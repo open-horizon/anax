@@ -34,12 +34,19 @@ Following are the fields in the JSON representation of a deployment policy:
   - `inputs`: A list of service variables to set.
     - `name`: The name of the variable. This is the same as a variable name found in `userInputs` as defined [here](./service_def.md).
     - `value`: The value to be assigned to the variable. Service variables are typed as described in `userInputs` defined [here](./service_def.md).
+- `secretBinding`: This section is used to bind secret names defined in the servcie with the secret names in the vault. The secret value will be retrived from the vault and passed to the service container at the deployment time. The secret value is used by the service container to access other applications.
+  - `serviceUrl`: The name of the service. It can be the top level services defined in the `services` attribute or their dependent services. This is the same value as found in the `url` field [here](./service_def.md).
+  - `serviceOrgid`: The organization in which the service in `serviceUrl` is defined.
+  - `serviceArch`: The hardware architecture of the service in `serviceUrl`, or `*` to indicate any compatible architecture. This is the same value as found in the `arch` field [here](./service_def.md).
+  - `serviceVersionRange`: A version range indicating the set of service versions to which this secret binding should be applied.
+  - `secrets`: A list of secret bindings. Each elelment is a map of string keyed by the name of the secret in the service. The value is the name of the secret in the vault. The valid formats for the vault secret names are: `<secretname>` for the organization level secret; `user/<username>/<secretname>` for the user level secret. The fully qualified vault secret name will be the the value defined here preceded by `openhorizon/<orgname>/` where the `<orgname>` is the organzation name of this deployment policy. However, it is invalid to specify the fully qualified name here.
 
 The following is an example of a deployment policy that deploys a service called `my.company.com.service.this-service`.
 The service is defined within organization `yourOrg`.
 This policy will deploy the service to any node which matches one of the architectures for which the service is defined, and is also compatible with nodes that have the property `aNodeProperty` set to `someValue`.
 Two versions of the service are mentioned, with version `2.3.1` having a higher priority for deployment than version `2.3.0`.
 The deployed service is dependent on service `my.company.com.service.other` which has a variable `var1` that needs to be set in order for it to deploy correctly.
+Both `2.3.0` and `2.3.1` versions of the services have a secret `ai_secret` defined that the service container will use to access an AI service on the clound once the vault secret name is bound to it. The policy binds it to a vault secret named `cloud_ai_secret_name`.
 ```
 {
   "label": "something short for a UI to display",
@@ -91,6 +98,19 @@ The deployed service is dependent on service `my.company.com.service.other` whic
         {
           "name": "var1",
           "value": "astring"
+        }
+      ]
+    }
+  ],
+  "secretBinding": [
+    {
+      "serviceOrgid": "yourOrg",
+      "serviceUrl": "my.company.com.service.this-service",
+      "serviceArch": "*",
+      "serviceVersionRange": "2.3.0",
+      "secrets": [
+        {
+          "ai_secret": "cloud_ai_secret_name"
         }
       ]
     }

@@ -51,5 +51,18 @@
         }
       ]
     }
+  ],
+  "secretBinding": [
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "ibm.netspeed",
+      "serviceArch": "",
+      "serviceVersionRange": "[0.0.0,INFINITY)",
+      "secrets": [
+        {
+          "ai_secret": "cloud_ai_secret_name"
+        }
+      ]
+    }
   ]
 }
