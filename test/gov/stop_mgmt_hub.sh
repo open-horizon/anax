@@ -18,12 +18,7 @@ if [ $? -ne 0 ]; then
   echo -e "${PREFIX} Failed copy the css config template file to ${tempHorizonDir}."
   exit 1
 fi
-cp -f ${ANAX_SOURCE}/test/docker/fs/etc/exchange/exchange-tmpl.json ${tempHorizonDir}
-if [ $? -ne 0 ]; then
-  echo -e "${PREFIX} Failed copy the exchange config template file to ${tempHorizonDir}."
-  exit 1
-fi
-export OH_DONT_DOWNLOAD='agbot-tmpl.json css-tmpl.conf exchange-tmpl.json'
+export OH_DONT_DOWNLOAD='agbot-tmpl.json css-tmpl.conf'
 
 
 cd /tmp

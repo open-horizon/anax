@@ -8,10 +8,12 @@ import (
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"golang.org/x/text/message"
 	"strings"
 )
@@ -63,6 +65,33 @@ type CompCheck struct {
 	NodeId         string                         `json:"node_id,omitempty"`
 	NodeArch       string                         `json:"node_arch,omitempty"`
 	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
+	NodeOrg        string                         `json:"node_org,omitempty"`  // can be omitted if node_id is specified
+	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
+	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
+	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
+	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
+	PatternId      string                         `json:"pattern_id,omitempty"`
+	Pattern        common.AbstractPatternFile     `json:"pattern,omitempty"`
+	ServicePolicy  *externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
+	Service        []common.AbstractServiceFile   `json:"service,omitempty"`
+}
+
+func (p CompCheck) String() string {
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
+
+}
+
+// stucture for the readining of the inital input for agbot secure APIs. It
+// is used by the unmarshal handers (UnmarshalJSON) of CompCheck, PolicyCheck, UserInputCheck
+// and SecretBindingCheck that only the agbot secure APIs will use.
+// This is because the original structures contain interfaces AbstractPatternFile and
+// AbstractServiceFile that cannot be demarshaled into.
+type CompCheck_NoAbstract struct {
+	NodeId         string                         `json:"node_id,omitempty"`
+	NodeArch       string                         `json:"node_arch,omitempty"`
+	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
+	NodeOrg        string                         `json:"node_org,omitempty"`  // can be omitted if node_id is specified
 	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
 	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
@@ -73,10 +102,37 @@ type CompCheck struct {
 	Service        []common.ServiceFile           `json:"service,omitempty"`
 }
 
-func (p CompCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
-		p.NodeId, p.NodeArch, p.NodeType, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
+// unmashal handler for CompCheck object to handle AbstractPatternFile and AbstractServiceFile
+func (p *CompCheck) UnmarshalJSON(b []byte) error {
 
+	var cc CompCheck_NoAbstract
+	if err := json.Unmarshal(b, &cc); err != nil {
+		return err
+	}
+
+	p.NodeId = cc.NodeId
+	p.NodeArch = cc.NodeArch
+	p.NodeType = cc.NodeType
+	p.NodeOrg = cc.NodeOrg
+	p.NodePolicy = cc.NodePolicy
+	p.NodeUserInput = cc.NodeUserInput
+	p.BusinessPolId = cc.BusinessPolId
+	p.BusinessPolicy = cc.BusinessPolicy
+	p.PatternId = cc.PatternId
+	p.ServicePolicy = cc.ServicePolicy
+
+	if cc.Pattern != nil {
+		p.Pattern = cc.Pattern
+	}
+
+	if cc.Service != nil && len(cc.Service) != 0 {
+		p.Service = []common.AbstractServiceFile{}
+		for index, _ := range cc.Service {
+			p.Service = append(p.Service, &cc.Service[index])
+		}
+	}
+
+	return nil
 }
 
 // The output format for the compatibility check
@@ -105,6 +161,7 @@ type CompCheckResource struct {
 	NodeId         string                                   `json:"node_id,omitempty"`
 	NodeArch       string                                   `json:"node_arch,omitempty"`
 	NodeType       string                                   `json:"node_type,omitempty"`
+	NodeOrg        string                                   `json:"node_org,omitempty"`
 	NodePolicy     *externalpolicy.ExternalPolicy           `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput                       `json:"node_user_input,omitempty"`
 	BusinessPolId  string                                   `json:"business_policy_id,omitempty"`
@@ -113,6 +170,11 @@ type CompCheckResource struct {
 	Pattern        common.AbstractPatternFile               `json:"pattern,omitempty"`
 	ServicePolicy  map[string]externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
 	Service        []common.AbstractServiceFile             `json:"service,omitempty"`
+	DepServices    map[string]exchange.ServiceDefinition    `json:"dependent_services,omitempty"` // for internal use for performance. A map of service definition keyed by id.
+	// It is either empty or provides ALL the dependent services needed. It is expected the top level service definitions are provided
+	// in the 'Service' attribute when this attribute is not empty.
+	NeededSB     []exchangecommon.SecretBinding `json:"needed_secret_binding,omitempty"`
+	ExtraneousSB []exchangecommon.SecretBinding `json:"extraneous_secret_binding,omitempty"`
 }
 
 func (p CompCheckResource) String() string {
@@ -134,43 +196,91 @@ func NewCompCheckResourceFromUICheck(uiInput *UserInputCheck) *CompCheckResource
 	// change the type from PatternFile to AbstractPatternFile
 	rsrc.Pattern = uiInput.Pattern
 
-	// change the service type to from ServiceFile to AbstractServiceFile
+	// copy the top level services if any
 	if uiInput.Service != nil {
 		rsrc.Service = []common.AbstractServiceFile{}
 		for _, svc := range uiInput.Service {
-			rsrc.Service = append(rsrc.Service, &svc)
+			rsrc.Service = append(rsrc.Service, svc)
+		}
+	}
+
+	// copy the dependent services if any
+	if uiInput.DepServices != nil {
+		rsrc.DepServices = map[string]exchange.ServiceDefinition{}
+		for sId, svc := range uiInput.DepServices {
+			rsrc.DepServices[sId] = svc
+		}
+	}
+
+	return &rsrc
+}
+
+func NewCompCheckRsrcFromSecretBindingCheck(sbInput *SecretBindingCheck) *CompCheckResource {
+	var rsrc CompCheckResource
+	rsrc.NodeId = sbInput.NodeId
+	rsrc.NodeArch = sbInput.NodeArch
+	rsrc.NodeType = sbInput.NodeType
+	rsrc.NodeOrg = sbInput.NodeOrg
+	rsrc.BusinessPolId = sbInput.BusinessPolId
+	rsrc.BusinessPolicy = sbInput.BusinessPolicy
+	rsrc.PatternId = sbInput.PatternId
+
+	// change the type from PatternFile to AbstractPatternFile
+	rsrc.Pattern = sbInput.Pattern
+
+	// copy the top level services if any
+	if sbInput.Service != nil {
+		rsrc.Service = []common.AbstractServiceFile{}
+		for _, svc := range sbInput.Service {
+			rsrc.Service = append(rsrc.Service, svc)
+		}
+	}
+
+	// copy the dependent services if any
+	if sbInput.DepServices != nil {
+		rsrc.DepServices = map[string]exchange.ServiceDefinition{}
+		for sId, svc := range sbInput.DepServices {
+			rsrc.DepServices[sId] = svc
 		}
 	}
 	return &rsrc
 }
 
-func NewCompCheckResourceFromPolicyCheck(uiInput *PolicyCheck) *CompCheckResource {
+func NewCompCheckResourceFromPolicyCheck(pcInput *PolicyCheck) *CompCheckResource {
 	var rsrc CompCheckResource
-	rsrc.NodeId = uiInput.NodeId
-	rsrc.NodeArch = uiInput.NodeArch
-	rsrc.NodeType = uiInput.NodeType
-	rsrc.NodePolicy = uiInput.NodePolicy
-	rsrc.BusinessPolId = uiInput.BusinessPolId
-	rsrc.BusinessPolicy = uiInput.BusinessPolicy
+	rsrc.NodeId = pcInput.NodeId
+	rsrc.NodeArch = pcInput.NodeArch
+	rsrc.NodeType = pcInput.NodeType
+	rsrc.NodePolicy = pcInput.NodePolicy
+	rsrc.BusinessPolId = pcInput.BusinessPolId
+	rsrc.BusinessPolicy = pcInput.BusinessPolicy
 
 	// If user input a service policy, it will be applied to all the services defined in the bp or pattern
 	rsrc.ServicePolicy = map[string]externalpolicy.ExternalPolicy{}
-	if uiInput.ServicePolicy != nil {
-		rsrc.ServicePolicy["AllServices"] = *uiInput.ServicePolicy
+	if pcInput.ServicePolicy != nil {
+		rsrc.ServicePolicy["AllServices"] = *pcInput.ServicePolicy
 	}
 
-	// change the service type to from ServiceFile to AbstractServiceFile
-	if uiInput.Service != nil {
+	// copy the top level services if any
+	if pcInput.Service != nil {
 		rsrc.Service = []common.AbstractServiceFile{}
-		for _, svc := range uiInput.Service {
-			rsrc.Service = append(rsrc.Service, &svc)
+		for _, svc := range pcInput.Service {
+			rsrc.Service = append(rsrc.Service, svc)
+		}
+	}
+
+	// copy the dependent services if any
+	if pcInput.DepServices != nil {
+		rsrc.DepServices = map[string]exchange.ServiceDefinition{}
+		for sId, svc := range pcInput.DepServices {
+			rsrc.DepServices[sId] = svc
 		}
 	}
 
 	return &rsrc
 }
 
-func DeployCompatible(ec exchange.ExchangeContext, ccInput *CompCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
+func DeployCompatible(ec exchange.ExchangeContext, agbotUrl string, ccInput *CompCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
 
 	getDeviceHandler := exchange.GetHTTPDeviceHandler(ec)
 	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(ec)
@@ -180,8 +290,9 @@ func DeployCompatible(ec exchange.ExchangeContext, ccInput *CompCheck, checkAllS
 	getServiceHandler := exchange.GetHTTPServiceHandler(ec)
 	serviceDefResolverHandler := exchange.GetHTTPServiceDefResolverHandler(ec)
 	getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
+	vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
 
-	return deployCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, getPatterns, servicePolicyHandler, getServiceHandler, serviceDefResolverHandler, getSelectedServices, ccInput, checkAllSvcs, msgPrinter)
+	return deployCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, getPatterns, servicePolicyHandler, getServiceHandler, serviceDefResolverHandler, getSelectedServices, vaultSecretExists, agbotUrl, ccInput, checkAllSvcs, msgPrinter)
 }
 
 // Internal function for PolicyCompatible
@@ -193,6 +304,7 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 	getServiceHandler exchange.ServiceHandler,
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	getSelectedServices exchange.SelectedServicesHandler,
+	vaultSecretExists exchange.VaultSecretExistsHandler, agbotUrl string,
 	ccInput *CompCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
 
 	// get default message printer if nil
@@ -213,16 +325,13 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 
 	// check policy first, for business policy case only
-	policyCheckInput, err := convertToPolicyCheck(ccInput, msgPrinter)
-	if err != nil {
-		return nil, err
-	}
+	policyCheckInput := convertToPolicyCheck(ccInput)
 
 	pcOutput := NewCompCheckOutput(true, map[string]string{}, NewCompCheckResourceFromPolicyCheck(policyCheckInput))
 	privOutput := NewCompCheckOutput(true, map[string]string{}, &CompCheckResource{})
 	if useBPol {
 		var err1 error
-		pcOutput, err1 = policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, getServiceHandler, serviceDefResolverHandler, policyCheckInput, true, msgPrinter)
+		pcOutput, err1 = policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, serviceDefResolverHandler, policyCheckInput, true, msgPrinter)
 		if err1 != nil {
 			return nil, err1
 		}
@@ -232,24 +341,38 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 			return pcOutput, nil
 		}
 	} else if ccInput.NodeId != "" || ccInput.NodePolicy != nil {
-		privOutput, err := EvaluatePatternPrivilegeCompatability(serviceDefResolverHandler, getServiceHandler, getPatterns, nodePolicyHandler, ccInput, &CompCheckResource{NodeArch: "amd64"}, msgPrinter, checkAllSvcs, true)
+		privOutput, err := EvaluatePatternPrivilegeCompatability(serviceDefResolverHandler, getPatterns, nodePolicyHandler, ccInput, privOutput.Input, msgPrinter, true, true)
 		if err != nil {
 			return nil, err
 		}
 		if !privOutput.Compatible {
-			return privOutput, nil
+			return createCompCheckOutput(pcOutput, privOutput, nil, nil, checkAllSvcs, msgPrinter), nil
 		}
 	}
 
 	// check user input for those services that are compatible
 	uiCheckInput := createUserInputCheckInput(ccInput, pcOutput, msgPrinter)
-	uiOutput, err := userInputCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, getServiceHandler, serviceDefResolverHandler, getSelectedServices, uiCheckInput, checkAllSvcs, msgPrinter)
+	uiOutput, err := userInputCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, serviceDefResolverHandler, getSelectedServices, uiCheckInput, true, msgPrinter)
 	if err != nil {
 		return nil, err
 	}
+	if !uiOutput.Compatible {
+		return createCompCheckOutput(pcOutput, privOutput, uiOutput, nil, checkAllSvcs, msgPrinter), nil
+	}
 
-	// combine the output of policy check and user input check into one
-	return createCompCheckOutput(pcOutput, privOutput, uiOutput, checkAllSvcs, msgPrinter), nil
+	var sbOutput *CompCheckOutput
+	if uiOutput.Input.NodeType == persistence.DEVICE_TYPE_DEVICE {
+		var err error
+		// check the secret bindings for those that are compatible
+		sbCheckInput := createSecretBindingCheckInput(ccInput, uiOutput, msgPrinter)
+		sbOutput, err = secretBindingCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, serviceDefResolverHandler, getSelectedServices, vaultSecretExists, agbotUrl, sbCheckInput, checkAllSvcs, msgPrinter)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// combine the output of policy check, user input check, secretbinding check into one
+	return createCompCheckOutput(pcOutput, privOutput, uiOutput, sbOutput, checkAllSvcs, msgPrinter), nil
 }
 
 // Use the result of policy check together with the original input to create a user input check input object.
@@ -269,10 +392,14 @@ func createUserInputCheckInput(ccInput *CompCheck, pcOutput *CompCheckOutput, ms
 	uiCheckInput.BusinessPolicy = pcOutput.Input.BusinessPolicy
 
 	// these are from the original input
-	uiCheckInput.Service = ccInput.Service
 	uiCheckInput.NodeUserInput = ccInput.NodeUserInput
 	uiCheckInput.PatternId = ccInput.PatternId
 	uiCheckInput.Pattern = ccInput.Pattern
+	if ccInput.Service != nil && len(ccInput.Service) != 0 {
+		uiCheckInput.Service = ccInput.Service
+	} else {
+		uiCheckInput.Service = pcOutput.Input.Service
+	}
 
 	// limit the check to the services that are compatible for policy check
 	// empty means check all
@@ -284,92 +411,154 @@ func createUserInputCheckInput(ccInput *CompCheck, pcOutput *CompCheckOutput, ms
 	}
 	uiCheckInput.ServiceToCheck = svcs
 
+	// get service cache
+	uiCheckInput.DepServices = pcOutput.Input.DepServices
+
 	return &uiCheckInput
 }
 
+// Use the result of userinput check together with the original input to create a secret binding check input object.
+func createSecretBindingCheckInput(ccInput *CompCheck, uiOutput *CompCheckOutput, msgPrinter *message.Printer) *SecretBindingCheck {
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	sbCheckInput := SecretBindingCheck{}
+
+	// get policies or patten from the userinput check output so that we do not need to get to the exchange to get them again.
+	sbCheckInput.NodeId = uiOutput.Input.NodeId
+	sbCheckInput.NodeArch = uiOutput.Input.NodeArch
+	sbCheckInput.NodeType = uiOutput.Input.NodeType
+	sbCheckInput.BusinessPolId = uiOutput.Input.BusinessPolId
+	sbCheckInput.BusinessPolicy = uiOutput.Input.BusinessPolicy
+	sbCheckInput.PatternId = uiOutput.Input.PatternId
+	sbCheckInput.Pattern = uiOutput.Input.Pattern
+
+	// these are from the original input
+	sbCheckInput.NodeOrg = ccInput.NodeOrg
+
+	// limit the check to the services that are compatible for previous checks
+	// empty means check all
+	svcs := []string{}
+	for sId, reason := range uiOutput.Reason {
+		if !strings.Contains(reason, msgPrinter.Sprintf("Incompatible")) {
+			svcs = append(svcs, sId)
+		}
+	}
+	sbCheckInput.ServiceToCheck = svcs
+
+	// get the service cache
+	sbCheckInput.DepServices = uiOutput.Input.DepServices
+	sbCheckInput.Service = uiOutput.Input.Service
+
+	return &sbCheckInput
+}
+
+// update the reason map from the deployment check output
+func updateReasonMap(cco *CompCheckOutput, reason map[string]string, msgPrinter *message.Printer) {
+	if cco.Reason == nil || len(cco.Reason) == 0 {
+		return
+	}
+
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+	msg_compatible := msgPrinter.Sprintf("Compatible")
+	for sId, rs := range cco.Reason {
+		if strings.HasSuffix(sId, "_*") || strings.HasSuffix(sId, "_") {
+			sId = cutil.RemoveArchFromServiceId(sId)
+		}
+		if _, ok := reason[sId]; !ok {
+			// add it in if it is not in the map
+			reason[sId] = rs
+		} else if rs != msg_compatible {
+			// keep the latest in comptible code
+			reason[sId] = rs
+		}
+	}
+}
+
 // combine the policy check output and user input output into CompCheckOutput
-func createCompCheckOutput(pcOutput *CompCheckOutput, privOutput *CompCheckOutput, uiOutput *CompCheckOutput, checkAllSvcs bool, msgPrinter *message.Printer) *CompCheckOutput {
+func createCompCheckOutput(pcOutput *CompCheckOutput, privOutput *CompCheckOutput, uiOutput *CompCheckOutput, sbOutput *CompCheckOutput, checkAllSvcs bool, msgPrinter *message.Printer) *CompCheckOutput {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
 	}
 
 	var ccOutput CompCheckOutput
+	var lastOutput *CompCheckOutput
 
-	// the last one takes precedence for overall assesement
-	ccOutput.Compatible = uiOutput.Compatible
-
-	// combine the reason from both
-	msg_compatible := msgPrinter.Sprintf("Compatible")
-	reason := map[string]string{}
-	if !checkAllSvcs && uiOutput.Compatible {
-		reason = uiOutput.Reason
+	// the last one takes precedence for overall assesement.
+	// sbOutput can be nil when node type is cluster because
+	// scretebinding check is not supported
+	if sbOutput != nil {
+		lastOutput = sbOutput
+	} else if uiOutput != nil {
+		lastOutput = uiOutput
 	} else {
-		// save the policy incompatibility reason.
-		if pcOutput.Reason == nil || len(pcOutput.Reason) == 0 {
-			// pattern case, only has userinput check
-			for sId_ui, rs_ui := range uiOutput.Reason {
-				reason[sId_ui] = rs_ui
-			}
-		} else {
-			// business policy case, has policy and userinput checks
-			for sId_pc, rs_pc := range pcOutput.Reason {
-				if rs_pc != msg_compatible {
-					reason[sId_pc] = rs_pc
-				} else if rs_privc, ok := privOutput.Reason[sId_pc]; ok && rs_privc != msg_compatible {
-					reason[sId_pc] = rs_privc
-				} else {
-					// add user input compatibility result
-					for sId_ui, rs_ui := range uiOutput.Reason {
-						if sId_ui == sId_pc {
-							reason[sId_ui] = rs_ui
-						} else if strings.HasSuffix(sId_pc, "_*") || strings.HasSuffix(sId_pc, "_") || strings.HasSuffix(sId_ui, "_*") || strings.HasSuffix(sId_ui, "_") {
-							// remove the arch parts and compare
-							sId_pc_na := cutil.RemoveArchFromServiceId(sId_pc)
-							sId_ui_na := cutil.RemoveArchFromServiceId(sId_ui)
-							if sId_pc_na == sId_ui_na {
-								reason[sId_ui] = rs_ui
-							}
-						}
-					}
-				}
-			}
+		lastOutput = privOutput
+	}
+	ccOutput.Compatible = lastOutput.Compatible
+
+	// combine the reason from all
+	reason := map[string]string{}
+	if !checkAllSvcs && lastOutput.Compatible {
+		reason = lastOutput.Reason
+	} else {
+		updateReasonMap(pcOutput, reason, msgPrinter)
+		updateReasonMap(privOutput, reason, msgPrinter)
+		if uiOutput != nil {
+			updateReasonMap(uiOutput, reason, msgPrinter)
+		}
+		if sbOutput != nil {
+			updateReasonMap(sbOutput, reason, msgPrinter)
 		}
 	}
+
 	ccOutput.Reason = reason
 
 	// combine the input part
 	ccInput := CompCheckResource{}
-	ccInput.NodeId = uiOutput.Input.NodeId
-	ccInput.NodeArch = uiOutput.Input.NodeArch
-	ccInput.NodeType = uiOutput.Input.NodeType
-	ccInput.NodeUserInput = uiOutput.Input.NodeUserInput
+	ccInput.NodeId = lastOutput.Input.NodeId
+	ccInput.NodeArch = lastOutput.Input.NodeArch
+	ccInput.NodeType = lastOutput.Input.NodeType
+	ccInput.NodeOrg = lastOutput.Input.NodeOrg
+	if uiOutput != nil {
+		ccInput.NodeUserInput = uiOutput.Input.NodeUserInput
+		ccInput.PatternId = uiOutput.Input.PatternId
+		ccInput.Pattern = uiOutput.Input.Pattern
+	}
 	ccInput.NodePolicy = pcOutput.Input.NodePolicy
-	ccInput.BusinessPolId = uiOutput.Input.BusinessPolId
-	ccInput.BusinessPolicy = uiOutput.Input.BusinessPolicy
-	ccInput.PatternId = uiOutput.Input.PatternId
-	ccInput.Pattern = uiOutput.Input.Pattern
-	ccInput.Service = uiOutput.Input.Service
+	ccInput.BusinessPolId = lastOutput.Input.BusinessPolId
+	ccInput.BusinessPolicy = lastOutput.Input.BusinessPolicy
+	ccInput.Service = lastOutput.Input.Service
 	ccInput.ServicePolicy = pcOutput.Input.ServicePolicy
 	ccOutput.Input = &ccInput
+
+	if sbOutput != nil {
+		ccOutput.Input.NeededSB = sbOutput.Input.NeededSB
+		ccOutput.Input.ExtraneousSB = sbOutput.Input.ExtraneousSB
+	}
 
 	return &ccOutput
 }
 
 // convert CompCheck object to PolicyCheckobject.
-func convertToPolicyCheck(in interface{}, msgPrinter *message.Printer) (*PolicyCheck, error) {
-	// get default message printer if nil
-	if msgPrinter == nil {
-		msgPrinter = i18n.GetMessagePrinter()
-	}
-
+func convertToPolicyCheck(in *CompCheck) *PolicyCheck {
 	var out PolicyCheck
-	if buf, err := json.Marshal(in); err != nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error marshaling object %v. %v", in)), COMPCHECK_GENERAL_ERROR)
-	} else if err := json.Unmarshal(buf, &out); err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Failed to convert input to PolicyCheck object. %v", err))
-	}
-	return &out, nil
+
+	out.NodeId = in.NodeId
+	out.NodeArch = in.NodeArch
+	out.NodeType = in.NodeType
+	out.NodePolicy = in.NodePolicy
+	out.BusinessPolId = in.BusinessPolId
+	out.BusinessPolicy = in.BusinessPolicy
+	out.ServicePolicy = in.ServicePolicy
+	out.Service = in.Service
+
+	return &out
 }
 
 // Get the exchange device
@@ -400,9 +589,10 @@ func GetExchangeNode(getDeviceHandler exchange.DeviceHandler, nodeId string, msg
 
 // EvaluatePatternPrivilegeCompatability determines if a given node requires a workload that uses privileged mode or network=host.
 // This function will recursively evaluate top-level services specified in the pattern.
-func EvaluatePatternPrivilegeCompatability(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
+func EvaluatePatternPrivilegeCompatability(getServiceResolvedDef exchange.ServiceDefResolverHandler,
 	getPatterns exchange.PatternHandler, nodePolicyHandler exchange.NodePolicyHandler,
 	cc *CompCheck, ccResource *CompCheckResource, msgPrinter *message.Printer, checkAll bool, quiet bool) (*CompCheckOutput, error) {
+
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
 	}
@@ -438,47 +628,36 @@ func EvaluatePatternPrivilegeCompatability(getServiceResolvedDef exchange.Servic
 	for _, svcRef := range getWorkloadsFromPattern(patternDef, ccResource.NodeArch) {
 		svcPriv := false
 		for _, workload := range svcRef.ServiceVersions {
-			sId := fmt.Sprintf("%s/%s", svcRef.ServiceOrg, svcRef.ServiceURL)
-			allSvcs, err := GetAllServices(getServiceResolvedDef, getService, policy.Workload{WorkloadURL: svcRef.ServiceURL, Org: svcRef.ServiceOrg, Arch: svcRef.ServiceArch, Version: workload.Version}, msgPrinter)
+			topSvc, topId, depSvcs, err := GetServiceAndDeps(svcRef.ServiceURL, svcRef.ServiceOrg, workload.Version, svcRef.ServiceArch, cc.Service,
+				ccResource.DepServices, getServiceResolvedDef, msgPrinter)
 			if err != nil && !quiet {
 				return nil, err
 			}
-			for _, inputSvcDef := range cc.Service {
-				exchSvcDef := exchange.ServiceDefinition{URL: inputSvcDef.GetURL()}
-				if _, ok := inputSvcDef.Deployment.(string); ok {
-					exchSvcDef.Deployment = inputSvcDef.Deployment.(string)
-				} else {
-					depByte, err := json.Marshal(inputSvcDef.Deployment)
-					if err != nil {
-						return nil, err
-					}
-					exchSvcDef.Deployment = string(depByte)
-				}
-				if allSvcs == nil {
-					allSvcs = &map[string]exchange.ServiceDefinition{fmt.Sprintf("%s/%s", inputSvcDef.GetOrg(), inputSvcDef.GetURL()): exchSvcDef}
-				} else {
-					(*allSvcs)[fmt.Sprintf("%s/%s", inputSvcDef.GetOrg(), inputSvcDef.GetURL())] = exchSvcDef
-				}
-			}
-			workLoadPriv, err, privWorkloads := ServicesRequirePrivilege(allSvcs, msgPrinter)
+
+			// check the compatibilit of the privileged settings
+			workLoadPriv, err, privWorkloads := ServicesRequirePrivilege(topSvc, topId, depSvcs, msgPrinter)
 			if err != nil {
 				return nil, err
 			}
+
+			// save the incompatibles
 			for _, sId := range privWorkloads {
-				exchSDef := (*allSvcs)[sId]
-				sDef := &ServiceDefinition{exchange.GetOrg(sId), exchSDef}
-				svcIncomp = append(svcIncomp, sDef)
+				if topId == sId {
+					svcIncomp = append(svcIncomp, topSvc)
+				} else {
+					sDef := &ServiceDefinition{exchange.GetOrg(sId), depSvcs[sId]}
+					svcIncomp = append(svcIncomp, sDef)
+				}
 			}
 
 			if workLoadPriv && checkAll {
 				svcPriv = true
-				messages[sId] = fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)
+				messages[topId] = fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)
 			} else if workLoadPriv {
 				ccResource.Service = svcIncomp
-				return NewCompCheckOutput(false, map[string]string{sId: fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)}, nil), nil
+				return NewCompCheckOutput(false, map[string]string{topId: fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)}, nil), nil
 			} else {
-				sDef := &ServiceDefinition{svcRef.ServiceOrg, (*allSvcs)[sId]}
-				svcComp = append(svcComp, sDef)
+				svcComp = append(svcComp, topSvc)
 			}
 		}
 		if svcPriv {
@@ -490,50 +669,54 @@ func EvaluatePatternPrivilegeCompatability(getServiceResolvedDef exchange.Servic
 	} else {
 		ccResource.Service = svcIncomp
 	}
+
 	if !nodePriv && overallPriv {
 		return NewCompCheckOutput(false, messages, ccResource), nil
 	}
 	return NewCompCheckOutput(true, nil, ccResource), nil
 }
 
-// GetAllServices returns a map of serviceIds to service definitions of the given service and any service it is dependent on evaluated recursively
-func GetAllServices(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
-	workload policy.Workload, msgPrinter *message.Printer) (*map[string]exchange.ServiceDefinition, error) {
-	if msgPrinter == nil {
-		msgPrinter = i18n.GetMessagePrinter()
-	}
-	sDefMap, topSvcDef, topSvcId, err := getServiceResolvedDef(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
-	if err != nil {
-		// logging this message here so it gets translated. Will add quiet parameter to determine if this is an error or a cli warning later.
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s. Compatability of %s cannot be fully evaluated until all services are in the Exchange.", topSvcId, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
-	}
-	if topSvcDef != nil {
-		sDefMap[topSvcId] = *topSvcDef
-	}
-	return &sDefMap, nil
-}
-
 // this function takes as a parameter a map of service ids to deployment strings
 // Returns true if any of the service listed require privilge to run
 // returns a slice of service ids of any services that require privilege to run
-func ServicesRequirePrivilege(serviceDefs *map[string]exchange.ServiceDefinition, msgPrinter *message.Printer) (bool, error, []string) {
+func ServicesRequirePrivilege(topSvc common.AbstractServiceFile, topSvcId string, depServiceDefs map[string]exchange.ServiceDefinition, msgPrinter *message.Printer) (bool, error, []string) {
 	privSvcs := []string{}
 	reqPriv := false
-
-	if serviceDefs == nil {
-		return false, nil, nil
-	}
 
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
 	}
 
-	for sId, sDef := range *serviceDefs {
-		if priv, err := DeploymentRequiresPrivilege(sDef.GetDeploymentString(), msgPrinter); err != nil {
+	// handle top level service
+	if topSvc != nil {
+		depstring := ""
+		if _, ok := topSvc.GetDeployment().(string); ok {
+			depstring = topSvc.GetDeployment().(string)
+		} else {
+			depByte, err := json.Marshal(topSvc.GetDeployment())
+			if err != nil {
+				return false, err, nil
+			}
+			depstring = string(depByte)
+		}
+
+		if priv, err := DeploymentRequiresPrivilege(depstring, msgPrinter); err != nil {
 			return false, err, nil
 		} else if priv {
 			reqPriv = true
-			privSvcs = append(privSvcs, sId)
+			privSvcs = append(privSvcs, topSvcId)
+		}
+	}
+
+	// handle dependent services
+	if depServiceDefs != nil {
+		for sId, sDef := range depServiceDefs {
+			if priv, err := DeploymentRequiresPrivilege(sDef.GetDeploymentString(), msgPrinter); err != nil {
+				return false, err, nil
+			} else if priv {
+				reqPriv = true
+				privSvcs = append(privSvcs, sId)
+			}
 		}
 	}
 	return reqPriv, nil, privSvcs
@@ -590,4 +773,152 @@ func CheckTypeCompatibility(nodeType string, serviceDef common.AbstractServiceFi
 	}
 
 	return true, ""
+}
+
+// Get the dependent services for the given service.
+// It goes to the dependentServices to find a dependent first. If not found
+// it will go to the exchange to get the dependents.
+func GetServiceDependentDefs(sDef common.AbstractServiceFile,
+	dependentServices map[string]exchange.ServiceDefinition, // can be nil
+	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
+	msgPrinter *message.Printer) (map[string]exchange.ServiceDefinition, error) {
+
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	// nothing to check
+	if sDef == nil {
+		return nil, nil
+	}
+
+	// get all the service defs for the dependent services for device type node
+	service_map := map[string]exchange.ServiceDefinition{}
+	if sDef.GetRequiredServices() != nil && len(sDef.GetRequiredServices()) != 0 {
+		for _, sDep := range sDef.GetRequiredServices() {
+			var s_map map[string]exchange.ServiceDefinition
+			var s_def *exchange.ServiceDefinition
+			var err error
+			var s_id string
+			svcSpec := NewServiceSpec(sDep.URL, sDep.Org, sDep.VersionRange, sDep.Arch)
+			if s_map, err = FindServiceDefs(svcSpec, dependentServices, msgPrinter); err != nil {
+				return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
+			} else if vExp, err := semanticversion.Version_Expression_Factory(sDep.VersionRange); err != nil {
+				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.VersionRange, err)), COMPCHECK_GENERAL_ERROR)
+			} else if s_map, s_def, s_id, err = serviceDefResolverHandler(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch); err != nil {
+				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving dependent services from the Exchange for %v. %v", sDep, err)), COMPCHECK_EXCHANGE_ERROR)
+			} else {
+				service_map[s_id] = *s_def
+			}
+			for id, s := range s_map {
+				service_map[id] = s
+			}
+		}
+	}
+
+	return service_map, nil
+}
+
+// Find the a service and all of its dependent services from the given service map. The version given in the
+// svcSpec is a version range.
+func FindServiceDefs(svcSpec *ServiceSpec, sDefsIn map[string]exchange.ServiceDefinition, msgPrinter *message.Printer) (map[string]exchange.ServiceDefinition, error) {
+	if sDefsIn == nil || len(sDefsIn) == 0 {
+		return nil, nil
+	}
+
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	found := true
+	all := map[string]exchange.ServiceDefinition{}
+	for sID, sDef := range sDefsIn {
+		if sDef.URL == svcSpec.ServiceUrl && exchange.GetOrg(sID) == svcSpec.ServiceOrgid && sDef.Arch == svcSpec.ServiceArch {
+			if vExp, err := semanticversion.Version_Expression_Factory(svcSpec.ServiceVersionRange); err != nil {
+				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", svcSpec.ServiceVersionRange, err)), COMPCHECK_GENERAL_ERROR)
+			} else if ok, err := vExp.Is_within_range(sDef.Version); err != nil {
+				return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
+			} else if ok {
+				found = true
+				all[sID] = sDefsIn[sID]
+
+				if sDef.RequiredServices != nil && len(sDef.RequiredServices) != 0 {
+					for _, sDep := range sDef.RequiredServices {
+						svcSpecDep := NewServiceSpec(sDep.URL, sDep.Org, sDep.VersionRange, sDep.Arch)
+						if defs, err := FindServiceDefs(svcSpecDep, sDefsIn, msgPrinter); err != nil || defs == nil {
+							return nil, err
+						} else {
+							for id, s := range defs {
+								all[id] = s
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if !found {
+		return nil, nil
+	} else {
+		return all, nil
+	}
+}
+
+// Get a specific service from the given array of services
+func GetServiceFromInput(svcUrl, svcOrg, svcVersion, svcArch string, inServices []common.AbstractServiceFile) common.AbstractServiceFile {
+	for _, in_svc := range inServices {
+		if in_svc.GetURL() == svcUrl && in_svc.GetVersion() == svcVersion &&
+			(svcArch == "*" || svcArch == "" || in_svc.GetArch() == svcArch) &&
+			(in_svc.GetOrg() == "" || in_svc.GetOrg() == svcOrg) {
+			return in_svc
+		}
+	}
+
+	return nil
+}
+
+// Given the a list of top level services and dependent servces, find the
+// top level service and its dependent services. If not found, get from the exchange.
+func GetServiceAndDeps(svcUrl, svcOrg, svcVersion, svcArch string,
+	inServices []common.AbstractServiceFile, inDepServices map[string]exchange.ServiceDefinition,
+	getServiceResolvedDef exchange.ServiceDefResolverHandler,
+	msgPrinter *message.Printer) (common.AbstractServiceFile, string, map[string]exchange.ServiceDefinition, error) {
+
+	var topSvc common.AbstractServiceFile
+	var exchTopSvc *exchange.ServiceDefinition
+	topId := ""
+	depSvcs := map[string]exchange.ServiceDefinition{}
+	var err error
+
+	// get services
+	topSvc = GetServiceFromInput(svcUrl, svcOrg, svcVersion, svcArch, inServices)
+	if topSvc != nil {
+		// found in input or exchange
+		topId = cutil.FormExchangeIdForService(svcUrl, svcVersion, svcArch)
+		topId = fmt.Sprintf("%v/%v", svcOrg, topId)
+		depSvcs, err = GetServiceDependentDefs(topSvc, inDepServices, getServiceResolvedDef, msgPrinter)
+		if err != nil {
+			return nil, "", nil, err
+		}
+	} else {
+		// not found, get it and dependents from the exchange
+		depSvcs, exchTopSvc, topId, err = getServiceResolvedDef(svcUrl, svcOrg, svcVersion, svcArch)
+		if err != nil {
+			return nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s. Compatability of %s cannot be fully evaluated until all services are in the Exchange.", topId, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
+		}
+		topSvc = &ServiceDefinition{exchange.GetOrg(topId), *exchTopSvc}
+	}
+
+	return topSvc, topId, depSvcs, nil
+}
+
+func FormatReasonMessage(reason string, type_error bool, msg_prefix string, type_prefix string) string {
+	if type_error {
+		return fmt.Sprintf("%v: %v", type_prefix, reason)
+	} else {
+		return fmt.Sprintf("%v: %v", msg_prefix, reason)
+	}
 }

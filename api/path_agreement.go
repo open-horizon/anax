@@ -30,7 +30,7 @@ func FindAgreementsForOutput(db *bolt.DB) (map[string]map[string][]persistence.E
 	wrap[agreementsKey][activeKey] = []persistence.EstablishedAgreement{}
 
 	for _, agreement := range agreements {
-		if err := abstractprotocol.ObscureProposalSecret(&agreement.Proposal); err != nil {
+		if agreement.Proposal, err = abstractprotocol.ObscureProposalSecret(agreement.Proposal); err != nil {
 			glog.V(3).Infof(apiLogString(fmt.Sprintf("failed to obscure secret details, error: %v", err)))
 		}
 		// The archived agreements and the agreements being terminated are returned as archived.

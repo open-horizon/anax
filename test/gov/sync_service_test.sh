@@ -285,6 +285,106 @@ else
   echo "Completed"
 fi
 
+#Create custom key pairs
+openssl genrsa -out /tmp/mms.private.key 2048
+openssl rsa -in /tmp/mms.private.key -outform PEM -pubout -out /tmp/mms.public.key
+openssl genrsa -out /tmp/env.private.key 2048
+openssl rsa -in /tmp/env.private.key -outform PEM -pubout -out /tmp/env.public.key
+MADE_DEFAULT_KEYS=0
+if [ ! -f ~/.hzn/keys/service.private.key ] || [ ! -f ~/.hzn/keys/service.public.pem ]; 
+then
+  hzn key create "IBM" "first.last@ibm.com"
+  MADE_DEFAULT_KEYS=1
+fi
+
+# Test object publish with -k
+echo "Testing object publish with -k flag"
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt -k /tmp/mms.private.key >/dev/null
+RC=$?
+if [ $RC -ne 0 ]
+then
+  echo -e "Got unexpected error uploading 32MB model object with -k flag: $RC"
+  exit 1
+else
+  echo "Completed"
+fi
+
+# object has correct "publicKey" field
+echo "Testing object is stored with publicKey field that was generated from given private key file"
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
+if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" = "" ]; then
+  echo -e "publicKey should be set if publish with -k flag"
+  exit 1
+elif [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "$(cat /tmp/mms.public.key | sed '1d;$d' | awk '{ printf "%s", $0 }')" ]; then
+  echo -e "publicKey does not correspond to given private key file using -k flag"
+  exit 1
+else
+  echo "Completed"
+fi
+
+# Test object publish with environment variable HZN_PRIVATE_KEY_FILE set
+echo "Testing object publish with environment variable HZN_PRIVATE_KEY_FILE set"
+export HZN_PRIVATE_KEY_FILE=/tmp/env.private.key
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt >/dev/null
+RC=$?
+if [ $RC -ne 0 ]
+then
+  echo -e "Got unexpected error uploading 32MB model object with -k flag: $RC"
+  exit 1
+else
+  echo "Completed"
+fi
+
+# object has correct "publicKey" field
+echo "Testing object is stored with publicKey field that was generated from env variable HZN_PRIVATE_KEY_FILE"
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
+if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" = "" ]; then
+  echo -e "publicKey should be set if publish when HZN_PRIVATE_KEY_FILE is set"
+  exit 1
+elif [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "$(cat /tmp/env.public.key | sed '1d;$d' | awk '{ printf "%s", $0 }')" ]; then
+  echo -e "publicKey does not correspond private key file using HZN_PRIVATE_KEY_FILE env variable"
+  exit 1
+else
+  echo "Completed"
+fi
+unset HZN_PRIVATE_KEY_FILE
+
+# Test object publish with default keyfile path set (~/.hzn/keys/service.private.key)
+echo "Testing object publish with default path set (~/.hzn/keys/service.private.key)"
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt >/dev/null
+RC=$?
+if [ $RC -ne 0 ]
+then
+  echo -e "Got unexpected error uploading 32MB model object with -k flag: $RC"
+  exit 1
+else
+  echo "Completed"
+fi
+
+# object has correct "publicKey" field
+echo "Testing object is stored with publicKey field that is stored in default path (~/.hzn/keys/service.private.key)"
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
+if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" = "" ]; then
+  echo -e "publicKey should be set if publish without -k flag or HZN_PRIVATE_KEY_FILE set"
+  exit 1
+elif [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "$(openssl x509 -in ~/.hzn/keys/service.public.pem -pubkey -nocert | sed '1d;$d' | awk '{ printf "%s", $0 }')" ]; then
+  echo -e "publicKey does not match default public key file stored at ~/.hzn/keys/service.public.pem"
+  exit 1
+else
+  echo "Completed"
+fi
+
+#remove custom key pairs
+rm /tmp/mms.private.key
+rm /tmp/mms.public.key
+rm /tmp/env.private.key
+rm /tmp/env.public.key
+if [ MADE_DEFAULT_KEYS = 1 ]
+then
+  rm ~/.hzn/keys/service.private.key
+  rm ~/.hzn/keys/service.public.pem
+fi
+
 # Test object list with flags
 echo "Start testing hzn mms object list"
 

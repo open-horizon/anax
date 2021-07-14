@@ -160,7 +160,6 @@ type ProtocolHandler interface {
 		messageTarget interface{},
 		sendMessage func(mt interface{}, pay []byte) error) error
 
-
 	RecordMeter(agreementId string,
 		mn *metering.MeteringNotification) error
 
@@ -586,15 +585,15 @@ func MarshalProposal(prop Proposal) (string, error) {
 	}
 }
 
-func ObscureProposalSecret(proposal *string) error {
-	if prop, err := DemarshalProposal(*proposal); err != nil {
-		return err
+func ObscureProposalSecret(proposal string) (string, error) {
+	if prop, err := DemarshalProposal(proposal); err != nil {
+		return "", err
 	} else if err := policy.ObscureSecretDetails(&prop.(*BaseProposal).TsandCs); err != nil {
-		return err
-	} else if *proposal, err = MarshalProposal(prop); err != nil {
-		return err
+		return "", err
+	} else if proposal, err = MarshalProposal(prop); err != nil {
+		return "", err
 	}
-	return nil
+	return proposal, nil
 }
 
 // Adds node built-in properties to the producer policy.

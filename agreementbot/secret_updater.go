@@ -6,10 +6,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/agreementbot/secrets"
-	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/exchange"
 	"sync"
 )
 
@@ -19,7 +19,7 @@ type SecretUpdateManager struct {
 	PULock         sync.Mutex              // The lock that protects the list of pending secret updates.
 }
 
-func NewSecretUpdateManager() *SecretUpdateManager{
+func NewSecretUpdateManager() *SecretUpdateManager {
 	return new(SecretUpdateManager)
 }
 
@@ -78,7 +78,7 @@ func (sm *SecretUpdateManager) CheckForUpdates(secretProvider secrets.AgbotSecre
 	for _, fullSecretName := range secretNames {
 
 		secretOrg := exchange.GetOrg(fullSecretName)
-		secretUser, secretName, err := common.ParseVaultSecretName(exchange.GetId(fullSecretName), nil)
+		secretUser, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(fullSecretName), nil)
 		if err != nil {
 			glog.Errorf(smlogString(fmt.Sprintf("Error parsing secret %s, error: %v", fullSecretName, err)))
 			continue
@@ -173,9 +173,9 @@ func (sm *SecretUpdateManager) UpdatePolicies(org string, exchPolsMetadata map[s
 			for _, bs := range sb.Secrets {
 				// Extract the secret manager secret name
 				_, secretFullName := bs.GetBinding()
-				referencedSecrets[fmt.Sprintf("%s/%s", org, secretFullName)]=true
+				referencedSecrets[fmt.Sprintf("%s/%s", org, secretFullName)] = true
 
-				secretUser, secretName, err := common.ParseVaultSecretName(secretFullName, nil)
+				secretUser, secretName, err := compcheck.ParseVaultSecretName(secretFullName, nil)
 				if err != nil {
 					glog.Errorf(smlogString(fmt.Sprintf("unable to parse secret name %s, error: %v", secretFullName, err)))
 					continue
@@ -261,9 +261,9 @@ func (sm *SecretUpdateManager) UpdatePatterns(org string, exchPatternMetadata ma
 			for _, bs := range sb.Secrets {
 				// Extract the secret manager secret name
 				_, secretFullName := bs.GetBinding()
-				referencedSecrets[fmt.Sprintf("%s/%s", org, secretFullName)]=true
+				referencedSecrets[fmt.Sprintf("%s/%s", org, secretFullName)] = true
 
-				secretUser, secretName, err := common.ParseVaultSecretName(secretFullName, nil)
+				secretUser, secretName, err := compcheck.ParseVaultSecretName(secretFullName, nil)
 				if err != nil {
 					glog.Errorf(smlogString(fmt.Sprintf("unable to parse secret name %s, error: %v", secretFullName, err)))
 					continue

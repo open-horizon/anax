@@ -175,7 +175,7 @@ fi
 loop_cnt=0
 ag_canceled=0
 test_good_togo=0
-if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" != "http://exchange-api:8081/v1" ]; then
   loop_max=40
 else
   loop_max=18

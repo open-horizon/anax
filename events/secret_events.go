@@ -6,11 +6,11 @@ import (
 )
 
 type SecretUpdate struct {
-	SecretOrg string
-	SecretFullName string    // This name is not org qualified
+	SecretOrg        string
+	SecretFullName   string // This name is not org qualified
 	SecretUpdateTime int64
-	PolicyNames []string     // An array of org qualified policy names
-	PatternNames [] string   // An array of org aualified pattern names
+	PolicyNames      []string // An array of org qualified policy names
+	PatternNames     []string // An array of org aualified pattern names
 }
 
 // Returns a new SecretUpdate object with a copied policy and pattern name list.

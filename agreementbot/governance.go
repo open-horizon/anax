@@ -8,7 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/basicprotocol"
-	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -245,7 +245,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 									if smSecretName == exchange.GetId(updatedSecretName) {
 
 										// Call the secret manager plugin to get the secret details.
-										secretUser, secretName, err := common.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
+										secretUser, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
 										if err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error parsing secret %s, error: %v", updatedSecretName, err)))
 											continue
