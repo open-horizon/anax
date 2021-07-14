@@ -379,7 +379,7 @@ func Read(file string) (*HorizonConfig, error) {
 				MaxExchangeChanges:  AgbotMaxChanges_DEFAULT,
 				RetryLookBackWindow: AgbotRetryLookBackWindow_DEFAULT,
 				PolicySearchOrder:   AgbotPolicySearchOrder_DEFAULT,
-				SecretsUpdateCheck: SecretsUpdateCheck_DEFAULT,
+				SecretsUpdateCheck:  SecretsUpdateCheck_DEFAULT,
 			},
 		}
 

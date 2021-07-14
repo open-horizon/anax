@@ -108,7 +108,7 @@ func (p *NativeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) inte
 		return map[string]interface{}{
 			"services": map[string]*containermessage.Service{
 				"": &containermessage.Service{
-					Image: "",
+					Image:   "",
 					Secrets: map[string]containermessage.Secret{},
 				},
 			},
@@ -117,7 +117,7 @@ func (p *NativeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) inte
 		serviceDep := make(map[string]*containermessage.Service, len(imageList))
 		for image_name, image := range imageList {
 			serviceDep[image_name] = &containermessage.Service{
-				Image: image,
+				Image:   image,
 				Secrets: map[string]containermessage.Secret{},
 			}
 		}
