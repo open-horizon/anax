@@ -16,19 +16,48 @@ import (
 
 // The input format for the policy check
 type PolicyCheck struct {
-	NodeId         string                         `json:"node_id,omitempty"`
-	NodeArch       string                         `json:"node_arch,omitempty"`
-	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
-	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
-	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
-	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
-	ServicePolicy  *externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
-	Service        []common.ServiceFile           `json:"service,omitempty"` //only needed if the services are not in the exchange
+	NodeId         string                                `json:"node_id,omitempty"`
+	NodeArch       string                                `json:"node_arch,omitempty"`
+	NodeType       string                                `json:"node_type,omitempty"` // can be omitted if node_id is specified
+	NodePolicy     *externalpolicy.ExternalPolicy        `json:"node_policy,omitempty"`
+	BusinessPolId  string                                `json:"business_policy_id,omitempty"`
+	BusinessPolicy *businesspolicy.BusinessPolicy        `json:"business_policy,omitempty"`
+	ServicePolicy  *externalpolicy.ExternalPolicy        `json:"service_policy,omitempty"`
+	Service        []common.AbstractServiceFile          `json:"service,omitempty"`            //only needed if the services are not in the exchange
+	DepServices    map[string]exchange.ServiceDefinition `json:"dependent_services,omitempty"` // for internal use for performance. A map of service definition keyed by id.
+	// It is either empty or provides ALL the dependent services needed. It is expected the top level service definitions are provided
+	// in the 'Service' attribute when this attribute is not empty.
 }
 
 func (p PolicyCheck) String() string {
 	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodePolicy: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v, Service：%v",
 		p.NodeId, p.NodeArch, p.NodeType, p.NodePolicy, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy, p.Service)
+}
+
+// unmashal handler for PolicyCheck object to handle AbstractPatternFile and AbstractServiceFile
+func (p *PolicyCheck) UnmarshalJSON(b []byte) error {
+
+	var cc CompCheck_NoAbstract
+	if err := json.Unmarshal(b, &cc); err != nil {
+		return err
+	}
+
+	p.NodeId = cc.NodeId
+	p.NodeArch = cc.NodeArch
+	p.NodeType = cc.NodeType
+	p.NodePolicy = cc.NodePolicy
+	p.BusinessPolId = cc.BusinessPolId
+	p.BusinessPolicy = cc.BusinessPolicy
+	p.ServicePolicy = cc.ServicePolicy
+
+	if cc.Service != nil && len(cc.Service) != 0 {
+		p.Service = []common.AbstractServiceFile{}
+		for index, _ := range cc.Service {
+			p.Service = append(p.Service, &cc.Service[index])
+		}
+	}
+
+	return nil
 }
 
 // This is the function that HZN and the agbot secure API calls.
@@ -46,10 +75,9 @@ func PolicyCompatible(ec exchange.ExchangeContext, pcInput *PolicyCheck, checkAl
 	getBusinessPolicies := exchange.GetHTTPBusinessPoliciesHandler(ec)
 	servicePolicyHandler := exchange.GetHTTPServicePolicyHandler(ec)
 	getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
-	getService := exchange.GetHTTPServiceHandler(ec)
 	getServiceResolvedDef := exchange.GetHTTPServiceDefResolverHandler(ec)
 
-	return policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, getService, getServiceResolvedDef, pcInput, checkAllSvcs, msgPrinter)
+	return policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, getServiceResolvedDef, pcInput, checkAllSvcs, msgPrinter)
 }
 
 // Internal function for PolicyCompatible
@@ -58,7 +86,6 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	getBusinessPolicies exchange.BusinessPoliciesHandler,
 	servicePolicyHandler exchange.ServicePolicyHandler,
 	getSelectedServices exchange.SelectedServicesHandler,
-	getService exchange.ServiceHandler,
 	getServiceResolvedDef exchange.ServiceDefResolverHandler,
 	pcInput *PolicyCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
 
@@ -79,6 +106,11 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 
 	nodeId := input.NodeId
 	if nodeId != "" {
+		// get node org from the node id
+		if resources.NodeOrg == "" {
+			resources.NodeOrg = exchange.GetOrg(nodeId)
+		}
+
 		node, err := GetExchangeNode(getDeviceHandler, nodeId, msgPrinter)
 		if err != nil {
 			return nil, err
@@ -118,6 +150,11 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		return nil, err1
 	}
 
+	// save all the services that are retrieved from the exchange so that
+	// they can be used later
+	dep_services := map[string]exchange.ServiceDefinition{}
+	top_services := []common.AbstractServiceFile{}
+
 	msg_incompatible := msgPrinter.Sprintf("Policy Incompatible")
 	msg_compatible := msgPrinter.Sprintf("Compatible")
 
@@ -154,19 +191,26 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		if input.ServicePolicy == nil {
 			if workload.Arch != "" {
 				// get service policy with built-in properties
-				if mergedServicePol, sPol, topSvcDef, sId, err := GetServicePolicyWithDefaultProperties(servicePolicyHandler, getServiceResolvedDef, getService, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, msgPrinter); err != nil {
+				if mergedServicePol, sPol, topSvcDef, sId, depSvcDefs, err := GetServicePolicyWithDefaultProperties(servicePolicyHandler, getServiceResolvedDef, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, msgPrinter); err != nil {
 					return nil, err
 					// compatibility check
 				} else {
 					if sPol != nil {
 						resources.ServicePolicy[sId] = *sPol
 					}
+
+					// for performance, save the services that gotten from the exchange for use later
+					for depId, depDef := range depSvcDefs {
+						dep_services[depId] = depDef
+					}
+					top_services = append(top_services, topSvcDef)
+
 					// node type and service type check
 					var err1 error
 					compatible := true
 					reason := ""
 					if topSvcDef != nil {
-						compatible, reason = CheckTypeCompatibility(resources.NodeType, &ServiceDefinition{workload.Org, *topSvcDef}, msgPrinter)
+						compatible, reason = CheckTypeCompatibility(resources.NodeType, topSvcDef, msgPrinter)
 					}
 					if compatible {
 						// policy compatibility check
@@ -193,7 +237,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 					// since workload arch is empty, need to go through all the arches
 					for sId, svc := range svcMeta {
 						// get service policy with built-in properties
-						mergedServicePol, sPol, topSvcDef, _, err := GetServicePolicyWithDefaultProperties(servicePolicyHandler, getServiceResolvedDef, getService, workload.WorkloadURL, workload.Org, workload.Version, svc.Arch, msgPrinter)
+						mergedServicePol, sPol, topSvcDef, _, depSvcDefs, err := GetServicePolicyWithDefaultProperties(servicePolicyHandler, getServiceResolvedDef, workload.WorkloadURL, workload.Org, workload.Version, svc.Arch, msgPrinter)
 						if err != nil {
 							return nil, err
 						} else {
@@ -201,11 +245,17 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 								resources.ServicePolicy[sId] = *sPol
 							}
 
+							// for performance, save the services that gotten from the exchange for use later
+							for depId, depDef := range depSvcDefs {
+								dep_services[depId] = depDef
+							}
+							top_services = append(top_services, topSvcDef)
+
 							// node type and service type check
 							compatible := true
 							reason := ""
 							if topSvcDef != nil {
-								compatible, reason = CheckTypeCompatibility(resources.NodeType, &ServiceDefinition{workload.Org, *topSvcDef}, msgPrinter)
+								compatible, reason = CheckTypeCompatibility(resources.NodeType, topSvcDef, msgPrinter)
 							}
 							if compatible {
 								// policy compatibility check
@@ -238,7 +288,14 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 			builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 			// add built-in service properties to the service policy
 			mergedServicePol := AddDefaultPropertiesToServicePolicy(input.ServicePolicy, builtInSvcPol, msgPrinter)
-			mergedServicePol, topSvcDef, sId, err := SetServicePolicyPrivilege(getServiceResolvedDef, getService, workload, mergedServicePol, input.Service, msgPrinter)
+			mergedServicePol, topSvcDef, sId, depSvcDefs, err := SetServicePolicyPrivilege(getServiceResolvedDef, workload, mergedServicePol, input.Service, msgPrinter)
+
+			// for performance, save the services that gotten from the exchange for use later
+			for depId, depDef := range depSvcDefs {
+				dep_services[depId] = depDef
+			}
+			top_services = append(top_services, topSvcDef)
+
 			// node type and service type check
 			var err1 error
 			compatible := true
@@ -250,7 +307,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 				sId = fmt.Sprintf("%v/%v", workload.Org, sId)
 			} else {
 				if topSvcDef != nil {
-					compatible, reason = CheckTypeCompatibility(resources.NodeType, &ServiceDefinition{workload.Org, *topSvcDef}, msgPrinter)
+					compatible, reason = CheckTypeCompatibility(resources.NodeType, topSvcDef, msgPrinter)
 				}
 				if compatible {
 					// policy compatibility check
@@ -272,6 +329,10 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 			}
 		}
 	}
+
+	// save the services retrieved from the exchange
+	resources.DepServices = dep_services
+	resources.Service = top_services
 
 	if messages != nil && len(messages) != 0 {
 		return NewCompCheckOutput(overall_compatible, messages, resources), nil
@@ -600,9 +661,9 @@ func GetServicePolicy(servicePolicyHandler exchange.ServicePolicyHandler, svcUrl
 
 // Get service policy from the exchange and then add the service defalt properties
 func GetServicePolicyWithDefaultProperties(servicePolicyHandler exchange.ServicePolicyHandler,
-	getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
+	getServiceResolvedDef exchange.ServiceDefResolverHandler,
 	svcUrl string, svcOrg string, svcVersion string, svcArch string,
-	msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, *externalpolicy.ExternalPolicy, *exchange.ServiceDefinition, string, error) {
+	msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, *externalpolicy.ExternalPolicy, common.AbstractServiceFile, string, map[string]exchange.ServiceDefinition, error) {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
@@ -610,23 +671,23 @@ func GetServicePolicyWithDefaultProperties(servicePolicyHandler exchange.Service
 
 	servicePol, sId, err := GetServicePolicy(servicePolicyHandler, svcUrl, svcOrg, svcVersion, svcArch, msgPrinter)
 	if err != nil {
-		return nil, nil, nil, "", err
+		return nil, nil, nil, "", nil, err
 	}
 
 	// get default service properties
 	builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(svcUrl, svcOrg, svcVersion, svcArch)
 
 	if err != nil {
-		return nil, nil, nil, "", err
+		return nil, nil, nil, "", nil, err
 	}
 
 	// add built-in service properties to the service policy
 	merged_pol := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, msgPrinter)
-	merged_pol, topSvcDef, _, err := SetServicePolicyPrivilege(getServiceResolvedDef, getService, policy.Workload{WorkloadURL: svcUrl, Org: svcOrg, Version: svcVersion, Arch: svcArch}, merged_pol, nil, msgPrinter)
+	merged_pol, topSvcDef, _, depSvcs, err := SetServicePolicyPrivilege(getServiceResolvedDef, policy.Workload{WorkloadURL: svcUrl, Org: svcOrg, Version: svcVersion, Arch: svcArch}, merged_pol, nil, msgPrinter)
 	if err != nil {
-		return nil, nil, nil, "", err
+		return nil, nil, nil, "", nil, err
 	}
-	return merged_pol, servicePol, topSvcDef, sId, nil
+	return merged_pol, servicePol, topSvcDef, sId, depSvcs, nil
 }
 
 // Add service default properties to the given service policy
@@ -668,88 +729,25 @@ func MergeFullServicePolicyToBusinessPolicy(businessPolicy *policy.Policy, servi
 	}
 }
 
-// This function merges the given business policy with the given built-in properties of the service and the given service policy
-// from the top level service, if any.
-func MergeServicePolicyToBusinessPolicy(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
-	workload policy.Workload, businessPol *policy.Policy, builtInSvcPol *externalpolicy.ExternalPolicy, servicePol *externalpolicy.ExternalPolicy, msgPrinter *message.Printer) (*policy.Policy, error) {
-	// get default message printer if nil
-	if msgPrinter == nil {
-		msgPrinter = i18n.GetMessagePrinter()
-	}
-
-	if businessPol == nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The deployment policy should not be null.")), COMPCHECK_INPUT_ERROR)
-	}
-
-	// add built-in service properties to the service policy
-	merged_pol1 := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, msgPrinter)
-	var err error
-	if merged_pol1, _, _, err = SetServicePolicyPrivilege(getServiceResolvedDef, getService, workload, merged_pol1, nil, msgPrinter); err != nil {
-		return nil, err
-	}
-
-	if businessPol.Properties.HasProperty(externalpolicy.PROP_SVC_PRIVILEGED) {
-		declPrivProp, err := businessPol.Properties.GetProperty(externalpolicy.PROP_SVC_PRIVILEGED)
-		if err != nil {
-			return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
-		}
-		declPriv := declPrivProp.Value.(bool)
-		svcPrivProp, err := merged_pol1.Properties.GetProperty(externalpolicy.PROP_SVC_PRIVILEGED)
-		if err != nil {
-			return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
-		}
-		svcPriv := svcPrivProp.Value.(bool)
-		if svcPriv && !declPriv {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Deployment policy %s cannot have %s=true when referring to a service that requires privilege to run.", businessPol.Header, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_INPUT_ERROR)
-		}
-	}
-	//merge service policy
-	if merged_pol2, err := MergeFullServicePolicyToBusinessPolicy(businessPol, merged_pol1, msgPrinter); err != nil {
-		return nil, err
-	} else {
-		return merged_pol2, nil
-	}
-}
-
 // SetServicePolicyPrivilege sets a property on the service privilege that indicates if the service uses a workload that requires privileged mode or network=host
 // This will not overwrite openhorizon.allowPrivileged=true if the service is found to not require privileged mode.
-func SetServicePolicyPrivilege(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
-	workload policy.Workload, svcPolicy *externalpolicy.ExternalPolicy, svcDefs []common.ServiceFile,
-	msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, *exchange.ServiceDefinition, string, error) {
+func SetServicePolicyPrivilege(getServiceResolvedDef exchange.ServiceDefResolverHandler,
+	workload policy.Workload, svcPolicy *externalpolicy.ExternalPolicy, svcDefs []common.AbstractServiceFile,
+	msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, common.AbstractServiceFile, string, map[string]exchange.ServiceDefinition, error) {
+
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
 	}
 
-	svcList := map[string]exchange.ServiceDefinition{}
-	var topSvcDef *exchange.ServiceDefinition
-	var topSvcId string
-	var sDefMap map[string]exchange.ServiceDefinition
-	var err error
-	if svcDefs == nil || len(svcDefs) == 0 {
-		sDefMap, topSvcDef, topSvcId, err = getServiceResolvedDef(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
-		if err != nil {
-			return nil, nil, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving service %v/%v %v %v and its dependents from the Exchange. %v", workload.Org, workload.WorkloadURL, workload.Version, workload.Arch, err)), COMPCHECK_EXCHANGE_ERROR)
-		}
-		if sDefMap != nil {
-			svcList = sDefMap
-		}
-
-		if topSvcDef != nil {
-			svcList[topSvcId] = *topSvcDef
-		}
-	} else {
-		sDefMap, topSvcDef, topSvcId, err = getServiceListFromInputDefs(getServiceResolvedDef, workload, svcDefs, msgPrinter)
-		if err != nil {
-			return nil, nil, "", err
-		}
-		if topSvcDef != nil {
-			svcList[topSvcId] = *topSvcDef
-		}
+	topSvcDef, topSvcId, depSvcList, err := GetServiceAndDeps(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch,
+		svcDefs, nil, getServiceResolvedDef, msgPrinter)
+	if err != nil {
+		return nil, nil, "", nil, err
 	}
 
-	runtimePriv, err, _ := ServicesRequirePrivilege(&svcList, msgPrinter)
+	runtimePriv, err, _ := ServicesRequirePrivilege(topSvcDef, topSvcId, depSvcList, msgPrinter)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, nil, "", nil, err
 	}
 
 	svcPolicy.Properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_PRIVILEGED, runtimePriv), true)
@@ -757,18 +755,18 @@ func SetServicePolicyPrivilege(getServiceResolvedDef exchange.ServiceDefResolver
 	if runtimePriv {
 		svcPolicy.Constraints.Add_Constraint(fmt.Sprintf("%s = %t", externalpolicy.PROP_SVC_PRIVILEGED, runtimePriv))
 	}
-	return svcPolicy, topSvcDef, topSvcId, nil
+	return svcPolicy, topSvcDef, topSvcId, depSvcList, nil
 }
 
 // Given a list of service def files for top level services and a workload,
 // get the service def from the list and go to the exchange and fetch all of its dependent services.
 // It returns a list of all dependent services, the top level service and id.
 func getServiceListFromInputDefs(getServiceResolvedDef exchange.ServiceDefResolverHandler,
-	workload policy.Workload, svcDefs []common.ServiceFile,
-	msgPrinter *message.Printer) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
+	workload policy.Workload, svcDefs []common.AbstractServiceFile,
+	msgPrinter *message.Printer) (map[string]exchange.ServiceDefinition, common.AbstractServiceFile, string, error) {
 
 	// find the top level service that matches the workload from the input services
-	var sDefTop *exchange.ServiceDefinition
+	var sDefTop common.AbstractServiceFile
 	sIdTop := ""
 	found := false
 	for _, in_svc := range svcDefs {
@@ -776,25 +774,9 @@ func getServiceListFromInputDefs(getServiceResolvedDef exchange.ServiceDefResolv
 			(workload.Arch == "*" || workload.Arch == "" || in_svc.GetArch() == workload.Arch) &&
 			(in_svc.GetOrg() == "" || in_svc.GetOrg() == workload.Org) {
 			found = true
-			sDefTop = &exchange.ServiceDefinition{Label: in_svc.Label, Description: in_svc.Description, Public: in_svc.Public, Documentation: in_svc.Documentation, URL: in_svc.URL, Version: in_svc.Version, Arch: in_svc.Arch, Sharable: in_svc.Sharable, MatchHardware: in_svc.MatchHardware, RequiredServices: in_svc.RequiredServices, UserInputs: in_svc.UserInputs}
-			sIdTop = cutil.FormExchangeIdForService(sDefTop.URL, sDefTop.Version, sDefTop.Arch)
+			sDefTop = in_svc
+			sIdTop = cutil.FormExchangeIdForService(sDefTop.GetURL(), sDefTop.GetVersion(), sDefTop.GetArch())
 			sIdTop = fmt.Sprintf("%v/%v", workload.Org, sIdTop)
-			sDefTop.Deployment = ""
-			if in_svc.Deployment != nil && in_svc.Deployment != "" {
-				if deployment, err := json.Marshal(in_svc.Deployment); err != nil {
-					return nil, nil, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to marshal deployment configuration for service %v, error %v", sIdTop, err)), COMPCHECK_GENERAL_ERROR)
-				} else {
-					sDefTop.Deployment = string(deployment)
-				}
-			}
-			sDefTop.ClusterDeployment = ""
-			if in_svc.ClusterDeployment != nil && in_svc.ClusterDeployment != "" {
-				if cluster_deployment, err := json.Marshal(in_svc.ClusterDeployment); err != nil {
-					return nil, nil, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to marshal cluster deployment configuration for service %v, error %v", sIdTop, err)), COMPCHECK_GENERAL_ERROR)
-				} else {
-					sDefTop.ClusterDeployment = string(cluster_deployment)
-				}
-			}
 
 			break
 		}
@@ -805,8 +787,9 @@ func getServiceListFromInputDefs(getServiceResolvedDef exchange.ServiceDefResolv
 
 	// get all the service defs for the dependent services
 	service_map := map[string]exchange.ServiceDefinition{}
-	if sDefTop.RequiredServices != nil && len(sDefTop.RequiredServices) != 0 {
-		for _, sDep := range sDefTop.RequiredServices {
+	rsvcs := sDefTop.GetRequiredServices()
+	if rsvcs != nil && len(rsvcs) != 0 {
+		for _, sDep := range rsvcs {
 			if vExp, err := semanticversion.Version_Expression_Factory(sDep.GetVersionRange()); err != nil {
 				return nil, nil, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.Version, err)), COMPCHECK_GENERAL_ERROR)
 			} else {

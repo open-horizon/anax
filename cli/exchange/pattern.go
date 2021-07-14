@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
@@ -13,6 +14,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
+	"golang.org/x/text/message"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -452,13 +454,13 @@ func verifySecretBindingForPattern(secretBinding []exchangecommon.SecretBinding,
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// make sure the all the service secrets have bindings.
-	neededSB, redundantSB, err := common.ValidateSecretBinding(secretBinding, sRef, ec, true, msgPrinter)
+	neededSB, extraneousSB, err := ValidateSecretBinding(secretBinding, sRef, ec, true, msgPrinter)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to validate the secret binding. %v", err))
-	} else if redundantSB != nil && len(redundantSB) > 0 {
-		msgPrinter.Printf("Note: The following secret bindings are not required by any services for this pattern: %v.", redundantSB)
+	} else if extraneousSB != nil && len(extraneousSB) > 0 {
+		msgPrinter.Printf("Note: The following secret bindings are not required by any services for this pattern:")
 		msgPrinter.Println()
-		for _, sb := range redundantSB {
+		for _, sb := range extraneousSB {
 			fmt.Printf("  %v", sb)
 			msgPrinter.Println()
 		}
@@ -472,8 +474,8 @@ func verifySecretBindingForPattern(secretBinding []exchangecommon.SecretBinding,
 	if isPublic {
 		// for the public pattern, the node org may not be the same as the pattern org.
 		// we cannot verify the vault secret here.
-		msgPrinter.Printf("Note: The fully qualified vault secret name is 'openhorizon/<node_org>/<secret_binding_name>'." +
-			" The vault secret cannot be verified because this is a public pattern and " +
+		msgPrinter.Printf("Note: The fully qualified binding secret name is 'openhorizon/<node_org>/<secret_binding_name>'." +
+			" The binding secret cannot be verified in the secret manager for a public pattern because " +
 			"the node organization can be different from the pattern organization.")
 		msgPrinter.Println()
 	} else {
@@ -482,11 +484,11 @@ func verifySecretBindingForPattern(secretBinding []exchangecommon.SecretBinding,
 		// make sure the vault secret exists.
 		agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
 		vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
-		msgMap, err := common.VerifyVaultSecrets(neededSB, patOrg, agbotUrl, vaultSecretExists, msgPrinter)
+		msgMap, err := compcheck.VerifyVaultSecrets(neededSB, patOrg, agbotUrl, vaultSecretExists, msgPrinter)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the vault secret. %v", err))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the binding secret in the secret manager. %v", err))
 		} else if msgMap != nil && len(msgMap) > 0 {
-			msgPrinter.Printf("Warning: The following vault secrets cannot be verified:")
+			msgPrinter.Printf("Warning: The following binding secrets cannot be verified in the secret manager:")
 			msgPrinter.Println()
 			for vsn, msg := range msgMap {
 				fmt.Printf("  %v: %v", vsn, msg)
@@ -494,4 +496,52 @@ func verifySecretBindingForPattern(secretBinding []exchangecommon.SecretBinding,
 			}
 		}
 	}
+}
+
+// It validates that each secret in the given services has a vault secret from the given secret binding array.
+// checkAllArches -- if the arch for the service is '*' or an empty string,
+// validate the secret bindings for all the arches that have this service.
+// It does not verify the vault secret exists in the vault.
+// It returns 2 array of SecretBinding objects. One for needed and one for extraneous.
+//
+func ValidateSecretBinding(secretBinding []exchangecommon.SecretBinding,
+	sRef []exchange.ServiceReference, ec exchange.ExchangeContext, checkAllArches bool,
+	msgPrinter *message.Printer) ([]exchangecommon.SecretBinding, []exchangecommon.SecretBinding, error) {
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	if sRef == nil || len(sRef) == 0 {
+		if secretBinding == nil || len(secretBinding) == 0 {
+			return nil, nil, nil
+		} else {
+			return nil, nil, fmt.Errorf(msgPrinter.Sprintf("No secret is defined for any of the services. The secret binding is not needed: %v.", secretBinding))
+		}
+	}
+
+	getServiceResolvedDef := exchange.GetHTTPServiceDefResolverHandler(ec)
+	getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
+
+	// keep track of which indexes in the secretBinding array were used
+	index_map := map[int]map[string]bool{}
+
+	// go through each top level services and do the validation for
+	// it and its dependent services
+	for _, svc := range sRef {
+		if svc.ServiceVersions != nil {
+			for _, v := range svc.ServiceVersions {
+				if new_index_map, err := ValidateSecretBindingForSvcAndDep(secretBinding, svc.ServiceOrg, svc.ServiceURL, v.Version, svc.ServiceArch,
+					checkAllArches, getServiceResolvedDef, getSelectedServices, msgPrinter); err != nil {
+					return nil, nil, err
+				} else {
+					compcheck.CombineIndexMap(index_map, new_index_map)
+				}
+			}
+		}
+	}
+
+	// group needed and extraneous secret bindings
+	neededSB, extraneousSB := compcheck.GroupSecretBindings(secretBinding, index_map)
+	return neededSB, extraneousSB, nil
 }

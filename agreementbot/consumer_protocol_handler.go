@@ -522,7 +522,7 @@ func (b *BaseConsumerProtocolHandler) VerifyAgreement(ag *persistence.Agreement,
 
 }
 
-func (b *BaseConsumerProtocolHandler) UpdateAgreement(ag *persistence.Agreement, updateType string,	metadata interface{}, cph ConsumerProtocolHandler) {
+func (b *BaseConsumerProtocolHandler) UpdateAgreement(ag *persistence.Agreement, updateType string, metadata interface{}, cph ConsumerProtocolHandler) {
 
 	if aph := cph.AgreementProtocolHandler(b.GetKnownBlockchain(ag)); aph == nil {
 		glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("for %v agreement protocol handler not ready", ag.CurrentAgreementId)))

@@ -20,7 +20,7 @@ function verifyAgreements() {
     fi
   fi
 
-  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
     TIMEOUT_MUL=1
   else
     TIMEOUT_MUL=3

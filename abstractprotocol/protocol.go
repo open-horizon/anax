@@ -160,7 +160,6 @@ type ProtocolHandler interface {
 		messageTarget interface{},
 		sendMessage func(mt interface{}, pay []byte) error) error
 
-
 	RecordMeter(agreementId string,
 		mn *metering.MeteringNotification) error
 

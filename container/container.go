@@ -1714,7 +1714,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		sVer := serviceInfo.Version
 
 		containerName := lc.Name
-		if len(lc.AgreementIds) > 0{
+		if len(lc.AgreementIds) > 0 {
 			containerName = lc.AgreementIds[0]
 		}
 

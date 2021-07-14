@@ -1066,3 +1066,17 @@ func DeleteServicePolicyWithId(ec ExchangeContext, service_id string) error {
 		}
 	}
 }
+
+// create an APISpecList object from the given service defition map
+func CreateAPISpecListFromServiceDef(depServices map[string]ServiceDefinition) *policy.APISpecList {
+	ret := new(policy.APISpecList)
+	for sId, sDep := range depServices {
+		newAPISpec := policy.APISpecification_Factory(sDep.URL, GetOrg(sId), sDep.Version, sDep.Arch)
+		if sDep.Sharable == MS_SHARING_MODE_SINGLETON || sDep.Sharable == MS_SHARING_MODE_SINGLE {
+			newAPISpec.ExclusiveAccess = false
+		}
+		ret.Add_API_Spec(newAPISpec)
+	}
+
+	return ret
+}

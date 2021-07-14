@@ -4,7 +4,6 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
-	"golang.org/x/text/message"
 )
 
 type AbstractPatternFile interface {
@@ -83,20 +82,6 @@ func (p *PatternFile) GetUserInputs() []policy.UserInput {
 
 func (p *PatternFile) GetSecretBinding() []exchangecommon.SecretBinding {
 	return p.SecretBinding
-}
-
-// make sure that all service secrets have vault bindings.
-// it does not verify that the vault secrets exist.
-func (p *PatternFile) ValidateSecretBinding(ec exchange.ExchangeContext,
-	msgPrinter *message.Printer) ([]exchangecommon.SecretBinding, []exchangecommon.SecretBinding, error) {
-	// no need to verify if both are empty
-	if p.Services == nil || len(p.Services) == 0 {
-		if p.SecretBinding == nil || len(p.SecretBinding) == 0 {
-			return nil, nil, nil
-		}
-	}
-
-	return ValidateSecretBinding(p.SecretBinding, p.GetServices(), ec, true, msgPrinter)
 }
 
 type ServiceReferenceFile struct {

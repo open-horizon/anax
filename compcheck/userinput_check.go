@@ -1,12 +1,12 @@
 package compcheck
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -17,16 +17,19 @@ import (
 
 // The input format for the userinput check
 type UserInputCheck struct {
-	NodeId         string                         `json:"node_id,omitempty"`
-	NodeArch       string                         `json:"node_arch,omitempty"`
-	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
-	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
-	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
-	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
-	PatternId      string                         `json:"pattern_id,omitempty"`
-	Pattern        *common.PatternFile            `json:"pattern,omitempty"`
-	Service        []common.ServiceFile           `json:"service,omitempty"`
-	ServiceToCheck []string                       `json:"service_to_check,omitempty"` // for internal use for performance. only check the service with the ids. If empty, check all.
+	NodeId         string                                `json:"node_id,omitempty"`
+	NodeArch       string                                `json:"node_arch,omitempty"`
+	NodeType       string                                `json:"node_type,omitempty"` // can be omitted if node_id is specified
+	NodeUserInput  []policy.UserInput                    `json:"node_user_input,omitempty"`
+	BusinessPolId  string                                `json:"business_policy_id,omitempty"`
+	BusinessPolicy *businesspolicy.BusinessPolicy        `json:"business_policy,omitempty"`
+	PatternId      string                                `json:"pattern_id,omitempty"`
+	Pattern        common.AbstractPatternFile            `json:"pattern,omitempty"`
+	Service        []common.AbstractServiceFile          `json:"service,omitempty"`
+	ServiceToCheck []string                              `json:"service_to_check,omitempty"`   // for internal use for performance. only check the service with the ids. If empty, check all.
+	DepServices    map[string]exchange.ServiceDefinition `json:"dependent_services,omitempty"` // for internal use for performance. A map of service definition keyed by id.
+	// It is either empty or provides ALL the dependent services needed. It is expected the top level service definitions are provided
+	// in the 'Service' attribute when this attribute is not empty.
 }
 
 func (p UserInputCheck) String() string {
@@ -34,109 +37,40 @@ func (p UserInputCheck) String() string {
 		p.NodeId, p.NodeArch, p.NodeType, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.Service)
 }
 
-type ServiceDefinition struct {
-	Org string `json:"org"`
-	exchange.ServiceDefinition
-}
+// unmashal handler for UserInputCheck object to handle AbstractPatternFile and AbstractServiceFile
+func (p *UserInputCheck) UnmarshalJSON(b []byte) error {
 
-func (s *ServiceDefinition) GetOrg() string {
-	return s.Org
-}
-
-func (s *ServiceDefinition) GetURL() string {
-	return s.URL
-}
-
-func (s *ServiceDefinition) GetVersion() string {
-	return s.Version
-}
-
-func (s *ServiceDefinition) GetArch() string {
-	return s.Arch
-}
-
-func (s *ServiceDefinition) GetRequiredServices() []exchange.ServiceDependency {
-	return s.RequiredServices
-}
-
-func (s *ServiceDefinition) GetUserInputs() []exchange.UserInput {
-	return s.UserInputs
-}
-
-func (s *ServiceDefinition) NeedsUserInput() bool {
-	if s.UserInputs == nil || len(s.UserInputs) == 0 {
-		return false
+	var cc CompCheck_NoAbstract
+	if err := json.Unmarshal(b, &cc); err != nil {
+		return err
 	}
 
-	for _, ui := range s.UserInputs {
-		if ui.Name != "" && ui.DefaultValue == "" {
-			return true
+	p.NodeId = cc.NodeId
+	p.NodeArch = cc.NodeArch
+	p.NodeType = cc.NodeType
+	p.NodeUserInput = cc.NodeUserInput
+	p.BusinessPolId = cc.BusinessPolId
+	p.BusinessPolicy = cc.BusinessPolicy
+	p.PatternId = cc.PatternId
+
+	if cc.Pattern != nil {
+		p.Pattern = cc.Pattern
+	}
+
+	if cc.Service != nil && len(cc.Service) != 0 {
+		p.Service = []common.AbstractServiceFile{}
+		for index, _ := range cc.Service {
+			p.Service = append(p.Service, &cc.Service[index])
 		}
 	}
-	return false
-}
 
-func (s *ServiceDefinition) GetDeployment() interface{} {
-	return s.Deployment
-}
-
-func (s *ServiceDefinition) GetClusterDeployment() interface{} {
-	return s.ClusterDeployment
-}
-
-type Pattern struct {
-	Org string `json:"org"`
-	exchange.Pattern
-}
-
-func (p *Pattern) GetOrg() string {
-	return p.Org
-}
-
-func (p *Pattern) IsPublic() bool {
-	return p.Public
-}
-
-func (p *Pattern) GetServices() []exchange.ServiceReference {
-	return p.Services
-}
-
-func (p *Pattern) GetUserInputs() []policy.UserInput {
-	return p.UserInput
-}
-
-func (p *Pattern) GetSecretBinding() []exchangecommon.SecretBinding {
-	return p.SecretBinding
-}
-
-type ServiceSpec struct {
-	ServiceOrgid        string `json:"serviceOrgid"`
-	ServiceUrl          string `json:"serviceUrl"`
-	ServiceArch         string `json:"serviceArch"`
-	ServiceVersionRange string `json:"serviceVersionRange"` // version or version range. empty string means it applies to all versions
-}
-
-func (s ServiceSpec) String() string {
-	return fmt.Sprintf("ServiceOrgid: %v, "+
-		"ServiceUrl: %v, "+
-		"ServiceArch: %v, "+
-		"ServiceVersionRange: %v",
-		s.ServiceOrgid, s.ServiceUrl, s.ServiceArch, s.ServiceVersionRange)
-}
-
-func NewServiceSpec(svcName, svcOrg, svcVersion, svcArch string) *ServiceSpec {
-	return &ServiceSpec{
-		ServiceOrgid:        svcOrg,
-		ServiceUrl:          svcName,
-		ServiceArch:         svcArch,
-		ServiceVersionRange: svcVersion,
-	}
+	return nil
 }
 
 // This is the function that HZN and the agbot secure API calls.
 // Given the UserInoutCheck input, check if the user inputs are compatible.
 // The required fields in UserInputCheck are:
-//  (NodeId or NodeUserInput) and (BusinessPolId or BusinessPolicy)
+//  (NodeId or NodeUserInput) and(BusinessPolId or BusinessPolicy or PatternId or Pattern)
 //
 // When checking whether the user inputs are compatible or not, we need to merge the node's user input
 // with the ones in the business policy and check them against the user input requirements in the top level
@@ -146,18 +80,16 @@ func UserInputCompatible(ec exchange.ExchangeContext, uiInput *UserInputCheck, c
 	getDeviceHandler := exchange.GetHTTPDeviceHandler(ec)
 	getBusinessPolicies := exchange.GetHTTPBusinessPoliciesHandler(ec)
 	getPatterns := exchange.GetHTTPExchangePatternHandler(ec)
-	getServiceHandler := exchange.GetHTTPServiceHandler(ec)
 	serviceDefResolverHandler := exchange.GetHTTPServiceDefResolverHandler(ec)
 	getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
 
-	return userInputCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, getServiceHandler, serviceDefResolverHandler, getSelectedServices, uiInput, checkAllSvcs, msgPrinter)
+	return userInputCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, serviceDefResolverHandler, getSelectedServices, uiInput, checkAllSvcs, msgPrinter)
 }
 
 // Internal function for UserInputCompatible
 func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	getBusinessPolicies exchange.BusinessPoliciesHandler,
 	getPatterns exchange.PatternHandler,
-	getServiceHandler exchange.ServiceHandler,
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	getSelectedServices exchange.SelectedServicesHandler,
 	uiInput *UserInputCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
@@ -187,6 +119,11 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 
 	if nodeId != "" {
+		// get node org from the node id
+		if resources.NodeOrg == "" {
+			resources.NodeOrg = exchange.GetOrg(nodeId)
+		}
+
 		node, err := GetExchangeNode(getDeviceHandler, nodeId, msgPrinter)
 		if err != nil {
 			return nil, err
@@ -266,13 +203,18 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	messages := map[string]string{}
 	msg_incompatible := msgPrinter.Sprintf("User Input Incompatible")
 	msg_compatible := msgPrinter.Sprintf("Compatible")
+	type_incompatible := msgPrinter.Sprintf("Type Incompatible")
 
 	// go through all the workloads and check if user input is compatible or not
 	service_comp := map[string]common.AbstractServiceFile{}
 	service_incomp := map[string]common.AbstractServiceFile{}
 	svc_type_mismatch := map[string]bool{}
 	overall_compatible := true
-	all_services := []common.AbstractServiceFile{}
+
+	// save all the services that are retrieved from the exchange so that
+	// they can be used later
+	dep_services := map[string]exchange.ServiceDefinition{}
+	top_services := []common.AbstractServiceFile{}
 
 	for _, serviceRef := range serviceRefs {
 		service_compatible := false
@@ -287,13 +229,17 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 						continue
 					}
 					sSpec := NewServiceSpec(serviceRef.ServiceURL, serviceRef.ServiceOrg, workload.Version, serviceRef.ServiceArch)
-					if compatible, reason, sDefs, err := VerifyUserInputForService(sSpec, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, resources.NodeType, msgPrinter); err != nil {
+					if compatible, reason, topSvcDef, _, depSvcDefs, err := VerifyUserInputForService(sSpec, serviceDefResolverHandler, bpUserInput, nodeUserInput, resources.NodeType, msgPrinter); err != nil {
 						return nil, err
 					} else {
-						all_services = append(all_services, sDefs...)
+						// for performance, save the services that gotten from the exchange for use later
+						for depId, depDef := range depSvcDefs {
+							dep_services[depId] = depDef
+						}
+						top_services = append(top_services, topSvcDef)
 
 						// check service type and node type compatibility
-						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, sDefs[0], msgPrinter)
+						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, topSvcDef, msgPrinter)
 						if !compatible_t {
 							reason = reason_t
 							svc_type_mismatch[sId] = true
@@ -301,14 +247,14 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 
 						if compatible && compatible_t {
 							service_compatible = true
-							service_comp[sId] = sDefs[0]
+							service_comp[sId] = topSvcDef
 							messages[sId] = msg_compatible
 							if !checkAllSvcs {
 								break
 							}
 						} else {
-							service_incomp[sId] = sDefs[0]
-							messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
+							service_incomp[sId] = topSvcDef
+							messages[sId] = FormatReasonMessage(reason, !compatible_t, msg_incompatible, type_incompatible)
 						}
 					}
 				} else {
@@ -322,13 +268,17 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 							if !needHandleService(sId, input.ServiceToCheck) {
 								continue
 							}
-							if compatible, reason, sDefs, err := VerifyUserInputForServiceDef(&svc, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, resources.NodeType, msgPrinter); err != nil {
+							if compatible, reason, depSvcDefs, err := VerifyUserInputForServiceDef(&svc, resources.DepServices, serviceDefResolverHandler, bpUserInput, nodeUserInput, resources.NodeType, msgPrinter); err != nil {
 								return nil, err
 							} else {
-								all_services = append(all_services, sDefs...)
+								// for performance, save the services that gotten from the exchange for use later
+								for depId, depDef := range depSvcDefs {
+									dep_services[depId] = depDef
+								}
+								top_services = append(top_services, &svc)
 
 								// check service type and node type compatibility
-								compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, sDefs[0], msgPrinter)
+								compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, &svc, msgPrinter)
 								if !compatible_t {
 									reason = reason_t
 									svc_type_mismatch[sId] = true
@@ -336,14 +286,14 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 
 								if compatible && compatible_t {
 									service_compatible = true
-									service_comp[sId] = sDefs[0]
+									service_comp[sId] = &svc
 									messages[sId] = msg_compatible
 									if !checkAllSvcs {
 										break
 									}
 								} else {
-									service_incomp[sId] = sDefs[0]
-									messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
+									service_incomp[sId] = &svc
+									messages[sId] = FormatReasonMessage(reason, !compatible_t, msg_incompatible, type_incompatible)
 								}
 							}
 						}
@@ -353,24 +303,14 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 					}
 				}
 			} else {
-				found := false
-				var useSDef common.AbstractServiceFile
-				for _, in_svc := range inServices {
-					if in_svc.GetURL() == serviceRef.ServiceURL && in_svc.GetVersion() == workload.Version &&
-						(serviceRef.ServiceArch == "*" || serviceRef.ServiceArch == "" || in_svc.GetArch() == serviceRef.ServiceArch) &&
-						(in_svc.GetOrg() == "" || in_svc.GetOrg() == serviceRef.ServiceOrg) {
-						found = true
-						useSDef = &in_svc
-						break
-					}
-				}
+				useSDef := GetServiceFromInput(serviceRef.ServiceURL, serviceRef.ServiceOrg, workload.Version, serviceRef.ServiceArch, inServices)
 
 				sId := cutil.FormExchangeIdForService(serviceRef.ServiceURL, workload.Version, serviceRef.ServiceArch)
 				sId = fmt.Sprintf("%v/%v", serviceRef.ServiceOrg, sId)
 				if !needHandleService(sId, input.ServiceToCheck) {
 					continue
 				}
-				if !found {
+				if useSDef == nil {
 					messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service definition not found in the input."))
 					// add a fake service for easy logic later
 					service_incomp[sId] = &ServiceDefinition{}
@@ -378,13 +318,17 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 					if useSDef.GetOrg() == "" {
 						useSDef.(*common.ServiceFile).Org = serviceRef.ServiceOrg
 					}
-					if compatible, reason, sDefs, err := VerifyUserInputForServiceDef(useSDef, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, resources.NodeType, msgPrinter); err != nil {
+					if compatible, reason, depSvcDefs, err := VerifyUserInputForServiceDef(useSDef, resources.DepServices, serviceDefResolverHandler, bpUserInput, nodeUserInput, resources.NodeType, msgPrinter); err != nil {
 						return nil, err
 					} else {
-						all_services = append(all_services, sDefs...)
+						// for performance, save the services that gotten from the exchange for use later
+						for depId, depDef := range depSvcDefs {
+							dep_services[depId] = depDef
+						}
+						top_services = append(top_services, useSDef)
 
 						// check service type and node type compatibility
-						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, sDefs[0], msgPrinter)
+						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, useSDef, msgPrinter)
 						if !compatible_t {
 							reason = reason_t
 							svc_type_mismatch[sId] = true
@@ -392,14 +336,14 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 
 						if compatible && compatible_t {
 							service_compatible = true
-							service_comp[sId] = sDefs[0]
+							service_comp[sId] = useSDef
 							messages[sId] = msg_compatible
 							if !checkAllSvcs {
 								break
 							}
 						} else {
-							service_incomp[sId] = sDefs[0]
-							messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
+							service_incomp[sId] = useSDef
+							messages[sId] = FormatReasonMessage(reason, !compatible_t, msg_incompatible, type_incompatible)
 						}
 					}
 				}
@@ -419,6 +363,10 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 	}
 
+	// save the services retrieved from the exchange
+	resources.DepServices = dep_services
+	resources.Service = top_services
+
 	// for the pattern case, if all the services are type mismatch then the overall_compatible should
 	// turn to false
 	if overall_compatible && !useBPol {
@@ -436,9 +384,9 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 
 		// now that all_services are collected, let's check the redundant services specified in the node userinput and
 		// pattern or policy
-		if err := CheckRedundantUserinput(all_services, nodeUserInput, msgPrinter); err != nil {
+		if err := CheckRedundantUserinput(top_services, dep_services, nodeUserInput, msgPrinter); err != nil {
 			messages["general"] = msgPrinter.Sprintf("Warning: checking node user input:  %v", err)
-		} else if err := CheckRedundantUserinput(all_services, bpUserInput, msgPrinter); err != nil {
+		} else if err := CheckRedundantUserinput(top_services, dep_services, bpUserInput, msgPrinter); err != nil {
 			if useBPol {
 				messages["general"] = msgPrinter.Sprintf("Warning: checking user input for the deployment policy: %v", err)
 			} else {
@@ -465,12 +413,11 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 // 2. merge the user input from business policy and node.
 // 3. check if the merged user input satisfies the service requirements.
 func VerifyUserInputForService(svcSpec *ServiceSpec,
-	getServiceHandler exchange.ServiceHandler,
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	bpUserInput []policy.UserInput,
 	deviceUserInput []policy.UserInput,
 	nodeType string,
-	msgPrinter *message.Printer) (bool, string, []common.AbstractServiceFile, error) {
+	msgPrinter *message.Printer) (bool, string, common.AbstractServiceFile, string, map[string]exchange.ServiceDefinition, error) {
 
 	// get default message printer if nil
 	if msgPrinter == nil {
@@ -479,66 +426,38 @@ func VerifyUserInputForService(svcSpec *ServiceSpec,
 
 	// nothing to check
 	if svcSpec == nil {
-		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service spec object cannot be null.")), COMPCHECK_INPUT_ERROR)
+		return false, "", nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service spec object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	svc_map, sDef, sId, err := serviceDefResolverHandler(svcSpec.ServiceUrl, svcSpec.ServiceOrgid, svcSpec.ServiceVersionRange, svcSpec.ServiceArch)
 	if err != nil {
-		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", svcSpec, err)), COMPCHECK_EXCHANGE_ERROR)
+		return false, "", nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", svcSpec, err)), COMPCHECK_EXCHANGE_ERROR)
 	}
 
 	compSDef := ServiceDefinition{svcSpec.ServiceOrgid, *sDef}
 
-	// The service defs to be returned,the first one will be the top level service and the rests are dependent services
-	ret_sDefs := []common.AbstractServiceFile{&compSDef}
-	if nodeType == persistence.DEVICE_TYPE_DEVICE {
-		for id, s := range svc_map {
-			org := exchange.GetOrg(id)
-			svc := ServiceDefinition{org, s}
-			ret_sDefs = append(ret_sDefs, &svc)
-		}
-	}
+	// check the secret binding compatibility
+	compatible, msg, err := VerifyUserInputForServiceCache(&compSDef, svc_map, bpUserInput, deviceUserInput, nodeType, msgPrinter)
 
-	if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(&compSDef, bpUserInput, deviceUserInput, msgPrinter); err != nil {
-		return false, "", ret_sDefs, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for service %v. %v", sId, err)), COMPCHECK_GENERAL_ERROR)
-	} else if !compatible {
-		return false, msgPrinter.Sprintf("Failed to verify user input for service %v. %v", sId, reason), ret_sDefs, nil
-	} else {
-		if nodeType == persistence.DEVICE_TYPE_DEVICE {
-			for id, s := range svc_map {
-				org := exchange.GetOrg(id)
-				svc := ServiceDefinition{org, s}
-				if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(&svc, bpUserInput, deviceUserInput, msgPrinter); err != nil {
-					return false, "", ret_sDefs, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for dependent service %v. %v", id, err)), COMPCHECK_GENERAL_ERROR)
-				} else if !compatible {
-					return false, msgPrinter.Sprintf("Failed to verify user input for dependent service %v. %v", id, reason), ret_sDefs, nil
-				}
-			}
-		}
-	}
-
-	return true, "", ret_sDefs, nil
+	return compatible, msg, &compSDef, sId, svc_map, err
 }
 
 // This function does the following:
-// 1. go to the exchange and gets the dependent services if any
+// 1. go to the given dependentServices or exchange to get all the dependent services for the given service.
 // 2. merge the user input from business policy and node.
 // 3. check if the merged user input satisfies the service requirements.
 func VerifyUserInputForServiceDef(sDef common.AbstractServiceFile,
-	getServiceHandler exchange.ServiceHandler,
+	dependentServices map[string]exchange.ServiceDefinition, // can be nil
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	bpUserInput []policy.UserInput,
 	deviceUserInput []policy.UserInput,
 	nodeType string,
-	msgPrinter *message.Printer) (bool, string, []common.AbstractServiceFile, error) {
+	msgPrinter *message.Printer) (bool, string, map[string]exchange.ServiceDefinition, error) {
 
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
 	}
-
-	// The service defs to be returned,the first one will be the top level service and the rests are dependent services
-	ret_sDefs := []common.AbstractServiceFile{sDef}
 
 	// nothing to check
 	if sDef == nil {
@@ -546,46 +465,65 @@ func VerifyUserInputForServiceDef(sDef common.AbstractServiceFile,
 	}
 
 	// get all the service defs for the dependent services for device type node
-	service_map := map[string]ServiceDefinition{}
-	if nodeType == persistence.DEVICE_TYPE_DEVICE {
-		if sDef.GetRequiredServices() != nil && len(sDef.GetRequiredServices()) != 0 {
-			for _, sDep := range sDef.GetRequiredServices() {
-				if vExp, err := semanticversion.Version_Expression_Factory(sDep.GetVersionRange()); err != nil {
-					return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.Version, err)), COMPCHECK_GENERAL_ERROR)
-				} else {
-					if s_map, s_def, s_id, err := serviceDefResolverHandler(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch); err != nil {
-						return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving dependent services from the Exchange for %v. %v", sDep, err)), COMPCHECK_EXCHANGE_ERROR)
-					} else {
-						service_map[s_id] = ServiceDefinition{sDep.Org, *s_def}
-						for id, s := range s_map {
-							service_map[id] = ServiceDefinition{exchange.GetOrg(id), s}
-							ret_sDefs = append(ret_sDefs, &ServiceDefinition{exchange.GetOrg(id), s})
-						}
-					}
-				}
-			}
-		}
+	service_map, err := GetServiceDependentDefs(sDef, dependentServices, serviceDefResolverHandler, msgPrinter)
+	if err != nil {
+		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find the dependent services for %v/%v %v %v. %v", sDef.GetOrg(), sDef.GetURL(), sDef.GetArch(), sDef.GetVersion(), err)), COMPCHECK_GENERAL_ERROR)
+	}
+
+	// check the secret binding compatibility
+	compatible, msg, err := VerifyUserInputForServiceCache(sDef, service_map, bpUserInput, deviceUserInput, nodeType, msgPrinter)
+
+	return compatible, msg, service_map, err
+}
+
+// Given the top level and dependent services, assuming the dependentServices contain
+// all and only the dependent services for this top level service,
+// this function does the following:
+// 1. merge the user input from business policy and node.
+// 2. check if the merged user input satisfies the service requirements.
+// The caller must make sure that the dependent services are accurate and no extranous ones.
+// For performance reason, this function does not check the valadity of the dependent services.
+func VerifyUserInputForServiceCache(sDef common.AbstractServiceFile,
+	depServices map[string]exchange.ServiceDefinition,
+	bpUserInput []policy.UserInput,
+	deviceUserInput []policy.UserInput,
+	nodeType string,
+	msgPrinter *message.Printer) (bool, string, error) {
+
+	// cluster type does not support user input check
+	if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+		return true, "", nil
+	}
+
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	// nothing to check
+	if sDef == nil {
+		return false, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// verify top level services
 	sId := cutil.FormExchangeIdForService(sDef.GetURL(), sDef.GetVersion(), sDef.GetArch())
 	sId = fmt.Sprintf("%v/%v", sDef.GetOrg(), sId)
 	if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(sDef, bpUserInput, deviceUserInput, msgPrinter); err != nil {
-		return false, "", ret_sDefs, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for service %v. %v", sId, err)), COMPCHECK_GENERAL_ERROR)
+		return false, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for service %v. %v", sId, err)), COMPCHECK_GENERAL_ERROR)
 	} else if !compatible {
-		return false, msgPrinter.Sprintf("Failed to verify user input for service %v. %v", sId, reason), ret_sDefs, nil
+		return false, msgPrinter.Sprintf("Failed to verify user input for service %v. %v", sId, reason), nil
 	}
 
 	// verify dependent services
-	for id, s := range service_map {
-		if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(&s, bpUserInput, deviceUserInput, msgPrinter); err != nil {
-			return false, "", ret_sDefs, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for dependent service %v. %v", id, err)), COMPCHECK_GENERAL_ERROR)
+	for id, s := range depServices {
+		if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(&ServiceDefinition{exchange.GetOrg(id), s}, bpUserInput, deviceUserInput, msgPrinter); err != nil {
+			return false, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for dependent service %v. %v", id, err)), COMPCHECK_GENERAL_ERROR)
 		} else if !compatible {
-			return false, msgPrinter.Sprintf("Failed to verify user input for dependent service %v. %v", id, reason), ret_sDefs, nil
+			return false, msgPrinter.Sprintf("Failed to verify user input for dependent service %v. %v", id, reason), nil
 		}
 	}
 
-	return true, "", ret_sDefs, nil
+	return true, "", nil
 }
 
 // Verfiy that all userInput variables are correctly typed and that non-defaulted userInput variables are specified.
@@ -781,7 +719,7 @@ func needHandleService(sId string, services []string) bool {
 
 // If the inputPat is given, then validate it.
 // If not, get patern from the exchange.
-func processPattern(getPatterns exchange.PatternHandler, patId string, inputPat *common.PatternFile, msgPrinter *message.Printer) (common.AbstractPatternFile, error) {
+func processPattern(getPatterns exchange.PatternHandler, patId string, inputPat common.AbstractPatternFile, msgPrinter *message.Printer) (common.AbstractPatternFile, error) {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
@@ -936,7 +874,7 @@ func getWorkloadsFromPattern(pattern common.AbstractPatternFile, nodeArch string
 }
 
 // This function checks the user inputs against the service definitions for redundant services and input variables.
-func CheckRedundantUserinput(all_services []common.AbstractServiceFile, userInput []policy.UserInput, msgPrinter *message.Printer) error {
+func CheckRedundantUserinput(topServices []common.AbstractServiceFile, depService map[string]exchange.ServiceDefinition, userInput []policy.UserInput, msgPrinter *message.Printer) error {
 	if userInput == nil || len(userInput) == 0 {
 		return nil
 	}
@@ -946,8 +884,13 @@ func CheckRedundantUserinput(all_services []common.AbstractServiceFile, userInpu
 		msgPrinter = i18n.GetMessagePrinter()
 	}
 
-	if all_services == nil || len(all_services) == 0 {
+	if topServices == nil || len(topServices) == 0 {
 		return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The service %v/%v version %v arch %v specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.", userInput[0].ServiceOrgid, userInput[0].ServiceUrl, userInput[0].ServiceVersionRange, userInput[0].ServiceArch)), COMPCHECK_VALIDATION_ERROR)
+	}
+
+	all_services := topServices
+	for id, s := range depService {
+		all_services = append(all_services, &ServiceDefinition{exchange.GetOrg(id), s})
 	}
 
 	// map of index to the userInput array. each elelment is a map of (variable name, true)

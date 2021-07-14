@@ -127,7 +127,7 @@ func (db *AgbotPostgresqlDB) GetSecretPartitionTableDropPattern(partition string
 
 // ==================
 func (db *AgbotPostgresqlDB) GetUniqueSecretsQueryPolicy() string {
-	sql := strings.Replace(SECRET_DISTINCT_NAMES_POLICY , SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
+	sql := strings.Replace(SECRET_DISTINCT_NAMES_POLICY, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
 	return sql
 }
 

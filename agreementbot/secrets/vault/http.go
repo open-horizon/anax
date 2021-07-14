@@ -82,7 +82,7 @@ type GetSecretResponse struct {
 }
 
 type SecretMetadata struct {
-	CreationTime string `json:"created_time"`    // Has format 2018-03-22T02:24:06.945319214Z
+	CreationTime string `json:"created_time"` // Has format 2018-03-22T02:24:06.945319214Z
 	UpdateTime   string `json:"updated_time"`
 }
 

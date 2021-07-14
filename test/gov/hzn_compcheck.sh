@@ -15,6 +15,17 @@ PREFIX="HZN deployment compatibility test:"
 echo ""
 echo -e "${PREFIX} start test"
 
+if [ "${HZN_VAULT}" == "true" ]; then
+  service_location="/root/input_files/compcheck/service_location_secrets.json"
+  bp_location="/root/input_files/compcheck/business_pol_location_secrets.json"
+  pattern_sloc="/root/input_files/compcheck/pattern_sloc_secrets.json"
+else
+  service_location="/root/input_files/compcheck/service_location.json"
+  bp_location="/root/input_files/compcheck/business_pol_location.json"
+  pattern_sloc="/root/input_files/compcheck/pattern_sloc.json"
+fi 
+
+
 # check the the result to see if it matches the expected http code and error
 function results {
 
@@ -69,7 +80,7 @@ function check_comp_results {
   echo "Compatibility result expected."
 }
 
-for subcmd in "policy" "userinput" "all"
+for subcmd in "policy" "userinput" "secretbinding" "all"
 do
   echo -e "\n${PREFIX} test without user cred."
   CMD="hzn deploycheck $subcmd -n userdev/an12345 -b userdev/bp_gpstest"
@@ -266,37 +277,37 @@ RES=$($CMD 2>&1)
 results "$RES" "Neither node id nor node user input file is specified. Getting node user input from the local node" "\"compatible\": true"
 
 echo -e "\n${PREFIX} test input: node user input and business policy"
-CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -B input_files/compcheck/business_pol_location.json"
+CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -B $bp_location"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node user input and pattern"
-CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P input_files/compcheck/pattern_sloc.json"
+CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P $pattern_sloc"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node user input, business policy and service."
-CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json"
+CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -B $bp_location --service $service_location"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node user input, pattern and services."
-CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P input_files/compcheck/pattern_sloc.json --service input_files/compcheck/service_location.json --service input_files/compcheck/service_locgps.json"
+CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P $pattern_sloc --service $service_location --service input_files/compcheck/service_locgps.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node policy, business policy and service policy. wrong arch"
-CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -a arm64 --node-ui input_files/compcheck/node_ui.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json"
+CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -a arm64 --node-ui input_files/compcheck/node_ui.json -B $bp_location --service $service_location"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "No service versions with architecture arm64 specified in the deployment policy or pattern"
 
 echo -e "\n${PREFIX} test input: node user input, pattern and services. wrong arch"
-CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -a arm64 --node-ui input_files/compcheck/node_ui.json -P input_files/compcheck/pattern_sloc.json --service input_files/compcheck/service_location.json --service input_files/compcheck/service_locgps.json"
+CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -a arm64 --node-ui input_files/compcheck/node_ui.json -P $pattern_sloc --service $service_location --service input_files/compcheck/service_locgps.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "No service versions with architecture arm64 specified in the deployment policy or pattern"
@@ -308,14 +319,14 @@ RES=$($CMD 2>&1)
 results "$RES" "No service versions with architecture ${ARCH} specified in the deployment policy or pattern"
 
 echo -e "\n${PREFIX} test input: node user input, business policy and service. not compatible"
-CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json"
+CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json -B $bp_location --service $service_location"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "User Input Incompatible: Service definition not found in the input"
 check_comp_results "$RES" "false" "User Input Incompatible: Failed to verify user input for dependent service"
 
 echo -e "\n${PREFIX} test input: node user input, pattern and service. not compatible"
-CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json -P input_files/compcheck/pattern_sloc.json --service input_files/compcheck/service_location.json"
+CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json -P $pattern_sloc --service $service_location"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "User Input Incompatible: Service definition not found in the input"
@@ -360,25 +371,25 @@ RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node user input, pattern and services."
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P input_files/compcheck/pattern_sloc.json --service input_files/compcheck/service_location.json --service input_files/compcheck/service_locgps.json --node-pol input_files/compcheck/node_policy.json"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P $pattern_sloc --service $service_location --service input_files/compcheck/service_locgps.json --node-pol input_files/compcheck/node_policy.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node policy node user input, business policy, service, and service policy. Compatible"
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json "
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy.json -B $bp_location --service $service_location "
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node policy node user input, business policy, service, and service policy. Incompatible"
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json "
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy.json -B $bp_location --service $service_location"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "User Input Incompatible"
 
 echo -e "\n${PREFIX} test input: node policy node user input, business policy, service, and service policy. One compatible, one not"
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy2.json --service-pol input_files/compcheck/service_policy.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json -c"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy2.json --service-pol input_files/compcheck/service_policy.json -B $bp_location --service $service_location -c"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
@@ -387,7 +398,7 @@ if [ "$c" != "true" ]; then
   echo "It should return compatible but not."
   exit 2
 fi
-l=$(echo $RES | jq '.reason | length')
+l=$(echo $RES | jq 'del(..|.general?) |.reason | length')
 if [ "$l" != "2" ]; then
   echo "It should return 2 service result but got $l."
   exit 2
@@ -405,13 +416,13 @@ fi
 echo "Compatibility result expected."
 
 echo -e "\n${PREFIX} test input: node policy node user input, business policy, service, and service policy. Incompatible"
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy2.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json "
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy2.json -B $bp_location --service $service_location "
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "Policy Incompatible"
 
 echo -e "\n${PREFIX} test service type checking. Compatible"
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH -p e2edev@somecomp.com/sall"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH -p e2edev@somecomp.com/sall -c"
 echo "$CMD"
 RES=$($CMD 2>&1 | grep -v 'Neither node id')
 check_comp_results "$RES" "true" "Service does not have deployment configuration for node type 'device'"
@@ -428,5 +439,21 @@ echo "$CMD"
 RES=$($CMD 2>&1 | grep -v 'Neither node id')
 check_comp_results "$RES" "false" "Service does not have deployment configuration for node type 'device'"
 
+# secret binding tests
+if [ "$HZN_VAULT" == "true" ] && [ "$NOVAULT" != "1" ]; then
+  export HZN_AGBOT_URL=${AGBOT_SAPI_URL}
+
+  echo -e "\n${PREFIX} test secret binding with business policy and service input. Compatible"
+  CMD="hzn deploycheck secretbinding -u $USERDEV_ADMIN_AUTH -B input_files/compcheck/business_pol_location_secrets.json --service input_files/compcheck/service_location_secrets.json"
+  echo "$CMD"
+  RES=$($CMD 2>&1 | grep -v 'Getting the node information from the local node')
+  check_comp_results "$RES" "true"
+
+  echo -e "\n${PREFIX} test secret binding with pattern and service input. Compatible"
+  CMD="hzn deploycheck secretbinding -u $USERDEV_ADMIN_AUTH -P input_files/compcheck/pattern_sloc_secrets.json --service input_files/compcheck/service_location_secrets.json --service input_files/compcheck/service_locgps.json"
+  echo "$CMD"
+  RES=$($CMD 2>&1 | grep -v 'Getting the node information from the local node')
+  check_comp_results "$RES" "true"
+fi
 
 echo -e "\n${PREFIX} complete test\n"

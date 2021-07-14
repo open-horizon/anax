@@ -436,7 +436,7 @@ func getSpecRefsForPattern(nodeType string, patName string,
 				}
 
 				if checkNodePrivilege {
-					if svcPriv, err, privSvcs := compcheck.ServicesRequirePrivilege(&dependentDefs, nil); err != nil {
+					if svcPriv, err, privSvcs := compcheck.ServicesRequirePrivilege(nil, "", dependentDefs, nil); err != nil {
 						return nil, nil, NewSystemError(fmt.Sprintf("Error checking if dependent services for %v require privileged mode. %v", topSvcID, err))
 					} else if svcPriv && !nodePriv {
 						return nil, nil, NewSystemError(fmt.Sprintf("Dependent services %v for %v require privileged mode, but the node does not have openhorizon.allowPrivileged property set to true.", privSvcs, topSvcID))

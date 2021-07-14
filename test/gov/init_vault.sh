@@ -2,7 +2,7 @@
 
 # bootstrap the vault
 
-if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" != "http://exchange-api:8081/v1" ]; then
 	exit 0
 fi
 

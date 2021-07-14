@@ -213,7 +213,7 @@ echo -e "No agbot setting is $NOAGBOT"
 HZN_AGBOT_API=${AGBOT_API}
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
-  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
     # Check that the agbot is still alive
     if ! curl -sSL ${AGBOT_API}/agreement > /dev/null; then
       echo "Agreement Bot 1 verification failure."
@@ -418,14 +418,14 @@ if [ "$NOSDO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   fi
 fi
 
-if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8080/v1" ]; then
+if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8081/v1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
     ./verify_surfaced_error.sh
     if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
   fi
 fi
 
-if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8080/v1" ]; then
+if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8081/v1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ]; then
     ./service_upgrading_downgrading_test.sh
     if [ $? -ne 0 ]; then echo "Service upgrading/downgrading test failure."; exit 1; fi
@@ -490,7 +490,7 @@ else
 fi
 
 # Clean up remote environment
-if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" != "http://exchange-api:8081/v1" ]; then
   echo "Clean up remote environment"
   echo "Delete e2edev@somecomp.com..."
   DL8ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')

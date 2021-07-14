@@ -675,7 +675,8 @@ func verifyNodeUserInputsForPolicy(org string, credToUse string, node exchange.D
 	msgPrinter.Println()
 
 	if len(ui) != 0 {
-		all_services := []common.AbstractServiceFile{}
+		top_services := []common.AbstractServiceFile{}
+		dep_services := map[string]exchange.ServiceDefinition{}
 		for _, u := range ui {
 			uInput := u
 
@@ -709,7 +710,7 @@ func verifyNodeUserInputsForPolicy(org string, credToUse string, node exchange.D
 			var bpUserInput []policy.UserInput
 
 			svcSpec := compcheck.NewServiceSpec(serviceUrl, serviceOrg, versionRange, serviceArch)
-			if validated, message, sDefs, err := compcheck.VerifyUserInputForService(svcSpec, nil, serviceDefResolverHandler, bpUserInput, ui, node.GetNodeType(), msgPrinter); !validated {
+			if validated, message, sTop, _, sDeps, err := compcheck.VerifyUserInputForService(svcSpec, serviceDefResolverHandler, bpUserInput, ui, node.GetNodeType(), msgPrinter); !validated {
 				if err != nil && message != "" {
 					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to validate exchange node userInput, message: %v, error: %v", message, err))
 				} else if err != nil {
@@ -718,10 +719,13 @@ func verifyNodeUserInputsForPolicy(org string, credToUse string, node exchange.D
 					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to validate exchange node userInput, message: %v", message))
 				}
 			} else {
-				all_services = append(all_services, sDefs...)
+				top_services = append(top_services, sTop)
+				for id, s := range sDeps {
+					dep_services[id] = s
+				}
 
 				// check service type and node type compatibility
-				if compatible_t, reason_t := compcheck.CheckTypeCompatibility(node.NodeType, sDefs[0], msgPrinter); compatible_t != true {
+				if compatible_t, reason_t := compcheck.CheckTypeCompatibility(node.NodeType, sTop, msgPrinter); compatible_t != true {
 					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to validate exchange node userInput: %v", reason_t))
 				}
 			}
@@ -729,7 +733,7 @@ func verifyNodeUserInputsForPolicy(org string, credToUse string, node exchange.D
 		}
 
 		// check redundant userinput for service
-		if err := compcheck.CheckRedundantUserinput(all_services, ui, msgPrinter); err != nil {
+		if err := compcheck.CheckRedundantUserinput(top_services, dep_services, ui, msgPrinter); err != nil {
 			cliutils.Warning(msgPrinter.Sprintf("validate exchange node/userinput %v ", err))
 		}
 	}

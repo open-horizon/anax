@@ -61,9 +61,9 @@ func SecretList(org, credToUse, secretName string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	// get rid of trailing / from secret name 
+	// get rid of trailing / from secret name
 	if strings.HasSuffix(secretName, "/") {
-		secretName = secretName[:len(secretName) - 1]
+		secretName = secretName[:len(secretName)-1]
 	}
 
 	// query the agbot secure api
@@ -76,7 +76,7 @@ func SecretList(org, credToUse, secretName string) {
 
 	// check if listing org/user secrets
 
-	// listing org secrets - empty name 
+	// listing org secrets - empty name
 	isSecretDirectory := secretName == ""
 
 	// listing user secrets - user/<user>
@@ -84,7 +84,7 @@ func SecretList(org, credToUse, secretName string) {
 		nameParts := strings.Split(secretName, "/")
 		partsLength := len(nameParts)
 		isSecretDirectory = nameParts[0] == "user" && partsLength == 2
-	}	
+	}
 
 	// parse and print the response
 	if retCode == 401 || retCode == 403 || retCode == 503 {

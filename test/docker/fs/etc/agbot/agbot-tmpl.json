@@ -23,7 +23,7 @@
         "NewContractIntervalS": 10,
         "ProcessGovernanceIntervalS": 10,
         "IgnoreContractWithAttribs": "ethereum_account",
-        "ExchangeURL": "http://exchange-api:8080/v1",
+        "ExchangeURL": "http://exchange-api:8081/v1",
         "ExchangeId": "${EXCHANGE_SYSTEM_ORG}/${AGBOT_ID}",
         "ExchangeToken":"${AGBOT_TOKEN}",
         "ExchangeVersionCheckIntervalM": 1,

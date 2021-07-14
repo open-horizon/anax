@@ -676,7 +676,7 @@ hzn exchange service list -o IBM
 
 # ======================= Patterns that use top level services ======================
 # sns pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
   export MHI=120
   export CAS=30
 else
@@ -705,7 +705,7 @@ RES=$(cat $KEY_TEST_DIR/pattern_netspeed.json | curl -sLX POST $CERT_VAR --heade
 results "$RES"
 
 # sgps test pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
   MHI=90
   CAS=60
 else
@@ -754,7 +754,7 @@ echo -e "Register gps service pattern $VERS:"
 results "$RES"
 
 # shelm test pattern
-# if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+# if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
 #   MHI=90
 #   CAS=60
 # else
@@ -807,7 +807,7 @@ if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" !
 else
 
 # susehello test pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
   MHI=90
   CAS=60
 else
@@ -866,120 +866,34 @@ fi
 #
 # The verify_sloc.sh script verifies that this service is running correctly.
 #
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-  MHI=240
-  CAS=60
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+  export MHI=240
+  export CAS=60
 else
-  MHI=600
-  CAS=600
+  export MHI=600
+  export CAS=600
 fi
-LOCVERS1="2.0.6"
-LOCVERS2="2.0.7"
-read -d '' sdef <<EOF
-{
-  "label": "Location Test",
-  "description": "service based location pattern",
-  "public": true,
-  "services": [
-    {
-      "serviceUrl":"https://bluehorizon.network/services/location",
-      "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"${ARCH}",
-      "serviceVersions":[
-        {
-          "version":"$LOCVERS1",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 3,
-            "retries": 2,
-            "retry_durations": 3600,
-            "verified_durations": 52
-          },
-          "upgradePolicy": {}
-        },
-        {
-          "version":"$LOCVERS2",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 2,
-            "retries": 2,
-            "retry_durations": 3600,
-            "verified_durations": 52
-          },
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {
-        "missing_heartbeat_interval": $MHI,
-        "check_agreement_status": $CAS
-      }
-    },
-    {
-      "serviceUrl":"https://bluehorizon.network/services/locgps",
-      "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"${ARCH}",
-      "agreementLess": true,
-      "serviceVersions":[
-        {
-          "version":"2.0.4",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{},
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {}
-    }
-  ],
-  "agreementProtocols": [
-    {
-      "name": "Basic"
-    }
-  ],
-  "userInput": [
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/services/locgps",
-      "serviceArch": "",
-      "serviceVersionRange": "2.0.3",
-      "inputs": [
-        {
-          "name": "test",
-          "value": "testValue"
-        },
-        {
-          "name": "extra",
-          "value": "extraValue"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "IBM",
-      "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "",
-      "serviceVersionRange": "1.0.0",
-      "inputs": [
-        {
-          "name": "cpu_var1",
-          "value": "ibmvar1"
-        }
-      ]
-    }
-  ]
-}
-EOF
+export LOCVERS1="2.0.6"
+export LOCVERS2="2.0.7"
+
+if [ "${HZN_VAULT}" == "true" ]; then
+  SLOC_PATTERN="/root/patterns/e2edev@somecomp.com/sloc_secrets.json"
+else
+  SLOC_PATTERN="/root/patterns/e2edev@somecomp.com/sloc.json"
+fi
+
+cat $SLOC_PATTERN | envsubst > $KEY_TEST_DIR/pattern_sloc.json
+
+sdef=$(cat $KEY_TEST_DIR/pattern_sloc.json)
+
 echo -e "Register location service pattern $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sloc" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sloc" | jq -r '.')
 
 results "$RES"
 
 # weather pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
   MHI=90
   CAS=60
 else
@@ -1057,7 +971,7 @@ echo -e "Register weather service pattern $VERS:"
 results "$RES"
 
 # k8s pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
   MHI=90
   CAS=60
 else
@@ -1113,7 +1027,7 @@ export LOCVERS2="2.0.7"
 export GPSVERS="1.0.0"
 export UHSVERS="1.0.0"
 export K8SVERS="1.0.0"
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
   export MHI_240=240
   export MHI_180=180
   export MHI_120=120

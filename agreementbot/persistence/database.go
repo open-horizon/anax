@@ -89,5 +89,4 @@ type AgbotDatabase interface {
 	DeleteSecretsForPattern(polOrg, patternName string) error
 	DeletePolicySecret(secretOrg, secretName, policyOrg, policyName string) error
 	DeletePatternSecret(secretOrg, secretName, patternOrg, patternName string) error
-
 }

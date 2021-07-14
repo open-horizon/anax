@@ -367,7 +367,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			} else if ag == nil {
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "id", Error: "agreement id not found"})
 			} else if err := abstractprotocol.ObscureProposalSecret(&ag.Proposal); err != nil {
-				glog.Warning(APIlogString(fmt.Sprintf("failed to obscure secret details, error: %v", err)))
+				glog.Error(APIlogString(fmt.Sprintf("failed to obscure secret details, error: %v", err)))
 			} else {
 				// write output
 				writeResponse(w, *ag, http.StatusOK)
@@ -391,7 +391,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 
 					for _, agreement := range ags {
 						if err := abstractprotocol.ObscureProposalSecret(&agreement.Proposal); err != nil {
-							glog.Warning(APIlogString(fmt.Sprintf("failed to obscure secret details, error: %v", err)))
+							glog.Error(APIlogString(fmt.Sprintf("failed to obscure secret details, error: %v", err)))
 						}
 						// The archived agreements and the agreements being terminated are returned as archived.
 						if agreement.Archived || agreement.AgreementTimedout != 0 {

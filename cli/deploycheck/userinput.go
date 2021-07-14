@@ -55,7 +55,7 @@ func UserInputCompatible(org string, userPw string, nodeId string, nodeArch stri
 		uiCheckInput.PatternId = cliutils.AddOrg(userOrg, uiCheckInput.PatternId)
 	}
 
-	// formalize node id or get node policy
+	// formalize node id or get node user input
 	bUseLocalNode := false
 	if useNodeId {
 		// add credentials'org to node id if the node id does not have an org
@@ -74,7 +74,7 @@ func UserInputCompatible(org string, userPw string, nodeId string, nodeArch stri
 
 	if bUseLocalNode {
 		// get id from local node, check arch
-		uiCheckInput.NodeId, uiCheckInput.NodeArch = getLocalNodeInfo(nodeArch)
+		uiCheckInput.NodeId, uiCheckInput.NodeArch, uiCheckInput.NodeType, _ = getLocalNodeInfo(nodeArch, nodeType, "")
 
 		// get node user input from local node
 		var node_ui []policy.UserInput
@@ -113,7 +113,7 @@ func UserInputCompatible(org string, userPw string, nodeId string, nodeArch stri
 		// display the output
 		output, err := cliutils.DisplayAsJson(compOutput)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn policy compatible' output: %v", err))
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn deploycheck userinput' output: %v", err))
 		}
 
 		fmt.Println(output)
@@ -121,31 +121,31 @@ func UserInputCompatible(org string, userPw string, nodeId string, nodeArch stri
 }
 
 // Make sure the url, arch and version are correct in the service definition file.
-func validateService(service *common.ServiceFile) error {
+func validateService(service common.AbstractServiceFile) error {
 	msgPrinter := i18n.GetMessagePrinter()
 
-	if service.URL == "" {
+	if service.GetURL() == "" {
 		return fmt.Errorf(msgPrinter.Sprintf("URL must be specified in the service definition."))
 	}
-	if service.Version == "" {
+	if service.GetVersion() == "" {
 		return fmt.Errorf(msgPrinter.Sprintf("Version must be specified in the service definition."))
-	} else if !semanticversion.IsVersionString(service.Version) {
-		return fmt.Errorf(msgPrinter.Sprintf("Invalid version format: %v.", service.Version))
+	} else if !semanticversion.IsVersionString(service.GetVersion()) {
+		return fmt.Errorf(msgPrinter.Sprintf("Invalid version format: %v.", service.GetVersion()))
 	}
-	if service.Arch == "" {
+	if service.GetArch() == "" {
 		return fmt.Errorf(msgPrinter.Sprintf("Arch must be specified in the service definition."))
 	}
 
 	return nil
 }
 
-// Make sure -n and --node-pol, -b and -B
+// Make sure -n and --node-ui, -b and -B
 // and -p and -P pairs are mutually exclusive.
 // Business policy and pattern are mutually exclusive.
 // Get default credential, node id and org if they are not set.
 func verifyUserInputCompatibleParameters(org string, userPw string, nodeId string, nodeType string, nodeUIFile string,
 	businessPolId string, businessPolFile string, patternId string, patternFile string,
-	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, *common.PatternFile, []common.ServiceFile) {
+	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, common.AbstractPatternFile, []common.AbstractServiceFile) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -245,25 +245,25 @@ func verifyUserInputCompatibleParameters(org string, userPw string, nodeId strin
 		return orgToUse, *credToUse, nodeIdToUse, useNodeId, bp, nil, serviceDefs
 	} else {
 		// get pattern from file or exchange
-		pattern, pf := getPattern(orgToUse, *credToUse, patternId, patternFile)
+		pattern := getPattern(orgToUse, *credToUse, patternId, patternFile)
 
 		// check if the specified the services are the ones that the pattern needs.
 		// only check if the given services are valid or not.
 		// Not checking the missing ones becaused it will be checked by the compcheck package.
 		checkServiceDefsForPattern(pattern, serviceDefs, svcDefFiles)
 
-		return orgToUse, *credToUse, nodeIdToUse, useNodeId, nil, pf, serviceDefs
+		return orgToUse, *credToUse, nodeIdToUse, useNodeId, nil, pattern, serviceDefs
 	}
 }
 
 // Given a service definition files, check if the exchange call will be needed to get all the dependent services.
 // It also returns the service definitions from the files and an array of service orgs.
-func useExchangeForServiceDef(svcDefFiles []string) (bool, []common.ServiceFile) {
+func useExchangeForServiceDef(svcDefFiles []string) (bool, []common.AbstractServiceFile) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	useSId := false
-	serviceDefs := []common.ServiceFile{}
+	serviceDefs := []common.AbstractServiceFile{}
 
 	if svcDefFiles == nil || len(svcDefFiles) == 0 {
 		// true means will use exchange call
@@ -278,7 +278,7 @@ func useExchangeForServiceDef(svcDefFiles []string) (bool, []common.ServiceFile)
 				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Error in service file %v. %v", s_file, err))
 			}
 
-			serviceDefs = append(serviceDefs, service)
+			serviceDefs = append(serviceDefs, &service)
 
 			if service.HasDependencies() {
 				// true means will use exchange call
@@ -291,7 +291,7 @@ func useExchangeForServiceDef(svcDefFiles []string) (bool, []common.ServiceFile)
 }
 
 // get pattern from exchange or from file.
-func getPattern(defaultOrg string, credToUse string, patternId string, patternFile string) (common.AbstractPatternFile, *common.PatternFile) {
+func getPattern(defaultOrg string, credToUse string, patternId string, patternFile string) common.AbstractPatternFile {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -302,7 +302,7 @@ func getPattern(defaultOrg string, credToUse string, patternId string, patternFi
 		if err := json.Unmarshal(newBytes, &pf); err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal pattern json input file %s: %v", patternFile, err))
 		}
-		return &pf, &pf
+		return &pf
 	} else {
 		var pe compcheck.Pattern
 		// get pattern from the exchange
@@ -315,15 +315,15 @@ func getPattern(defaultOrg string, credToUse string, patternId string, patternFi
 		} else {
 			for _, exchPat := range patternList.Patterns {
 				pe = compcheck.Pattern{Org: patOrg, Pattern: exchPat}
-				return &pe, nil
+				return &pe
 			}
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 // make sure the service defs matches the required top level services for pattern
-func checkServiceDefsForPattern(pattern common.AbstractPatternFile, serviceDefs []common.ServiceFile, svcDefFiles []string) {
+func checkServiceDefsForPattern(pattern common.AbstractPatternFile, serviceDefs []common.AbstractServiceFile, svcDefFiles []string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -332,9 +332,9 @@ func checkServiceDefsForPattern(pattern common.AbstractPatternFile, serviceDefs 
 		for i, sdef := range serviceDefs {
 			found := false
 			for _, sref := range pattern.GetServices() {
-				if sdef.URL == sref.ServiceURL && (sdef.Org == "" || sdef.Org == sref.ServiceOrg) && (sref.ServiceArch == "" || sref.ServiceArch == "*" || sdef.Arch == sref.ServiceArch) {
+				if sdef.GetURL() == sref.ServiceURL && (sdef.GetOrg() == "" || sdef.GetOrg() == sref.ServiceOrg) && (sref.ServiceArch == "" || sref.ServiceArch == "*" || sdef.GetArch() == sref.ServiceArch) {
 					for _, v := range sref.ServiceVersions {
-						if sdef.Version == v.Version {
+						if sdef.GetVersion() == v.Version {
 							found = true
 							break
 						}
@@ -346,30 +346,30 @@ func checkServiceDefsForPattern(pattern common.AbstractPatternFile, serviceDefs 
 			}
 
 			if !found {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The service %v/%v %v %v specified in file %v does not match the pattern requirement.", sdef.Org, sdef.URL, sdef.Arch, sdef.Version, svcDefFiles[i]))
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The service %v/%v %v %v specified in file %v does not match the pattern requirement.", sdef.GetOrg(), sdef.GetURL(), sdef.GetArch(), sdef.GetVersion(), svcDefFiles[i]))
 			}
 		}
 	}
 }
 
 // make sure the service defs matches the required top level services for business policy
-func checkServiceDefsForBPol(bp *businesspolicy.BusinessPolicy, serviceDefs []common.ServiceFile, svcDefFiles []string) {
+func checkServiceDefsForBPol(bp *businesspolicy.BusinessPolicy, serviceDefs []common.AbstractServiceFile, svcDefFiles []string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	if svcDefFiles != nil && len(svcDefFiles) != 0 {
 		for i, sdef := range serviceDefs {
 			found := false
-			if sdef.URL == bp.Service.Name && (sdef.Org == "" || sdef.Org == bp.Service.Org) && (bp.Service.Arch == "" || bp.Service.Arch == "*" || sdef.Arch == bp.Service.Arch) {
+			if sdef.GetURL() == bp.Service.Name && (sdef.GetOrg() == "" || sdef.GetOrg() == bp.Service.Org) && (bp.Service.Arch == "" || bp.Service.Arch == "*" || sdef.GetArch() == bp.Service.Arch) {
 				for _, v := range bp.Service.ServiceVersions {
-					if sdef.Version == v.Version {
+					if sdef.GetVersion() == v.Version {
 						found = true
 						break
 					}
 				}
 			}
 			if !found {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The service %v/%v %v %v specified in file %v does not match the deployment policy requirement.", sdef.Org, sdef.URL, sdef.Arch, sdef.Version, svcDefFiles[i]))
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The service %v/%v %v %v specified in file %v does not match the deployment policy requirement.", sdef.GetOrg(), sdef.GetURL(), sdef.GetArch(), sdef.GetVersion(), svcDefFiles[i]))
 			}
 		}
 	}

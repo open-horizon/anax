@@ -19,6 +19,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/text/message"
@@ -173,6 +174,7 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycheck/policycompatible", a.policy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
+		router.HandleFunc("/deploycheck/secretbindingcompatible", a.secretbinding_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets", a.secrets).Methods("GET", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/{secret}", a.secrets).Methods("GET", "PUT", "POST", "DELETE", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/user/{user}", a.secrets).Methods("GET", "OPTIONS")
@@ -311,6 +313,82 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+// @Title secretbinding_compatible
+// @Description Check the secret binding compatibility. This API does the secret binding compatibility check for the given business policy (or a pattern) and service definition. It checks if each secret defined in a serice has a binding associated in the given deployment policy (or pattern) and each bound secret exists in the secret manager. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
+// @Accept  json
+// @Produce json
+// @Param   checkAll     		query    bool     false        "Return the compatibility check result for all the service versions referenced in the business policy or pattern."
+// @Param   long         		query    bool     false        "Show the input which was used to come up with the result."
+// @Param   node_id      		body     string   false        "The exchange id of the node. Mutually exclusive with node_user_input."
+// @Param   node_arch    		body     string   false        "The architecture of the node."
+// @Param   node_org    		body     string   false        "The organization of the node."
+// @Param   business_policy_id  body     string   false        "The exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
+// @Param   business_policy  	body     businesspolicy.BusinessPolicy     	false        "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
+// @Param   pattern_id      	body     string   false        "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
+// @Param   pattern  			body     common.PatternFile     			false        "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
+// @Param   service  			body     common.ServiceFile    				false        "An array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange."
+// @Success 200 {object}  compcheck.CompCheckOutput
+// @Failure 400 {object}  string      "No input found"
+// @Failure 401 {object}  string      "Failed to authenticate"
+// @Failure 500 {object}  string      "Error"
+// @Resource /deploycheck
+// @Router /deploycheck/secretbindingcompatible [get]
+// This function does secret binding compatibility check.
+func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/secretbindingcompatible called.")))
+
+		if user_ec, msgPrinter, ok := a.processUserCred("/deploycheck/secretbindingcompatible", w, r); ok {
+			body, _ := ioutil.ReadAll(r.Body)
+			if len(body) == 0 {
+				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
+				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
+			} else if input, err := a.decodeSecretBindingCheckBody(body, msgPrinter); err != nil {
+				glog.Errorf(APIlogString(err.Error()))
+				writeResponse(w, err.Error(), http.StatusBadRequest)
+			} else {
+				// if checkAll is set, then check all the services defined in the business policy for compatibility.
+				checkAll := r.URL.Query().Get("checkAll")
+
+				// do user input compatibility check
+				output, err := compcheck.SecretBindingCompatible(user_ec, "", input, (checkAll != ""), msgPrinter)
+
+				// do the bound secret name varification in the secret manager
+				if err == nil && output != nil {
+					neededSB := output.Input.NeededSB
+					if neededSB != nil && len(neededSB) != 0 {
+						if ok, msg, err := a.verifySecretNames(user_ec, neededSB, output.Input.NodeOrg, msgPrinter); err != nil {
+							glog.Errorf(APIlogString(err.Error()))
+							writeResponse(w, err.Error(), http.StatusInternalServerError)
+							return
+						} else if !ok {
+							output.Compatible = false
+							output.Reason["general"] = msg
+						}
+					}
+
+					// nil out the details in the output if 'long' is not set in the request
+					long := r.URL.Query().Get("long")
+					if long == "" {
+						output.Input = nil
+					}
+				}
+
+				// write the output
+				a.writeCompCheckResponse(w, output, err, msgPrinter)
+			}
+		}
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 // @Title deploy_compatible
 // @Description Check deployment compatibility. This API does compatibility check for the given business policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
 // @Accept  json
@@ -319,6 +397,7 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 // @Param   long         		query    bool     false        "Show the input which was used to come up with the result."
 // @Param   node_id      		body     string   false        "The exchange id of the node. Mutually exclusive with node_policy and node_user_input."
 // @Param   node_arch    		body     string   false        "The architecture of the node."
+// @Param   node_org    		body     string   false        "The organization of the node."
 // @Param   node_policy  		body     externalpolicy.ExternalPolicy 	false        "The node policy that will be put in the exchange. Mutually exclusive with node_id."
 // @Param   node_user_input  	body     policy.UserInput       		false        "The user input that will be put in the exchange for the services. Mutually exclusive with node_id."
 // @Param   business_policy_id  body     string   false        "The exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
@@ -352,12 +431,27 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 				checkAll := r.URL.Query().Get("checkAll")
 
 				// do user input compatibility check
-				output, err := compcheck.DeployCompatible(user_ec, input, (checkAll != ""), msgPrinter)
+				output, err := compcheck.DeployCompatible(user_ec, "", input, (checkAll != ""), msgPrinter)
 
-				// nil out the details in the output if 'long' is not set in the request
-				long := r.URL.Query().Get("long")
-				if long == "" && output != nil {
-					output.Input = nil
+				// do the bound secret name varification in the secret manager
+				if err == nil && output != nil {
+					neededSB := output.Input.NeededSB
+					if neededSB != nil && len(neededSB) != 0 {
+						if ok, msg, err := a.verifySecretNames(user_ec, neededSB, output.Input.NodeOrg, msgPrinter); err != nil {
+							glog.Errorf(APIlogString(err.Error()))
+							writeResponse(w, err.Error(), http.StatusInternalServerError)
+							return
+						} else if !ok {
+							output.Compatible = false
+							output.Reason["general"] = msg
+						}
+					}
+
+					// nil out the details in the output if 'long' is not set in the request
+					long := r.URL.Query().Get("long")
+					if long == "" {
+						output.Input = nil
+					}
 				}
 
 				// write the output
@@ -443,6 +537,26 @@ func (a *SecureAPI) decodeUserInputCheckBody(body []byte, msgPrinter *message.Pr
 		if err := json.Unmarshal(body, &input); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to UserInputCheck object. %v", err)))
 			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to UserInputCheck object. %v", err))
+		} else {
+			// verification of the input is done in the compcheck component, no need to validate the policies here.
+			return &input, nil
+		}
+	}
+}
+
+// Verify the comcheck input body from the /deploycheck/secretbindingcompatible api and convert it to compcheck.UserInputCheck
+// It will give meaningful error as much as possible
+func (a *SecureAPI) decodeSecretBindingCheckBody(body []byte, msgPrinter *message.Printer) (*compcheck.SecretBindingCheck, error) {
+
+	var js map[string]interface{}
+	if err := json.Unmarshal(body, &js); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+	} else {
+		var input compcheck.SecretBindingCheck
+		if err := json.Unmarshal(body, &input); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to SecretBindingCheck object. %v", err)))
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to SecretBindingCheck object. %v", err))
 		} else {
 			// verification of the input is done in the compcheck component, no need to validate the policies here.
 			return &input, nil
@@ -562,95 +676,29 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if vault is configured in the management hub, and the provider is ready to handle requests.
-	if a.secretProvider == nil {
-		glog.Errorf(APIlogString("There is no secrets provider configured, secrets are unavailable."))
-		writeResponse(w, msgPrinter.Sprintf("There is no secrets provider configured, secrets are unavailable."), http.StatusServiceUnavailable)
-		return
-	}
-
-	if !a.secretProvider.IsReady() {
-		unavailMsg := "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
-		glog.Errorf(APIlogString(unavailMsg))
-		writeResponse(w, msgPrinter.Sprintf(unavailMsg), http.StatusServiceUnavailable)
-	}
-
 	if user != "" {
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, user, vaultSecretName))))
 	} else {
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, vaultSecretName))))
 	}
 
-	if org == "" {
-		glog.Errorf(APIlogString(fmt.Sprintf("org must be specified in the API path")))
-		writeResponse(w, msgPrinter.Sprintf("org must be specified in the API path"), http.StatusBadRequest)
-		return
-	} else if (strings.Contains(fmt.Sprint(r.URL), "/user/") && user == "") ||
-		(vaultSecretName == "user" && user == "") {
-		glog.Errorf(APIlogString(fmt.Sprintf("user must be specified in the API path")))
-		writeResponse(w, msgPrinter.Sprintf("user must be specified in the API path"), http.StatusBadRequest)
+	// pre processing
+	if err, httpCode := a.vaultSecretPreCheck(ec, fmt.Sprint(r.URL), vaultSecretName, org, user, msgPrinter); err != nil {
+		glog.Errorf(APIlogString(err.Error()))
+		writeResponse(w, err.Error(), httpCode)
 		return
 	}
 
-	// The user could be authenticated but might be trying to access secrets in another org or of a different user.
-	// The second check is automatically enforced by the vault anyways.
-	// _, userId := cutil.SplitOrgSpecUrl(ec.GetExchangeId())
-	// if exchange.GetOrg(ec.GetExchangeId()) != org {
-	// 	glog.Errorf(APIlogString(fmt.Sprintf("user %s cannot access secrets in org %s.", exchange.GetOrg(ec.GetExchangeId()), org)))
-	// 	writeResponse(w, msgPrinter.Sprintf("Unauthorized. User %s cannot access secrets in org %s.", ec.GetExchangeId(), org), http.StatusForbidden)
-	// 	return
-	// } else if strings.Contains(fmt.Sprint(r.URL), "/user/") && user != userId {
-	// 	glog.Errorf(APIlogString(fmt.Sprintf("user %v cannot access secrets for user %v", userId, user)))
-	// 	writeResponse(w, msgPrinter.Sprintf("user %v cannot access secrets for user %v", userId, user), http.StatusUnauthorized)
-	// 	return
-	// }
-
 	// Handle secret API options
-	userPath := "user/"+user+cliutils.AddSlash(vaultSecretName)
+	userPath := "user/" + user + cliutils.AddSlash(vaultSecretName)
 	switch r.Method {
 	case "GET":
-
 		// Call the plugged in secrets provider to list the secret(s) for the input org.
-		if vaultSecretName == "" {
-
-			var secretNames []string
-			var err error
-			if user != "" {
-				// listing user level secrets
-				secretNames, err = a.secretProvider.ListOrgUserSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
-			} else {
-				// listing org level secrets
-				secretNames, err = a.secretProvider.ListOrgSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
-			}
-
-			if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode == http.StatusNotFound {
-				//glog.Errorf(APIlogString(fmt.Sprintf("No secrets in org %s", org)))
-				writeResponse(w, msgPrinter.Sprintf("%v", serr), serr.RespCode)
-			} else if serr, ok := err.(secrets.ErrorResponse); err != nil && ok {
-				glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v. %v", serr, serr.Details)))
-				writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr), serr.RespCode)
-			} else if err != nil && !ok {
-				glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v.", err)))
-				writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err), http.StatusInternalServerError)
-			} else {
-				writeResponse(w, secretNames, http.StatusOK)
-			}
+		if payload, err, httpCode := a.getVaultSecret(ec, vaultSecretName, org, user, msgPrinter); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
 		} else {
-			var err error
-			if user != "" {
-				err = a.secretProvider.ListOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
-			} else {
-				err = a.secretProvider.ListOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
-			}
-			if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode != http.StatusNotFound {
-				glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v. %v", serr, serr.Details)))
-				writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr), serr.RespCode)
-			} else if err != nil && !ok {
-				glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v.", err)))
-				writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err), http.StatusInternalServerError)
-			} else {
-				writeResponse(w, map[string]bool{"exists": (serr.RespCode != http.StatusNotFound)}, http.StatusOK)
-			}
+			writeResponse(w, payload, http.StatusOK)
 		}
 	case "PUT":
 		fallthrough
@@ -707,6 +755,138 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
+}
+
+// This function does preprocessing for the secret APIs.
+// It returns error and http response code.
+func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
+	apiUrl string, vaultSecretName string, org string, user string,
+	msgPrinter *message.Printer) (error, int) {
+
+	// Check if vault is configured in the management hub, and the provider is ready to handle requests.
+	if a.secretProvider == nil {
+		return fmt.Errorf(msgPrinter.Sprintf("There is no secrets provider configured, secrets are unavailable.")), http.StatusServiceUnavailable
+	}
+
+	if !a.secretProvider.IsReady() {
+		unavailMsg := "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
+		return fmt.Errorf(msgPrinter.Sprintf(unavailMsg)), http.StatusServiceUnavailable
+	}
+
+	if org == "" {
+		return fmt.Errorf(msgPrinter.Sprintf("org must be specified in the API path")), http.StatusBadRequest
+	} else if (strings.Contains(apiUrl, "/user/") && user == "") ||
+		(vaultSecretName == "user" && user == "") {
+		return fmt.Errorf(msgPrinter.Sprintf("user must be specified in the API path")), http.StatusBadRequest
+	}
+
+	// The user could be authenticated but might be trying to access secrets in another org or of a different user.
+	// The second check is automatically enforced by the vault anyways.
+	//_, userId := cutil.SplitOrgSpecUrl(ec.GetExchangeId())
+	//if exchange.GetOrg(ec.GetExchangeId()) != org {
+	//	return fmt.Errorf(msgPrinter.Sprintf("Unauthorized. User %s cannot access secrets in org %s.", ec.GetExchangeId(), org)), http.StatusForbidden
+	//} else if strings.Contains(apiUrl, "/user/") && user != userId {
+	//	return fmt.Errorf(msgPrinter.Sprintf("user %v cannot access secrets for user %v", userId, user)), http.StatusUnauthorized
+	//}
+	return nil, 0
+}
+
+// Call the plugged in secrets provider to list the secret(s) for the input org.
+// It returns the payload, error and httpcode.
+func (a *SecureAPI) getVaultSecret(ec exchange.ExchangeContext,
+	vaultSecretName string, org string, user string,
+	msgPrinter *message.Printer) (interface{}, error, int) {
+
+	userPath := "user/" + user + cliutils.AddSlash(vaultSecretName)
+	if vaultSecretName == "" {
+		var secretNames []string
+		var err error
+		if user != "" {
+			// listing user level secrets
+			secretNames, err = a.secretProvider.ListOrgUserSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
+		} else {
+			// listing org level secrets
+			secretNames, err = a.secretProvider.ListOrgSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+		}
+
+		if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode == http.StatusNotFound {
+			return nil, fmt.Errorf(msgPrinter.Sprintf("%v", serr)), serr.RespCode
+		} else if serr, ok := err.(secrets.ErrorResponse); err != nil && ok {
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr)), serr.RespCode
+		} else if err != nil && !ok {
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err)), http.StatusInternalServerError
+		} else {
+			return secretNames, nil, http.StatusOK
+		}
+	} else {
+		var err error
+		if user != "" {
+			err = a.secretProvider.ListOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
+		} else {
+			err = a.secretProvider.ListOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+		}
+		if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode != http.StatusNotFound {
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr)), serr.RespCode
+		} else if err != nil && !ok {
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err)), http.StatusInternalServerError
+		} else {
+			return map[string]bool{"exists": (serr.RespCode != http.StatusNotFound)}, nil, http.StatusOK
+		}
+	}
+}
+
+// Given an array of secret bindings, make sure the bound secrets exist
+// in the secret manager(/provider).
+func (a *SecureAPI) verifySecretNames(ec exchange.ExchangeContext,
+	secretBinding []exchangecommon.SecretBinding,
+	nodeOrg string, msgPrinter *message.Printer) (bool, string, error) {
+
+	// take the user org as the default node org
+	if nodeOrg == "" {
+		nodeOrg = exchange.GetOrg(ec.GetExchangeId())
+	}
+
+	for _, sn := range secretBinding {
+		for _, vbind := range sn.Secrets {
+			_, secretName := vbind.GetBinding()
+
+			//parse the bound secret name
+			secretUser, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
+			if err != nil {
+				return false, "", err
+			}
+
+			// make sure the scret manager is ready. Forming the agbot api url so that it
+			// can use the agbot secure API precheck function vaultSecretPreCheck
+			agbotApiUrl := ""
+			fullSecretName := ""
+			if secretUser == "" {
+				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/%v", nodeOrg, shortSecretName)
+				fullSecretName = fmt.Sprintf("/openhorizon/%v/%v", nodeOrg, shortSecretName)
+			} else {
+				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/user/%v/%v", nodeOrg, secretUser, shortSecretName)
+				fullSecretName = fmt.Sprintf("/openhorizon/%v/user/%v/%v", nodeOrg, secretUser, shortSecretName)
+			}
+			if err, _ := a.vaultSecretPreCheck(ec, agbotApiUrl, shortSecretName, nodeOrg, secretUser, msgPrinter); err != nil {
+				return false, "", err
+			}
+
+			// check if the bound secret exists or not
+			payload, err, _ := a.getVaultSecret(ec, shortSecretName, nodeOrg, secretUser, msgPrinter)
+			if err != nil {
+				return false, "", fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager.", fullSecretName))
+			} else if payload != nil {
+				if p, ok := payload.(map[string]bool); !ok {
+					// this should never happen, but check it just in case
+					return false, "", fmt.Errorf(msgPrinter.Sprintf("Wrong type returned checking the secret name in the secret manager: %v", payload))
+				} else if p["exists"] == false {
+					return false, msgPrinter.Sprintf("Secret %v does not exist in the secret manager.", fullSecretName), nil
+				}
+			}
+		}
+	}
+
+	return true, "", nil
 }
 
 // convert the policy check error code to http status code

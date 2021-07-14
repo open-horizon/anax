@@ -38,5 +38,4 @@ func Test_SUM_Queue(t *testing.T) {
 	assert.True(t, len(sum.PendingUpdates) == 0, "There should be 0 pending updates")
 	assert.True(t, ne.Updates[0].SecretFullName == "mysecret1", "The first secret with an update should be mysecret1")
 
-
 }

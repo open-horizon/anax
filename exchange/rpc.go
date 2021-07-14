@@ -979,9 +979,11 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 
 	if reflect.ValueOf(params).Kind() == reflect.Ptr {
 		paramValue := reflect.Indirect(reflect.ValueOf(params))
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, paramValue)))
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, paramValue)))
+		//fmt.Printf("Invoking exchange %v at %v with %v\n", method, urlPath, paramValue)
 	} else {
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params)))
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params)))
+		//fmt.Printf("Invoking exchange %v at %v with %v\n", method, urlPath, params)
 	}
 
 	requestBody := bytes.NewBuffer(nil)

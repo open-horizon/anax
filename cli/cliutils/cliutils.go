@@ -480,6 +480,26 @@ func ConfirmRemove(question string) {
 	}
 }
 
+// WithDefaultKeyFile returns the keyFile path if it has a non-blank value, or the default keys.
+func WithDefaultKeyFile(keyFile string, isPublic bool) string {
+	var err error
+
+	if keyFile != "" {
+		return keyFile
+	}
+	// get default file names if input is empty
+	if keyFile, err = GetDefaultSigningKeyFile(isPublic); err != nil {
+		Fatal(CLI_GENERAL_ERROR, err.Error())
+	// convert to absolute path
+	} else if keyFile, err = filepath.Abs(keyFile); err != nil {
+		Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Failed to get absolute path for file %v. %v", keyFile, err))
+	// check file exist
+	} else if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+		return ""
+	}
+	return keyFile
+}
+
 // WithDefaultEnvVar returns the specified flag ptr if it has a non-blank value, or the env var value.
 func WithDefaultEnvVar(flag *string, envVarName string) *string {
 	if *flag != "" {

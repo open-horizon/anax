@@ -13,6 +13,7 @@ if [ -z ${AGBOT_SAPI_URL} ]; then
   exit 0
 fi
 
+# -------------------- deployment-check api tests ------------------------- #
 COMP_RESULT=""
 
 bp_location=$(</root/input_files/compcheck/business_pol_location.json)
@@ -22,6 +23,13 @@ node_ui=`cat /root/input_files/compcheck/node_ui.json`
 pattern_sloc=`cat /root/input_files/compcheck/pattern_sloc.json`
 service_location=`cat /root/input_files/compcheck/service_location.json`
 service_locgps=`cat /root/input_files/compcheck/service_locgps.json`
+
+if [ "${HZN_VAULT}" == "true" ]; then
+  service_location=`cat /root/input_files/compcheck/service_location_secrets.json`
+  service_location_secret_extra=`cat /root/input_files/compcheck/service_location_secrets_extra.json`
+  bp_location=$(</root/input_files/compcheck/business_pol_location_secrets.json)
+  pattern_sloc=`cat /root/input_files/compcheck/pattern_sloc_secrets.json`
+fi
 
 # check the the result to see if it matches the expected http code and error
 function results {
@@ -457,13 +465,48 @@ EOF
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "User Input Incompatible"
 
-echo ""
-echo -e "${PREFIX} Start testing for vault secrets API"
-
 if [ "$HZN_VAULT" != "true" ] || [ "$NOVAULT" == "1" ]; then
-  echo -e "\n${PREFIX} Skipping agbot API tests for vault\n"
+  echo -e "\n${PREFIX} Skipping agbot API tests for secret binding and vault\n"
   exit 0
 fi
+
+# test secret binding in deploymen check
+echo -e "\n${PREFIX} test /deploycheck/secretbindingcompatible. Input: patten with secret binding, service with secret. Result: compatible."
+read -d '' comp_input <<EOF
+{
+  "pattern":          $pattern_sloc,
+  "service":          [$service_location, $service_locgps]
+}
+EOF
+run_and_check "deploycheck/secretbindingcompatible" "$comp_input" "200" ""
+check_comp_results "true" "Compatible"
+
+echo -e "\n${PREFIX} test /deploycheck/secretbindingcompatible. business policy with secret, service with secret. compatible"
+read -d '' comp_input <<EOF
+{
+  "business_policy":  $bp_location,
+  "service":          [$service_location]
+}
+EOF
+run_and_check "deploycheck/secretbindingcompatible" "$comp_input" "200" ""
+check_comp_results "true" "Compatible"
+
+
+echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: node policy, node userinput, business policy with secret, service with secret. Incompatible"
+read -d '' comp_input <<EOF
+{
+  "node_policy":      $node_policy,
+  "node_user_input":  $node_ui,
+  "business_policy":  $bp_location,
+  "service":          [$service_location_secret_extra]
+}
+EOF
+run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
+check_comp_results "false" "Secret Binding Incompatible" "No secret binding found for"
+
+# -------------------- secret api tests ------------------------- #
+echo ""
+echo -e "${PREFIX} Start testing for vault secrets API"
 
 # Later export these from /root/init_vault
 TEST_VAULT_SECRET_ORG="userdev"

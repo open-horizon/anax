@@ -81,7 +81,7 @@ const MsgUpdateTypeSecret = "basicagreementupdatesecret"
 
 type BAgreementUpdate struct {
 	*abstractprotocol.BaseProtocolMessage
-	Updatetype string        `json:"updateType"`
+	Updatetype string      `json:"updateType"`
 	Metadata   interface{} `json:"metadata,omitempty"`
 }
 

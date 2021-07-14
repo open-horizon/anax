@@ -7,13 +7,15 @@ import (
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
+	"golang.org/x/text/message"
 	"net/http"
+	"runtime"
 )
 
 //BusinessListPolicy lists all the policies in the org or only the specified policy if one is given
@@ -248,13 +250,13 @@ func verifySecretBindingForPolicy(policy *businesspolicy.BusinessPolicy, polOrg 
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// make sure the all the service secrets have bindings.
-	neededSB, redundantSB, err := common.ValidateSecretBindingForDeplPolicy(policy, ec, true, msgPrinter)
+	neededSB, extraneousSB, err := ValidateSecretBindingForDeplPolicy(policy, ec, true, msgPrinter)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to validate the secret binding. %v", err))
-	} else if redundantSB != nil && len(redundantSB) > 0 {
+	} else if extraneousSB != nil && len(extraneousSB) > 0 {
 		msgPrinter.Printf("Note: The following secret bindings are not required by any services for this deployment policy:")
 		msgPrinter.Println()
-		for _, sb := range redundantSB {
+		for _, sb := range extraneousSB {
 			fmt.Printf("  %v", sb)
 			msgPrinter.Println()
 		}
@@ -267,17 +269,128 @@ func verifySecretBindingForPolicy(policy *businesspolicy.BusinessPolicy, polOrg 
 	// make sure the vault secret exists
 	agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
 	vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
-	msgMap, err := common.VerifyVaultSecrets(neededSB, polOrg, agbotUrl, vaultSecretExists, msgPrinter)
+	msgMap, err := compcheck.VerifyVaultSecrets(neededSB, polOrg, agbotUrl, vaultSecretExists, msgPrinter)
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the vault secret. %v", err))
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the binding secret in the secret manager. %v", err))
 	} else if msgMap != nil && len(msgMap) > 0 {
-		msgPrinter.Printf("Warning: The following vault secrets cannot be verified:")
+		msgPrinter.Printf("Warning: The following binding secrets cannot be verified in the secret manager:")
 		msgPrinter.Println()
 		for vsn, msg := range msgMap {
 			fmt.Printf("  %v: %v", vsn, msg)
 			msgPrinter.Println()
 		}
 	}
+}
+
+// Validate that each service secret has a vault binding in the given deployment policy.
+// checkAllArches -- if the arch for the service is '*' or an empty string,
+//   validate the secret bindings for all the arches that have this service.
+// It does not verify if the vault secret exist in vault.
+// It returns 2 array of SecretBinding objects. One for needed and one for extraneous.
+func ValidateSecretBindingForDeplPolicy(policy *businesspolicy.BusinessPolicy,
+	ec exchange.ExchangeContext, checkAllArches bool,
+	msgPrinter *message.Printer) ([]exchangecommon.SecretBinding, []exchangecommon.SecretBinding, error) {
+
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	// validate secret bindings for all service versions defined
+	svc := policy.Service
+	secretBinding := policy.SecretBinding
+	getServiceResolvedDef := exchange.GetHTTPServiceDefResolverHandler(ec)
+	getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
+
+	index_map := map[int]map[string]bool{}
+	for _, wl := range svc.ServiceVersions {
+
+		if new_index_map, err := ValidateSecretBindingForSvcAndDep(secretBinding, svc.Org, svc.Name, wl.Version, svc.Arch,
+			checkAllArches, getServiceResolvedDef, getSelectedServices, msgPrinter); err != nil {
+			return nil, nil, err
+		} else {
+			compcheck.CombineIndexMap(index_map, new_index_map)
+		}
+	}
+
+	// group needed and extraneous secret bindings
+	neededSB, extraneousSB := compcheck.GroupSecretBindings(secretBinding, index_map)
+
+	return neededSB, extraneousSB, nil
+}
+
+// Given a top level service and an array of vault secret bindings, validate that
+// all the secrets for the service and dependent services have vault bindings.
+// It returns an index map keyed by index of the secretBinding array,
+//    the value is a map of service secret names in the binding
+//    that are needed. Using map here instead of array to make it easy to remove the
+//    duplicates.
+//    It also returns a map of dependent services keyed by the service id, the top
+//    level service definition and id.
+//
+// checkAllArches -- if the arch for the service is '*' or an empty string,
+// validate the secret bindings for all the arches that have this service.
+// It does not verify that the vault secret actually exists or not.
+func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBinding,
+	serviceOrg, serviceName, serviceVersion, serviceArch string, checkAllArches bool,
+	getServiceResolvedDef exchange.ServiceDefResolverHandler,
+	getSelectedServices exchange.SelectedServicesHandler,
+	msgPrinter *message.Printer) (map[int]map[string]bool, error) {
+
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	// map: keyed by index of the secretBinding array, the value is a map of
+	// service secret names in the binding that are needed, i.e. not extraneous.
+	//    map[index]map[service_secret_names]bool
+	ret := map[int]map[string]bool{}
+
+	arches := []string{}
+	if serviceArch == "" || serviceArch == "*" {
+		if checkAllArches {
+			// include all the arches
+			if svcMeta, err := getSelectedServices(serviceName, serviceOrg, serviceVersion, ""); err != nil {
+				return ret, fmt.Errorf(msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all archetctures. %v", serviceOrg, serviceName, serviceVersion, err))
+			} else {
+				for _, svc := range svcMeta {
+					arches = append(arches, svc.Arch)
+				}
+			}
+		} else {
+			// just include the service with current node arch
+			arches = append(arches, runtime.GOARCH)
+		}
+	} else {
+		arches = append(arches, serviceArch)
+	}
+
+	for _, arch := range arches {
+		svc_map, sDef, sId, err := getServiceResolvedDef(serviceName, serviceOrg, serviceVersion, arch)
+		if err != nil {
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Error retrieving service %v/%v version %v from the Exchange. %v", serviceOrg, serviceName, serviceVersion, err))
+		} else {
+			// check top level service
+			if index, neededSb, err := compcheck.ValidateSecretBindingForSingleService(secretBinding, &compcheck.ServiceDefinition{Org: serviceOrg, ServiceDefinition: *sDef}, msgPrinter); err != nil {
+				return ret, fmt.Errorf(msgPrinter.Sprintf("Error validating secret bindings for service %v. %v", sId, err))
+			} else {
+				compcheck.UpdateIndexMap(ret, index, neededSb)
+			}
+
+			// check the dependent services
+			for id, s := range svc_map {
+				sOrg := exchange.GetOrg(id)
+				if index, neededSb, err := compcheck.ValidateSecretBindingForSingleService(secretBinding, &compcheck.ServiceDefinition{Org: sOrg, ServiceDefinition: s}, msgPrinter); err != nil {
+					return ret, fmt.Errorf(msgPrinter.Sprintf("Error validating secret bindings for dependent service %v. %v", id, err))
+				} else {
+					compcheck.UpdateIndexMap(ret, index, neededSb)
+				}
+			}
+		}
+	}
+
+	return ret, nil
 }
 
 // Display an empty business policy template as an object.
