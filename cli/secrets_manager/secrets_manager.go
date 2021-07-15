@@ -3,6 +3,7 @@ package secrets_manager
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/i18n"
 	"io/ioutil"
@@ -30,7 +31,7 @@ func printResponse(resp []byte, structure interface{}) {
 	// print the parsed structure
 	jsonBytes, jerr := json.MarshalIndent(structure, "", cliutils.JSON_INDENT)
 	if jerr != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'exchange node list' output: %v", jerr))
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'agbot API' output: %v", jerr))
 	}
 	fmt.Printf("%s\n", jsonBytes)
 }
@@ -69,7 +70,7 @@ func SecretList(org, credToUse, secretName string) {
 	// query the agbot secure api
 	var resp []byte
 	listQuery := func() int {
-		return cliutils.AgbotGet("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
+		return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
 			[]int{200, 401, 403, 404, 503}, &resp)
 	}
 	retCode := queryWithRetry(listQuery, 3, 1)
@@ -89,7 +90,8 @@ func SecretList(org, credToUse, secretName string) {
 	// parse and print the response
 	if retCode == 401 || retCode == 403 || retCode == 503 {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, string(resp))
-	} else if isSecretDirectory { // list org/user secrets
+	} else if isSecretDirectory {
+		// list org/user secrets
 		if retCode == 200 {
 			// list secrets
 			var secrets []string
@@ -98,18 +100,24 @@ func SecretList(org, credToUse, secretName string) {
 			// no secrets found in the organization or user's directory
 			fmt.Println("[]")
 		}
-	} else { // secret name provided, exists/does not exist
+	} else {
+		// secret name provided, exists/does not exist
+		// if the secret does not exist, exit with a non-zero return code
 		if retCode == 200 {
 			var secret SecretResponse
 			printResponse(resp, &secret)
+			if !secret.Exists {
+				os.Exit(1)
+			}
 		} else if retCode == 404 {
 			// secret doesn't exist, output exists: false for consistency
 			secretDNE := SecretResponse{false}
 			jsonBytes, jerr := json.MarshalIndent(secretDNE, "", cliutils.JSON_INDENT)
 			if jerr != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'exchange node list' output: %v", jerr))
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'agbot API' output: %v", jerr))
 			}
 			fmt.Printf("%s\n", jsonBytes)
+			os.Exit(1)
 		}
 	}
 
@@ -133,7 +141,7 @@ func SecretAdd(org, credToUse, secretName, secretFile, secretKey, secretDetail s
 	secretExists := false
 	var resp []byte
 	checkQuery := func() int {
-		return cliutils.AgbotGet("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
+		return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
 			[]int{200, 401, 403, 404, 503}, &resp)
 	}
 	retCode := queryWithRetry(checkQuery, 3, 1)
@@ -218,4 +226,27 @@ func SecretRemove(org, credToUse, secretName string) {
 	} else if retCode == 503 {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Vault component not found in the management hub."))
 	}
+}
+
+// Pulls secret details from the secrets manager. If the secret does not exist, an error (fatal) is raised
+func SecretRead(org, credToUse, secretName string) {
+	// query the agbot secure api
+	var resp []byte
+	listQuery := func() int {
+		return cliutils.AgbotGet("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
+			[]int{200, 401, 403, 404, 503}, &resp)
+	}
+	retCode := queryWithRetry(listQuery, 3, 1)
+
+	// parse and print the response
+	if retCode == 401 || retCode == 403 || retCode == 404 || retCode == 503 {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, string(resp))
+	} else {
+		// retCode == 200
+		var secretDetails secrets.SecretDetails
+
+		// parse and print the response 
+		printResponse(resp, &secretDetails)
+	}
+
 }

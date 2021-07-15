@@ -525,14 +525,14 @@ LIST_ORG_SECRETS="org/${TEST_VAULT_SECRET_ORG}/secrets"
 CREATE_ORG_SECRETS="org/${TEST_VAULT_SECRET_ORG}/secrets/secret1"
 DELETE_ORG_SECRETS="org/${TEST_VAULT_SECRET_ORG}/secrets/secret1"
 
-echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET"
-CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}"
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} LIST"
+CMD="curl -sLX LIST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "200" "exists" "false"
 
-echo -e "\n${PREFIX} test ${LIST_ORG_SECRETS} GET"
-CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRETS}"
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRETS} LIST"
+CMD="curl -sLX LIST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRETS}"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "200" "${TEST_VAULT_SECRET_NAME}"
@@ -543,14 +543,14 @@ echo "$CMD"
 RES=$(curl -sLX POST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} -d "${create_secret}" ${AGBOT_SAPI_URL}/${CREATE_ORG_SECRETS})
 results "$RES" "201" ""
 
-echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET"
-CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}1"
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} LIST"
+CMD="curl -sLX LIST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}1"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "200" "exists" "true"
 
-echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET"
-CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}_wrong"
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} LIST"
+CMD="curl -sLX LIST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}_wrong"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "200" "false"
@@ -561,14 +561,14 @@ echo "$CMD"
 RES=$($CMD)
 results "$RES" "401" "Failed to authenticate"
 
-echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with invalid secret and secret org"
-CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}_wrong"
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} LIST with invalid secret and secret org"
+CMD="curl -sLX LIST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}_wrong"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "200" "exists" "false"
 
-echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with invalid org"
-CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/org/${TEST_VAULT_SECRET_ORG}_wrong/secrets"
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} LIST with invalid org"
+CMD="curl -sLX LIST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/org/${TEST_VAULT_SECRET_ORG}_wrong/secrets"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "403" ""
@@ -579,8 +579,8 @@ echo "$CMD"
 RES=$($CMD)
 results "$RES" "204" ""
 
-echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with deleted secret"
-CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}1"
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} LIST with deleted secret"
+CMD="curl -sLX LIST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}1"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "200" "exists" "false"
