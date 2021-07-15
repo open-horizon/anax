@@ -42,7 +42,6 @@ func (a *AuthenticationManager) CreateCredential(key string, id string, ver stri
 	if err != nil {
 		return errors.New("unable to generate new authentication token")
 	}
-
 	fileName := path.Join(a.GetCredentialPath(key), config.HZN_FSS_AUTH_FILE)
 	// For insecure creds (when secureCreds set to false), the group is not needed because the file permissions will be universal.
 
