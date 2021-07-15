@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -76,19 +77,53 @@ func (f *HTTPClientFactory) WrappedNewHTTPClient() func(*uint) *http.Client {
 	}
 }
 
-// TODO: use a pool of clients instead of creating them forevar
+// TODO: use a pool of clients instead of creating them forever
 func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
-	var caBytes []byte
+	var derCerts, pemCerts []byte
+	var cerCerts [][]byte
 	var mgmtHubBytes []byte
 	var cssCaBytes []byte
 
 	if hConfig.Edge.CACertsPath != "" {
 		var err error
-		caBytes, err = ioutil.ReadFile(hConfig.Edge.CACertsPath)
+		err = filepath.Walk(hConfig.Edge.CACertsPath,
+			func(path string, f os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if !f.IsDir() {
+					ext := filepath.Ext(path)
+					ok := func(ext string) bool {
+						extensions := []string{".der", ".pem", ".crt", ".cer"}
+						for _, extension := range extensions {
+							if ext == extension {
+								return true
+							}
+						}
+						return false
+					}(ext)
+					if ok {
+						caBytes, err := ioutil.ReadFile(path)
+						if err != nil {
+							return fmt.Errorf("Failed to read CACertsFile: %v", path)
+						}
+						switch ext {
+						case ".der":
+							derCerts = append(derCerts, caBytes...)
+						case ".pem":
+							pemCerts = append(pemCerts, caBytes...)
+						case ".cer", ".crt":
+							cerCerts = append(cerCerts, caBytes)
+
+						}
+						glog.V(4).Infof("Read CA certs from provided file %v", path)
+					}
+				}
+				return nil
+			})
 		if err != nil {
-			return nil, fmt.Errorf("Failed to read CACertsFile: %v", hConfig.Edge.CACertsPath)
+			return nil, fmt.Errorf("Failed to read CACertsFiles from: %v", hConfig.Edge.CACertsPath)
 		}
-		glog.V(4).Infof("Read CA certs from provided file %v", hConfig.Edge.CACertsPath)
 	}
 
 	// A custom TLS certificate can be set in the /var/default/horizon file. Anax sees this value as
@@ -138,8 +173,28 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 		certPool = x509.NewCertPool()
 	}
 
-	if len(caBytes) != 0 {
-		certPool.AppendCertsFromPEM(caBytes)
+	if len(pemCerts) != 0 {
+		certPool.AppendCertsFromPEM(pemCerts)
+	}
+	if len(derCerts) != 0 {
+		derCerts, _ := x509.ParseCertificates(derCerts)
+		if derCerts != nil {
+			for _, derCert := range derCerts {
+				certPool.AddCert(derCert)
+			}
+		}
+	}
+	if len(cerCerts) != 0 {
+		for _, caBytes := range cerCerts {
+			if len(caBytes) != 0 {
+				if ok := certPool.AppendCertsFromPEM(caBytes); !ok {
+					cerCert, _ := x509.ParseCertificate(caBytes)
+					if cerCert != nil {
+						certPool.AddCert(cerCert)
+					}
+				}
+			}
+		}
 	}
 	if len(mgmtHubBytes) != 0 {
 		certPool.AppendCertsFromPEM(mgmtHubBytes)
