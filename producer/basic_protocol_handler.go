@@ -15,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
 )
 
@@ -163,12 +164,17 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 				// Store the secret updates in the agent DB.
 				allSecrets := persistence.PersistedSecretFromPolicySecret(updatedSecrets, update.AgreementId())
 
+				secManager := resource.NewSecretsManager(c.BaseProducerProtocolHandler.config.GetSecretsManagerFilePath(), c.db)
+
 				for _, secToSave := range allSecrets {
 					if msDef, err := microservice.FindOrCreateMicroserviceDef(c.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, secToSave.SvcArch, exchange.GetHTTPServiceHandler(c.ec)); err != nil {
 						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to find microservices defs for secret update %v, error: %v", update.AgreementId(), update.Metadata, err)))
 						acceptedUpdate = false
 					} else if err = persistence.SaveSecret(c.db, secToSave.SvcSecretName, msDef.Id, msDef.Version, &secToSave); err != nil {
 						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to persist secret update %v, error: %v", update.AgreementId(), update.Metadata, err)))
+						acceptedUpdate = false
+					} else if err = secManager.UpdateServiceSecrets(msDef.Id, secToSave); err != nil {
+						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to update secret in agent filesystem %v, error: %v", update.AgreementId(), update.Metadata, err)))
 						acceptedUpdate = false
 					}
 				}
