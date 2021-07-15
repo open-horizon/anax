@@ -394,6 +394,7 @@ func ConvertCommon(p *Pattern, patternId string, dv DataVerification, nodeh Node
 // Structs and types for working with pattern based exchange searches
 type SearchExchangePatternRequest struct {
 	ServiceURL   string   `json:"serviceUrl,omitempty"`
+	Arch         string   `json:"arch,omitempty"`
 	NodeOrgIds   []string `json:"nodeOrgids,omitempty"`
 	SecondsStale int      `json:"secondsStale"`
 	NumEntries   int      `json:"numEntries"`
