@@ -285,28 +285,10 @@ macpkginfo:
 
 anax-image:
 	@echo "Producing anax docker image $(ANAX_IMAGE)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "s390x" || $(arch) == "arm64" ]]; then \
-	  rm -rf $(ANAX_CONTAINER_DIR)/anax; \
-	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
-	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
-	  cp $(CLI_EXECUTABLE) $(ANAX_CONTAINER_DIR); \
-	  cp -f $(LICENSE_FILE) $(ANAX_CONTAINER_DIR); \
-	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_IMAGE_LABELS) -t $(ANAX_IMAGE) -f Dockerfile.ubi.$(arch) . && \
-	  docker tag $(ANAX_IMAGE) $(ANAX_IMAGE_STG); \
-	else echo "Building the anax docker image is not supported on $(arch)"; fi
-
+	bash image_bld.sh anax $(ANAX_IMAGE) $(ANAX_IMAGE_LABELS) $(DOCKER_MAYBE_CACHE) $(ANAX_IMAGE_STG)
 agbot-image:
 	@echo "Producing agbot docker image $(AGBOT_IMAGE)"
-	if [[ $(arch) == "amd64" ]]; then \
-	  rm -rf $(ANAX_CONTAINER_DIR)/anax; \
-	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
-	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
-	  cp $(CLI_EXECUTABLE) $(ANAX_CONTAINER_DIR); \
-	  cp -f $(LICENSE_FILE) $(ANAX_CONTAINER_DIR); \
-	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(AGBOT_IMAGE_LABELS) -t $(AGBOT_IMAGE) -f Dockerfile_agbot.ubi . && \
-	  docker tag $(AGBOT_IMAGE) $(AGBOT_IMAGE_STG); \
-	else echo "Building the agbot docker image is not supported on $(arch)"; fi
-
+	bash image_bld.sh agbot $(AGBOT_IMAGE) $(AGBOT_IMAGE_LABELS) $(DOCKER_MAYBE_CACHE) $(AGBOT_IMAGE_STG)
 # Pushes the docker image with the staging tag
 docker-push-only:
 	@echo "Pushing anax docker image $(ANAX_IMAGE)"
@@ -323,28 +305,15 @@ docker-push: anax-image docker-push-only agbot-image agbot-push-only
 # you must set ANAX_IMAGE_VERSION to the correct version for promotion to production
 promote-anax:
 	@echo "Promoting $(ANAX_IMAGE)"
-	docker pull $(ANAX_IMAGE)
-	docker tag $(ANAX_IMAGE) $(ANAX_IMAGE_PROD)
-	docker push $(ANAX_IMAGE_PROD)
-	docker tag $(ANAX_IMAGE) $(ANAX_IMAGE_LATEST)
-	docker push $(ANAX_IMAGE_LATEST)
+	bash promote_image.sh $(ANAX_IMAGE) $(ANAX_IMAGE_PROD) $(ANAX_IMAGE_LATEST)
 
 # you must set ANAX_IMAGE_VERSION to the correct version for promotion to production
 promote-agbot:
 	@echo "Promoting $(AGBOT_IMAGE)"
-	docker pull $(AGBOT_IMAGE)
-	docker tag $(AGBOT_IMAGE) $(AGBOT_IMAGE_PROD)
-	docker push $(AGBOT_IMAGE_PROD)
-	docker tag $(AGBOT_IMAGE) $(AGBOT_IMAGE_LATEST)
-	docker push $(AGBOT_IMAGE_LATEST)
-
+	bash promote_image.sh $(AGBOT_IMAGE) $(AGBOT_IMAGE_PROD) $(AGBOT_IMAGE_LATEST)
 promote-anax-k8s:
 	@echo "Promoting $(ANAX_K8S_IMAGE)"
-	docker pull $(ANAX_K8S_IMAGE)
-	docker tag $(ANAX_K8S_IMAGE) $(ANAX_K8S_IMAGE_PROD)
-	docker push $(ANAX_K8S_IMAGE_PROD)
-	docker tag $(ANAX_K8S_IMAGE) $(ANAX_K8S_IMAGE_LATEST)
-	docker push $(ANAX_K8S_IMAGE_LATEST)
+	bash promote_image.sh $(ANAX_K8S_IMAGE) $(ANAX_K8S_IMAGE_PROD) $(ANAX_K8S_IMAGE_LATEST)
 
 anax-package: anax-image
 	@echo "Packaging anax image"
@@ -367,14 +336,8 @@ agbot-package: agbot-image
 	fi
 
 anax-k8s-image: anax-k8s-clean
-	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
-	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
-	cp -f $(LICENSE_FILE) $(ANAX_K8S_CONTAINER_DIR)
-	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" ]]; then \
-		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_LABELS) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi.$(arch) .; \
-	fi
-	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
+	@echo "Producing anax-k8s docker image $(ANAX_K8S_IMAGE)"
+	bash image_bld.sh anax-k8s $(ANAX_K8S_IMAGE) $(ANAX_K8S_IMAGE_LABELS) $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_STG)
 
 anax-k8s-package: anax-k8s-image
 	@echo "Packaging anax-k8s container"
@@ -388,33 +351,17 @@ anax-k8s-package: anax-k8s-image
 
 css-docker-image: css-clean
 	@echo "Producing CSS docker image $(CSS_IMAGE)"
-	if [[ $(arch) == "amd64" ]]; then \
-		cp -f $(LICENSE_FILE) $(CSS_CONTAINER_DIR); \
-		cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
-		docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
-	else echo "Building the CSS docker image is not supported on $(arch)"; fi
-
+	bash image_bld.sh css-docker $(CSS_IMAGE) $(CSS_IMAGE_LABELS) $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_STG)
 promote-css:
 	@echo "Promoting $(CSS_IMAGE)"
-	docker pull $(CSS_IMAGE)
-	docker tag $(CSS_IMAGE) $(CSS_IMAGE_PROD)
-	docker push $(CSS_IMAGE_PROD)
-	docker tag $(CSS_IMAGE) $(CSS_IMAGE_LATEST)
-	docker push $(CSS_IMAGE_LATEST)
-
+	bash promote_image.sh $(CSS_IMAGE) $(CSS_IMAGE_PROD) $(CSS_IMAGE_LATEST)
 ess-docker-image: ess-clean
 	@echo "Producing ESS docker image $(ESS_IMAGE)"
-	cp -f $(LICENSE_FILE) $(ESS_CONTAINER_DIR)
-	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ESS_IMAGE_LABELS) -t $(ESS_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
-	docker tag $(ESS_IMAGE) $(ESS_IMAGE_STG); \
+	bash image_bld.sh ess-docker $(ESS_IMAGE) $(ESS_IMAGE_LABELS) $(DOCKER_MAYBE_CACHE) $(ESS_IMAGE_STG)
 
 ess-promote:
 	@echo "Promoting $(ESS_IMAGE)"
-	docker pull $(ESS_IMAGE)
-	docker tag $(ESS_IMAGE) $(ESS_IMAGE_PROD)
-	docker push $(ESS_IMAGE_PROD)
-	docker tag $(ESS_IMAGE) $(ESS_IMAGE_LATEST)
-	docker push $(ESS_IMAGE_LATEST)
+	bash promote_image.sh $(ESS_IMAGE) $(ESS_IMAGE_PROD) $(ESS_IMAGE_LATEST)
 
 # This target should be used by developers working on anax, to build the ESS and CSS containers for the anax test environment.
 # These containers only need to be rebuilt when either the authentication plugin changes or when anax rebases on a new level/tag
