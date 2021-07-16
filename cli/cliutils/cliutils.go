@@ -490,10 +490,10 @@ func WithDefaultKeyFile(keyFile string, isPublic bool) string {
 	// get default file names if input is empty
 	if keyFile, err = GetDefaultSigningKeyFile(isPublic); err != nil {
 		Fatal(CLI_GENERAL_ERROR, err.Error())
-	// convert to absolute path
+		// convert to absolute path
 	} else if keyFile, err = filepath.Abs(keyFile); err != nil {
 		Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Failed to get absolute path for file %v. %v", keyFile, err))
-	// check file exist
+		// check file exist
 	} else if _, err := os.Stat(keyFile); os.IsNotExist(err) {
 		return ""
 	}

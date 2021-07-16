@@ -43,7 +43,7 @@ type SecretDetails struct {
 }
 
 func (m SecretDetails) String() string {
-	return fmt.Sprintf("Key: %v, Value: ********", m.Key, m.Value)
+	return fmt.Sprintf("Key: %v, Value: ********", m.Key)
 }
 
 type SecretMetadata struct {

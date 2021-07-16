@@ -210,13 +210,15 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 					// Is the current agreement affected by secrets that have changed? If so, return the secrets that have changed.
 					var updatedSecrets []string
+					var newestUpdateTime uint64
 					if ag.Pattern != "" {
-						updatedSecrets = secretUpdates.GetUpdatedSecretsForPattern(ag.Pattern)
+						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPattern(ag.Pattern, ag.LastSecretUpdateTime)
 					} else {
-						updatedSecrets = secretUpdates.GetUpdatedSecretsForPolicy(ag.PolicyName)
+						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPolicy(ag.PolicyName, ag.LastSecretUpdateTime)
 					}
 
-					if len(updatedSecrets) != 0 {
+					// If there are secret updates for this agreement AND the agreement has not seen these updates yet, then process them for this agreement.
+					if len(updatedSecrets) != 0 && ag.LastSecretUpdateTime < newestUpdateTime {
 
 						// Extract the consumer policy from agreement.
 						pol, err := policy.DemarshalPolicy(ag.Policy)
@@ -227,7 +229,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 						// Collect the updated secrets into a list of new secret bindings to send to the agent.
 						updatedBindings := make([]exchangecommon.SecretBinding, 0)
 
-						glog.V(5).Infof(logString(fmt.Sprintf("handling %s with %v for updated secrets %v", ag.CurrentAgreementId, pol.SecretBinding, updatedSecrets)))
+						glog.V(3).Infof(logString(fmt.Sprintf("handling %s with %v for updated secrets %v, newest update time %v", ag.CurrentAgreementId, pol.SecretBinding, updatedSecrets, newestUpdateTime)))
 
 						for _, binding := range pol.SecretBinding {
 
@@ -253,13 +255,13 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 										details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), ag.Org, secretUser, secretName)
 										if err != nil {
-											glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", secretName, ag.PolicyName, err)))
+											glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
 											continue
 										}
 
 										detailBytes, err := json.Marshal(details)
 										if err != nil {
-											glog.Errorf(logString(fmt.Sprintf("error marshalling secret details %v for policy %v, service %v/%v %v, error: %v", secretName, ag.PolicyName, err)))
+											glog.Errorf(logString(fmt.Sprintf("error marshalling secret details of %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
 											continue
 										}
 
@@ -268,7 +270,6 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 										sb.Secrets = append(sb.Secrets, newBS)
 										bindingUpdate = true
 
-										glog.V(5).Infof(logString(fmt.Sprintf("collected new details: %v", sb.Secrets)))
 										break
 									}
 								}
@@ -285,6 +286,10 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 						// Send the Update Agreement protocol message
 						protocolHandler.UpdateAgreement(&ag, basicprotocol.MsgUpdateTypeSecret, updatedBindings, protocolHandler)
 
+						if _, err := w.db.AgreementSecretUpdateTime(ag.CurrentAgreementId, agp, newestUpdateTime); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to save secret update time for %s, error: %v", ag.CurrentAgreementId, err)))
+						}
+
 					}
 				}
 			}
@@ -297,6 +302,8 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 	// After processing all agreements, update the agbot's secret manager DB to indicate that all secrets have been processed.
 	if secretUpdates != nil {
 		for _, su := range secretUpdates.Updates {
+			glog.V(5).Infof(logString(fmt.Sprintf("updating secret DB %s/%s with time %v", su.SecretOrg, su.SecretFullName, su.SecretUpdateTime)))
+
 			err := w.db.SetSecretUpdate(su.SecretOrg, su.SecretFullName, su.SecretUpdateTime)
 			if err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to save secret update time for %s/%s, error: %v", su.SecretOrg, su.SecretFullName, err)))
