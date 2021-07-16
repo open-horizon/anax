@@ -1150,3 +1150,22 @@ func NewPolicyCompError1(err error) *PolicyCompError {
 		Err: err.Error(),
 	}
 }
+
+func ObscureSecretDetails(proposal *string) error {
+	var err error
+	var pol *Policy
+	if pol, err = DemarshalPolicy(*proposal); err != nil {
+		return err
+	}
+	for _, secretBinding := range pol.SecretDetails {
+		for _, secret := range secretBinding.Secrets {
+			for secretName := range secret {
+				secret[secretName] = "********"
+			}
+		}
+	}
+	if *proposal, err = MarshalPolicy(pol); err != nil {
+		return err
+	}
+	return nil
+}
