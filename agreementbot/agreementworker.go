@@ -462,13 +462,13 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			workload.Arch = exchangeDev.Arch
 		}
 
-		depServices, workloadDetails, sIdTop, err := exchange.GetHTTPServiceDefResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+		asl, workloadDetails, sIds, err := exchange.GetHTTPServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 		if err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
 			return
 		}
-		asl := exchange.CreateAPISpecListFromServiceDef(depServices)
 		topSvcDef := compcheck.ServiceDefinition{Org: workload.Org, ServiceDefinition: *workloadDetails}
+		sIdTop := sIds[0]
 
 		// Do not make proposals for services without a deployment configuration got its node type.
 		t_comp, t_reason := compcheck.CheckTypeCompatibility(nodeType, &topSvcDef, msgPrinter)
@@ -479,7 +479,6 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 		// zero out the dependent services for cluster type
 		if nodeType == persistence.DEVICE_TYPE_CLUSTER {
-			depServices = map[string]exchange.ServiceDefinition{}
 			asl = new(policy.APISpecList)
 		}
 
@@ -504,6 +503,13 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 					}
 				}
 			}
+		}
+
+		// get dependent service definitions for later use
+		depServices, _, _, err := exchange.GetHTTPServiceDefResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+		if err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for dependent service details for %v, error: %v", workload, err)))
+			return
 		}
 
 		// check if merged producer policy matches the consumer policy
@@ -641,10 +647,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			foundWorkload = true
 
 			// copy all the service ids
-			svcIds = []string{sIdTop}
-			for sId, _ := range depServices {
-				svcIds = append(svcIds, sId)
-			}
+			svcIds = make([]string, len(sIds))
+			copy(svcIds, sIds)
 
 			// if this service policy is not from the policy manager cache, then send a message to pass the service policy back
 			// so that the business policy manager will save it.
