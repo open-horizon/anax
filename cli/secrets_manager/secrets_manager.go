@@ -245,7 +245,7 @@ func SecretRead(org, credToUse, secretName string) {
 		// retCode == 200
 		var secretDetails secrets.SecretDetails
 
-		// parse and print the response 
+		// parse and print the response
 		printResponse(resp, &secretDetails)
 	}
 

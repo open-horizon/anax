@@ -56,36 +56,44 @@ func (sus *SecretUpdates) Length() int {
 
 // Returns a list of the fully qualified secret names that have change recently, which are used/referenced
 // by the input policy.
-func (sus *SecretUpdates) GetUpdatedSecretsForPolicy(policyName string) []string {
+func (sus *SecretUpdates) GetUpdatedSecretsForPolicy(policyName string, lastUpdateTime uint64) (uint64, []string) {
 
 	res := make([]string, 0)
+	newestUpdate := uint64(0)
 
 	if policyName == "" {
-		return res
+		return newestUpdate, res
 	}
 
 	for _, su := range sus.Updates {
-		if cutil.SliceContains(su.PolicyNames, policyName) {
+		if cutil.SliceContains(su.PolicyNames, policyName) && uint64(su.SecretUpdateTime) > lastUpdateTime {
+			if uint64(su.SecretUpdateTime) > newestUpdate {
+				newestUpdate = uint64(su.SecretUpdateTime)
+			}
 			res = append(res, fmt.Sprintf("%s/%s", su.SecretOrg, su.SecretFullName))
 		}
 	}
-	return res
+	return newestUpdate, res
 
 }
 
-func (sus *SecretUpdates) GetUpdatedSecretsForPattern(patternName string) []string {
+func (sus *SecretUpdates) GetUpdatedSecretsForPattern(patternName string, lastUpdateTime uint64) (uint64, []string) {
 
 	res := make([]string, 0)
+	newestUpdate := uint64(0)
 
 	if patternName == "" {
-		return res
+		return newestUpdate, res
 	}
 
 	for _, su := range sus.Updates {
-		if cutil.SliceContains(su.PatternNames, patternName) {
+		if cutil.SliceContains(su.PatternNames, patternName) && uint64(su.SecretUpdateTime) > lastUpdateTime {
+			if uint64(su.SecretUpdateTime) > newestUpdate {
+				newestUpdate = uint64(su.SecretUpdateTime)
+			}
 			res = append(res, fmt.Sprintf("%s/%s", su.SecretOrg, su.SecretFullName))
 		}
 	}
-	return res
+	return newestUpdate, res
 
 }

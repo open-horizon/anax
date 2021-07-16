@@ -31,9 +31,9 @@ func NewSecretsManager(secFilePath string, database *bolt.DB) *SecretsManager {
 func (s SecretsManager) UpdateServiceSecrets(msDefId string, updatedSec persistence.PersistedServiceSecret) error {
 	// Need the list of agreement ids from the saved secret
 	if savedSec, err := persistence.FindSingleSecretForService(s.db, updatedSec.SvcSecretName, msDefId); err != nil {
-		return err 
+		return err
 	} else if contentBytes, err := base64.StdEncoding.DecodeString(updatedSec.SvcSecretValue); err != nil {
-		return err 
+		return err
 	} else {
 		for _, agId := range savedSec.AgreementIds {
 			err = WriteToFile(contentBytes, path.Join(s.SecretsStorePath, agId, updatedSec.SvcSecretName), path.Join(s.SecretsStorePath, agId))
