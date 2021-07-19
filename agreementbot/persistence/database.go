@@ -41,6 +41,8 @@ type AgbotDatabase interface {
 	AgreementBlockchainUpdate(agreementId string, consumerSig string, hash string, counterParty string, signature string, protocol string) (*Agreement, error)
 	AgreementBlockchainUpdateAck(agreementId string, protocol string) (*Agreement, error)
 	AgreementTimedout(agreementid string, protocol string) (*Agreement, error)
+	AgreementSecretUpdateTime(agreementid string, protocol string, secretUpdateTime uint64) (*Agreement, error)
+	AgreementSecretUpdateAckTime(agreementid string, protocol string, secretUpdateAckTime uint64) (*Agreement, error)
 
 	DataNotification(agreementid string, protocol string) (*Agreement, error)
 	DataVerified(agreementid string, protocol string) (*Agreement, error)

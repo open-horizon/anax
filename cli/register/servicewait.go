@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cli/deploycheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"strings"
@@ -37,7 +38,7 @@ func CheckService(name string, org string, arch string, version string, nodeType
 	// Check in the service type
 	for _, s := range services.Services {
 		serviceType := s.GetServiceType()
-		return nodeType == serviceType || serviceType == exchange.SERVICE_TYPE_BOTH
+		return nodeType == serviceType || serviceType == exchangecommon.SERVICE_TYPE_BOTH
 	}
 	return false
 }

@@ -1,6 +1,7 @@
 package exchange
 
 import (
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"reflect"
 	"testing"
@@ -151,9 +152,9 @@ func TestCopy(t *testing.T) {
 	}
 
 	hwReq := map[string]interface{}{"cpu": 4, "camera": "yes"}
-	svcDep := []ServiceDependency{ServiceDependency{URL: "supportservice", Org: "userdev", Version: "2.3.4", VersionRange: "[1.3.2,4.2.3)", Arch: "amd64"},
-		ServiceDependency{URL: "supportservice2", Org: "userdev", Version: "2.3.7", VersionRange: "[1.3.2,4.2.3)", Arch: "amd64"}}
-	userIn := []UserInput{UserInput{Name: "input1", Label: "input for service", Type: "string", DefaultValue: "Mexico City"}, UserInput{Name: "input2", Label: "input for service", Type: "string", DefaultValue: "Caracas"}}
+	svcDep := []exchangecommon.ServiceDependency{exchangecommon.ServiceDependency{URL: "supportservice", Org: "userdev", Version: "2.3.4", VersionRange: "[1.3.2,4.2.3)", Arch: "amd64"},
+		exchangecommon.ServiceDependency{URL: "supportservice2", Org: "userdev", Version: "2.3.7", VersionRange: "[1.3.2,4.2.3)", Arch: "amd64"}}
+	userIn := []exchangecommon.UserInput{exchangecommon.UserInput{Name: "input1", Label: "input for service", Type: "string", DefaultValue: "Mexico City"}, exchangecommon.UserInput{Name: "input2", Label: "input for service", Type: "string", DefaultValue: "Caracas"}}
 	svc1 := ServiceDefinition{Owner: "userdev", Label: "newservice", Description: "A service definition", Documentation: "this is a service definition", Public: true, URL: "helloworld",
 		Version: "0.0.1", Arch: "amd64", Sharable: "singleton", Deployment: "a long string", DeploymentSignature: "the deployment signature", ClusterDeployment: "a cluster deployment",
 		ClusterDeploymentSignature: "a cluster deployment signature", LastUpdated: "now", MatchHardware: hwReq, RequiredServices: svcDep, UserInputs: userIn}

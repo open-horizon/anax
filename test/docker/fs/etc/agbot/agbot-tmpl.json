@@ -44,6 +44,7 @@
         "AgreementBatchSize": 1300,
         "RetryLookBackWindow": 900,
         "MMSGarbageCollectionInterval": 20,
+        "SecretsUpdateCheck": 15,
         "Vault": {
             "VaultURL": "${HZN_VAULT_URL}"
         }

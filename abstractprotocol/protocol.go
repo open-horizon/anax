@@ -586,12 +586,14 @@ func MarshalProposal(prop Proposal) (string, error) {
 }
 
 func ObscureProposalSecret(proposal string) (string, error) {
-	if prop, err := DemarshalProposal(proposal); err != nil {
-		return "", err
-	} else if err := policy.ObscureSecretDetails(&prop.(*BaseProposal).TsandCs); err != nil {
-		return "", err
-	} else if proposal, err = MarshalProposal(prop); err != nil {
-		return "", err
+	if proposal != "" {
+		if prop, err := DemarshalProposal(proposal); err != nil {
+			return "", err
+		} else if prop.(*BaseProposal).TsandCs, err = policy.ObscureSecretDetails(prop.(*BaseProposal).TsandCs); err != nil {
+			return "", err
+		} else if proposal, err = MarshalProposal(prop); err != nil {
+			return "", err
+		}
 	}
 	return proposal, nil
 }

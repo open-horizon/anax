@@ -3,13 +3,11 @@ package resource
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
 	"io/ioutil"
@@ -30,32 +28,15 @@ func NewSecretsManager(secFilePath string, database *bolt.DB) *SecretsManager {
 }
 
 // This is for updating service secrets. This assumes that the updated secrets are already updated in the agent db.
-func (s SecretsManager) UpdateServiceSecrets(depDesc *containermessage.DeploymentDescription, agId string) error {
-	if depDesc == nil || depDesc.Services == nil {
-		return nil
-	}
-	for svcName, svc := range depDesc.Services {
-		if svc != nil && svc.Secrets != nil {
-			for secName, sec := range svc.Secrets {
-				if s.db != nil {
-					secretsFromDB, err := persistence.FindAllServiceSecretsWithSpecs(s.db, sec.SvcUrl, sec.SvcOrg, sec.SvcVersionRange)
-					if err != nil {
-						return err
-					}
-					for _, allSecretsForService := range secretsFromDB {
-						if secret, ok := allSecretsForService.SecretsMap[secName]; ok {
-							secretBytes, err := json.Marshal(secret)
-							if err != nil {
-								return err
-							}
-							err = WriteToFile(secretBytes, getSecretsKey(svcName, secName), path.Join(s.SecretsStorePath, agId, svcName, secName), path.Join(s.SecretsStorePath, agId, svcName))
-							if err != nil {
-								return err
-							}
-						}
-					}
-				}
-			}
+func (s SecretsManager) UpdateServiceSecrets(msDefId string, updatedSec persistence.PersistedServiceSecret) error {
+	// Need the list of agreement ids from the saved secret
+	if savedSec, err := persistence.FindSingleSecretForService(s.db, updatedSec.SvcSecretName, msDefId); err != nil {
+		return err
+	} else if contentBytes, err := base64.StdEncoding.DecodeString(updatedSec.SvcSecretValue); err != nil {
+		return err
+	} else {
+		for _, agId := range savedSec.AgreementIds {
+			err = WriteToFile(contentBytes, path.Join(s.SecretsStorePath, agId, updatedSec.SvcSecretName), path.Join(s.SecretsStorePath, agId))
 		}
 	}
 	return nil
@@ -152,7 +133,7 @@ func CreateAndWriteToFile(contents []byte, key string, fileName string, filePath
 }
 
 // This is for updating a service secrets file that already exists
-func WriteToFile(contents []byte, key string, fileName string, filePath string) error {
+func WriteToFile(contents []byte, fileName string, filePath string) error {
 	var fileMode os.FileMode
 	fileMode = 0750
 

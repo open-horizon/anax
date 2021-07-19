@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -38,6 +39,23 @@ func (w *GovernanceWorker) governMicroservices() int {
 		}
 	}
 	return 0
+}
+
+// Since we changed to saving the signing key with the agreement id, we need to make sure we delete the key when done with it
+// to avoid filling up the filesystem
+func (w *GovernanceWorker) cleanupSigningKeys(keys []string) {
+
+        errHandler := func(keyname string) api.ErrorHandler {
+                return func(err error) bool {
+                        glog.Errorf(logString(fmt.Sprintf("received error when deleting the signing key file %v to anax. %v", keyname, err)))
+                        return true
+                }
+        }
+
+        for _, key := range keys {
+                glog.V(3).Info(fmt.Sprintf("About to delete signing key %s", key))
+                api.DeletePublicKey(key, w.Config, errHandler(key))
+        }
 }
 
 // This function is called when there is a change to a service in the exchange. That might signal a service upgrade.
@@ -86,7 +104,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			if isRetry {
 				mi = msinst_given
 			} else {
-				mi, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath)
+				mi, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath, false)
 				if err1 != nil {
 					return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
 				}
@@ -102,6 +120,10 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 
 			// now handle the case where there are containers
 			deployment, deploymentSig := msdef.GetDeployment()
+
+			// keep track of keys used for validating signatures so we can clean them up when signatures verified
+			signingKeys := make([]string, 0, 1)
+			num_signing_keys := 0
 
 			// convert workload to policy workload structure
 			var ms_workload policy.Workload
@@ -125,6 +147,12 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 						}
 					}
 
+					var prepend_key_string string
+					if len(agreementId) > 0 {
+						prepend_key_string = agreementId
+					} else {
+						prepend_key_string = ms_key
+					}
 					for key, content := range key_map {
 						//add .pem the end of the keyname if it does not have none.
 						fn := key
@@ -132,17 +160,28 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 							fn = fmt.Sprintf("%v.pem", key)
 						}
 
-						api.UploadPublicKey(fn, []byte(content), w.Config, errHandler(fn))
+						// Keys for different services might have the same key name like service.public.pem so prepend something unique like the agreement id 
+						// but then we have to make sure we delete the key when done with it
+						prepend_string := prepend_key_string + "_" + strconv.Itoa(num_signing_keys) + "_"
+						num_signing_keys += 1
+						key_name := prepend_string + fn
+
+						api.UploadPublicKey(key_name, []byte(content), w.Config, errHandler(fn))
+						signingKeys = append(signingKeys, key_name)
 					}
 				}
 			}
 
 			// Verify the deployment signature
 			if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
+				w.cleanupSigningKeys(signingKeys)
 				return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
 			} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
+				w.cleanupSigningKeys(signingKeys)
 				return nil, fmt.Errorf(logString(fmt.Sprintf("service container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
 			}
+
+			w.cleanupSigningKeys(signingKeys)
 
 			// Gather up the service dependencies, if there are any. Microservices in the workload/microservice model never have dependencies,
 			// but services can. It is important to use the correct version for the service dependency, which is the version we have
@@ -165,7 +204,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			if isRetry {
 				ms_instance = msinst_given
 			} else {
-				ms_instance, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath)
+				ms_instance, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath, false)
 				if err1 != nil {
 					return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
 				}
@@ -334,7 +373,7 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 	}
 
 	// archive this microservice instance
-	if _, err := persistence.ArchiveMicroserviceInstance(w.db, inst_key); err != nil {
+	if err := persistence.ArchiveMicroserviceInstAndDef(w.db, inst_key); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", inst_key, err)))
 		return fmt.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", inst_key, err)))
 	}
@@ -500,7 +539,7 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 	needs_new_ms := false
 
 	// Always start a new instance if the sharing mode is multiple.
-	if msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
+	if msdef.Sharable == exchangecommon.SERVICE_SHARING_MODE_MULTIPLE {
 		needs_new_ms = true
 		// For other sharing modes, start a new instance only if there is no existing one.
 		// The "exclusive" sharing mode is handled by maxAgreements=1 in the node side policy file. This ensures that agbots and nodes will
@@ -595,7 +634,7 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 
 							// If this microservice is only associated with 1 agreement, then it can be stopped. The only exception
 							// is for microservices that are agreementless, which are never stopped.
-							if (msd.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || len(msi.AssociatedAgreements) == 1) && !msi.AgreementLess {
+							if (msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_MULTIPLE || len(msi.AssociatedAgreements) == 1) && !msi.AgreementLess {
 								// mark the ms clean up started and remove all the microservice containers if any
 								if _, err := persistence.MicroserviceInstanceCleanupStarted(w.db, msi.GetKey()); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error setting cleanup start time for service instance %v. %v", msi.GetKey(), err)))
@@ -605,8 +644,9 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 									// the ms instance will be archived after the microservice containers are destroyed.
 									glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for %v", msi.GetKey())))
 									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE, msi.GetKey())
-								} else if _, err := persistence.ArchiveMicroserviceInstance(w.db, msi.GetKey()); err != nil {
+								} else if err := persistence.ArchiveMicroserviceInstAndDef(w.db, msi.GetKey()); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", msi.GetKey(), err)))
+
 								}
 							} else {
 								if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), false, agreementId); err != nil {
@@ -624,7 +664,7 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 								}
 								// Singleton services that are dependencies will have extra networks, which might not be needed any more since
 								// at least one of the parents is going away when the current agreement terminates.
-								if msd.Sharable == exchange.MS_SHARING_MODE_SINGLE || msd.Sharable == exchange.MS_SHARING_MODE_SINGLETON {
+								if msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE || msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON {
 									glog.V(5).Infof(logString(fmt.Sprintf("Remove extra networks for %v all context msi: %v", msi.GetKey(), msi)))
 									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE_NETWORK, msi.GetKey())
 								}
@@ -1081,3 +1121,4 @@ func composeNewRegisteredServices(activeServices []exchange.Microservice, oldReg
 		return newRegisteredServices, false
 	}
 }
+

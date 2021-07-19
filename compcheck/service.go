@@ -3,6 +3,7 @@ package compcheck
 import (
 	"fmt"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 )
 
 // an implementation of common.AbstractServiceFile
@@ -27,11 +28,11 @@ func (s *ServiceDefinition) GetArch() string {
 	return s.Arch
 }
 
-func (s *ServiceDefinition) GetRequiredServices() []exchange.ServiceDependency {
+func (s *ServiceDefinition) GetRequiredServices() []exchangecommon.ServiceDependency {
 	return s.RequiredServices
 }
 
-func (s *ServiceDefinition) GetUserInputs() []exchange.UserInput {
+func (s *ServiceDefinition) GetUserInputs() []exchangecommon.UserInput {
 	return s.UserInputs
 }
 

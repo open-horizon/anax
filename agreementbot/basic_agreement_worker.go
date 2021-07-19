@@ -394,6 +394,14 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 				if wi.Reply.IsSecretUpdate() {
 					// update the system to indicate that the secret update is complete.
 					glog.V(5).Infof(bwlogstring(a.workerID, fmt.Sprintf("secret update accepted %v", wi.Reply.ShortString())))
+
+					// Record the secret update ACK message.
+					if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.Reply.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{}); err != nil {
+						glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.Reply.AgreementId(), err)))
+					} else if _, err := a.db.AgreementSecretUpdateAckTime(wi.Reply.AgreementId(), a.protocolHandler.Name(), agreement.LastSecretUpdateTime); err != nil {
+						glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("unable to save secret update ack time for %s, error: %v", wi.Reply.AgreementId(), err)))
+					}
+
 				}
 
 			} else {

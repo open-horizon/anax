@@ -40,7 +40,7 @@ func Test_LogEvent(t *testing.T) {
 	src1 := persistence.NewAgreementEventSourceFromAg(*ag1)
 
 	// service source type
-	svc1, err1 := persistence.NewMicroserviceInstance(db, "http://sensor1.org", "myorg", "1.2.0", "1", []persistence.ServiceInstancePathElement{})
+	svc1, err1 := persistence.NewMicroserviceInstance(db, "http://sensor1.org", "myorg", "1.2.0", "1", []persistence.ServiceInstancePathElement{}, false)
 	if err1 != nil {
 		t.Errorf("error writing agreement1: %v", err1)
 	}
@@ -273,11 +273,11 @@ func Test_LogServiceEvent(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
-	src1, err1 := persistence.NewMicroserviceInstance(db, "http://sensor1.org", "myorg", "1.2.0", "1", []persistence.ServiceInstancePathElement{})
+	src1, err1 := persistence.NewMicroserviceInstance(db, "http://sensor1.org", "myorg", "1.2.0", "1", []persistence.ServiceInstancePathElement{}, false)
 	if err1 != nil {
 		t.Errorf("error writing agreement1: %v", err1)
 	}
-	src2, err2 := persistence.NewMicroserviceInstance(db, "http://sensor2.org", "myorg", "1.0.0", "2", []persistence.ServiceInstancePathElement{})
+	src2, err2 := persistence.NewMicroserviceInstance(db, "http://sensor2.org", "myorg", "1.0.0", "2", []persistence.ServiceInstancePathElement{}, false)
 	if err2 != nil {
 		t.Errorf("error writing agreement2: %v", err2)
 	}

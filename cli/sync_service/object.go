@@ -497,11 +497,11 @@ func signObjData(objFile string, dsHashAlgo string, dsHash string, privKeyFilePa
 		if privateKey, err = sign.ReadPrivateKey(privKeyFilePath); err != nil {
 			return "", "", err
 		}
-	// if there is no given private key or defualt value, generate private 
-	// and public key pair
+		// if there is no given private key or defualt value, generate private
+		// and public key pair
 	} else if privateKey, err = rsa.GenerateKey(rand.Reader, 2048); err != nil {
 		return "", "", err
-	} 
+	}
 
 	if publicKeyBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey); err != nil {
 		return "", "", err

@@ -1151,21 +1151,24 @@ func NewPolicyCompError1(err error) *PolicyCompError {
 	}
 }
 
-func ObscureSecretDetails(proposal *string) error {
-	var err error
-	var pol *Policy
-	if pol, err = DemarshalPolicy(*proposal); err != nil {
-		return err
-	}
-	for _, secretBinding := range pol.SecretDetails {
-		for _, secret := range secretBinding.Secrets {
-			for secretName := range secret {
-				secret[secretName] = "********"
+// Obscure the secret details within the policy
+func ObscureSecretDetails(policy string) (string, error) {
+	if policy != "" {
+		var err error
+		var pol *Policy
+		if pol, err = DemarshalPolicy(policy); err != nil {
+			return "", err
+		}
+		for _, secretBinding := range pol.SecretDetails {
+			for _, secret := range secretBinding.Secrets {
+				for secretName := range secret {
+					secret[secretName] = "********"
+				}
 			}
 		}
+		if policy, err = MarshalPolicy(pol); err != nil {
+			return "", err
+		}
 	}
-	if *proposal, err = MarshalPolicy(pol); err != nil {
-		return err
-	}
-	return nil
+	return policy, nil
 }

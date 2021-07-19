@@ -5,6 +5,7 @@ package governance
 import (
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
@@ -163,24 +164,24 @@ func Test_ValidateUserInput(t *testing.T) {
 
 	mergedUserInput := []policy.UserInput{ui1, ui2}
 
-	requi1 := exchange.UserInput{Name: "var1", Type: "string", DefaultValue: "This is a string"}
-	requi2 := exchange.UserInput{Name: "var2", Type: "int", DefaultValue: ""}
-	requi3 := exchange.UserInput{Name: "var3", Type: "float", DefaultValue: ""}
-	requi4 := exchange.UserInput{Name: "var4", Type: "boolean", DefaultValue: ""}
-	requi5 := exchange.UserInput{Name: "var5", Type: "list of strings", DefaultValue: "a, b, c"}
+	requi1 := exchangecommon.UserInput{Name: "var1", Type: "string", DefaultValue: "This is a string"}
+	requi2 := exchangecommon.UserInput{Name: "var2", Type: "int", DefaultValue: ""}
+	requi3 := exchangecommon.UserInput{Name: "var3", Type: "float", DefaultValue: ""}
+	requi4 := exchangecommon.UserInput{Name: "var4", Type: "boolean", DefaultValue: ""}
+	requi5 := exchangecommon.UserInput{Name: "var5", Type: "list of strings", DefaultValue: "a, b, c"}
 
 	sdef1 := exchange.ServiceDefinition{
 		URL:        "service1",
 		Version:    "1.2.3",
 		Arch:       "amd64",
-		UserInputs: []exchange.UserInput{requi1, requi2, requi3, requi4, requi5},
+		UserInputs: []exchangecommon.UserInput{requi1, requi2, requi3, requi4, requi5},
 	}
 
 	sdef2 := exchange.ServiceDefinition{
 		URL:        "service2",
 		Version:    "1.2.3",
 		Arch:       "amd64",
-		UserInputs: []exchange.UserInput{requi1, requi2, requi3, requi4, requi5},
+		UserInputs: []exchangecommon.UserInput{requi1, requi2, requi3, requi4, requi5},
 	}
 
 	// userinput has part of the required inputs
@@ -258,17 +259,17 @@ func Test_ValidateUserInput_with_Attributes(t *testing.T) {
 
 	mergedUserInput := []policy.UserInput{ui1, ui2}
 
-	requi1 := exchange.UserInput{Name: "var1", Type: "string", DefaultValue: "This is a string"}
-	requi2 := exchange.UserInput{Name: "var2", Type: "int", DefaultValue: ""}
-	requi3 := exchange.UserInput{Name: "var3", Type: "float", DefaultValue: ""}
-	requi4 := exchange.UserInput{Name: "var4", Type: "boolean", DefaultValue: ""}
-	requi5 := exchange.UserInput{Name: "var5", Type: "list of strings", DefaultValue: "a, b, c"}
+	requi1 := exchangecommon.UserInput{Name: "var1", Type: "string", DefaultValue: "This is a string"}
+	requi2 := exchangecommon.UserInput{Name: "var2", Type: "int", DefaultValue: ""}
+	requi3 := exchangecommon.UserInput{Name: "var3", Type: "float", DefaultValue: ""}
+	requi4 := exchangecommon.UserInput{Name: "var4", Type: "boolean", DefaultValue: ""}
+	requi5 := exchangecommon.UserInput{Name: "var5", Type: "list of strings", DefaultValue: "a, b, c"}
 
 	sdef1 := exchange.ServiceDefinition{
 		URL:        "service1",
 		Version:    "1.2.3",
 		Arch:       "amd64",
-		UserInputs: []exchange.UserInput{requi1, requi2, requi3, requi4, requi5},
+		UserInputs: []exchangecommon.UserInput{requi1, requi2, requi3, requi4, requi5},
 	}
 
 	hostonly := false

@@ -670,12 +670,12 @@ Environment Variables:
 	utilVerifyPubKeyFile := utilVerifyCmd.Flag("public-key-file", msgPrinter.Sprintf("The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.")).Short('K').Required().ExistingFile()
 	utilVerifySig := utilVerifyCmd.Flag("signature", msgPrinter.Sprintf("The supposed signature of stdin.")).Short('s').Required().String()
 
-	smCmd := app.Command("secretsmanager | sm", msgPrinter.Sprintf("List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. This CLI does not read and pull secret details; to do so, you must authenticate as an administrator and use the secrets manager CLI.")).Alias("sm").Alias("secretsmanager")
+	smCmd := app.Command("secretsmanager | sm", msgPrinter.Sprintf("List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.")).Alias("sm").Alias("secretsmanager")
 	smOrg := smCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	smUserPw := smCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
 	smSecretCmd := smCmd.Command("secret", msgPrinter.Sprintf("List and manage secrets in the secrets manager."))
 	smSecretListCmd := smSecretCmd.Command("list | ls", msgPrinter.Sprintf("Display the names of the secrets in the secrets manager.")).Alias("ls").Alias("list")
-	smSecretListName := smSecretListCmd.Arg("secretName", msgPrinter.Sprintf("List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager.")).String()
+	smSecretListName := smSecretListCmd.Arg("secretName", msgPrinter.Sprintf("List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.")).String()
 	smSecretAddCmd := smSecretCmd.Command("add", msgPrinter.Sprintf("Add a secret to the secrets manager."))
 	smSecretAddName := smSecretAddCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.")).Required().String()
 	smSecretAddFile := smSecretAddCmd.Flag("secretFile", msgPrinter.Sprintf("Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.")).Short('f').String()
@@ -684,6 +684,8 @@ Environment Variables:
 	smSecretAddOverwrite := smSecretAddCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.")).Short('O').Bool()
 	smSecretRemoveCmd := smSecretCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a secret in the secrets manager.")).Alias("rm").Alias("remove")
 	smSecretRemoveName := smSecretRemoveCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret to be removed from the secrets manager.")).Required().String()
+	smSecretReadCmd := smSecretCmd.Command("read", msgPrinter.Sprintf("Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation."))
+	smSecretReadName := smSecretReadCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret to read in the secrets manager.")).Required().String()
 
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 
@@ -1163,5 +1165,7 @@ Environment Variables:
 		secret_manager.SecretAdd(*smOrg, *smUserPw, *smSecretAddName, *smSecretAddFile, *smSecretAddKey, *smSecretAddDetail, *smSecretAddOverwrite)
 	case smSecretRemoveCmd.FullCommand():
 		secret_manager.SecretRemove(*smOrg, *smUserPw, *smSecretRemoveName)
+	case smSecretReadCmd.FullCommand():
+		secret_manager.SecretRead(*smOrg, *smUserPw, *smSecretReadName)
 	}
 }

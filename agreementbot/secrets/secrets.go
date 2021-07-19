@@ -31,7 +31,7 @@ type AgbotSecrets interface {
 
 	// This function assumes that the plugin maintains an authentication to the secret manager that it can use
 	// when it doesnt need to call APIs with user creds. The creds used instead have the ability to READ secrets.
-	GetSecretDetails(org, secretUser, secretName string) (SecretDetails, error)
+	GetSecretDetails(user, token, org, secretUser, secretName string) (SecretDetails, error)
 
 	// This function returns the secret manager's metadata about a given secret.
 	GetSecretMetadata(secretOrg, secretUser, secretName string) (SecretMetadata, error)
@@ -43,7 +43,7 @@ type SecretDetails struct {
 }
 
 func (m SecretDetails) String() string {
-	return fmt.Sprintf("Key: %v, Value: ********", m.Key, m.Value)
+	return fmt.Sprintf("Key: %v, Value: ********", m.Key)
 }
 
 type SecretMetadata struct {

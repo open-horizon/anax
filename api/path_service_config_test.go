@@ -6,6 +6,7 @@ import (
 	"flag"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"testing"
@@ -58,7 +59,7 @@ func Test_CreateService0(t *testing.T) {
 
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
-	sHandler := getVariableServiceHandler(exchange.UserInput{})
+	sHandler := getVariableServiceHandler(exchangecommon.UserInput{})
 	errHandled, newService, msg := CreateService(service, errorhandler, patternHandler, getDummyServiceDefResolver(), sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), nil, db, getBasicConfig(), false)
 	if errHandled {
 		t.Errorf("unexpected error (%T) %v", myError, myError)
@@ -71,12 +72,12 @@ func Test_CreateService0(t *testing.T) {
 }
 
 func Test_validateUserInput(t *testing.T) {
-	ui := []exchange.UserInput{
-		exchange.UserInput{Name: "var1", Type: "string", DefaultValue: "val1"},
-		exchange.UserInput{Name: "var2", Type: "int"},
-		exchange.UserInput{Name: "var3", Type: "float", DefaultValue: ""},
-		exchange.UserInput{Name: "var4", Type: "bool"},
-		exchange.UserInput{Name: "var5", Type: "list of strings", DefaultValue: "[123, 456]"},
+	ui := []exchangecommon.UserInput{
+		exchangecommon.UserInput{Name: "var1", Type: "string", DefaultValue: "val1"},
+		exchangecommon.UserInput{Name: "var2", Type: "int"},
+		exchangecommon.UserInput{Name: "var3", Type: "float", DefaultValue: ""},
+		exchangecommon.UserInput{Name: "var4", Type: "bool"},
+		exchangecommon.UserInput{Name: "var5", Type: "list of strings", DefaultValue: "[123, 456]"},
 	}
 
 	sdef := exchange.ServiceDefinition{UserInputs: ui}
