@@ -61,31 +61,6 @@ func NewMicroserviceInstanceOutput(mi persistence.MicroserviceInstance, containe
 	}
 }
 
-func NewAgreementServiceInstanceOutput(ag *persistence.EstablishedAgreement, containers *[]dockerclient.APIContainers) *MicroserviceInstanceOutput {
-	sipe := persistence.NewServiceInstancePathElement(ag.RunningWorkload.URL, ag.RunningWorkload.Org, ag.RunningWorkload.Version)
-	mi := persistence.MicroserviceInstance{
-		SpecRef:              ag.RunningWorkload.URL,
-		Org:                  ag.RunningWorkload.Org,
-		Version:              ag.RunningWorkload.Version,
-		Arch:                 ag.RunningWorkload.Arch,
-		InstanceId:           ag.CurrentAgreementId,
-		Archived:             ag.Archived,
-		InstanceCreationTime: ag.AgreementCreationTime,
-		ExecutionStartTime:   ag.AgreementExecutionStartTime,
-		ExecutionFailureCode: uint(ag.TerminatedReason),
-		ExecutionFailureDesc: ag.TerminatedDescription,
-		CleanupStartTime:     ag.AgreementTerminatedTime,
-		AssociatedAgreements: []string{ag.CurrentAgreementId},
-		MicroserviceDefId:    "",
-		ParentPath:           [][]persistence.ServiceInstancePathElement{[]persistence.ServiceInstancePathElement{*sipe}},
-	}
-
-	return &MicroserviceInstanceOutput{
-		MicroserviceInstance: mi,
-		Containers:           containers,
-	}
-}
-
 // The output format for GET workload
 type AllWorkloads struct {
 	Containers *[]dockerclient.APIContainers `json:"containers"` // the docker info for a running container

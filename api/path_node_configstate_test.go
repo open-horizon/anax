@@ -6,6 +6,7 @@ import (
 	"flag"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"strings"
 	"testing"
@@ -105,7 +106,7 @@ func Test_UpdateConfigstate2services(t *testing.T) {
 	mVersion := "1.0.0"
 	mArch := cutil.ArchString()
 	sResolver := getVariableServiceDefResolver(mURL, myOrg, mVersion, mArch, nil)
-	sHandler := getVariableServiceHandler(exchange.UserInput{})
+	sHandler := getVariableServiceHandler(exchangecommon.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
 	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
@@ -168,7 +169,7 @@ func Test_UpdateConfigstate2service_only(t *testing.T) {
 	}
 
 	sResolver := getVariableServiceDefResolver("", "", "", "", nil)
-	sHandler := getVariableServiceHandler(exchange.UserInput{})
+	sHandler := getVariableServiceHandler(exchangecommon.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
 	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
@@ -234,7 +235,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	mVersion := "1.0.0"
 	mArch := cutil.ArchString()
 	sResolver := getVariableServiceDefResolver(mURL, myOrg, mVersion, mArch, nil)
-	sHandler := getVariableServiceHandler(exchange.UserInput{})
+	sHandler := getVariableServiceHandler(exchangecommon.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
 	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
@@ -315,7 +316,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 	mVersion := "1.0.0"
 	mArch := cutil.ArchString()
 	sResolver := getVariableServiceDefResolver(mURL, myOrg, mVersion, mArch, nil)
-	sHandler := getVariableServiceHandler(exchange.UserInput{})
+	sHandler := getVariableServiceHandler(exchangecommon.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
 	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
@@ -376,7 +377,7 @@ func Test_UpdateConfigstateWith_services(t *testing.T) {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
 
-	sHandler := getVariableServiceHandler(exchange.UserInput{})
+	sHandler := getVariableServiceHandler(exchangecommon.UserInput{})
 	sr := exchange.ServiceReference{
 		ServiceURL:  "http://mydomain.com/workload/test1",
 		ServiceOrg:  "testorg",
@@ -439,7 +440,7 @@ func Test_UpdateConfigstate_unconfig_services(t *testing.T) {
 	}
 
 	missingVarName := "missingVar"
-	ui := exchange.UserInput{
+	ui := exchangecommon.UserInput{
 		Name:         missingVarName,
 		Label:        "label",
 		Type:         "string",
@@ -503,7 +504,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 	}
 
 	missingVarName := "missingVar"
-	ui := exchange.UserInput{
+	ui := exchangecommon.UserInput{
 		Name:         missingVarName,
 		Label:        "label",
 		Type:         "string",
@@ -512,7 +513,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 	mURL := "http://utest.com/mservice"
 	mVersion := "1.0.0"
 	mArch := "amd64"
-	sHandler := getVariableServiceHandler(exchange.UserInput{})
+	sHandler := getVariableServiceHandler(exchangecommon.UserInput{})
 	sr := exchange.ServiceReference{
 		ServiceURL:  "http://mydomain.com/workload/test1",
 		ServiceOrg:  "testorg",

@@ -5,6 +5,7 @@ package exchange
 import (
 	"errors"
 	"flag"
+	"github.com/open-horizon/anax/exchangecommon"
 	"testing"
 )
 
@@ -17,10 +18,10 @@ func TestServiceString1(t *testing.T) {
 		URL:                        "http://test.company.com/service1",
 		Version:                    "1.0.0",
 		Arch:                       "amd64",
-		Sharable:                   MS_SHARING_MODE_SINGLETON,
+		Sharable:                   exchangecommon.SERVICE_SHARING_MODE_SINGLETON,
 		MatchHardware:              HardwareRequirement{},
-		RequiredServices:           []ServiceDependency{},
-		UserInputs:                 []UserInput{},
+		RequiredServices:           []exchangecommon.ServiceDependency{},
+		UserInputs:                 []exchangecommon.UserInput{},
 		Deployment:                 `{"services":{}}`,
 		DeploymentSignature:        "xyzpdq=",
 		ClusterDeployment:          `{}`,
@@ -45,32 +46,32 @@ func TestServiceString2(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLETON,
+		Sharable:    exchangecommon.SERVICE_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
-		RequiredServices: []ServiceDependency{
-			ServiceDependency{
+		RequiredServices: []exchangecommon.ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms1",
 				Org:     "otherOrg",
 				Version: "1.5.0",
 				Arch:    "amd64",
 			},
-			ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms2",
 				Org:     "otherOrg",
 				Version: "2.7",
 				Arch:    "amd64",
 			},
 		},
-		UserInputs: []UserInput{
-			UserInput{
+		UserInputs: []exchangecommon.UserInput{
+			exchangecommon.UserInput{
 				Name:         "name",
 				Label:        "a ui",
 				Type:         "string",
 				DefaultValue: "",
 			},
-			UserInput{
+			exchangecommon.UserInput{
 				Name:         "name2",
 				Label:        "another ui",
 				Type:         "string",
@@ -102,32 +103,32 @@ func TestServiceString3(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLETON,
+		Sharable:    exchangecommon.SERVICE_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
-		RequiredServices: []ServiceDependency{
-			ServiceDependency{
+		RequiredServices: []exchangecommon.ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms1",
 				Org:     "otherOrg",
 				Version: "1.5.0",
 				Arch:    "amd64",
 			},
-			ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms2",
 				Org:     "otherOrg",
 				Version: "2.7",
 				Arch:    "amd64",
 			},
 		},
-		UserInputs: []UserInput{
-			UserInput{
+		UserInputs: []exchangecommon.UserInput{
+			exchangecommon.UserInput{
 				Name:         "name",
 				Label:        "a ui",
 				Type:         "string",
 				DefaultValue: "",
 			},
-			UserInput{
+			exchangecommon.UserInput{
 				Name:         "name2",
 				Label:        "another ui",
 				Type:         "string",
@@ -164,32 +165,32 @@ func TestService_GetUserInputByName(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLETON,
+		Sharable:    exchangecommon.SERVICE_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
-		RequiredServices: []ServiceDependency{
-			ServiceDependency{
+		RequiredServices: []exchangecommon.ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms1",
 				Org:     "otherOrg",
 				Version: "1.5.0",
 				Arch:    "amd64",
 			},
-			ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms2",
 				Org:     "otherOrg",
 				Version: "2.7",
 				Arch:    "amd64",
 			},
 		},
-		UserInputs: []UserInput{
-			UserInput{
+		UserInputs: []exchangecommon.UserInput{
+			exchangecommon.UserInput{
 				Name:         targetName,
 				Label:        targetLabel,
 				Type:         "string",
 				DefaultValue: "",
 			},
-			UserInput{
+			exchangecommon.UserInput{
 				Name:         "name2",
 				Label:        "another ui",
 				Type:         "string",
@@ -231,32 +232,32 @@ func TestService_NeedsUserInput1(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLETON,
+		Sharable:    exchangecommon.SERVICE_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
-		RequiredServices: []ServiceDependency{
-			ServiceDependency{
+		RequiredServices: []exchangecommon.ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms1",
 				Org:     "otherOrg",
 				Version: "1.5.0",
 				Arch:    "amd64",
 			},
-			ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms2",
 				Org:     "otherOrg",
 				Version: "2.7",
 				Arch:    "amd64",
 			},
 		},
-		UserInputs: []UserInput{
-			UserInput{
+		UserInputs: []exchangecommon.UserInput{
+			exchangecommon.UserInput{
 				Name:         "name",
 				Label:        "a ui",
 				Type:         "string",
 				DefaultValue: "",
 			},
-			UserInput{
+			exchangecommon.UserInput{
 				Name:         "name2",
 				Label:        "another ui",
 				Type:         "string",
@@ -288,32 +289,32 @@ func TestService_NeedsUserInput2(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLETON,
+		Sharable:    exchangecommon.SERVICE_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
-		RequiredServices: []ServiceDependency{
-			ServiceDependency{
+		RequiredServices: []exchangecommon.ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms1",
 				Org:     "otherOrg",
 				Version: "1.5.0",
 				Arch:    "amd64",
 			},
-			ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms2",
 				Org:     "otherOrg",
 				Version: "2.7",
 				Arch:    "amd64",
 			},
 		},
-		UserInputs: []UserInput{
-			UserInput{
+		UserInputs: []exchangecommon.UserInput{
+			exchangecommon.UserInput{
 				Name:         "name",
 				Label:        "a ui",
 				Type:         "string",
 				DefaultValue: "four",
 			},
-			UserInput{
+			exchangecommon.UserInput{
 				Name:         "name2",
 				Label:        "another ui",
 				Type:         "string",
@@ -347,32 +348,32 @@ func TestService_PopulateDefaultUserInput(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLETON,
+		Sharable:    exchangecommon.SERVICE_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
-		RequiredServices: []ServiceDependency{
-			ServiceDependency{
+		RequiredServices: []exchangecommon.ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms1",
 				Org:     "otherOrg",
 				Version: "1.5.0",
 				Arch:    "amd64",
 			},
-			ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms2",
 				Org:     "otherOrg",
 				Version: "2.7",
 				Arch:    "amd64",
 			},
 		},
-		UserInputs: []UserInput{
-			UserInput{
+		UserInputs: []exchangecommon.UserInput{
+			exchangecommon.UserInput{
 				Name:         targetName,
 				Label:        "a ui",
 				Type:         "string",
 				DefaultValue: targetValue,
 			},
-			UserInput{
+			exchangecommon.UserInput{
 				Name:         "name2",
 				Label:        "another ui",
 				Type:         "string",
@@ -410,32 +411,32 @@ func TestService_GetDeployment(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLETON,
+		Sharable:    exchangecommon.SERVICE_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
-		RequiredServices: []ServiceDependency{
-			ServiceDependency{
+		RequiredServices: []exchangecommon.ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms1",
 				Org:     "otherOrg",
 				Version: "1.5.0",
 				Arch:    "amd64",
 			},
-			ServiceDependency{
+			exchangecommon.ServiceDependency{
 				URL:     "http://my.com/ms/ms2",
 				Org:     "otherOrg",
 				Version: "2.7",
 				Arch:    "amd64",
 			},
 		},
-		UserInputs: []UserInput{
-			UserInput{
+		UserInputs: []exchangecommon.UserInput{
+			exchangecommon.UserInput{
 				Name:         "name",
 				Label:        "a ui",
 				Type:         "string",
 				DefaultValue: "four",
 			},
-			UserInput{
+			exchangecommon.UserInput{
 				Name:         "name2",
 				Label:        "another ui",
 				Type:         "string",
@@ -533,7 +534,7 @@ func Test_GetServiceResponse_1specific(t *testing.T) {
 	myVersion := "2.0.0"
 	myArch := "amd64"
 
-	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
+	sh := getVariableServiceHandler([]exchangecommon.UserInput{}, []exchangecommon.ServiceDependency{})
 	sd, id, _ := sh(myURL, myOrg, myVersion, myArch)
 
 	resp := &GetServicesResponse{
@@ -584,7 +585,7 @@ func Test_GetServiceResponse_1range_open(t *testing.T) {
 	myArch := "amd64"
 
 	// 1 in the version range
-	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
+	sh := getVariableServiceHandler([]exchangecommon.UserInput{}, []exchangecommon.ServiceDependency{})
 	sd, id, _ := sh(myURL, myOrg, myVersion, myArch)
 
 	resp := &GetServicesResponse{
@@ -616,7 +617,7 @@ func Test_GetServiceResponse_1range_specific_none(t *testing.T) {
 	callerMSRange := "[1.0.0,2.0.0)"
 
 	// 1 not in the version range
-	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
+	sh := getVariableServiceHandler([]exchangecommon.UserInput{}, []exchangecommon.ServiceDependency{})
 	sd, id, _ := sh(myURL, myOrg, myVersion, myArch)
 
 	resp := &GetServicesResponse{
@@ -646,7 +647,7 @@ func Test_GetServiceResponse_1range_specific_success(t *testing.T) {
 	callerMSRange := "[1.0.0,2.0.0]"
 
 	// 1 in the version range
-	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
+	sh := getVariableServiceHandler([]exchangecommon.UserInput{}, []exchangecommon.ServiceDependency{})
 	sd, id, _ := sh(myURL, myOrg, myVersion, myArch)
 
 	resp := &GetServicesResponse{
@@ -678,7 +679,7 @@ func Test_GetServiceResponse_1range_specific_error(t *testing.T) {
 	callerMSRange := "[1.0.0,a]"
 
 	// 1 in the version range
-	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
+	sh := getVariableServiceHandler([]exchangecommon.UserInput{}, []exchangecommon.ServiceDependency{})
 	sd, id, _ := sh(myURL, myOrg, myVersion, myArch)
 
 	resp := &GetServicesResponse{
@@ -708,7 +709,7 @@ func Test_GetServiceResponse_2range_specific_success(t *testing.T) {
 	callerMSRange := "[1.0.0,2.0.0]"
 
 	// 1 in the version range
-	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
+	sh := getVariableServiceHandler([]exchangecommon.UserInput{}, []exchangecommon.ServiceDependency{})
 	sd1, _, _ := sh(myURL, myOrg, myVersion, myArch)
 	sd2, _, _ := sh("http://service2", myOrg, "1.5.0", myArch)
 
@@ -739,7 +740,7 @@ func TestServiceResolver1(t *testing.T) {
 	myVersion := "2.0.0"
 	myArch := "amd64"
 
-	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
+	sh := getVariableServiceHandler([]exchangecommon.UserInput{}, []exchangecommon.ServiceDependency{})
 	apiSpecList, sd, _, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
@@ -761,7 +762,7 @@ func TestServiceDefResolver1(t *testing.T) {
 	myVersion := "2.0.0"
 	myArch := "amd64"
 
-	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
+	sh := getVariableServiceHandler([]exchangecommon.UserInput{}, []exchangecommon.ServiceDependency{})
 	service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
@@ -783,8 +784,8 @@ func TestServiceResolver2(t *testing.T) {
 	myVersion := "2.0.0"
 	myArch := "amd64"
 
-	sDep := []ServiceDependency{
-		ServiceDependency{
+	sDep := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms1",
 			Org:     "otherOrg",
 			Version: "1.5.0",
@@ -793,10 +794,10 @@ func TestServiceResolver2(t *testing.T) {
 	}
 
 	// Establish service dependencies that the mock service handler will provide.
-	sdMap := make(map[string][]ServiceDependency)
+	sdMap := make(map[string][]exchangecommon.ServiceDependency)
 	sdMap[myURL] = sDep
 
-	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+	sh := getRecursiveVariableServiceHandler([]exchangecommon.UserInput{}, sdMap)
 	apiSpecList, sd, _, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
@@ -818,8 +819,8 @@ func TestServiceDefResolver2(t *testing.T) {
 	myVersion := "2.0.0"
 	myArch := "amd64"
 
-	sDep := []ServiceDependency{
-		ServiceDependency{
+	sDep := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms1",
 			Org:     "otherOrg",
 			Version: "1.5.0",
@@ -828,10 +829,10 @@ func TestServiceDefResolver2(t *testing.T) {
 	}
 
 	// Establish service dependencies that the mock service handler will provide.
-	sdMap := make(map[string][]ServiceDependency)
+	sdMap := make(map[string][]exchangecommon.ServiceDependency)
 	sdMap[myURL] = sDep
 
-	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+	sh := getRecursiveVariableServiceHandler([]exchangecommon.UserInput{}, sdMap)
 	service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
@@ -865,14 +866,14 @@ func Test_RecursiveServiceResolver_1level(t *testing.T) {
 	myVersion := "1.0.0"
 	myArch := "amd64"
 
-	sDep := []ServiceDependency{
-		ServiceDependency{
+	sDep := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms1",
 			Org:     "otherOrg",
 			Version: "1.5.0",
 			Arch:    "amd64",
 		},
-		ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms2",
 			Org:     "thirdOrg",
 			Version: "1.5.0",
@@ -881,10 +882,10 @@ func Test_RecursiveServiceResolver_1level(t *testing.T) {
 	}
 
 	// Establish service dependencies that the mock service handler will provide.
-	sdMap := make(map[string][]ServiceDependency)
+	sdMap := make(map[string][]exchangecommon.ServiceDependency)
 	sdMap[myURL] = sDep
 
-	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+	sh := getRecursiveVariableServiceHandler([]exchangecommon.UserInput{}, sdMap)
 
 	// Test the resolver API
 	apiSpecs, sd, sIds, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
@@ -916,14 +917,14 @@ func Test_RecursiveServiceDefResolver_1level(t *testing.T) {
 	myVersion := "1.0.0"
 	myArch := "amd64"
 
-	sDep := []ServiceDependency{
-		ServiceDependency{
+	sDep := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms1",
 			Org:     "otherOrg",
 			Version: "1.5.0",
 			Arch:    "amd64",
 		},
-		ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms2",
 			Org:     "thirdOrg",
 			Version: "1.5.0",
@@ -932,10 +933,10 @@ func Test_RecursiveServiceDefResolver_1level(t *testing.T) {
 	}
 
 	// Establish service dependencies that the mock service handler will provide.
-	sdMap := make(map[string][]ServiceDependency)
+	sdMap := make(map[string][]exchangecommon.ServiceDependency)
 	sdMap[myURL] = sDep
 
-	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+	sh := getRecursiveVariableServiceHandler([]exchangecommon.UserInput{}, sdMap)
 
 	// Test the resolver API
 	service_map, sd, sId, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
@@ -966,14 +967,14 @@ func Test_RecursiveServiceResolver_2level(t *testing.T) {
 	myArch := "amd64"
 
 	// Dependencies of top level service
-	sDep1 := []ServiceDependency{
-		ServiceDependency{
+	sDep1 := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms1",
 			Org:     "otherOrg",
 			Version: "1.5.0",
 			Arch:    "amd64",
 		},
-		ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms2",
 			Org:     "thirdOrg",
 			Version: "1.5.0",
@@ -982,14 +983,14 @@ func Test_RecursiveServiceResolver_2level(t *testing.T) {
 	}
 
 	// Dependencies of top level dependency: ms1
-	sDep21 := []ServiceDependency{
-		ServiceDependency{
+	sDep21 := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/msa",
 			Org:     "otherOrg",
 			Version: "2.7.0",
 			Arch:    "amd64",
 		},
-		ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/msb",
 			Org:     "otherOrg",
 			Version: "1.0.0",
@@ -998,14 +999,14 @@ func Test_RecursiveServiceResolver_2level(t *testing.T) {
 	}
 
 	// Dependencies of top level dependency: ms2
-	sDep22 := []ServiceDependency{
-		ServiceDependency{
+	sDep22 := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/msx",
 			Org:     "thirdOrg",
 			Version: "2.7.0",
 			Arch:    "amd64",
 		},
-		ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/msa",
 			Org:     "otherOrg",
 			Version: "2.0.0",
@@ -1014,12 +1015,12 @@ func Test_RecursiveServiceResolver_2level(t *testing.T) {
 	}
 
 	// Establish service dependencies that the mock service handler will provide.
-	sdMap := make(map[string][]ServiceDependency)
+	sdMap := make(map[string][]exchangecommon.ServiceDependency)
 	sdMap[myURL] = sDep1
 	sdMap[sDep1[0].URL] = sDep21
 	sdMap[sDep1[1].URL] = sDep22
 
-	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+	sh := getRecursiveVariableServiceHandler([]exchangecommon.UserInput{}, sdMap)
 
 	// Test the resolver API
 	apiSpecs, sd, _, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
@@ -1048,14 +1049,14 @@ func Test_RecursiveServiceDefResolver_2level(t *testing.T) {
 	myArch := "amd64"
 
 	// Dependencies of top level service
-	sDep1 := []ServiceDependency{
-		ServiceDependency{
+	sDep1 := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms1",
 			Org:     "otherOrg",
 			Version: "1.5.0",
 			Arch:    "amd64",
 		},
-		ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/ms2",
 			Org:     "thirdOrg",
 			Version: "1.5.0",
@@ -1064,14 +1065,14 @@ func Test_RecursiveServiceDefResolver_2level(t *testing.T) {
 	}
 
 	// Dependencies of top level dependency: ms1
-	sDep21 := []ServiceDependency{
-		ServiceDependency{
+	sDep21 := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/msa",
 			Org:     "otherOrg",
 			Version: "2.7.0",
 			Arch:    "amd64",
 		},
-		ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/msb",
 			Org:     "otherOrg",
 			Version: "1.0.0",
@@ -1080,14 +1081,14 @@ func Test_RecursiveServiceDefResolver_2level(t *testing.T) {
 	}
 
 	// Dependencies of top level dependency: ms2
-	sDep22 := []ServiceDependency{
-		ServiceDependency{
+	sDep22 := []exchangecommon.ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/msx",
 			Org:     "thirdOrg",
 			Version: "2.7.0",
 			Arch:    "amd64",
 		},
-		ServiceDependency{
+		exchangecommon.ServiceDependency{
 			URL:     "http://my.com/ms/msa",
 			Org:     "otherOrg",
 			Version: "2.0.0",
@@ -1096,12 +1097,12 @@ func Test_RecursiveServiceDefResolver_2level(t *testing.T) {
 	}
 
 	// Establish service dependencies that the mock service handler will provide.
-	sdMap := make(map[string][]ServiceDependency)
+	sdMap := make(map[string][]exchangecommon.ServiceDependency)
 	sdMap[myURL] = sDep1
 	sdMap[sDep1[0].URL] = sDep21
 	sdMap[sDep1[1].URL] = sDep22
 
-	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+	sh := getRecursiveVariableServiceHandler([]exchangecommon.UserInput{}, sdMap)
 
 	// Test the resolver API
 	service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
@@ -1118,12 +1119,12 @@ func Test_RecursiveServiceDefResolver_2level(t *testing.T) {
 	}
 }
 
-func getRecursiveVariableServiceHandler(mUserInput []UserInput, mRequiredServices map[string][]ServiceDependency) ServiceHandler {
+func getRecursiveVariableServiceHandler(mUserInput []exchangecommon.UserInput, mRequiredServices map[string][]exchangecommon.ServiceDependency) ServiceHandler {
 	return func(mUrl string, mOrg string, mVersion string, mArch string) (*ServiceDefinition, string, error) {
 
 		reqServ, ok := mRequiredServices[mUrl]
 		if !ok {
-			reqServ = []ServiceDependency{}
+			reqServ = []exchangecommon.ServiceDependency{}
 		}
 
 		md := ServiceDefinition{
@@ -1134,7 +1135,7 @@ func getRecursiveVariableServiceHandler(mUserInput []UserInput, mRequiredService
 			URL:                 mUrl,
 			Version:             mVersion,
 			Arch:                mArch,
-			Sharable:            MS_SHARING_MODE_EXCLUSIVE,
+			Sharable:            exchangecommon.SERVICE_SHARING_MODE_EXCLUSIVE,
 			MatchHardware:       HardwareRequirement{},
 			RequiredServices:    reqServ,
 			UserInputs:          mUserInput,
@@ -1146,7 +1147,7 @@ func getRecursiveVariableServiceHandler(mUserInput []UserInput, mRequiredService
 	}
 }
 
-func getVariableServiceHandler(mUserInput []UserInput, mRequiredServices []ServiceDependency) ServiceHandler {
+func getVariableServiceHandler(mUserInput []exchangecommon.UserInput, mRequiredServices []exchangecommon.ServiceDependency) ServiceHandler {
 	return func(mUrl string, mOrg string, mVersion string, mArch string) (*ServiceDefinition, string, error) {
 		md := ServiceDefinition{
 			Owner:               "testOwner",
@@ -1156,7 +1157,7 @@ func getVariableServiceHandler(mUserInput []UserInput, mRequiredServices []Servi
 			URL:                 mUrl,
 			Version:             mVersion,
 			Arch:                mArch,
-			Sharable:            MS_SHARING_MODE_EXCLUSIVE,
+			Sharable:            exchangecommon.SERVICE_SHARING_MODE_EXCLUSIVE,
 			MatchHardware:       HardwareRequirement{},
 			RequiredServices:    mRequiredServices,
 			UserInputs:          mUserInput,
@@ -1208,7 +1209,7 @@ func Test_ServiceSuspended(t *testing.T) {
 
 func Test_Support_versionrange_0(t *testing.T) {
 
-	sd1 := ServiceDependency{
+	sd1 := exchangecommon.ServiceDependency{
 		URL:          "other",
 		Org:          "test",
 		Version:      "",
@@ -1216,7 +1217,7 @@ func Test_Support_versionrange_0(t *testing.T) {
 		Arch:         "amd64",
 	}
 
-	sd2 := ServiceDependency{
+	sd2 := exchangecommon.ServiceDependency{
 		URL:          "other",
 		Org:          "test",
 		Version:      "1.0.0",
@@ -1232,10 +1233,10 @@ func Test_Support_versionrange_0(t *testing.T) {
 		URL:                 "test name",
 		Version:             "1.0.0",
 		Arch:                "amd64",
-		Sharable:            MS_SHARING_MODE_EXCLUSIVE,
+		Sharable:            exchangecommon.SERVICE_SHARING_MODE_EXCLUSIVE,
 		MatchHardware:       HardwareRequirement{},
-		RequiredServices:    []ServiceDependency{sd1, sd2},
-		UserInputs:          []UserInput{},
+		RequiredServices:    []exchangecommon.ServiceDependency{sd1, sd2},
+		UserInputs:          []exchangecommon.UserInput{},
 		Deployment:          `{"services":{}}`,
 		DeploymentSignature: "xyzpdq=",
 		LastUpdated:         "today",

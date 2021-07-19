@@ -8,7 +8,7 @@ import (
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"os"
@@ -105,7 +105,7 @@ func createServiceDef(t *testing.T, horizonDir string, serviceName string, child
 
 	if len(children) != 0 {
 		for _, child := range children {
-			sdep := exchange.ServiceDependency{URL: child.GetURL(), Org: "testorg", Version: "1.0.0", Arch: cutil.ArchString()}
+			sdep := exchangecommon.ServiceDependency{URL: child.GetURL(), Org: "testorg", Version: "1.0.0", Arch: cutil.ArchString()}
 			depSDef1.RequiredServices = append(depSDef1.RequiredServices, sdep)
 		}
 	}
@@ -130,10 +130,10 @@ func createSkeletalServiceDef(serviceName string) *common.ServiceFile {
 	res.URL = DEFAULT_SDEF_URL
 	res.Version = "1.0.0"
 	res.Arch = cutil.ArchString()
-	res.Sharable = exchange.MS_SHARING_MODE_MULTIPLE
-	res.UserInputs = []exchange.UserInput{}
+	res.Sharable = exchangecommon.SERVICE_SHARING_MODE_MULTIPLE
+	res.UserInputs = []exchangecommon.UserInput{}
 	res.MatchHardware = map[string]interface{}{}
-	res.RequiredServices = []exchange.ServiceDependency{}
+	res.RequiredServices = []exchangecommon.ServiceDependency{}
 	res.Deployment = map[string]interface{}{
 		"services": map[string]*containermessage.Service{
 			serviceName: &containermessage.Service{

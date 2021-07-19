@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -192,7 +193,7 @@ func ValidateUserInput(pDevice *persistence.ExchangeDevice, userInput policy.Use
 	// make sure that the node type and the service type match
 	nodeType := pDevice.GetNodeType()
 	serviceType := sdef.GetServiceType()
-	if serviceType != exchange.SERVICE_TYPE_BOTH && nodeType != serviceType {
+	if serviceType != exchangecommon.SERVICE_TYPE_BOTH && nodeType != serviceType {
 		return false, fmt.Errorf("The service %v/%v is for '%v' node type but the current node type is '%v'.", serviceOrg, serviceUrl, serviceType, nodeType)
 	}
 
@@ -200,9 +201,9 @@ func ValidateUserInput(pDevice *persistence.ExchangeDevice, userInput policy.Use
 	serviceUserInputs := sdef.UserInputs
 	policyUserInputs := userInput.Inputs
 
-	serviceUserinputsMap := make(map[string]exchange.UserInput)
+	serviceUserinputsMap := make(map[string]exchangecommon.UserInput)
 	var serviceInputName string
-	var serviceInput exchange.UserInput
+	var serviceInput exchangecommon.UserInput
 
 	for _, serviceInput = range serviceUserInputs {
 		serviceInputName = serviceInput.Name

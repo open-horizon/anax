@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -86,7 +87,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			if isRetry {
 				mi = msinst_given
 			} else {
-				mi, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath)
+				mi, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath, false)
 				if err1 != nil {
 					return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
 				}
@@ -165,7 +166,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			if isRetry {
 				ms_instance = msinst_given
 			} else {
-				ms_instance, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath)
+				ms_instance, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath, false)
 				if err1 != nil {
 					return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
 				}
@@ -334,7 +335,7 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 	}
 
 	// archive this microservice instance
-	if _, err := persistence.ArchiveMicroserviceInstance(w.db, inst_key); err != nil {
+	if err := persistence.ArchiveMicroserviceInstAndDef(w.db, inst_key); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", inst_key, err)))
 		return fmt.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", inst_key, err)))
 	}
@@ -500,7 +501,7 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 	needs_new_ms := false
 
 	// Always start a new instance if the sharing mode is multiple.
-	if msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
+	if msdef.Sharable == exchangecommon.SERVICE_SHARING_MODE_MULTIPLE {
 		needs_new_ms = true
 		// For other sharing modes, start a new instance only if there is no existing one.
 		// The "exclusive" sharing mode is handled by maxAgreements=1 in the node side policy file. This ensures that agbots and nodes will
@@ -595,7 +596,7 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 
 							// If this microservice is only associated with 1 agreement, then it can be stopped. The only exception
 							// is for microservices that are agreementless, which are never stopped.
-							if (msd.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || len(msi.AssociatedAgreements) == 1) && !msi.AgreementLess {
+							if (msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_MULTIPLE || len(msi.AssociatedAgreements) == 1) && !msi.AgreementLess {
 								// mark the ms clean up started and remove all the microservice containers if any
 								if _, err := persistence.MicroserviceInstanceCleanupStarted(w.db, msi.GetKey()); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error setting cleanup start time for service instance %v. %v", msi.GetKey(), err)))
@@ -605,8 +606,9 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 									// the ms instance will be archived after the microservice containers are destroyed.
 									glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for %v", msi.GetKey())))
 									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE, msi.GetKey())
-								} else if _, err := persistence.ArchiveMicroserviceInstance(w.db, msi.GetKey()); err != nil {
+								} else if err := persistence.ArchiveMicroserviceInstAndDef(w.db, msi.GetKey()); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", msi.GetKey(), err)))
+
 								}
 							} else {
 								if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), false, agreementId); err != nil {
@@ -624,7 +626,7 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 								}
 								// Singleton services that are dependencies will have extra networks, which might not be needed any more since
 								// at least one of the parents is going away when the current agreement terminates.
-								if msd.Sharable == exchange.MS_SHARING_MODE_SINGLE || msd.Sharable == exchange.MS_SHARING_MODE_SINGLETON {
+								if msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE || msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON {
 									glog.V(5).Infof(logString(fmt.Sprintf("Remove extra networks for %v all context msi: %v", msi.GetKey(), msi)))
 									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE_NETWORK, msi.GetKey())
 								}
@@ -1081,3 +1083,4 @@ func composeNewRegisteredServices(activeServices []exchange.Microservice, oldReg
 		return newRegisteredServices, false
 	}
 }
+

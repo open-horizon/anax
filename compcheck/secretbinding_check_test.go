@@ -42,7 +42,7 @@ func getVariableSelectedServicesHandler(arches []string) exchange.SelectedServic
 					URL:              mUrl,
 					Version:          mVersion,
 					Arch:             arch,
-					RequiredServices: []exchange.ServiceDependency{},
+					RequiredServices: []exchangecommon.ServiceDependency{},
 					Deployment:       "",
 				}
 
@@ -54,7 +54,7 @@ func getVariableSelectedServicesHandler(arches []string) exchange.SelectedServic
 				URL:              mUrl,
 				Version:          mVersion,
 				Arch:             mArch,
-				RequiredServices: []exchange.ServiceDependency{},
+				RequiredServices: []exchangecommon.ServiceDependency{},
 				Deployment:       "",
 			}
 			sId := fmt.Sprintf("id_%s", mArch)
@@ -67,18 +67,18 @@ func getVariableSelectedServicesHandler(arches []string) exchange.SelectedServic
 
 func getVariableServiceDefResolverHandler(mUrl, mOrg, mVersion, mArch string, secrets_top []string, secrets_dep []string) exchange.ServiceDefResolverHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
-		sd := []exchange.ServiceDependency{}
+		sd := []exchangecommon.ServiceDependency{}
 		dep_defs := map[string]exchange.ServiceDefinition{}
 		if mUrl != "" {
 			dep := exchange.ServiceDefinition{
 				URL:              mUrl,
 				Version:          mVersion,
 				Arch:             mArch,
-				RequiredServices: []exchange.ServiceDependency{},
+				RequiredServices: []exchangecommon.ServiceDependency{},
 				Deployment:       getDeploymentString(wUrl, secrets_dep),
 			}
 			dep_defs[mOrg+"/dep_svc_id"] = dep
-			sd = append(sd, exchange.ServiceDependency{
+			sd = append(sd, exchangecommon.ServiceDependency{
 				URL:     mUrl,
 				Org:     mOrg,
 				Version: mVersion,
