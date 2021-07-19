@@ -45,17 +45,17 @@ func (w *GovernanceWorker) governMicroservices() int {
 // to avoid filling up the filesystem
 func (w *GovernanceWorker) cleanupSigningKeys(keys []string) {
 
-        errHandler := func(keyname string) api.ErrorHandler {
-                return func(err error) bool {
-                        glog.Errorf(logString(fmt.Sprintf("received error when deleting the signing key file %v to anax. %v", keyname, err)))
-                        return true
-                }
-        }
+	errHandler := func(keyname string) api.ErrorHandler {
+		return func(err error) bool {
+			glog.Errorf(logString(fmt.Sprintf("received error when deleting the signing key file %v to anax. %v", keyname, err)))
+			return true
+		}
+	}
 
-        for _, key := range keys {
-                glog.V(3).Info(fmt.Sprintf("About to delete signing key %s", key))
-                api.DeletePublicKey(key, w.Config, errHandler(key))
-        }
+	for _, key := range keys {
+		glog.V(3).Info(fmt.Sprintf("About to delete signing key %s", key))
+		api.DeletePublicKey(key, w.Config, errHandler(key))
+	}
 }
 
 // This function is called when there is a change to a service in the exchange. That might signal a service upgrade.
@@ -160,7 +160,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 							fn = fmt.Sprintf("%v.pem", key)
 						}
 
-						// Keys for different services might have the same key name like service.public.pem so prepend something unique like the agreement id 
+						// Keys for different services might have the same key name like service.public.pem so prepend something unique like the agreement id
 						// but then we have to make sure we delete the key when done with it
 						prepend_string := prepend_key_string + "_" + strconv.Itoa(num_signing_keys) + "_"
 						num_signing_keys += 1

@@ -176,10 +176,10 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 					} else if err = secManager.UpdateServiceSecrets(msDef.Id, secToSave); err != nil {
 						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to update secret in agent filesystem %v, error: %v", update.AgreementId(), update.Metadata, err)))
 						acceptedUpdate = false
+					} else {
+						glog.V(5).Infof(BPHlogString(fmt.Sprintf("handled update for secret %v", secToSave.SvcSecretName)))
 					}
 				}
-
-				// TODO: Update the filesystem for the running containers.
 
 			}
 

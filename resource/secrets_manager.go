@@ -29,14 +29,14 @@ func NewSecretsManager(secFilePath string, database *bolt.DB) *SecretsManager {
 
 // This is for updating service secrets. This assumes that the updated secrets are already updated in the agent db.
 func (s SecretsManager) UpdateServiceSecrets(msDefId string, updatedSec persistence.PersistedServiceSecret) error {
-	// Need the list of agreement ids from the saved secret
+	// Need the list of container ids from the saved secret
 	if savedSec, err := persistence.FindSingleSecretForService(s.db, updatedSec.SvcSecretName, msDefId); err != nil {
 		return err
 	} else if contentBytes, err := base64.StdEncoding.DecodeString(updatedSec.SvcSecretValue); err != nil {
 		return err
 	} else {
-		for _, agId := range savedSec.AgreementIds {
-			err = WriteToFile(contentBytes, path.Join(s.SecretsStorePath, agId, updatedSec.SvcSecretName), path.Join(s.SecretsStorePath, agId))
+		for _, containerId := range savedSec.ContainerIds {
+			err = WriteToFile(contentBytes, path.Join(s.SecretsStorePath, containerId, updatedSec.SvcSecretName), path.Join(s.SecretsStorePath, containerId))
 		}
 	}
 	return nil
@@ -59,6 +59,8 @@ func (s SecretsManager) WriteServiceSecretsToFile(svcOrgAndName string, agId str
 					if contentBytes, err := base64.StdEncoding.DecodeString(sec.SvcSecretValue); err != nil {
 						return fmt.Errorf("Error decoding base64 encoded secret string: %v", err)
 					} else if err = CreateAndWriteToFile(contentBytes, containerId, path.Join(s.SecretsStorePath, containerId, secName), path.Join(s.SecretsStorePath, containerId)); err != nil {
+						return err
+					} else if err = persistence.AddContainerIdToSecret(s.db, secName, svcSecret.MsDefId, svcSecret.MsDefVers, containerId); err != nil {
 						return err
 					}
 				}

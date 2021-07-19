@@ -10,11 +10,10 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
-	"sync"
 	"strings"
+	"sync"
 	"time"
 )
-
 
 // The node search object searches the exchange for nodes that can run services referred to in patterns and deployment
 // policies. The exchange search API for patterns will return all nodes eligible for a given pattern. For deployment
@@ -32,16 +31,15 @@ type NodeSearch struct {
 	lastSearchComplete   bool
 	lastSearchTime       uint64
 	searchThread         chan bool
-	rescanLock           sync.Mutex // The lock that protects the rescanNeeded flag. The rescanNeeded flag can be checked/changed on different threads.
-	rescanNeeded         bool       // A broad indicator that something policy or pattern related changed, and therefore the agbot needs to rescan all nodes.
-	batchSize            uint64     // The max number of nodes that this object will process in a deployment policy search result.
-	activeDeviceTimeoutS int        // The amount of time a device can go without heartbeating and still be considered active for the purposes of search.
-	retryLookBack        uint64     // The amount of time to look backward for node changes when node retries are happening.
-	policyOrder          bool       // When true, order policies most recently changed to least recently changed.
-	clearExchangeCache   bool       // When true, the exchange cache will be deleted after a seach is made with devices returned.
-	completedSearches    map[string]bool  //Keeps track of the patterns/policies that have been searched to eliminate rescans until all are searched
+	rescanLock           sync.Mutex      // The lock that protects the rescanNeeded flag. The rescanNeeded flag can be checked/changed on different threads.
+	rescanNeeded         bool            // A broad indicator that something policy or pattern related changed, and therefore the agbot needs to rescan all nodes.
+	batchSize            uint64          // The max number of nodes that this object will process in a deployment policy search result.
+	activeDeviceTimeoutS int             // The amount of time a device can go without heartbeating and still be considered active for the purposes of search.
+	retryLookBack        uint64          // The amount of time to look backward for node changes when node retries are happening.
+	policyOrder          bool            // When true, order policies most recently changed to least recently changed.
+	clearExchangeCache   bool            // When true, the exchange cache will be deleted after a seach is made with devices returned.
+	completedSearches    map[string]bool //Keeps track of the patterns/policies that have been searched to eliminate rescans until all are searched
 }
-
 
 func NewNodeSearch() *NodeSearch {
 	ns := &NodeSearch{
@@ -167,7 +165,7 @@ func (n *NodeSearch) findAndMakeAgreements() {
 
 	// Get a list of all the orgs this agbot is serving.
 	allOrgs := n.pm.GetAllPolicyOrgs()
-	
+
 	// If all patterns/policies completely searched clear map so next time through, search can start searches from full list again
 	doClearSearchedMap := true
 
@@ -183,18 +181,18 @@ func (n *NodeSearch) findAndMakeAgreements() {
 
 			// Search for nodes based on the current changedSince timestamp to pick up any newly changed nodes.
 			if consumerPolicy.PatternId != "" {
-				// Check to see if we have already searched this pattern... makes sure we check other policies before circling back and repeating re-searching ones we already did. 
-				// Can't use consumerPolicy.PatternId as the key since multiple consumerPolicies can have same PatternId but have different architectures. 
+				// Check to see if we have already searched this pattern... makes sure we check other policies before circling back and repeating re-searching ones we already did.
+				// Can't use consumerPolicy.PatternId as the key since multiple consumerPolicies can have same PatternId but have different architectures.
 				// The consumerPolicy.Header.Name captures the service and the architecture.  Need to prepend the org too since searches are by org.
-				_,ok := n.completedSearches[org + "_" + consumerPolicy.Header.Name];
-				if !ok { 
-					if _, err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0); err != nil { 
-						// Dont move the changed since time forward since there was an error.  
-						searchError = true 
-						break 
+				_, ok := n.completedSearches[org+"_"+consumerPolicy.Header.Name]
+				if !ok {
+					if _, err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0); err != nil {
+						// Dont move the changed since time forward since there was an error.
+						searchError = true
+						break
 					} else {
-						glog.V(5).Infof(AWlogString(fmt.Sprintf("Adding pattern %s as searched", org + "_" + consumerPolicy.Header.Name)))
-						n.completedSearches[org + "_" + consumerPolicy.Header.Name] = true
+						glog.V(5).Infof(AWlogString(fmt.Sprintf("Adding pattern %s as searched", org+"_"+consumerPolicy.Header.Name)))
+						n.completedSearches[org+"_"+consumerPolicy.Header.Name] = true
 					}
 				} else {
 					glog.V(5).Infof(AWlogString(fmt.Sprintf("Would have searched %s again... skipping", consumerPolicy.PatternId)))
@@ -203,30 +201,30 @@ func (n *NodeSearch) findAndMakeAgreements() {
 				_, polName := cutil.SplitOrgSpecUrl(consumerPolicy.Header.Name)
 
 				// Get the hash of the business policy entry
-				pBE_hash :=  string(pBE.Hash)
+				pBE_hash := string(pBE.Hash)
 
-				//Check to see if we have already searched this policy... makes sure we check other policies before circling back and repeating re-searching ones we already did 
-				_,ok := n.completedSearches[pBE_hash];   // Use the hash since the policy may get updated which would change the hash but not the name. Do want to search changed/new policies
+				//Check to see if we have already searched this policy... makes sure we check other policies before circling back and repeating re-searching ones we already did
+				_, ok := n.completedSearches[pBE_hash] // Use the hash since the policy may get updated which would change the hash but not the name. Do want to search changed/new policies
 
-				if !ok { 
-					if lastPage, err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, pBE.Updated); err != nil { 
-						// Dont move the changed since time forward since there was an error.  
-						searchError = true 
-						break 
-					} else if !lastPage { 
-						// The search returned a large number of results that need to be processed. Let the system work on them 
-						// and then we'll come back and try again.  
-						n.SetRescanNeeded() 
+				if !ok {
+					if lastPage, err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, pBE.Updated); err != nil {
+						// Dont move the changed since time forward since there was an error.
+						searchError = true
+						break
+					} else if !lastPage {
+						// The search returned a large number of results that need to be processed. Let the system work on them
+						// and then we'll come back and try again.
+						n.SetRescanNeeded()
 
 						// Since not last page, this policy not completely searched so do not clear map
 						doClearSearchedMap = false
-						break 
-					} else { 
-						glog.V(5).Infof(AWlogString(fmt.Sprintf("Adding policy %s as searched", consumerPolicy.Header.Name))) 
+						break
+					} else {
+						glog.V(5).Infof(AWlogString(fmt.Sprintf("Adding policy %s as searched", consumerPolicy.Header.Name)))
 						n.completedSearches[pBE_hash] = true
 					}
-				} else { 
-					glog.V(5).Infof(AWlogString(fmt.Sprintf("Would have searched %s again... skipping", consumerPolicy.Header.Name))) 
+				} else {
+					glog.V(5).Infof(AWlogString(fmt.Sprintf("Would have searched %s again... skipping", consumerPolicy.Header.Name)))
 				}
 			}
 
@@ -241,7 +239,7 @@ func (n *NodeSearch) findAndMakeAgreements() {
 		n.SetRescanNeeded()
 	}
 
-	if doClearSearchedMap { 
+	if doClearSearchedMap {
 		glog.V(3).Infof(AWlogString(fmt.Sprintf("OK to clear search map; length of map %d", len(n.completedSearches))))
 		n.completedSearches = make(map[string]bool)
 	}
@@ -420,13 +418,13 @@ func (n *NodeSearch) searchExchange(pol *policy.Policy, polOrg string, polName s
 		}
 
 		arch := ""
-		// Architectures supported by the horizon agents 
-		supported_architectures  := []string{"amd64", "arm", "arm64", "ppc64le"}
+		// Architectures supported by the horizon agents
+		supported_architectures := []string{"amd64", "arm", "arm64", "ppc64le"}
 		// pol.Header.Name should be something like Helloworld_ibm.helloworld_ieam-roks-scale_amd64 (or _arm or _arm64 or _ppc64le)
 		// Search list of supported architectures to find a match. If there isn't a match for some reason, the architecture passed in will be ""
 		// which the Exchange can handle by not filtering the nodes by architecture and the agbot will determine if they match
-		for _,pattern_arch := range supported_architectures {
-			if  strings.HasSuffix(pol.Header.Name, pattern_arch) {
+		for _, pattern_arch := range supported_architectures {
+			if strings.HasSuffix(pol.Header.Name, pattern_arch) {
 				arch = pattern_arch
 				break
 			}

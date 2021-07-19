@@ -21,6 +21,7 @@ type PersistedServiceSecret struct {
 	SvcSecretName   string
 	SvcSecretValue  string
 	AgreementIds    []string
+	ContainerIds    []string
 	TimeCreated     uint64
 	TimeLastUpdated uint64
 }
@@ -63,14 +64,16 @@ func SaveSecret(db *bolt.DB, secretName string, msDefId string, msDefVers string
 	if secretToSave.TimeCreated == 0 {
 		secretToSave.TimeCreated = timestamp
 	}
-	secretToSave.TimeLastUpdated = timestamp
 
 	if mergedSec, ok := secretToSaveAll.SecretsMap[secretName]; ok {
 		mergedSec.AgreementIds = append(mergedSec.AgreementIds, secretToSave.AgreementIds...)
-		mergedSec.TimeLastUpdated = secretToSave.TimeLastUpdated
-		mergedSec.SvcSecretValue = secretToSave.SvcSecretValue
+		mergedSec.ContainerIds = append(mergedSec.ContainerIds, secretToSave.ContainerIds...)
+		if mergedSec.SvcSecretValue != secretToSave.SvcSecretValue {
+			mergedSec.TimeLastUpdated = timestamp
+		}
 		secretToSaveAll.SecretsMap[secretName] = mergedSec
 	} else {
+		secretToSave.TimeLastUpdated = uint64(time.Now().Unix())
 		secretToSaveAll.SecretsMap[secretName] = secretToSave
 	}
 	return SaveAllServiceSecrets(db, msDefId, secretToSaveAll)
@@ -139,6 +142,22 @@ func FindSingleSecretForService(db *bolt.DB, secName string, msDefId string) (*P
 	}
 
 	return nil, nil
+}
+
+func AddContainerIdToSecret(db *bolt.DB, secName string, msDefId string, msDefVers string, containerId string) error {
+	sec, err := FindSingleSecretForService(db, secName, msDefId)
+	if err != nil {
+		return err
+	}
+
+	if !cutil.SliceContains(sec.ContainerIds, containerId) {
+		sec.ContainerIds = append(sec.ContainerIds, containerId)
+		err = SaveSecret(db, secName, msDefId, msDefVers, sec)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type SecFilter func(PersistedServiceSecrets) bool
