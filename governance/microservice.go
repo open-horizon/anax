@@ -596,7 +596,7 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 
 							// If this microservice is only associated with 1 agreement, then it can be stopped. The only exception
 							// is for microservices that are agreementless, which are never stopped.
-							if (msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_MULTIPLE || len(msi.AssociatedAgreements) == 1) && !msi.AgreementLess {
+							if (msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_MULTIPLE || len(msi.AssociatedAgreements) < 2) && !msi.AgreementLess {
 								// mark the ms clean up started and remove all the microservice containers if any
 								if _, err := persistence.MicroserviceInstanceCleanupStarted(w.db, msi.GetKey()); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error setting cleanup start time for service instance %v. %v", msi.GetKey(), err)))
@@ -606,9 +606,9 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 									// the ms instance will be archived after the microservice containers are destroyed.
 									glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for %v", msi.GetKey())))
 									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE, msi.GetKey())
-								} else if err := persistence.ArchiveMicroserviceInstAndDef(w.db, msi.GetKey()); err != nil {
+								}
+								if err := persistence.ArchiveMicroserviceInstAndDef(w.db, msi.GetKey()); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", msi.GetKey(), err)))
-
 								}
 							} else {
 								if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), false, agreementId); err != nil {
@@ -1083,4 +1083,3 @@ func composeNewRegisteredServices(activeServices []exchange.Microservice, oldReg
 		return newRegisteredServices, false
 	}
 }
-
