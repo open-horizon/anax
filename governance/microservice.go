@@ -41,6 +41,23 @@ func (w *GovernanceWorker) governMicroservices() int {
 	return 0
 }
 
+// Since we changed to saving the signing key with the agreement id, we need to make sure we delete the key when done with it
+// to avoid filling up the filesystem
+func (w *GovernanceWorker) cleanupSigningKeys(keys []string) {
+
+        errHandler := func(keyname string) api.ErrorHandler {
+                return func(err error) bool {
+                        glog.Errorf(logString(fmt.Sprintf("received error when deleting the signing key file %v to anax. %v", keyname, err)))
+                        return true
+                }
+        }
+
+        for _, key := range keys {
+                glog.V(3).Info(fmt.Sprintf("About to delete signing key %s", key))
+                api.DeletePublicKey(key, w.Config, errHandler(key))
+        }
+}
+
 // This function is called when there is a change to a service in the exchange. That might signal a service upgrade.
 func (w *GovernanceWorker) governMicroserviceVersions() {
 
@@ -104,6 +121,10 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			// now handle the case where there are containers
 			deployment, deploymentSig := msdef.GetDeployment()
 
+			// keep track of keys used for validating signatures so we can clean them up when signatures verified
+			signingKeys := make([]string, 0, 1)
+			num_signing_keys := 0
+
 			// convert workload to policy workload structure
 			var ms_workload policy.Workload
 			ms_workload.Deployment = deployment
@@ -126,6 +147,12 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 						}
 					}
 
+					var prepend_key_string string
+					if len(agreementId) > 0 {
+						prepend_key_string = agreementId
+					} else {
+						prepend_key_string = ms_key
+					}
 					for key, content := range key_map {
 						//add .pem the end of the keyname if it does not have none.
 						fn := key
@@ -133,17 +160,28 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 							fn = fmt.Sprintf("%v.pem", key)
 						}
 
-						api.UploadPublicKey(fn, []byte(content), w.Config, errHandler(fn))
+						// Keys for different services might have the same key name like service.public.pem so prepend something unique like the agreement id 
+						// but then we have to make sure we delete the key when done with it
+						prepend_string := prepend_key_string + "_" + strconv.Itoa(num_signing_keys) + "_"
+						num_signing_keys += 1
+						key_name := prepend_string + fn
+
+						api.UploadPublicKey(key_name, []byte(content), w.Config, errHandler(fn))
+						signingKeys = append(signingKeys, key_name)
 					}
 				}
 			}
 
 			// Verify the deployment signature
 			if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
+				w.cleanupSigningKeys(signingKeys)
 				return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
 			} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
+				w.cleanupSigningKeys(signingKeys)
 				return nil, fmt.Errorf(logString(fmt.Sprintf("service container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
 			}
+
+			w.cleanupSigningKeys(signingKeys)
 
 			// Gather up the service dependencies, if there are any. Microservices in the workload/microservice model never have dependencies,
 			// but services can. It is important to use the correct version for the service dependency, which is the version we have
