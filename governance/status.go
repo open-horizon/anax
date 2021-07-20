@@ -128,7 +128,7 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 	// When cfgStates is not empty, it contains the config state for all the services.
 	// The getServiceStatus() may miss the ones that already suspended and the ones just
 	// turned into active.
-	// This part update the service config states with the new ones . 
+	// This part update the service config states with the new ones .
 	if cfgStates != nil && len(cfgStates) != 0 {
 		// updating services cfg states
 		for _, cfgState := range cfgStates {
