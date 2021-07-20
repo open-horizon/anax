@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -71,7 +72,7 @@ func SecretList(org, credToUse, secretName string) {
 	var resp []byte
 	listQuery := func() int {
 		return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
-			[]int{200, 401, 403, 404, 503}, &resp)
+			[]int{200, 400, 401, 403, 404, 503}, &resp)
 	}
 	retCode := queryWithRetry(listQuery, 3, 1)
 
@@ -88,8 +89,9 @@ func SecretList(org, credToUse, secretName string) {
 	}
 
 	// parse and print the response
-	if retCode == 401 || retCode == 403 || retCode == 503 {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, string(resp))
+	if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 503 {
+		respString, _ := strconv.Unquote(string(resp))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, respString)
 	} else if isSecretDirectory {
 		// list org/user secrets
 		if retCode == 200 {
@@ -129,6 +131,11 @@ func SecretAdd(org, credToUse, secretName, secretFile, secretKey, secretDetail s
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
+	// get rid of trailing / from secret name
+	if strings.HasSuffix(secretName, "/") {
+		secretName = secretName[:len(secretName)-1]
+	}
+
 	// check the input
 	if secretFile != "" && secretDetail != "" {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-f is mutually exclusive with --secretDetail."))
@@ -142,18 +149,20 @@ func SecretAdd(org, credToUse, secretName, secretFile, secretKey, secretDetail s
 	var resp []byte
 	checkQuery := func() int {
 		return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
-			[]int{200, 401, 403, 404, 503}, &resp)
+			[]int{200, 400, 401, 403, 404, 503}, &resp)
 	}
 	retCode := queryWithRetry(checkQuery, 3, 1)
 
 	// check the response
-	if retCode == 401 || retCode == 403 || retCode == 503 {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, string(resp))
+	if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 503 {
+		respString, _ := strconv.Unquote(string(resp))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, strings.Replace(respString, " list ", " add ", 1))
 	} else if retCode == 200 {
 		var secret SecretResponse
 		perr := json.Unmarshal(resp, &secret)
 		if perr != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal REST API response: %v", perr))
+			// API returned an error or list
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect secret name given: %v", secretName))
 		}
 		secretExists = secret.Exists
 	}
@@ -190,15 +199,16 @@ func SecretAdd(org, credToUse, secretName, secretFile, secretKey, secretDetail s
 	var resp2 []byte
 	addQuery := func() int {
 		return cliutils.AgbotPutPost(http.MethodPut, "org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName),
-			cliutils.OrgAndCreds(org, credToUse), []int{201, 401, 403, 503}, newSecret, &resp2)
+			cliutils.OrgAndCreds(org, credToUse), []int{201, 400, 401, 403, 503}, newSecret, &resp2)
 	}
 	retCode = queryWithRetry(addQuery, 3, 1)
 
 	// output success or failure
 	if retCode == 201 {
 		fmt.Printf("Secret \"%s\" successfully added to the secrets manager.\n", secretName)
-	} else if retCode == 401 || retCode == 403 || retCode == 503 {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, string(resp2))
+	} else if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 503 {
+		respString, _ := strconv.Unquote(string(resp2))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, respString)
 	}
 
 }
@@ -208,21 +218,28 @@ func SecretRemove(org, credToUse, secretName string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
+	// get rid of trailing / from secret name
+	if strings.HasSuffix(secretName, "/") {
+		secretName = secretName[:len(secretName)-1]
+	}
+
 	// query the agbot secure api
 	removeQuery := func() int {
 		return cliutils.AgbotDelete("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
-			[]int{204, 401, 403, 404, 503})
+			[]int{204, 400, 401, 403, 404, 503})
 	}
 	retCode := queryWithRetry(removeQuery, 3, 1)
 
 	// output success or failure
 	if retCode == 204 {
 		fmt.Printf("Secret \"%v\" successfully deleted from the secrets manager.\n", secretName)
+	} else if retCode == 400 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Bad request, secret name \"%s\" invalid.", secretName))
 	} else if retCode == 401 || retCode == 403 {
 		user, _ := cliutils.SplitIdToken(credToUse)
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid credentials. User \"%s\" cannot access \"%s\".\n", user, secretName))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Permission denied, user \"%s\" cannot access \"%s\".\n", user, secretName))
 	} else if retCode == 404 {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Secret \"%s\" not found in the secrets manager, nothing to delete.\n", secretName))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Secret \"%s\" not found in the secrets manager, nothing to remove.\n", secretName))
 	} else if retCode == 503 {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Vault component not found in the management hub."))
 	}
@@ -230,17 +247,23 @@ func SecretRemove(org, credToUse, secretName string) {
 
 // Pulls secret details from the secrets manager. If the secret does not exist, an error (fatal) is raised
 func SecretRead(org, credToUse, secretName string) {
+	// get rid of trailing / from secret name
+	if strings.HasSuffix(secretName, "/") {
+		secretName = secretName[:len(secretName)-1]
+	}
+
 	// query the agbot secure api
 	var resp []byte
 	listQuery := func() int {
 		return cliutils.AgbotGet("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
-			[]int{200, 401, 403, 404, 503}, &resp)
+			[]int{200, 400, 401, 403, 404, 503}, &resp)
 	}
 	retCode := queryWithRetry(listQuery, 3, 1)
 
 	// parse and print the response
-	if retCode == 401 || retCode == 403 || retCode == 404 || retCode == 503 {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, string(resp))
+	if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 404 || retCode == 503 {
+		respString, _ := strconv.Unquote(string(resp))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, respString)
 	} else {
 		// retCode == 200
 		var secretDetails secrets.SecretDetails
