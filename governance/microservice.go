@@ -25,7 +25,7 @@ func (w *GovernanceWorker) governMicroservices() int {
 
 	// check if service instance containers are down
 	glog.V(4).Infof(logString(fmt.Sprintf("governing service containers")))
-	if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllMIFilter(), persistence.UnarchivedMIFilter()}); err != nil {
+	if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error retrieving all service instances from database, error: %v", err)))
 	} else if ms_instances != nil {
 		for _, msi := range ms_instances {
@@ -189,7 +189,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			// be greater than the dependency version.
 			ms_specs := []events.MicroserviceSpec{}
 			for _, rs := range msdef.RequiredServices {
-				msdef_dep, err := microservice.FindOrCreateMicroserviceDef(w.db, rs.URL, rs.Org, rs.Version, rs.Arch, exchange.GetHTTPServiceHandler(w))
+				msdef_dep, err := microservice.FindOrCreateMicroserviceDef(w.db, rs.URL, rs.Org, rs.Version, rs.Arch, false, exchange.GetHTTPServiceHandler(w))
 				if err != nil {
 					return nil, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for for %v/%v: %v", rs.Org, rs.URL, err)))
 				} else {
@@ -667,14 +667,6 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 								if msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE || msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON {
 									glog.V(5).Infof(logString(fmt.Sprintf("Remove extra networks for %v all context msi: %v", msi.GetKey(), msi)))
 									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE_NETWORK, msi.GetKey())
-								}
-							}
-
-							// handle inactive microservice upgrade, upgrade the microservice if needed
-							if !skipUpgrade {
-								if msd.AutoUpgrade && !msd.ActiveUpgrade {
-									cmd := w.NewUpgradeMicroserviceCommand(msd.Id)
-									w.Commands <- cmd
 								}
 							}
 						}

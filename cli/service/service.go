@@ -4,31 +4,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
-	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
-	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"net/http"
 	"runtime"
 	"strings"
 )
 
-type APIServices struct {
-	Config []api.APIMicroserviceConfig `json:"config"` // the service configurations
-	//Instances   map[string][]interface{}    `json:"instances"`   // the service instances that are running
-	//Definitions map[string][]interface{}    `json:"definitions"` // the definitions of services from the exchange
-}
-
 type OurService struct {
-	Url       string                 `json:"url"`     // A URL pointing to the definition of the service
-	Org       string                 `json:"org"`     // The organization where the service is defined
-	Version   string                 `json:"version"` // The version of the service in OSGI version format
-	Arch      string                 `json:"arch"`    // The hardware architecture of the service impl
-	Variables map[string]interface{} `json:"variables"`
+	Url     string `json:"url"`     // A URL pointing to the definition of the service
+	Org     string `json:"org"`     // The organization where the service is defined
+	Version string `json:"version"` // The version of the service in OSGI version format
+	Arch    string `json:"arch"`    // The hardware architecture of the service impl
 }
 
 func List() {
@@ -36,38 +27,16 @@ func List() {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Get the services
-	var apiOutput APIServices
-	// Note: intentionally querying /service, because in the future we will probably want to mix in some key runtime info
-	httpCode, _ := cliutils.HorizonGet("service/config", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput, false)
-	//todo: i think config can be queried even before the node is registered?
+	var apiOutput api.AllServices
+	httpCode, _ := cliutils.HorizonGet("service", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput, false)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf(cliutils.MUST_REGISTER_FIRST))
 	}
 
-	statusInfo := apicommon.Info{}
-	cliutils.HorizonGet("status", []int{200}, &statusInfo, false)
-	anaxArch := (*statusInfo.Configuration).Arch
-
 	// Go thru the services and pull out interesting fields
 	services := make([]OurService, 0)
-	for _, s := range apiOutput.Config {
-		serv := OurService{Url: s.SensorUrl, Org: s.SensorOrg, Version: s.SensorVersion, Arch: anaxArch, Variables: make(map[string]interface{})}
-
-		for _, attr := range s.Attributes {
-			if b_attr, err := json.Marshal(attr); err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal '/service/config' output attribute %v. %v", attr, err))
-				return
-			} else if a, err := persistence.HydrateConcreteAttribute(b_attr); err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to convert '/service/config' output attribute %v to its original type. %v", attr, err))
-				return
-			} else {
-				switch a.(type) {
-				case persistence.UserInputAttributes:
-					// get user input
-					serv.Variables = a.GetGenericMappings()
-				}
-			}
-		}
+	for _, s := range apiOutput.Definitions["active"] {
+		serv := OurService{Url: s.SpecRef, Org: s.Org, Version: s.Version, Arch: s.Arch}
 
 		services = append(services, serv)
 	}
@@ -80,7 +49,7 @@ func List() {
 	fmt.Printf("%s\n", jsonBytes)
 }
 
-func Log(serviceName string, containerName string, tailing bool) {
+func Log(serviceName string, serviceVersion, containerName string, tailing bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// if node is not registered
@@ -101,31 +70,33 @@ func Log(serviceName string, containerName string, tailing bool) {
 	// is what appears in the syslog, so we need to save that.
 	serviceFound := false
 	var instanceId string
+	var msdefId string
 	org, name := cutil.SplitOrgSpecUrl(refUrl)
 	for _, serviceInstance := range runningServices.Instances["active"] {
 		if (serviceInstance.SpecRef == name && serviceInstance.Org == org) || strings.Contains(serviceInstance.SpecRef, refUrl) {
-			instanceId = serviceInstance.InstanceId
-			serviceFound = true
-			msgPrinter.Printf("Found service %v with service id %v.", serviceInstance.SpecRef, instanceId)
-			msgPrinter.Println()
-			break
+			if serviceVersion == "" || serviceVersion == serviceInstance.Version {
+				instanceId = serviceInstance.InstanceId
+				msdefId = serviceInstance.MicroserviceDefId
+				serviceFound = true
+				msgPrinter.Printf("Found service %v with service id %v.", serviceInstance.SpecRef, instanceId)
+				msgPrinter.Println()
+				break
+			}
 		}
 	}
 	if !serviceFound {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v is not running on the node.", refUrl))
+		if serviceVersion == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v is not running on the node.", refUrl))
+		} else {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v version %v is not running on the node.", refUrl, serviceVersion))
+		}
 	}
 
 	// Check service's log-driver to read logs from correct place
 	containerFound := false
 	var nonDefaultLogDriverUsed bool
-	for _, v := range runningServices.Definitions["active"] {
-		def := &persistence.MicroserviceDefinition{}
-		defBytes, _ := json.Marshal(v)
-		if err := json.Unmarshal(defBytes, def); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service definition unmarshalling error: %v", err))
-		}
-
-		if (def.SpecRef == name && def.Org == org) || strings.Contains(def.SpecRef, refUrl) {
+	for _, def := range runningServices.Definitions["active"] {
+		if def.Id == msdefId {
 			if def.Deployment != "" {
 				deployment := &containermessage.DeploymentDescription{}
 				if err := json.Unmarshal([]byte(def.Deployment), deployment); err != nil {
@@ -151,9 +122,17 @@ func Log(serviceName string, containerName string, tailing bool) {
 		}
 	}
 	if !containerFound && containerName != "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Container %v is not running as part of service %v.", containerName, serviceName))
+		if serviceVersion == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Container %v is not running as part of service %v.", containerName, serviceName))
+		} else {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Container %v is not running as part of service %v version.", containerName, serviceName, serviceVersion))
+		}
 	} else if !containerFound {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Could not find service %v running on the node.", serviceName))
+		if serviceVersion == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Could not find service %v running on the node.", serviceName))
+		} else {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Could not find service %v version %v running on the node.", serviceName, serviceVersion))
+		}
 	} else {
 		msgPrinter.Printf("Displaying log messages of container %v for service %v with service id %v.", containerName, name, instanceId)
 		msgPrinter.Println()

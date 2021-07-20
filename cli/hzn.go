@@ -637,6 +637,7 @@ Environment Variables:
 	forceSuspendService := serviceConfigStateSuspendCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	serviceLogCmd := serviceCmd.Command("log", msgPrinter.Sprintf("Show the container logs for a service."))
 	logServiceName := serviceLogCmd.Arg("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .")).Required().String()
+	logServiceVersion := serviceLogCmd.Flag("version", msgPrinter.Sprintf("The version of the service.")).Short('V').String()
 	logServiceContainerName := serviceLogCmd.Flag("container", msgPrinter.Sprintf("The name of the container within the service whose log records should be displayed.")).Short('c').String()
 	logTail := serviceLogCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	serviceListCmd := serviceCmd.Command("list | ls", msgPrinter.Sprintf("List the services variable configuration that has been done on this Horizon edge node.")).Alias("ls").Alias("list")
@@ -1092,7 +1093,7 @@ Environment Variables:
 	case serviceListCmd.FullCommand():
 		service.List()
 	case serviceLogCmd.FullCommand():
-		service.Log(*logServiceName, *logServiceContainerName, *logTail)
+		service.Log(*logServiceName, *logServiceVersion, *logServiceContainerName, *logTail)
 	case serviceRegisteredCmd.FullCommand():
 		service.Registered()
 	case serviceConfigStateListCmd.FullCommand():

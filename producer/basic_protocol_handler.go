@@ -167,7 +167,8 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 				secManager := resource.NewSecretsManager(c.BaseProducerProtocolHandler.config.GetSecretsManagerFilePath(), c.db)
 
 				for _, secToSave := range allSecrets {
-					if msDef, err := microservice.FindOrCreateMicroserviceDef(c.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, secToSave.SvcArch, exchange.GetHTTPServiceHandler(c.ec)); err != nil {
+					// TODO: what exact version do we need here?
+					if msDef, err := microservice.FindOrCreateMicroserviceDef(c.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, secToSave.SvcArch, false, exchange.GetHTTPServiceHandler(c.ec)); err != nil {
 						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to find microservices defs for secret update %v, error: %v", update.AgreementId(), update.Metadata, err)))
 						acceptedUpdate = false
 					} else if err = persistence.SaveSecret(c.db, secToSave.SvcSecretName, msDef.Id, msDef.Version, &secToSave); err != nil {

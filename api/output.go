@@ -72,16 +72,16 @@ func NewWorkloadOutput() *AllWorkloads {
 
 // The output format for GET service
 type AllServices struct {
-	Config      []MicroserviceConfig                     `json:"config"`      // the service configurations
-	Instances   map[string][]*MicroserviceInstanceOutput `json:"instances"`   // the microservice instances that are running
-	Definitions map[string][]interface{}                 `json:"definitions"` // the definitions of services from the exchange
+	Config      []MicroserviceConfig                            `json:"config"`      // the service configurations
+	Instances   map[string][]*MicroserviceInstanceOutput        `json:"instances"`   // the microservice instances that are running
+	Definitions map[string][]persistence.MicroserviceDefinition `json:"definitions"` // the definitions of services from the exchange
 }
 
 func NewServiceOutput() *AllServices {
 	return &AllServices{
 		Config:      make([]MicroserviceConfig, 0, 10),
 		Instances:   make(map[string][]*MicroserviceInstanceOutput, 0),
-		Definitions: make(map[string][]interface{}, 0),
+		Definitions: make(map[string][]persistence.MicroserviceDefinition, 0),
 	}
 }
 
@@ -114,7 +114,7 @@ func (s EstablishedAgreementsByAgreementTerminatedTime) Less(i, j int) bool {
 	return s[i].AgreementTerminatedTime < s[j].AgreementTerminatedTime
 }
 
-type MicroserviceDefById []interface{}
+type MicroserviceDefById []persistence.MicroserviceDefinition
 
 func (s MicroserviceDefById) Len() int {
 	return len(s)
@@ -125,10 +125,10 @@ func (s MicroserviceDefById) Swap(i, j int) {
 }
 
 func (s MicroserviceDefById) Less(i, j int) bool {
-	return s[i].(persistence.MicroserviceDefinition).Id < s[j].(persistence.MicroserviceDefinition).Id
+	return s[i].Id < s[j].Id
 }
 
-type MicroserviceDefByUpgradeStartTime []interface{}
+type MicroserviceDefByUpgradeStartTime []persistence.MicroserviceDefinition
 
 func (s MicroserviceDefByUpgradeStartTime) Len() int {
 	return len(s)
@@ -139,7 +139,7 @@ func (s MicroserviceDefByUpgradeStartTime) Swap(i, j int) {
 }
 
 func (s MicroserviceDefByUpgradeStartTime) Less(i, j int) bool {
-	return s[i].(persistence.MicroserviceDefinition).UpgradeStartTime < s[j].(persistence.MicroserviceDefinition).UpgradeStartTime
+	return s[i].UpgradeStartTime < s[j].UpgradeStartTime
 }
 
 type MicroserviceInstanceByMicroserviceDefId []*MicroserviceInstanceOutput

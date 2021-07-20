@@ -1609,7 +1609,8 @@ func (w *GovernanceWorker) processServiceSecrets(tcPolicy *policy.Policy, agId s
 			service_arch = cutil.ArchString()
 		}
 
-		if msDef, err := microservice.FindOrCreateMicroserviceDef(w.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, service_arch, exchange.GetHTTPServiceHandler(w)); err != nil {
+		// TODO: what exact version do we need here?
+		if msDef, err := microservice.FindOrCreateMicroserviceDef(w.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, service_arch, false, exchange.GetHTTPServiceHandler(w)); err != nil {
 			return err
 		} else if err = persistence.SaveSecret(w.db, secToSave.SvcSecretName, msDef.Id, msDef.Version, &secToSave); err != nil {
 			return err
@@ -1627,7 +1628,7 @@ func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.Serv
 
 	for _, sDep := range *deps {
 
-		msdef, err := microservice.FindOrCreateMicroserviceDef(w.db, sDep.URL, sDep.Org, sDep.Version, sDep.Arch, exchange.GetHTTPServiceHandler(w))
+		msdef, err := microservice.FindOrCreateMicroserviceDef(w.db, sDep.URL, sDep.Org, sDep.Version, sDep.Arch, false, exchange.GetHTTPServiceHandler(w))
 		if err != nil {
 			return ms_specs, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for dependent service for agreement %v. %v", agreementId, err)))
 		}
