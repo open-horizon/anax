@@ -59,8 +59,8 @@ func (w *ResourceWorker) Messages() chan events.Message {
 
 func (w *ResourceWorker) Initialize() bool {
 	if w.rm.Configured() {
-		if err := w.rm.StartFileSyncService(w.am); err != nil {
-			glog.Errorf(reslog(fmt.Sprintf("Error starting ESS: %v", err)))
+		if err := w.rm.StartFileSyncServiceAndSecretsAPI(w.am, w.db); err != nil {
+			glog.Errorf(reslog(fmt.Sprintf("Error starting ESS and Secrets API: %v", err)))
 			return false
 		}
 	}
@@ -151,7 +151,7 @@ func (w *ResourceWorker) handleNodeConfigCommand(cmd *NodeConfigCommand) error {
 		destinationType = "openhorizon/openhorizon.edgenode"
 	}
 	w.rm.NodeConfigUpdate(cmd.msg.Org(), destinationType, cmd.msg.DeviceId(), cmd.msg.Token())
-	return w.rm.StartFileSyncService(w.am)
+	return w.rm.StartFileSyncServiceAndSecretsAPI(w.am, w.db)
 }
 
 // The node has just been unconfigured so we can stop the file sync service.
