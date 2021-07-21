@@ -576,6 +576,28 @@ func DemarshalProposal(proposal string) (Proposal, error) {
 
 }
 
+func MarshalProposal(prop Proposal) (string, error) {
+	// attempt serialization of the proposal
+	if propString, err := json.Marshal(prop); err != nil {
+		return "", err
+	} else {
+		return string(propString), nil
+	}
+}
+
+func ObscureProposalSecret(proposal string) (string, error) {
+	if proposal != "" {
+		if prop, err := DemarshalProposal(proposal); err != nil {
+			return "", err
+		} else if prop.(*BaseProposal).TsandCs, err = policy.ObscureSecretDetails(prop.(*BaseProposal).TsandCs); err != nil {
+			return "", err
+		} else if proposal, err = MarshalProposal(prop); err != nil {
+			return "", err
+		}
+	}
+	return proposal, nil
+}
+
 // Adds node built-in properties to the producer policy.
 // It will get node's CPU count, available memory and arch and add them to
 // the producer policy that was used to make the proposal on agbot.
