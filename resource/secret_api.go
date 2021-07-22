@@ -18,6 +18,7 @@ package resource
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/boltdb/bolt"
@@ -42,11 +43,11 @@ type SecretAPI struct {
 	authenticator *SecretsAPIAuthenticate
 }
 
-// secretObject includes the secret details.
-// The details are a JSON document containing {"key":"<key>", "value": "<value>"} that has been marshalled into a string and then base64 encoded.
+// secretObject includes the secret key and secret value.
 // swagger:model
 type secretObject struct {
-        Details string `json:"details"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 func NewSecretAPI(db *bolt.DB, am *AuthenticationManager) *SecretAPI {
@@ -321,14 +322,12 @@ func (api *SecretAPI) handleSecrets(writer http.ResponseWriter, request *http.Re
 					glog.V(3).Infof(secAPILogString(fmt.Sprintf("SecretStatus saved for MSSInstance: %v", savedMSSInst.String())))
 				}
 
-				// return secret name and secret details
-				m := make(map[string]*secretObject, 0)
-
-				secretName := psecret.SvcSecretName
-				secretObj := &secretObject{Details: psecret.SvcSecretValue}
-				m[secretName] = secretObj
-
-				if data, err := json.MarshalIndent(m, "", "  "); err != nil {
+				var sobj secretObject
+				if dbyte, err := base64.StdEncoding.DecodeString(psecret.SvcSecretValue); err != nil {
+					returnErrorResponse(writer, err, "Failed to decode the secret details.", http.StatusInternalServerError)
+				} else if err := json.Unmarshal(dbyte, &sobj); err != nil {
+					returnErrorResponse(writer, err, "Failed to unmarshal the secret byte to object.", http.StatusInternalServerError)
+				} else if data, err := json.MarshalIndent(sobj, "", "  "); err != nil {
 					returnErrorResponse(writer, err, "Failed to marshal the secret.", http.StatusInternalServerError)
 				} else {
 					writer.Header().Add(contentType, applicationJSON)
