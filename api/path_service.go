@@ -41,8 +41,8 @@ func FindServicesForOutput(pm *policy.PolicyManager,
 	wrap.Instances[archivedKey] = make([]*MicroserviceInstanceOutput, 0, 5)
 	wrap.Instances[activeKey] = make([]*MicroserviceInstanceOutput, 0, 5)
 
-	wrap.Definitions[archivedKey] = make([]interface{}, 0, 5)
-	wrap.Definitions[activeKey] = make([]interface{}, 0, 5)
+	wrap.Definitions[archivedKey] = make([]persistence.MicroserviceDefinition, 0, 5)
+	wrap.Definitions[activeKey] = make([]persistence.MicroserviceDefinition, 0, 5)
 
 	// Iterate through each service instance from the ms database and generate the output object for each one.
 	for _, msinst := range msinsts {
