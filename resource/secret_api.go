@@ -381,4 +381,3 @@ func isEmptySecretObject(psecret persistence.PersistedServiceSecret) bool {
 var secAPILogString = func(v interface{}) string {
 	return fmt.Sprintf("Secrets API: %v", v)
 }
-

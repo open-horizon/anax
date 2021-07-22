@@ -251,5 +251,3 @@ func (r *ResourceManager) RemovePersistencePath() {
 var rmLogString = func(v interface{}) string {
 	return fmt.Sprintf("Resource Manager: %v", v)
 }
-
-

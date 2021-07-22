@@ -252,8 +252,9 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		// Add a filesystem binding for the FSS (ESS) API SSL client certificate.
 		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.Config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_MOUNT))
 
+
 		// Add a filesystem binding for secrets from the agreement protocol to be stored.
-		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.GetSecretsManager().GetSecretsPath(agreementId), config.HZN_SECRETS_MOUNT))
+		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.GetSecretsManager().GetSecretsPath(agreementId), config.HZN_SECRETS_MOUNT)) 
 
 		// Get the group id that owns the service ess auth folder/file. Add this group id in the GroupAdd fields in docker.HostConfig. So that service account in service container can read ess auth folder/file (750)
 		groupAdds := make([]string, 0)
@@ -1299,6 +1300,11 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		}
 	}
 
+	// Save service secrets with the microservice id and write them to the agent filesystem
+	if err := b.GetSecretsManager().ProcessServiceSecretsWithInstanceId(originalAgreementId, agreementId); err != nil {
+		glog.Errorf("Error writing service secrets for agreement %v to file: %v", agreementId, err)
+	}
+
 	servicePairs, err := b.finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet, b.Config.GetFileSyncServiceAPIUnixDomainSocketPath())
 	if err != nil {
 		return nil, err
@@ -1364,9 +1370,6 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		}
 	}
 
-	if err := b.GetSecretsManager().WriteServiceSecretsToFile(serviceURL, originalAgreementId, agreementId); err != nil {
-		glog.Errorf("Error writing service secrets for agreement %v to file: %v", agreementId, err)
-	}
 	// finished pre-processing
 
 	// process shared by finding existing or creating new then hooking up "private" in pattern to the shared by adding two endpoints. Note! a shared container is not in the agreement bridge it came from
@@ -2467,17 +2470,10 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		glog.Errorf("Error removing containers for %v. Error: %v", agreements, err)
 	}
 
-	// Remove no longer needed secrets from the db
+	// Remove the secrets for these agreements from the agent filesystem and db
 	for _, agId := range agreements {
-		if err := persistence.DeleteAllSecForAgreement(b.db, agId); err != nil {
-			glog.Errorf("Error removing service secrets for agreement %v from db: %v", agId, err)
-		}
-	}
-
-	// Remove the secrets file from the agent filesystem
-	for _, agId := range agreements {
-		if err = b.GetSecretsManager().RemoveSecretsFolderForAgreement(agId); err != nil {
-			glog.Errorf("Error removing service secret folder for agreement %v: %v", agId, err)
+		if err = b.GetSecretsManager().DeleteAllSecForAgreement(b.db, agId); err != nil {
+			glog.Errorf("Error removing service secrets for agreement %v: %v", agId, err)
 		}
 	}
 

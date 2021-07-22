@@ -105,11 +105,11 @@ func (vs *AgbotVaultSecrets) ListOrgUserSecrets(user, token, org, path string) (
 	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
 	secrets, err := vs.listSecrets(user, token, org, url, path)
 	if err != nil {
-		return nil, err 
-	} 
+		return nil, err
+	}
 
-	// trim the user/<user> prefix from the names 
-	var secretList []string 
+	// trim the user/<user> prefix from the names
+	var secretList []string
 	for _, secret := range secrets {
 		secretList = append(secretList, strings.TrimPrefix(secret, path+"/"))
 	}
@@ -121,14 +121,14 @@ func (vs *AgbotVaultSecrets) ListOrgUserSecrets(user, token, org, path string) (
 // of the names in the input queue ("" if top-level vault directory)
 func (vs *AgbotVaultSecrets) gatherSecretNames(user, token, org, path string, queue []string) []string {
 
-	var secretNames []string 
+	var secretNames []string
 
 	// go through the queue and check for directories and names
 	for _, secret := range queue {
 		newPath := path + secret
-		if secret[len(secret) - 1] == '/' {
-			// secret directory 
-			secretList, err := vs.ListOrgSecrets(user, token, org, newPath[:len(newPath) - 1])
+		if secret[len(secret)-1] == '/' {
+			// secret directory
+			secretList, err := vs.ListOrgSecrets(user, token, org, newPath[:len(newPath)-1])
 			if err == nil {
 				secretNames = append(secretNames, secretList...)
 			}
@@ -180,7 +180,7 @@ func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url, path string) ([]
 		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to parse response %v", string(respBytes)), Details: "", RespCode: http.StatusInternalServerError}
 	}
 
-	// filter out user/ directory if top-level 
+	// filter out user/ directory if top-level
 	var secrets []string
 	if path == "" {
 		for _, secret := range respMsg.Data.Keys {
@@ -192,13 +192,13 @@ func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url, path string) ([]
 		secrets = respMsg.Data.Keys
 	}
 
-	// gather all the multi-part secret names 
+	// gather all the multi-part secret names
 	runningPath := ""
 	if path != "" {
 		runningPath = path + "/"
 	}
 	secretList := vs.gatherSecretNames(user, token, org, runningPath, secrets)
-	
+
 	return secretList, nil
 }
 
