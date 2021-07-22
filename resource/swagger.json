@@ -155,13 +155,16 @@
   },
   "definitions": {
     "secretObject": {
-      "description": "The details are a JSON document containing {\"key\":\"\u003ckey\u003e\", \"value\": \"\u003cvalue\u003e\"} that has been marshalled into a string and then base64 encoded.",
       "type": "object",
-      "title": "secretObject includes the secret details.",
+      "title": "secretObject includes the secret key and secret value.",
       "properties": {
-        "details": {
+        "key": {
           "type": "string",
-          "x-go-name": "Details"
+          "x-go-name": "Key"
+        },
+        "value": {
+          "type": "string",
+          "x-go-name": "Value"
         }
       },
       "x-go-package": "github.com/open-horizon/anax/resource"
