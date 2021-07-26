@@ -313,7 +313,6 @@ func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribut
 // Create the environment variable map needed by the container worker to hold the environment variables that are passed to the
 // workload container.
 func createEnvVarMap(agreementId string,
-	workloadPW string,
 	global []common.GlobalSet,
 	msURL string,
 	configVar map[string]interface{},
@@ -339,7 +338,6 @@ func createEnvVarMap(agreementId string,
 		agreementId,
 		GetNodeId(),
 		org,
-		workloadPW,
 		os.Getenv(DEVTOOL_HZN_EXCHANGE_URL),
 		os.Getenv(DEVTOOL_HZN_PATTERN),
 		cw.Config.GetFileSyncServiceProtocol(),
@@ -692,10 +690,8 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	}
 
 	agId := ""
-	wlpw := ""
 	if agreementBased {
 		agId = id
-		wlpw = "deprecated"
 	}
 
 	// Dependencies that require userinput variables to be set must have those variables set in the current userinput file,
@@ -703,7 +699,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	configVars := getConfiguredVariables(configUserInputs, specRef)
 
 	// Now that we have the configured variables, turn everything into environment variables for the container.
-	environmentAdditions, enverr := createEnvVarMap(agId, wlpw, globals, specRef, configVars, defUserInputs, org, cw, persistence.AttributesToEnvvarMap)
+	environmentAdditions, enverr := createEnvVarMap(agId, globals, specRef, configVars, defUserInputs, org, cw, persistence.AttributesToEnvvarMap)
 	if enverr != nil {
 		return nil, errors.New(msgPrinter.Sprintf("unable to create environment variables"))
 	}
