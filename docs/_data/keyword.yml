@@ -1,0 +1,114 @@
+cloud:
+  IBM&reg; Cloud
+cloud_notm:
+  IBM Cloud
+cloud_registry:
+  DockerHub
+common_services:
+  IBM Cloud Platform Common Services
+contain_soft:
+  IBM Certified Container
+contain_softs:
+  IBM Certified Containers
+docker:
+  Docker&reg;
+gui:
+  management console
+gui-short:
+  console
+edge:
+  IBM&reg; Edge Application Manager
+edge_notm:
+  Open Horizon
+edge_abbr:
+  OH
+edge_devices_notm:
+  Open Horizon
+edge_shared_notm:
+  Open Horizon shared components
+ieam:
+  Open Horizon
+edge_profile:
+  edge computing manager profile
+edge_deploy_pattern:
+  Open Horizon deployment pattern
+edge_deploy_patterns:
+  Open Horizon deployment patterns
+edge_node:
+  Open Horizon edge node
+edge_nodes:
+  Open Horizon edge nodes
+edge_service:
+  Open Horizon service
+edge_services:
+  Open Horizon services
+homebrew:
+  Homebrew&reg;
+horizon_open:
+  Open Horizon
+horizon:
+  Horizon
+horizon_agbot:
+  Horizon agbot
+horizon_agbots:
+  Horizon agbots
+horizon_agbot_full:
+  Horizon agreement bot (agbot)
+horizon_agent:
+  Horizon agent
+horizon_agents:
+  Horizon agents
+horizon_exchange:
+  Horizon exchange
+horizon_switch:
+  Horizon switchboard
+IBM:
+  IBM&reg;
+intel:
+  Intel&reg;
+IBM_notm:
+  IBM
+event_streams:
+  Apache Kafka
+ibm_cloud:
+  IBM Cloud
+klust:
+  Klusterlet
+linux:
+  Linux&reg;
+linux_notm:
+  Linux
+linux_bit:
+  Linux&reg; x86_64
+linux_bit_notm:
+  Linux x86_64
+mac_notm:
+  Mac
+mac:
+  mac&reg;
+macOS_notm:
+  macOS
+macOS:
+  macOS&reg;
+mgmt_hub:
+  management hub
+message_hub_notm:
+  Apache Kafka
+ocp:
+  OCP
+ocp_tm:
+  Red Hat&reg; OpenShift&reg; Container Platform
+open_shift:
+  OpenShift
+open_shift_cp:
+  OpenShift Container Platform
+semver:
+  4.2.0
+tech_prev:
+  Important&colon; This content is a technical preview and should not be relied on in a production environment&period;
+windows:
+  Windows&trade;
+windows_notm:
+  Windows
+version:
+  4.2
