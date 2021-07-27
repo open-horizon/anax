@@ -1537,7 +1537,6 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			proposal.AgreementId(),
 			exchange.GetId(w.GetExchangeId()),
 			exchange.GetOrg(w.GetExchangeId()),
-			workload.WorkloadPassword,
 			w.GetExchangeURL(),
 			w.devicePattern,
 			w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),

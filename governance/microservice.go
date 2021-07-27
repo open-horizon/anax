@@ -296,10 +296,17 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 		}
 	}
 
-	envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
-	envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.GetExchangeId())
-	envAdds[config.ENVVAR_PREFIX+"PATTERN"] = w.devicePattern
-	envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
+	cutil.SetPlatformEnvvars(envAdds,
+		config.ENVVAR_PREFIX,
+		"",
+		exchange.GetId(w.GetExchangeId()),
+		exchange.GetOrg(w.GetExchangeId()),
+		w.Config.Edge.ExchangeURL,
+		w.devicePattern,
+		w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),
+		w.BaseWorker.Manager.Config.GetFileSyncServiceAPIListen(),
+		strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
+
 
 	// Add in any default variables from the microservice userInputs that havent been overridden
 	for _, ui := range msdef.UserInputs {
