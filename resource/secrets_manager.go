@@ -69,13 +69,7 @@ func (s SecretsManager) FindSecretsMatchingMsInst(allSecrets *[]persistence.Pers
 	instVers := msInst.GetVersion()
 
 	for _, sec := range *allSecrets {
-		if semanticversion.IsVersionString(sec.SvcVersionRange) {
-			if match, err := semanticversion.CompareVersions(sec.SvcVersionRange, instVers); err != nil {
-				return nil, err
-			} else if match != 0 {
-				continue
-			}
-		} else if semVersRange, err := semanticversion.Version_Expression_Factory(sec.SvcVersionRange); err != nil {
+		if semVersRange, err := semanticversion.Version_Expression_Factory(sec.SvcVersionRange); err != nil {
 			return nil, err
 		} else if match, err := semVersRange.Is_within_range(instVers); err != nil {
 			return nil, err

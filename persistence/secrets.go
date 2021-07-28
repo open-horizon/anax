@@ -145,12 +145,14 @@ func SaveSecret(db *bolt.DB, secretName string, msInstKey string, msInstVers str
 		mergedSec.ContainerIds = cutil.MergeSlices(mergedSec.ContainerIds, secretToSave.ContainerIds)
 		if mergedSec.SvcSecretValue != secretToSave.SvcSecretValue {
 			mergedSec.TimeLastUpdated = timestamp
+			mergedSec.SvcSecretValue = secretToSave.SvcSecretValue
 		}
 		secretToSaveAll.SecretsMap[secretName] = mergedSec
 	} else {
 		secretToSave.TimeLastUpdated = uint64(time.Now().Unix())
 		secretToSaveAll.SecretsMap[secretName] = secretToSave
 	}
+
 	return SaveAllSecretsForService(db, msInstKey, secretToSaveAll)
 }
 
