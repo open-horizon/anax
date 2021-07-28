@@ -231,89 +231,78 @@ print_command_and_response "$CMD" "$RES"
 echo -e "$PREFIX listing a secret owned by a different user"
 
 CMD="hzn sm secret list -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/e2edevadmin/test-password"
-echo -e "$CMD"
-$($CMD)
-if [ $? -eq 0 ]; then 
-  echo -e "\nERROR: shouldn't be able to list a secret owned by a different user"
-  exit 1
-fi 
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "Permission denied" "shouldn't be able to list a secret owned by a different user"
 
 # error on `remove` - secret owned by a different user
 echo -e "$PREFIX removing a secret owned by a different user"
 
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/e2edevadmin/test-password" 
-echo -e "$CMD"
-$($CMD)
-if [ $? -eq 0 ]; then 
-  echo -e "\nERROR: shouldn't be able to remove a secret owned by a different user"
-  exit 1
-fi 
+CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/e2edevadmin/test-password"  
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "Permission denied" "shouldn't be able to remove a secret owned by a different user"
 
 # error on `remove` - secret doesn't exist at the org level
 echo -e "$PREFIX removing a secret that doesn't exist at the org level"
 
 CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} fake-password"
-echo -e "$CMD"
-$($CMD)
-if [ $? -eq 0 ]; then 
-  echo -e "\nERROR: shouldn't be able to remove a secret that doesn't exist"
-  exit 1
-fi 
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "nothing to remove" "shouldn't be able to remove a secret that doesn't exist"
 
 # error on `remove` - secret doesn't exist at the user level
 echo -e "$PREFIX removing a secret that doesn't exist at the user level"
 
 CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/fake-password"
-echo -e "$CMD"
-$($CMD)
-if [ $? -eq 0 ]; then 
-  echo -e "\nERROR: shouldn't be able to remove a secret that doesn't exist"
-  exit 1
-fi 
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "nothing to remove" "shouldn't be able to remove a secret that doesn't exist"
 
 # error on `read` - secret doesn't exist
 echo -e "$PREFIX reading a secret that doesn't exist"
 
 CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} fake-password"
-echo -e "$CMD"
-$($CMD)
-if [ $? -eq 0 ]; then 
-  echo -e "\nERROR: shouldn't be able to read a secret that doesn't exist"
-  exit 1
-fi 
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "No secret(s) found" "shouldn't be able to read a secret that doesn't exist"
 
 # error on `read` - user can't read org level secrets 
 echo -e "$PREFIX non-admin shouldn't read org level secrets"
 
 CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_USER_AUTH} test-password"
-echo -e "$CMD"
-$($CMD)
-if [ $? -eq 0 ]; then 
-  echo -e "\nERROR: user shouldn't be able to read org-level secrets"
-  exit 1
-fi 
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "Permission denied" "user shouldn't be able to read org-level secrets"
 
 # error on `read` - user can't read another user's secrets
 echo -e "$PREFIX user shouldn't read another user's secrets"
 
 CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_USER_AUTH} user/userdevadmin/test-password"
-echo -e "$CMD"
-$($CMD)
-if [ $? -eq 0 ]; then 
-  echo -e "\nERROR: user shouldn't be able to read org-level secrets"
-  exit 1
-fi 
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "Permission denied" "user shouldn't be able to read another user's secrets"
 
 # error on `add` - secret owned by a different user 
 echo -e "$PREFIX adding a secret owned by a different user"
 
 CMD="hzn sm secret add --secretKey password -d password456 -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/e2edevadmin/fake-password"
-echo -e "$CMD"
-$($CMD)
-if [ $? -eq 0 ]; then 
-  echo -e "\nERROR: shouldn't be able to remove a secret owned by a different user"
-  exit 1
-fi 
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "Permission denied" "user shouldn't be able to add to another user's secrets"
+
+# error on `read` - bad request 
+echo -e "$PREFIX passing an incorrect secret name into add"
+
+CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user"
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "User must be specified" "shouldn't be able to create secret with incorrect name"
+
+# error on `read` - bad request 
+echo -e "$PREFIX passing an incorrect secret name into add"
+
+CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin"
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "Incorrect secret name" "shouldn't be able to create secret with incorrect name"
+
+# error on `list` - incorrect credentials
+echo -e "$PREFIX passing incorrect exchange credentials into list"
+
+CMD="hzn sm secret list -o ${USERDEV_ORG} -u userdevfake:userdevfakepw test-password"
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "Failed to authenticate" "shouldn't be able to access secrets with incorrect credentials"
 
 # ----------------------------
 # ----- CLEANUP -----
