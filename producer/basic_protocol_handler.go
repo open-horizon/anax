@@ -12,7 +12,6 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
-	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"
@@ -166,20 +165,9 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 
 				secManager := resource.NewSecretsManager(c.BaseProducerProtocolHandler.config.GetSecretsManagerFilePath(), c.db)
 
-				for _, secToSave := range allSecrets {
-					// TODO: what exact version do we need here?
-					if msDef, err := microservice.FindOrCreateMicroserviceDef(c.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, secToSave.SvcArch, false, exchange.GetHTTPServiceHandler(c.ec)); err != nil {
-						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to find microservices defs for secret update %v, error: %v", update.AgreementId(), update.Metadata, err)))
-						acceptedUpdate = false
-					} else if err = persistence.SaveSecret(c.db, secToSave.SvcSecretName, msDef.Id, msDef.Version, &secToSave); err != nil {
-						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to persist secret update %v, error: %v", update.AgreementId(), update.Metadata, err)))
-						acceptedUpdate = false
-					} else if err = secManager.UpdateServiceSecrets(msDef.Id, secToSave); err != nil {
-						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to update secret in agent filesystem %v, error: %v", update.AgreementId(), update.Metadata, err)))
-						acceptedUpdate = false
-					} else {
-						glog.V(5).Infof(BPHlogString(fmt.Sprintf("handled update for secret %v", secToSave.SvcSecretName)))
-					}
+				if err = secManager.ProcessServiceSecretUpdates(update.AgreementId(), allSecrets); err != nil {
+					glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to process service secret updates, error: %v", update.AgreementId(), err)))
+					acceptedUpdate = false
 				}
 
 			}

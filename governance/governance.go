@@ -661,6 +661,11 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 			}
 		}
 
+		// Remove the agreement secrets from the database
+		if err := persistence.DeleteAgreementSecrets(w.db, agreementId); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error deleting secrets for agreement %v from the database: %v", agreementId, err)))
+		}
+
 		// If we can do the termination now, do it. Otherwise we will queue a command to do it later.
 		w.externalTermination(ag, agreementId, agreementProtocol, reason)
 		if !w.producerPH[agreementProtocol].IsBlockchainWritable(ag) {
@@ -1597,23 +1602,14 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 	return nil
 }
 
+// Save the secrets by agreement id since we don't have an instance id for the services yet
 func (w *GovernanceWorker) processServiceSecrets(tcPolicy *policy.Policy, agId string) error {
-	glog.V(5).Infof(logString(fmt.Sprintf("process service secrets for policy: %v", agId)))
+	glog.V(5).Infof(logString(fmt.Sprintf("process service secrets for agreement: %v", agId)))
 
 	allSecrets := persistence.PersistedSecretFromPolicySecret(tcPolicy.SecretDetails, agId)
 
-	for _, secToSave := range allSecrets {
-		service_arch := secToSave.SvcArch
-		if service_arch == "" || service_arch == "*" {
-			service_arch = cutil.ArchString()
-		}
-
-		// TODO: what exact version do we need here?
-		if msDef, err := microservice.FindOrCreateMicroserviceDef(w.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, service_arch, false, exchange.GetHTTPServiceHandler(w)); err != nil {
-			return err
-		} else if err = persistence.SaveSecret(w.db, secToSave.SvcSecretName, msDef.Id, msDef.Version, &secToSave); err != nil {
-			return err
-		}
+	if err := persistence.SaveAgreementSecrets(w.db, agId, &allSecrets); err != nil {
+		return fmt.Errorf(logString(fmt.Sprintf("Failed to save agreement secrets for agreement: %v", agId)))
 	}
 	return nil
 }

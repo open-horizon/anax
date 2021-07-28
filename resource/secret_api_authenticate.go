@@ -42,4 +42,3 @@ func (auth *SecretsAPIAuthenticate) Authenticate(request *http.Request) (bool, s
 var secretsALS = func(v interface{}) string {
 	return fmt.Sprintf("Secrets API : Authenticator %v", v)
 }
-

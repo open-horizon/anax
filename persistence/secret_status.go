@@ -230,7 +230,7 @@ func FindUpdatedSecretsForMSSInstance(db *bolt.DB, ms_inst_key string) ([]string
 		secrets, err := FindAllSecretsForMS(db, msDefId) // list of secrets retrieved from "Secret" bucket
 		if err != nil {
 			return updatedSecretNames, err
-		} else if len(secrets.SecretsMap) == 0 {
+		} else if secrets == nil || len(secrets.SecretsMap) == 0 {
 			return updatedSecretNames, nil
 		}
 
@@ -309,4 +309,3 @@ func persistUpdatedMSSInst(db *bolt.DB, ms_inst_key string, update *Microservice
 		}
 	})
 }
-
