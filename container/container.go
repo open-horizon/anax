@@ -252,9 +252,11 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		// Add a filesystem binding for the FSS (ESS) API SSL client certificate.
 		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.Config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_MOUNT))
 
-
-		// Add a filesystem binding for secrets from the agreement protocol to be stored.
-		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.GetSecretsManager().GetSecretsPath(agreementId), config.HZN_SECRETS_MOUNT)) 
+		// check if the service has any secrets 
+		if _, err := os.Stat(w.GetSecretsManager().GetSecretsPath(agreementId)); err == nil {
+			// Add a filesystem binding for secrets from the agreement protocol to be stored.
+			service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.GetSecretsManager().GetSecretsPath(agreementId), config.HZN_SECRETS_MOUNT)) 
+		}
 
 		// Get the group id that owns the service ess auth folder/file. Add this group id in the GroupAdd fields in docker.HostConfig. So that service account in service container can read ess auth folder/file (750)
 		groupAdds := make([]string, 0)
