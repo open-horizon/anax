@@ -1205,7 +1205,6 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) (string, bool) 
 
 // This function creates the containers, volumes, networks for the given agreement or service.
 func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]string, serviceURL string, sVer string, originalAgreementId string) (persistence.DeploymentConfig, error) {
-
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
 		if container != nil {

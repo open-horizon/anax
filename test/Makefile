@@ -125,7 +125,8 @@ endif
 DOCKER_VAULT_CNAME := vault
 DOCKER_VAULT_INAME := openhorizon/$(arch)_vault
 DOCKER_VAULT_TAG := testing
-ifeq ($(HZN_VAULT),true)
+no_vault := $(shell echo -e $(TEST_VARS) | grep NOVAULT=1)
+ifeq ($(no_vault),)
 	VAULT_ADDR = http://vault:8200
 endif
 VAULT_CONFIG := $(CURDIR)/docker/fs/etc/vault/config.json
@@ -204,6 +205,7 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "VAULT_TOKEN"="$(VAULT_DEV_ROOT_TOKEN_ID)" \
 		-e "VAULT_ADDR"="$(VAULT_ADDR)" \
 		-e "HZN_SDO_SVC_URL"="$(HZN_SDO_SVC_URL)" \
+		-e "HZN_AGBOT_URL"="$(AGBOT_SAPI_URL)" \
 		-t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)
 	docker cp $(E2EDEVTEST_TEMPFS)/. $(DOCKER_TEST_CNAME):/
 
@@ -243,7 +245,7 @@ run-dockerreg: test-network
 	docker rm -v $(DOCKER_REG_PW_CNAME)
 
 run-vault: test-network
-	if [[ "$(HZN_VAULT)" == "true" ]]; then \
+	if [[ "$(NOVAULT)" != "1" ]]; then \
 		# Start the vault container \
 		echo "Handling $(DOCKER_VAULT_CNAME)"; \
 		docker/docker_run.bash "$(DOCKER_VAULT_CNAME)" \
@@ -335,7 +337,7 @@ test-image:
 	fi
 
 vault-image:
-	if [[ "$(HZN_VAULT)" == "true" ]]; then \
+	if [[ "$(NOVAULT)" != "1" ]]; then \
 		echo "\nPulling vault image $(DOCKER_VAULT_INAME)"; \
 		docker pull $(DOCKER_VAULT_INAME):$(DOCKER_VAULT_TAG); \
 	else \

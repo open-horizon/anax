@@ -31,6 +31,7 @@ func (s SecretsManager) ProcessServiceSecretsWithInstanceId(agId string, msInstK
 	if s.db == nil {
 		return nil
 	}
+
 	if msIntf, err := persistence.GetMicroserviceInstIWithKey(s.db, msInstKey); err != nil {
 		return fmt.Errorf(secLogString(fmt.Sprintf("Failed to get microservice instance interface for: %v. Error was: %v", msInstKey, err)))
 	} else if err = s.SaveMicroserviceInstanceSecretsFromAgreementSecrets(agId, msIntf); err != nil {
@@ -107,9 +108,8 @@ func (s SecretsManager) SaveMicroserviceInstanceSecretsFromAgreementSecrets(agId
 			if existingSvcSec, ok := existingInstSvcSec.SecretsMap[agSecret.SvcSecretName]; ok && existingSvcSec.SvcSecretValue != agSecret.SvcSecretValue {
 				// New secret info and existing info do not match. This is an error. Log and ignore new secret details.
 				glog.Errorf(secLogString(fmt.Sprintf("Conflicting service secret details for secret %v for service instance %v. Proceding with original secret detail.", agSecret.SvcSecretName, msInst.GetKey())))
-				existingSvcSec.AgreementIds = append(existingSvcSec.AgreementIds, agId)
-				existingInstSvcSec.SecretsMap[agSecret.SvcSecretName] = existingSvcSec
-				err = persistence.SaveAllSecretsForService(s.db, msInst.GetKey(), existingInstSvcSec)
+				agSecret.SvcSecretValue = existingSvcSec.SvcSecretValue
+				err = persistence.SaveSecret(s.db, agSecret.SvcSecretName, msInst.GetKey(), msInst.GetVersion(), &agSecret)
 			} else if err = persistence.SaveSecret(s.db, agSecret.SvcSecretName, msInst.GetKey(), msInst.GetVersion(), &agSecret); err != nil {
 				return err
 			}

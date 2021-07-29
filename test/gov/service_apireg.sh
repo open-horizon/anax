@@ -156,7 +156,7 @@ echo -e "Register ppc64le test service:"
 #     exit 2
 # fi
 
-if [ "${HZN_VAULT}" == "true" ]; then
+if [ "${NOVAULT}" != "1" ]; then
   CPU_FILE_IBM="/root/service_defs/IBM/service-cpu_1.2.2_secrets.json"
   CPU_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/service-cpu_1.0_secrets.json"
 
@@ -432,7 +432,7 @@ fi
 # service definition
 # register version 2.3.0 for execution purposes
 
-if [ "${HZN_VAULT}" == "true" ]; then
+if [ "${NOVAULT}" != "1" ]; then
   NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0_secrets.json"
   NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
 
@@ -686,7 +686,7 @@ fi
 
 export VERS="2.3.0"
 
-if [ "${HZN_VAULT}" == "true" ]; then
+if [ "${NOVAULT}" != "1" ]; then
   NS_PATTERN="/root/patterns/e2edev@somecomp.com/netspeed_secrets.json"
 
 else
@@ -876,7 +876,7 @@ fi
 export LOCVERS1="2.0.6"
 export LOCVERS2="2.0.7"
 
-if [ "${HZN_VAULT}" == "true" ]; then
+if [ "${NOVAULT}" != "1" ]; then
   SLOC_PATTERN="/root/patterns/e2edev@somecomp.com/sloc_secrets.json"
 else
   SLOC_PATTERN="/root/patterns/e2edev@somecomp.com/sloc.json"
@@ -1045,7 +1045,7 @@ else
   export CAS_30=600
 fi
 
-if [ "${HZN_VAULT}" == "true" ]; then
+if [ "${NOVAULT}" != "1" ]; then
   SALL_PATTERN="/root/patterns/e2edev@somecomp.com/sall_secrets.json"
 
 else
@@ -1072,7 +1072,7 @@ fi
 # ======================= Business Policies that use top level services ======================
 
 # netspeed policy
-if [ "${HZN_VAULT}" == "true" ]; then
+if [ "${NOVAULT}" != "1" ]; then
   NS_DP="/root/deployment_policies/userdev/netspeed_secrets.json"
 
 else
@@ -1085,6 +1085,22 @@ cat ${NS_DP} | envsubst > $KEY_TEST_DIR/policy_netspeed.json
 echo -e "Register business policy for netspeed:"
 
 RES=$(cat $KEY_TEST_DIR/policy_netspeed.json | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
+
+results "$RES"
+
+# location policy 
+if [ "${NOVAULT}" != "1" ]; then
+  NS_DP="/root/deployment_policies/userdev/location_secrets.json"
+
+else
+  NS_DP="/root/deployment_policies/userdev/location.json"
+fi
+
+cat ${NS_DP} | envsubst > $KEY_TEST_DIR/policy_location.json
+
+echo -e "Register business policy for netspeed:"
+
+RES=$(cat $KEY_TEST_DIR/policy_location.json | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_location" | jq -r '.')
 
 results "$RES"
 
@@ -1129,96 +1145,6 @@ EOF
 echo -e "Register business policy for gpstest:"
 
   RES=$(echo "$bpgpstestdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_gpstest" | jq -r '.')
-
-results "$RES"
-
-read -d '' bplocdef <<EOF
-{
-  "label": "business policy for location",
-  "description": "for location",
-  "service": {
-    "name": "https://bluehorizon.network/services/location",
-    "org": "e2edev@somecomp.com",
-    "arch": "${ARCH}",
-    "serviceVersions": [
-        {
-          "version":"2.0.6",
-          "priority":{
-            "priority_value": 3,
-            "retries": 2,
-            "retry_durations": 3600,
-            "verified_durations": 52
-          },
-          "upgradePolicy": {}
-        },
-        {
-          "version":"2.0.7",
-          "priority":{
-            "priority_value": 2,
-            "retries": 2,
-            "retry_durations": 3600,
-            "verified_durations": 52
-          },
-          "upgradePolicy": {}
-        }
-     ]
-  },
-  "properties": [
-      {
-          "name": "iame2edev",
-          "value": "true"
-      },
-      {
-          "name": "NOLOC",
-          "value": false
-      },
-      {
-          "name": "number",
-          "value": "36"
-      },
-      {
-          "name": "locvar",
-          "value": "location value"
-      }
-  ],
-  "constraints": [
-    "purpose == network-testing"
-  ],
-  "userInput": [
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/services/locgps",
-      "serviceArch": "",
-      "serviceVersionRange": "2.0.3",
-      "inputs": [
-        {
-          "name": "test",
-          "value": "testValue"
-        },
-        {
-          "name": "extra",
-          "value": "extraValue"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "IBM",
-      "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "",
-      "serviceVersionRange": "1.0.0",
-      "inputs": [
-        {
-          "name": "cpu_var1",
-          "value": "ibmvar1"
-        }
-      ]
-    }
-  ]
-}
-EOF
-echo -e "Register business policy for location:"
-
-  RES=$(echo "$bplocdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_location" | jq -r '.')
 
 results "$RES"
 

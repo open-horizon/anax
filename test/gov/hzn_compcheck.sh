@@ -15,7 +15,7 @@ PREFIX="HZN deployment compatibility test:"
 echo ""
 echo -e "${PREFIX} start test"
 
-if [ "${HZN_VAULT}" == "true" ]; then
+if [ "${NOVAULT}" != "1" ]; then
   service_location="/root/input_files/compcheck/service_location_secrets.json"
   bp_location="/root/input_files/compcheck/business_pol_location_secrets.json"
   pattern_sloc="/root/input_files/compcheck/pattern_sloc_secrets.json"
@@ -371,25 +371,25 @@ RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node user input, pattern and services."
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P $pattern_sloc --service $service_location --service input_files/compcheck/service_locgps.json --node-pol input_files/compcheck/node_policy.json"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P $pattern_sloc --service $service_location --service input_files/compcheck/service_locgps.json --node-pol input_files/compcheck/node_policy.json -O userdev"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node policy node user input, business policy, service, and service policy. Compatible"
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy.json -B $bp_location --service $service_location "
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy.json -B $bp_location --service $service_location -O userdev"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node policy node user input, business policy, service, and service policy. Incompatible"
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy.json -B $bp_location --service $service_location"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json --node-pol input_files/compcheck/node_policy.json --service-pol input_files/compcheck/service_policy.json -B $bp_location --service $service_location -O userdev"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "User Input Incompatible"
 
 echo -e "\n${PREFIX} test input: node policy node user input, business policy, service, and service policy. One compatible, one not"
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy2.json --service-pol input_files/compcheck/service_policy.json -B $bp_location --service $service_location -c"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json --node-pol input_files/compcheck/node_policy2.json --service-pol input_files/compcheck/service_policy.json -B $bp_location --service $service_location -O userdev -c"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
@@ -440,7 +440,7 @@ RES=$($CMD 2>&1 | grep -v 'Neither node id')
 check_comp_results "$RES" "false" "Service does not have deployment configuration for node type 'device'"
 
 # secret binding tests
-if [ "$HZN_VAULT" == "true" ] && [ "$NOVAULT" != "1" ]; then
+if [ "$NOVAULT" != "1" ]; then
   export HZN_AGBOT_URL=${AGBOT_SAPI_URL}
 
   echo -e "\n${PREFIX} test secret binding with business policy and service input. Compatible"

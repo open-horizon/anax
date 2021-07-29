@@ -24,7 +24,7 @@ pattern_sloc=`cat /root/input_files/compcheck/pattern_sloc.json`
 service_location=`cat /root/input_files/compcheck/service_location.json`
 service_locgps=`cat /root/input_files/compcheck/service_locgps.json`
 
-if [ "${HZN_VAULT}" == "true" ]; then
+if [ "$NOVAULT" != "1" ]; then
   service_location=`cat /root/input_files/compcheck/service_location_secrets.json`
   service_location_secret_extra=`cat /root/input_files/compcheck/service_location_secrets_extra.json`
   bp_location=$(</root/input_files/compcheck/business_pol_location_secrets.json)
@@ -465,7 +465,7 @@ EOF
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "User Input Incompatible"
 
-if [ "$HZN_VAULT" != "true" ] || [ "$NOVAULT" == "1" ]; then
+if [ "$NOVAULT" == "1" ]; then
   echo -e "\n${PREFIX} Skipping agbot API tests for secret binding and vault\n"
   exit 0
 fi

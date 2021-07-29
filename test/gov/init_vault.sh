@@ -10,7 +10,7 @@ USER_ORG="userdev"
 TEST_SECRET="secret"
 
 #Starting vault tests and bootstrap in the dev environment.
-if [ "$HZN_VAULT" == "true" ] && [ "$NOVAULT" != "1" ]
+if [ "$NOVAULT" != "1" ]
 then
   echo -e "Checking vault reachability"
   /root/vault_test.sh
