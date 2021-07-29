@@ -167,18 +167,21 @@ func TestUnregisterServiceExchange(t *testing.T) {
 
 	m1 := exchange.Microservice{
 		Url:           "myorg/gps",
+		Version:       "1.0",
 		Properties:    nil,
 		NumAgreements: 0,
 		Policy:        "blahblah",
 	}
 	m2 := exchange.Microservice{
 		Url:           "myorg/network",
+		Version:       "1.0",
 		Properties:    nil,
 		NumAgreements: 0,
 		Policy:        "blahblah",
 	}
 	m3 := exchange.Microservice{
 		Url:           "myorg/pwsms",
+		Version:       "1.0",
 		Properties:    nil,
 		NumAgreements: 0,
 		Policy:        "blahblah",
@@ -190,6 +193,7 @@ func TestUnregisterServiceExchange(t *testing.T) {
 	device_token := "mytoken"
 	device_name := "mydevicename"
 	url := "network"
+	version := "1.0"
 
 	// save device in db
 	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, "device", false, org, "netspeed-amd64", "configuring")
@@ -197,12 +201,12 @@ func TestUnregisterServiceExchange(t *testing.T) {
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, nil),
 		checkPatchDeviceHandler(t, nil, url),
-		url, org, device_id, device_token, db)
+		url, org, version, device_id, device_token, db)
 	assert.Nil(t, err, "no registered ms, nothing to do")
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
 		checkPatchDeviceHandler(t, mss, url),
-		url, org, device_id, device_token, db)
+		url, org, version, device_id, device_token, db)
 	assert.Nil(t, err, "eveything should have worked")
 
 	err = cleanupDB(dir)

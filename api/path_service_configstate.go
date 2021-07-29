@@ -8,7 +8,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 )
 
 // get the service configuration state for all the registered services.
@@ -57,6 +57,13 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 	if service_cs.Url != "" && service_cs.Org == "" {
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Please specify organization when the service url is not an empty string: %v", service_cs), "org")), nil
 	}
+	if service_cs.Version != "" && (service_cs.Org == "" || service_cs.Url == "") {
+		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Please specify organization and service url when the service version is not an empty string: %v", service_cs), "org,url")), nil
+	}
+	if service_cs.Version != "" && !semanticversion.IsVersionString(service_cs.Version) {
+		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Please make sure the service version is a valid version string: %v", service_cs.Version), "version")), nil
+	}
+
 	if service_cs.ConfigState != exchange.SERVICE_CONFIGSTATE_ACTIVE && service_cs.ConfigState != exchange.SERVICE_CONFIGSTATE_SUSPENDED {
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("The service configstate '%v' is not supported. The supported states are: %v, %v", service_cs.ConfigState, exchange.SERVICE_CONFIGSTATE_ACTIVE, exchange.SERVICE_CONFIGSTATE_SUSPENDED), "configState")), nil
 	}
@@ -83,57 +90,59 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 			svc_exchange.ConfigState = exchange.SERVICE_CONFIGSTATE_ACTIVE
 		}
 
-		var version, arch string
-		pol, err := policy.DemarshalPolicy(svc_exchange.Policy)
-		if err != nil {
-			glog.Errorf(fmt.Sprintf("Error unmarshaling service policy: %v", err))
-		} else {
-			for _, spec := range pol.APISpecs {
-				if spec.SpecRef == url && spec.Org == org {
-					version = spec.Version
-					arch = spec.Arch
-				}
-			}
-		}
+		arch := cutil.ArchString()
 
-		if service_cs.Url != "" {
-			// single service case
-			if service_cs.Url == url && service_cs.Org == org {
-				found = true
-				if service_cs.ConfigState != svc_exchange.ConfigState {
-					changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, version, arch, service_cs.ConfigState)))
-				}
-				break
-			}
-		} else {
-			if service_cs.Org == "" {
-				// for all the registered services
-				found = true
-				if service_cs.ConfigState != svc_exchange.ConfigState {
-					changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, version, arch, service_cs.ConfigState)))
-				}
-			} else {
-				// for all the registered services in the org
-				if service_cs.Org == org {
+		if service_cs.Version == "" {
+			if service_cs.Url != "" {
+				// single service case
+				if service_cs.Url == url && service_cs.Org == org {
 					found = true
 					if service_cs.ConfigState != svc_exchange.ConfigState {
-						changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, version, arch, service_cs.ConfigState)))
+						changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, service_cs.Version, arch, service_cs.ConfigState)))
 					}
 				}
+			} else {
+				if service_cs.Org == "" {
+					// for all the registered services
+					found = true
+					if service_cs.ConfigState != svc_exchange.ConfigState {
+						changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, service_cs.Version, arch, service_cs.ConfigState)))
+					}
+				} else {
+					// for all the registered services in the org
+					if service_cs.Org == org {
+						found = true
+						if service_cs.ConfigState != svc_exchange.ConfigState {
+							changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, service_cs.Version, arch, service_cs.ConfigState)))
+						}
+					}
+				}
+			}
+		} else { // in this case url, org and version are all not empty
+			if service_cs.Url == url && service_cs.Org == org && (service_cs.Version == svc_exchange.Version || svc_exchange.Version == "") {
+				found = true
+				if service_cs.ConfigState != svc_exchange.ConfigState {
+					changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, service_cs.Version, arch, service_cs.ConfigState)))
+				}
+				break
 			}
 		}
 	}
 
 	//handle not-found error
 	if !found {
-		if service_cs.Url != "" {
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No changes made. The service %v does not exist or is not a registered service in the exchange for node %v.", cutil.FormOrgSpecUrl(service_cs.Url, service_cs.Org), pDevice.Name), "url, org")), nil
-		} else {
-			if service_cs.Org == "" {
-				return errorhandler(NewAPIUserInputError(fmt.Sprintf("No changes made. No registered services found in the exchange for node %v.", pDevice.Name), "url, org")), nil
+		if service_cs.Version == "" {
+			if service_cs.Url != "" {
+				return errorhandler(NewAPIUserInputError(fmt.Sprintf("No changes made. The service %v does not exist or is not a registered service in the exchange for node %v.", cutil.FormOrgSpecUrl(service_cs.Url, service_cs.Org), pDevice.Name), "url, org")), nil
 			} else {
-				return errorhandler(NewAPIUserInputError(fmt.Sprintf("No changes made. No registered services from organization %v found in the exchange for node %v.", service_cs.Org, pDevice.Name), "org")), nil
+				if service_cs.Org == "" {
+					return errorhandler(NewAPIUserInputError(fmt.Sprintf("No changes made. No registered services found in the exchange for node %v.", pDevice.Name), "url, org")), nil
+				} else {
+					return errorhandler(NewAPIUserInputError(fmt.Sprintf("No changes made. No registered services from organization %v found in the exchange for node %v.", service_cs.Org, pDevice.Name), "org")), nil
+				}
 			}
+		} else {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No changes made. The service %v version %v does not exist or is not a registered service in the exchange for node %v.", cutil.FormOrgSpecUrl(service_cs.Url, service_cs.Org), service_cs.Version, pDevice.Name), "url, org, version")), nil
 		}
 	}
 

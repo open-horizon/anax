@@ -248,7 +248,7 @@ func GetMicroserviceInstIWithKey(db *bolt.DB, msinst_key string) (MicroserviceIn
 // This function archives the microservice instance with the given key.
 // The key could be a key for the MicroseviceInstance or EstablishedAgreement
 // It will archive the related microservice defintion if no more instances referencing it.
-func ArchiveMicroserviceInstAndDef(db *bolt.DB, msinst_key string) error {
+func ArchiveMicroserviceInstAndDef(db *bolt.DB, msinst_key string, archiveDef bool) error {
 	// find the microservice instance
 	msi, err := GetMicroserviceInstIWithKey(db, msinst_key)
 	if err != nil {
@@ -263,6 +263,10 @@ func ArchiveMicroserviceInstAndDef(db *bolt.DB, msinst_key string) error {
 		if err = msi.Archive(db); err != nil {
 			return err
 		}
+	}
+
+	if !archiveDef {
+		return nil
 	}
 
 	msdefId := msi.GetServiceDefId()
