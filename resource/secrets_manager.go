@@ -63,6 +63,9 @@ func (s SecretsManager) ProcessServiceSecretUpdates(agId string, updatedSecList 
 }
 
 func (s SecretsManager) FindSecretsMatchingMsInst(allSecrets *[]persistence.PersistedServiceSecret, msInst persistence.MicroserviceInstInterface) (*[]persistence.PersistedServiceSecret, error) {
+	if allSecrets == nil {
+		return nil, nil
+	}
 	matchingSecrets := []persistence.PersistedServiceSecret{}
 	instOrg := msInst.GetOrg()
 	instUrl := msInst.GetURL()
@@ -88,8 +91,12 @@ func (s SecretsManager) FindSecretsMatchingMsInst(allSecrets *[]persistence.Pers
 func (s SecretsManager) SaveMicroserviceInstanceSecretsFromAgreementSecrets(agId string, msInst persistence.MicroserviceInstInterface) error {
 	if agAllSecretsList, err := persistence.FindAgreementSecrets(s.db, agId); err != nil {
 		return err
+	} else if agAllSecretsList == nil {
+		return nil
 	} else if agSecretsList, err := s.FindSecretsMatchingMsInst(agAllSecretsList, msInst); err != nil {
 		return err
+	} else if agSecretsList == nil {
+		return nil
 	} else if existingInstSvcSec, err := persistence.FindAllSecretsForMS(s.db, msInst.GetKey()); err != nil {
 		return err
 	} else if existingInstSvcSec != nil {
