@@ -307,7 +307,6 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 		w.BaseWorker.Manager.Config.GetFileSyncServiceAPIListen(),
 		strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
 
-
 	// Add in any default variables from the microservice userInputs that havent been overridden
 	for _, ui := range msdef.UserInputs {
 		if ui.DefaultValue != "" {

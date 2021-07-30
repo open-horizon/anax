@@ -36,7 +36,6 @@ const MESSAGE_KEY_CHECK = "AgbotMessageKeyCheck"
 
 // Agreement governance timing state. Used in the GovernAgreements subworker.
 type DVState struct {
-	dvSkip uint64
 	nhSkip uint64
 }
 

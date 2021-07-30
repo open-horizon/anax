@@ -520,7 +520,7 @@ func FindOrCreateMicroserviceDef(db *bolt.DB, service_name string, service_org s
 	// create a MicroserviceDefinition object with the hightest version within the range if it is not created yet
 	if backupMsdef != nil {
 		if c, err := semanticversion.CompareVersions(backupMsdef.Version, sdef.Version); err != nil {
-			return nil, fmt.Errorf("Error compairing version %v with version %v. %v", backupMsdef.Version, sdef.Version, service_org, service_name, err)
+			return nil, fmt.Errorf("Error compairing version %v with version %v. %v", backupMsdef.Version, sdef.Version, err)
 		} else if c >= 0 {
 			return backupMsdef, nil
 		}

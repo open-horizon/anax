@@ -773,9 +773,9 @@ func (a *SecureAPI) errCheck(err error, action string, info *SecretRequestInfo) 
 			if secretName == "" {
 				errMsg = info.msgPrinter.Sprintf("Permission denied, user \"%s\" cannot %s secrets in organization \"%s\"", info.ec.GetExchangeId(), action, info.org)
 			} else {
-			errMsg = info.msgPrinter.Sprintf("Permission denied, user \"%s\" cannot %s secret \"%s\" in organization \"%s\"", info.ec.GetExchangeId(), action, secretName, info.org)	
+				errMsg = info.msgPrinter.Sprintf("Permission denied, user \"%s\" cannot %s secret \"%s\" in organization \"%s\"", info.ec.GetExchangeId(), action, secretName, info.org)
 			}
-			
+
 		case *secrets.InvalidResponse:
 			if e.ReadError != nil {
 				errMsg = info.msgPrinter.Sprintf("Unable to read the vault response: %s", e.ReadError.Error())
@@ -783,13 +783,13 @@ func (a *SecureAPI) errCheck(err error, action string, info *SecretRequestInfo) 
 				// e.ParseError != nil
 				errMsg = info.msgPrinter.Sprintf("Unable to parse the vault response \"%s\": %s", e.Response, e.ParseError.Error())
 			}
-		case *secrets.BadRequest: 
+		case *secrets.BadRequest:
 			if e.ResponseCode == 405 {
 				// method not supported
 				if secretName == "" {
 					errMsg = info.msgPrinter.Sprintf("Unable to %s secrets in organization \"%s\", operation not supported by the secrets provider.", action, info.org)
 				} else {
-				errMsg = info.msgPrinter.Sprintf("Unable to %s secret \"%s\" in organization \"%s\", operation not supported by the secrets provider.", action, secretName, info.org)
+					errMsg = info.msgPrinter.Sprintf("Unable to %s secret \"%s\" in organization \"%s\", operation not supported by the secrets provider.", action, secretName, info.org)
 				}
 			} else {
 				// e.ResponseCode == 400
@@ -799,10 +799,10 @@ func (a *SecureAPI) errCheck(err error, action string, info *SecretRequestInfo) 
 		case *secrets.NoSecretFound:
 			if secretName == "" {
 				errMsg = info.msgPrinter.Sprintf("No secret(s) found in organization \"%s\"", info.org)
-			} else {	
-			errMsg = info.msgPrinter.Sprintf("No secret(s) found under secret name \"%s\"", secretName)
+			} else {
+				errMsg = info.msgPrinter.Sprintf("No secret(s) found under secret name \"%s\"", secretName)
 			}
-		case *secrets.Unknown: 
+		case *secrets.Unknown:
 			errMsg = info.msgPrinter.Sprintf("An unknown error occurred. Response code %d received from the secrets provider.", e.ResponseCode)
 			errMsg += info.msgPrinter.Sprintf("\nResponse: %s", secrets.RespToString(e.Response))
 		default:
@@ -1039,8 +1039,8 @@ func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error
 			// no error
 			return secretNames, nil, http.StatusOK
 		} else {
-			// ignore NoSecretFound error 
-			_, ok := serr.Err.(*secrets.NoSecretFound) 
+			// ignore NoSecretFound error
+			_, ok := serr.Err.(*secrets.NoSecretFound)
 			if ok {
 				// 404, should return an empty list
 				return secretNames, nil, http.StatusOK
@@ -1062,8 +1062,8 @@ func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error
 			// no error, secret exists
 			return map[string]bool{"exists": true}, nil, http.StatusOK
 		} else {
-			// ignore NoSecretFound error 
-			_, ok := serr.Err.(*secrets.NoSecretFound) 
+			// ignore NoSecretFound error
+			_, ok := serr.Err.(*secrets.NoSecretFound)
 			if ok {
 				// 404, should return false
 				return map[string]bool{"exists": (serr.ResponseCode != http.StatusNotFound)}, nil, http.StatusOK
