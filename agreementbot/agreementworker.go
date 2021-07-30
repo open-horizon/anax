@@ -366,7 +366,6 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		if glog.V(5) {
 			glog.Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
 		}
-		wi.ProducerPolicy = *nodePolicy
 	}
 
 	// If a deployment policy is being used, set wi.ProducerPolicy to the node policy
@@ -392,6 +391,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				return
 			}
 		}
+		wi.ProducerPolicy = *nodePolicy
 	}
 
 	// Generate an agreement ID
