@@ -241,14 +241,17 @@ func (api *SecretAPI) handleSecrets(writer http.ResponseWriter, request *http.Re
 					// received == true
 					glog.V(3).Infof(secAPILogString(fmt.Sprintf("POST /api/v1/secrets/%s?received=true", secretName)))
 					// call persistent to find secret
-					if updatedInst, err := persistence.UpdateSecretStatusReceived(api.db, mssInst.GetKey(), secretName); err != nil {
-						returnErrorResponse(writer, err, "Failed to mark secret received. ", http.StatusInternalServerError)
-					} else if updatedInst == nil {
-						// secretName doesn't in MSS.SecretStatus map, cannot mark it to received
-						writer.WriteHeader(http.StatusNotFound)
-						return
+					if psecret, err := persistence.FindSingleSecretForService(api.db, secretName, mssInst.GetKey()); err != nil {
+						returnErrorResponse(writer, err, "Failed to find secret.", http.StatusInternalServerError)
+					} else if psecret == nil || isEmptySecretObject(*psecret) {
+						returnErrorResponse(writer, err, "Secret not found.", http.StatusNotFound)
 					} else {
-						glog.V(5).Infof(secAPILogString(fmt.Sprintf("marked MSS secret %v received, %v", secretName, updatedInst.String())))
+						secStatus := persistence.NewSecretStatus(secretName, psecret.TimeLastUpdated)
+						savedMSSInst, err := persistence.SaveSecretStatus(api.db, mssInst.GetKey(), secStatus)
+						if err != nil {
+							returnErrorResponse(writer, err, "Failed to update secret status.", http.StatusInternalServerError)
+						}
+						glog.V(3).Infof(secAPILogString(fmt.Sprintf("MSS secret %v is received for MSS Inst %v", secretName, savedMSSInst.String())))
 						writer.WriteHeader(http.StatusCreated)
 						return
 					}
@@ -305,23 +308,6 @@ func (api *SecretAPI) handleSecrets(writer http.ResponseWriter, request *http.Re
 			} else if psecret == nil || isEmptySecretObject(*psecret) {
 				returnErrorResponse(writer, err, "Secret not found.", http.StatusNotFound)
 			} else {
-				curentSecretStatus, err := persistence.FindSecretStatus(api.db, mssInst.GetKey(), secretName)
-				if err != nil {
-					returnErrorResponse(writer, err, "Failed to retrieve current secret status.", http.StatusInternalServerError)
-				}
-
-				if psecret.TimeLastUpdated == psecret.TimeCreated {
-					// It is already mounted, don't have to save to secretStatus
-				} else if curentSecretStatus == nil || psecret.TimeLastUpdated > curentSecretStatus.UpdateTime {
-					// update secretStatus for msInst. Otherwise (psecret.TimeLastUpdated == curentSecretStatus.UpdateTime), it means secretStatus is already stored for msInst
-					secStatus := persistence.NewSecretStatus(secretName, psecret.TimeLastUpdated, false)
-					savedMSSInst, err := persistence.SaveSecretStatus(api.db, mssInst.GetKey(), secStatus)
-					if err != nil {
-						returnErrorResponse(writer, err, "Failed to update secret status.", http.StatusInternalServerError)
-					}
-					glog.V(3).Infof(secAPILogString(fmt.Sprintf("SecretStatus saved for MSSInstance: %v", savedMSSInst.String())))
-				}
-
 				var sobj secretObject
 				if dbyte, err := base64.StdEncoding.DecodeString(psecret.SvcSecretValue); err != nil {
 					returnErrorResponse(writer, err, "Failed to decode the secret details.", http.StatusInternalServerError)
