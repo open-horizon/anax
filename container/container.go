@@ -1290,15 +1290,15 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 	if !b.IsDevInstance() {
 		msInstKey := agreementId
+		// Make sure miroservice instance exsits
 		if msInstInterface, err := persistence.GetMicroserviceInstIWithKey(b.db, msInstKey); err != nil {
 			return nil, err
 		} else if msInstInterface == nil {
 			return nil, errors.New(fmt.Sprintf("Failed to find microservice instance interface for key: %v", msInstKey))
+		} else if mssInst, err := persistence.NewMSSInst(b.db, msInstKey, cred.Token); err != nil {
+			return nil, errors.New(fmt.Sprintf("Failed to persist MicroserviceSecretStatusInstance, err: %v", err))
 		} else {
-			_, err := persistence.NewMSSInst(b.db, msInstKey, msInstInterface.GetServiceDefId(), cred.Token)
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Failed to persist MicroserviceSecretStatusInstance, err: %v", err))
-			}
+			glog.V(5).Infof("microservice secret status record saved: %v", mssInst)
 		}
 	}
 

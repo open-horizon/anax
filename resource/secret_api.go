@@ -300,7 +300,7 @@ func (api *SecretAPI) handleSecrets(writer http.ResponseWriter, request *http.Re
 
 			// call persistent to get secret object (key: serviceName/secretName)
 			// get secret value: secret.SvcSecretValue
-			if psecret, err := persistence.FindSingleSecretForService(api.db, secretName, mssInst.MsDefId); err != nil {
+			if psecret, err := persistence.FindSingleSecretForService(api.db, secretName, mssInst.GetKey()); err != nil {
 				returnErrorResponse(writer, err, "Failed to find secret.", http.StatusInternalServerError)
 			} else if psecret == nil || isEmptySecretObject(*psecret) {
 				returnErrorResponse(writer, err, "Secret not found.", http.StatusNotFound)

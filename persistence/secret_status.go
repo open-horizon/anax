@@ -12,7 +12,6 @@ const SECRET_STATUS = "secret_status"
 
 type MicroserviceSecretStatusInst struct {
 	MsInstKey     string
-	MsDefId       string
 	ESSToken      string
 	SecretsStatus map[string]*SecretStatus
 }
@@ -26,10 +25,9 @@ type SecretStatus struct {
 // for log and testing
 func (w MicroserviceSecretStatusInst) String() string {
 	return fmt.Sprintf("MsInstKey: %v, "+
-		"MsDefId: %v, "+
 		"ESSToken: ********, "+
 		"SecretsStatus: %v",
-		w.MsInstKey, w.MsDefId, w.SecretsStatus)
+		w.MsInstKey, w.SecretsStatus)
 }
 
 func (s SecretStatus) String() string {
@@ -39,14 +37,13 @@ func (s SecretStatus) String() string {
 		s.SecretName, s.UpdateTime, s.Received)
 }
 
-func NewMSSInst(db *bolt.DB, msInstKey string, msDefId string, essToken string) (*MicroserviceSecretStatusInst, error) {
-	if msInstKey == "" || msDefId == "" || essToken == "" {
-		return nil, errors.New("microserviceInstanceKey,  microserviceDefinitionId or essToken is empty, cannot persist")
+func NewMSSInst(db *bolt.DB, msInstKey string, essToken string) (*MicroserviceSecretStatusInst, error) {
+	if msInstKey == "" || essToken == "" {
+		return nil, errors.New("microserviceInstanceKey or essToken is empty, cannot persist")
 	}
 
 	new_secret_status_inst := &MicroserviceSecretStatusInst{
 		MsInstKey:     msInstKey,
-		MsDefId:       msDefId,
 		ESSToken:      essToken,
 		SecretsStatus: make(map[string]*SecretStatus),
 	}
@@ -223,11 +220,10 @@ func FindUpdatedSecretsForMSSInstance(db *bolt.DB, ms_inst_key string) ([]string
 	if mssInst, err := FindMSSInstWithKey(db, ms_inst_key); err != nil {
 		return updatedSecretNames, err
 	} else {
-		msDefId := mssInst.MsDefId
 		// get secretsStatus map for this instance
 		secretsStatus := mssInst.SecretsStatus
-		// Find secrets for given msDefId in "Secret" bucket
-		secrets, err := FindAllSecretsForMS(db, msDefId) // list of secrets retrieved from "Secret" bucket
+		// Find secrets for given mssInst Key  in "Secrets" bucket
+		secrets, err := FindAllSecretsForMS(db, mssInst.GetKey()) // list of secrets retrieved from "Secret" bucket
 		if err != nil {
 			return updatedSecretNames, err
 		} else if secrets == nil || len(secrets.SecretsMap) == 0 {
