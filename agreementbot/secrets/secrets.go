@@ -31,9 +31,13 @@ type AgbotSecrets interface {
 
 	// This function assumes that the plugin maintains an authentication to the secret manager that it can use
 	// when it doesnt need to call APIs with user creds. The creds used instead have the ability to READ secrets.
+	// "user" argument is the user who is accessing the secret, "secretUser" is the owner of the secret being accessed,
+	// if an org-level secret then this will be empty
 	GetSecretDetails(user, token, org, secretUser, secretName string) (SecretDetails, error)
 
 	// This function returns the secret manager's metadata about a given secret.
+	// "user" argument is the user who is accessing the secret, "secretUser" is the owner of the secret being accessed,
+	// if an org-level secret then this will be empty
 	GetSecretMetadata(secretOrg, secretUser, secretName string) (SecretMetadata, error)
 }
 
