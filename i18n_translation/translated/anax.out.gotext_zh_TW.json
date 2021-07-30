@@ -88,19 +88,23 @@
     },
     {
       "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "輸入主體無法解除序列化為 JSON 物件。 {Err}"
+      "translation": "輸入內文無法解除序列化為 JSON 物件。 {Err}"
     },
     {
       "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 PolicyCheck 物件。 {Err}"
+      "translation": "輸入內文無法解除序列化為 PolicyCheck 物件。 {Err}"
     },
     {
       "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 UserInputCheck 物件。 {Err}"
+      "translation": "輸入內文無法解除序列化為 UserInputCheck 物件。 {Err}"
+    },
+    {
+      "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "translation": "輸入內文無法解除序列化為 SecretBindingCheck 物件。{Err}"
     },
     {
       "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 CompCheck 物件。 {Err}"
+      "translation": "輸入內文無法解除序列化為 CompCheck 物件。 {Err}"
     },
     {
       "id": "No exchange user id is supplied.",
@@ -123,6 +127,54 @@
       "translation": "內部伺服器錯誤"
     },
     {
+      "id": "There is no secrets provider configured, secrets are unavailable.",
+      "translation": "未配置密碼提供者，密碼無法使用。"
+    },
+    {
+      "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
+      "translation": "密碼提供者尚未備妥。呼叫者應該重試進行幾次此 API 呼叫且兩次呼叫之間經歷短暫延遲，以確保密碼提供者無法使用。"
+    },
+    {
+      "id": "Unable to read request body, error: {Err}.",
+      "translation": "無法讀取要求內文，錯誤：{Err}。"
+    },
+    {
+      "id": "Request body is empty.",
+      "translation": "要求內文為空。"
+    },
+    {
+      "id": "Request body parse error, {Uerr}",
+      "translation": "要求內文剖析錯誤：{Uerr}"
+    },
+    {
+      "id": "Unable to access secrets provider, error: {Serr}.",
+      "translation": "無法存取密碼提供者，錯誤：{Serr}。"
+    },
+    {
+      "id": "org must be specified in the API path",
+      "translation": "必須在 API 路徑中指定組織"
+    },
+    {
+      "id": "user must be specified in the API path",
+      "translation": "必須在 API 路徑中指定使用者"
+    },
+    {
+      "id": "{Serr}",
+      "translation": "{Serr}"
+    },
+    {
+      "id": "Error checking secret {FullSecretName} in the secret manager.",
+      "translation": "在密碼管理程式中檢查密碼 {FullSecretName} 時發生錯誤。"
+    },
+    {
+      "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "translation": "在密碼管理程式中檢查密碼名稱時傳回錯誤類型：{Payload}"
+    },
+    {
+      "id": "Secret {FullSecretName} does not exist in the secret manager.",
+      "translation": "密碼管理程式中不存在密碼 {FullSecretName}。"
+    },
+    {
       "id": "Error parsing the selections {Form}. {Err}",
       "translation": "剖析 selections {Form} 時發生錯誤。 {Err}"
     },
@@ -132,31 +184,31 @@
     },
     {
       "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點配置/登錄的輸入時發生錯誤。 輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
+      "translation": "剖析節點配置/登錄的輸入時發生錯誤。 輸入內文無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
       "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點配置/登錄的輸入時發生錯誤。 輸入主體無法解除序列化為配置狀態物件：{Arg_1}，錯誤為：{Arg_2}"
+      "translation": "剖析節點配置/登錄的輸入時發生錯誤。 輸入內文無法解除序列化為配置狀態物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
       "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點更新的輸入時發生錯誤。 輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
+      "translation": "剖析節點更新的輸入時發生錯誤。 輸入內文無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
       "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則的輸入時發生錯誤。 輸入主體無法解除序列化為原則物件：{Arg_1}，錯誤為：{Arg_2}"
+      "translation": "剖析節點原則的輸入時發生錯誤。 輸入內文無法解除序列化為原則物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
       "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入主體無法解除序列化為限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
+      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入內文無法解除序列化為限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
       "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入主體不包含限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
+      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入內文不包含限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
       "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點使用者輸入的輸入時發生錯誤。 輸入主體無法解除序列化為使用者輸入物件：{Arg_1}，錯誤為：{Arg_2}"
+      "translation": "剖析節點使用者輸入的輸入時發生錯誤。 輸入內文無法解除序列化為使用者輸入物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
       "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
@@ -407,6 +459,10 @@
       "translation": "Docker 授權網域名稱：{DomainName}"
     },
     {
+      "id": "unable to load docker credentials for {Domain}: {Err}",
+      "translation": "無法載入 {Domain} 的 Docker 認證：{Err}"
+    },
+    {
       "id": "unable to find docker credentials for {Domain}",
       "translation": "找不到 {Domain} 的 Docker 認證"
     },
@@ -427,8 +483,12 @@
       "translation": "正在取回 {ImageName}..."
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "無法擷取 Docker 映像檔 {Repository____tag}。 找不到 Docker 認證。 如果映像檔登錄為私密， 則您可能需要執行 'docker login ...'。 錯誤為：{Err}"
+      "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "translation": "無法取得 docker.io 或 {Domain} 網域的 Docker 鑑別：{Err}"
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "translation": "無法擷取 Docker 映像檔 {Repository____tag}。 找不到 Docker 認證。 如果映像檔登錄為私密， 則您可能需要執行 'docker login ...'。 錯誤：{Err}：{LoginErr}"
     },
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
@@ -469,6 +529,30 @@
     {
       "id": "Exiting.",
       "translation": "結束中。"
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "無法取得檔案 {KeyFile} 的絕對路徑。 {Err}"
+    },
+    {
+      "id": "Error parsing HORIZON_URL: {Err}",
+      "translation": "剖析 HORIZON_URL 時發生錯誤：{Err}"
+    },
+    {
+      "id": "Error parsing host of the HORIZON_URL: {Err}",
+      "translation": "剖析 HORIZON_URL 的主機時發生錯誤：{Err}"
+    },
+    {
+      "id": "Error parsing port of the HORIZON_URL: {Err}",
+      "translation": "剖析 HORIZON_URL 的埠時發生錯誤：{Err}"
+    },
+    {
+      "id": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "translation": "非預期的 HORIZON_URL 埠：{PortInt}"
+    },
+    {
+      "id": "The agbot url: {EnvVar}",
+      "translation": "agbot URL：{EnvVar}"
     },
     {
       "id": "Error reading HTTP response, error {Err}",
@@ -521,6 +605,22 @@
     {
       "id": "failed to marshal body for {ApiMsg}: {Err}",
       "translation": "無法配置 {ApiMsg} 的主體：{Err}"
+    },
+    {
+      "id": "HZN_AGBOT_URL is not defined",
+      "translation": "未定義 HZN_AGBOT_URL"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確，輸出：{StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "無法解除配置 {ApiMsg} 中的 Exchange 主體回應：{Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "無法配置 {ApiMsg} 中的 Exchange 輸出：{Err}"
     },
     {
       "id": "Failed to unmarshal bytes. {Err}",
@@ -623,18 +723,6 @@
       "translation": "呼叫 {Service} REST API {ApiMsg} 時發現 HTTP 錯誤：{Err}。 HTTP 狀態：{Httpstatus}。"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確，輸出：{StringbodyBytes}"
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "無法解除配置 {ApiMsg} 中的 Exchange 主體回應：{Err}"
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "無法配置 {ApiMsg} 中的 Exchange 輸出：{Err}"
-    },
-    {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
       "translation": "無法從 {ApiMsg} 中讀取 Exchange 主體回應：{Err}"
     },
@@ -665,10 +753,6 @@
     {
       "id": "provided private key is not valid; error: {Err}",
       "translation": "所提供的私密金鑰無效；錯誤：{Err}"
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "無法取得檔案 {KeyFile} 的絕對路徑。 {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
@@ -741,6 +825,10 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "警告：無法剖析映像檔路徑 '{Image}'。 不要將它推送至 Docker 登錄，只需將它按原樣包含在 'deployment' 欄位中。"
+    },
+    {
+      "id": "Docker pull failure: {Err}",
+      "translation": "Docker 取回失敗：{Err}"
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
@@ -843,14 +931,6 @@
       "translation": "相容"
     },
     {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "translation": "配置物件 {In} 時發生錯誤。 {Arg_2}"
-    },
-    {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "無法將輸入轉換為 PolicyCheck 物件。 {Err}"
-    },
-    {
       "id": "The given node id is empty.",
       "translation": "給定的節點 ID 為空。"
     },
@@ -865,10 +945,6 @@
     {
       "id": "No node found for this node id {NodeId}.",
       "translation": "找不到節點 ID 為 {NodeId} 的節點。"
-    },
-    {
-      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "找不到 {TopSvcId} 之相依服務的定義。 無法完整評估 {PROPNODEPRIVILEGED} 的相容性，除非所有服務都在 Exchange 中。"
     },
     {
       "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
@@ -889,6 +965,18 @@
     {
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "服務沒有節點類型 'cluster' 的叢集部署配置。"
+    },
+    {
+      "id": "Unable to create version expression from {VersionRange}. {Err}",
+      "translation": "無法從 {VersionRange} 建立版本表示式。{Err}"
+    },
+    {
+      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "translation": "從 Exchange 擷取 {SDep} 的相依服務時發生錯誤。 {Err}"
+    },
+    {
+      "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "找不到 {TopId} 的相依服務的定義。無法完整評估 {PROPNODEPRIVILEGED} 的相容性，除非所有服務都在 Exchange 中。"
     },
     {
       "id": "The PolicyCheck input cannot be null",
@@ -1055,44 +1143,16 @@
       "translation": "將部署原則與服務原則合併時發生錯誤。 {Err}"
     },
     {
-      "id": "The deployment policy should not be null.",
-      "translation": "部署原則不應為空值。"
-    },
-    {
-      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "translation": "參照需要專用權才能執行的服務時，部署原則 {Header} 不能具有 {PROPNODEPRIVILEGED}=true。"
-    },
-    {
-      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "translation": "從 Exchange 擷取服務 {Org}/{WorkloadURL} {Version} {Arch} 及其相依項目時發生錯誤。 {Err}"
-    },
-    {
-      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "無法配置服務 {SIdTop} 的部署配置，錯誤為：{Err}"
-    },
-    {
-      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "無法配置服務 {SIdTop} 的叢集部署配置，錯誤為：{Err}"
-    },
-    {
       "id": "Unable to find service definition from the input services.",
       "translation": "在輸入服務中找不到服務定義。"
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "無法從 {Version} 建立版本表示式。 {Err}"
+      "id": "The SecretBindingCheck input cannot be null",
+      "translation": "SecretBindingCheck 輸入不能為空值"
     },
     {
-      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "translation": "從 Exchange 擷取 {SDep} 的相依服務時發生錯誤。 {Err}"
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "UserInputCheck 輸入不能為空值"
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "未指定節點使用者輸入和節點 ID。"
+      "id": "Node type '{NodeType}' does not support secret binding check.",
+      "translation": "節點類型 '{NodeType}' 不支援密碼連結檢查。"
     },
     {
       "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
@@ -1103,8 +1163,12 @@
       "translation": "未在部署原則或型樣中指定任何服務版本。"
     },
     {
-      "id": "User Input Incompatible",
-      "translation": "使用者輸入不相容"
+      "id": "Secret Binding Incompatible",
+      "translation": "密碼連結不相容"
+    },
+    {
+      "id": "Type Incompatible",
+      "translation": "類型不相容"
     },
     {
       "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
@@ -1113,6 +1177,86 @@
     {
       "id": "Service definition not found in the input.",
       "translation": "在輸入中找不到服務定義。"
+    },
+    {
+      "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "translation": "警告：任何服務都不需要下列密碼連結：{ExtraneousSB}"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "在部署原則或型樣中找不到 'arch' 為 {NodeArch} 的服務。"
+    },
+    {
+      "id": "No services found in the deployment policy or pattern.",
+      "translation": "在部署原則或型樣中找不到服務。"
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "translation": "輸入服務定義物件不能為空值。"
+    },
+    {
+      "id": "Error verifying secret in the secret manager. {Err}",
+      "translation": "驗證密碼管理程式中的密碼時發生錯誤。{Err}"
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "translation": "輸入服務規格物件不能為空值。"
+    },
+    {
+      "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "translation": "找不到 {Org}/{URL} {Arch} {Version} 的相依服務。{Err}"
+    },
+    {
+      "id": "Secret binding for a cluster service is not supported.",
+      "translation": "叢集服務的密碼連結不受支援。"
+    },
+    {
+      "id": "No secret binding found for the following service secrets: {NbArray}.",
+      "translation": "找不到下列服務密碼的密碼連結：{NbArray}。"
+    },
+    {
+      "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "translation": "在服務 {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 的密碼連結中指定的版本字串 {ServiceVersionRange} 錯誤，錯誤為 {Err}"
+    },
+    {
+      "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "translation": "在範圍 {VExp} 中檢查版本 {SvcVersion} 時發生錯誤。{Err}"
+    },
+    {
+      "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "translation": "在檢查密碼連結時 agbot URL 不能為空字串。請確保已設定 HZN_AGBOT_URL。"
+    },
+    {
+      "id": "The node organization must be provided.",
+      "translation": "必須提供節點組織。"
+    },
+    {
+      "id": "Error parsing secret name in the secret binding. {Errparse}",
+      "translation": "剖析密碼連結中的密碼名稱時發生錯誤。{Errparse}"
+    },
+    {
+      "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "translation": "在密碼管理程式中檢查密碼 {VaultSecretName} 時發生錯誤。{Err}"
+    },
+    {
+      "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "連結密碼名稱不能為空字串。對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
+    },
+    {
+      "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "連結密碼名稱的格式無效：{SecretName}。對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "translation": "UserInputCheck 輸入不能為空值"
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "translation": "未指定節點使用者輸入和節點 ID。"
+    },
+    {
+      "id": "User Input Incompatible",
+      "translation": "使用者輸入不相容"
     },
     {
       "id": "Warning: checking node user input:  {Err}",
@@ -1125,18 +1269,6 @@
     {
       "id": "Warning: checking user input for the pattern: {Err}",
       "translation": "警告：正在檢查型樣的使用者輸入：{Err}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "translation": "在部署原則或型樣中找不到 'arch' 為 {NodeArch} 的服務。"
-    },
-    {
-      "id": "No services found in the deployment policy or pattern.",
-      "translation": "在部署原則或型樣中找不到服務。"
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "translation": "輸入服務規格物件不能為空值。"
     },
     {
       "id": "Error verifing user input for service {SId}. {Err}",
@@ -1153,10 +1285,6 @@
     {
       "id": "Failed to verify user input for dependent service {Id}. {Reason}",
       "translation": "無法驗證相依服務 {Id} 的使用者輸入。 {Reason}"
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "translation": "輸入服務定義物件不能為空值。"
     },
     {
       "id": "Failed to get the service from the Exchange. {Err}",
@@ -1765,6 +1893,22 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "無法關閉 MMS API 憑證私密金鑰檔 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+      "id": "Unable to authenticate nil request for secrets API",
+      "translation": "無法鑑別密碼 API 的零要求"
+    },
+    {
+      "id": "Unable to extract basic auth for request",
+      "translation": "無法擷取要求的基本鑑別"
+    },
+    {
+      "id": "unable to verify {AppKey}, error {Err}",
+      "translation": "無法驗證 {AppKey}，錯誤為 {Err}"
+    },
+    {
+      "id": "credentials for {AppKey} are not valid",
+      "translation": "{AppKey} 的認證無效"
     },
     {
       "id": "Version_Expression: Empty string is not a valid version.",

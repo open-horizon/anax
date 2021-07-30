@@ -440,6 +440,22 @@
       "fuzzy": true
     },
     {
+      "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "translation": "입력 본문을 SecretBindingCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
       "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
       "translation": "입력 본문을 CompCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
@@ -483,6 +499,151 @@
       "id": "Internal server error",
       "message": "Internal server error",
       "translation": "내부 서버 오류",
+      "fuzzy": true
+    },
+    {
+      "id": "There is no secrets provider configured, secrets are unavailable.",
+      "message": "There is no secrets provider configured, secrets are unavailable.",
+      "translation": "구성된 시크릿 제공자가 없으며, 시크릿을 사용할 수 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "unavailMsg",
+        "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
+      ],
+      "message": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
+      "translation": "시크릿 제공자가 준비되지 않았습니다. 호출자는 시크릿 제공자를 사용할 수 없도록 하기 위해 호출 사이에 짧은 지연을 두고 이 API 호출을 몇 번 재시도해야 합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to read request body, error: {Err}.",
+      "message": "Unable to read request body, error: {Err}.",
+      "translation": "요청 본문을 읽을 수 없음. 오류: {Err}.",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Request body is empty.",
+      "message": "Request body is empty.",
+      "translation": "요청 본문이 비어 있습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Request body parse error, {Uerr}",
+      "message": "Request body parse error, {Uerr}",
+      "translation": "요청 본문 구문 분석 오류. {Uerr}",
+      "placeholders": [
+        {
+          "id": "Uerr",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "uerr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to access secrets provider, error: {Serr}.",
+      "message": "Unable to access secrets provider, error: {Serr}.",
+      "translation": "시크릿 제공자에 액세스할 수 없음. 오류: {Serr}.",
+      "placeholders": [
+        {
+          "id": "Serr",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/agreementbot/secrets.ErrorResponse",
+          "underlyingType": "struct{Msg string; Details string; RespCode int}",
+          "argNum": 1,
+          "expr": "serr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "org must be specified in the API path",
+      "message": "org must be specified in the API path",
+      "translation": "API 경로에 org를 지정해야 함",
+      "fuzzy": true
+    },
+    {
+      "id": "user must be specified in the API path",
+      "message": "user must be specified in the API path",
+      "translation": "API 경로에 user를 지정해야 함",
+      "fuzzy": true
+    },
+    {
+      "id": "{Serr}",
+      "message": "{Serr}",
+      "translation": "{Serr}",
+      "placeholders": [
+        {
+          "id": "Serr",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/agreementbot/secrets.ErrorResponse",
+          "underlyingType": "struct{Msg string; Details string; RespCode int}",
+          "argNum": 1,
+          "expr": "serr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking secret {FullSecretName} in the secret manager.",
+      "message": "Error checking secret {FullSecretName} in the secret manager.",
+      "translation": "시크릿 관리자에서 {FullSecretName} 시크릿 확인 중 오류가 발생했습니다.",
+      "placeholders": [
+        {
+          "id": "FullSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fullSecretName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "message": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "translation": "시크릿 관리자에서 시크릿 이름을 확인할 때 잘못된 유형이 리턴됨: {Payload}",
+      "placeholders": [
+        {
+          "id": "Payload",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "payload"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Secret {FullSecretName} does not exist in the secret manager.",
+      "message": "Secret {FullSecretName} does not exist in the secret manager.",
+      "translation": "시크릿 관리자에 {FullSecretName} 시크릿이 없습니다.",
+      "placeholders": [
+        {
+          "id": "FullSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fullSecretName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -1860,6 +2021,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to load docker credentials for {Domain}: {Err}",
+      "message": "unable to load docker credentials for {Domain}: {Err}",
+      "translation": "{Domain}에 대한 Docker 인증 정보를 로드할 수 없음: {Err}",
+      "placeholders": [
+        {
+          "id": "Domain",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "domain"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "unable to find docker credentials for {Domain}",
       "message": "unable to find docker credentials for {Domain}",
       "translation": "{Domain}에 대한 Docker 인증 정보를 찾을 수 없음",
@@ -1948,9 +2133,33 @@
       "fuzzy": true
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "message": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "Docker 이미지 {Repository____tag}을(를) 가져올 수 없습니다. Docker 인증 정보를 찾을 수 없습니다. 이미지 레지스트리가 개인용인 경우 'docker login ...'을 실행해야 합니다. 오류: {Err}",
+      "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "message": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "translation": "docker.io 또는 {Domain} 도메인에 대한 Docker 인증을 가져올 수 없음: {Err}",
+      "placeholders": [
+        {
+          "id": "Domain",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "domain"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "message": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "translation": "Docker 이미지 {Repository____tag}을(를) 가져올 수 없습니다. Docker 인증 정보를 찾을 수 없습니다. 이미지 레지스트리가 개인용인 경우 'docker login ...'을 실행해야 합니다. 오류: {Err}: {LoginErr}",
       "placeholders": [
         {
           "id": "Repository____tag",
@@ -1967,6 +2176,14 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        },
+        {
+          "id": "LoginErr",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "loginErr"
         }
       ],
       "fuzzy": true
@@ -2106,7 +2323,7 @@
     {
       "id": "Error reading input, error {Err}",
       "message": "Error reading input, error {Err}",
-      "translation": "입력을 읽는 중에 오류가 발생함, 오류 {Err}",
+      "translation": "입력을 읽는 중에 오류가 발생함. 오류 {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -2123,6 +2340,110 @@
       "id": "Exiting.",
       "message": "Exiting.",
       "translation": "종료 중입니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "message": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "{KeyFile} 파일의 절대 경로를 가져오는 데 실패했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "KeyFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing HORIZON_URL: {Err}",
+      "message": "Error parsing HORIZON_URL: {Err}",
+      "translation": "HORIZON_URL 구문 분석 중 오류 발생: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing host of the HORIZON_URL: {Err}",
+      "message": "Error parsing host of the HORIZON_URL: {Err}",
+      "translation": "HORIZON_URL의 호스트 구문 분석 중 오류 발생: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing port of the HORIZON_URL: {Err}",
+      "message": "Error parsing port of the HORIZON_URL: {Err}",
+      "translation": "HORIZON_URL의 포트 구문 분석 중 오류 발생: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "message": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "translation": "HORIZON_URL의 예기치 않은 포트: {PortInt}",
+      "placeholders": [
+        {
+          "id": "PortInt",
+          "string": "%[1]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "portInt"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The agbot url: {EnvVar}",
+      "message": "The agbot url: {EnvVar}",
+      "translation": "agbot url: {EnvVar}",
+      "placeholders": [
+        {
+          "id": "EnvVar",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "envVar"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -2425,6 +2746,92 @@
       "id": "failed to marshal body for {ApiMsg}: {Err}",
       "message": "failed to marshal body for {ApiMsg}: {Err}",
       "translation": "{ApiMsg}의 본문을 마샬링하는 데 실패함: {Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HZN_AGBOT_URL is not defined",
+      "message": "HZN_AGBOT_URL is not defined",
+      "translation": "HZN_AGBOT_URL이 정의되지 않음",
+      "fuzzy": true
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "message": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "{ApiMsg}의 잘못된 HTTP 코드 {HttpCode}, 출력: {StringbodyBytes}",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "StringbodyBytes",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "string(bodyBytes)"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "message": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "{ApiMsg}에서 exchange 본문 응답을 역마샬링하는 데 실패함: {Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "message": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "{ApiMsg}에서 exchange 출력을 마샬링하는 데 실패함: {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -3022,86 +3429,6 @@
       "fuzzy": true
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "message": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "{ApiMsg}의 잘못된 HTTP 코드 {HttpCode}, 출력: {StringbodyBytes}",
-      "placeholders": [
-        {
-          "id": "HttpCode",
-          "string": "%[1]d",
-          "type": "int",
-          "underlyingType": "int",
-          "argNum": 1,
-          "expr": "httpCode"
-        },
-        {
-          "id": "ApiMsg",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "apiMsg"
-        },
-        {
-          "id": "StringbodyBytes",
-          "string": "%[3]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 3,
-          "expr": "string(bodyBytes)"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "message": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg}에서 exchange 본문 응답을 역마샬링하는 데 실패함: {Err}",
-      "placeholders": [
-        {
-          "id": "ApiMsg",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "apiMsg"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "message": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg}에서 exchange 출력을 마샬링하는 데 실패함: {Err}",
-      "placeholders": [
-        {
-          "id": "ApiMsg",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "apiMsg"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
       "message": "failed to read exchange body response from {ApiMsg}: {Err}",
       "translation": "{ApiMsg}에서 exchange 본문 응답을 읽는 데 실패함: {Err}",
@@ -3234,30 +3561,6 @@
           "type": "error",
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "message": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "{KeyFile} 파일의 절대 경로를 가져오는 데 실패했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "KeyFile",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "keyFile"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -3598,6 +3901,22 @@
       "fuzzy": true
     },
     {
+      "id": "Docker pull failure: {Err}",
+      "message": "Docker pull failure: {Err}",
+      "translation": "Docker 풀 실패: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
       "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
       "translation": "제공된 로그 드라이버({LogDriver})에서 로그 보기를 지원하지 않습니다. 로그는 다음 드라이버에서만 제공됩니다. {DockerDriversWithLoggingSupport}",
@@ -3873,7 +4192,7 @@
         {
           "id": "ReqSvc",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "type": "github.com/open-horizon/anax/exchangecommon.ServiceDependency",
           "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
           "argNum": 2,
           "expr": "reqSvc"
@@ -3889,7 +4208,7 @@
         {
           "id": "ReqSvc",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "type": "github.com/open-horizon/anax/exchangecommon.ServiceDependency",
           "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
           "argNum": 1,
           "expr": "reqSvc"
@@ -4042,45 +4361,6 @@
       "fuzzy": true
     },
     {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "message": "Error marshaling object {In}. {Arg_2}",
-      "translation": "{In} 오브젝트를 마샬링하는 중에 오류가 발생했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "In",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "in"
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "message": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "입력을 PolicyCheck 오브젝트로 변환하는 데 실패했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "The given node id is empty.",
       "message": "The given node id is empty.",
       "translation": "지정된 노드 ID가 비어 있습니다.",
@@ -4138,30 +4418,6 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "nodeId"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "message": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "{TopSvcId}의 종속 서비스에 대한 정의를 찾는 데 실패했습니다. 모든 서비스가 Exchange에 있을 때까지 {PROPNODEPRIVILEGED}의 호환성을 완전히 평가할 수 없습니다.",
-      "placeholders": [
-        {
-          "id": "TopSvcId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "topSvcId"
-        },
-        {
-          "id": "PROPNODEPRIVILEGED",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
         }
       ],
       "fuzzy": true
@@ -4240,6 +4496,78 @@
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "message": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "서비스에 노드 유형 'cluster'에 대한 클러스터 배치 구성이 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to create version expression from {VersionRange}. {Err}",
+      "message": "Unable to create version expression from {VersionRange}. {Err}",
+      "translation": "{VersionRange}에서 버전 표현식을 작성할 수 없습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "VersionRange",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sDep.VersionRange"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "message": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "translation": "{SDep}에 대해 Exchange에서 종속 서비스를 검색하는 중에 오류가 발생했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "SDep",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/exchangecommon.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 1,
+          "expr": "sDep"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "message": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "{TopId}의 종속 서비스에 대한 정의를 찾는 데 실패했습니다. 모든 서비스가 Exchange에 있을 때까지 {PROPNODEPRIVILEGED}의 호환성을 완전히 평가할 수 없습니다.",
+      "placeholders": [
+        {
+          "id": "TopId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "topId"
+        },
+        {
+          "id": "PROPNODEPRIVILEGED",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -4933,195 +5261,31 @@
       "fuzzy": true
     },
     {
-      "id": "The deployment policy should not be null.",
-      "message": "The deployment policy should not be null.",
-      "translation": "배치 정책은 널일 수 없습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "message": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "translation": "실행할 권한이 필요한 서비스를 참조하는 경우 배치 정책 {Header}에 {PROPNODEPRIVILEGED}=true를 사용할 수 없습니다.",
-      "placeholders": [
-        {
-          "id": "Header",
-          "string": "%[1]s",
-          "type": "github.com/open-horizon/anax/policy.PolicyHeader",
-          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Version string \"json:\\\"version\\\"\"}",
-          "argNum": 1,
-          "expr": "businessPol.Header"
-        },
-        {
-          "id": "PROPNODEPRIVILEGED",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "message": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "translation": "Exchange에서 서비스 {Org}/{WorkloadURL} {Version} {Arch} 및 해당 종속자를 검색하는 중 오류가 발생했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Org",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "workload.Org"
-        },
-        {
-          "id": "WorkloadURL",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "workload.WorkloadURL"
-        },
-        {
-          "id": "Version",
-          "string": "%[3]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 3,
-          "expr": "workload.Version"
-        },
-        {
-          "id": "Arch",
-          "string": "%[4]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 4,
-          "expr": "workload.Arch"
-        },
-        {
-          "id": "Err",
-          "string": "%[5]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 5,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "message": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "서비스 {SIdTop}의 배치 구성을 마샬링하지 못했습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "SIdTop",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sIdTop"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "message": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "서비스 {SIdTop}의 클러스터 배치 구성을 마샬링하지 못했습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "SIdTop",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sIdTop"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Unable to find service definition from the input services.",
       "message": "Unable to find service definition from the input services.",
       "translation": "입력 서비스에서 서비스 정의를 찾지 못했습니다.",
       "fuzzy": true
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "message": "Unable to create version expression from {Version}. {Err}",
-      "translation": "{Version}(으)로부터 버전 표현식을 작성할 수 없습니다. {Err}",
+      "id": "The SecretBindingCheck input cannot be null",
+      "message": "The SecretBindingCheck input cannot be null",
+      "translation": "SecretBindingCheck 입력은 널일 수 없음",
+      "fuzzy": true
+    },
+    {
+      "id": "Node type '{NodeType}' does not support secret binding check.",
+      "message": "Node type '{NodeType}' does not support secret binding check.",
+      "translation": "'{NodeType}' 노드 유형은 시크릿 바인딩 검사를 지원하지 않습니다.",
       "placeholders": [
         {
-          "id": "Version",
+          "id": "NodeType",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "sDep.Version"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
+          "expr": "nodeType"
         }
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "message": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "translation": "{SDep}에 대해 Exchange에서 종속 서비스를 검색하는 중에 오류가 발생했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "SDep",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
-          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
-          "argNum": 1,
-          "expr": "sDep"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "message": "The UserInputCheck input cannot be null",
-      "translation": "UserInputCheck 입력은 널일 수 없음",
-      "fuzzy": true
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "message": "Neither node user input nor node id is specified.",
-      "translation": "노드 사용자 입력과 노드 ID가 모두 지정되지 않았습니다.",
       "fuzzy": true
     },
     {
@@ -5147,9 +5311,15 @@
       "fuzzy": true
     },
     {
-      "id": "User Input Incompatible",
-      "message": "User Input Incompatible",
-      "translation": "사용자 입력이 호환되지 않음",
+      "id": "Secret Binding Incompatible",
+      "message": "Secret Binding Incompatible",
+      "translation": "시크릿 바인딩이 호환되지 않음",
+      "fuzzy": true
+    },
+    {
+      "id": "Type Incompatible",
+      "message": "Type Incompatible",
+      "translation": "유형이 호환되지 않음",
       "fuzzy": true
     },
     {
@@ -5199,6 +5369,322 @@
       "fuzzy": true
     },
     {
+      "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "message": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "translation": "경고: 다음 시크릿 바인딩은 서비스에 필요하지 않음: {ExtraneousSB}",
+      "placeholders": [
+        {
+          "id": "ExtraneousSB",
+          "string": "%[1]v",
+          "type": "[]github.com/open-horizon/anax/exchangecommon.SecretBinding",
+          "underlyingType": "[]github.com/open-horizon/anax/exchangecommon.SecretBinding",
+          "argNum": 1,
+          "expr": "extraneousSB"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "message": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "배치 정책 또는 패턴에서 'arch'가 {NodeArch}인 서비스를 찾을 수 없습니다.",
+      "placeholders": [
+        {
+          "id": "NodeArch",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "resources.NodeArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No services found in the deployment policy or pattern.",
+      "message": "No services found in the deployment policy or pattern.",
+      "translation": "배치 정책 또는 패턴에서 서비스를 찾을 수 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "message": "The input service definition object cannot be null.",
+      "translation": "입력 서비스 정의 오브젝트는 널일 수 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Error verifying secret in the secret manager. {Err}",
+      "message": "Error verifying secret in the secret manager. {Err}",
+      "translation": "시크릿 관리자에서 시크릿 확인 중 오류가 발생했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "message": "The input service spec object cannot be null.",
+      "translation": "입력 서비스 spec 오브젝트는 널일 수 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "message": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "translation": "{Org}/{URL} {Arch} {Version}에 대한 종속 서비스를 찾는 데 실패했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sDef.GetOrg()"
+        },
+        {
+          "id": "URL",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sDef.GetURL()"
+        },
+        {
+          "id": "Arch",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "sDef.GetArch()"
+        },
+        {
+          "id": "Version",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "sDef.GetVersion()"
+        },
+        {
+          "id": "Err",
+          "string": "%[5]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 5,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Secret binding for a cluster service is not supported.",
+      "message": "Secret binding for a cluster service is not supported.",
+      "translation": "클러스터 서비스에 대한 시크릿 바인딩이 지원되지 않습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "No secret binding found for the following service secrets: {NbArray}.",
+      "message": "No secret binding found for the following service secrets: {NbArray}.",
+      "translation": "다음 서비스 시크릿에 대한 시크릿 바인딩을 찾을 수 없음: {NbArray}.",
+      "placeholders": [
+        {
+          "id": "NbArray",
+          "string": "%[1]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "nbArray"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "message": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "translation": "{SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 서비스에 대한 시크릿 바인딩에 잘못된 버전 문자열 {ServiceVersionRange}이(가) 지정됨. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "ServiceVersionRange",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sb.ServiceVersionRange"
+        },
+        {
+          "id": "SvcOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "svcOrg"
+        },
+        {
+          "id": "SvcName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "svcName"
+        },
+        {
+          "id": "SvcVersion",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "svcVersion"
+        },
+        {
+          "id": "SvcArch",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "svcArch"
+        },
+        {
+          "id": "Err",
+          "string": "%[6]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 6,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "message": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "translation": "{VExp} 범위에서 버전 {SvcVersion} 확인 중 오류가 발생했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "SvcVersion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcVersion"
+        },
+        {
+          "id": "VExp",
+          "string": "%[2]v",
+          "type": "*github.com/open-horizon/anax/semanticversion.Version_Expression",
+          "underlyingType": "*github.com/open-horizon/anax/semanticversion.Version_Expression",
+          "argNum": 2,
+          "expr": "vExp"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "message": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "translation": "시크릿 바인딩 확인 시 agbot URL은 빈 문자열일 수 없습니다. HZN_AGBOT_URL이 설정되었는지 확인하십시오.",
+      "fuzzy": true
+    },
+    {
+      "id": "The node organization must be provided.",
+      "message": "The node organization must be provided.",
+      "translation": "노드 조직을 제공해야 합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing secret name in the secret binding. {Errparse}",
+      "message": "Error parsing secret name in the secret binding. {Errparse}",
+      "translation": "시크릿 바인딩에서 시크릿 이름 구문 분석 중 오류가 발생했습니다. {Errparse}",
+      "placeholders": [
+        {
+          "id": "Errparse",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err_parse"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "message": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "translation": "시크릿 관리자에서 {VaultSecretName} 시크릿 확인 중 오류가 발생했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "VaultSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "vaultSecretName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "message": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "바인딩 시크릿 이름은 빈 문자열일 수 없습니다. 올바른 형식은 조직 레벨 시크릿의 경우 '<secretname>'이고 사용자 레벨 시크릿의 경우 'user/<username>/<secretname>'입니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "message": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "바인딩 시크릿 이름의 올바르지 않은 형식: {SecretName}. 올바른 형식은 조직 레벨 시크릿의 경우 '<secretname>'이고 사용자 레벨 시크릿의 경우 'user/<username>/<secretname>'입니다.",
+      "placeholders": [
+        {
+          "id": "SecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "secretName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "message": "The UserInputCheck input cannot be null",
+      "translation": "UserInputCheck 입력은 널일 수 없음",
+      "fuzzy": true
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "message": "Neither node user input nor node id is specified.",
+      "translation": "노드 사용자 입력과 노드 ID가 모두 지정되지 않았습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "User Input Incompatible",
+      "message": "User Input Incompatible",
+      "translation": "사용자 입력이 호환되지 않음",
+      "fuzzy": true
+    },
+    {
       "id": "Warning: checking node user input:  {Err}",
       "message": "Warning: checking node user input:  {Err}",
       "translation": "경고: 노드 사용자 입력 확인 중:  {Err}",
@@ -5244,34 +5730,6 @@
           "expr": "err"
         }
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "message": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "translation": "배치 정책 또는 패턴에서 'arch'가 {NodeArch}인 서비스를 찾을 수 없습니다.",
-      "placeholders": [
-        {
-          "id": "NodeArch",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "resources.NodeArch"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "No services found in the deployment policy or pattern.",
-      "message": "No services found in the deployment policy or pattern.",
-      "translation": "배치 정책 또는 패턴에서 서비스를 찾을 수 없습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "message": "The input service spec object cannot be null.",
-      "translation": "입력 서비스 spec 오브젝트는 널일 수 없습니다.",
       "fuzzy": true
     },
     {
@@ -5368,12 +5826,6 @@
           "expr": "reason"
         }
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "message": "The input service definition object cannot be null.",
-      "translation": "입력 서비스 정의 오브젝트는 널일 수 없습니다.",
       "fuzzy": true
     },
     {
@@ -9087,6 +9539,58 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to authenticate nil request for secrets API",
+      "message": "Unable to authenticate nil request for secrets API",
+      "translation": "시크릿 API에 대해 닐(nil) 요청을 인증할 수 없음",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to extract basic auth for request",
+      "message": "Unable to extract basic auth for request",
+      "translation": "요청에 대해 기본 인증을 추출할 수 없음",
+      "fuzzy": true
+    },
+    {
+      "id": "unable to verify {AppKey}, error {Err}",
+      "message": "unable to verify {AppKey}, error {Err}",
+      "translation": "{AppKey}을(를) 확인할 수 없음. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "AppKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "appKey"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "credentials for {AppKey} are not valid",
+      "message": "credentials for {AppKey} are not valid",
+      "translation": "{AppKey}에 대한 인증 정보가 올바르지 않음",
+      "placeholders": [
+        {
+          "id": "AppKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "appKey"
         }
       ],
       "fuzzy": true
