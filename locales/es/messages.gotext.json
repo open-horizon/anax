@@ -440,6 +440,22 @@
       "fuzzy": true
     },
     {
+      "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "translation": "El cuerpo de entrada no se ha podido deserializar en el objeto SecretBindingCheck. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
       "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
       "translation": "El cuerpo de entrada no se ha podido deserializar en un objeto CompCheck. {Err}",
@@ -483,6 +499,151 @@
       "id": "Internal server error",
       "message": "Internal server error",
       "translation": "Error interno del servidor",
+      "fuzzy": true
+    },
+    {
+      "id": "There is no secrets provider configured, secrets are unavailable.",
+      "message": "There is no secrets provider configured, secrets are unavailable.",
+      "translation": "No hay ningún proveedor de secretos configurado, los secretos no están disponibles.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "unavailMsg",
+        "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
+      ],
+      "message": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
+      "translation": "El proveedor de secretos no está listo. El emisor de la llamada debe reintentar esta llamada de API unas pocas veces con un breve retardo entre llamadas para asegurarse de que el proveedor de secretos no está disponible.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to read request body, error: {Err}.",
+      "message": "Unable to read request body, error: {Err}.",
+      "translation": "No se puede leer el cuerpo de la solicitud, error: {Err}.",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Request body is empty.",
+      "message": "Request body is empty.",
+      "translation": "El cuerpo de la solicitud está vacío.",
+      "fuzzy": true
+    },
+    {
+      "id": "Request body parse error, {Uerr}",
+      "message": "Request body parse error, {Uerr}",
+      "translation": "Error de análisis del cuerpo de solicitud, {Uerr}",
+      "placeholders": [
+        {
+          "id": "Uerr",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "uerr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to access secrets provider, error: {Serr}.",
+      "message": "Unable to access secrets provider, error: {Serr}.",
+      "translation": "No se puede acceder al proveedor de secretos, error: {Serr}.",
+      "placeholders": [
+        {
+          "id": "Serr",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/agreementbot/secrets.ErrorResponse",
+          "underlyingType": "struct{Msg string; Details string; RespCode int}",
+          "argNum": 1,
+          "expr": "serr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "org must be specified in the API path",
+      "message": "org must be specified in the API path",
+      "translation": "org se debe especificar en la vía de acceso de la API",
+      "fuzzy": true
+    },
+    {
+      "id": "user must be specified in the API path",
+      "message": "user must be specified in the API path",
+      "translation": "user se debe especificar en la vía de acceso de API",
+      "fuzzy": true
+    },
+    {
+      "id": "{Serr}",
+      "message": "{Serr}",
+      "translation": "{Serr}",
+      "placeholders": [
+        {
+          "id": "Serr",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/agreementbot/secrets.ErrorResponse",
+          "underlyingType": "struct{Msg string; Details string; RespCode int}",
+          "argNum": 1,
+          "expr": "serr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking secret {FullSecretName} in the secret manager.",
+      "message": "Error checking secret {FullSecretName} in the secret manager.",
+      "translation": "Error al comprobar el secreto {FullSecretName} en el gestor de secretos.",
+      "placeholders": [
+        {
+          "id": "FullSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fullSecretName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "message": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "translation": "Se ha devuelto un tipo incorrecto al comprobar el nombre del secreto en el gestor del secreto: {Payload}",
+      "placeholders": [
+        {
+          "id": "Payload",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "payload"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Secret {FullSecretName} does not exist in the secret manager.",
+      "message": "Secret {FullSecretName} does not exist in the secret manager.",
+      "translation": "El secreto  {FullSecretName} no existe en el gestor de secretos.",
+      "placeholders": [
+        {
+          "id": "FullSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fullSecretName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -1860,6 +2021,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to load docker credentials for {Domain}: {Err}",
+      "message": "unable to load docker credentials for {Domain}: {Err}",
+      "translation": "No se han podido cargar las credenciales de {Domain}: {Err}.",
+      "placeholders": [
+        {
+          "id": "Domain",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "domain"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "unable to find docker credentials for {Domain}",
       "message": "unable to find docker credentials for {Domain}",
       "translation": "No se han podido encontrar las credenciales de Docker para {Domain}",
@@ -1948,9 +2133,33 @@
       "fuzzy": true
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "message": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "No se ha podido extraer la imagen de Docker {Repository____tag}. No se han encontrado credenciales de Docker. Puede que necesite ejecutar 'docker login ...' si el registro de imagen es privado. Error: {Err}",
+      "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "message": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "translation": "No se ha podido obtener la autorización de Docker para docker.io o el dominio {Domain}: {Err}",
+      "placeholders": [
+        {
+          "id": "Domain",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "domain"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "message": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "translation": "No se ha podido extraer la imagen de Docker {Repository____tag}. No se han encontrado credenciales de Docker. Puede que necesite ejecutar 'docker login ...' si el registro de imagen es privado. Error: {Err}: {LoginErr}",
       "placeholders": [
         {
           "id": "Repository____tag",
@@ -1967,6 +2176,14 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        },
+        {
+          "id": "LoginErr",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "loginErr"
         }
       ],
       "fuzzy": true
@@ -2123,6 +2340,110 @@
       "id": "Exiting.",
       "message": "Exiting.",
       "translation": "Saliendo.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "message": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "No se ha podido obtener la vía de acceso absoluta para el archivo {KeyFile}. {Err}",
+      "placeholders": [
+        {
+          "id": "KeyFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing HORIZON_URL: {Err}",
+      "message": "Error parsing HORIZON_URL: {Err}",
+      "translation": "Error al analizar HORIZON_URL: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing host of the HORIZON_URL: {Err}",
+      "message": "Error parsing host of the HORIZON_URL: {Err}",
+      "translation": "Error al analizar el host de HORIZON_URL: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing port of the HORIZON_URL: {Err}",
+      "message": "Error parsing port of the HORIZON_URL: {Err}",
+      "translation": "Error al analizar el puerto de HORIZON_URL: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "message": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "translation": "Puerto inesperado de HORIZON_URL: {PortInt}",
+      "placeholders": [
+        {
+          "id": "PortInt",
+          "string": "%[1]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "portInt"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The agbot url: {EnvVar}",
+      "message": "The agbot url: {EnvVar}",
+      "translation": "El URL de agbot: {EnvVar}",
+      "placeholders": [
+        {
+          "id": "EnvVar",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "envVar"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -2425,6 +2746,92 @@
       "id": "failed to marshal body for {ApiMsg}: {Err}",
       "message": "failed to marshal body for {ApiMsg}: {Err}",
       "translation": "No se ha podido ordenar el cuerpo para {ApiMsg}: {Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HZN_AGBOT_URL is not defined",
+      "message": "HZN_AGBOT_URL is not defined",
+      "translation": "HZN_AGBOT_URL no está definido",
+      "fuzzy": true
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "message": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "Código HTTP erróneo {HttpCode} de {ApiMsg}, salida: {StringbodyBytes}",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "StringbodyBytes",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "string(bodyBytes)"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "message": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "No se ha podido desordenar la respuesta del cuerpo de Exchange de {ApiMsg}: {Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "message": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "No se ha podido desordenar la salida de Exchange de {ApiMsg}: {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -3022,86 +3429,6 @@
       "fuzzy": true
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "message": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "Código HTTP erróneo {HttpCode} de {ApiMsg}, salida: {StringbodyBytes}",
-      "placeholders": [
-        {
-          "id": "HttpCode",
-          "string": "%[1]d",
-          "type": "int",
-          "underlyingType": "int",
-          "argNum": 1,
-          "expr": "httpCode"
-        },
-        {
-          "id": "ApiMsg",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "apiMsg"
-        },
-        {
-          "id": "StringbodyBytes",
-          "string": "%[3]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 3,
-          "expr": "string(bodyBytes)"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "message": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "No se ha podido desordenar la respuesta del cuerpo de Exchange de {ApiMsg}: {Err}",
-      "placeholders": [
-        {
-          "id": "ApiMsg",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "apiMsg"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "message": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "No se ha podido desordenar la salida de Exchange de {ApiMsg}: {Err}",
-      "placeholders": [
-        {
-          "id": "ApiMsg",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "apiMsg"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
       "message": "failed to read exchange body response from {ApiMsg}: {Err}",
       "translation": "No se ha podido leer la respuesta del cuerpo de Exchange de {ApiMsg}: {Err}",
@@ -3234,30 +3561,6 @@
           "type": "error",
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "message": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "No se ha podido obtener la vía de acceso absoluta para el archivo {KeyFile}. {Err}",
-      "placeholders": [
-        {
-          "id": "KeyFile",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "keyFile"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -3598,6 +3901,22 @@
       "fuzzy": true
     },
     {
+      "id": "Docker pull failure: {Err}",
+      "message": "Docker pull failure: {Err}",
+      "translation": "Anomalía de extracción de Docker: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
       "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
       "translation": "El controlador de registro proporcionado ({LogDriver}) no da soporte a la visualización de registros. Los registros solo están disponibles en los siguientes controladores: {DockerDriversWithLoggingSupport}",
@@ -3873,7 +4192,7 @@
         {
           "id": "ReqSvc",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "type": "github.com/open-horizon/anax/exchangecommon.ServiceDependency",
           "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
           "argNum": 2,
           "expr": "reqSvc"
@@ -3889,7 +4208,7 @@
         {
           "id": "ReqSvc",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "type": "github.com/open-horizon/anax/exchangecommon.ServiceDependency",
           "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
           "argNum": 1,
           "expr": "reqSvc"
@@ -4042,45 +4361,6 @@
       "fuzzy": true
     },
     {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "message": "Error marshaling object {In}. {Arg_2}",
-      "translation": "Se ha producido un error al desordenar el objeto {In}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "In",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "in"
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "message": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "No se ha podido convertir la entrada en un objeto PolicyCheck. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "The given node id is empty.",
       "message": "The given node id is empty.",
       "translation": "El nodo dado está vacío.",
@@ -4138,30 +4418,6 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "nodeId"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "message": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "No se ha podido encontrar la definición de los servicios dependientes de {TopSvcId}. La compatibilidad de {PROPNODEPRIVILEGED} no se puede evaluar completamente hasta que todos los servicios estén en Exchange.",
-      "placeholders": [
-        {
-          "id": "TopSvcId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "topSvcId"
-        },
-        {
-          "id": "PROPNODEPRIVILEGED",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
         }
       ],
       "fuzzy": true
@@ -4240,6 +4496,78 @@
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "message": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "El servicio no tiene una configuración de despliegue de clúster para el tipo de nodo 'cluster'.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to create version expression from {VersionRange}. {Err}",
+      "message": "Unable to create version expression from {VersionRange}. {Err}",
+      "translation": "No se puede crear la expresión de versión de {VersionRange}. {Err}",
+      "placeholders": [
+        {
+          "id": "VersionRange",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sDep.VersionRange"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "message": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "translation": "Se ha producido un error al recuperar servicios dependientes de Exchange para {SDep}. {Err}",
+      "placeholders": [
+        {
+          "id": "SDep",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/exchangecommon.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 1,
+          "expr": "sDep"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "message": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "No se ha podido encontrar la definición para los servicios dependientes de {TopId}. La compatibilidad de {PROPNODEPRIVILEGED} no se puede evaluar completamente hasta que todos los servicios estén en Exchange.",
+      "placeholders": [
+        {
+          "id": "TopId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "topId"
+        },
+        {
+          "id": "PROPNODEPRIVILEGED",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -4933,195 +5261,31 @@
       "fuzzy": true
     },
     {
-      "id": "The deployment policy should not be null.",
-      "message": "The deployment policy should not be null.",
-      "translation": "La política de despliegue no debe ser nula.",
-      "fuzzy": true
-    },
-    {
-      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "message": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "translation": "La política de despliegue {Header} no puede tener {PROPNODEPRIVILEGED}=true al referirse a un servicio que requiere privilegio para ejecutarse.",
-      "placeholders": [
-        {
-          "id": "Header",
-          "string": "%[1]s",
-          "type": "github.com/open-horizon/anax/policy.PolicyHeader",
-          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Version string \"json:\\\"version\\\"\"}",
-          "argNum": 1,
-          "expr": "businessPol.Header"
-        },
-        {
-          "id": "PROPNODEPRIVILEGED",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "message": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "translation": "Error al recuperar el servicio {Org}/{WorkloadURL} {Version} {Arch} y sus dependientes de Exchange. {Err}",
-      "placeholders": [
-        {
-          "id": "Org",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "workload.Org"
-        },
-        {
-          "id": "WorkloadURL",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "workload.WorkloadURL"
-        },
-        {
-          "id": "Version",
-          "string": "%[3]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 3,
-          "expr": "workload.Version"
-        },
-        {
-          "id": "Arch",
-          "string": "%[4]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 4,
-          "expr": "workload.Arch"
-        },
-        {
-          "id": "Err",
-          "string": "%[5]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 5,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "message": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "No se ha podido ordenar la configuración de despliegue para el servicio {SIdTop}, error {Err}",
-      "placeholders": [
-        {
-          "id": "SIdTop",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sIdTop"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "message": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "No se ha podido ordenar la configuración de despliegue de clúster para el servicio {SIdTop}, error {Err}",
-      "placeholders": [
-        {
-          "id": "SIdTop",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sIdTop"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Unable to find service definition from the input services.",
       "message": "Unable to find service definition from the input services.",
       "translation": "No se puede encontrar la definición de servicio de los servicios de entrada.",
       "fuzzy": true
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "message": "Unable to create version expression from {Version}. {Err}",
-      "translation": "No se ha podido crear la expresión de versión de {Version}. {Err}",
+      "id": "The SecretBindingCheck input cannot be null",
+      "message": "The SecretBindingCheck input cannot be null",
+      "translation": "La entrada SecretBindingCheck no puede ser nula",
+      "fuzzy": true
+    },
+    {
+      "id": "Node type '{NodeType}' does not support secret binding check.",
+      "message": "Node type '{NodeType}' does not support secret binding check.",
+      "translation": "El tipo de nodo '{NodeType}' no da soporte a la comprobación de enlace de secreto.",
       "placeholders": [
         {
-          "id": "Version",
+          "id": "NodeType",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "sDep.Version"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
+          "expr": "nodeType"
         }
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "message": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "translation": "Se ha producido un error al recuperar servicios dependientes de Exchange para {SDep}. {Err}",
-      "placeholders": [
-        {
-          "id": "SDep",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
-          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
-          "argNum": 1,
-          "expr": "sDep"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "message": "The UserInputCheck input cannot be null",
-      "translation": "La entrada UserInputCheck no puede ser nula",
-      "fuzzy": true
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "message": "Neither node user input nor node id is specified.",
-      "translation": "No se ha especificado la entrada de usuario de nodo ni el ID de nodo.",
       "fuzzy": true
     },
     {
@@ -5147,9 +5311,15 @@
       "fuzzy": true
     },
     {
-      "id": "User Input Incompatible",
-      "message": "User Input Incompatible",
-      "translation": "Entrada de usuario incompatible",
+      "id": "Secret Binding Incompatible",
+      "message": "Secret Binding Incompatible",
+      "translation": "Enlace de secreto no compatible",
+      "fuzzy": true
+    },
+    {
+      "id": "Type Incompatible",
+      "message": "Type Incompatible",
+      "translation": "Tipo incompatible",
       "fuzzy": true
     },
     {
@@ -5199,6 +5369,322 @@
       "fuzzy": true
     },
     {
+      "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "message": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "translation": "Aviso: Los siguientes enlaces de secreto no son necesarios para ningún servicio: {ExtraneousSB}",
+      "placeholders": [
+        {
+          "id": "ExtraneousSB",
+          "string": "%[1]v",
+          "type": "[]github.com/open-horizon/anax/exchangecommon.SecretBinding",
+          "underlyingType": "[]github.com/open-horizon/anax/exchangecommon.SecretBinding",
+          "argNum": 1,
+          "expr": "extraneousSB"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "message": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "El servicio con 'arch' {NodeArch} no se puede encontrar en la política o el patrón de despliegue.",
+      "placeholders": [
+        {
+          "id": "NodeArch",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "resources.NodeArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No services found in the deployment policy or pattern.",
+      "message": "No services found in the deployment policy or pattern.",
+      "translation": "No se han encontrado servicios en el patrón o la política de despliegue.",
+      "fuzzy": true
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "message": "The input service definition object cannot be null.",
+      "translation": "El objeto de definición de servicio de entrada no puede ser nulo.",
+      "fuzzy": true
+    },
+    {
+      "id": "Error verifying secret in the secret manager. {Err}",
+      "message": "Error verifying secret in the secret manager. {Err}",
+      "translation": "Error al verificar el secreto en el gestor de secretos. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "message": "The input service spec object cannot be null.",
+      "translation": "El objeto de especificación de servicio de entrada no puede ser nulo.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "message": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "translation": "No se han podido encontrar los servicios dependientes para {Org}/{URL} {Arch} {Version}. {Err}",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sDef.GetOrg()"
+        },
+        {
+          "id": "URL",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sDef.GetURL()"
+        },
+        {
+          "id": "Arch",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "sDef.GetArch()"
+        },
+        {
+          "id": "Version",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "sDef.GetVersion()"
+        },
+        {
+          "id": "Err",
+          "string": "%[5]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 5,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Secret binding for a cluster service is not supported.",
+      "message": "Secret binding for a cluster service is not supported.",
+      "translation": "El enlace de secreto para un servicio de clúster no está soportado.",
+      "fuzzy": true
+    },
+    {
+      "id": "No secret binding found for the following service secrets: {NbArray}.",
+      "message": "No secret binding found for the following service secrets: {NbArray}.",
+      "translation": "No se ha encontrado ningún enlace de secreto para los siguientes secretos de servicio: {NbArray}.",
+      "placeholders": [
+        {
+          "id": "NbArray",
+          "string": "%[1]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "nbArray"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "message": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "translation": "Se ha especificado una serie de versión incorrecta  {ServiceVersionRange} en el enlace de secreto para el servicio {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "placeholders": [
+        {
+          "id": "ServiceVersionRange",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sb.ServiceVersionRange"
+        },
+        {
+          "id": "SvcOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "svcOrg"
+        },
+        {
+          "id": "SvcName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "svcName"
+        },
+        {
+          "id": "SvcVersion",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "svcVersion"
+        },
+        {
+          "id": "SvcArch",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "svcArch"
+        },
+        {
+          "id": "Err",
+          "string": "%[6]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 6,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "message": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "translation": "Error al comprobar la versión {SvcVersion} en el rango {VExp}. {Err}",
+      "placeholders": [
+        {
+          "id": "SvcVersion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcVersion"
+        },
+        {
+          "id": "VExp",
+          "string": "%[2]v",
+          "type": "*github.com/open-horizon/anax/semanticversion.Version_Expression",
+          "underlyingType": "*github.com/open-horizon/anax/semanticversion.Version_Expression",
+          "argNum": 2,
+          "expr": "vExp"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "message": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "translation": "El URL de agbot no puede ser una serie vacía al comprobar el enlace de secreto. Asegúrese de que se ha establecido HZN_AGBOT_URL.",
+      "fuzzy": true
+    },
+    {
+      "id": "The node organization must be provided.",
+      "message": "The node organization must be provided.",
+      "translation": "Se debe proporcionar la organización del nodo.",
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing secret name in the secret binding. {Errparse}",
+      "message": "Error parsing secret name in the secret binding. {Errparse}",
+      "translation": "Error al analizar el nombre del secreto en el enlace de secreto. {Errparse}",
+      "placeholders": [
+        {
+          "id": "Errparse",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err_parse"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "message": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "translation": "Error al comprobar el secreto {VaultSecretName} en el gestor de secretos. {Err}",
+      "placeholders": [
+        {
+          "id": "VaultSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "vaultSecretName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "message": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "El nombre del secreto de enlace no puede ser una serie vacía. Los formatos válidos son: '<secretname>' para el secreto a nivel de organización y 'user/<username>/<secretname>' para el secreto a nivel de usuario.",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "message": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "Formato no válido para el nombre del secreto de enlace: {SecretName}. Los formatos válidos son: '<secretname>' para el secreto a nivel de organización y 'user/<username>/<secretname>' para el secreto a nivel de usuario.",
+      "placeholders": [
+        {
+          "id": "SecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "secretName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "message": "The UserInputCheck input cannot be null",
+      "translation": "La entrada UserInputCheck no puede ser nula",
+      "fuzzy": true
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "message": "Neither node user input nor node id is specified.",
+      "translation": "No se ha especificado la entrada de usuario de nodo ni el ID de nodo.",
+      "fuzzy": true
+    },
+    {
+      "id": "User Input Incompatible",
+      "message": "User Input Incompatible",
+      "translation": "Entrada de usuario incompatible",
+      "fuzzy": true
+    },
+    {
       "id": "Warning: checking node user input:  {Err}",
       "message": "Warning: checking node user input:  {Err}",
       "translation": "Aviso: comprobando entrada de usuario de nodo:  {Err}",
@@ -5244,34 +5730,6 @@
           "expr": "err"
         }
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "message": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "translation": "El servicio con 'arch' {NodeArch} no se puede encontrar en la política o el patrón de despliegue.",
-      "placeholders": [
-        {
-          "id": "NodeArch",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "resources.NodeArch"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "No services found in the deployment policy or pattern.",
-      "message": "No services found in the deployment policy or pattern.",
-      "translation": "No se han encontrado servicios en el patrón o la política de despliegue.",
-      "fuzzy": true
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "message": "The input service spec object cannot be null.",
-      "translation": "El objeto de especificación de servicio de entrada no puede ser nulo.",
       "fuzzy": true
     },
     {
@@ -5368,12 +5826,6 @@
           "expr": "reason"
         }
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "message": "The input service definition object cannot be null.",
-      "translation": "El objeto de definición de servicio de entrada no puede ser nulo.",
       "fuzzy": true
     },
     {
@@ -9087,6 +9539,58 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to authenticate nil request for secrets API",
+      "message": "Unable to authenticate nil request for secrets API",
+      "translation": "No se ha podido autenticar la solicitud nula para la API de secretos",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to extract basic auth for request",
+      "message": "Unable to extract basic auth for request",
+      "translation": "No se ha podido extraer la autorización básica para la solicitud",
+      "fuzzy": true
+    },
+    {
+      "id": "unable to verify {AppKey}, error {Err}",
+      "message": "unable to verify {AppKey}, error {Err}",
+      "translation": "No se ha podido verificar {AppKey}, error {Err}",
+      "placeholders": [
+        {
+          "id": "AppKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "appKey"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "credentials for {AppKey} are not valid",
+      "message": "credentials for {AppKey} are not valid",
+      "translation": "las credenciales para {AppKey} no son válidas",
+      "placeholders": [
+        {
+          "id": "AppKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "appKey"
         }
       ],
       "fuzzy": true

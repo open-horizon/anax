@@ -634,7 +634,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msg
 				// key should be in the format {org}/{user}
 				orgAndUsername := strings.Split(key, "/")
 				if len(orgAndUsername) != 2 {
-					return nil, "", fmt.Errorf(msgPrinter.Sprintf("Exchange user %s is not in the correct format, should be {org}/{username}", key))
+					return nil, "", fmt.Errorf(msgPrinter.Sprintf("Exchange user %s is not in the correct format, should be org/username.", key))
 				}
 				return user_ec, orgAndUsername[1], nil
 			}

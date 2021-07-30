@@ -99,6 +99,10 @@
       "translation": "입력 본문을 UserInputCheck 오브젝트로 역직렬화하지 못했습니다. {Err}"
     },
     {
+      "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "translation": "입력 본문을 SecretBindingCheck 오브젝트로 역직렬화하지 못했습니다. {Err}"
+    },
+    {
       "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
       "translation": "입력 본문을 CompCheck 오브젝트로 역직렬화하지 못했습니다. {Err}"
     },
@@ -121,6 +125,54 @@
     {
       "id": "Internal server error",
       "translation": "내부 서버 오류"
+    },
+    {
+      "id": "There is no secrets provider configured, secrets are unavailable.",
+      "translation": "구성된 시크릿 제공자가 없으며, 시크릿을 사용할 수 없습니다."
+    },
+    {
+      "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
+      "translation": "시크릿 제공자가 준비되지 않았습니다. 호출자는 시크릿 제공자를 사용할 수 없도록 하기 위해 호출 사이에 짧은 지연을 두고 이 API 호출을 몇 번 재시도해야 합니다."
+    },
+    {
+      "id": "Unable to read request body, error: {Err}.",
+      "translation": "요청 본문을 읽을 수 없음. 오류: {Err}."
+    },
+    {
+      "id": "Request body is empty.",
+      "translation": "요청 본문이 비어 있습니다."
+    },
+    {
+      "id": "Request body parse error, {Uerr}",
+      "translation": "요청 본문 구문 분석 오류. {Uerr}"
+    },
+    {
+      "id": "Unable to access secrets provider, error: {Serr}.",
+      "translation": "시크릿 제공자에 액세스할 수 없음. 오류: {Serr}."
+    },
+    {
+      "id": "org must be specified in the API path",
+      "translation": "API 경로에 org를 지정해야 함"
+    },
+    {
+      "id": "user must be specified in the API path",
+      "translation": "API 경로에 user를 지정해야 함"
+    },
+    {
+      "id": "{Serr}",
+      "translation": "{Serr}"
+    },
+    {
+      "id": "Error checking secret {FullSecretName} in the secret manager.",
+      "translation": "시크릿 관리자에서 {FullSecretName} 시크릿 확인 중 오류가 발생했습니다."
+    },
+    {
+      "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "translation": "시크릿 관리자에서 시크릿 이름을 확인할 때 잘못된 유형이 리턴됨: {Payload}"
+    },
+    {
+      "id": "Secret {FullSecretName} does not exist in the secret manager.",
+      "translation": "시크릿 관리자에 {FullSecretName} 시크릿이 없습니다."
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -407,6 +459,10 @@
       "translation": "Docker 인증 도메인 이름: {DomainName}"
     },
     {
+      "id": "unable to load docker credentials for {Domain}: {Err}",
+      "translation": "{Domain}에 대한 Docker 인증 정보를 로드할 수 없음: {Err}"
+    },
+    {
       "id": "unable to find docker credentials for {Domain}",
       "translation": "{Domain}에 대한 Docker 인증 정보를 찾을 수 없음"
     },
@@ -427,8 +483,12 @@
       "translation": "{ImageName} 가져오는 중..."
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "Docker 이미지 {Repository____tag}을(를) 가져올 수 없습니다. Docker 인증 정보를 찾을 수 없습니다. 이미지 레지스트리가 개인용인 경우 'docker login ...'을 실행해야 합니다. 오류: {Err}"
+      "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "translation": "docker.io 또는 {Domain} 도메인에 대한 Docker 인증을 가져올 수 없음: {Err}"
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "translation": "Docker 이미지 {Repository____tag}을(를) 가져올 수 없습니다. Docker 인증 정보를 찾을 수 없습니다. 이미지 레지스트리가 개인용인 경우 'docker login ...'을 실행해야 합니다. 오류: {Err}: {LoginErr}"
     },
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
@@ -464,11 +524,35 @@
     },
     {
       "id": "Error reading input, error {Err}",
-      "translation": "입력을 읽는 중에 오류가 발생함, 오류 {Err}"
+      "translation": "입력을 읽는 중에 오류가 발생함. 오류 {Err}"
     },
     {
       "id": "Exiting.",
       "translation": "종료 중입니다."
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "{KeyFile} 파일의 절대 경로를 가져오는 데 실패했습니다. {Err}"
+    },
+    {
+      "id": "Error parsing HORIZON_URL: {Err}",
+      "translation": "HORIZON_URL 구문 분석 중 오류 발생: {Err}"
+    },
+    {
+      "id": "Error parsing host of the HORIZON_URL: {Err}",
+      "translation": "HORIZON_URL의 호스트 구문 분석 중 오류 발생: {Err}"
+    },
+    {
+      "id": "Error parsing port of the HORIZON_URL: {Err}",
+      "translation": "HORIZON_URL의 포트 구문 분석 중 오류 발생: {Err}"
+    },
+    {
+      "id": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "translation": "HORIZON_URL의 예기치 않은 포트: {PortInt}"
+    },
+    {
+      "id": "The agbot url: {EnvVar}",
+      "translation": "agbot url: {EnvVar}"
     },
     {
       "id": "Error reading HTTP response, error {Err}",
@@ -521,6 +605,22 @@
     {
       "id": "failed to marshal body for {ApiMsg}: {Err}",
       "translation": "{ApiMsg}의 본문을 마샬링하는 데 실패함: {Err}"
+    },
+    {
+      "id": "HZN_AGBOT_URL is not defined",
+      "translation": "HZN_AGBOT_URL이 정의되지 않음"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "{ApiMsg}의 잘못된 HTTP 코드 {HttpCode}, 출력: {StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "{ApiMsg}에서 exchange 본문 응답을 역마샬링하는 데 실패함: {Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "{ApiMsg}에서 exchange 출력을 마샬링하는 데 실패함: {Err}"
     },
     {
       "id": "Failed to unmarshal bytes. {Err}",
@@ -623,18 +723,6 @@
       "translation": "{Service} REST API {ApiMsg}을(를) 호출하는 중에 HTTP 오류 {Err}이(가) 발생했습니다. HTTP 상태: {Httpstatus}."
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "{ApiMsg}의 잘못된 HTTP 코드 {HttpCode}, 출력: {StringbodyBytes}"
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg}에서 exchange 본문 응답을 역마샬링하는 데 실패함: {Err}"
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg}에서 exchange 출력을 마샬링하는 데 실패함: {Err}"
-    },
-    {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
       "translation": "{ApiMsg}에서 exchange 본문 응답을 읽는 데 실패함: {Err}"
     },
@@ -665,10 +753,6 @@
     {
       "id": "provided private key is not valid; error: {Err}",
       "translation": "제공된 개인 키가 올바르지 않습니다. 오류: {Err}"
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "{KeyFile} 파일의 절대 경로를 가져오는 데 실패했습니다. {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
@@ -741,6 +825,10 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "경고: 이미지 경로 '{Image}'을(를) 구문 분석할 수 없습니다. 이를 Docker 레지스트리에 푸시하지 않고 'deployment' 필드에 있는 그대로 포함합니다."
+    },
+    {
+      "id": "Docker pull failure: {Err}",
+      "translation": "Docker 풀 실패: {Err}"
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
@@ -843,14 +931,6 @@
       "translation": "호환 가능"
     },
     {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "translation": "{In} 오브젝트를 마샬링하는 중에 오류가 발생했습니다. {Arg_2}"
-    },
-    {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "입력을 PolicyCheck 오브젝트로 변환하는 데 실패했습니다. {Err}"
-    },
-    {
       "id": "The given node id is empty.",
       "translation": "지정된 노드 ID가 비어 있습니다."
     },
@@ -865,10 +945,6 @@
     {
       "id": "No node found for this node id {NodeId}.",
       "translation": "이 노드 ID {NodeId}의 노드를 찾을 수 없습니다."
-    },
-    {
-      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "{TopSvcId}의 종속 서비스에 대한 정의를 찾는 데 실패했습니다. 모든 서비스가 Exchange에 있을 때까지 {PROPNODEPRIVILEGED}의 호환성을 완전히 평가할 수 없습니다."
     },
     {
       "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
@@ -889,6 +965,18 @@
     {
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "서비스에 노드 유형 'cluster'에 대한 클러스터 배치 구성이 없습니다."
+    },
+    {
+      "id": "Unable to create version expression from {VersionRange}. {Err}",
+      "translation": "{VersionRange}에서 버전 표현식을 작성할 수 없습니다. {Err}"
+    },
+    {
+      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "translation": "{SDep}에 대해 Exchange에서 종속 서비스를 검색하는 중에 오류가 발생했습니다. {Err}"
+    },
+    {
+      "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "{TopId}의 종속 서비스에 대한 정의를 찾는 데 실패했습니다. 모든 서비스가 Exchange에 있을 때까지 {PROPNODEPRIVILEGED}의 호환성을 완전히 평가할 수 없습니다."
     },
     {
       "id": "The PolicyCheck input cannot be null",
@@ -1055,44 +1143,16 @@
       "translation": "배치 정책을 서비스 정책과 병합하는 중에 오류가 발생했습니다. {Err}"
     },
     {
-      "id": "The deployment policy should not be null.",
-      "translation": "배치 정책은 널일 수 없습니다."
-    },
-    {
-      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "translation": "실행할 권한이 필요한 서비스를 참조하는 경우 배치 정책 {Header}에 {PROPNODEPRIVILEGED}=true를 사용할 수 없습니다."
-    },
-    {
-      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "translation": "Exchange에서 서비스 {Org}/{WorkloadURL} {Version} {Arch} 및 해당 종속자를 검색하는 중 오류가 발생했습니다. {Err}"
-    },
-    {
-      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "서비스 {SIdTop}의 배치 구성을 마샬링하지 못했습니다. 오류 {Err}"
-    },
-    {
-      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "서비스 {SIdTop}의 클러스터 배치 구성을 마샬링하지 못했습니다. 오류 {Err}"
-    },
-    {
       "id": "Unable to find service definition from the input services.",
       "translation": "입력 서비스에서 서비스 정의를 찾지 못했습니다."
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "{Version}(으)로부터 버전 표현식을 작성할 수 없습니다. {Err}"
+      "id": "The SecretBindingCheck input cannot be null",
+      "translation": "SecretBindingCheck 입력은 널일 수 없음"
     },
     {
-      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "translation": "{SDep}에 대해 Exchange에서 종속 서비스를 검색하는 중에 오류가 발생했습니다. {Err}"
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "UserInputCheck 입력은 널일 수 없음"
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "노드 사용자 입력과 노드 ID가 모두 지정되지 않았습니다."
+      "id": "Node type '{NodeType}' does not support secret binding check.",
+      "translation": "'{NodeType}' 노드 유형은 시크릿 바인딩 검사를 지원하지 않습니다."
     },
     {
       "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
@@ -1103,8 +1163,12 @@
       "translation": "배치 정책 또는 패턴에 서비스 버전이 지정되지 않았습니다."
     },
     {
-      "id": "User Input Incompatible",
-      "translation": "사용자 입력이 호환되지 않음"
+      "id": "Secret Binding Incompatible",
+      "translation": "시크릿 바인딩이 호환되지 않음"
+    },
+    {
+      "id": "Type Incompatible",
+      "translation": "유형이 호환되지 않음"
     },
     {
       "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
@@ -1113,6 +1177,86 @@
     {
       "id": "Service definition not found in the input.",
       "translation": "입력에서 서비스 정의를 찾을 수 없습니다."
+    },
+    {
+      "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "translation": "경고: 다음 시크릿 바인딩은 서비스에 필요하지 않음: {ExtraneousSB}"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "배치 정책 또는 패턴에서 'arch'가 {NodeArch}인 서비스를 찾을 수 없습니다."
+    },
+    {
+      "id": "No services found in the deployment policy or pattern.",
+      "translation": "배치 정책 또는 패턴에서 서비스를 찾을 수 없습니다."
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "translation": "입력 서비스 정의 오브젝트는 널일 수 없습니다."
+    },
+    {
+      "id": "Error verifying secret in the secret manager. {Err}",
+      "translation": "시크릿 관리자에서 시크릿 확인 중 오류가 발생했습니다. {Err}"
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "translation": "입력 서비스 spec 오브젝트는 널일 수 없습니다."
+    },
+    {
+      "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "translation": "{Org}/{URL} {Arch} {Version}에 대한 종속 서비스를 찾는 데 실패했습니다. {Err}"
+    },
+    {
+      "id": "Secret binding for a cluster service is not supported.",
+      "translation": "클러스터 서비스에 대한 시크릿 바인딩이 지원되지 않습니다."
+    },
+    {
+      "id": "No secret binding found for the following service secrets: {NbArray}.",
+      "translation": "다음 서비스 시크릿에 대한 시크릿 바인딩을 찾을 수 없음: {NbArray}."
+    },
+    {
+      "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "translation": "{SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 서비스에 대한 시크릿 바인딩에 잘못된 버전 문자열 {ServiceVersionRange}이(가) 지정됨. 오류 {Err}"
+    },
+    {
+      "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "translation": "{VExp} 범위에서 버전 {SvcVersion} 확인 중 오류가 발생했습니다. {Err}"
+    },
+    {
+      "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "translation": "시크릿 바인딩 확인 시 agbot URL은 빈 문자열일 수 없습니다. HZN_AGBOT_URL이 설정되었는지 확인하십시오."
+    },
+    {
+      "id": "The node organization must be provided.",
+      "translation": "노드 조직을 제공해야 합니다."
+    },
+    {
+      "id": "Error parsing secret name in the secret binding. {Errparse}",
+      "translation": "시크릿 바인딩에서 시크릿 이름 구문 분석 중 오류가 발생했습니다. {Errparse}"
+    },
+    {
+      "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "translation": "시크릿 관리자에서 {VaultSecretName} 시크릿 확인 중 오류가 발생했습니다. {Err}"
+    },
+    {
+      "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "바인딩 시크릿 이름은 빈 문자열일 수 없습니다. 올바른 형식은 조직 레벨 시크릿의 경우 '<secretname>'이고 사용자 레벨 시크릿의 경우 'user/<username>/<secretname>'입니다."
+    },
+    {
+      "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "바인딩 시크릿 이름의 올바르지 않은 형식: {SecretName}. 올바른 형식은 조직 레벨 시크릿의 경우 '<secretname>'이고 사용자 레벨 시크릿의 경우 'user/<username>/<secretname>'입니다."
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "translation": "UserInputCheck 입력은 널일 수 없음"
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "translation": "노드 사용자 입력과 노드 ID가 모두 지정되지 않았습니다."
+    },
+    {
+      "id": "User Input Incompatible",
+      "translation": "사용자 입력이 호환되지 않음"
     },
     {
       "id": "Warning: checking node user input:  {Err}",
@@ -1125,18 +1269,6 @@
     {
       "id": "Warning: checking user input for the pattern: {Err}",
       "translation": "경고: 패턴의 사용자 입력 확인 중: {Err}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "translation": "배치 정책 또는 패턴에서 'arch'가 {NodeArch}인 서비스를 찾을 수 없습니다."
-    },
-    {
-      "id": "No services found in the deployment policy or pattern.",
-      "translation": "배치 정책 또는 패턴에서 서비스를 찾을 수 없습니다."
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "translation": "입력 서비스 spec 오브젝트는 널일 수 없습니다."
     },
     {
       "id": "Error verifing user input for service {SId}. {Err}",
@@ -1153,10 +1285,6 @@
     {
       "id": "Failed to verify user input for dependent service {Id}. {Reason}",
       "translation": "종속 서비스 {Id}에 대한 사용자 입력을 확인하는 데 실패했습니다. {Reason}"
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "translation": "입력 서비스 정의 오브젝트는 널일 수 없습니다."
     },
     {
       "id": "Failed to get the service from the Exchange. {Err}",
@@ -1765,6 +1893,22 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "MMS API 인증서 개인 키 파일 {ServerKey}을(를) 닫을 수 없습니다. 오류 {Err}"
+    },
+    {
+      "id": "Unable to authenticate nil request for secrets API",
+      "translation": "시크릿 API에 대해 닐(nil) 요청을 인증할 수 없음"
+    },
+    {
+      "id": "Unable to extract basic auth for request",
+      "translation": "요청에 대해 기본 인증을 추출할 수 없음"
+    },
+    {
+      "id": "unable to verify {AppKey}, error {Err}",
+      "translation": "{AppKey}을(를) 확인할 수 없음. 오류 {Err}"
+    },
+    {
+      "id": "credentials for {AppKey} are not valid",
+      "translation": "{AppKey}에 대한 인증 정보가 올바르지 않음"
     },
     {
       "id": "Version_Expression: Empty string is not a valid version.",
