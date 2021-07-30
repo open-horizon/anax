@@ -19,7 +19,6 @@ type MicroserviceSecretStatusInst struct {
 type SecretStatus struct {
 	SecretName string `json:"secret_name"`
 	UpdateTime uint64 `json:"update_time"`
-	Received   bool   `json:"received"`
 }
 
 // for log and testing
@@ -32,9 +31,8 @@ func (w MicroserviceSecretStatusInst) String() string {
 
 func (s SecretStatus) String() string {
 	return fmt.Sprintf("{SecretName: %v, "+
-		"UpdateTime: %v, "+
-		"Received: %v}",
-		s.SecretName, s.UpdateTime, s.Received)
+		"UpdateTime: %v}",
+		s.SecretName, s.UpdateTime)
 }
 
 func NewMSSInst(db *bolt.DB, msInstKey string, essToken string) (*MicroserviceSecretStatusInst, error) {
@@ -50,11 +48,10 @@ func NewMSSInst(db *bolt.DB, msInstKey string, essToken string) (*MicroserviceSe
 	return saveMSSInst(db, new_secret_status_inst)
 }
 
-func NewSecretStatus(secretName string, updateTime uint64, received bool) *SecretStatus {
+func NewSecretStatus(secretName string, updateTime uint64) *SecretStatus {
 	return &SecretStatus{
 		SecretName: secretName,
 		UpdateTime: updateTime,
-		Received:   received,
 	}
 }
 
@@ -201,20 +198,6 @@ func FindSecretStatus(db *bolt.DB, ms_inst_key string, secret_name string) (*Sec
 	return mssinst.SecretsStatus[secret_name], nil
 }
 
-func UpdateSecretStatusReceived(db *bolt.DB, ms_inst_key string, secret_name string) (*MicroserviceSecretStatusInst, error) {
-	return mssInstStateUpdate(db, ms_inst_key, func(c MicroserviceSecretStatusInst) *MicroserviceSecretStatusInst {
-		secretStatusMap := c.SecretsStatus
-		if secretStatus, ok := secretStatusMap[secret_name]; !ok {
-			return nil
-		} else {
-			updatedSecStatus := NewSecretStatus(secretStatus.SecretName, secretStatus.UpdateTime, true)
-			secretStatusMap[secret_name] = updatedSecStatus
-			c.SecretsStatus = secretStatusMap
-			return &c
-		}
-	})
-}
-
 func FindUpdatedSecretsForMSSInstance(db *bolt.DB, ms_inst_key string) ([]string, error) {
 	updatedSecretNames := make([]string, 0)
 	if mssInst, err := FindMSSInstWithKey(db, ms_inst_key); err != nil {
@@ -235,8 +218,7 @@ func FindUpdatedSecretsForMSSInstance(db *bolt.DB, ms_inst_key string) ([]string
 			// 1. If secret TimeLastUpdated == TimeCreated, no update
 			// 2. If MSInstance secretStatus has no record, and update time > create time, has been updated
 			// 3. If MSInstance secretStatus doesn't have this secret, and update time > create time, has been update
-			// 4. If MSInstance secretStatus for secretName is received, it is "updated" only when secret update time > update time stored for given MSInstance
-			// 5. If MSInstance secretStatus for secretName is not received, it is "updated" only when secret update time >= update time stored for given MSInstance
+			// 4. If MSInstance secretStatus has this secret, and secret update time > secret status update time, has been updated
 
 			if secret.TimeLastUpdated == 0 || secret.TimeLastUpdated == secret.TimeCreated {
 				// the secret is not updated since created
@@ -246,9 +228,7 @@ func FindUpdatedSecretsForMSSInstance(db *bolt.DB, ms_inst_key string) ([]string
 					updatedSecretNames = append(updatedSecretNames, secName)
 				} else if secStat, ok := secretsStatus[secName]; !ok {
 					updatedSecretNames = append(updatedSecretNames, secName)
-				} else if !secStat.Received && secret.TimeLastUpdated >= secStat.UpdateTime {
-					updatedSecretNames = append(updatedSecretNames, secName)
-				} else if secStat.Received && secret.TimeLastUpdated > secStat.UpdateTime {
+				} else if secret.TimeLastUpdated > secStat.UpdateTime {
 					updatedSecretNames = append(updatedSecretNames, secName)
 				}
 			}
