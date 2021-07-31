@@ -1970,6 +1970,61 @@ func GetHttpRetryParameters(default_count int, default_interval int) (int, int, 
 	return maxRetries, retryInterval, nil
 }
 
+// download http response body to outputFilePath if specified, otherwise, downloads to defaultFileName. Returns file path used.
+func DownloadToFile(outputFilePath, defaultFileName string, body []byte, extension string, permissions os.FileMode, overwrite bool) string {
+	msgPrinter := i18n.GetMessagePrinter()
+	var fileName string
+	// if no fileName and filePath specified, data will be saved in current dir, with name {defaultFileName}
+	if outputFilePath == "" {
+		fileName = defaultFileName
+	} else {
+		// trim the ending "/" if there are more than 1 "/"
+		for strings.HasSuffix(outputFilePath, "//") {
+			outputFilePath = strings.TrimSuffix(outputFilePath, "/")
+		}
+
+		fi, _ := os.Stat(outputFilePath)
+		if fi == nil {
+			// outputFilePath is not an existing dir, then consider it as fileName, need to remove "/" in the end
+			if strings.HasSuffix(outputFilePath, "/") {
+				outputFilePath = strings.TrimSuffix(outputFilePath, "/")
+			}
+			fileName = outputFilePath
+		} else {
+			if fi.IsDir() {
+				if !strings.HasSuffix(outputFilePath, "/") {
+					outputFilePath = outputFilePath + "/"
+				}
+				fileName = fmt.Sprintf("%s%s", outputFilePath, defaultFileName)
+			} else {
+				fileName = outputFilePath
+			}
+		}
+	}
+	if fileName[len(fileName)-len(extension):] != extension {
+		fileName += extension
+	}
+
+	if !overwrite {
+		if _, err := os.Stat(fileName); !os.IsNotExist(err) {
+			Fatal(CLI_INPUT_ERROR, msgPrinter.Sprintf("File %s already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.", fileName))
+		}
+	}
+
+	// add newline to end of file
+	bodyString := string(body)
+	if bodyString[len(bodyString)-1] != '\n' {
+		bodyString += "\n"
+	}
+	body = []byte(bodyString)
+
+	if err := ioutil.WriteFile(fileName, body, permissions); err != nil {
+		Fatal(INTERNAL_ERROR, msgPrinter.Sprintf("Failed to save data for object '%s' to file %s, err: %v", defaultFileName, fileName, err))
+	}
+
+	return fileName
+}
+
 /* Will probably need this....
 func getString(v interface{}) string {
 	if reflect.ValueOf(v).IsNil() { return "" }

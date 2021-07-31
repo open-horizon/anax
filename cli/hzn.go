@@ -113,6 +113,9 @@ Environment Variables:
       to communicate with the Horizon Model Management Service, for example
       https://exchange.bluehorizon.network/css/. (By default hzn will ask the
       Horizon Agent for the URL.)
+  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use
+	  to communicate with SDO owner services. (By default hzn will ask the
+		Horizon Agent for the URL.)
 
   All these environment variables and ones mentioned in the command help can be
   specified in user's configuration file: ~/.hzn/hzn.json with JSON format.
@@ -690,16 +693,53 @@ Environment Variables:
 
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 
-	voucherCmd := app.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
+  	sdoCmd := app.Command("sdo", msgPrinter.Sprintf("List and manage resources in SDO owner services"))
+	sdoOrg := sdoCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
+	sdoUserPw := sdoCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
+	
+  	sdoKeysCmd := sdoCmd.Command("keys", msgPrinter.Sprintf("List and manage Horizon SDO ownership keys."))
 
-	voucherListCmd := voucherCmd.Command("list | ls", msgPrinter.Sprintf("List the imported SDO ownership vouchers.")).Alias("ls").Alias("list")
+	sdoKeysListCmd := sdoKeysCmd.Command("list | ls", msgPrinter.Sprintf("List the SDO ownership keys stored in SDO owner services.")).Alias("ls").Alias("list")
+	sdoKeyToList := sdoKeysListCmd.Arg("keyName", msgPrinter.Sprintf("List the full details of this SDO ownership key.")).String()
+	sdoKeysCreateCmd := sdoKeysCmd.Command("create | cr", msgPrinter.Sprintf("Create a new key in SDO owner services.")).Alias("cr").Alias("create")
+	sdoKeysCreateInputFile := sdoKeysCreateCmd.Arg("key-meta-file", msgPrinter.Sprintf("The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.")).Required().File()
+	sdoKeysCreateFile := sdoKeysCreateCmd.Flag("file-path", msgPrinter.Sprintf("The file that the returned public key is written to. If omit, the key will be printed to the console.")).Short('f').String()
+	sdoKeysCreateOverwrite := sdoKeysCreateCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing output public key file if it exists.")).Short('O').Bool()
+	sdoKeysDownloadCmd := sdoKeysCmd.Command("download | dl", msgPrinter.Sprintf("Download the specified key from SDO owner services.")).Alias("dl").Alias("download")
+	sdoKeyToDownload := sdoKeysDownloadCmd.Arg("keyName", msgPrinter.Sprintf("The name of the key to be downloaded from SDO owner services.")).Required().String()
+	sdoKeysDownloadFile := sdoKeysDownloadCmd.Flag("file-path", msgPrinter.Sprintf("The file that the data of downloaded key is written to. If omit, the key will be printed to the console.")).Short('f').String()
+	sdoKeysDownloadOverwrite := sdoKeysDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
+	sdoKeysRemoveCmd := sdoKeysCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a key from SDO owner services.")).Alias("rm").Alias("remove")
+	sdoKeysToRemove := sdoKeysRemoveCmd.Arg("keyName", msgPrinter.Sprintf("The name of the key to be removed from SDO owner services.")).Required().String()
+  	sdoKeysNewCmd := sdoKeysCmd.Command("new", msgPrinter.Sprintf("Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services."))
+	sdoKeysNewFile := sdoKeysNewCmd.Flag("file-path", msgPrinter.Sprintf("The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.")).Short('f').String()
+	sdoKeysNewOverwrite := sdoKeysNewCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
+
+	sdoVoucherCmd := sdoCmd.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
+	
+	sdoVoucherListCmd := sdoVoucherCmd.Command("list | ls", msgPrinter.Sprintf("List the imported SDO ownership vouchers.")).Alias("ls").Alias("list")
+	sdoVoucherToList := sdoVoucherListCmd.Arg("voucher", msgPrinter.Sprintf("List the full details of this SDO ownership voucher.")).String()
+	sdoVoucherListLong := sdoVoucherListCmd.Flag("long", msgPrinter.Sprintf("When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.")).Short('l').Bool()
+	sdoVoucherInspectCmd := sdoVoucherCmd.Command("inspect | ins", msgPrinter.Sprintf("Display properties of the SDO ownership voucher.")).Alias("ins").Alias("inspect")
+	sdoVoucherInspectFile := sdoVoucherInspectCmd.Arg("voucher-file", msgPrinter.Sprintf("The SDO ownership voucher file.")).Required().File() // returns the file descriptor
+	sdoVoucherImportCmd := sdoVoucherCmd.Command("import | imp", msgPrinter.Sprintf("Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered.")).Alias("import").Alias("imp")
+	sdoVoucherImportFile := sdoVoucherImportCmd.Arg("voucher-file", msgPrinter.Sprintf("The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).")).Required().File() // returns the file descriptor
+	sdoVoucherImportExample := sdoVoucherImportCmd.Flag("example", msgPrinter.Sprintf("Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.")).Short('e').String()
+	sdoVoucherImportPolicy := sdoVoucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.")).String()
+	sdoVoucherImportPattern := sdoVoucherImportCmd.Flag("pattern", msgPrinter.Sprintf("The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.")).Short('p').String()
+	sdoVoucherDownloadCmd := sdoVoucherCmd.Command("download | dl", msgPrinter.Sprintf("Download the specified SDO ownership voucher from SDO owner services.")).Alias("dl").Alias("download")
+	sdoVoucherDownloadDevice := sdoVoucherDownloadCmd.Arg("device-id", msgPrinter.Sprintf("The SDO ownership voucher to download.")).Required().String()
+	sdoVoucherDownloadFile := sdoVoucherDownloadCmd.Flag("file-path", msgPrinter.Sprintf("The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of {deviceID}.json and save in current directory.")).Short('f').String()
+	sdoVoucherDownloadOverwrite := sdoVoucherDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
+
+	voucherCmd := app.Command("voucher", msgPrinter.Sprintf("(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers."))
+
+	voucherListCmd := voucherCmd.Command("list | ls", msgPrinter.Sprintf("(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.")).Alias("ls").Alias("list")
 	voucherToList := voucherListCmd.Arg("voucher", msgPrinter.Sprintf("List the full details of this SDO ownership voucher.")).String()
 	voucherListLong := voucherListCmd.Flag("long", msgPrinter.Sprintf("When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.")).Short('l').Bool()
-
-	voucherInspectCmd := voucherCmd.Command("inspect | ins", msgPrinter.Sprintf("Display properties of the SDO ownership voucher.")).Alias("ins").Alias("inspect")
+	voucherInspectCmd := voucherCmd.Command("inspect | ins", msgPrinter.Sprintf("(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.")).Alias("ins").Alias("inspect")
 	voucherInspectFile := voucherInspectCmd.Arg("voucher-file", msgPrinter.Sprintf("The SDO ownership voucher file.")).Required().File() // returns the file descriptor
-
-	voucherImportCmd := voucherCmd.Command("import | imp", msgPrinter.Sprintf("Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered. HZN_SDO_SVC_URL must be set in the environment, /etc/default/horizon, or one of the hzn.json files.")).Alias("import").Alias("imp")
+	voucherImportCmd := voucherCmd.Command("import | imp", msgPrinter.Sprintf("(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher")).Alias("import").Alias("imp")
 	voucherImportFile := voucherImportCmd.Arg("voucher-file", msgPrinter.Sprintf("The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).")).Required().File() // returns the file descriptor
 	voucherOrg := voucherImportCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	voucherUserPw := voucherImportCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
@@ -871,6 +911,17 @@ Environment Variables:
 		}
 	}
 
+	// For the sdo command family, make sure that org and exchange credentials are specified in some way.
+	if strings.HasPrefix(fullCmd, "sdo voucher") && !strings.HasPrefix(fullCmd, "sdo voucher inspect") {
+		sdoOrg = cliutils.RequiredWithDefaultEnvVar(sdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		sdoUserPw = cliutils.RequiredWithDefaultEnvVar(sdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+	}
+	if strings.HasPrefix(fullCmd, "sdo keys") && !strings.HasPrefix(fullCmd, "sdo keys new"){
+		sdoOrg = cliutils.RequiredWithDefaultEnvVar(sdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		sdoUserPw = cliutils.RequiredWithDefaultEnvVar(sdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+	}
+
+	// DEPRECATED
 	// For the voucher import command family, make sure that org and exchange credentials are specified in some way.
 	if strings.HasPrefix(fullCmd, "voucher import") {
 		voucherOrg = cliutils.RequiredWithDefaultEnvVar(voucherOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
@@ -1154,12 +1205,33 @@ Environment Variables:
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	case mmsObjectDownloadCmd.FullCommand():
 		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile, *mmsObjectDownloadOverwrite, *mmsObjectDownloadSkipIntegrityCheck)
+	
+	// DEPRECATED (voucherInspectCmd, voucherImportCmd, voucherListCmd are deprecated commands)
 	case voucherInspectCmd.FullCommand():
-		sdo.VoucherInspect(*voucherInspectFile)
+		sdo.DeprecatedVoucherInspect(*voucherInspectFile)
 	case voucherImportCmd.FullCommand():
-		sdo.VoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy, *voucherImportPattern)
+		sdo.DeprecatedVoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy, *voucherImportPattern)
 	case voucherListCmd.FullCommand():
-		sdo.VoucherList(*voucherOrg, *voucherUserPw, *voucherToList, !*voucherListLong)
+		sdo.DeprecatedVoucherList(*voucherOrg, *voucherUserPw, *voucherToList, !*voucherListLong)
+	
+	case sdoKeysCreateCmd.FullCommand():
+		sdo.KeysCreate(*sdoOrg, *sdoUserPw, *sdoKeysCreateInputFile, *sdoKeysCreateFile, *sdoKeysCreateOverwrite)
+	case sdoKeysListCmd.FullCommand():
+		sdo.KeysList(*sdoOrg, *sdoUserPw, *sdoKeyToList)
+	case sdoKeysDownloadCmd.FullCommand():
+		sdo.KeysDownload(*sdoOrg, *sdoUserPw, *sdoKeyToDownload, *sdoKeysDownloadFile, *sdoKeysDownloadOverwrite)
+	case sdoKeysRemoveCmd.FullCommand():
+		sdo.KeysRemove(*sdoOrg, *sdoUserPw, *sdoKeysToRemove)
+	case sdoKeysNewCmd.FullCommand():
+		sdo.KeysNew(*sdoKeysNewFile, *sdoKeysNewOverwrite)
+	case sdoVoucherInspectCmd.FullCommand():
+		sdo.VoucherInspect(*sdoVoucherInspectFile)
+	case sdoVoucherImportCmd.FullCommand():
+		sdo.VoucherImport(*sdoOrg, *sdoUserPw, *sdoVoucherImportFile, *sdoVoucherImportExample, *sdoVoucherImportPolicy, *sdoVoucherImportPattern)
+	case sdoVoucherListCmd.FullCommand():
+		sdo.VoucherList(*sdoOrg, *sdoUserPw, *sdoVoucherToList, !*sdoVoucherListLong)
+	case sdoVoucherDownloadCmd.FullCommand():
+		sdo.VoucherDownload(*sdoOrg, *sdoUserPw, *sdoVoucherDownloadDevice, *sdoVoucherDownloadFile, *sdoVoucherDownloadOverwrite)
 	case smSecretListCmd.FullCommand():
 		secret_manager.SecretList(*smOrg, *smUserPw, *smSecretListName)
 	case smSecretAddCmd.FullCommand():
