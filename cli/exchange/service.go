@@ -110,7 +110,7 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool, filePath strin
 		// save the kube operator yaml archive to file if filePath is specified and one service is specified
 		if filePath != "" {
 			if clusterDeployment == "" {
-				msgPrinter.Printf("Ignoring -f because the clusterDepolyment attribute is empty for this service.")
+				msgPrinter.Printf("Ignoring -f because the clusterDeployment attribute is empty for this service.")
 				msgPrinter.Println()
 			} else {
 				SaveOpYamlToFile(svcId, clusterDeployment, filePath, exSvcOpYamlForce)
