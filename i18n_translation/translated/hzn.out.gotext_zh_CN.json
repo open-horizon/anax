@@ -27,6 +27,10 @@
       "translation": "输入主体未能反序列化为 UserInputCheck 对象。 {Err}"
     },
     {
+      "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 SecretBindingCheck 对象。{Err}"
+    },
+    {
       "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
       "translation": "输入主体未能反序列化为 CompCheck 对象。 {Err}"
     },
@@ -49,6 +53,54 @@
     {
       "id": "Internal server error",
       "translation": "内部服务器错误"
+    },
+    {
+      "id": "There is no secrets provider configured, secrets are unavailable.",
+      "translation": "未配置私钥提供出现，私钥不可用。"
+    },
+    {
+      "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
+      "translation": "私钥提供程序未就绪。调用者应重试此 API 调用少数几次，并在相邻调用之间短暂延迟，以确保私钥提供程序可用。"
+    },
+    {
+      "id": "Unable to read request body, error: {Err}.",
+      "translation": "无法读取请求主体，错误：{Err}。"
+    },
+    {
+      "id": "Request body is empty.",
+      "translation": "请求主体为空。"
+    },
+    {
+      "id": "Request body parse error, {Uerr}",
+      "translation": "请求主体解析错误，{Uerr}"
+    },
+    {
+      "id": "Unable to access secrets provider, error: {Serr}.",
+      "translation": "无法访问私钥提供程序，错误：{Serr}。"
+    },
+    {
+      "id": "org must be specified in the API path",
+      "translation": "必须在 API 路径中指定组织"
+    },
+    {
+      "id": "user must be specified in the API path",
+      "translation": "必须在 API 路径中指定用户"
+    },
+    {
+      "id": "{Serr}",
+      "translation": "{Serr}"
+    },
+    {
+      "id": "Error checking secret {FullSecretName} in the secret manager.",
+      "translation": "在私钥管理器中检查私钥 {FullSecretName} 时出错。"
+    },
+    {
+      "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "translation": "在私钥管理器中检查私钥名称时返回错误的类型：{Payload}"
+    },
+    {
+      "id": "Secret {FullSecretName} does not exist in the secret manager.",
+      "translation": "私钥 {FullSecretName} 在私钥管理器中不存在。"
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -291,8 +343,8 @@
       "translation": "{PROPSVCPRIVILEGED} 属性必须包含布尔值（true 或 false）。"
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon 代理程序的命令行界面。 大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅 '环境变量' 一节以覆盖该位置）。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n      这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供 'hzn exchange' 子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID： 'hzn exchange -o' 标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH： 'hzn exchange -u' 或 'hzn\n\t  register -u' 标志的缺省值，其格式为 '[org/]user:pw'。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供 'hzn mms' 子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}"
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "translation": "Horizon 代理程序的命令行界面。 大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅 '环境变量' 一节以覆盖该位置）。\n\n子命令描述：\n  agbot：列示和管理 Horizon 协议 bot 资源。\n  agreement：列示或管理此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。\n  architecture：显示此机器的体系结构（由 Horizon 和 golang 定义）。\n  attribute：列示或管理当前在此 Horizon 边缘节点上注册的全局属性。\n  deploycheck：检查部署兼容性。\n  dev：用于创建服务的开发工具。\n  env：显示 Horizon 环境变量。\n  eventlog：列示当前注册或所有注册的事件日志。\n  exchange：列示和管理 Horizon Exchange 资源。\n  key：列示和管理用于签署和验证服务的密钥。\n  metering：列示或管理活动协议或存档协议的测量（付款）信息。\n  mms：列示和管理 Horizon 模型管理服务资源。\n  node：列示和管理有关此 Horizon 边缘节点的常规信息。\n  policy：列示和管理此 Horizon 边缘节点的策略。\n  reginput：为此模式创建输入文件模板，该模板填写后即可用于“hzn register”命令。\n            这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。\n  register：向管理中心注册此边缘节点。\n  service：列示或管理当前在此 Horizon 边缘节点上注册的服务。\n  status：显示节点的当前 Horizon 内部状态。\n  unregister：注销并重置此 Horizon 边缘节点，以使其可以再次注册。\n  userinput：列示或管理当前在此 Horizon 边缘节点上注册的服务用户输入。\n  util：实用程序命令。\n  version：显示 Horizon 版本。\n  voucher：列示并管理 Horizon SDO 所有权凭单。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n      这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供 'hzn exchange' 子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID： 'hzn exchange -o' 标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH： 'hzn exchange -u' 或 'hzn\n\t  register -u' 标志的缺省值，其格式为 '[org/]user:pw'。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供 'hzn mms' 子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -303,1012 +355,144 @@
       "translation": "调用 Horizon 或 Exchange API 时，请执行 GET，但不要执行 PUT、POST 或 DELETE。"
     },
     {
-      "id": "Show the Horizon Environment Variables.",
-      "translation": "显示 Horizon 环境变量。"
+      "id": "List and manage Horizon agreement bot resources.",
+      "translation": "列示和管理 Horizon 协议 bot 资源。"
     },
     {
-      "id": "Show the Horizon version.",
-      "translation": "显示 Horizon 版本。"
+      "id": "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.",
+      "translation": "列示或管理这个 Horizon 协议 bot 与边缘节点议定的活动协议或存档协议。"
+    },
+    {
+      "id": "Cancel 1 or all of the active agreements this Horizon agreement bot has with edge nodes. Usually an agbot will immediately negotiated a new agreement.",
+      "translation": "取消这个 Horizon 协议 bot 与边缘节点议定的 1 个或全部活动协议。 通常，agbot 将立即协商新协议。"
+    },
+    {
+      "id": "Cancel all of the current agreements.",
+      "translation": "取消所有的当前协议。"
+    },
+    {
+      "id": "The active agreement to cancel.",
+      "translation": "要取消的活动协议。"
+    },
+    {
+      "id": "List the active or archived agreements this Horizon agreement bot has with edge nodes.",
+      "translation": "列示这个 Horizon 协议 bot 与边缘节点议定的活动协议或存档协议。"
+    },
+    {
+      "id": "List archived agreements instead of the active agreements.",
+      "translation": "列示存档协议，而不列示活动协议。"
+    },
+    {
+      "id": "Show the details of this active or archived agreement.",
+      "translation": "显示此活动协议或存档协议的详细信息。"
+    },
+    {
+      "id": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
+      "translation": "管理已高速缓存的由 agbot 提供的组织、模式和部署策略。"
+    },
+    {
+      "id": "List served deployment policies cached in the agbot.",
+      "translation": "列出在 agbot 中高速缓存的已提供的部署策略。"
+    },
+    {
+      "id": "Display served deployment policies cached in the agbot.",
+      "translation": "显示在 agbot 中高速缓存的已提供的部署策略。"
+    },
+    {
+      "id": "Display policies under this org.",
+      "translation": "显示此组织下的策略。"
+    },
+    {
+      "id": "Display this policy.",
+      "translation": "显示此策略。"
+    },
+    {
+      "id": "Display detailed info.",
+      "translation": "显示详细信息。"
+    },
+    {
+      "id": "List patterns cached in the agbot.",
+      "translation": "列出在 agbot 中高速缓存的模式。"
+    },
+    {
+      "id": "Display served patterns cached in the agbot.",
+      "translation": "显示在 agbot 中高速缓存的已提供的模式。"
+    },
+    {
+      "id": "Display patterns under this org.",
+      "translation": "显示此组织下的模式。"
+    },
+    {
+      "id": "Display this pattern.",
+      "translation": "显示此模式。"
+    },
+    {
+      "id": "List served pattern orgs and deployment policy orgs.",
+      "translation": "列出提供的模式组织和部署策略组织。"
+    },
+    {
+      "id": "Display served pattern orgs and deployment policy orgs.",
+      "translation": "显示提供的模式组织和部署策略组织。"
+    },
+    {
+      "id": "Display general information about this Horizon agbot node.",
+      "translation": "显示这个 Horizon agbot 节点的常规信息。"
+    },
+    {
+      "id": "List the policies this Horizon agreement bot hosts.",
+      "translation": "列示此 Horizon 协议 bot 所托管的策略。"
+    },
+    {
+      "id": "List policies this Horizon agreement bot hosts.",
+      "translation": "列示此 Horizon 协议 bot 所托管的策略。"
+    },
+    {
+      "id": "The organization the policy belongs to.",
+      "translation": "策略所属的组织。"
+    },
+    {
+      "id": "The policy name.",
+      "translation": "策略名称。"
+    },
+    {
+      "id": "Display the current horizon internal status for the Horizon agreement bot.",
+      "translation": "显示 Horizon 协议 bot 的当前 Horizon 内部状态。"
+    },
+    {
+      "id": "Show detailed status",
+      "translation": "显示详细状态"
+    },
+    {
+      "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
+      "translation": "列示或管理此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。"
+    },
+    {
+      "id": "List the active or archived agreements this edge node has made with a Horizon agreement bot.",
+      "translation": "列示此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。"
+    },
+    {
+      "id": "Cancel 1 or all of the active agreements this edge node has made with a Horizon agreement bot. Usually an agbot will immediately negotiated a new agreement. If you want to cancel all agreements and not have this edge accept new agreements, run 'hzn unregister'.",
+      "translation": "取消此边缘节点与 Horizon 协议 bot 议定的 1 个或全部活动协议。 通常，agbot 将立即协商新协议。 如果要取消所有协议，而且不希望此边缘节点接受新协议，请运行 'hzn unregister'。"
     },
     {
       "id": "Show the architecture of this machine (as defined by Horizon and golang).",
       "translation": "显示此机器的体系结构（由 Horizon 和 golang 定义）。"
     },
     {
-      "id": "List and manage Horizon Exchange resources.",
-      "translation": "列示和管理 Horizon Exchange 资源。"
+      "id": "List or manage the global attributes that are currently registered on this Horizon edge node.",
+      "translation": "列示或管理当前在此 Horizon 边缘节点上注册的全局属性。"
     },
     {
-      "id": "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.",
-      "translation": "Horizon Exchange 组织标识。 未指定时，将使用 HZN_ORG_ID 作为缺省值。"
-    },
-    {
-      "id": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
-      "translation": "用于查询和创建 Exchange 资源的 Horizon Exchange 用户凭证。 未指定时，将使用 HZN_EXCHANGE_USER_AUTH 作为缺省值。 如果未附加用户的组织作为前缀，那么将自动附加 -o 值作为前缀。 除使用 -o 之外，还可以使用 Horizon Exchange 组织标识来设置 HZN_ORG_ID"
-    },
-    {
-      "id": "Display the version of the Horizon Exchange.",
-      "translation": "显示 Horizon Exchange 的版本。"
-    },
-    {
-      "id": "Display the status of the Horizon Exchange.",
-      "translation": "显示 Horizon Exchange 的状态。"
-    },
-    {
-      "id": "List and manage organizations in the Horizon Exchange.",
-      "translation": "列示和管理 Horizon Exchange 中的组织。"
-    },
-    {
-      "id": "Display the organization resource from the Horizon Exchange. (Normally you can only display your own organiztion. If the org does not exist, you will get an invalid credentials error.)",
-      "translation": "显示 Horizon Exchange 中的组织资源。 （通常，您只能显示自己的组织。 如果该组织不存在，您将看到“凭证无效”错误。）"
-    },
-    {
-      "id": "List this one organization.",
-      "translation": "列示这一组织。"
-    },
-    {
-      "id": "Display detailed info of orgs",
-      "translation": "显示组织的详细信息"
-    },
-    {
-      "id": "Create the organization resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中创建组织资源。"
-    },
-    {
-      "id": "Create this organization and assign it to an agbot.",
-      "translation": "创建此组织并将其分配给 agbot。"
-    },
-    {
-      "id": "Label for new organization.",
-      "translation": "新组织的标签。"
-    },
-    {
-      "id": "Description for new organization.",
-      "translation": "新组织的描述。"
-    },
-    {
-      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
-      "translation": "新组织的标记。 格式为 mytag1=myvalue1。 此标志可以重复以指定多个标记。"
-    },
-    {
-      "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "传送到 Exchange 的代理程序脉动信号之间的最小秒数。"
-    },
-    {
-      "id": "The maximum number of seconds between agent heartbeats to the Exchange. During periods of inactivity, the agent will increase the interval between heartbeats by increments of --heartbeatadjust.",
-      "translation": "传送到 Exchange 的代理程序脉动信号之间的最大秒数。 在不活动期间，代理程序将按 --heartbeatadjust 增量来增加脉动信号之间的时间间隔。"
-    },
-    {
-      "id": "The number of seconds to increment the agent's heartbeat interval.",
-      "translation": "增加代理程序脉动信号时间间隔的秒数。"
-    },
-    {
-      "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
-      "translation": "允许此组织拥有的最大节点数。 值不能超过 Exchange 全局限制。 缺省值为 0，这表示无组织限制。"
-    },
-    {
-      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
-      "translation": "向此 agbot 添加组织，从而使其负责在此组织中部署服务。agbot 将使用此组织中的模式和部署策略向此组织中的节点部署服务。如果省略，那么在 Exchange 中找到的第一个 agbot 将负责此组织。格式为“agbot_org/agbot_id”。"
-    },
-    {
-      "id": "Update the organization resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中更新组织资源。"
-    },
-    {
-      "id": "Update this organization.",
-      "translation": "更新此组织。"
-    },
-    {
-      "id": "New label for organization.",
-      "translation": "组织的新标签。"
-    },
-    {
-      "id": "New description for organization.",
-      "translation": "组织的新描述。"
-    },
-    {
-      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "组织的新标记。 格式为 mytag1=myvalue1。 此标志可以重复以指定多个标记。 使用“-t \"\"”一次以移除所有标记。"
-    },
-    {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "传送到 Exchange 的代理程序脉动信号之间新的最小秒数。 缺省负整数 -1 意味着此属性无更改。"
-    },
-    {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "传送到 Exchange 的代理程序脉动信号之间新的最大秒数。 缺省负整数 -1 意味着此属性无更改。"
-    },
-    {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
-      "translation": "增加代理程序脉动信号时间间隔的秒数的新值。 缺省负整数 -1 意味着此属性无更改。"
-    },
-    {
-      "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
-      "translation": "允许此组织拥有的新的最大节点数。 值不能超过 Exchange 全局限制。 缺省负整数 -1 表示无更改。"
-    },
-    {
-      "id": "Remove an organization resource from the Horizon Exchange.",
-      "translation": "从 Horizon Exchange 中移除组织资源。"
-    },
-    {
-      "id": "Remove this organization.",
-      "translation": "移除此组织。"
-    },
-    {
-      "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
-      "translation": "要从中移除部署策略的 agbot。 如果省略，将使用在 Exchange 中找到的第一个 agbot。 格式为“agbot_org/agbot_id”。"
-    },
-    {
-      "id": "Skip the 'are you sure?' prompt.",
-      "translation": "跳过“是否确定？”提示。"
-    },
-    {
-      "id": "List and manage users in the Horizon Exchange.",
-      "translation": "列示和管理 Horizon Exchange 中的用户。"
-    },
-    {
-      "id": "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)",
-      "translation": "显示 Horizon Exchange 中的用户资源。 （通常，您只能显示自己的用户。 如果该用户不存在，您会看到 '凭证无效' 错误。）"
-    },
-    {
-      "id": "List this one user. Default is your own user. Only admin users can list other users.",
-      "translation": "列示这个用户。 缺省值是您自己的用户。 只有管理员用户才能列示其他用户。"
-    },
-    {
-      "id": "List all users in the org. Will only do this if you are a user with admin privilege.",
-      "translation": "列示组织中的所有用户。仅当您是具有管理权限的用户时，才能执行此操作。"
-    },
-    {
-      "id": "When listing all of the users, show only the usernames, instead of each entire resource.",
-      "translation": "列示所有用户时，仅显示用户名，而不是显示每个完整的资源。"
-    },
-    {
-      "id": "Create the user resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中创建用户资源。"
-    },
-    {
-      "id": "Your username for this user account when creating it in the Horizon exchange.",
-      "translation": "在 Horizon Exchange 中创建此用户帐户时，此帐户的用户名。"
-    },
-    {
-      "id": "Your password for this user account when creating it in the Horizon exchange.",
-      "translation": "在 Horizon Exchange 中创建此用户帐户时，此帐户的密码。"
-    },
-    {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
-      "translation": "在 Horizon Exchange 中创建此用户帐户时，应该与此帐户关联的电子邮件地址。 此自变量是可选的"
-    },
-    {
-      "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
-      "translation": "此用户应该是管理员，能够管理 Exchange 的此组织中的所有资源。"
-    },
-    {
-      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
-      "translation": "此用户应该是中心管理员，能够在此管理中心中管理组织。"
-    },
-    {
-      "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
-      "translation": "将现有用户更改为管理员用户（例如组织中的 root 用户），或者更改为不再是管理员用户。 只能由 Exchange root 用户或其他管理员用户运行。"
-    },
-    {
-      "id": "The user to be modified.",
-      "translation": "要修改的用户。"
-    },
-    {
-      "id": "True if they should be an admin user, otherwise false.",
-      "translation": "如果他们应该是管理员用户，请设置为 true，否则设置为 false。"
-    },
-    {
-      "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
-      "translation": "从 Horizon Exchange 中移除用户资源。 警告：这将导致同时删除此用户拥有的所有 Exchange 资源（节点、服务、模式，等等）。"
-    },
-    {
-      "id": "The user to remove.",
-      "translation": "要移除的用户。"
-    },
-    {
-      "id": "List and manage nodes in the Horizon Exchange",
-      "translation": "列示和管理 Horizon Exchange 中的节点"
-    },
-    {
-      "id": "Display the node resources from the Horizon Exchange.",
-      "translation": "显示 Horizon Exchange 中的节点资源。"
-    },
-    {
-      "id": "List just this one node.",
-      "translation": "仅列示这一节点。"
-    },
-    {
-      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "要用作凭证的 Horizon Exchange 节点标识和令牌，用于查询和修改节点资源（如果未指定 -u 标志）。 HZN_EXCHANGE_NODE_AUTH 将用作 -n 的缺省值。 如果未附加节点的组织作为前缀，那么将自动附加 -o 值作为前缀。"
-    },
-    {
-      "id": "When listing all of the nodes, show the entire resource of each node, instead of just the name.",
-      "translation": "列示所有节点时，显示每个节点的完整资源，而不是仅显示名称。"
-    },
-    {
-      "id": "Create the node resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中创建节点资源。"
-    },
-    {
-      "id": "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.",
-      "translation": "要创建的 Horizon Exchange 节点标识和令牌。 节点标识在组织中必须是唯一的。"
-    },
-    {
-      "id": "Your node architecture. If not specified, architecture will be left blank.",
-      "translation": "节点体系结构。 如果未指定，体系结构将留空。"
-    },
-    {
-      "id": "The name of your node",
-      "translation": "节点的名称"
-    },
-    {
-      "id": "The type of your node. The valid values are: device, cluster. If omitted, the default is device. However, the node type stays unchanged if the node already exists, only the node token will be updated.",
-      "translation": "节点类型。 有效值为 device 和 cluster。 如果省略，那么缺省值为 device。 但是，如果节点已存在，那么节点类型保持不变，仅更新节点令牌。"
-    },
-    {
-      "id": "The node to be created.",
-      "translation": "要创建的节点。"
-    },
-    {
-      "id": "The token the new node should have.",
-      "translation": "新节点应使用的令牌。"
-    },
-    {
-      "id": "Update an attribute of the node in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中更新节点的属性。"
-    },
-    {
-      "id": "The node to be updated.",
-      "translation": "要更新的节点。"
-    },
-    {
-      "id": "The path to a json file containing the changed attribute to be updated in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "要在 Horizon Exchange 中更新的更改后属性所在 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "Change the token of a node resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中更改节点资源的令牌。"
-    },
-    {
-      "id": "The node to be changed.",
-      "translation": "要更改的节点。"
-    },
-    {
-      "id": "The new token for the node.",
-      "translation": "节点的新令牌。"
-    },
-    {
-      "id": "Check to see if the specified node and token are valid in the Horizon Exchange.",
-      "translation": "核实所指定的节点和令牌在 Horizon Exchange 中是否有效。"
-    },
-    {
-      "id": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
-      "translation": "要检查的 Horizon Exchange 节点标识和令牌。 未指定时，将使用 HZN_EXCHANGE_NODE_AUTH 作为缺省值。 与 <node> 和 <token> 自变量互斥。"
-    },
-    {
-      "id": "The node id to be checked. Mutually exclusive with -n flag.",
-      "translation": "要检查的节点标识。 与 -n 标志互斥。"
-    },
-    {
-      "id": "The token for the node. Mutually exclusive with -n flag.",
-      "translation": "节点的令牌。 与 -n 标志互斥。"
-    },
-    {
-      "id": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
-      "translation": "从 Horizon Exchange 中移除节点资源。 存在使用此节点标识注册的边缘节点时，不应执行移除。"
-    },
-    {
-      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "要用作凭证的 Horizon Exchange 节点标识和令牌，用于查询和修改节点资源（如果未指定 -u 标志）。 HZN_EXCHANGE_NODE_AUTH 将用作 -n 的缺省值。 如果未附加节点的组织作为前缀，那么将自动附加 -o 值作为前缀。"
-    },
-    {
-      "id": "The node to remove.",
-      "translation": "要移除的节点。"
-    },
-    {
-      "id": "Display the node policy from the Horizon Exchange.",
-      "translation": "显示 Horizon Exchange 中的节点策略。"
-    },
-    {
-      "id": "List policy for this node.",
-      "translation": "列示此节点的策略。"
-    },
-    {
-      "id": "Add or replace the node policy in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中添加或替换节点策略。"
-    },
-    {
-      "id": "Add or replace policy for this node.",
-      "translation": "添加或替换此节点的策略。"
-    },
-    {
-      "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin.",
-      "translation": "在 Horizon Exchange 中创建/更新节点策略所必需的元数据所在 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn exchange node addpolicy' to update the node policy. This command is used to update either the node policy properties or the constraints, but not both.",
-      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn exchange node addpolicy”来更新节点策略。 此命令用于更新节点策略属性或约束，但不能同时更新两者。"
-    },
-    {
-      "id": "Update the policy for this node.",
-      "translation": "更新此节点的策略。"
-    },
-    {
-      "id": "The path of a JSON file containing the new constraints or properties (not both) for the node policy in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "包含 Horizon Exchange 中节点策略的新约束或属性（非两者都包含）的 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "Remove the node policy in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中移除节点策略。"
-    },
-    {
-      "id": "Remove policy for this node.",
-      "translation": "移除此节点的策略。"
-    },
-    {
-      "id": "List the node errors currently surfaced to the Exchange.",
-      "translation": "列出当前向 Exchange 呈现的节点错误。"
-    },
-    {
-      "id": "List surfaced errors for this node.",
-      "translation": "列出此节点已出现的错误。"
-    },
-    {
-      "id": "Show the full eventlog object of the errors currently surfaced to the Exchange.",
-      "translation": "显示当前向 Exchange 呈现的错误的完整事件日志对象。"
-    },
-    {
-      "id": "List the run-time status of the node.",
-      "translation": "列出节点的运行时状态。"
-    },
-    {
-      "id": "List status for this node",
-      "translation": "列出此节点的状态"
-    },
-    {
-      "id": "List and manage agbots in the Horizon Exchange",
-      "translation": "列示和管理 Horizon Exchange 中的 agbot"
-    },
-    {
-      "id": "Display the agbot resources from the Horizon Exchange.",
-      "translation": "显示 Horizon Exchange 中的 agbot 资源。"
-    },
-    {
-      "id": "List just this one agbot.",
-      "translation": "仅列示这一 agbot。"
-    },
-    {
-      "id": "When listing all of the agbots, show the entire resource of each agbots, instead of just the name.",
-      "translation": "列示所有 agbot 时，显示每个 agbot 的完整资源，而不是仅显示名称。"
-    },
-    {
-      "id": "Display the patterns that this agbot is serving.",
-      "translation": "显示此 agbot 所提供的模式。"
-    },
-    {
-      "id": "The agbot to list the patterns for.",
-      "translation": "要列示模式的 agbot。"
-    },
-    {
-      "id": "The organization of the 1 pattern to list.",
-      "translation": "要列示的 1 个模式的组织。"
-    },
-    {
-      "id": "The name of the 1 pattern to list.",
-      "translation": "要列示的 1 个模式的名称。"
-    },
-    {
-      "id": "The organization of the nodes that should be searched. Defaults to patternorg.",
-      "translation": "应搜索的节点的组织。 缺省值为 patternorg。"
-    },
-    {
-      "id": "Add this pattern to the list of patterns this agbot is serving.",
-      "translation": "将此模式添加到此 agbot 所提供的模式列表。"
-    },
-    {
-      "id": "The agbot to add the pattern to.",
-      "translation": "要向其添加模式的 agbot。"
-    },
-    {
-      "id": "The organization of the pattern to add.",
-      "translation": "要添加的模式的组织。"
-    },
-    {
-      "id": "The name of the pattern to add.",
-      "translation": "要添加的模式的名称。"
-    },
-    {
-      "id": "Remove this pattern from the list of patterns this agbot is serving.",
-      "translation": "从此 agbot 所提供的模式列表中移除此模式。"
-    },
-    {
-      "id": "The agbot to remove the pattern from.",
-      "translation": "要从中移除模式的 agbot。"
-    },
-    {
-      "id": "The organization of the pattern to remove.",
-      "translation": "要移除的模式的组织。"
-    },
-    {
-      "id": "The name of the pattern to remove.",
-      "translation": "要移除的模式的名称。"
-    },
-    {
-      "id": "Display the deployment policies that this agbot is serving.",
-      "translation": "显示此 agbot 所提供的部署策略。"
-    },
-    {
-      "id": "The agbot to list serving deployment policies for.",
-      "translation": "要列示所提供的部署策略的 agbot。"
-    },
-    {
-      "id": "Add this deployment policy to the list of policies this agbot is serving. Currently only support adding all the deployment policies from an organization.",
-      "translation": "将此部署策略添加到此 agbot 所提供的策略列表。 目前只支持添加组织的所有部署策略。"
-    },
-    {
-      "id": "The agbot to add the deployment policy to.",
-      "translation": "要向其添加部署策略的 agbot。"
-    },
-    {
-      "id": "The organization of the deployment policy to add.",
-      "translation": "要添加的部署策略的组织。"
-    },
-    {
-      "id": "Remove this deployment policy from the list of policies this agbot is serving. Currently only support removing all the deployment policies from an organization.",
-      "translation": "从此 agbot 所提供的策略列表中移除此部署策略。 目前只支持移除组织的所有部署策略。"
-    },
-    {
-      "id": "The agbot to remove the deployment policy from.",
-      "translation": "要从中移除部署策略的 agbot。"
-    },
-    {
-      "id": "The organization of the deployment policy to remove.",
-      "translation": "待移除的部署策略的组织。"
-    },
-    {
-      "id": "List and manage patterns in the Horizon Exchange",
-      "translation": "列示和管理 Horizon Exchange 中的模式"
-    },
-    {
-      "id": "Display the pattern resources from the Horizon Exchange.",
-      "translation": "显示 Horizon Exchange 中的模式资源。"
-    },
-    {
-      "id": "List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.",
-      "translation": "仅列示这一模式。 使用 <org>/<pat> 可指定另一组织中的一个公用模式，使用 <org>/ 可列示另一组织中的所有公用模式。"
-    },
-    {
-      "id": "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.",
-      "translation": "列示所有模式时，显示每个模式的完整资源，而不是仅显示名称。"
-    },
-    {
-      "id": "Sign and create/update the pattern resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中签署以及创建/更新模式资源。"
-    },
-    {
-      "id": "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See {Sampledir}/pattern.json. Specify -f- to read from stdin.",
-      "translation": "在 Horizon Exchange 中创建/更新模式所必需的元数据所在 JSON 文件的路径。 请参阅 {Sampledir}/pattern.json。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "要用来对模式进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.private.key。"
-    },
-    {
-      "id": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "应该随模式一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。 此标志和 -k 标志均未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 未设置 HZN_PUBLIC_KEY_FILE 时，缺省值为 ~/.hzn/keys/service.public.pem。 如果指定 -k 但未指定此标志，那么不会随模式一起存储任何公用密钥文件。 Horizon 代理程序必须导入公用密钥才能验证签名。"
-    },
-    {
-      "id": "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.",
-      "translation": "在 Horizon Exchange 中用于此模式的名称。 未指定时，缺省值为 -f 中指定的文件路径的基本名称。"
-    },
-    {
-      "id": "Verify the signatures of a pattern resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中验证模式资源的签名。"
-    },
-    {
-      "id": "The pattern to verify.",
-      "translation": "要验证的模式。"
-    },
-    {
-      "id": "The path of a pem public key file to be used to verify the pattern. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
-      "translation": "要用于验证模式的 pem 公用密钥文件的路径。 未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.public.pem。"
-    },
-    {
-      "id": "Update an attribute of the pattern in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中更新模式的属性。"
-    },
-    {
-      "id": "The name of the pattern in the Horizon Exchange to publish.",
-      "translation": "Horizon Exchange 中要发布的模式的名称。"
-    },
-    {
-      "id": "The path to a json file containing the updated attribute of the pattern to be put in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "要放入 Horizon Exchange 中的模式更新后属性所在 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "Remove a pattern resource from the Horizon Exchange.",
-      "translation": "从 Horizon Exchange 中移除模式资源。"
-    },
-    {
-      "id": "The pattern to remove.",
-      "translation": "要移除的模式。"
-    },
-    {
-      "id": "List the signing public keys/certs for this pattern resource in the Horizon Exchange.",
-      "translation": "列示 Horizon Exchange 中此模式资源的签名公用密钥/证书。"
-    },
-    {
-      "id": "The existing pattern to list the keys for.",
-      "translation": "要列示键的现有模式。"
-    },
-    {
-      "id": "The existing key name to see the contents of.",
-      "translation": "要查看其内容的现有键名称。"
-    },
-    {
-      "id": "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中移除此模式资源的签名公用密钥/证书。"
-    },
-    {
-      "id": "The existing pattern to remove the key from.",
-      "translation": "要从中移除键的现有模式。"
-    },
-    {
-      "id": "The existing key name to remove.",
-      "translation": "要移除的现有键名称。"
-    },
-    {
-      "id": "List and manage services in the Horizon Exchange",
-      "translation": "列示和管理 Horizon Exchange 中的服务"
-    },
-    {
-      "id": "Display the service resources from the Horizon Exchange.",
-      "translation": "显示 Horizon Exchange 中的服务资源。"
-    },
-    {
-      "id": "List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.",
-      "translation": "仅列示这一服务。 使用 <org>/<svc> 可指定另一组织中的一个公用服务，使用 <org>/ 可列示另一组织中的所有公用服务。"
-    },
-    {
-      "id": "When listing all of the services, show the entire service definition, instead of just the name. When listing a specific service, show more details.",
-      "translation": "列出所有服务时，显示完整的服务定义，而不是仅显示名称。 列出特定服务时，显示更多详细信息。"
-    },
-    {
-      "id": "The name of the file where the cluster deployment operator yaml archive will be saved. This flag is only used when listing a specific service. This flag is ignored when the service does not have a clusterDeployment attribute.",
-      "translation": "用于保存集群部署操作程序 yaml 存档的文件名。 只有在列出特定服务时才使用此标志。 如果服务不存在 clusterDeployment 属性，那么将忽略此标志。"
-    },
-    {
-      "id": "Skip the 'do you want to overwrite?' prompt when -f is specified and the file exists.",
-      "translation": "如果已指定 -f，并且存在该文件，那么将跳过“是否要覆盖？”提示。"
-    },
-    {
-      "id": "Sign and create/update the service resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中签署以及创建/更新服务资源。"
-    },
-    {
-      "id": "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See {Sampledir}/service.json and {Sampledir_1}/service_cluster.json. Specify -f- to read from stdin.",
-      "translation": "在 Horizon Exchange 中创建/更新服务所必需的元数据所在 JSON 文件的路径。 请参阅 {Sampledir}/service.json 和 {Sampledir_1}/service_cluster.json。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "要用来对服务进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.private.key。"
-    },
-    {
-      "id": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "应该随服务一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。 此标志和 -k 标志均未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 未设置 HZN_PUBLIC_KEY_FILE 时，缺省值为 ~/.hzn/keys/service.public.pem。 如果指定 -k 但未指定此标志，那么不会随服务一起存储任何公用密钥文件。 Horizon 代理程序必须导入公用密钥才能验证签名。"
-    },
-    {
-      "id": "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.",
-      "translation": "部署字段中的映像路径包含正规标记，不应更改为 sha256 摘要值。 不会自动将该映像上载到存储库。 只有在需要频繁测试新版本的开发期间，才应使用此标志。"
-    },
-    {
-      "id": "Use the image from the image repository. It will pull the image from the image repository and overwrite the local image if exists. This flag is mutually exclusive with -I.",
-      "translation": "使用映像存储库中的映像。 这将从映像存储库中拉取映像，并覆盖本地映像（如果存在）。 此标志与 -I 互斥。"
-    },
-    {
-      "id": "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token",
-      "translation": "应该随服务一起存储的 Docker 注册表域和认证令牌，用于使 Horizon 边缘节点能够访问该服务的 Docker 映像。 此标志可以重复指定，每个标志的格式都应该是 registry:user:token"
-    },
-    {
-      "id": "Overwrite the existing version if the service exists in the Exchange. It will skip the 'do you want to overwrite' prompt.",
-      "translation": "如果 Exchange 中存在该服务，将覆盖现有版本。 这将跳过“是否要覆盖”提示。"
-    },
-    {
-      "id": "The path of the service policy JSON file to be used for the service to be published. This flag is optional",
-      "translation": "要用于所发布服务的服务策略 JSON 文件的路径。 此标志是可选的"
-    },
-    {
-      "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
-      "translation": "服务对组织外的用户是否可视。 此标志是可选的。 如果保留未设置，那么服务将缺省设置为元数据已设置的任何内容。 如果服务定义也尚未设置公共字段，那么缺省情况下服务将不是公共的。"
-    },
-    {
-      "id": "Verify the signatures of a service resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中验证服务资源的签名。"
-    },
-    {
-      "id": "The service to verify.",
-      "translation": "要验证的服务。"
-    },
-    {
-      "id": "The path of a pem public key file to be used to verify the service. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
-      "translation": "要用于验证服务的 pem 公用密钥文件的路径。 未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.public.pem。"
-    },
-    {
-      "id": "Remove a service resource from the Horizon Exchange.",
-      "translation": "从 Horizon Exchange 中移除服务资源。"
-    },
-    {
-      "id": "The service to remove.",
-      "translation": "要移除的服务。"
-    },
-    {
-      "id": "List the signing public keys/certs for this service resource in the Horizon Exchange.",
-      "translation": "列示 Horizon Exchange 中此服务资源的签名公用密钥/证书。"
-    },
-    {
-      "id": "The existing service to list the keys for.",
-      "translation": "要列示键的现有服务。"
-    },
-    {
-      "id": "Remove a signing public key/cert for this service resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中移除此服务资源的签名公用密钥/证书。"
-    },
-    {
-      "id": "The existing service to remove the key from.",
-      "translation": "要从中移除键的现有服务。"
-    },
-    {
-      "id": "List the docker auth tokens for this service resource in the Horizon Exchange.",
-      "translation": "列示 Horizon Exchange 中此服务资源的 Docker 认证令牌。"
-    },
-    {
-      "id": "The existing service to list the docker auths for.",
-      "translation": "要列示 Docker 认证令牌的现有服务。"
-    },
-    {
-      "id": "The existing docker auth id to see the contents of.",
-      "translation": "要查看其内容的现有 Docker 认证标识。"
-    },
-    {
-      "id": "Remove a docker auth token for this service resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中移除此服务资源的 Docker 认证令牌。"
-    },
-    {
-      "id": "The existing service to remove the docker auth from.",
-      "translation": "要从中移除 Docker 认证令牌的现有服务。"
-    },
-    {
-      "id": "The existing docker auth id to remove.",
-      "translation": "要移除的现有 Docker 认证标识。"
-    },
-    {
-      "id": "Display the service policy from the Horizon Exchange.",
-      "translation": "显示 Horizon Exchange 中的服务策略。"
-    },
-    {
-      "id": "The Horizon Exchange id and password of the user",
-      "translation": "用户的 Horizon Exchange 标识和密码"
-    },
-    {
-      "id": "List policy for this service.",
-      "translation": "列示此服务的策略。"
-    },
-    {
-      "id": "Display an empty service policy template that can be filled in.",
-      "translation": "显示可以填写的空服务策略模板。"
-    },
-    {
-      "id": "Add or replace the service policy in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中添加或替换服务策略。"
-    },
-    {
-      "id": "The Horizon Exchange ID and password of the user",
-      "translation": "用户的 Horizon Exchange 标识和密码"
-    },
-    {
-      "id": "Add or replace policy for this service.",
-      "translation": "添加或替换此服务的策略。"
-    },
-    {
-      "id": "The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "在 Horizon Exchange 中创建/更新服务策略所必需的元数据所在 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "Remove the service policy in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中移除服务策略。"
-    },
-    {
-      "id": "Remove policy for this service.",
-      "translation": "移除此服务的策略。"
-    },
-    {
-      "id": "Display the nodes that the service is running on.",
-      "translation": "显示正在运行此服务的节点。"
-    },
-    {
-      "id": "The service id. Use <org>/<svc> to specify a service from a different org.",
-      "translation": "服务标识。 使用 <org>/<svc> 来指定其他组织中的服务。"
-    },
-    {
-      "id": "The node's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.",
-      "translation": "节点的组织。 如果省略，它将与 -o 或 HZN_ORG_ID 指定的组织相同。"
-    },
-    {
-      "id": "List and manage deployment policies in the Horizon Exchange.",
-      "translation": "列示和管理 Horizon Exchange 中的部署策略。"
-    },
-    {
-      "id": "Display the deployment policies from the Horizon Exchange.",
-      "translation": "显示 Horizon Exchange 中的部署策略。"
-    },
-    {
-      "id": "The Horizon ID and password of the user.",
-      "translation": "用户的 Horizon 标识和密码。"
-    },
-    {
-      "id": "Display detailed output about the deployment policies.",
-      "translation": "显示有关部署策略的详细输出。"
-    },
-    {
-      "id": "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
-      "translation": "仅列示这一策略。 使用 <org>/<policy> 可指定另一组织中的一个公用策略，使用 <org>/ 可列示另一组织中的所有公用策略。"
-    },
-    {
-      "id": "Display an empty deployment policy template that can be filled in.",
-      "translation": "显示可填写的空部署策略模板。"
-    },
-    {
-      "id": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
-      "translation": "在 Horizon Exchange 中添加或替换部署策略。 针对空的部署策略模板使用“hzn exchange deployment new”。"
-    },
-    {
-      "id": "The name of the policy to add or overwrite.",
-      "translation": "要添加或覆盖的策略的名称。"
-    },
-    {
-      "id": "Allow this deployment policy to be published even though it does not have any constraints.",
-      "translation": "允许发布此部署策略，即使不存在任何约束也是如此。"
-    },
-    {
-      "id": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
-      "translation": "在 Horizon Exchange 中更新现有策略的一个属性。 受支持的属性为“hzn exchange deployment new”命令所示策略定义中的顶级属性。"
-    },
-    {
-      "id": "The name of the policy to be updated in the Horizon Exchange.",
-      "translation": "要在 Horizon Exchange 中更新的策略的名称。"
-    },
-    {
-      "id": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "Horizon Exchange 中待更改的已更新部署策略属性所在的 JSON 文件路径。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "Remove the deployment policy in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中移除该部署策略。"
-    },
-    {
-      "id": "The name of the deployment policy to be removed.",
-      "translation": "待移除的部署策略的名称。"
-    },
-    {
-      "id": "List all public services/patterns in all orgs that have orgType: IBM.",
-      "translation": "列示 orgType 为 IBM 的所有组织中的所有公用服务/模式。"
-    },
-    {
-      "id": "Display all public services in all orgs that have orgType: IBM.",
-      "translation": "显示 orgType 为 IBM 的所有组织中的所有公用服务。"
-    },
-    {
-      "id": "Only display org (IBM) and service names.",
-      "translation": "仅显示组织 (IBM) 和服务名称。"
-    },
-    {
-      "id": "Display detailed output about public services in all orgs that have orgType: IBM.",
-      "translation": "显示 orgType 为 IBM 的所有组织中公用服务的相关详细输出。"
-    },
-    {
-      "id": "Display all public patterns in all orgs that have orgType: IBM.",
-      "translation": "显示 orgType 为 IBM 的所有组织中的所有公用模式。"
-    },
-    {
-      "id": "Only display org (IBM) and pattern names.",
-      "translation": "仅显示组织 (IBM) 和模式名称。"
-    },
-    {
-      "id": "Display detailed output about public patterns in all orgs that have orgType: IBM.",
-      "translation": "显示 orgType 为 IBM 的所有组织中公用模式的相关详细输出。"
-    },
-    {
-      "id": "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.",
-      "translation": "为此模式创建输入文件模板，该模板填写后即可用于 'hzn register' 命令。 这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。"
-    },
-    {
-      "id": "The Horizon exchange node ID and token (it must already exist).",
-      "translation": "Horizon Exchange 节点标识和令牌（必须已存在）。"
-    },
-    {
-      "id": "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.",
-      "translation": "应该创建的 JSON 输入模板文件名。 此文件包含占位符，供您填写用户输入值。"
-    },
-    {
-      "id": "The Horizon exchange organization ID that the node will be registered in.",
-      "translation": "要在其中注册节点的 Horizon Exchange 组织标识。"
-    },
-    {
-      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.",
-      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。 如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。"
-    },
-    {
-      "id": "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.",
-      "translation": "编写模板文件所针对的体系结构。 （Horizon 会忽略模式中体系结构不同于目标系统的服务。） 体系结构必须是目标系统上 'hzn node list' 所返回的体系结构。"
-    },
-    {
-      "id": "Register this edge node with Horizon.",
-      "translation": "向 Horizon 注册此边缘节点。"
-    },
-    {
-      "id": "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the Exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.",
-      "translation": "Horizon Exchange 节点标识和令牌。 节点标识在组织中必须是唯一的。 未指定时，将使用 HZN_EXCHANGE_NODE_AUTH 作为缺省值。 如果 -n 和 HZN_EXCHANGE_NODE_AUTH 都未指定，那么节点标识将由 Horizon 根据机器序列号或标准主机名来创建。 未指定令牌时，Horizon 将创建随机令牌。 如果 Exchange 中尚不存在该标识和令牌所指示的节点资源，那么还必须指定 -u 标志才能创建该资源。"
-    },
-    {
-      "id": "The name of the node. If not specified, it will be the same as the node id.",
-      "translation": "节点的名称。 未指定时，名称与节点标识相同。"
-    },
-    {
-      "id": "User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.",
-      "translation": "用于在 Horizon Exchange 中创建节点资源的用户凭证（如果该资源尚不存在）。 未指定时，将使用 HZN_EXCHANGE_USER_AUTH 作为缺省值。"
-    },
-    {
-      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
-      "translation": "用于设置或覆盖将部署到此节点的服务所需的用户输入变量的 JSON 文件。 请参阅 {Sampledir}/user_input.json。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
-      "translation": "应该在其中注册节点的 Horizon Exchange 组织标识。 缺省值为 HZN_ORG_ID 环境变量。 与 <nodeorg> 和 <pattern> 自变量互斥。"
-    },
-    {
-      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments.",
-      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。 如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。 与 <nodeorg> 和 <pattern> 自变量互斥。"
-    },
-    {
-      "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
-      "translation": "用于设置或覆盖此节点的节点策略的 JSON 文件，将用于基于策略的协议协商。"
-    },
-    {
-      "id": "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.",
-      "translation": "应该在其中注册节点的 Horizon Exchange 组织标识。 与 -o 和 -p 互斥。"
-    },
-    {
-      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.",
-      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。 如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。 与 -o 和 -p 互斥。"
-    },
-    {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
-      "translation": "等待指定的服务在此节点上开始执行。 使用模式注册时，使用“*”来监视此模式中的所有服务。 使用策略注册时，“*”不是 -s 的有效值。 边缘集群节点不支持此标志。"
-    },
-    {
-      "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
-      "translation": "在此节点上等待的服务的组织。 如果指定了“-s *”，那么省略 --serviceorg。"
-    },
-    {
-      "id": "The number of seconds for the --service to start. The default is 60 seconds, beginning when registration is successful. Ignored if --service is not specified.",
-      "translation": "要启动的 --service 的秒数。 缺省值为 60 秒，从注册成功时开始。 如果未指定 --service，那么忽略。"
-    },
-    {
-      "id": "List and manage keys for signing and verifying services.",
-      "translation": "列示和管理用于签署和验证服务的密钥。"
-    },
-    {
-      "id": "List the signing keys that have been imported into this Horizon agent.",
-      "translation": "列示已导入到 Horizon 代理程序中的签名密钥。"
-    },
-    {
-      "id": "The name of a specific key to show.",
-      "translation": "要显示的特定密钥的名称。"
-    },
-    {
-      "id": "List the names of all signing keys, even the older public keys not wrapped in a certificate.",
-      "translation": "列示所有签名密钥的名称，即使旧公用密钥未包装在证书中，也是如此。"
-    },
-    {
-      "id": "Generate a signing key pair.",
-      "translation": "生成签名密钥对。"
-    },
-    {
-      "id": "x509 certificate Organization (O) field (preferably a company name or other organization's name).",
-      "translation": "x509 证书组织 (O) 字段（最好设置为公司名称或其他组织的名称）。"
-    },
-    {
-      "id": "x509 certificate Common Name (CN) field (preferably an email address issued by x509org).",
-      "translation": "x509 证书通用名 (CN) 字段（最好设置为 x509org 所发出的电子邮件地址）。"
-    },
-    {
-      "id": "The directory to put the key pair files in. Mutually exclusive with -k and -K. The file names will be randomly generated.",
-      "translation": "要将密钥对放入其中的目录。 与 -k 和 -K 互斥。 文件名将随机生成。"
-    },
-    {
-      "id": "The full path of the private key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "专用密钥文件的完整路径。 与 -d 互斥。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.private.key。"
-    },
-    {
-      "id": "The full path of the public key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
-      "translation": "公用密钥文件的完整路径。 与 -d 互斥。 未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.public.pem。"
-    },
-    {
-      "id": "Overwrite the existing files. It will skip the 'do you want to overwrite' prompt.",
-      "translation": "覆盖现有文件。 这将跳过“是否要覆盖”提示。"
-    },
-    {
-      "id": "The length of the key to create.",
-      "translation": "要创建的密钥的长度。"
-    },
-    {
-      "id": "x509 certificate validity (Validity > Not After) expressed in days from the day of generation.",
-      "translation": "x509 证书有效期（有效期 > 失效时间），以生成之日起的天数表示。"
-    },
-    {
-      "id": "Automatically import the created public key into the local Horizon agent.",
-      "translation": "将创建的公用密钥自动导入到本地 Horizon 代理程序中。"
-    },
-    {
-      "id": "Imports a signing public key into the Horizon agent.",
-      "translation": "将签名公用密钥导入到 Horizon 代理程序中。"
-    },
-    {
-      "id": "The path of a pem public key file to be imported. The base name in the path is also used as the key name in the Horizon agent. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
-      "translation": "要导入的 pem 公用密钥文件的路径。 路径中的基本名称也用作 Horizon 代理程序中的密钥名称。 未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.public.pem。"
-    },
-    {
-      "id": "Remove the specified signing key from this Horizon agent.",
-      "translation": "从此 Horizon 代理程序中移除指定的签名密钥。"
-    },
-    {
-      "id": "The name of a specific key to remove.",
-      "translation": "要移除的特定密钥的名称。"
-    },
-    {
-      "id": "List and manage general information about this Horizon edge node.",
-      "translation": "列示和管理这个 Horizon 边缘节点的常规信息。"
-    },
-    {
-      "id": "Display general information about this Horizon edge node.",
-      "translation": "显示这个 Horizon 边缘节点的常规信息。"
-    },
-    {
-      "id": "List and manage policy for this Horizon edge node.",
-      "translation": "列示和管理这个 Horizon 边缘节点的策略。"
-    },
-    {
-      "id": "Display this edge node's policy.",
-      "translation": "显示此边缘节点的策略。"
-    },
-    {
-      "id": "Display an empty policy template that can be filled in.",
-      "translation": "显示可以填写的空策略模板。"
-    },
-    {
-      "id": "Create or replace the node's policy. The node's built-in properties cannot be modified or deleted by this command, with the exception of openhorizon.allowPrivileged.",
-      "translation": "创建或替换节点的策略。 此命令无法修改或删除节点的内置属性，openhorizon.allowPrivileged 除外。"
-    },
-    {
-      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
-      "translation": "包含节点策略的 JSON 输入文件的名称。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn policy update' to update the node policy. This command is used to update either the node policy properties or the constraints, but not both.",
-      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn policy update”来更新节点策略。 此命令用于更新节点策略属性或约束，但不能同时更新两者。"
-    },
-    {
-      "id": "The new constraints or properties in the format '{Constraintsconstraint_list}' or '{Propertiesproperty_list}'.",
-      "translation": "新的约束或属性，其格式为 '{Constraintsconstraint_list}' 或 '{Propertiesproperty_list}'。"
-    },
-    {
-      "id": "Remove the node's policy.",
-      "translation": "移除节点的策略。"
+      "id": "List the global attributes that are currently registered on this Horizon edge node.",
+      "translation": "列示当前在此 Horizon 边缘节点上注册的全局属性。"
     },
     {
       "id": "Check deployment compatibility.",
       "translation": "检查部署兼容性。"
+    },
+    {
+      "id": "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.",
+      "translation": "Horizon Exchange 组织标识。 未指定时，将使用 HZN_ORG_ID 作为缺省值。"
     },
     {
       "id": "Horizon exchange user credential to query exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH will be used as a default. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -1323,16 +507,64 @@
       "translation": "显示用于兼容性检查的策略和用户输入。"
     },
     {
+      "id": "Check all compatibilities for a deployment.",
+      "translation": "检查某个部署的所有兼容性。"
+    },
+    {
+      "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.",
+      "translation": "节点的体系结构。 未指定 -n 时，此项为必需。 如果省略，那么将检查部署策略或模式中引用的所有体系结构服务的兼容性。"
+    },
+    {
+      "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+      "translation": "节点类型。 有效值为“device”和“cluster”。 如果省略，缺省值是由 -n 或当前注册设备提供的节点的类型。"
+    },
+    {
+      "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
+      "translation": "节点的组织。如果省略，缺省值是由 -n 或当前注册设备提供的节点的组织。"
+    },
+    {
+      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange 节点标识。 与 --node-pol 和 --node-ui 互斥。 如果省略此项，那么将使用用来注册当前设备的节点标识。 如果未附加组织标识作为前缀，那么将自动附加 -o 值作为前缀。"
+    },
+    {
+      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
+      "translation": "包含节点策略的 JSON 输入文件的名称。 与 -n、-p 和 -P 互斥。"
+    },
+    {
+      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
+      "translation": "节点用户输入所在 JSON 输入文件的名称。 与 -n 互斥。"
+    },
+    {
+      "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "Horizon Exchange 部署策略标识。 与 -B、-p 和 -P 互斥。 如果未附加组织标识作为前缀，那么将自动附加节点的组织标识作为前缀。"
+    },
+    {
+      "id": "The JSON input file name containing the deployment policy. Mutually exclusive with -b, -p and -P.",
+      "translation": "部署策略所在的 JSON 输入文件名。 与 -b、-p 和 -P 互斥。"
+    },
+    {
+      "id": "(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the Exchange for the service defined in the deployment policy.",
+      "translation": "（可选）服务策略所在 JSON 输入文件的名称。 与 -p 和 -P 互斥。 如果省略，那么将从 Exchange 检索部署策略中所定义的服务的服务策略。"
+    },
+    {
+      "id": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the deployment policy or pattern will be retrieved from the Exchange. This flag can be repeated to specify different versions of the service.",
+      "translation": "（可选）服务定义所在 JSON 输入文件的名称。 如果省略，那么将从 Exchange 检索部署策略或模式中所定义的服务。 此标志可以重复，以指定该服务的不同版本。"
+    },
+    {
+      "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b, -B --node-pol and --service-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "Horizon Exchange 模式标识。 与 -P、-b、-B --node-pol 和 --service-pol 互斥。 如果未附加组织标识作为前缀，那么将自动附加节点的组织标识作为前缀。"
+    },
+    {
+      "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B, --node-pol and --service-pol.",
+      "translation": "模式所在 JSON 输入文件的名称。 与 -p、-b 以及 -B、--node-pol 和--service-pol 互斥。"
+    },
+    {
       "id": "Check policy compatibility.",
       "translation": "检查策略兼容性。"
     },
     {
       "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility.",
       "translation": "节点的体系结构。 未指定 -n 时，此项为必需。 如果省略，那么将检查部署策略中引用的所有体系结构服务的兼容性。"
-    },
-    {
-      "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
-      "translation": "节点类型。 有效值为“device”和“cluster”。 如果省略，缺省值是由 -n 或当前注册设备提供的节点的类型。"
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -1359,32 +591,12 @@
       "translation": "（可选）服务定义所在 JSON 输入文件的名称。 与 -b 互斥。 如果省略，那么将从 Exchange 检索部署策略中引用的服务。 此标志可以重复，以指定该服务的不同版本。"
     },
     {
-      "id": "Check user input compatibility.",
-      "translation": "检查用户输入兼容性。"
+      "id": "Check secret bindings.",
+      "translation": "检查私钥绑定。"
     },
     {
-      "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.",
-      "translation": "节点的体系结构。 未指定 -n 时，此项为必需。 如果省略，那么将检查部署策略或模式中引用的所有体系结构服务的兼容性。"
-    },
-    {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange 节点标识。 与 --node-ui 互斥。 如果省略此项，那么将使用用来注册当前设备的节点标识。 如果未附加组织标识作为前缀，那么将自动附加 -o 值作为前缀。"
-    },
-    {
-      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-      "translation": "节点用户输入所在 JSON 输入文件的名称。 与 -n 互斥。"
-    },
-    {
-      "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-      "translation": "Horizon Exchange 部署策略标识。 与 -B、-p 和 -P 互斥。 如果未附加组织标识作为前缀，那么将自动附加节点的组织标识作为前缀。"
-    },
-    {
-      "id": "The JSON input file name containing the deployment policy. Mutually exclusive with -b, -p and -P.",
-      "translation": "部署策略所在的 JSON 输入文件名。 与 -b、-p 和 -P 互斥。"
-    },
-    {
-      "id": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the deployment policy or pattern will be retrieved from the Exchange. This flag can be repeated to specify different versions of the service.",
-      "translation": "（可选）服务定义所在 JSON 输入文件的名称。 如果省略，那么将从 Exchange 检索部署策略或模式中所定义的服务。 此标志可以重复，以指定该服务的不同版本。"
+      "id": "The Horizon exchange node ID. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange 节点标识。 如果省略此项，那么将使用用来注册当前设备的节点标识。 如果未附加组织标识作为前缀，那么将自动附加 -o 值作为前缀。"
     },
     {
       "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b and -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -1395,228 +607,12 @@
       "translation": "模式所在 JSON 输入文件的名称。 与 -p、-b 和 -B 互斥。"
     },
     {
-      "id": "Check all compatibilities for a deployment.",
-      "translation": "检查某个部署的所有兼容性。"
+      "id": "Check user input compatibility.",
+      "translation": "检查用户输入兼容性。"
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange 节点标识。 与 --node-pol 和 --node-ui 互斥。 如果省略此项，那么将使用用来注册当前设备的节点标识。 如果未附加组织标识作为前缀，那么将自动附加 -o 值作为前缀。"
-    },
-    {
-      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-      "translation": "包含节点策略的 JSON 输入文件的名称。 与 -n、-p 和 -P 互斥。"
-    },
-    {
-      "id": "(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the Exchange for the service defined in the deployment policy.",
-      "translation": "（可选）服务策略所在 JSON 输入文件的名称。 与 -p 和 -P 互斥。 如果省略，那么将从 Exchange 检索部署策略中所定义的服务的服务策略。"
-    },
-    {
-      "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b, -B --node-pol and --service-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-      "translation": "Horizon Exchange 模式标识。 与 -P、-b、-B --node-pol 和 --service-pol 互斥。 如果未附加组织标识作为前缀，那么将自动附加节点的组织标识作为前缀。"
-    },
-    {
-      "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B, --node-pol and --service-pol.",
-      "translation": "模式所在 JSON 输入文件的名称。 与 -p、-b 以及 -B、--node-pol 和--service-pol 互斥。"
-    },
-    {
-      "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
-      "translation": "列示或管理此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。"
-    },
-    {
-      "id": "List the active or archived agreements this edge node has made with a Horizon agreement bot.",
-      "translation": "列示此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。"
-    },
-    {
-      "id": "Show the details of this active or archived agreement.",
-      "translation": "显示此活动协议或存档协议的详细信息。"
-    },
-    {
-      "id": "List archived agreements instead of the active agreements.",
-      "translation": "列示存档协议，而不列示活动协议。"
-    },
-    {
-      "id": "Cancel 1 or all of the active agreements this edge node has made with a Horizon agreement bot. Usually an agbot will immediately negotiated a new agreement. If you want to cancel all agreements and not have this edge accept new agreements, run 'hzn unregister'.",
-      "translation": "取消此边缘节点与 Horizon 协议 bot 议定的 1 个或全部活动协议。 通常，agbot 将立即协商新协议。 如果要取消所有协议，而且不希望此边缘节点接受新协议，请运行 'hzn unregister'。"
-    },
-    {
-      "id": "Cancel all of the current agreements.",
-      "translation": "取消所有的当前协议。"
-    },
-    {
-      "id": "The active agreement to cancel.",
-      "translation": "要取消的活动协议。"
-    },
-    {
-      "id": "List or manage the metering (payment) information for the active or archived agreements.",
-      "translation": "列示或管理活动协议或存档协议的测量（付款）信息。"
-    },
-    {
-      "id": "List the metering (payment) information for the active or archived agreements.",
-      "translation": "列示活动协议或存档协议的测量（付款）信息。"
-    },
-    {
-      "id": "List archived agreement metering information instead of metering for the active agreements.",
-      "translation": "列示存档协议测量信息，而不列示活动协议的测量信息。"
-    },
-    {
-      "id": "List or manage the global attributes that are currently registered on this Horizon edge node.",
-      "translation": "列示或管理当前在此 Horizon 边缘节点上注册的全局属性。"
-    },
-    {
-      "id": "List the global attributes that are currently registered on this Horizon edge node.",
-      "translation": "列示当前在此 Horizon 边缘节点上注册的全局属性。"
-    },
-    {
-      "id": "List or manage the service user inputs that are currently registered on this Horizon edge node.",
-      "translation": "列示或管理当前在此 Horizon 边缘节点上注册的服务用户输入。"
-    },
-    {
-      "id": "List the service user inputs currently registered on this Horizon edge node.",
-      "translation": "列示当前在此 Horizon 边缘节点上注册的服务用户输入。"
-    },
-    {
-      "id": "Display an empty userinput template.",
-      "translation": "显示空的用户输入模板。"
-    },
-    {
-      "id": "Add a new user input object or overwrite the current user input object for this Horizon edge node.",
-      "translation": "为此 Horizon 边缘节点添加新的用户输入对象，或覆盖当前的用户输入对象。"
-    },
-    {
-      "id": "The file path to the json file with the user input object. Specify -f- to read from stdin.",
-      "translation": "用户输入对象所在 JSON 文件的文件路径。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "Update an existing user input object for this Horizon edge node.",
-      "translation": "更新此 Horizon 边缘节点的现有用户输入对象。"
-    },
-    {
-      "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
-      "translation": "更新后的用户输入对象所在 JSON 文件的文件路径。 指定 -f- 可从 stdin 读取。"
-    },
-    {
-      "id": "Remove the user inputs that are currently registered on this Horizon edge node.",
-      "translation": "移除当前在此 Horizon 边缘节点上注册的用户输入。"
-    },
-    {
-      "id": "Skip the 'Are you sure?' prompt.",
-      "translation": "跳过“是否确定？”提示。"
-    },
-    {
-      "id": "List or manage the services that are currently registered on this Horizon edge node.",
-      "translation": "列示或管理当前在此 Horizon 边缘节点上注册的服务。"
-    },
-    {
-      "id": "Show the container logs for a service.",
-      "translation": "显示服务的容器日志。"
-    },
-    {
-      "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .",
-      "translation": "应显示日志记录的服务名称。 服务名称与服务定义的 URL 字段相同。 显示日志记录类似于 tail 行为并返回。"
-    },
-    {
-      "id": "Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.",
-      "translation": "连续轮询服务日志以显示最新记录，类似于 tail -F 行为。"
-    },
-    {
-      "id": "List the services variable configuration that has been done on this Horizon edge node.",
-      "translation": "列示在此 Horizon 边缘节点上完成的服务变量配置。"
-    },
-    {
-      "id": "List the services that are currently registered on this Horizon edge node.",
-      "translation": "列示当前在此 Horizon 边缘节点上注册的服务。"
-    },
-    {
-      "id": "List or manage the configuration state for the services that are currently registered on this Horizon edge node.",
-      "translation": "列示或管理当前在此 Horizon 边缘节点上注册的服务的配置状态。"
-    },
-    {
-      "id": "List the configuration state for the services that are currently registered on this Horizon edge node.",
-      "translation": "列示当前在此 Horizon 边缘节点上注册的服务的配置状态。"
-    },
-    {
-      "id": "Change the configuration state to 'suspend' for a service.",
-      "translation": "将服务的配置状态更改为 '暂挂'。"
-    },
-    {
-      "id": "Change the configuration state to 'active' for a service.",
-      "translation": "将服务的配置状态更改为 '活动'。"
-    },
-    {
-      "id": "Suspend all registerd services.",
-      "translation": "暂挂所有已注册的服务。"
-    },
-    {
-      "id": "The organization of the service that should be suspended.",
-      "translation": "应该暂挂的服务的组织。"
-    },
-    {
-      "id": "The name of the service that should be suspended.",
-      "translation": "应该暂挂的服务的名称。"
-    },
-    {
-      "id": "Resume all registerd services.",
-      "translation": "恢复所有已注册的服务。"
-    },
-    {
-      "id": "The organization of the service that should be resumed.",
-      "translation": "应该恢复的服务的组织。"
-    },
-    {
-      "id": "The name of the service that should be resumed.",
-      "translation": "应该恢复的服务的名称。"
-    },
-    {
-      "id": "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.",
-      "translation": "注销并重置此 Horizon 边缘节点，以使其可以再次注册。 警告：这将停止所有正在此边缘节点上运行的 Horizon 服务，并重新启动 Horizon 代理程序。"
-    },
-    {
-      "id": "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).",
-      "translation": "此外，还会从 Horizon Exchange 中移除此节点的资源（因为不再需要将此节点与 Horizon 配合使用）。"
-    },
-    {
-      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-      "translation": "同时移除所有的先前注册信息。 只有在 'hzn unregister' 命令失败后，才应使用此标志。 在使用此标志之前，请通过运行 'hzn eventlog list -a -l' 命令捕获日志。"
-    },
-    {
-      "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
-      "translation": "等待注销完成的分钟数。 缺省值为零，这表示永久等待。"
-    },
-    {
-      "id": "Display the current horizon internal status for the node.",
-      "translation": "显示节点的当前 Horizon 内部状态。"
-    },
-    {
-      "id": "Show detailed status",
-      "translation": "显示详细状态"
-    },
-    {
-      "id": "List the event logs for the current or all registrations.",
-      "translation": "列示当前注册或所有注册的事件日志。"
-    },
-    {
-      "id": "Continuously polls the event log to display the most recent records, similar to tail -F behavior.",
-      "translation": "连续轮询事件日志以显示最新记录，类似于 tail -F 行为。"
-    },
-    {
-      "id": "List all the event logs including the previous registrations.",
-      "translation": "列示所有事件日志，包括先前的注册。"
-    },
-    {
-      "id": "List event logs with details.",
-      "translation": "列示含详细信息的事件日志。"
-    },
-    {
-      "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-      "translation": "选定项字符串。 此标志可以重复指定，这表示 'AND'。 每个标志的格式都应该是 attribute=value、attribute~value、\"attribute>value\" 或 \"attribute<value\"，其中 '~' 表示包含。 公共属性名称包括 timestamp、severity、message、event_code、source_type、agreement_id、service_url 等等。使用 '-l' 标志可查看所有属性名称。"
-    },
-    {
-      "id": "List all the active errors that will be shared with the Exchange if the node is online.",
-      "translation": "列出节点处于联机状态时将与 Exchange 进行共享的所有现行错误。"
-    },
-    {
-      "id": "List the full event logs of the surface errors.",
-      "translation": "列示出现的错误的完整事件日志。"
+      "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange 节点标识。 与 --node-ui 互斥。 如果省略此项，那么将使用用来注册当前设备的节点标识。 如果未附加组织标识作为前缀，那么将自动附加 -o 值作为前缀。"
     },
     {
       "id": "Development tools for creation of services.",
@@ -1627,8 +623,76 @@
       "translation": "Horizon 项目元数据所在的目录。 省略此标志时，将使用当前目录下名为 'horizon' 的子目录。"
     },
     {
+      "id": "For working with project dependencies.",
+      "translation": "用于处理项目依赖关系。"
+    },
+    {
+      "id": "The URL of the service dependency in the Exchange. Mutually exclusive with -p and --url.",
+      "translation": "Exchange 中存在服务依赖关系的 URL。 与 -p 和 --url 互斥。"
+    },
+    {
+      "id": "The URL of the service dependency in the Exchange. Mutually exclusive with -p and --specRef.",
+      "translation": "Exchange 中存在服务依赖关系的 URL。 与 -p 和 --specRef 互斥。"
+    },
+    {
+      "id": "The Org of the service dependency in the Exchange. Mutually exclusive with -p.",
+      "translation": "Exchange 中存在服务依赖关系的组织。 与 -p 互斥。"
+    },
+    {
+      "id": "(optional) The Version of the service dependency in the Exchange. Mutually exclusive with -p.",
+      "translation": "（可选）Exchange 中存在服务依赖关系的版本。 与 -p 互斥。"
+    },
+    {
+      "id": "(optional) The hardware Architecture of the service dependency in the Exchange. Mutually exclusive with -p.",
+      "translation": "（可选）Exchange 中存在服务依赖关系的硬件体系结构。 与 -p 互斥。"
+    },
+    {
+      "id": "Retrieving Horizon metadata for a new dependency.",
+      "translation": "正在检索新依赖关系的 Horizon 元数据。"
+    },
+    {
+      "id": "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.",
+      "translation": "依赖关系定义所在的 Horizon 项目。 与 -s、-o、--ver、-a 和 --url 互斥。"
+    },
+    {
+      "id": "Horizon Exchange user credentials to query exchange resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+      "translation": "用于查询 Exchange 资源的 Horizon Exchange 用户凭证。 缺省值为 HZN_EXCHANGE_USER_AUTH 环境变量。 如果未附加用户的组织作为前缀，那么将自动附加 HZN_ORG_ID 环境变量的值作为前缀。"
+    },
+    {
+      "id": "File containing user input values for configuring the new dependency. If omitted, the userinput file in the dependency project will be used.",
+      "translation": "用于配置新依赖关系的用户输入值所在的文件。 如果省略此项，那么将使用依赖项目中的用户输入文件。"
+    },
+    {
+      "id": "List all dependencies.",
+      "translation": "列示所有依赖关系。"
+    },
+    {
+      "id": "Remove a project dependency.",
+      "translation": "移除项目依赖关系。"
+    },
+    {
       "id": "For working with a service project.",
       "translation": "用于处理服务项目。"
+    },
+    {
+      "id": "Show the container/system logs for a service.",
+      "translation": "显示服务的容器/系统日志。"
+    },
+    {
+      "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+      "translation": "应显示日志记录的服务名称。 服务名称与服务定义的 URL 字段相同。"
+    },
+    {
+      "id": "(DEPRECATED) This flag is deprecated and is replaced by -c.",
+      "translation": "（不推荐）此标志不推荐使用，并已替换为 -c。"
+    },
+    {
+      "id": "The name of the service container whose log records should be displayed. Can be omitted if the service definition has only one container in its deployment config.",
+      "translation": "应显示其日志记录的服务容器的名称。如果服务定义在其部署配置中只有一个容器，那么可以省略。"
+    },
+    {
+      "id": "Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.",
+      "translation": "连续轮询服务日志以显示最新记录，类似于 tail -F 行为。"
     },
     {
       "id": "Create a new service project.",
@@ -1691,6 +755,10 @@
       "translation": "用于查询 Exchange 资源的 Horizon Exchange 用户凭证。 如果要从 Exchange 自动访存缺失的相依服务，请指定此凭证。 缺省值为 HZN_EXCHANGE_USER_AUTH 环境变量。 如果未附加用户的组织作为前缀，那么将自动附加 HZN_ORG_ID 环境变量的值作为前缀。"
     },
     {
+      "id": "Filepath of a file containing a secret that is required by the service or one of its dependent services. The filename must match a secret name in the service definition. The file is encoded in JSON as an object containing two keys both typed as a string; \"key\" is used to indicate the kind of secret, and \"value\" is the string form of the secret. This flag can be repeated.",
+      "translation": "文件的文件路径，该文件包含服务或其中一个从属服务所需的私钥。文件名必须与服务定义中的私钥名称匹配。该文件采用 JSON 编码为包含作为字符串键入的两个密钥的对象；“key”用于指示私钥的类型，“value”是私钥的字符串形式。此标志可以重复。"
+    },
+    {
       "id": "Stop a service that is running in a mocked Horizon Agent environment. This command is not supported for services using the {KUBEDEPLOYMENTCONFIGTYPE} deployment configuration.",
       "translation": "停止正在模拟 Horizon 代理程序环境中运行的服务。 此命令不支持使用 {KUBEDEPLOYMENTCONFIGTYPE} 部署配置的服务。"
     },
@@ -1703,184 +771,920 @@
       "translation": "用于验证项目的用户输入值所在的文件。 如果省略此项，那么将使用项目的用户输入文件。"
     },
     {
-      "id": "Show the container/system logs for a service.",
-      "translation": "显示服务的容器/系统日志。"
+      "id": "Show the Horizon Environment Variables.",
+      "translation": "显示 Horizon 环境变量。"
     },
     {
-      "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
-      "translation": "应显示日志记录的服务名称。 服务名称与服务定义的 URL 字段相同。"
+      "id": "List the event logs for the current or all registrations.",
+      "translation": "列示当前注册或所有注册的事件日志。"
     },
     {
-      "id": "For working with project dependencies.",
-      "translation": "用于处理项目依赖关系。"
+      "id": "Continuously polls the event log to display the most recent records, similar to tail -F behavior.",
+      "translation": "连续轮询事件日志以显示最新记录，类似于 tail -F 行为。"
     },
     {
-      "id": "The URL of the service dependency in the Exchange. Mutually exclusive with -p and --url.",
-      "translation": "Exchange 中存在服务依赖关系的 URL。 与 -p 和 --url 互斥。"
+      "id": "List all the event logs including the previous registrations.",
+      "translation": "列示所有事件日志，包括先前的注册。"
     },
     {
-      "id": "The URL of the service dependency in the Exchange. Mutually exclusive with -p and --specRef.",
-      "translation": "Exchange 中存在服务依赖关系的 URL。 与 -p 和 --specRef 互斥。"
+      "id": "List event logs with details.",
+      "translation": "列示含详细信息的事件日志。"
     },
     {
-      "id": "The Org of the service dependency in the Exchange. Mutually exclusive with -p.",
-      "translation": "Exchange 中存在服务依赖关系的组织。 与 -p 互斥。"
+      "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+      "translation": "选定项字符串。 此标志可以重复指定，这表示 'AND'。 每个标志的格式都应该是 attribute=value、attribute~value、\"attribute>value\" 或 \"attribute<value\"，其中 '~' 表示包含。 公共属性名称包括 timestamp、severity、message、event_code、source_type、agreement_id、service_url 等等。使用 '-l' 标志可查看所有属性名称。"
     },
     {
-      "id": "(optional) The Version of the service dependency in the Exchange. Mutually exclusive with -p.",
-      "translation": "（可选）Exchange 中存在服务依赖关系的版本。 与 -p 互斥。"
+      "id": "List all the active errors that will be shared with the Exchange if the node is online.",
+      "translation": "列出节点处于联机状态时将与 Exchange 进行共享的所有现行错误。"
     },
     {
-      "id": "(optional) The hardware Architecture of the service dependency in the Exchange. Mutually exclusive with -p.",
-      "translation": "（可选）Exchange 中存在服务依赖关系的硬件体系结构。 与 -p 互斥。"
+      "id": "List the full event logs of the surface errors.",
+      "translation": "列示出现的错误的完整事件日志。"
     },
     {
-      "id": "Retrieving Horizon metadata for a new dependency.",
-      "translation": "正在检索新依赖关系的 Horizon 元数据。"
+      "id": "List and manage Horizon Exchange resources.",
+      "translation": "列示和管理 Horizon Exchange 资源。"
     },
     {
-      "id": "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.",
-      "translation": "依赖关系定义所在的 Horizon 项目。 与 -s、-o、--ver、-a 和 --url 互斥。"
+      "id": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
+      "translation": "用于查询和创建 Exchange 资源的 Horizon Exchange 用户凭证。 未指定时，将使用 HZN_EXCHANGE_USER_AUTH 作为缺省值。 如果未附加用户的组织作为前缀，那么将自动附加 -o 值作为前缀。 除使用 -o 之外，还可以使用 Horizon Exchange 组织标识来设置 HZN_ORG_ID"
     },
     {
-      "id": "Horizon Exchange user credentials to query exchange resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-      "translation": "用于查询 Exchange 资源的 Horizon Exchange 用户凭证。 缺省值为 HZN_EXCHANGE_USER_AUTH 环境变量。 如果未附加用户的组织作为前缀，那么将自动附加 HZN_ORG_ID 环境变量的值作为前缀。"
+      "id": "List and manage agbots in the Horizon Exchange",
+      "translation": "列示和管理 Horizon Exchange 中的 agbot"
     },
     {
-      "id": "File containing user input values for configuring the new dependency. If omitted, the userinput file in the dependency project will be used.",
-      "translation": "用于配置新依赖关系的用户输入值所在的文件。 如果省略此项，那么将使用依赖项目中的用户输入文件。"
+      "id": "Add this deployment policy to the list of policies this agbot is serving. Currently only support adding all the deployment policies from an organization.",
+      "translation": "将此部署策略添加到此 agbot 所提供的策略列表。 目前只支持添加组织的所有部署策略。"
     },
     {
-      "id": "List all dependencies.",
-      "translation": "列示所有依赖关系。"
+      "id": "The agbot to add the deployment policy to.",
+      "translation": "要向其添加部署策略的 agbot。"
     },
     {
-      "id": "Remove a project dependency.",
-      "translation": "移除项目依赖关系。"
+      "id": "The organization of the deployment policy to add.",
+      "translation": "要添加的部署策略的组织。"
     },
     {
-      "id": "List and manage Horizon agreement bot resources.",
-      "translation": "列示和管理 Horizon 协议 bot 资源。"
+      "id": "Add this pattern to the list of patterns this agbot is serving.",
+      "translation": "将此模式添加到此 agbot 所提供的模式列表。"
     },
     {
-      "id": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
-      "translation": "管理已高速缓存的由 agbot 提供的组织、模式和部署策略。"
+      "id": "The agbot to add the pattern to.",
+      "translation": "要向其添加模式的 agbot。"
     },
     {
-      "id": "List served pattern orgs and deployment policy orgs.",
-      "translation": "列出提供的模式组织和部署策略组织。"
+      "id": "The organization of the pattern to add.",
+      "translation": "要添加的模式的组织。"
     },
     {
-      "id": "Display served pattern orgs and deployment policy orgs.",
-      "translation": "显示提供的模式组织和部署策略组织。"
+      "id": "The name of the pattern to add.",
+      "translation": "要添加的模式的名称。"
     },
     {
-      "id": "List patterns cached in the agbot.",
-      "translation": "列出在 agbot 中高速缓存的模式。"
+      "id": "The organization of the nodes that should be searched. Defaults to patternorg.",
+      "translation": "应搜索的节点的组织。 缺省值为 patternorg。"
     },
     {
-      "id": "Display served patterns cached in the agbot.",
-      "translation": "显示在 agbot 中高速缓存的已提供的模式。"
+      "id": "Display the agbot resources from the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 中的 agbot 资源。"
     },
     {
-      "id": "Display patterns under this org.",
-      "translation": "显示此组织下的模式。"
+      "id": "List just this one agbot.",
+      "translation": "仅列示这一 agbot。"
     },
     {
-      "id": "Display this pattern.",
-      "translation": "显示此模式。"
+      "id": "When listing all of the agbots, show the entire resource of each agbots, instead of just the name.",
+      "translation": "列示所有 agbot 时，显示每个 agbot 的完整资源，而不是仅显示名称。"
     },
     {
-      "id": "Display detailed info.",
-      "translation": "显示详细信息。"
+      "id": "Display the deployment policies that this agbot is serving.",
+      "translation": "显示此 agbot 所提供的部署策略。"
     },
     {
-      "id": "List served deployment policies cached in the agbot.",
-      "translation": "列出在 agbot 中高速缓存的已提供的部署策略。"
+      "id": "The agbot to list serving deployment policies for.",
+      "translation": "要列示所提供的部署策略的 agbot。"
     },
     {
-      "id": "Display served deployment policies cached in the agbot.",
-      "translation": "显示在 agbot 中高速缓存的已提供的部署策略。"
+      "id": "Display the patterns that this agbot is serving.",
+      "translation": "显示此 agbot 所提供的模式。"
     },
     {
-      "id": "Display policies under this org.",
-      "translation": "显示此组织下的策略。"
+      "id": "The agbot to list the patterns for.",
+      "translation": "要列示模式的 agbot。"
     },
     {
-      "id": "Display this policy.",
-      "translation": "显示此策略。"
+      "id": "The organization of the 1 pattern to list.",
+      "translation": "要列示的 1 个模式的组织。"
     },
     {
-      "id": "Display general information about this Horizon agbot node.",
-      "translation": "显示这个 Horizon agbot 节点的常规信息。"
+      "id": "The name of the 1 pattern to list.",
+      "translation": "要列示的 1 个模式的名称。"
     },
     {
-      "id": "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.",
-      "translation": "列示或管理这个 Horizon 协议 bot 与边缘节点议定的活动协议或存档协议。"
+      "id": "Remove this deployment policy from the list of policies this agbot is serving. Currently only support removing all the deployment policies from an organization.",
+      "translation": "从此 agbot 所提供的策略列表中移除此部署策略。 目前只支持移除组织的所有部署策略。"
     },
     {
-      "id": "List the active or archived agreements this Horizon agreement bot has with edge nodes.",
-      "translation": "列示这个 Horizon 协议 bot 与边缘节点议定的活动协议或存档协议。"
+      "id": "The agbot to remove the deployment policy from.",
+      "translation": "要从中移除部署策略的 agbot。"
     },
     {
-      "id": "List just this one agreement.",
-      "translation": "仅列示这一协议。"
+      "id": "The organization of the deployment policy to remove.",
+      "translation": "待移除的部署策略的组织。"
     },
     {
-      "id": "Cancel 1 or all of the active agreements this Horizon agreement bot has with edge nodes. Usually an agbot will immediately negotiated a new agreement.",
-      "translation": "取消这个 Horizon 协议 bot 与边缘节点议定的 1 个或全部活动协议。 通常，agbot 将立即协商新协议。"
+      "id": "Remove this pattern from the list of patterns this agbot is serving.",
+      "translation": "从此 agbot 所提供的模式列表中移除此模式。"
     },
     {
-      "id": "List the policies this Horizon agreement bot hosts.",
-      "translation": "列示此 Horizon 协议 bot 所托管的策略。"
+      "id": "The agbot to remove the pattern from.",
+      "translation": "要从中移除模式的 agbot。"
     },
     {
-      "id": "List policies this Horizon agreement bot hosts.",
-      "translation": "列示此 Horizon 协议 bot 所托管的策略。"
+      "id": "The organization of the pattern to remove.",
+      "translation": "要移除的模式的组织。"
     },
     {
-      "id": "The organization the policy belongs to.",
-      "translation": "策略所属的组织。"
+      "id": "The name of the pattern to remove.",
+      "translation": "要移除的模式的名称。"
     },
     {
-      "id": "The policy name.",
-      "translation": "策略名称。"
+      "id": "List all public services/patterns in all orgs that have orgType: IBM.",
+      "translation": "列示 orgType 为 IBM 的所有组织中的所有公用服务/模式。"
     },
     {
-      "id": "Display the current horizon internal status for the Horizon agreement bot.",
-      "translation": "显示 Horizon 协议 bot 的当前 Horizon 内部状态。"
+      "id": "Display all public patterns in all orgs that have orgType: IBM.",
+      "translation": "显示 orgType 为 IBM 的所有组织中的所有公用模式。"
     },
     {
-      "id": "Utility commands.",
-      "translation": "实用程序命令。"
+      "id": "Only display org (IBM) and pattern names.",
+      "translation": "仅显示组织 (IBM) 和模式名称。"
     },
     {
-      "id": "Sign the text in stdin. The signature is sent to stdout.",
-      "translation": "对 stdin 中的文本进行签名。 该签名将发送到 stdout。"
+      "id": "Display detailed output about public patterns in all orgs that have orgType: IBM.",
+      "translation": "显示 orgType 为 IBM 的所有组织中公用模式的相关详细输出。"
     },
     {
-      "id": "The path of a private key file to be used to sign the stdin.",
-      "translation": "要用来对 stdin 进行签名的专用密钥文件的路径。"
+      "id": "Display all public services in all orgs that have orgType: IBM.",
+      "translation": "显示 orgType 为 IBM 的所有组织中的所有公用服务。"
     },
     {
-      "id": "Verify that the signature specified via -s is a valid signature for the text in stdin.",
-      "translation": "验证通过 -s 指定的签名是 stdin 中的文本的有效签名。"
+      "id": "Only display org (IBM) and service names.",
+      "translation": "仅显示组织 (IBM) 和服务名称。"
     },
     {
-      "id": "The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.",
-      "translation": "用于验证 stdin 签名的公用密钥文件（对应于用来进行签名的专用密钥）的路径。"
+      "id": "Display detailed output about public services in all orgs that have orgType: IBM.",
+      "translation": "显示 orgType 为 IBM 的所有组织中公用服务的相关详细输出。"
     },
     {
-      "id": "The supposed signature of stdin.",
-      "translation": "假定的 stdin 签名。"
+      "id": "List and manage deployment policies in the Horizon Exchange.",
+      "translation": "列示和管理 Horizon Exchange 中的部署策略。"
     },
     {
-      "id": "Convert the configuration file from JSON format to a shell script.",
-      "translation": "将配置文件从 JSON 格式转换为 shell 脚本。"
+      "id": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
+      "translation": "在 Horizon Exchange 中添加或替换部署策略。 针对空的部署策略模板使用“hzn exchange deployment new”。"
     },
     {
-      "id": "The path of a configuration file to be converted.",
-      "translation": "要转换的配置文件的路径。"
+      "id": "The Horizon ID and password of the user.",
+      "translation": "用户的 Horizon 标识和密码。"
+    },
+    {
+      "id": "The name of the policy to add or overwrite.",
+      "translation": "要添加或覆盖的策略的名称。"
+    },
+    {
+      "id": "The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "在 Horizon Exchange 中创建/更新服务策略所必需的元数据所在 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "Allow this deployment policy to be published even though it does not have any constraints.",
+      "translation": "允许发布此部署策略，即使不存在任何约束也是如此。"
+    },
+    {
+      "id": "Display the deployment policies from the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 中的部署策略。"
+    },
+    {
+      "id": "Display detailed output about the deployment policies.",
+      "translation": "显示有关部署策略的详细输出。"
+    },
+    {
+      "id": "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
+      "translation": "仅列示这一策略。 使用 <org>/<policy> 可指定另一组织中的一个公用策略，使用 <org>/ 可列示另一组织中的所有公用策略。"
+    },
+    {
+      "id": "Display an empty deployment policy template that can be filled in.",
+      "translation": "显示可填写的空部署策略模板。"
+    },
+    {
+      "id": "Remove the deployment policy in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中移除该部署策略。"
+    },
+    {
+      "id": "Skip the 'are you sure?' prompt.",
+      "translation": "跳过“是否确定？”提示。"
+    },
+    {
+      "id": "The name of the deployment policy to be removed.",
+      "translation": "待移除的部署策略的名称。"
+    },
+    {
+      "id": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
+      "translation": "在 Horizon Exchange 中更新现有策略的一个属性。 受支持的属性为“hzn exchange deployment new”命令所示策略定义中的顶级属性。"
+    },
+    {
+      "id": "The name of the policy to be updated in the Horizon Exchange.",
+      "translation": "要在 Horizon Exchange 中更新的策略的名称。"
+    },
+    {
+      "id": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "Horizon Exchange 中待更改的已更新部署策略属性所在的 JSON 文件路径。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "List and manage nodes in the Horizon Exchange",
+      "translation": "列示和管理 Horizon Exchange 中的节点"
+    },
+    {
+      "id": "Add or replace the node policy in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中添加或替换节点策略。"
+    },
+    {
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "translation": "要用作凭证的 Horizon Exchange 节点标识和令牌，用于查询和修改节点资源（如果未指定 -u 标志）。 HZN_EXCHANGE_NODE_AUTH 将用作 -n 的缺省值。 如果未附加节点的组织作为前缀，那么将自动附加 -o 值作为前缀。"
+    },
+    {
+      "id": "Add or replace policy for this node.",
+      "translation": "添加或替换此节点的策略。"
+    },
+    {
+      "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin.",
+      "translation": "在 Horizon Exchange 中创建/更新节点策略所必需的元数据所在 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "Create the node resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中创建节点资源。"
+    },
+    {
+      "id": "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.",
+      "translation": "要创建的 Horizon Exchange 节点标识和令牌。 节点标识在组织中必须是唯一的。"
+    },
+    {
+      "id": "Your node architecture. If not specified, architecture will be left blank.",
+      "translation": "节点体系结构。 如果未指定，体系结构将留空。"
+    },
+    {
+      "id": "The name of your node",
+      "translation": "节点的名称"
+    },
+    {
+      "id": "The type of your node. The valid values are: device, cluster. If omitted, the default is device. However, the node type stays unchanged if the node already exists, only the node token will be updated.",
+      "translation": "节点类型。 有效值为 device 和 cluster。 如果省略，那么缺省值为 device。 但是，如果节点已存在，那么节点类型保持不变，仅更新节点令牌。"
+    },
+    {
+      "id": "The node to be created.",
+      "translation": "要创建的节点。"
+    },
+    {
+      "id": "The token the new node should have.",
+      "translation": "新节点应使用的令牌。"
+    },
+    {
+      "id": "Check to see if the specified node and token are valid in the Horizon Exchange.",
+      "translation": "核实所指定的节点和令牌在 Horizon Exchange 中是否有效。"
+    },
+    {
+      "id": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
+      "translation": "要检查的 Horizon Exchange 节点标识和令牌。 未指定时，将使用 HZN_EXCHANGE_NODE_AUTH 作为缺省值。 与 <node> 和 <token> 自变量互斥。"
+    },
+    {
+      "id": "The node id to be checked. Mutually exclusive with -n flag.",
+      "translation": "要检查的节点标识。 与 -n 标志互斥。"
+    },
+    {
+      "id": "The token for the node. Mutually exclusive with -n flag.",
+      "translation": "节点的令牌。 与 -n 标志互斥。"
+    },
+    {
+      "id": "Display the node resources from the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 中的节点资源。"
+    },
+    {
+      "id": "List just this one node.",
+      "translation": "仅列示这一节点。"
+    },
+    {
+      "id": "When listing all of the nodes, show the entire resource of each node, instead of just the name.",
+      "translation": "列示所有节点时，显示每个节点的完整资源，而不是仅显示名称。"
+    },
+    {
+      "id": "List the node errors currently surfaced to the Exchange.",
+      "translation": "列出当前向 Exchange 呈现的节点错误。"
+    },
+    {
+      "id": "List surfaced errors for this node.",
+      "translation": "列出此节点已出现的错误。"
+    },
+    {
+      "id": "Show the full eventlog object of the errors currently surfaced to the Exchange.",
+      "translation": "显示当前向 Exchange 呈现的错误的完整事件日志对象。"
+    },
+    {
+      "id": "Display the node policy from the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 中的节点策略。"
+    },
+    {
+      "id": "List policy for this node.",
+      "translation": "列示此节点的策略。"
+    },
+    {
+      "id": "List the run-time status of the node.",
+      "translation": "列出节点的运行时状态。"
+    },
+    {
+      "id": "List status for this node",
+      "translation": "列出此节点的状态"
+    },
+    {
+      "id": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
+      "translation": "从 Horizon Exchange 中移除节点资源。 存在使用此节点标识注册的边缘节点时，不应执行移除。"
+    },
+    {
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "translation": "要用作凭证的 Horizon Exchange 节点标识和令牌，用于查询和修改节点资源（如果未指定 -u 标志）。 HZN_EXCHANGE_NODE_AUTH 将用作 -n 的缺省值。 如果未附加节点的组织作为前缀，那么将自动附加 -o 值作为前缀。"
+    },
+    {
+      "id": "The node to remove.",
+      "translation": "要移除的节点。"
+    },
+    {
+      "id": "Remove the node policy in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中移除节点策略。"
+    },
+    {
+      "id": "Remove policy for this node.",
+      "translation": "移除此节点的策略。"
+    },
+    {
+      "id": "Change the token of a node resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中更改节点资源的令牌。"
+    },
+    {
+      "id": "The node to be changed.",
+      "translation": "要更改的节点。"
+    },
+    {
+      "id": "The new token for the node.",
+      "translation": "节点的新令牌。"
+    },
+    {
+      "id": "Update an attribute of the node in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中更新节点的属性。"
+    },
+    {
+      "id": "The node to be updated.",
+      "translation": "要更新的节点。"
+    },
+    {
+      "id": "The path to a json file containing the changed attribute to be updated in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "要在 Horizon Exchange 中更新的更改后属性所在 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn exchange node addpolicy' to update the node policy. This command is used to update either the node policy properties or the constraints, but not both.",
+      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn exchange node addpolicy”来更新节点策略。 此命令用于更新节点策略属性或约束，但不能同时更新两者。"
+    },
+    {
+      "id": "Update the policy for this node.",
+      "translation": "更新此节点的策略。"
+    },
+    {
+      "id": "The path of a JSON file containing the new constraints or properties (not both) for the node policy in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "包含 Horizon Exchange 中节点策略的新约束或属性（非两者都包含）的 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "List and manage organizations in the Horizon Exchange.",
+      "translation": "列示和管理 Horizon Exchange 中的组织。"
+    },
+    {
+      "id": "Create the organization resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中创建组织资源。"
+    },
+    {
+      "id": "Create this organization and assign it to an agbot.",
+      "translation": "创建此组织并将其分配给 agbot。"
+    },
+    {
+      "id": "Label for new organization.",
+      "translation": "新组织的标签。"
+    },
+    {
+      "id": "Description for new organization.",
+      "translation": "新组织的描述。"
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "新组织的标记。 格式为 mytag1=myvalue1。 此标志可以重复以指定多个标记。"
+    },
+    {
+      "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
+      "translation": "传送到 Exchange 的代理程序脉动信号之间的最小秒数。"
+    },
+    {
+      "id": "The maximum number of seconds between agent heartbeats to the Exchange. During periods of inactivity, the agent will increase the interval between heartbeats by increments of --heartbeatadjust.",
+      "translation": "传送到 Exchange 的代理程序脉动信号之间的最大秒数。 在不活动期间，代理程序将按 --heartbeatadjust 增量来增加脉动信号之间的时间间隔。"
+    },
+    {
+      "id": "The number of seconds to increment the agent's heartbeat interval.",
+      "translation": "增加代理程序脉动信号时间间隔的秒数。"
+    },
+    {
+      "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+      "translation": "允许此组织拥有的最大节点数。 值不能超过 Exchange 全局限制。 缺省值为 0，这表示无组织限制。"
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "向此 agbot 添加组织，从而使其负责在此组织中部署服务。agbot 将使用此组织中的模式和部署策略向此组织中的节点部署服务。如果省略，那么在 Exchange 中找到的第一个 agbot 将负责此组织。格式为“agbot_org/agbot_id”。"
+    },
+    {
+      "id": "Display the organization resource from the Horizon Exchange. (Normally you can only display your own organiztion. If the org does not exist, you will get an invalid credentials error.)",
+      "translation": "显示 Horizon Exchange 中的组织资源。 （通常，您只能显示自己的组织。 如果该组织不存在，您将看到“凭证无效”错误。）"
+    },
+    {
+      "id": "List this one organization.",
+      "translation": "列示这一组织。"
+    },
+    {
+      "id": "Display detailed info of orgs",
+      "translation": "显示组织的详细信息"
+    },
+    {
+      "id": "Remove an organization resource from the Horizon Exchange.",
+      "translation": "从 Horizon Exchange 中移除组织资源。"
+    },
+    {
+      "id": "Remove this organization.",
+      "translation": "移除此组织。"
+    },
+    {
+      "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+      "translation": "要从中移除部署策略的 agbot。 如果省略，将使用在 Exchange 中找到的第一个 agbot。 格式为“agbot_org/agbot_id”。"
+    },
+    {
+      "id": "Update the organization resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中更新组织资源。"
+    },
+    {
+      "id": "Update this organization.",
+      "translation": "更新此组织。"
+    },
+    {
+      "id": "New label for organization.",
+      "translation": "组织的新标签。"
+    },
+    {
+      "id": "New description for organization.",
+      "translation": "组织的新描述。"
+    },
+    {
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "组织的新标记。 格式为 mytag1=myvalue1。 此标志可以重复以指定多个标记。 使用“-t \"\"”一次以移除所有标记。"
+    },
+    {
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "传送到 Exchange 的代理程序脉动信号之间新的最小秒数。 缺省负整数 -1 意味着此属性无更改。"
+    },
+    {
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "传送到 Exchange 的代理程序脉动信号之间新的最大秒数。 缺省负整数 -1 意味着此属性无更改。"
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "增加代理程序脉动信号时间间隔的秒数的新值。 缺省负整数 -1 意味着此属性无更改。"
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+      "translation": "允许此组织拥有的新的最大节点数。 值不能超过 Exchange 全局限制。 缺省负整数 -1 表示无更改。"
+    },
+    {
+      "id": "List and manage patterns in the Horizon Exchange",
+      "translation": "列示和管理 Horizon Exchange 中的模式"
+    },
+    {
+      "id": "Display the pattern resources from the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 中的模式资源。"
+    },
+    {
+      "id": "List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.",
+      "translation": "仅列示这一模式。 使用 <org>/<pat> 可指定另一组织中的一个公用模式，使用 <org>/ 可列示另一组织中的所有公用模式。"
+    },
+    {
+      "id": "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.",
+      "translation": "列示所有模式时，显示每个模式的完整资源，而不是仅显示名称。"
+    },
+    {
+      "id": "List the signing public keys/certs for this pattern resource in the Horizon Exchange.",
+      "translation": "列示 Horizon Exchange 中此模式资源的签名公用密钥/证书。"
+    },
+    {
+      "id": "The existing pattern to list the keys for.",
+      "translation": "要列示键的现有模式。"
+    },
+    {
+      "id": "The existing key name to see the contents of.",
+      "translation": "要查看其内容的现有键名称。"
+    },
+    {
+      "id": "Sign and create/update the pattern resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中签署以及创建/更新模式资源。"
+    },
+    {
+      "id": "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See {Sampledir}/pattern.json. Specify -f- to read from stdin.",
+      "translation": "在 Horizon Exchange 中创建/更新模式所必需的元数据所在 JSON 文件的路径。 请参阅 {Sampledir}/pattern.json。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
+      "translation": "要用来对模式进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.private.key。"
+    },
+    {
+      "id": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
+      "translation": "应该随模式一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。 此标志和 -k 标志均未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 未设置 HZN_PUBLIC_KEY_FILE 时，缺省值为 ~/.hzn/keys/service.public.pem。 如果指定 -k 但未指定此标志，那么不会随模式一起存储任何公用密钥文件。 Horizon 代理程序必须导入公用密钥才能验证签名。"
+    },
+    {
+      "id": "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.",
+      "translation": "在 Horizon Exchange 中用于此模式的名称。 未指定时，缺省值为 -f 中指定的文件路径的基本名称。"
+    },
+    {
+      "id": "Remove a pattern resource from the Horizon Exchange.",
+      "translation": "从 Horizon Exchange 中移除模式资源。"
+    },
+    {
+      "id": "The pattern to remove.",
+      "translation": "要移除的模式。"
+    },
+    {
+      "id": "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中移除此模式资源的签名公用密钥/证书。"
+    },
+    {
+      "id": "The existing pattern to remove the key from.",
+      "translation": "要从中移除键的现有模式。"
+    },
+    {
+      "id": "The existing key name to remove.",
+      "translation": "要移除的现有键名称。"
+    },
+    {
+      "id": "Update an attribute of the pattern in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中更新模式的属性。"
+    },
+    {
+      "id": "The name of the pattern in the Horizon Exchange to publish.",
+      "translation": "Horizon Exchange 中要发布的模式的名称。"
+    },
+    {
+      "id": "The path to a json file containing the updated attribute of the pattern to be put in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "要放入 Horizon Exchange 中的模式更新后属性所在 JSON 文件的路径。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "Verify the signatures of a pattern resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中验证模式资源的签名。"
+    },
+    {
+      "id": "The pattern to verify.",
+      "translation": "要验证的模式。"
+    },
+    {
+      "id": "The path of a pem public key file to be used to verify the pattern. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+      "translation": "要用于验证模式的 pem 公用密钥文件的路径。 未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.public.pem。"
+    },
+    {
+      "id": "List and manage services in the Horizon Exchange",
+      "translation": "列示和管理 Horizon Exchange 中的服务"
+    },
+    {
+      "id": "Add or replace the service policy in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中添加或替换服务策略。"
+    },
+    {
+      "id": "The Horizon Exchange ID and password of the user",
+      "translation": "用户的 Horizon Exchange 标识和密码"
+    },
+    {
+      "id": "Add or replace policy for this service.",
+      "translation": "添加或替换此服务的策略。"
+    },
+    {
+      "id": "Display the service resources from the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 中的服务资源。"
+    },
+    {
+      "id": "List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.",
+      "translation": "仅列示这一服务。 使用 <org>/<svc> 可指定另一组织中的一个公用服务，使用 <org>/ 可列示另一组织中的所有公用服务。"
+    },
+    {
+      "id": "When listing all of the services, show the entire service definition, instead of just the name. When listing a specific service, show more details.",
+      "translation": "列出所有服务时，显示完整的服务定义，而不是仅显示名称。 列出特定服务时，显示更多详细信息。"
+    },
+    {
+      "id": "The name of the file where the cluster deployment operator yaml archive will be saved. This flag is only used when listing a specific service. This flag is ignored when the service does not have a clusterDeployment attribute.",
+      "translation": "用于保存集群部署操作程序 yaml 存档的文件名。 只有在列出特定服务时才使用此标志。 如果服务不存在 clusterDeployment 属性，那么将忽略此标志。"
+    },
+    {
+      "id": "Skip the 'do you want to overwrite?' prompt when -f is specified and the file exists.",
+      "translation": "如果已指定 -f，并且存在该文件，那么将跳过“是否要覆盖？”提示。"
+    },
+    {
+      "id": "List the docker auth tokens for this service resource in the Horizon Exchange.",
+      "translation": "列示 Horizon Exchange 中此服务资源的 Docker 认证令牌。"
+    },
+    {
+      "id": "The existing service to list the docker auths for.",
+      "translation": "要列示 Docker 认证令牌的现有服务。"
+    },
+    {
+      "id": "The existing docker auth id to see the contents of.",
+      "translation": "要查看其内容的现有 Docker 认证标识。"
+    },
+    {
+      "id": "List the signing public keys/certs for this service resource in the Horizon Exchange.",
+      "translation": "列示 Horizon Exchange 中此服务资源的签名公用密钥/证书。"
+    },
+    {
+      "id": "The existing service to list the keys for.",
+      "translation": "要列示键的现有服务。"
+    },
+    {
+      "id": "Display the nodes that the service is running on.",
+      "translation": "显示正在运行此服务的节点。"
+    },
+    {
+      "id": "The service id. Use <org>/<svc> to specify a service from a different org.",
+      "translation": "服务标识。 使用 <org>/<svc> 来指定其他组织中的服务。"
+    },
+    {
+      "id": "The node's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.",
+      "translation": "节点的组织。 如果省略，它将与 -o 或 HZN_ORG_ID 指定的组织相同。"
+    },
+    {
+      "id": "Display the service policy from the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 中的服务策略。"
+    },
+    {
+      "id": "The Horizon Exchange id and password of the user",
+      "translation": "用户的 Horizon Exchange 标识和密码"
+    },
+    {
+      "id": "List policy for this service.",
+      "translation": "列示此服务的策略。"
+    },
+    {
+      "id": "Display an empty service policy template that can be filled in.",
+      "translation": "显示可以填写的空服务策略模板。"
+    },
+    {
+      "id": "Sign and create/update the service resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中签署以及创建/更新服务资源。"
+    },
+    {
+      "id": "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See {Sampledir}/service.json and {Sampledir_1}/service_cluster.json. Specify -f- to read from stdin.",
+      "translation": "在 Horizon Exchange 中创建/更新服务所必需的元数据所在 JSON 文件的路径。 请参阅 {Sampledir}/service.json 和 {Sampledir_1}/service_cluster.json。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
+      "translation": "要用来对服务进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.private.key。"
+    },
+    {
+      "id": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
+      "translation": "应该随服务一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。 此标志和 -k 标志均未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 未设置 HZN_PUBLIC_KEY_FILE 时，缺省值为 ~/.hzn/keys/service.public.pem。 如果指定 -k 但未指定此标志，那么不会随服务一起存储任何公用密钥文件。 Horizon 代理程序必须导入公用密钥才能验证签名。"
+    },
+    {
+      "id": "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.",
+      "translation": "部署字段中的映像路径包含正规标记，不应更改为 sha256 摘要值。 不会自动将该映像上载到存储库。 只有在需要频繁测试新版本的开发期间，才应使用此标志。"
+    },
+    {
+      "id": "Use the image from the image repository. It will pull the image from the image repository and overwrite the local image if exists. This flag is mutually exclusive with -I.",
+      "translation": "使用映像存储库中的映像。 这将从映像存储库中拉取映像，并覆盖本地映像（如果存在）。 此标志与 -I 互斥。"
+    },
+    {
+      "id": "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token",
+      "translation": "应该随服务一起存储的 Docker 注册表域和认证令牌，用于使 Horizon 边缘节点能够访问该服务的 Docker 映像。 此标志可以重复指定，每个标志的格式都应该是 registry:user:token"
+    },
+    {
+      "id": "Overwrite the existing version if the service exists in the Exchange. It will skip the 'do you want to overwrite' prompt.",
+      "translation": "如果 Exchange 中存在该服务，将覆盖现有版本。 这将跳过“是否要覆盖”提示。"
+    },
+    {
+      "id": "The path of the service policy JSON file to be used for the service to be published. This flag is optional",
+      "translation": "要用于所发布服务的服务策略 JSON 文件的路径。 此标志是可选的"
+    },
+    {
+      "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+      "translation": "服务对组织外的用户是否可视。 此标志是可选的。 如果保留未设置，那么服务将缺省设置为元数据已设置的任何内容。 如果服务定义也尚未设置公共字段，那么缺省情况下服务将不是公共的。"
+    },
+    {
+      "id": "Remove a service resource from the Horizon Exchange.",
+      "translation": "从 Horizon Exchange 中移除服务资源。"
+    },
+    {
+      "id": "The service to remove.",
+      "translation": "要移除的服务。"
+    },
+    {
+      "id": "Remove a docker auth token for this service resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中移除此服务资源的 Docker 认证令牌。"
+    },
+    {
+      "id": "The existing service to remove the docker auth from.",
+      "translation": "要从中移除 Docker 认证令牌的现有服务。"
+    },
+    {
+      "id": "The existing docker auth id to remove.",
+      "translation": "要移除的现有 Docker 认证标识。"
+    },
+    {
+      "id": "Remove a signing public key/cert for this service resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中移除此服务资源的签名公用密钥/证书。"
+    },
+    {
+      "id": "The existing service to remove the key from.",
+      "translation": "要从中移除键的现有服务。"
+    },
+    {
+      "id": "Remove the service policy in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中移除服务策略。"
+    },
+    {
+      "id": "Remove policy for this service.",
+      "translation": "移除此服务的策略。"
+    },
+    {
+      "id": "Verify the signatures of a service resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中验证服务资源的签名。"
+    },
+    {
+      "id": "The service to verify.",
+      "translation": "要验证的服务。"
+    },
+    {
+      "id": "The path of a pem public key file to be used to verify the service. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+      "translation": "要用于验证服务的 pem 公用密钥文件的路径。 未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.public.pem。"
+    },
+    {
+      "id": "Display the status of the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 的状态。"
+    },
+    {
+      "id": "List and manage users in the Horizon Exchange.",
+      "translation": "列示和管理 Horizon Exchange 中的用户。"
+    },
+    {
+      "id": "Create the user resource in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中创建用户资源。"
+    },
+    {
+      "id": "Your username for this user account when creating it in the Horizon exchange.",
+      "translation": "在 Horizon Exchange 中创建此用户帐户时，此帐户的用户名。"
+    },
+    {
+      "id": "Your password for this user account when creating it in the Horizon exchange.",
+      "translation": "在 Horizon Exchange 中创建此用户帐户时，此帐户的密码。"
+    },
+    {
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "在 Horizon Exchange 中创建此用户帐户时，应该与此帐户关联的电子邮件地址。 此自变量是可选的"
+    },
+    {
+      "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
+      "translation": "此用户应该是管理员，能够管理 Exchange 的此组织中的所有资源。"
+    },
+    {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "此用户应该是中心管理员，能够在此管理中心中管理组织。"
+    },
+    {
+      "id": "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)",
+      "translation": "显示 Horizon Exchange 中的用户资源。 （通常，您只能显示自己的用户。 如果该用户不存在，您会看到 '凭证无效' 错误。）"
+    },
+    {
+      "id": "List this one user. Default is your own user. Only admin users can list other users.",
+      "translation": "列示这个用户。 缺省值是您自己的用户。 只有管理员用户才能列示其他用户。"
+    },
+    {
+      "id": "List all users in the org. Will only do this if you are a user with admin privilege.",
+      "translation": "列示组织中的所有用户。仅当您是具有管理权限的用户时，才能执行此操作。"
+    },
+    {
+      "id": "When listing all of the users, show only the usernames, instead of each entire resource.",
+      "translation": "列示所有用户时，仅显示用户名，而不是显示每个完整的资源。"
+    },
+    {
+      "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
+      "translation": "从 Horizon Exchange 中移除用户资源。 警告：这将导致同时删除此用户拥有的所有 Exchange 资源（节点、服务、模式，等等）。"
+    },
+    {
+      "id": "The user to remove.",
+      "translation": "要移除的用户。"
+    },
+    {
+      "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
+      "translation": "将现有用户更改为管理员用户（例如组织中的 root 用户），或者更改为不再是管理员用户。 只能由 Exchange root 用户或其他管理员用户运行。"
+    },
+    {
+      "id": "The user to be modified.",
+      "translation": "要修改的用户。"
+    },
+    {
+      "id": "True if they should be an admin user, otherwise false.",
+      "translation": "如果他们应该是管理员用户，请设置为 true，否则设置为 false。"
+    },
+    {
+      "id": "Display the version of the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 的版本。"
+    },
+    {
+      "id": "List and manage keys for signing and verifying services.",
+      "translation": "列示和管理用于签署和验证服务的密钥。"
+    },
+    {
+      "id": "Generate a signing key pair.",
+      "translation": "生成签名密钥对。"
+    },
+    {
+      "id": "x509 certificate Organization (O) field (preferably a company name or other organization's name).",
+      "translation": "x509 证书组织 (O) 字段（最好设置为公司名称或其他组织的名称）。"
+    },
+    {
+      "id": "x509 certificate Common Name (CN) field (preferably an email address issued by x509org).",
+      "translation": "x509 证书通用名 (CN) 字段（最好设置为 x509org 所发出的电子邮件地址）。"
+    },
+    {
+      "id": "The directory to put the key pair files in. Mutually exclusive with -k and -K. The file names will be randomly generated.",
+      "translation": "要将密钥对放入其中的目录。 与 -k 和 -K 互斥。 文件名将随机生成。"
+    },
+    {
+      "id": "The full path of the private key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
+      "translation": "专用密钥文件的完整路径。 与 -d 互斥。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.private.key。"
+    },
+    {
+      "id": "The full path of the public key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+      "translation": "公用密钥文件的完整路径。 与 -d 互斥。 未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.public.pem。"
+    },
+    {
+      "id": "Overwrite the existing files. It will skip the 'do you want to overwrite' prompt.",
+      "translation": "覆盖现有文件。 这将跳过“是否要覆盖”提示。"
+    },
+    {
+      "id": "The length of the key to create.",
+      "translation": "要创建的密钥的长度。"
+    },
+    {
+      "id": "x509 certificate validity (Validity > Not After) expressed in days from the day of generation.",
+      "translation": "x509 证书有效期（有效期 > 失效时间），以生成之日起的天数表示。"
+    },
+    {
+      "id": "Automatically import the created public key into the local Horizon agent.",
+      "translation": "将创建的公用密钥自动导入到本地 Horizon 代理程序中。"
+    },
+    {
+      "id": "Imports a signing public key into the Horizon agent.",
+      "translation": "将签名公用密钥导入到 Horizon 代理程序中。"
+    },
+    {
+      "id": "The path of a pem public key file to be imported. The base name in the path is also used as the key name in the Horizon agent. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+      "translation": "要导入的 pem 公用密钥文件的路径。 路径中的基本名称也用作 Horizon 代理程序中的密钥名称。 未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.public.pem。"
+    },
+    {
+      "id": "List the signing keys that have been imported into this Horizon agent.",
+      "translation": "列示已导入到 Horizon 代理程序中的签名密钥。"
+    },
+    {
+      "id": "The name of a specific key to show.",
+      "translation": "要显示的特定密钥的名称。"
+    },
+    {
+      "id": "List the names of all signing keys, even the older public keys not wrapped in a certificate.",
+      "translation": "列示所有签名密钥的名称，即使旧公用密钥未包装在证书中，也是如此。"
+    },
+    {
+      "id": "Remove the specified signing key from this Horizon agent.",
+      "translation": "从此 Horizon 代理程序中移除指定的签名密钥。"
+    },
+    {
+      "id": "The name of a specific key to remove.",
+      "translation": "要移除的特定密钥的名称。"
+    },
+    {
+      "id": "List or manage the metering (payment) information for the active or archived agreements.",
+      "translation": "列示或管理活动协议或存档协议的测量（付款）信息。"
+    },
+    {
+      "id": "List the metering (payment) information for the active or archived agreements.",
+      "translation": "列示活动协议或存档协议的测量（付款）信息。"
+    },
+    {
+      "id": "List archived agreement metering information instead of metering for the active agreements.",
+      "translation": "列示存档协议测量信息，而不列示活动协议的测量信息。"
     },
     {
       "id": "List and manage Horizon Model Management Service resources.",
@@ -1895,12 +1699,44 @@
       "translation": "用于查询和创建模型管理服务资源的 Horizon 用户凭证。 未指定时，将使用 HZN_EXCHANGE_USER_AUTH 作为缺省值。 如果未附加用户的组织作为前缀，那么将自动附加 -o 值作为前缀。"
     },
     {
-      "id": "Display the status of the Horizon Model Management Service.",
-      "translation": "显示 Horizon 模型管理服务的状态。"
-    },
-    {
       "id": "List and manage objects in the Horizon Model Management Service.",
       "translation": "列示和管理 Horizon 模型管理服务中的对象。"
+    },
+    {
+      "id": "Delete an object in the Horizon Model Management Service, making it unavailable for services deployed on nodes.",
+      "translation": "删除 Horizon 模型管理服务中的对象，使其不可供部署在节点上的服务使用。"
+    },
+    {
+      "id": "The type of the object to delete.",
+      "translation": "要删除的对象的类型。"
+    },
+    {
+      "id": "The id of the object to delete.",
+      "translation": "要删除的对象的标识。"
+    },
+    {
+      "id": "Download data of the given object in the Horizon Model Management Service.",
+      "translation": "下载 Horizon 模型管理服务中给定对象的数据。"
+    },
+    {
+      "id": "The type of the object to download data. This flag must be used with -i.",
+      "translation": "要下载数据的对象类型。 此标志必须与 -i 配合使用。"
+    },
+    {
+      "id": "The id of the object to download data. This flag must be used with -t.",
+      "translation": "要下载数据的对象标识。 此标志必须与 -t 配合使用。"
+    },
+    {
+      "id": "The file that the data of downloaded object is written to. This flag must be used with -f. If omit, will use default file name in format of objectType_objectID and save in current directory",
+      "translation": "要写入已下载对象的数据的文件。 此标志必须与 -f 配合使用。 如果省略，那么将使用 objectType_objectID 格式的缺省文件名，并保存在当前目录中"
+    },
+    {
+      "id": "Overwrite the existing file if it exists in the file system.",
+      "translation": "如果文件在文件系统中存在，覆盖现有文件。"
+    },
+    {
+      "id": "The download command will not perform a data integrity check on the downloaded object data",
+      "translation": "下载命令不会对下载的对象数据执行数据完整性检查"
     },
     {
       "id": "List objects in the Horizon Model Management Service.",
@@ -1983,40 +1819,376 @@
       "translation": "要发布的对象（文件形式）。 此标志是可选项，使您能够只更新对象的定义。"
     },
     {
-      "id": "Delete an object in the Horizon Model Management Service, making it unavailable for services deployed on nodes.",
-      "translation": "删除 Horizon 模型管理服务中的对象，使其不可供部署在节点上的服务使用。"
+      "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
+      "translation": "发布命令不会对上载的对象数据执行数据完整性检查。它与 --hashAlgo 和 --hash 互斥"
     },
     {
-      "id": "The type of the object to delete.",
-      "translation": "要删除的对象的类型。"
+      "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+      "translation": "用于在对对象数据签名之前对其进行散列的散列算法，从而确保上载和下载期间的数据完整性。受支持的散列算法为 SHA1 或 SHA256，缺省值为 SHA1。它与 --noIntegrity 标志互斥"
     },
     {
-      "id": "The id of the object to delete.",
-      "translation": "要删除的对象的标识。"
+      "id": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+      "translation": "正在上载或下载的对象数据的散列。如果要提供散列而不是允许命令自动计算散列，请使用此标志。必须使用 SHA1 或 SHA256 算法生成散列。如果散列是使用 SHA256 生成的，那么必须指定 -a 标志。此标志与 --noIntegrity 互斥。"
     },
     {
-      "id": "Download data of the given object in the Horizon Model Management Service.",
-      "translation": "下载 Horizon 模型管理服务中给定对象的数据。"
+      "id": "The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+      "translation": "要用来对对象进行签名的专用密钥文件的路径。相应的公用密钥将存储在 MMS 中，以确保对象的完整性。未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE 来查找专用密钥。如果未设置，将使用 ~/.hzn/keys/service.private.key。如果不存在，那么仅为此发布操作生成 RSA 密钥对，然后废弃专用密钥。"
     },
     {
-      "id": "The type of the object to download data. This flag must be used with -i.",
-      "translation": "要下载数据的对象类型。 此标志必须与 -i 配合使用。"
+      "id": "Display the status of the Horizon Model Management Service.",
+      "translation": "显示 Horizon 模型管理服务的状态。"
     },
     {
-      "id": "The id of the object to download data. This flag must be used with -t.",
-      "translation": "要下载数据的对象标识。 此标志必须与 -t 配合使用。"
+      "id": "List and manage general information about this Horizon edge node.",
+      "translation": "列示和管理这个 Horizon 边缘节点的常规信息。"
     },
     {
-      "id": "The file that the data of downloaded object is written to. This flag must be used with -f. If omit, will use default file name in format of objectType_objectID and save in current directory",
-      "translation": "要写入已下载对象的数据的文件。 此标志必须与 -f 配合使用。 如果省略，那么将使用 objectType_objectID 格式的缺省文件名，并保存在当前目录中"
+      "id": "Display general information about this Horizon edge node.",
+      "translation": "显示这个 Horizon 边缘节点的常规信息。"
     },
     {
-      "id": "Overwrite the existing file if it exists in the file system.",
-      "translation": "如果文件在文件系统中存在，覆盖现有文件。"
+      "id": "List and manage policy for this Horizon edge node.",
+      "translation": "列示和管理这个 Horizon 边缘节点的策略。"
+    },
+    {
+      "id": "Display this edge node's policy.",
+      "translation": "显示此边缘节点的策略。"
+    },
+    {
+      "id": "Display an empty policy template that can be filled in.",
+      "translation": "显示可以填写的空策略模板。"
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn policy update' to update the node policy. This command is used to update either the node policy properties or the constraints, but not both.",
+      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn policy update”来更新节点策略。 此命令用于更新节点策略属性或约束，但不能同时更新两者。"
+    },
+    {
+      "id": "The new constraints or properties in the format '{Constraintsconstraint_list}' or '{Propertiesproperty_list}'.",
+      "translation": "新的约束或属性，其格式为 '{Constraintsconstraint_list}' 或 '{Propertiesproperty_list}'。"
+    },
+    {
+      "id": "Remove the node's policy.",
+      "translation": "移除节点的策略。"
+    },
+    {
+      "id": "Create or replace the node's policy. The node's built-in properties cannot be modified or deleted by this command, with the exception of openhorizon.allowPrivileged.",
+      "translation": "创建或替换节点的策略。 此命令无法修改或删除节点的内置属性，openhorizon.allowPrivileged 除外。"
+    },
+    {
+      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+      "translation": "包含节点策略的 JSON 输入文件的名称。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.",
+      "translation": "为此模式创建输入文件模板，该模板填写后即可用于 'hzn register' 命令。 这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。"
+    },
+    {
+      "id": "The Horizon exchange node ID and token (it must already exist).",
+      "translation": "Horizon Exchange 节点标识和令牌（必须已存在）。"
+    },
+    {
+      "id": "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.",
+      "translation": "应该创建的 JSON 输入模板文件名。 此文件包含占位符，供您填写用户输入值。"
+    },
+    {
+      "id": "The Horizon exchange organization ID that the node will be registered in.",
+      "translation": "要在其中注册节点的 Horizon Exchange 组织标识。"
+    },
+    {
+      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.",
+      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。 如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。"
+    },
+    {
+      "id": "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.",
+      "translation": "编写模板文件所针对的体系结构。 （Horizon 会忽略模式中体系结构不同于目标系统的服务。） 体系结构必须是目标系统上 'hzn node list' 所返回的体系结构。"
+    },
+    {
+      "id": "Register this edge node with Horizon.",
+      "translation": "向 Horizon 注册此边缘节点。"
+    },
+    {
+      "id": "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the Exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.",
+      "translation": "Horizon Exchange 节点标识和令牌。 节点标识在组织中必须是唯一的。 未指定时，将使用 HZN_EXCHANGE_NODE_AUTH 作为缺省值。 如果 -n 和 HZN_EXCHANGE_NODE_AUTH 都未指定，那么节点标识将由 Horizon 根据机器序列号或标准主机名来创建。 未指定令牌时，Horizon 将创建随机令牌。 如果 Exchange 中尚不存在该标识和令牌所指示的节点资源，那么还必须指定 -u 标志才能创建该资源。"
+    },
+    {
+      "id": "The name of the node. If not specified, it will be the same as the node id.",
+      "translation": "节点的名称。 未指定时，名称与节点标识相同。"
+    },
+    {
+      "id": "User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.",
+      "translation": "用于在 Horizon Exchange 中创建节点资源的用户凭证（如果该资源尚不存在）。 未指定时，将使用 HZN_EXCHANGE_USER_AUTH 作为缺省值。"
+    },
+    {
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "用于设置或覆盖将部署到此节点的服务所需的用户输入变量的 JSON 文件。 请参阅 {Sampledir}/user_input.json。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
+      "translation": "应该在其中注册节点的 Horizon Exchange 组织标识。 缺省值为 HZN_ORG_ID 环境变量。 与 <nodeorg> 和 <pattern> 自变量互斥。"
+    },
+    {
+      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments.",
+      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。 如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。 与 <nodeorg> 和 <pattern> 自变量互斥。"
+    },
+    {
+      "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
+      "translation": "用于设置或覆盖此节点的节点策略的 JSON 文件，将用于基于策略的协议协商。"
+    },
+    {
+      "id": "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.",
+      "translation": "应该在其中注册节点的 Horizon Exchange 组织标识。 与 -o 和 -p 互斥。"
+    },
+    {
+      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.",
+      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。 如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。 与 -o 和 -p 互斥。"
+    },
+    {
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "等待指定的服务在此节点上开始执行。 使用模式注册时，使用“*”来监视此模式中的所有服务。 使用策略注册时，“*”不是 -s 的有效值。 边缘集群节点不支持此标志。"
+    },
+    {
+      "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
+      "translation": "在此节点上等待的服务的组织。 如果指定了“-s *”，那么省略 --serviceorg。"
+    },
+    {
+      "id": "The number of seconds for the --service to start. The default is 60 seconds, beginning when registration is successful. Ignored if --service is not specified.",
+      "translation": "要启动的 --service 的秒数。 缺省值为 60 秒，从注册成功时开始。 如果未指定 --service，那么忽略。"
+    },
+    {
+      "id": "List or manage the services that are currently registered on this Horizon edge node.",
+      "translation": "列示或管理当前在此 Horizon 边缘节点上注册的服务。"
+    },
+    {
+      "id": "List or manage the configuration state for the services that are currently registered on this Horizon edge node.",
+      "translation": "列示或管理当前在此 Horizon 边缘节点上注册的服务的配置状态。"
+    },
+    {
+      "id": "List the configuration state for the services that are currently registered on this Horizon edge node.",
+      "translation": "列示当前在此 Horizon 边缘节点上注册的服务的配置状态。"
+    },
+    {
+      "id": "Change the configuration state to 'active' for a service.",
+      "translation": "将服务的配置状态更改为 '活动'。"
+    },
+    {
+      "id": "Resume all registerd services.",
+      "translation": "恢复所有已注册的服务。"
+    },
+    {
+      "id": "The organization of the service that should be resumed.",
+      "translation": "应该恢复的服务的组织。"
+    },
+    {
+      "id": "The name of the service that should be resumed.",
+      "translation": "应该恢复的服务的名称。"
+    },
+    {
+      "id": "Change the configuration state to 'suspend' for a service.",
+      "translation": "将服务的配置状态更改为 '暂挂'。"
+    },
+    {
+      "id": "Suspend all registerd services.",
+      "translation": "暂挂所有已注册的服务。"
+    },
+    {
+      "id": "The organization of the service that should be suspended.",
+      "translation": "应该暂挂的服务的组织。"
+    },
+    {
+      "id": "The name of the service that should be suspended.",
+      "translation": "应该暂挂的服务的名称。"
+    },
+    {
+      "id": "Show the container logs for a service.",
+      "translation": "显示服务的容器日志。"
+    },
+    {
+      "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .",
+      "translation": "应显示日志记录的服务名称。 服务名称与服务定义的 URL 字段相同。 显示日志记录类似于 tail 行为并返回。"
+    },
+    {
+      "id": "The version of the service.",
+      "translation": "服务的版本。"
+    },
+    {
+      "id": "The name of the container within the service whose log records should be displayed.",
+      "translation": "应显示其日志记录的服务中容器的名称。"
+    },
+    {
+      "id": "List the services variable configuration that has been done on this Horizon edge node.",
+      "translation": "列示在此 Horizon 边缘节点上完成的服务变量配置。"
+    },
+    {
+      "id": "List the services that are currently registered on this Horizon edge node.",
+      "translation": "列示当前在此 Horizon 边缘节点上注册的服务。"
+    },
+    {
+      "id": "Display the current horizon internal status for the node.",
+      "translation": "显示节点的当前 Horizon 内部状态。"
+    },
+    {
+      "id": "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.",
+      "translation": "注销并重置此 Horizon 边缘节点，以使其可以再次注册。 警告：这将停止所有正在此边缘节点上运行的 Horizon 服务，并重新启动 Horizon 代理程序。"
+    },
+    {
+      "id": "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).",
+      "translation": "此外，还会从 Horizon Exchange 中移除此节点的资源（因为不再需要将此节点与 Horizon 配合使用）。"
+    },
+    {
+      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
+      "translation": "同时移除所有的先前注册信息。 只有在 'hzn unregister' 命令失败后，才应使用此标志。 在使用此标志之前，请通过运行 'hzn eventlog list -a -l' 命令捕获日志。"
+    },
+    {
+      "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
+      "translation": "等待注销完成的分钟数。 缺省值为零，这表示永久等待。"
+    },
+    {
+      "id": "List or manage the service user inputs that are currently registered on this Horizon edge node.",
+      "translation": "列示或管理当前在此 Horizon 边缘节点上注册的服务用户输入。"
+    },
+    {
+      "id": "Add a new user input object or overwrite the current user input object for this Horizon edge node.",
+      "translation": "为此 Horizon 边缘节点添加新的用户输入对象，或覆盖当前的用户输入对象。"
+    },
+    {
+      "id": "The file path to the json file with the user input object. Specify -f- to read from stdin.",
+      "translation": "用户输入对象所在 JSON 文件的文件路径。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "List the service user inputs currently registered on this Horizon edge node.",
+      "translation": "列示当前在此 Horizon 边缘节点上注册的服务用户输入。"
+    },
+    {
+      "id": "Display an empty userinput template.",
+      "translation": "显示空的用户输入模板。"
+    },
+    {
+      "id": "Remove the user inputs that are currently registered on this Horizon edge node.",
+      "translation": "移除当前在此 Horizon 边缘节点上注册的用户输入。"
+    },
+    {
+      "id": "Skip the 'Are you sure?' prompt.",
+      "translation": "跳过“是否确定？”提示。"
+    },
+    {
+      "id": "Update an existing user input object for this Horizon edge node.",
+      "translation": "更新此 Horizon 边缘节点的现有用户输入对象。"
+    },
+    {
+      "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
+      "translation": "更新后的用户输入对象所在 JSON 文件的文件路径。 指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "Utility commands.",
+      "translation": "实用程序命令。"
+    },
+    {
+      "id": "Convert the configuration file from JSON format to a shell script.",
+      "translation": "将配置文件从 JSON 格式转换为 shell 脚本。"
+    },
+    {
+      "id": "The path of a configuration file to be converted.",
+      "translation": "要转换的配置文件的路径。"
+    },
+    {
+      "id": "Sign the text in stdin. The signature is sent to stdout.",
+      "translation": "对 stdin 中的文本进行签名。 该签名将发送到 stdout。"
+    },
+    {
+      "id": "The path of a private key file to be used to sign the stdin.",
+      "translation": "要用来对 stdin 进行签名的专用密钥文件的路径。"
+    },
+    {
+      "id": "Verify that the signature specified via -s is a valid signature for the text in stdin.",
+      "translation": "验证通过 -s 指定的签名是 stdin 中的文本的有效签名。"
+    },
+    {
+      "id": "The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.",
+      "translation": "用于验证 stdin 签名的公用密钥文件（对应于用来进行签名的专用密钥）的路径。"
+    },
+    {
+      "id": "The supposed signature of stdin.",
+      "translation": "假定的 stdin 签名。"
+    },
+    {
+      "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
+      "translation": "列示和管理私钥管理器中的私钥。注：您必须认证为管理员才能列示可供整个组织使用的私钥。"
+    },
+    {
+      "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+      "translation": "用于查询私钥管理器资源的 Horizon Exchange 凭证。缺省值为 HZN_EXCHANGE_USER_AUTH 环境变量。 如果未附加用户的组织作为前缀，那么将自动附加 HZN_ORG_ID 环境变量的值作为前缀。"
+    },
+    {
+      "id": "List and manage secrets in the secrets manager.",
+      "translation": "列示和管理私钥管理器中的私钥。"
+    },
+    {
+      "id": "Display the names of the secrets in the secrets manager.",
+      "translation": "显示私钥管理器中的私钥的名称。"
+    },
+    {
+      "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
+      "translation": "仅列示这一私钥。返回指示私钥存在的布尔值。这是私钥管理器中使用的私钥的名称。如果该私钥不存在，那么使用退出代码 1 返回。"
+    },
+    {
+      "id": "Add a secret to the secrets manager.",
+      "translation": "将私钥添加到私钥管理器。"
+    },
+    {
+      "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
+      "translation": "私钥的名称。它在您的组织中必须是唯一的。此名称用于部署策略和模式，以将此私钥绑定到服务定义中的私钥名称。"
+    },
+    {
+      "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
+      "translation": "包含私钥详细信息的文件的文件路径。与 --secretDetail 互斥。指定 -f- 可从 stdin 读取。"
+    },
+    {
+      "id": "A key for the secret.",
+      "translation": "私钥的密钥。"
+    },
+    {
+      "id": "The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.",
+      "translation": "字符串形式的私钥详细信息。私钥详细信息是实际的私钥本身，而不是私钥的名称。例如，密码、专用密钥等是私钥详细信息的示例。与 --secretFile 互斥。"
+    },
+    {
+      "id": "Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.",
+      "translation": "如果现有私钥在私钥管理器中存在，那么将其覆盖。这将跳过“是否要覆盖”提示。"
+    },
+    {
+      "id": "Remove a secret in the secrets manager.",
+      "translation": "移除私钥管理器中的私钥。"
+    },
+    {
+      "id": "The name of the secret to be removed from the secrets manager.",
+      "translation": "要从私钥管理器中移除的私钥的名称。"
+    },
+    {
+      "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
+      "translation": "读取私钥管理器中存储的私钥的详细信息。这包括在私钥创建时提供的键和值对。"
+    },
+    {
+      "id": "The name of the secret to read in the secrets manager.",
+      "translation": "要在私钥管理器中读取的私钥的名称。"
+    },
+    {
+      "id": "Show the Horizon version.",
+      "translation": "显示 Horizon 版本。"
     },
     {
       "id": "List and manage Horizon SDO ownership vouchers.",
       "translation": "列出并管理 Horizon SDO 所有权凭单。"
+    },
+    {
+      "id": "List the imported SDO ownership vouchers.",
+      "translation": "列出已导入的 SDO 所有权凭单。"
+    },
+    {
+      "id": "List the full details of this SDO ownership voucher.",
+      "translation": "列出此 SDO 所有权凭单的完整详细信息。"
+    },
+    {
+      "id": "When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.",
+      "translation": "指定凭单 UUID 时，将列出此凭单的完整内容，否则，将列出所有已导入凭单的完整内容。"
     },
     {
       "id": "Display properties of the SDO ownership voucher.",
@@ -2049,18 +2221,6 @@
     {
       "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
       "translation": "与此凭单相关联的边缘设备所使用的部署模式名称。 如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。 与 -e 和 --policy 互斥。"
-    },
-    {
-      "id": "List the imported SDO ownership vouchers.",
-      "translation": "列出已导入的 SDO 所有权凭单。"
-    },
-    {
-      "id": "List the full details of this SDO ownership voucher.",
-      "translation": "列出此 SDO 所有权凭单的完整详细信息。"
-    },
-    {
-      "id": "When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.",
-      "translation": "指定凭单 UUID 时，将列出此凭单的完整内容，否则，将列出所有已导入凭单的完整内容。"
     },
     {
       "id": "The mms command is not supported on an edge cluster node.",
@@ -2271,6 +2431,10 @@
       "translation": "Docker 认证域名：{DomainName}"
     },
     {
+      "id": "unable to load docker credentials for {Domain}: {Err}",
+      "translation": "无法装入 {Domain} 的 Docker 凭证：{Err}"
+    },
+    {
       "id": "unable to find docker credentials for {Domain}",
       "translation": "找不到 {Domain} 的 Docker 凭证"
     },
@@ -2291,8 +2455,12 @@
       "translation": "正在拉取 {ImageName}..."
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "无法拉取 Docker 映像 {Repository____tag}。 找不到 Docker 凭证。 如果映像注册表是私有的，您可能需要运行 'docker login ...'。 错误：{Err}"
+      "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "translation": "无法获取 docker.io 或 {Domain} 域的 Docker 认证：{Err}"
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "translation": "无法拉取 Docker 映像 {Repository____tag}。 找不到 Docker 凭证。 如果映像注册表是私有的，您可能需要运行 'docker login ...'。 错误：{Err}：{LoginErr}"
     },
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
@@ -2333,6 +2501,30 @@
     {
       "id": "Exiting.",
       "translation": "正在退出。"
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "获取 {KeyFile} 文件的绝对路径失败。 {Err}"
+    },
+    {
+      "id": "Error parsing HORIZON_URL: {Err}",
+      "translation": "解析 HORIZON_URL 时出错：{Err}"
+    },
+    {
+      "id": "Error parsing host of the HORIZON_URL: {Err}",
+      "translation": "解析 HORIZON_URL 的主机时出错：{Err}"
+    },
+    {
+      "id": "Error parsing port of the HORIZON_URL: {Err}",
+      "translation": "解析 HORIZON_URL 的端口时出错：{Err}"
+    },
+    {
+      "id": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "translation": "HORIZON_URL 的意外端口：{PortInt}"
+    },
+    {
+      "id": "The agbot url: {EnvVar}",
+      "translation": "agbot URL：{EnvVar}"
     },
     {
       "id": "Error reading HTTP response, error {Err}",
@@ -2385,6 +2577,22 @@
     {
       "id": "failed to marshal body for {ApiMsg}: {Err}",
       "translation": "对 {ApiMsg} 的主体进行序列化失败：{Err}"
+    },
+    {
+      "id": "HZN_AGBOT_URL is not defined",
+      "translation": "未定义 HZN_AGBOT_URL"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确，输出：{StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的 Exchange 主体响应进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的 Exchange 输出进行序列化失败：{Err}"
     },
     {
       "id": "Failed to unmarshal bytes. {Err}",
@@ -2487,18 +2695,6 @@
       "translation": "调用 {Service} REST API {ApiMsg} 时遇到 HTTP 错误：{Err}。 HTTP 状态：{Httpstatus}。"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确，输出：{StringbodyBytes}"
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "对来自 {ApiMsg} 的 Exchange 主体响应进行取消序列化失败：{Err}"
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "对来自 {ApiMsg} 的 Exchange 输出进行序列化失败：{Err}"
-    },
-    {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
       "translation": "读取来自 {ApiMsg} 的 Exchange 主体响应失败：{Err}"
     },
@@ -2529,10 +2725,6 @@
     {
       "id": "provided private key is not valid; error: {Err}",
       "translation": "提供的专用密钥无效；错误：{Err}"
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "获取 {KeyFile} 文件的绝对路径失败。 {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
@@ -2607,6 +2799,10 @@
       "translation": "警告：未能解析映像路径 '{Image}'。 不会将其推送到 Docker 注册表，而只是将其按原样包括在 'deployment' 字段中。"
     },
     {
+      "id": "Docker pull failure: {Err}",
+      "translation": "Docker 拉取失败：{Err}"
+    },
+    {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
       "translation": "所提供的日志驱动程序 ({LogDriver}) 不支持日志查看。 日志仅在以下驱动程序上可用：{DockerDriversWithLoggingSupport}"
     },
@@ -2655,8 +2851,8 @@
       "translation": "正在使用兼容性检查输入：{CompCheckInput}"
     },
     {
-      "id": "failed to marshal 'hzn policy compatible' output: {Err}",
-      "translation": "对“hzn policy compatible”输出进行序列化失败：{Err}"
+      "id": "failed to marshal 'hzn deploycheck all' output: {Err}",
+      "translation": "对“hzn deploycheck all”输出进行序列化失败：{Err}"
     },
     {
       "id": "Please specify either deployment policy or pattern.",
@@ -2699,6 +2895,14 @@
       "translation": "-a 所指定的节点体系结构 {InputArch} 与本地节点的体系结构 {Arch} 不匹配。"
     },
     {
+      "id": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
+      "translation": "-t 指定的节点类型 {InputType} 与本地节点 {NodeType} 的类型不匹配。"
+    },
+    {
+      "id": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
+      "translation": "-O 指定的节点组织 {InputType} 与本地节点 {NodeOrg} 的组织不匹配。"
+    },
+    {
       "id": "failed to unmarshal deployment policy json input file {BusinessPolFile}: {Err}",
       "translation": "未能对部署策略 JSON 输入文件 {BusinessPolFile} 取消序列化：{Err}"
     },
@@ -2715,6 +2919,10 @@
       "translation": "对 JSON 输入文件 {FilePath} 进行取消序列化失败：{Err}"
     },
     {
+      "id": "failed to marshal 'hzn deploycheck policy' output: {Err}",
+      "translation": "对“hzn deploycheck policy”输出进行序列化失败：{Err}"
+    },
+    {
       "id": "Either -b or -B must be specified.",
       "translation": "必须指定 -b 或 -B。"
     },
@@ -2727,12 +2935,24 @@
       "translation": "请使用 -u 指定 Exchange 凭证，以查询节点、部署策略、服务和服务策略。"
     },
     {
+      "id": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
+      "translation": "未指定节点体系结构、组织或类型，并且未指定节点标识。正在从本地节点获取节点信息。"
+    },
+    {
+      "id": "failed to marshal 'hzn deploycheck secretbinding' output: {Err}",
+      "translation": "对“hzn deploycheck secretbinding”输出进行序列化失败：{Err}"
+    },
+    {
       "id": "Error unmarshaling service json file {FilePath}: {Err}",
       "translation": "对服务 JSON 文件 {FilePath} 进行取消序列化出错：{Err}"
     },
     {
       "id": "Error unmarshaling userInput json file: {Err}",
       "translation": "对用户输入 JSON 文件进行取消序列化出错：{Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn deploycheck userinput' output: {Err}",
+      "translation": "对“hzn deploycheck userinput”输出进行序列化失败：{Err}"
     },
     {
       "id": "URL must be specified in the service definition.",
@@ -3015,6 +3235,10 @@
       "translation": "正在创建用户输入文件：{Dir}/{USERINPUTFILE}"
     },
     {
+      "id": "Creating secrets file: {Dir}/{SECRETSFILE}",
+      "translation": "正在创建私钥文件：{Dir}/{SECRETSFILE}"
+    },
+    {
       "id": "Creating service definition file: {Dir}/{SERVICEDEFINITIONFILE}",
       "translation": "正在创建服务定义文件：{Dir}/{SERVICEDEFINITIONFILE}"
     },
@@ -3067,8 +3291,16 @@
       "translation": "部署配置类型不受支持：{Dconfig}"
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
-      "translation": "“{SERVICECOMMAND} {SERVICELOGCOMMAND}”已找到多个服务用于部署。 请使用 -s 标志指定服务名称"
+      "id": "Error verifying filepath {SecPath}: {Err}",
+      "translation": "验证文件路径 {SecPath} 时出错：{Err}"
+    },
+    {
+      "id": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
+      "translation": "在当前项目中找不到服务 {ServiceName}。如果这是新的从属服务，请使用“hzn dev dependency fetch”命令更新依赖关系列表。"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
+      "translation": "“{SERVICECOMMAND} {SERVICELOGCOMMAND}”：服务 {ServiceName} 中找不到容器 {ContainerName}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
@@ -3475,8 +3707,24 @@
       "translation": "Horizon Exchange 中已更新部署策略 {PolOrg}/{Policy}"
     },
     {
+      "id": "Cannot create deployment policy {PolOrg}/{Policy}: {Msg}",
+      "translation": "无法创建部署策略 {PolOrg}/{Policy}：{Msg}"
+    },
+    {
       "id": "Deployment policy: {PolOrg}/{Policy} added in the Horizon Exchange",
       "translation": "Horizon Exchange 中已添加部署策略 {PolOrg}/{Policy}"
+    },
+    {
+      "id": "Invalid format for properties: {Err1}",
+      "translation": "属性的格式无效：{Err1}"
+    },
+    {
+      "id": "Invalid format for constraints: {Err1}",
+      "translation": "约束的格式无效：{Err1}"
+    },
+    {
+      "id": "Deployment policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, userInput and secretBinding.",
+      "translation": "输入文件中找不到待更新的部署策略属性。 支持的属性包括：label、description、service、properties、constraints、userInput 和 secretBinding。"
     },
     {
       "id": "failed to unmarshal attribute input {Attribute}: {Err}",
@@ -3489,18 +3737,6 @@
     {
       "id": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
       "translation": "已在 Horizon Exchange 中更新策略 {PolOrg}/{PolicyName}"
-    },
-    {
-      "id": "Invalid format for properties: {Err}",
-      "translation": "属性的格式无效：{Err}"
-    },
-    {
-      "id": "Invalid format for constraints: {Err}",
-      "translation": "约束的格式无效：{Err}"
-    },
-    {
-      "id": "Deployment policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, and userInput.",
-      "translation": "输入文件中找不到待更新的部署策略属性。 支持的属性包括：label、description、service、properties、constraints 和 userInput。"
     },
     {
       "id": "Are you sure you want to remove deployment policy {Policy} for org {PolOrg} from the Horizon Exchange?",
@@ -3517,6 +3753,38 @@
     {
       "id": "Deployment policy {PolOrg}/{Policy} removed",
       "translation": "已移除部署策略 {PolOrg}/{Policy}"
+    },
+    {
+      "id": "Failed to validate the secret binding. {Err}",
+      "translation": "验证私钥绑定失败。{Err}"
+    },
+    {
+      "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
+      "translation": "注：对于此部署策略，任何服务都不需要以下私钥绑定："
+    },
+    {
+      "id": "Failed to verify the binding secret in the secret manager. {Err}",
+      "translation": "在私钥管理器中验证绑定私钥失败。{Err}"
+    },
+    {
+      "id": "Warning: The following binding secrets cannot be verified in the secret manager:",
+      "translation": "警告：无法在私钥管理器中验证以下绑定私钥："
+    },
+    {
+      "id": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
+      "translation": "从 Exchange 为所有体系结构获取服务 {ServiceOrg}/{ServiceName} V{ServiceVersion} 失败。{Err}"
+    },
+    {
+      "id": "Error retrieving service {ServiceOrg}/{ServiceName} version {ServiceVersion} from the Exchange. {Err}",
+      "translation": "从 Exchange 检索服务 {ServiceOrg}/{ServiceName} V{ServiceVersion} 时出错。{Err}"
+    },
+    {
+      "id": "Error validating secret bindings for service {SId}. {Err}",
+      "translation": "验证服务 {SId} 的私钥绑定时出错。{Err}"
+    },
+    {
+      "id": "Error validating secret bindings for dependent service {Id}. {Err}",
+      "translation": "验证相依服务 {Id} 的私钥绑定时出错。{Err}"
     },
     {
       "id": "Deployment policy label.",
@@ -3699,8 +3967,8 @@
       "translation": "节点标识和令牌有效。"
     },
     {
-      "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "translation": "确定要从 Horizon Exchange 中移除节点 {NodeOrg}/{Node} 吗（存在使用此节点标识注册的边缘节点时，不应执行移除）？"
+      "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange?",
+      "translation": "确定要从 Horizon Exchange 中移除节点 {NodeOrg}/{Node} 吗？"
     },
     {
       "id": "node '{NodeOrg}/{Node}' not found.",
@@ -3867,8 +4135,8 @@
       "translation": "组织 {TheOrg} 已成功更新。"
     },
     {
-      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
-      "translation": "警告：这还将删除此组织拥有的所有 Exchange 资源（节点、服务、模式，等等）。 确定要从 Horizon Exchange 和 MMS 中移除用户 {TheOrg} 吗？"
+      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove org {TheOrg} from the Horizon Exchange and the MMS?",
+      "translation": "警告：这还将删除此组织拥有的所有 Exchange 资源（节点、服务、模式，等等）。 确定要从 Horizon Exchange 和 MMS 中移除组织 {TheOrg} 吗？"
     },
     {
       "id": "Using agbot {Agbot}",
@@ -3943,8 +4211,8 @@
       "translation": "在组织 {PatOrg} 中找不到模式 {Pattern}"
     },
     {
-      "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, and userInput.",
-      "translation": "输入文件中找不到待更新的模式属性。 受支持的属性包括：标签、描述、服务和用户输入。"
+      "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
+      "translation": "输入文件中找不到待更新的模式属性。 支持的属性包括：label、description、services、userInput 和 secretBinding。"
     },
     {
       "id": "Pattern {PatOrg}/{Pattern} updated in the Horizon Exchange",
@@ -4017,6 +4285,18 @@
     {
       "id": "key '{KeyName}' not found",
       "translation": "找不到键 '{KeyName}'"
+    },
+    {
+      "id": "Note: The following secret bindings are not required by any services for this pattern:",
+      "translation": "注：对于此模式，任何服务都不需要以下私钥绑定："
+    },
+    {
+      "id": "Note: The fully qualified binding secret name is 'openhorizon/<node_org>/<secret_binding_name>'. The binding secret cannot be verified in the secret manager for a public pattern because the node organization can be different from the pattern organization.",
+      "translation": "注：标准绑定私钥名称为“openhorizon/<node_org>/<secret_binding_name>”。无法在公共模式的私钥管理器中验证绑定私钥，因为节点组织可以与模式组织不同。"
+    },
+    {
+      "id": "No secret is defined for any of the services. The secret binding is not needed: {SecretBinding}.",
+      "translation": "没有为任何服务定义私钥。不需要私钥绑定：{SecretBinding}。"
     },
     {
       "id": "-f can only be used when one service is specified.",
@@ -4216,7 +4496,7 @@
     },
     {
       "id": "Users in the root org must be hubadmins. Omit the -H option.",
-      "translation": "根组织中的用户必须是中心管理员。请省略 -H 选项。"
+      "translation": "根组织中的用户必须是中心管理员。 省略 -H 选项。"
     },
     {
       "id": "A user in the root org cannot be an org admin.",
@@ -4447,6 +4727,10 @@
       "translation": "HZN_FSS_CSSURL：{CssUrl}"
     },
     {
+      "id": "HZN_AGBOT_URL: {AgbotUrl}",
+      "translation": "HZN_AGBOT_URL：{AgbotUrl}"
+    },
+    {
       "id": "deployment config {Dep} is not supported",
       "translation": "部署配置 {Dep} 不受支持"
     },
@@ -4575,6 +4859,10 @@
       "translation": "Exchange 中存在节点 {Org}/{NodeId}"
     },
     {
+      "id": "Updating node name...",
+      "translation": "正在更新节点名..."
+    },
+    {
       "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
       "translation": "未指定模式或节点策略。 将继续使用现有的节点策略。"
     },
@@ -4677,18 +4965,6 @@
     {
       "id": "Call to {Resource} timed out.",
       "translation": "调用 {Resource} 已超时。"
-    },
-    {
-      "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "注册失败，原因：{Matches0}。请更新输入文件 {InputFile} 中的 services 一节。 请运行 'hzn unregister'，然后再次运行 'hzn register...'"
-    },
-    {
-      "id": "Error setting service variables from user input file: {RespBody}",
-      "translation": "设置用户输入文件中的服务变量时发生错误：{RespBody}"
-    },
-    {
-      "id": "Call to set service config resource timed out.",
-      "translation": "调用为设置服务配置资源已超时。"
     },
     {
       "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
@@ -4797,6 +5073,38 @@
     {
       "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
       "translation": "一个或多个服务在部署字符串中包含 privileged。 确保节点策略文件允许 privileged。 已创建样本节点策略文件：{NodePolicySampleFile}"
+    },
+    {
+      "id": "Failed",
+      "translation": "已失败"
+    },
+    {
+      "id": "Progress so far: no agreements formed yet",
+      "translation": "目前的进展：尚未形成任何协议"
+    },
+    {
+      "id": "Progress so far: agreement proposal has been received",
+      "translation": "目前的进展：已收到协议提案"
+    },
+    {
+      "id": "Progress so far: agreement is accepted",
+      "translation": "目前的进展：已接受协议"
+    },
+    {
+      "id": "Progress so far: agreement is finalized",
+      "translation": "目前的进展：已最终确定协议"
+    },
+    {
+      "id": "Progress so far: service is created",
+      "translation": "目前的进展：已创建服务"
+    },
+    {
+      "id": "Progress so far: execution is started",
+      "translation": "目前的进展：已开始执行"
+    },
+    {
+      "id": "Success",
+      "translation": "成功"
     },
     {
       "id": "Status of the services you are watching:",
@@ -4951,12 +5259,36 @@
       "translation": "正在添加/更新节点策略..."
     },
     {
-      "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
-      "translation": "对“/service/config”输出属性 {Attr} 进行序列化失败。 {Err}"
+      "id": "failed to unmarshal REST API response: {Perr}",
+      "translation": "对 REST API 响应进行取消序列化失败：{Perr}"
     },
     {
-      "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
-      "translation": "将 '/service/config' 输出属性 {Attr} 转换为它的原始类型失败。 {Err}"
+      "id": "failed to marshal 'agbot API' output: {Jerr}",
+      "translation": "对“agbot API”输出进行序列化失败：{Jerr}"
+    },
+    {
+      "id": "-f is mutually exclusive with --secretDetail.",
+      "translation": "-f 与 --secretDetail 互斥。"
+    },
+    {
+      "id": "Must specify either -f or --secretDetail.",
+      "translation": "必须指定 -f 或 --secretail。"
+    },
+    {
+      "id": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?",
+      "translation": "私钥管理器中已存在私钥“{SecretName}”。要覆盖吗？"
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\".",
+      "translation": "凭证无效。 用户“{User}”无法访问“{SecretName}”。"
+    },
+    {
+      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete.",
+      "translation": "私钥管理器中找不到私钥“{SecretName}”，没有要删除的任何内容。"
+    },
+    {
+      "id": "Vault component not found in the management hub.",
+      "translation": "在管理中心内找不到保险库组件。"
     },
     {
       "id": "failed to marshal 'hzn service list' output: {Err}",
@@ -4967,24 +5299,48 @@
       "translation": "该节点未注册。"
     },
     {
-      "id": "Displaying log messages for service {SpecRef} with service id {InstanceId}.",
-      "translation": "正在显示服务标识为 {InstanceId} 的服务 {SpecRef} 的日志消息。"
+      "id": "Found service {SpecRef} with service id {InstanceId}.",
+      "translation": "找到服务标识为 {InstanceId} 的服务 {SpecRef}。"
     },
     {
       "id": "Service {RefUrl} is not running on the node.",
       "translation": "服务 {RefUrl} 未在该节点上运行。"
     },
     {
-      "id": "Service definition unmarshalling error: {Err}",
-      "translation": "服务定义取消序列化发生错误：{Err}"
+      "id": "Service {RefUrl} version {ServiceVersion} is not running on the node.",
+      "translation": "服务 {RefUrl} V{ServiceVersion} 未在该节点上运行。"
     },
     {
       "id": "Deployment unmarshalling error: {Err}",
       "translation": "部署取消序列化发生错误：{Err}"
     },
     {
+      "id": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
+      "translation": "服务定义 {ServiceName} 由多个容器组成。请使用 -c 标志指定容器名称。"
+    },
+    {
       "id": "Service logs are unavailable: {Err}",
       "translation": "服务日志不可用：{Err}"
+    },
+    {
+      "id": "Container {ContainerName} is not running as part of service {ServiceName}.",
+      "translation": "容器 {ContainerName} 未作为服务 {ServiceName} 的一部分运行。"
+    },
+    {
+      "id": "Container {ContainerName} is not running as part of service {ServiceName} version.",
+      "translation": "容器 {ContainerName} 未作为服务 {ServiceName} 版本的一部分运行。"
+    },
+    {
+      "id": "Could not find service {ServiceName} running on the node.",
+      "translation": "找不到在节点上运行的服务 {ServiceName}。"
+    },
+    {
+      "id": "Could not find service {ServiceName} version {ServiceVersion} running on the node.",
+      "translation": "找不到在节点上运行的服务 {ServiceName} V{ServiceVersion}。"
+    },
+    {
+      "id": "Displaying log messages of container {ContainerName} for service {Name} with service id {InstanceId}.",
+      "translation": "正在显示服务标识为 {InstanceId} 的服务 {Name} 的容器 {ContainerName} 的日志消息。"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
@@ -5051,12 +5407,16 @@
       "translation": "文件 {FileName} 已存在。 请指定其他文件路径或文件名。 要覆盖现有文件，请使用“--overwrite”标志。"
     },
     {
-      "id": "Failed to create file: {FileName}",
-      "translation": "未能创建文件：{FileName}"
+      "id": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
+      "translation": "在组织 {Org} 中找不到类型为“{ObjType}”的对象元数据“{ObjId}”"
     },
     {
-      "id": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}",
-      "translation": "未能将类型为“{ObjType}”的对象“{ObjId}”的数据保存至文件 {FileName}"
+      "id": "Failed to verify data: {Error}",
+      "translation": "验证数据失败：{Error}"
+    },
+    {
+      "id": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}, err: {Err}",
+      "translation": "未能将类型为“{ObjType}”的对象“{ObjId}”的数据保存至文件 {FileName}，错误：{Err}"
     },
     {
       "id": "Data of object {ObjId} saved to file {FileName}",
@@ -5223,8 +5583,28 @@
       "translation": "不能将 --pattern 与 --def 一起指定"
     },
     {
+      "id": "cannot specify --skipDigitalSig with --hash",
+      "translation": "不能将 --skipDigitalSig 与 --hash 一起指定"
+    },
+    {
+      "id": "cannot specify --skipDigitalSig with --hashAlgo",
+      "translation": "不能将 --skipDigitalSig 与 --hashAlgo 一起指定"
+    },
+    {
+      "id": "invalid value for --hashAlgo, please use SHA1 or SHA256",
+      "translation": "--hashAlgo 的值无效，请使用 SHA1 或 SHA256"
+    },
+    {
       "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
       "translation": "对定义文件 {ObjMetadataFile} 进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "Digital sign with {HashAlgorithm} will be performed for data integrity. It will delay the MMS object publish.",
+      "translation": "将执行使用 {HashAlgorithm} 的数字签名，以确保数据完整性。这将延迟 MMS 对象发布。"
+    },
+    {
+      "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
+      "translation": "对文件 {ObjFile} 进行数字签名失败，错误：{Err}"
     },
     {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
@@ -5241,6 +5621,22 @@
     {
       "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
       "translation": "对象 {ObjId} 已从模型管理服务中的组织 {Org} 中删除"
+    },
+    {
+      "id": "Hash value is loaded.",
+      "translation": "已装入散列值。"
+    },
+    {
+      "id": "Start hashing the file...",
+      "translation": "开始散列文件..."
+    },
+    {
+      "id": "Data hash is generated. Start digital signing with the data hash...",
+      "translation": "已生成数据散列。使用数据散列开始数字签名..."
+    },
+    {
+      "id": "Hash algorithm {HashAlgo} is not supported",
+      "translation": "不支持散列算法 {HashAlgo}"
     },
     {
       "id": "health status API returned HTTP code {HttpCode}",
@@ -5507,6 +5903,38 @@
       "translation": "正在重新启动 anax..."
     },
     {
+      "id": "Error resolving horizon container name: {Err}",
+      "translation": "解析 Horizon 容器名称时出错：{Err}"
+    },
+    {
+      "id": "Looking for horizon container by name: {ContainerName}",
+      "translation": "正在按名称查找 Horizon 容器：{ContainerName}"
+    },
+    {
+      "id": "Error during checking if anax container is running: {ErrBytes}",
+      "translation": "检查 anax 容器是否正在运行期间出错：{ErrBytes}"
+    },
+    {
+      "id": "Restarting horizon container...",
+      "translation": "正在重新启动 Horizon 容器..."
+    },
+    {
+      "id": "Error during removing horizon db files from horizon container: {ErrBytes}",
+      "translation": "从 Horizon 容器中移除 Horizon 数据库文件期间出错：{ErrBytes}"
+    },
+    {
+      "id": "Error during removing policy files from horizon container: {ErrBytes}",
+      "translation": "从 Horizon 容器中移除策略文件期间出错：{ErrBytes}"
+    },
+    {
+      "id": "Error during restarting the anax container: {ErrBytes}",
+      "translation": "重新启动 anax 容器期间出错：{ErrBytes}"
+    },
+    {
+      "id": "Could not find anax container by {ContainerName} name",
+      "translation": "找不到名称为 {ContainerName} 的 anax 容器"
+    },
+    {
       "id": "Stopping horizon...",
       "translation": "正在停止 Horizon..."
     },
@@ -5679,14 +6107,6 @@
       "translation": "不兼容"
     },
     {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "translation": "序列化对象 {In} 时出错。 {Arg_2}"
-    },
-    {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "未能将输入转换为 PolicyCheck 对象。 {Err}"
-    },
-    {
       "id": "The given node id is empty.",
       "translation": "给定的节点标识为空。"
     },
@@ -5701,10 +6121,6 @@
     {
       "id": "No node found for this node id {NodeId}.",
       "translation": "找不到节点标识为 {NodeId} 的节点。"
-    },
-    {
-      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "未能找到 {TopSvcId} 的相依服务的定义。 在所有服务都处于 Exchange 中之前，无法完全评估 {PROPNODEPRIVILEGED} 的兼容性。"
     },
     {
       "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
@@ -5725,6 +6141,18 @@
     {
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "服务没有节点类型“cluster”的集群部署配置。"
+    },
+    {
+      "id": "Unable to create version expression from {VersionRange}. {Err}",
+      "translation": "无法从 {VersionRange} 创建版本表达式。{Err}"
+    },
+    {
+      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "translation": "从 Exchange 检索 {SDep} 的相依服务时发生错误。 {Err}"
+    },
+    {
+      "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "找不到 {TopId} 的相依服务的定义。在所有服务都处于 Exchange 中之前，无法完全评估 {PROPNODEPRIVILEGED} 的兼容性。"
     },
     {
       "id": "The PolicyCheck input cannot be null",
@@ -5891,44 +6319,16 @@
       "translation": "将部署策略与服务策略合并时发生错误。 {Err}"
     },
     {
-      "id": "The deployment policy should not be null.",
-      "translation": "部署策略不应为空。"
-    },
-    {
-      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "translation": "引用需要权限才能运行的服务时，部署策略 {Header} 的 {PROPNODEPRIVILEGED} 不得为 true。"
-    },
-    {
-      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "translation": "检索 Exchange 中的服务 {Org}/{WorkloadURL} {Version} {Arch} 及其相关服务时发生错误。 {Err}"
-    },
-    {
-      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "未能对服务 {SIdTop} 的部署配置进行序列化，错误 {Err}"
-    },
-    {
-      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "未能对服务 {SIdTop} 的集群部署配置进行序列化，错误 {Err}"
-    },
-    {
       "id": "Unable to find service definition from the input services.",
       "translation": "输入服务中找不到服务定义。"
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "无法从 {Version} 创建版本表达式。 {Err}"
+      "id": "The SecretBindingCheck input cannot be null",
+      "translation": "SecretBindingCheck 输入不得为 Null"
     },
     {
-      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "translation": "从 Exchange 检索 {SDep} 的相依服务时发生错误。 {Err}"
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "UserInputCheck 输入不得为 Null"
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "既未指定节点用户输入也未指定节点标识。"
+      "id": "Node type '{NodeType}' does not support secret binding check.",
+      "translation": "节点类型“{NodeType}”不支持私钥绑定检查。"
     },
     {
       "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
@@ -5939,8 +6339,12 @@
       "translation": "部署策略或模式中未指定任何服务版本。"
     },
     {
-      "id": "User Input Incompatible",
-      "translation": "用户输入不兼容"
+      "id": "Secret Binding Incompatible",
+      "translation": "私钥绑定不兼容"
+    },
+    {
+      "id": "Type Incompatible",
+      "translation": "类型不兼容"
     },
     {
       "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
@@ -5949,6 +6353,86 @@
     {
       "id": "Service definition not found in the input.",
       "translation": "在输入中找不到服务定义。"
+    },
+    {
+      "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "translation": "警告：任何服务都不需要以下私钥绑定：{ExtraneousSB}"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "部署策略或模式中找不到“arch”{NodeArch} 的服务。"
+    },
+    {
+      "id": "No services found in the deployment policy or pattern.",
+      "translation": "部署策略或模式中找不到任何服务。"
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "translation": "输入服务定义对象不得为 Null。"
+    },
+    {
+      "id": "Error verifying secret in the secret manager. {Err}",
+      "translation": "验证私钥管理器中的私钥时出错。{Err}"
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "translation": "输入服务规范对象不得为 Null。"
+    },
+    {
+      "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "translation": "找不到 {Org}/{URL} {Arch} {Version} 的相依服务。{Err}"
+    },
+    {
+      "id": "Secret binding for a cluster service is not supported.",
+      "translation": "不支持集群服务的私钥绑定。"
+    },
+    {
+      "id": "No secret binding found for the following service secrets: {NbArray}.",
+      "translation": "找不到以下服务私钥的私钥绑定：{NbArray}。"
+    },
+    {
+      "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "translation": "服务 {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 的私钥绑定中指定了错误的版本字符串 {ServiceVersionRange}，错误 {Err}"
+    },
+    {
+      "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "translation": "检查范围 {VExp} 中的版本 {SvcVersion} 时出错。{Err}"
+    },
+    {
+      "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "translation": "agbot URL 在检查私钥绑定时不能是空字符串。请确保已设置 HZN_AGBOT_URL。"
+    },
+    {
+      "id": "The node organization must be provided.",
+      "translation": "必须提供节点组织。"
+    },
+    {
+      "id": "Error parsing secret name in the secret binding. {Errparse}",
+      "translation": "解析私钥绑定中的私钥名称时出错。{Errparse}"
+    },
+    {
+      "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "translation": "在私钥管理器中检查私钥 {VaultSecretName} 时出错。{Err}"
+    },
+    {
+      "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "绑定私钥名称不能是空字符串。有效格式为：“<secretname>”（对于组织级别私钥）和“user/<username>/<secretname>”（对于用户级别私钥）。"
+    },
+    {
+      "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "绑定私钥名称的格式无效：{SecretName}。有效格式为：“<secretname>”（对于组织级别私钥）和“user/<username>/<secretname>”（对于用户级别私钥）。"
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "translation": "UserInputCheck 输入不得为 Null"
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "translation": "既未指定节点用户输入也未指定节点标识。"
+    },
+    {
+      "id": "User Input Incompatible",
+      "translation": "用户输入不兼容"
     },
     {
       "id": "Warning: checking node user input:  {Err}",
@@ -5961,18 +6445,6 @@
     {
       "id": "Warning: checking user input for the pattern: {Err}",
       "translation": "警告：正在检查模式的用户输入：{Err}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "translation": "部署策略或模式中找不到“arch”{NodeArch} 的服务。"
-    },
-    {
-      "id": "No services found in the deployment policy or pattern.",
-      "translation": "部署策略或模式中找不到任何服务。"
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "translation": "输入服务规范对象不得为 Null。"
     },
     {
       "id": "Error verifing user input for service {SId}. {Err}",
@@ -5989,10 +6461,6 @@
     {
       "id": "Failed to verify user input for dependent service {Id}. {Reason}",
       "translation": "验证相依服务 {Id} 的用户输入失败。 {Reason}"
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "translation": "输入服务定义对象不得为 Null。"
     },
     {
       "id": "Failed to get the service from the Exchange. {Err}",
@@ -6261,6 +6729,22 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "无法关闭 MMS API 证书专用密钥文件 {ServerKey}，错误：{Err}"
+    },
+    {
+      "id": "Unable to authenticate nil request for secrets API",
+      "translation": "无法认证针对私钥 API 的 nil 请求"
+    },
+    {
+      "id": "Unable to extract basic auth for request",
+      "translation": "无法抽取请求的基本认证"
+    },
+    {
+      "id": "unable to verify {AppKey}, error {Err}",
+      "translation": "无法验证 {AppKey}，错误 {Err}"
+    },
+    {
+      "id": "credentials for {AppKey} are not valid",
+      "translation": "{AppKey} 的凭证无效"
     },
     {
       "id": "Version_Expression: Empty string is not a valid version.",
