@@ -221,7 +221,7 @@ func CreateProposal(p ProtocolHandler,
 	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, workload, agreementId, defaultPW, defaultNoData, version); err != nil {
 		return nil, errors.New(fmt.Sprintf("Protocol %v initiation received error trying to merge policy %v and %v, error: %v", p.Name(), producerPolicy, consumerPolicy, err))
 	} else {
-		glog.V(5).Infof(AAPlogString(p.Name(), fmt.Sprintf("Merged Policy %v", *TCPolicy)))
+		glog.V(5).Infof(AAPlogString(p.Name(), fmt.Sprintf("Merged Policy %v", TCPolicy)))
 
 		if tcBytes, err := json.Marshal(TCPolicy); err != nil {
 			return nil, errors.New(fmt.Sprintf("Protocol %v error marshalling TsAndCs %v, error: %v", p.Name(), *TCPolicy, err))

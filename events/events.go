@@ -2,6 +2,8 @@ package events
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/golang/glog"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
@@ -1454,7 +1456,21 @@ func (m *ExchangeDeviceMessage) ShortProtocolMessage() string {
 }
 
 func (m ExchangeDeviceMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgbotId: %v, ProtocolMessage: %v, Time: %v, ExchangeMessage: %s", m.event, m.agbotId, m.protocolMessage, m.Time, m.exchangeMessage)
+	pm := m.protocolMessage
+	// Try to demarshal protocol message into Proposal struct
+	if glog.V(5) {
+		if newProp, err := abstractprotocol.DemarshalProposal(pm); err == nil {
+			// check if protocol message is a byte-encoded Proposal struct
+			if len(newProp.AgreementId()) > 0 {
+				// if it is a proposal, obscure the secrets
+				if pm, err = abstractprotocol.ObscureProposalSecret(pm); err != nil {
+					// something went wrong, send empty string to ensure secret protection
+					pm = ""
+				}
+			}
+		} 
+	}
+	return fmt.Sprintf("Event: %v, AgbotId: %v, ProtocolMessage: %v, Time: %v, ExchangeMessage: %s", m.event, m.agbotId, pm, m.Time, m.exchangeMessage)
 }
 
 func (m ExchangeDeviceMessage) ShortString() string {
