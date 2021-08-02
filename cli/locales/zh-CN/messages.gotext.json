@@ -80,7 +80,7 @@
     {
       "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
       "message": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
-      "translation": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 SecretBindingCheck 对象。{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -142,7 +142,7 @@
     {
       "id": "There is no secrets provider configured, secrets are unavailable.",
       "message": "There is no secrets provider configured, secrets are unavailable.",
-      "translation": "There is no secrets provider configured, secrets are unavailable.",
+      "translation": "未配置私钥提供出现，私钥不可用。",
       "fuzzy": true
     },
     {
@@ -151,13 +151,13 @@
         "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
       ],
       "message": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
-      "translation": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
+      "translation": "私钥提供程序未就绪。调用者应重试此 API 调用少数几次，并在相邻调用之间短暂延迟，以确保私钥提供程序可用。",
       "fuzzy": true
     },
     {
       "id": "Unable to read request body, error: {Err}.",
       "message": "Unable to read request body, error: {Err}.",
-      "translation": "Unable to read request body, error: {Err}.",
+      "translation": "无法读取请求主体，错误：{Err}。",
       "placeholders": [
         {
           "id": "Err",
@@ -173,13 +173,13 @@
     {
       "id": "Request body is empty.",
       "message": "Request body is empty.",
-      "translation": "Request body is empty.",
+      "translation": "请求主体为空。",
       "fuzzy": true
     },
     {
       "id": "Request body parse error, {Uerr}",
       "message": "Request body parse error, {Uerr}",
-      "translation": "Request body parse error, {Uerr}",
+      "translation": "请求主体解析错误，{Uerr}",
       "placeholders": [
         {
           "id": "Uerr",
@@ -195,7 +195,7 @@
     {
       "id": "Unable to access secrets provider, error: {Serr}.",
       "message": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "Unable to access secrets provider, error: {Serr}.",
+      "translation": "无法访问私钥提供程序，错误：{Serr}。",
       "placeholders": [
         {
           "id": "Serr",
@@ -211,13 +211,13 @@
     {
       "id": "org must be specified in the API path",
       "message": "org must be specified in the API path",
-      "translation": "org must be specified in the API path",
+      "translation": "必须在 API 路径中指定组织",
       "fuzzy": true
     },
     {
       "id": "user must be specified in the API path",
       "message": "user must be specified in the API path",
-      "translation": "user must be specified in the API path",
+      "translation": "必须在 API 路径中指定用户",
       "fuzzy": true
     },
     {
@@ -239,7 +239,7 @@
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
       "message": "Error checking secret {FullSecretName} in the secret manager.",
-      "translation": "Error checking secret {FullSecretName} in the secret manager.",
+      "translation": "在私钥管理器中检查私钥 {FullSecretName} 时出错。",
       "placeholders": [
         {
           "id": "FullSecretName",
@@ -255,7 +255,7 @@
     {
       "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
       "message": "Wrong type returned checking the secret name in the secret manager: {Payload}",
-      "translation": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "translation": "在私钥管理器中检查私钥名称时返回错误的类型：{Payload}",
       "placeholders": [
         {
           "id": "Payload",
@@ -271,7 +271,7 @@
     {
       "id": "Secret {FullSecretName} does not exist in the secret manager.",
       "message": "Secret {FullSecretName} does not exist in the secret manager.",
-      "translation": "Secret {FullSecretName} does not exist in the secret manager.",
+      "translation": "私钥 {FullSecretName} 在私钥管理器中不存在。",
       "placeholders": [
         {
           "id": "FullSecretName",
@@ -1454,7 +1454,7 @@
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "translation": "Horizon 代理程序的命令行界面。 大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅 '环境变量' 一节以覆盖该位置）。\n\n子命令描述：\n  agbot：列示和管理 Horizon 协议 bot 资源。\n  agreement：列示或管理此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。\n  architecture：显示此机器的体系结构（由 Horizon 和 golang 定义）。\n  attribute：列示或管理当前在此 Horizon 边缘节点上注册的全局属性。\n  deploycheck：检查部署兼容性。\n  dev：用于创建服务的开发工具。\n  env：显示 Horizon 环境变量。\n  eventlog：列示当前注册或所有注册的事件日志。\n  exchange：列示和管理 Horizon Exchange 资源。\n  key：列示和管理用于签署和验证服务的密钥。\n  metering：列示或管理活动协议或存档协议的测量（付款）信息。\n  mms：列示和管理 Horizon 模型管理服务资源。\n  node：列示和管理有关此 Horizon 边缘节点的常规信息。\n  policy：列示和管理此 Horizon 边缘节点的策略。\n  reginput：为此模式创建输入文件模板，该模板填写后即可用于“hzn register”命令。\n            这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。\n  register：向管理中心注册此边缘节点。\n  service：列示或管理当前在此 Horizon 边缘节点上注册的服务。\n  status：显示节点的当前 Horizon 内部状态。\n  unregister：注销并重置此 Horizon 边缘节点，以使其可以再次注册。\n  userinput：列示或管理当前在此 Horizon 边缘节点上注册的服务用户输入。\n  util：实用程序命令。\n  version：显示 Horizon 版本。\n  voucher：列示并管理 Horizon SDO 所有权凭单。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n      这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供 'hzn exchange' 子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID： 'hzn exchange -o' 标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH： 'hzn exchange -u' 或 'hzn\n\t  register -u' 标志的缺省值，其格式为 '[org/]user:pw'。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供 'hzn mms' 子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -1728,7 +1728,7 @@
     {
       "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
       "message": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
-      "translation": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
+      "translation": "节点的组织。如果省略，缺省值是由 -n 或当前注册设备提供的节点的组织。",
       "fuzzy": true
     },
     {
@@ -1836,13 +1836,13 @@
     {
       "id": "Check secret bindings.",
       "message": "Check secret bindings.",
-      "translation": "Check secret bindings.",
+      "translation": "检查私钥绑定。",
       "fuzzy": true
     },
     {
       "id": "The Horizon exchange node ID. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "message": "The Horizon exchange node ID. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "The Horizon exchange node ID. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange 节点标识。 如果省略此项，那么将使用用来注册当前设备的节点标识。 如果未附加组织标识作为前缀，那么将自动附加 -o 值作为前缀。",
       "fuzzy": true
     },
     {
@@ -1974,13 +1974,13 @@
     {
       "id": "(DEPRECATED) This flag is deprecated and is replaced by -c.",
       "message": "(DEPRECATED) This flag is deprecated and is replaced by -c.",
-      "translation": "(DEPRECATED) This flag is deprecated and is replaced by -c.",
+      "translation": "（不推荐）此标志不推荐使用，并已替换为 -c。",
       "fuzzy": true
     },
     {
       "id": "The name of the service container whose log records should be displayed. Can be omitted if the service definition has only one container in its deployment config.",
       "message": "The name of the service container whose log records should be displayed. Can be omitted if the service definition has only one container in its deployment config.",
-      "translation": "The name of the service container whose log records should be displayed. Can be omitted if the service definition has only one container in its deployment config.",
+      "translation": "应显示其日志记录的服务容器的名称。如果服务定义在其部署配置中只有一个容器，那么可以省略。",
       "fuzzy": true
     },
     {
@@ -2112,7 +2112,7 @@
     {
       "id": "Filepath of a file containing a secret that is required by the service or one of its dependent services. The filename must match a secret name in the service definition. The file is encoded in JSON as an object containing two keys both typed as a string; \"key\" is used to indicate the kind of secret, and \"value\" is the string form of the secret. This flag can be repeated.",
       "message": "Filepath of a file containing a secret that is required by the service or one of its dependent services. The filename must match a secret name in the service definition. The file is encoded in JSON as an object containing two keys both typed as a string; \"key\" is used to indicate the kind of secret, and \"value\" is the string form of the secret. This flag can be repeated.",
-      "translation": "Filepath of a file containing a secret that is required by the service or one of its dependent services. The filename must match a secret name in the service definition. The file is encoded in JSON as an object containing two keys both typed as a string; \"key\" is used to indicate the kind of secret, and \"value\" is the string form of the secret. This flag can be repeated.",
+      "translation": "文件的文件路径，该文件包含服务或其中一个从属服务所需的私钥。文件名必须与服务定义中的私钥名称匹配。该文件采用 JSON 编码为包含作为字符串键入的两个密钥的对象；“key”用于指示私钥的类型，“value”是私钥的字符串形式。此标志可以重复。",
       "fuzzy": true
     },
     {
@@ -3620,7 +3620,7 @@
     {
       "id": "The download command will not perform a data integrity check on the downloaded object data",
       "message": "The download command will not perform a data integrity check on the downloaded object data",
-      "translation": "The download command will not perform a data integrity check on the downloaded object data",
+      "translation": "下载命令不会对下载的对象数据执行数据完整性检查",
       "fuzzy": true
     },
     {
@@ -3746,25 +3746,25 @@
     {
       "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
       "message": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
-      "translation": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
+      "translation": "发布命令不会对上载的对象数据执行数据完整性检查。它与 --hashAlgo 和 --hash 互斥",
       "fuzzy": true
     },
     {
       "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
       "message": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-      "translation": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+      "translation": "用于在对对象数据签名之前对其进行散列的散列算法，从而确保上载和下载期间的数据完整性。受支持的散列算法为 SHA1 或 SHA256，缺省值为 SHA1。它与 --noIntegrity 标志互斥",
       "fuzzy": true
     },
     {
       "id": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
       "message": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
-      "translation": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+      "translation": "正在上载或下载的对象数据的散列。如果要提供散列而不是允许命令自动计算散列，请使用此标志。必须使用 SHA1 或 SHA256 算法生成散列。如果散列是使用 SHA256 生成的，那么必须指定 -a 标志。此标志与 --noIntegrity 互斥。",
       "fuzzy": true
     },
     {
       "id": "The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
       "message": "The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
-      "translation": "The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+      "translation": "要用来对对象进行签名的专用密钥文件的路径。相应的公用密钥将存储在 MMS 中，以确保对象的完整性。未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE 来查找专用密钥。如果未设置，将使用 ~/.hzn/keys/service.private.key。如果不存在，那么仅为此发布操作生成 RSA 密钥对，然后废弃专用密钥。",
       "fuzzy": true
     },
     {
@@ -4056,13 +4056,13 @@
     {
       "id": "The version of the service.",
       "message": "The version of the service.",
-      "translation": "The version of the service.",
+      "translation": "服务的版本。",
       "fuzzy": true
     },
     {
       "id": "The name of the container within the service whose log records should be displayed.",
       "message": "The name of the container within the service whose log records should be displayed.",
-      "translation": "The name of the container within the service whose log records should be displayed.",
+      "translation": "应显示其日志记录的服务中容器的名称。",
       "fuzzy": true
     },
     {
@@ -4212,91 +4212,91 @@
     {
       "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
       "message": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "translation": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
+      "translation": "列示和管理私钥管理器中的私钥。注：您必须认证为管理员才能列示可供整个组织使用的私钥。",
       "fuzzy": true
     },
     {
       "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
       "message": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-      "translation": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+      "translation": "用于查询私钥管理器资源的 Horizon Exchange 凭证。缺省值为 HZN_EXCHANGE_USER_AUTH 环境变量。 如果未附加用户的组织作为前缀，那么将自动附加 HZN_ORG_ID 环境变量的值作为前缀。",
       "fuzzy": true
     },
     {
       "id": "List and manage secrets in the secrets manager.",
       "message": "List and manage secrets in the secrets manager.",
-      "translation": "List and manage secrets in the secrets manager.",
+      "translation": "列示和管理私钥管理器中的私钥。",
       "fuzzy": true
     },
     {
       "id": "Display the names of the secrets in the secrets manager.",
       "message": "Display the names of the secrets in the secrets manager.",
-      "translation": "Display the names of the secrets in the secrets manager.",
+      "translation": "显示私钥管理器中的私钥的名称。",
       "fuzzy": true
     },
     {
       "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
       "message": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
-      "translation": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
+      "translation": "仅列示这一私钥。返回指示私钥存在的布尔值。这是私钥管理器中使用的私钥的名称。如果该私钥不存在，那么使用退出代码 1 返回。",
       "fuzzy": true
     },
     {
       "id": "Add a secret to the secrets manager.",
       "message": "Add a secret to the secrets manager.",
-      "translation": "Add a secret to the secrets manager.",
+      "translation": "将私钥添加到私钥管理器。",
       "fuzzy": true
     },
     {
       "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
       "message": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
-      "translation": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
+      "translation": "私钥的名称。它在您的组织中必须是唯一的。此名称用于部署策略和模式，以将此私钥绑定到服务定义中的私钥名称。",
       "fuzzy": true
     },
     {
       "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
       "message": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
-      "translation": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
+      "translation": "包含私钥详细信息的文件的文件路径。与 --secretDetail 互斥。指定 -f- 可从 stdin 读取。",
       "fuzzy": true
     },
     {
       "id": "A key for the secret.",
       "message": "A key for the secret.",
-      "translation": "A key for the secret.",
+      "translation": "私钥的密钥。",
       "fuzzy": true
     },
     {
       "id": "The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.",
       "message": "The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.",
-      "translation": "The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.",
+      "translation": "字符串形式的私钥详细信息。私钥详细信息是实际的私钥本身，而不是私钥的名称。例如，密码、专用密钥等是私钥详细信息的示例。与 --secretFile 互斥。",
       "fuzzy": true
     },
     {
       "id": "Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.",
       "message": "Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.",
-      "translation": "Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.",
+      "translation": "如果现有私钥在私钥管理器中存在，那么将其覆盖。这将跳过“是否要覆盖”提示。",
       "fuzzy": true
     },
     {
       "id": "Remove a secret in the secrets manager.",
       "message": "Remove a secret in the secrets manager.",
-      "translation": "Remove a secret in the secrets manager.",
+      "translation": "移除私钥管理器中的私钥。",
       "fuzzy": true
     },
     {
       "id": "The name of the secret to be removed from the secrets manager.",
       "message": "The name of the secret to be removed from the secrets manager.",
-      "translation": "The name of the secret to be removed from the secrets manager.",
+      "translation": "要从私钥管理器中移除的私钥的名称。",
       "fuzzy": true
     },
     {
       "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
       "message": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
-      "translation": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
+      "translation": "读取私钥管理器中存储的私钥的详细信息。这包括在私钥创建时提供的键和值对。",
       "fuzzy": true
     },
     {
       "id": "The name of the secret to read in the secrets manager.",
       "message": "The name of the secret to read in the secrets manager.",
-      "translation": "The name of the secret to read in the secrets manager.",
+      "translation": "要在私钥管理器中读取的私钥的名称。",
       "fuzzy": true
     },
     {
@@ -5220,7 +5220,7 @@
     {
       "id": "unable to load docker credentials for {Domain}: {Err}",
       "message": "unable to load docker credentials for {Domain}: {Err}",
-      "translation": "unable to load docker credentials for {Domain}: {Err}",
+      "translation": "无法装入 {Domain} 的 Docker 凭证：{Err}",
       "placeholders": [
         {
           "id": "Domain",
@@ -5332,7 +5332,7 @@
     {
       "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
       "message": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
-      "translation": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "translation": "无法获取 docker.io 或 {Domain} 域的 Docker 认证：{Err}",
       "placeholders": [
         {
           "id": "Domain",
@@ -5356,7 +5356,7 @@
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
       "message": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
-      "translation": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "translation": "无法拉取 Docker 映像 {Repository____tag}。 找不到 Docker 凭证。 如果映像注册表是私有的，您可能需要运行 'docker login ...'。 错误：{Err}：{LoginErr}",
       "placeholders": [
         {
           "id": "Repository____tag",
@@ -5566,7 +5566,7 @@
     {
       "id": "Error parsing HORIZON_URL: {Err}",
       "message": "Error parsing HORIZON_URL: {Err}",
-      "translation": "Error parsing HORIZON_URL: {Err}",
+      "translation": "解析 HORIZON_URL 时出错：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -5582,7 +5582,7 @@
     {
       "id": "Error parsing host of the HORIZON_URL: {Err}",
       "message": "Error parsing host of the HORIZON_URL: {Err}",
-      "translation": "Error parsing host of the HORIZON_URL: {Err}",
+      "translation": "解析 HORIZON_URL 的主机时出错：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -5598,7 +5598,7 @@
     {
       "id": "Error parsing port of the HORIZON_URL: {Err}",
       "message": "Error parsing port of the HORIZON_URL: {Err}",
-      "translation": "Error parsing port of the HORIZON_URL: {Err}",
+      "translation": "解析 HORIZON_URL 的端口时出错：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -5614,7 +5614,7 @@
     {
       "id": "Unexpected port of the HORIZON_URL: {PortInt}",
       "message": "Unexpected port of the HORIZON_URL: {PortInt}",
-      "translation": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "translation": "HORIZON_URL 的意外端口：{PortInt}",
       "placeholders": [
         {
           "id": "PortInt",
@@ -5630,7 +5630,7 @@
     {
       "id": "The agbot url: {EnvVar}",
       "message": "The agbot url: {EnvVar}",
-      "translation": "The agbot url: {EnvVar}",
+      "translation": "agbot URL：{EnvVar}",
       "placeholders": [
         {
           "id": "EnvVar",
@@ -5966,7 +5966,7 @@
     {
       "id": "HZN_AGBOT_URL is not defined",
       "message": "HZN_AGBOT_URL is not defined",
-      "translation": "HZN_AGBOT_URL is not defined",
+      "translation": "未定义 HZN_AGBOT_URL",
       "fuzzy": true
     },
     {
@@ -7100,7 +7100,7 @@
     {
       "id": "Docker pull failure: {Err}",
       "message": "Docker pull failure: {Err}",
-      "translation": "Docker pull failure: {Err}",
+      "translation": "Docker 拉取失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -7328,7 +7328,7 @@
     {
       "id": "failed to marshal 'hzn deploycheck all' output: {Err}",
       "message": "failed to marshal 'hzn deploycheck all' output: {Err}",
-      "translation": "failed to marshal 'hzn deploycheck all' output: {Err}",
+      "translation": "对“hzn deploycheck all”输出进行序列化失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -7432,7 +7432,7 @@
     {
       "id": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
       "message": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
-      "translation": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
+      "translation": "-t 指定的节点类型 {InputType} 与本地节点 {NodeType} 的类型不匹配。",
       "placeholders": [
         {
           "id": "InputType",
@@ -7456,7 +7456,7 @@
     {
       "id": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
       "message": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
-      "translation": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
+      "translation": "-O 指定的节点组织 {InputType} 与本地节点 {NodeOrg} 的组织不匹配。",
       "placeholders": [
         {
           "id": "InputType",
@@ -7568,7 +7568,7 @@
     {
       "id": "failed to marshal 'hzn deploycheck policy' output: {Err}",
       "message": "failed to marshal 'hzn deploycheck policy' output: {Err}",
-      "translation": "failed to marshal 'hzn deploycheck policy' output: {Err}",
+      "translation": "对“hzn deploycheck policy”输出进行序列化失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -7602,13 +7602,13 @@
     {
       "id": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
       "message": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
-      "translation": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
+      "translation": "未指定节点体系结构、组织或类型，并且未指定节点标识。正在从本地节点获取节点信息。",
       "fuzzy": true
     },
     {
       "id": "failed to marshal 'hzn deploycheck secretbinding' output: {Err}",
       "message": "failed to marshal 'hzn deploycheck secretbinding' output: {Err}",
-      "translation": "failed to marshal 'hzn deploycheck secretbinding' output: {Err}",
+      "translation": "对“hzn deploycheck secretbinding”输出进行序列化失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -7664,7 +7664,7 @@
     {
       "id": "failed to marshal 'hzn deploycheck userinput' output: {Err}",
       "message": "failed to marshal 'hzn deploycheck userinput' output: {Err}",
-      "translation": "failed to marshal 'hzn deploycheck userinput' output: {Err}",
+      "translation": "对“hzn deploycheck userinput”输出进行序列化失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -8986,7 +8986,7 @@
     {
       "id": "Creating secrets file: {Dir}/{SECRETSFILE}",
       "message": "Creating secrets file: {Dir}/{SECRETSFILE}",
-      "translation": "Creating secrets file: {Dir}/{SECRETSFILE}",
+      "translation": "正在创建私钥文件：{Dir}/{SECRETSFILE}",
       "placeholders": [
         {
           "id": "Dir",
@@ -9236,7 +9236,7 @@
     {
       "id": "Error verifying filepath {SecPath}: {Err}",
       "message": "Error verifying filepath {SecPath}: {Err}",
-      "translation": "Error verifying filepath {SecPath}: {Err}",
+      "translation": "验证文件路径 {SecPath} 时出错：{Err}",
       "placeholders": [
         {
           "id": "SecPath",
@@ -9260,7 +9260,7 @@
     {
       "id": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
       "message": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
-      "translation": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
+      "translation": "在当前项目中找不到服务 {ServiceName}。如果这是新的从属服务，请使用“hzn dev dependency fetch”命令更新依赖关系列表。",
       "placeholders": [
         {
           "id": "ServiceName",
@@ -9276,7 +9276,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
       "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
-      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
+      "translation": "“{SERVICECOMMAND} {SERVICELOGCOMMAND}”：服务 {ServiceName} 中找不到容器 {ContainerName}",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -11421,7 +11421,7 @@
     {
       "id": "Cannot create deployment policy {PolOrg}/{Policy}: {Msg}",
       "message": "Cannot create deployment policy {PolOrg}/{Policy}: {Msg}",
-      "translation": "Cannot create deployment policy {PolOrg}/{Policy}: {Msg}",
+      "translation": "无法创建部署策略 {PolOrg}/{Policy}：{Msg}",
       "placeholders": [
         {
           "id": "PolOrg",
@@ -11477,7 +11477,7 @@
     {
       "id": "Invalid format for properties: {Err1}",
       "message": "Invalid format for properties: {Err1}",
-      "translation": "Invalid format for properties: {Err1}",
+      "translation": "属性的格式无效：{Err1}",
       "placeholders": [
         {
           "id": "Err1",
@@ -11493,7 +11493,7 @@
     {
       "id": "Invalid format for constraints: {Err1}",
       "message": "Invalid format for constraints: {Err1}",
-      "translation": "Invalid format for constraints: {Err1}",
+      "translation": "约束的格式无效：{Err1}",
       "placeholders": [
         {
           "id": "Err1",
@@ -11509,7 +11509,7 @@
     {
       "id": "Deployment policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, userInput and secretBinding.",
       "message": "Deployment policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, userInput and secretBinding.",
-      "translation": "Deployment policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, userInput and secretBinding.",
+      "translation": "输入文件中找不到待更新的部署策略属性。 支持的属性包括：label、description、service、properties、constraints、userInput 和 secretBinding。",
       "fuzzy": true
     },
     {
@@ -11683,7 +11683,7 @@
     {
       "id": "Failed to validate the secret binding. {Err}",
       "message": "Failed to validate the secret binding. {Err}",
-      "translation": "Failed to validate the secret binding. {Err}",
+      "translation": "验证私钥绑定失败。{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -11699,13 +11699,13 @@
     {
       "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
       "message": "Note: The following secret bindings are not required by any services for this deployment policy:",
-      "translation": "Note: The following secret bindings are not required by any services for this deployment policy:",
+      "translation": "注：对于此部署策略，任何服务都不需要以下私钥绑定：",
       "fuzzy": true
     },
     {
       "id": "Failed to verify the binding secret in the secret manager. {Err}",
       "message": "Failed to verify the binding secret in the secret manager. {Err}",
-      "translation": "Failed to verify the binding secret in the secret manager. {Err}",
+      "translation": "在私钥管理器中验证绑定私钥失败。{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -11721,13 +11721,13 @@
     {
       "id": "Warning: The following binding secrets cannot be verified in the secret manager:",
       "message": "Warning: The following binding secrets cannot be verified in the secret manager:",
-      "translation": "Warning: The following binding secrets cannot be verified in the secret manager:",
+      "translation": "警告：无法在私钥管理器中验证以下绑定私钥：",
       "fuzzy": true
     },
     {
       "id": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
       "message": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
-      "translation": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
+      "translation": "从 Exchange 为所有体系结构获取服务 {ServiceOrg}/{ServiceName} V{ServiceVersion} 失败。{Err}",
       "placeholders": [
         {
           "id": "ServiceOrg",
@@ -11767,7 +11767,7 @@
     {
       "id": "Error retrieving service {ServiceOrg}/{ServiceName} version {ServiceVersion} from the Exchange. {Err}",
       "message": "Error retrieving service {ServiceOrg}/{ServiceName} version {ServiceVersion} from the Exchange. {Err}",
-      "translation": "Error retrieving service {ServiceOrg}/{ServiceName} version {ServiceVersion} from the Exchange. {Err}",
+      "translation": "从 Exchange 检索服务 {ServiceOrg}/{ServiceName} V{ServiceVersion} 时出错。{Err}",
       "placeholders": [
         {
           "id": "ServiceOrg",
@@ -11807,7 +11807,7 @@
     {
       "id": "Error validating secret bindings for service {SId}. {Err}",
       "message": "Error validating secret bindings for service {SId}. {Err}",
-      "translation": "Error validating secret bindings for service {SId}. {Err}",
+      "translation": "验证服务 {SId} 的私钥绑定时出错。{Err}",
       "placeholders": [
         {
           "id": "SId",
@@ -11831,7 +11831,7 @@
     {
       "id": "Error validating secret bindings for dependent service {Id}. {Err}",
       "message": "Error validating secret bindings for dependent service {Id}. {Err}",
-      "translation": "Error validating secret bindings for dependent service {Id}. {Err}",
+      "translation": "验证相依服务 {Id} 的私钥绑定时出错。{Err}",
       "placeholders": [
         {
           "id": "Id",
@@ -12437,7 +12437,7 @@
     {
       "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange?",
       "message": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange?",
-      "translation": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange?",
+      "translation": "确定要从 Horizon Exchange 中移除节点 {NodeOrg}/{Node} 吗？",
       "placeholders": [
         {
           "id": "NodeOrg",
@@ -13101,7 +13101,7 @@
     {
       "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove org {TheOrg} from the Horizon Exchange and the MMS?",
       "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove org {TheOrg} from the Horizon Exchange and the MMS?",
-      "translation": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove org {TheOrg} from the Horizon Exchange and the MMS?",
+      "translation": "警告：这还将删除此组织拥有的所有 Exchange 资源（节点、服务、模式，等等）。 确定要从 Horizon Exchange 和 MMS 中移除组织 {TheOrg} 吗？",
       "placeholders": [
         {
           "id": "TheOrg",
@@ -13433,7 +13433,7 @@
     {
       "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
       "message": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-      "translation": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
+      "translation": "输入文件中找不到待更新的模式属性。 支持的属性包括：label、description、services、userInput 和 secretBinding。",
       "fuzzy": true
     },
     {
@@ -13837,19 +13837,19 @@
     {
       "id": "Note: The following secret bindings are not required by any services for this pattern:",
       "message": "Note: The following secret bindings are not required by any services for this pattern:",
-      "translation": "Note: The following secret bindings are not required by any services for this pattern:",
+      "translation": "注：对于此模式，任何服务都不需要以下私钥绑定：",
       "fuzzy": true
     },
     {
       "id": "Note: The fully qualified binding secret name is 'openhorizon/<node_org>/<secret_binding_name>'. The binding secret cannot be verified in the secret manager for a public pattern because the node organization can be different from the pattern organization.",
       "message": "Note: The fully qualified binding secret name is 'openhorizon/<node_org>/<secret_binding_name>'. The binding secret cannot be verified in the secret manager for a public pattern because the node organization can be different from the pattern organization.",
-      "translation": "Note: The fully qualified binding secret name is 'openhorizon/<node_org>/<secret_binding_name>'. The binding secret cannot be verified in the secret manager for a public pattern because the node organization can be different from the pattern organization.",
+      "translation": "注：标准绑定私钥名称为“openhorizon/<node_org>/<secret_binding_name>”。无法在公共模式的私钥管理器中验证绑定私钥，因为节点组织可以与模式组织不同。",
       "fuzzy": true
     },
     {
       "id": "No secret is defined for any of the services. The secret binding is not needed: {SecretBinding}.",
       "message": "No secret is defined for any of the services. The secret binding is not needed: {SecretBinding}.",
-      "translation": "No secret is defined for any of the services. The secret binding is not needed: {SecretBinding}.",
+      "translation": "没有为任何服务定义私钥。不需要私钥绑定：{SecretBinding}。",
       "placeholders": [
         {
           "id": "SecretBinding",
@@ -14593,7 +14593,7 @@
     {
       "id": "Users in the root org must be hubadmins. Omit the -H option.",
       "message": "Users in the root org must be hubadmins. Omit the -H option.",
-      "translation": "根组织中的用户必须是中心管理员。请省略 -H 选项。",
+      "translation": "根组织中的用户必须是中心管理员。 省略 -H 选项。",
       "fuzzy": true
     },
     {
@@ -15649,7 +15649,7 @@
     {
       "id": "HZN_AGBOT_URL: {AgbotUrl}",
       "message": "HZN_AGBOT_URL: {AgbotUrl}",
-      "translation": "HZN_AGBOT_URL: {AgbotUrl}",
+      "translation": "HZN_AGBOT_URL：{AgbotUrl}",
       "placeholders": [
         {
           "id": "AgbotUrl",
@@ -16125,7 +16125,7 @@
     {
       "id": "Updating node name...",
       "message": "Updating node name...",
-      "translation": "Updating node name...",
+      "translation": "正在更新节点名...",
       "fuzzy": true
     },
     {
@@ -16977,49 +16977,49 @@
     {
       "id": "Failed",
       "message": "Failed",
-      "translation": "Failed",
+      "translation": "已失败",
       "fuzzy": true
     },
     {
       "id": "Progress so far: no agreements formed yet",
       "message": "Progress so far: no agreements formed yet",
-      "translation": "Progress so far: no agreements formed yet",
+      "translation": "目前的进展：尚未形成任何协议",
       "fuzzy": true
     },
     {
       "id": "Progress so far: agreement proposal has been received",
       "message": "Progress so far: agreement proposal has been received",
-      "translation": "Progress so far: agreement proposal has been received",
+      "translation": "目前的进展：已收到协议提案",
       "fuzzy": true
     },
     {
       "id": "Progress so far: agreement is accepted",
       "message": "Progress so far: agreement is accepted",
-      "translation": "Progress so far: agreement is accepted",
+      "translation": "目前的进展：已接受协议",
       "fuzzy": true
     },
     {
       "id": "Progress so far: agreement is finalized",
       "message": "Progress so far: agreement is finalized",
-      "translation": "Progress so far: agreement is finalized",
+      "translation": "目前的进展：已最终确定协议",
       "fuzzy": true
     },
     {
       "id": "Progress so far: service is created",
       "message": "Progress so far: service is created",
-      "translation": "Progress so far: service is created",
+      "translation": "目前的进展：已创建服务",
       "fuzzy": true
     },
     {
       "id": "Progress so far: execution is started",
       "message": "Progress so far: execution is started",
-      "translation": "Progress so far: execution is started",
+      "translation": "目前的进展：已开始执行",
       "fuzzy": true
     },
     {
       "id": "Success",
       "message": "Success",
-      "translation": "Success",
+      "translation": "成功",
       "fuzzy": true
     },
     {
@@ -17667,7 +17667,7 @@
     {
       "id": "failed to unmarshal REST API response: {Perr}",
       "message": "failed to unmarshal REST API response: {Perr}",
-      "translation": "failed to unmarshal REST API response: {Perr}",
+      "translation": "对 REST API 响应进行取消序列化失败：{Perr}",
       "placeholders": [
         {
           "id": "Perr",
@@ -17683,7 +17683,7 @@
     {
       "id": "failed to marshal 'agbot API' output: {Jerr}",
       "message": "failed to marshal 'agbot API' output: {Jerr}",
-      "translation": "failed to marshal 'agbot API' output: {Jerr}",
+      "translation": "对“agbot API”输出进行序列化失败：{Jerr}",
       "placeholders": [
         {
           "id": "Jerr",
@@ -17699,19 +17699,19 @@
     {
       "id": "-f is mutually exclusive with --secretDetail.",
       "message": "-f is mutually exclusive with --secretDetail.",
-      "translation": "-f is mutually exclusive with --secretDetail.",
+      "translation": "-f 与 --secretDetail 互斥。",
       "fuzzy": true
     },
     {
       "id": "Must specify either -f or --secretDetail.",
       "message": "Must specify either -f or --secretDetail.",
-      "translation": "Must specify either -f or --secretDetail.",
+      "translation": "必须指定 -f 或 --secretail。",
       "fuzzy": true
     },
     {
       "id": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?",
       "message": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?",
-      "translation": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?",
+      "translation": "私钥管理器中已存在私钥“{SecretName}”。要覆盖吗？",
       "placeholders": [
         {
           "id": "SecretName",
@@ -17727,7 +17727,7 @@
     {
       "id": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\".",
       "message": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\".",
-      "translation": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\".",
+      "translation": "凭证无效。 用户“{User}”无法访问“{SecretName}”。",
       "placeholders": [
         {
           "id": "User",
@@ -17751,7 +17751,7 @@
     {
       "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete.",
       "message": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete.",
-      "translation": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete.",
+      "translation": "私钥管理器中找不到私钥“{SecretName}”，没有要删除的任何内容。",
       "placeholders": [
         {
           "id": "SecretName",
@@ -17767,7 +17767,7 @@
     {
       "id": "Vault component not found in the management hub.",
       "message": "Vault component not found in the management hub.",
-      "translation": "Vault component not found in the management hub.",
+      "translation": "在管理中心内找不到保险库组件。",
       "fuzzy": true
     },
     {
@@ -17795,7 +17795,7 @@
     {
       "id": "Found service {SpecRef} with service id {InstanceId}.",
       "message": "Found service {SpecRef} with service id {InstanceId}.",
-      "translation": "Found service {SpecRef} with service id {InstanceId}.",
+      "translation": "找到服务标识为 {InstanceId} 的服务 {SpecRef}。",
       "placeholders": [
         {
           "id": "SpecRef",
@@ -17835,7 +17835,7 @@
     {
       "id": "Service {RefUrl} version {ServiceVersion} is not running on the node.",
       "message": "Service {RefUrl} version {ServiceVersion} is not running on the node.",
-      "translation": "Service {RefUrl} version {ServiceVersion} is not running on the node.",
+      "translation": "服务 {RefUrl} V{ServiceVersion} 未在该节点上运行。",
       "placeholders": [
         {
           "id": "RefUrl",
@@ -17875,7 +17875,7 @@
     {
       "id": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
       "message": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-      "translation": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
+      "translation": "服务定义 {ServiceName} 由多个容器组成。请使用 -c 标志指定容器名称。",
       "placeholders": [
         {
           "id": "ServiceName",
@@ -17907,7 +17907,7 @@
     {
       "id": "Container {ContainerName} is not running as part of service {ServiceName}.",
       "message": "Container {ContainerName} is not running as part of service {ServiceName}.",
-      "translation": "Container {ContainerName} is not running as part of service {ServiceName}.",
+      "translation": "容器 {ContainerName} 未作为服务 {ServiceName} 的一部分运行。",
       "placeholders": [
         {
           "id": "ContainerName",
@@ -17931,7 +17931,7 @@
     {
       "id": "Container {ContainerName} is not running as part of service {ServiceName} version.",
       "message": "Container {ContainerName} is not running as part of service {ServiceName} version.",
-      "translation": "Container {ContainerName} is not running as part of service {ServiceName} version.",
+      "translation": "容器 {ContainerName} 未作为服务 {ServiceName} 版本的一部分运行。",
       "placeholders": [
         {
           "id": "ContainerName",
@@ -17963,7 +17963,7 @@
     {
       "id": "Could not find service {ServiceName} running on the node.",
       "message": "Could not find service {ServiceName} running on the node.",
-      "translation": "Could not find service {ServiceName} running on the node.",
+      "translation": "找不到在节点上运行的服务 {ServiceName}。",
       "placeholders": [
         {
           "id": "ServiceName",
@@ -17979,7 +17979,7 @@
     {
       "id": "Could not find service {ServiceName} version {ServiceVersion} running on the node.",
       "message": "Could not find service {ServiceName} version {ServiceVersion} running on the node.",
-      "translation": "Could not find service {ServiceName} version {ServiceVersion} running on the node.",
+      "translation": "找不到在节点上运行的服务 {ServiceName} V{ServiceVersion}。",
       "placeholders": [
         {
           "id": "ServiceName",
@@ -18003,7 +18003,7 @@
     {
       "id": "Displaying log messages of container {ContainerName} for service {Name} with service id {InstanceId}.",
       "message": "Displaying log messages of container {ContainerName} for service {Name} with service id {InstanceId}.",
-      "translation": "Displaying log messages of container {ContainerName} for service {Name} with service id {InstanceId}.",
+      "translation": "正在显示服务标识为 {InstanceId} 的服务 {Name} 的容器 {ContainerName} 的日志消息。",
       "placeholders": [
         {
           "id": "ContainerName",
@@ -18275,7 +18275,7 @@
     {
       "id": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
       "message": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "translation": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
+      "translation": "在组织 {Org} 中找不到类型为“{ObjType}”的对象元数据“{ObjId}”",
       "placeholders": [
         {
           "id": "ObjId",
@@ -18307,7 +18307,7 @@
     {
       "id": "Failed to verify data: {Error}",
       "message": "Failed to verify data: {Error}",
-      "translation": "Failed to verify data: {Error}",
+      "translation": "验证数据失败：{Error}",
       "placeholders": [
         {
           "id": "Error",
@@ -18323,7 +18323,7 @@
     {
       "id": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}, err: {Err}",
       "message": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}, err: {Err}",
-      "translation": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}, err: {Err}",
+      "translation": "未能将类型为“{ObjType}”的对象“{ObjId}”的数据保存至文件 {FileName}，错误：{Err}",
       "placeholders": [
         {
           "id": "ObjId",
@@ -18703,19 +18703,19 @@
     {
       "id": "cannot specify --skipDigitalSig with --hash",
       "message": "cannot specify --skipDigitalSig with --hash",
-      "translation": "cannot specify --skipDigitalSig with --hash",
+      "translation": "不能将 --skipDigitalSig 与 --hash 一起指定",
       "fuzzy": true
     },
     {
       "id": "cannot specify --skipDigitalSig with --hashAlgo",
       "message": "cannot specify --skipDigitalSig with --hashAlgo",
-      "translation": "cannot specify --skipDigitalSig with --hashAlgo",
+      "translation": "不能将 --skipDigitalSig 与 --hashAlgo 一起指定",
       "fuzzy": true
     },
     {
       "id": "invalid value for --hashAlgo, please use SHA1 or SHA256",
       "message": "invalid value for --hashAlgo, please use SHA1 or SHA256",
-      "translation": "invalid value for --hashAlgo, please use SHA1 or SHA256",
+      "translation": "--hashAlgo 的值无效，请使用 SHA1 或 SHA256",
       "fuzzy": true
     },
     {
@@ -18745,7 +18745,7 @@
     {
       "id": "Digital sign with {HashAlgorithm} will be performed for data integrity. It will delay the MMS object publish.",
       "message": "Digital sign with {HashAlgorithm} will be performed for data integrity. It will delay the MMS object publish.",
-      "translation": "Digital sign with {HashAlgorithm} will be performed for data integrity. It will delay the MMS object publish.",
+      "translation": "将执行使用 {HashAlgorithm} 的数字签名，以确保数据完整性。这将延迟 MMS 对象发布。",
       "placeholders": [
         {
           "id": "HashAlgorithm",
@@ -18761,7 +18761,7 @@
     {
       "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
       "message": "failed to digital sign the file {ObjFile}, Error: {Err}",
-      "translation": "failed to digital sign the file {ObjFile}, Error: {Err}",
+      "translation": "对文件 {ObjFile} 进行数字签名失败，错误：{Err}",
       "placeholders": [
         {
           "id": "ObjFile",
@@ -18873,25 +18873,25 @@
     {
       "id": "Hash value is loaded.",
       "message": "Hash value is loaded.",
-      "translation": "Hash value is loaded.",
+      "translation": "已装入散列值。",
       "fuzzy": true
     },
     {
       "id": "Start hashing the file...",
       "message": "Start hashing the file...",
-      "translation": "Start hashing the file...",
+      "translation": "开始散列文件...",
       "fuzzy": true
     },
     {
       "id": "Data hash is generated. Start digital signing with the data hash...",
       "message": "Data hash is generated. Start digital signing with the data hash...",
-      "translation": "Data hash is generated. Start digital signing with the data hash...",
+      "translation": "已生成数据散列。使用数据散列开始数字签名...",
       "fuzzy": true
     },
     {
       "id": "Hash algorithm {HashAlgo} is not supported",
       "message": "Hash algorithm {HashAlgo} is not supported",
-      "translation": "Hash algorithm {HashAlgo} is not supported",
+      "translation": "不支持散列算法 {HashAlgo}",
       "placeholders": [
         {
           "id": "HashAlgo",
@@ -20055,7 +20055,7 @@
     {
       "id": "Error resolving horizon container name: {Err}",
       "message": "Error resolving horizon container name: {Err}",
-      "translation": "Error resolving horizon container name: {Err}",
+      "translation": "解析 Horizon 容器名称时出错：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -20071,7 +20071,7 @@
     {
       "id": "Looking for horizon container by name: {ContainerName}",
       "message": "Looking for horizon container by name: {ContainerName}",
-      "translation": "Looking for horizon container by name: {ContainerName}",
+      "translation": "正在按名称查找 Horizon 容器：{ContainerName}",
       "placeholders": [
         {
           "id": "ContainerName",
@@ -20087,7 +20087,7 @@
     {
       "id": "Error during checking if anax container is running: {ErrBytes}",
       "message": "Error during checking if anax container is running: {ErrBytes}",
-      "translation": "Error during checking if anax container is running: {ErrBytes}",
+      "translation": "检查 anax 容器是否正在运行期间出错：{ErrBytes}",
       "placeholders": [
         {
           "id": "ErrBytes",
@@ -20103,13 +20103,13 @@
     {
       "id": "Restarting horizon container...",
       "message": "Restarting horizon container...",
-      "translation": "Restarting horizon container...",
+      "translation": "正在重新启动 Horizon 容器...",
       "fuzzy": true
     },
     {
       "id": "Error during removing horizon db files from horizon container: {ErrBytes}",
       "message": "Error during removing horizon db files from horizon container: {ErrBytes}",
-      "translation": "Error during removing horizon db files from horizon container: {ErrBytes}",
+      "translation": "从 Horizon 容器中移除 Horizon 数据库文件期间出错：{ErrBytes}",
       "placeholders": [
         {
           "id": "ErrBytes",
@@ -20125,7 +20125,7 @@
     {
       "id": "Error during removing policy files from horizon container: {ErrBytes}",
       "message": "Error during removing policy files from horizon container: {ErrBytes}",
-      "translation": "Error during removing policy files from horizon container: {ErrBytes}",
+      "translation": "从 Horizon 容器中移除策略文件期间出错：{ErrBytes}",
       "placeholders": [
         {
           "id": "ErrBytes",
@@ -20141,7 +20141,7 @@
     {
       "id": "Error during restarting the anax container: {ErrBytes}",
       "message": "Error during restarting the anax container: {ErrBytes}",
-      "translation": "Error during restarting the anax container: {ErrBytes}",
+      "translation": "重新启动 anax 容器期间出错：{ErrBytes}",
       "placeholders": [
         {
           "id": "ErrBytes",
@@ -20157,7 +20157,7 @@
     {
       "id": "Could not find anax container by {ContainerName} name",
       "message": "Could not find anax container by {ContainerName} name",
-      "translation": "Could not find anax container by {ContainerName} name",
+      "translation": "找不到名称为 {ContainerName} 的 anax 容器",
       "placeholders": [
         {
           "id": "ContainerName",
@@ -20883,7 +20883,7 @@
     {
       "id": "Unable to create version expression from {VersionRange}. {Err}",
       "message": "Unable to create version expression from {VersionRange}. {Err}",
-      "translation": "Unable to create version expression from {VersionRange}. {Err}",
+      "translation": "无法从 {VersionRange} 创建版本表达式。{Err}",
       "placeholders": [
         {
           "id": "VersionRange",
@@ -20931,7 +20931,7 @@
     {
       "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
       "message": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "找不到 {TopId} 的相依服务的定义。在所有服务都处于 Exchange 中之前，无法完全评估 {PROPNODEPRIVILEGED} 的兼容性。",
       "placeholders": [
         {
           "id": "TopId",
@@ -21651,13 +21651,13 @@
     {
       "id": "The SecretBindingCheck input cannot be null",
       "message": "The SecretBindingCheck input cannot be null",
-      "translation": "The SecretBindingCheck input cannot be null",
+      "translation": "SecretBindingCheck 输入不得为 Null",
       "fuzzy": true
     },
     {
       "id": "Node type '{NodeType}' does not support secret binding check.",
       "message": "Node type '{NodeType}' does not support secret binding check.",
-      "translation": "Node type '{NodeType}' does not support secret binding check.",
+      "translation": "节点类型“{NodeType}”不支持私钥绑定检查。",
       "placeholders": [
         {
           "id": "NodeType",
@@ -21695,13 +21695,13 @@
     {
       "id": "Secret Binding Incompatible",
       "message": "Secret Binding Incompatible",
-      "translation": "Secret Binding Incompatible",
+      "translation": "私钥绑定不兼容",
       "fuzzy": true
     },
     {
       "id": "Type Incompatible",
       "message": "Type Incompatible",
-      "translation": "Type Incompatible",
+      "translation": "类型不兼容",
       "fuzzy": true
     },
     {
@@ -21753,7 +21753,7 @@
     {
       "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
       "message": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
-      "translation": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "translation": "警告：任何服务都不需要以下私钥绑定：{ExtraneousSB}",
       "placeholders": [
         {
           "id": "ExtraneousSB",
@@ -21797,7 +21797,7 @@
     {
       "id": "Error verifying secret in the secret manager. {Err}",
       "message": "Error verifying secret in the secret manager. {Err}",
-      "translation": "Error verifying secret in the secret manager. {Err}",
+      "translation": "验证私钥管理器中的私钥时出错。{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -21819,7 +21819,7 @@
     {
       "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
       "message": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
-      "translation": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "translation": "找不到 {Org}/{URL} {Arch} {Version} 的相依服务。{Err}",
       "placeholders": [
         {
           "id": "Org",
@@ -21867,13 +21867,13 @@
     {
       "id": "Secret binding for a cluster service is not supported.",
       "message": "Secret binding for a cluster service is not supported.",
-      "translation": "Secret binding for a cluster service is not supported.",
+      "translation": "不支持集群服务的私钥绑定。",
       "fuzzy": true
     },
     {
       "id": "No secret binding found for the following service secrets: {NbArray}.",
       "message": "No secret binding found for the following service secrets: {NbArray}.",
-      "translation": "No secret binding found for the following service secrets: {NbArray}.",
+      "translation": "找不到以下服务私钥的私钥绑定：{NbArray}。",
       "placeholders": [
         {
           "id": "NbArray",
@@ -21889,7 +21889,7 @@
     {
       "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
       "message": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
-      "translation": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "translation": "服务 {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 的私钥绑定中指定了错误的版本字符串 {ServiceVersionRange}，错误 {Err}",
       "placeholders": [
         {
           "id": "ServiceVersionRange",
@@ -21945,7 +21945,7 @@
     {
       "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
       "message": "Error checking version {SvcVersion} in range {VExp}. {Err}",
-      "translation": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "translation": "检查范围 {VExp} 中的版本 {SvcVersion} 时出错。{Err}",
       "placeholders": [
         {
           "id": "SvcVersion",
@@ -21977,19 +21977,19 @@
     {
       "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
       "message": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
-      "translation": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "translation": "agbot URL 在检查私钥绑定时不能是空字符串。请确保已设置 HZN_AGBOT_URL。",
       "fuzzy": true
     },
     {
       "id": "The node organization must be provided.",
       "message": "The node organization must be provided.",
-      "translation": "The node organization must be provided.",
+      "translation": "必须提供节点组织。",
       "fuzzy": true
     },
     {
       "id": "Error parsing secret name in the secret binding. {Errparse}",
       "message": "Error parsing secret name in the secret binding. {Errparse}",
-      "translation": "Error parsing secret name in the secret binding. {Errparse}",
+      "translation": "解析私钥绑定中的私钥名称时出错。{Errparse}",
       "placeholders": [
         {
           "id": "Errparse",
@@ -22005,7 +22005,7 @@
     {
       "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
       "message": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
-      "translation": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "translation": "在私钥管理器中检查私钥 {VaultSecretName} 时出错。{Err}",
       "placeholders": [
         {
           "id": "VaultSecretName",
@@ -22029,13 +22029,13 @@
     {
       "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
       "message": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "绑定私钥名称不能是空字符串。有效格式为：“<secretname>”（对于组织级别私钥）和“user/<username>/<secretname>”（对于用户级别私钥）。",
       "fuzzy": true
     },
     {
       "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
       "message": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "绑定私钥名称的格式无效：{SecretName}。有效格式为：“<secretname>”（对于组织级别私钥）和“user/<username>/<secretname>”（对于用户级别私钥）。",
       "placeholders": [
         {
           "id": "SecretName",
@@ -23675,19 +23675,19 @@
     {
       "id": "Unable to authenticate nil request for secrets API",
       "message": "Unable to authenticate nil request for secrets API",
-      "translation": "Unable to authenticate nil request for secrets API",
+      "translation": "无法认证针对私钥 API 的 nil 请求",
       "fuzzy": true
     },
     {
       "id": "Unable to extract basic auth for request",
       "message": "Unable to extract basic auth for request",
-      "translation": "Unable to extract basic auth for request",
+      "translation": "无法抽取请求的基本认证",
       "fuzzy": true
     },
     {
       "id": "unable to verify {AppKey}, error {Err}",
       "message": "unable to verify {AppKey}, error {Err}",
-      "translation": "unable to verify {AppKey}, error {Err}",
+      "translation": "无法验证 {AppKey}，错误 {Err}",
       "placeholders": [
         {
           "id": "AppKey",
@@ -23711,7 +23711,7 @@
     {
       "id": "credentials for {AppKey} are not valid",
       "message": "credentials for {AppKey} are not valid",
-      "translation": "credentials for {AppKey} are not valid",
+      "translation": "{AppKey} 的凭证无效",
       "placeholders": [
         {
           "id": "AppKey",
