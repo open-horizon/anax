@@ -179,6 +179,15 @@ func (w *ChangesWorker) NewEvent(incoming events.Message) {
 		case events.UNCONFIGURE_COMPLETE:
 			w.Commands <- worker.NewTerminateCommand("shutdown")
 		}
+	case *events.ServiceConfigStateChangeMessage:
+		msg, _ := incoming.(*events.ServiceConfigStateChangeMessage)
+		switch msg.Event().Id {
+		case events.SERVICE_CONFIG_STATE_CHANGED:
+			err := w.recordExchangeDeviceStatus()
+			if err != nil {
+				glog.Errorf(chglog(fmt.Sprintf("error recording exchange device status, error %v", err)))
+			}
+		}
 
 	default: //nothing
 
@@ -611,6 +620,20 @@ func (w *ChangesWorker) getHeartbeatIntervals() bool {
 	}
 
 	return updated
+}
+
+func (w *ChangesWorker) recordExchangeDeviceStatus() error {
+	device, err := exchange.GetHTTPDeviceHandler(w)(w.GetExchangeId(), "")
+	if err != nil {
+		return fmt.Errorf("error reading node from exchange: %v", err)
+	}
+
+	if hash, err := device.GetRegisteredServicesHash(); err != nil {
+		return fmt.Errorf("error hashing the registeredServices: %v", err)
+	} else if err = persistence.SaveNodeRegisteredServicesHash_Exch(w.db, hash); err != nil {
+		return fmt.Errorf("error saving the RegisteredServices hash: %v", err)
+	}
+	return nil
 }
 
 // Utility logging function

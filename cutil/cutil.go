@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"golang.org/x/crypto/sha3"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -832,4 +833,14 @@ func GetHashFromString(str string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(str))
 	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+// HashObject returns the SHA3-256 digest of the JSON marshaled from provided interface
+func HashObject(i interface{}) ([]byte, error) {
+	bytes, err := json.Marshal(i)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("error marshaling the data: %v", err))
+	}
+	hash := sha3.Sum256(bytes)
+	return hash[:], nil
 }

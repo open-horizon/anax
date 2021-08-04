@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -61,13 +62,17 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("The service configstate '%v' is not supported. The supported states are: %v, %v", service_cs.ConfigState, exchange.SERVICE_CONFIGSTATE_ACTIVE, exchange.SERVICE_CONFIGSTATE_SUSPENDED), "configState")), nil
 	}
 
-	glog.V(5).Infof(apiLogString(fmt.Sprintf("Start changing service configuration state for %v for the node.", service_cs)))
-
 	pDevice, err := getDevice(fmt.Sprintf("%v/%v", pLocalDevice.Org, pLocalDevice.Id), pLocalDevice.Token)
 	if err != nil {
 		glog.Errorf(apiLogString(fmt.Sprintf("Unable to retrieve node resource for %v from the exchange, error %v", pLocalDevice.Id, err)))
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to retrieve node resource for %v from the exchange, error %v", pLocalDevice.Id, err))), nil
 	}
+	if serviceConfigStateIsOutdated, err := isServiceConfigStateOutdated(pDevice, db); err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("Cannot check if service configstate is synched with exchange: %v", err))), nil
+	} else if serviceConfigStateIsOutdated {
+		return errorhandler(NewSystemError("Cannot change the service state now because of recent config state changes in Exchange, please try again later")), nil
+	}
+	glog.V(5).Infof(apiLogString(fmt.Sprintf("Start changing service configuration state for %v for the node.", service_cs)))
 
 	// save the services
 	changed_services := []events.ServiceConfigState{}
@@ -146,4 +151,18 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Complete changing service configuration state to %v for the node.", service_cs)))
 
 	return false, changed_services
+}
+
+func isServiceConfigStateOutdated(pDevice *exchange.Device, db *bolt.DB) (bool, error) {
+	exchHash, err := pDevice.GetRegisteredServicesHash()
+	if err != nil {
+		return false, fmt.Errorf("failed to hash the RegisteredService object: %v", err)
+	}
+
+	savedHash, err := persistence.GetNodeRegisteredServicesHash_Exch(db)
+	if err != nil {
+		return false, fmt.Errorf("unable to load latest saved RegisteredServices hash from persistence, error %v", err)
+	}
+
+	return !bytes.Equal(exchHash, savedHash), nil
 }

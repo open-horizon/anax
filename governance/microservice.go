@@ -1072,7 +1072,27 @@ func (w *GovernanceWorker) UpdateRegisteredServicesWithAgreement() {
 		glog.Errorf(logString(fmt.Sprintf("Error patching node %v with new registeredServices %v. %v", w.GetExchangeId(), newRegisteredServices, err)))
 		return
 	} else {
-		glog.V(3).Infof(logString(fmt.Sprintf("Complete updating the node %v with the new registeredServices %v in the exchange.", w.GetExchangeId(), newRegisteredServices)))
+		glog.V(3).Infof(logString(fmt.Sprintf("Complete updating the node %v with the new registeredServices %v in the exchange. Saving the hash in the persistance...", w.GetExchangeId(), newRegisteredServices)))
+
+		// get and save updated registeredServices from Exchange
+		pDevice, err = exchange.GetHTTPDeviceHandler(w)(w.GetExchangeId(), w.GetExchangeToken())
+		if err != nil {
+			eventlog.LogExchangeEvent(w.db, persistence.SEVERITY_ERROR,
+				persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_NODE_FROM_EXCH, w.GetExchangeId(), err.Error()),
+				persistence.EC_EXCHANGE_ERROR, w.GetExchangeURL())
+			glog.Errorf(logString(fmt.Sprintf("Error retrieving node %v from the exchange: %v", w.GetExchangeId(), err)))
+			return
+		} else if pDevice == nil {
+			glog.Errorf(logString(fmt.Sprintf("Cannot get node %v from the exchange.", w.GetExchangeId())))
+			return
+		}
+
+		if hash, err := pDevice.GetRegisteredServicesHash(); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error hashing the registeredServices: %v", err)))
+			return
+		} else if err = persistence.SaveNodeRegisteredServicesHash_Exch(w.db, hash); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error persisting the registeredServices hash: %v", err)))
+		}
 	}
 }
 

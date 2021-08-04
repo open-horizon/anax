@@ -75,7 +75,7 @@ function checkNetspeedLocationContainers {
 	ret=$?
 	if [[ "$PATTERN" == "sall" ]]; then
 		# in this pattern case, locgps is agreementless service, so it should stay up
-		# all the time.  
+		# all the time.
 		if [ $ret -ne 0 ]; then
 			echo -e "${PREFIX} container for e2edev@somecomp.com/locgps is missing."
 			return 1
@@ -85,7 +85,7 @@ function checkNetspeedLocationContainers {
 			echo -e "${PREFIX} container for e2edev@somecomp.com/locgps is missing."
 			return 1
 		fi
-	fi		
+	fi
 
 	checkContainer "e2edev@somecomp.com" "my.company.com.services.cpu2"
 	ret=$?

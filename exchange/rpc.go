@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -193,6 +194,16 @@ func (d *Device) GetNodeType() string {
 	} else {
 		return d.NodeType
 	}
+}
+
+func (d *Device) GetRegisteredServicesHash() ([]byte, error) {
+	for i, svc := range d.RegisteredServices {
+		// prevent different hash value for NULL and empty array
+		if len(svc.Properties) == 0 {
+			d.RegisteredServices[i].Properties = make([]MSProp, 0)
+		}
+	}
+	return cutil.HashObject(d.RegisteredServices)
 }
 
 type GetDevicesResponse struct {
