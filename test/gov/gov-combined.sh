@@ -12,7 +12,7 @@ function set_exports {
     export DEVICE_ID="an12345"
     export DEVICE_NAME="anaxdev1"
     export DEVICE_ORG="e2edev@somecomp.com"
-    export TOKEN="abcdefg"
+    export TOKEN="Abcdefghijklmno1"
 
     export HZN_AGENT_PORT=8510
     export ANAX_API="http://localhost:${HZN_AGENT_PORT}"

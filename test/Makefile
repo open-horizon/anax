@@ -69,7 +69,7 @@ AGBOT_API ?= http://agbot:8080
 AGBOT2_API ?= http://agbot2:8080
 AGBOT_SAPI_URL ?= https://agbot:8083
 AGBOT_NAME ?= agbot
-AGBOT_TOKEN ?= abcdefg
+AGBOT_TOKEN ?= Abcdefghijklmno1
 
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
