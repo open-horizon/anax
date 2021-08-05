@@ -382,7 +382,11 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			msgPrinter.Println()
 
 			// Wait for the service to be started.
-			WaitForService(waitOrg, waitService, waitTimeout, pattern, pat, nodeType, anaxArch, org, nodeIdTok)
+			var userOrg, userAuth string
+			if userPw != "" {
+				userOrg, userAuth = cliutils.TrimOrg(org, userPw)
+			}
+			WaitForService(waitOrg, waitService, waitTimeout, pattern, pat, nodeType, anaxArch, org, nodeIdTok, userOrg, userAuth)
 		}
 	} else {
 		msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
