@@ -1178,30 +1178,33 @@ func getErrorServiceHandler() ServiceHandler {
 func Test_ServiceSuspended(t *testing.T) {
 	m1 := Microservice{
 		Url:         "myorg1/http://servicename1",
+		Version:     "1.0",
 		ConfigState: "suspended",
 	}
 	m2 := Microservice{
 		Url:         "myorg2/http://servicename2",
+		Version:     "2.0",
 		ConfigState: "active",
 	}
 	m3 := Microservice{
 		Url:         "myname@myorg.com/http://servicename3",
+		Version:     "3.0",
 		ConfigState: "suspended",
 	}
 
-	found, suspended := ServiceSuspended([]Microservice{m1, m2, m3}, "http://servicename1", "myorg1")
+	found, suspended := ServiceSuspended([]Microservice{m1, m2, m3}, "http://servicename1", "myorg1", "")
 	if !found || !suspended {
 		t.Errorf("ServiceSuspended should have returned (true, true) but got (%v, %v)", found, suspended)
 	}
-	found, suspended = ServiceSuspended([]Microservice{m1, m2, m3}, "http://servicename2", "myorg2")
+	found, suspended = ServiceSuspended([]Microservice{m1, m2, m3}, "http://servicename2", "myorg2", "2.0")
 	if !found || suspended {
 		t.Errorf("ServiceSuspended should have returned (true, false) but got (%v, %v)", found, suspended)
 	}
-	found, suspended = ServiceSuspended([]Microservice{m1, m2, m3}, "http://servicename3", "myname@myorg.com")
+	found, suspended = ServiceSuspended([]Microservice{m1, m2, m3}, "http://servicename3", "myname@myorg.com", "3.0")
 	if !found || !suspended {
 		t.Errorf("ServiceSuspended should have returned (true, true) but got (%v, %v)", found, suspended)
 	}
-	found, suspended = ServiceSuspended([]Microservice{m1, m2, m3}, "http://servicename2", "myorg1")
+	found, suspended = ServiceSuspended([]Microservice{m1, m2, m3}, "http://servicename2", "myorg1", "")
 	if found || suspended {
 		t.Errorf("ServiceSuspended should have returned (true, true) but got (%v, %v)", found, suspended)
 	}

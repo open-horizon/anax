@@ -388,7 +388,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 // Unregisters the given microservice from the exchange
 func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 	patchExchangeDevice exchange.PatchDeviceHandler,
-	spec_ref string, org string,
+	spec_ref string, org string, version string,
 	device_id string, device_token string, db *bolt.DB) error {
 
 	glog.V(3).Infof("Unregister service %v/%v from exchange for %v.", org, spec_ref, device_id)
@@ -403,7 +403,7 @@ func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 		// remove the service with the given spec_ref
 		ms_put := make([]exchange.Microservice, 0, 10)
 		for _, ms := range services {
-			if ms.Url != cutil.FormOrgSpecUrl(spec_ref, org) {
+			if ms.Url != cutil.FormOrgSpecUrl(spec_ref, org) || (version != "" && ms.Version != "" && version != ms.Version) {
 				ms_put = append(ms_put, ms)
 			}
 		}
@@ -520,7 +520,7 @@ func FindOrCreateMicroserviceDef(db *bolt.DB, service_name string, service_org s
 	// create a MicroserviceDefinition object with the hightest version within the range if it is not created yet
 	if backupMsdef != nil {
 		if c, err := semanticversion.CompareVersions(backupMsdef.Version, sdef.Version); err != nil {
-			return nil, fmt.Errorf("Error compairing version %v with version %v. %v", backupMsdef.Version, sdef.Version, err)
+			return nil, fmt.Errorf("Error compairing version %v with version %v for service %v/%v. %v", backupMsdef.Version, sdef.Version, service_org, service_name, err)
 		} else if c >= 0 {
 			return backupMsdef, nil
 		}

@@ -629,11 +629,13 @@ Environment Variables:
 	serviceConfigStateActiveCmd := serviceConfigStateCmd.Command("resume | r", msgPrinter.Sprintf("Change the configuration state to 'active' for a service.")).Alias("r").Alias("resume")
 	resumeAllServices := serviceConfigStateActiveCmd.Flag("all", msgPrinter.Sprintf("Resume all registerd services.")).Short('a').Bool()
 	resumeServiceOrg := serviceConfigStateActiveCmd.Arg("serviceorg", msgPrinter.Sprintf("The organization of the service that should be resumed.")).String()
-	resumeServiceName := serviceConfigStateActiveCmd.Arg("service", msgPrinter.Sprintf("The name of the service that should be resumed.")).String()
-	serviceConfigStateSuspendCmd := serviceConfigStateCmd.Command("suspend | s", msgPrinter.Sprintf("Change the configuration state to 'suspend' for a service.")).Alias("s").Alias("suspend")
+	resumeServiceName := serviceConfigStateActiveCmd.Arg("service", msgPrinter.Sprintf("The name of the service that should be resumed. If omitted, all the services for the organization will be resumed.")).String()
+	resumeServiceVersion := serviceConfigStateActiveCmd.Arg("version", msgPrinter.Sprintf("The version of the service that should be resumed. If omitted, all the versions for this service will be resumed.")).String()
+	serviceConfigStateSuspendCmd := serviceConfigStateCmd.Command("suspend | s", msgPrinter.Sprintf("Change the configuration state to 'suspend' for a service. Parent and child dependencies of the suspended service will be stopped until the service is resumed.")).Alias("s").Alias("suspend")
 	suspendAllServices := serviceConfigStateSuspendCmd.Flag("all", msgPrinter.Sprintf("Suspend all registerd services.")).Short('a').Bool()
 	suspendServiceOrg := serviceConfigStateSuspendCmd.Arg("serviceorg", msgPrinter.Sprintf("The organization of the service that should be suspended.")).String()
-	suspendServiceName := serviceConfigStateSuspendCmd.Arg("service", msgPrinter.Sprintf("The name of the service that should be suspended.")).String()
+	suspendServiceName := serviceConfigStateSuspendCmd.Arg("service", msgPrinter.Sprintf("The name of the service that should be suspended. If omitted, all the services for the organization will be suspended.")).String()
+	suspendServiceVersion := serviceConfigStateSuspendCmd.Arg("version", msgPrinter.Sprintf("The version of the service that should be suspended. If omitted, all the versions for this service will be suspended.")).String()
 	forceSuspendService := serviceConfigStateSuspendCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	serviceLogCmd := serviceCmd.Command("log", msgPrinter.Sprintf("Show the container logs for a service."))
 	logServiceName := serviceLogCmd.Arg("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .")).Required().String()
@@ -1099,9 +1101,9 @@ Environment Variables:
 	case serviceConfigStateListCmd.FullCommand():
 		service.ListConfigState()
 	case serviceConfigStateSuspendCmd.FullCommand():
-		service.Suspend(*forceSuspendService, *suspendAllServices, *suspendServiceOrg, *suspendServiceName)
+		service.Suspend(*forceSuspendService, *suspendAllServices, *suspendServiceOrg, *suspendServiceName, *suspendServiceVersion)
 	case serviceConfigStateActiveCmd.FullCommand():
-		service.Resume(*resumeAllServices, *resumeServiceOrg, *resumeServiceName)
+		service.Resume(*resumeAllServices, *resumeServiceOrg, *resumeServiceName, *resumeServiceVersion)
 	case unregisterCmd.FullCommand():
 		unregister.DoIt(*forceUnregister, *removeNodeUnregister, *deepCleanUnregister, *timeoutUnregister)
 	case statusCmd.FullCommand():

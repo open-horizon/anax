@@ -15,6 +15,7 @@ const (
 	EL_GOV_ERR_RETRIEVE_UNARCHIVED_AG_FROM_DB = "Unable to retrieve unarchived agreements from database. %v"
 	EL_GOV_ERR_MARK_AG_TERMINATED_IN_DB       = "Error marking agreement %v terminated in database: %v."
 	EL_GOV_ERR_RETRIEVE_SDEFS_FROM_DB         = "Error getting service definitions %v from db. %v"
+	EL_GOV_ERR_RETRIEVE_ALL_SDEFS_FROM_DB     = "Error retrieving all service definitions from db. %v"
 	EL_GOV_ERR_RETRIEVE_SINSTS_VER_FROM_DB    = "Error retrieving all service instances from database for %v/%v version %v key %v. %v"
 	EL_GOV_ERR_RETRIEVE_SINSTS_FOR_FROM_DB    = "Error retrieving all service instances from database for %v. %v"
 	EL_GOV_ERR_RETRIEVE_SINSTS_FROM_DB        = "Error retrieving all service instances from database, error: %v"
@@ -125,6 +126,7 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_UNARCHIVED_AG_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_MARK_AG_TERMINATED_IN_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_SDEFS_FROM_DB)
+	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_ALL_SDEFS_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_SINSTS_VER_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_SINSTS_FOR_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_SINSTS_FROM_DB)

@@ -239,17 +239,19 @@ const SERVICE_CONFIGSTATE_ACTIVE = "active"
 type ServiceConfigState struct {
 	Url         string `json:"url"`
 	Org         string `json:"org"`
+	Version     string `json:"version"`
 	ConfigState string `json:"configState"`
 }
 
 func (s *ServiceConfigState) String() string {
-	return fmt.Sprintf("Url: %v, Org: %v, ConfigState: %v", s.Url, s.Org, s.ConfigState)
+	return fmt.Sprintf("Url: %v, Org: %v, Version: %v, ConfigState: %v", s.Url, s.Org, s.Version, s.ConfigState)
 }
 
-func NewServiceConfigState(url, org, state string) *ServiceConfigState {
+func NewServiceConfigState(url, org, version, state string) *ServiceConfigState {
 	return &ServiceConfigState{
 		Url:         url,
 		Org:         org,
+		Version:     version,
 		ConfigState: state,
 	}
 }
@@ -785,7 +787,7 @@ func GetServicesConfigState(httpClientFactory *config.HTTPClientFactory, dev_id 
 			config_state = SERVICE_CONFIGSTATE_ACTIVE
 		}
 
-		mcs := NewServiceConfigState(url, org, config_state)
+		mcs := NewServiceConfigState(url, org, service.Version, config_state)
 		service_cs = append(service_cs, *mcs)
 	}
 
@@ -796,12 +798,13 @@ func GetServicesConfigState(httpClientFactory *config.HTTPClientFactory, dev_id 
 
 // check the registered services to see if the given service is suspended or not
 // returns (found, suspended)
-func ServiceSuspended(registered_services []Microservice, service_url string, service_org string) (bool, bool) {
+func ServiceSuspended(registered_services []Microservice, service_url string, service_org string, service_ver string) (bool, bool) {
 	if registered_services == nil {
 		return false, false
 	}
 	for _, svc := range registered_services {
-		if svc.Url == cutil.FormOrgSpecUrl(service_url, service_org) || svc.Url == service_url {
+		if (svc.Url == cutil.FormOrgSpecUrl(service_url, service_org) || svc.Url == service_url) &&
+			(svc.Version == "" || service_ver == "" || service_ver == svc.Version) {
 			if svc.ConfigState == SERVICE_CONFIGSTATE_SUSPENDED {
 				return true, true
 			} else {
