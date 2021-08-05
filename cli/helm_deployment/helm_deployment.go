@@ -1,6 +1,8 @@
 package helm_deployment
 
 import (
+	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,7 +26,7 @@ func NewHelmDeploymentConfigPlugin() plugin_registry.DeploymentConfigPlugin {
 	return new(HelmDeploymentConfigPlugin)
 }
 
-func (p *HelmDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePath string, ctx plugin_registry.PluginContext) (bool, string, string, error) {
+func (p *HelmDeploymentConfigPlugin) Sign(dep map[string]interface{}, privKey *rsa.PrivateKey, ctx plugin_registry.PluginContext) (bool, string, string, error) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -60,9 +62,15 @@ func (p *HelmDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 	}
 	depStr := string(deployment)
 
-	sig, err := sign.Input(keyFilePath, deployment)
+	hasher := sha256.New()
+	_, err = hasher.Write(deployment)
 	if err != nil {
-		return true, "", "", errors.New(msgPrinter.Sprintf("problem signing deployment string with %s: %v", keyFilePath, err))
+		return true, "", "", err
+	}
+	sig, err := sign.Sha256HashOfInput(privKey, hasher)
+
+	if err != nil {
+		return true, "", "", errors.New(msgPrinter.Sprintf("problem signing deployment string: %v", err))
 	}
 
 	return true, depStr, sig, nil

@@ -1,6 +1,8 @@
 package exchange
 
 import (
+	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
@@ -275,14 +277,20 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 					}
 					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = string(deployment)
 					// We know we need to sign the overrides, so make sure a real key file was provided.
+					var privKey *rsa.PrivateKey
 					if !keyVerified {
-						keyFilePath, newPubKeyToStore, newPubKeyName = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
+						privKey, newPubKeyToStore, newPubKeyName = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 						keyVerified = true
 					}
 
-					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
+					hasher := sha256.New()
+					_, err = hasher.Write(deployment)
 					if err != nil {
-						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem signing the deployment_overrides string with %s: %v", keyFilePath, err))
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem signing the deployment_overrides string: %v", err))
+					}
+					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature, err = sign.Sha256HashOfInput(privKey, hasher)
+					if err != nil {
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem signing the deployment_overrides string: %v", err))
 					}
 				}
 			}

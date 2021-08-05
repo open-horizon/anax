@@ -3,6 +3,7 @@ package cliutils
 import (
 	"bufio"
 	"bytes"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
@@ -480,6 +481,30 @@ func ConfirmRemove(question string) {
 		i18n.GetMessagePrinter().Println()
 		os.Exit(0)
 	}
+}
+
+// WithDefaultKeyFile returns the keyFile path if it has a non-blank value, or the default keys.
+func WithDefaultKeyFile(keyFile string, isPublic bool) string {
+	var err error
+
+	if keyFile != "" {
+		return VerifySigningKeyInput(keyFile, isPublic)
+	}
+	// get default file names if input is empty
+	if keyFile, err = GetDefaultSigningKeyFile(isPublic); err != nil {
+		Fatal(CLI_GENERAL_ERROR, err.Error())
+	// convert to absolute path
+	} else if keyFile, err = filepath.Abs(keyFile); err != nil {
+		Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Failed to get absolute path for file %v. %v", keyFile, err))
+	// check file exist
+	} else if _, err := os.Stat(keyFile); err != nil {
+		if os.IsNotExist(err) {
+			return ""
+		} else {
+			Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Error checking absolute path for file %v. %v", keyFile, err))
+		}
+	}
+	return keyFile
 }
 
 // WithDefaultEnvVar returns the specified flag ptr if it has a non-blank value, or the env var value.
@@ -1516,7 +1541,7 @@ func getPrivateKeyFromFile(keyFile string) *rsa.PrivateKey {
 	var privKey *rsa.PrivateKey
 	var err error
 	if privKey, err = sign.ReadPrivateKey(keyFile); err != nil {
-		Fatal(CLI_INPUT_ERROR, msgPrinter.Sprintf("provided private key is not valid; error: %v", err))
+		Fatal(CLI_INPUT_ERROR, msgPrinter.Sprintf("provided private key %v is not valid; error: %v", keyFile, err))
 	}
 
 	return privKey
@@ -1537,13 +1562,45 @@ func GetDefaultSigningKeyFile(isPublic bool) (string, error) {
 	}
 }
 
+func GetDeprecatedDefaultSigningKeyFile(isPublic bool) (string, error) {
+	// we have to use $HOME for now because os/user is not implemented on some plateforms
+	home_dir := os.Getenv("HOME")
+	if home_dir == "" {
+		home_dir = "/tmp/keys"
+	}
+
+	if isPublic {
+		return filepath.Join(home_dir, ".hzn/keys/service.public.pem"), nil
+	} else {
+		return filepath.Join(home_dir, ".hzn/keys/service.private.key"), nil
+	}
+}
+
 // Gets default keys if not set, verify key files exist.
 func VerifySigningKeyInput(keyFile string, isPublic bool) string {
+	keyFile = verifySigningKeyInputHelper(keyFile, isPublic, false)
+	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+		keyFile = verifySigningKeyInputHelper(keyFile, isPublic, true)
+		if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+			Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("%v. Please create the signing key.", err))
+		}
+	}
+
+	return keyFile
+}
+
+func verifySigningKeyInputHelper(keyFile string, isPublic, usingDeprecated bool) string {
 	var err error
 	// get default file names if input is empty
 	if keyFile == "" {
-		if keyFile, err = GetDefaultSigningKeyFile(isPublic); err != nil {
-			Fatal(CLI_GENERAL_ERROR, err.Error())
+		if usingDeprecated {
+			if keyFile, err = GetDeprecatedDefaultSigningKeyFile(isPublic); err != nil {
+				Fatal(CLI_GENERAL_ERROR, err.Error())
+			}
+		} else {
+			if keyFile, err = GetDefaultSigningKeyFile(isPublic); err != nil {
+				Fatal(CLI_GENERAL_ERROR, err.Error())
+			}
 		}
 	}
 
@@ -1552,24 +1609,27 @@ func VerifySigningKeyInput(keyFile string, isPublic bool) string {
 		Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Failed to get absolute path for file %v. %v", keyFile, err))
 	}
 
-	// check file exist
-	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
-		Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("%v. Please create the signing key.", err))
-	}
 	return keyFile
 }
 
 // get default keys if needed and verify them.
-// this function is used by `hzn exhcange pattern/service publish
-func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, []byte, string) {
+// this function is used by `hzn exchange pattern/service publish
+func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (*rsa.PrivateKey, []byte, string) {
 
 	var err error
 
 	// Get default private key if -k not specified
 	var privKey *rsa.PrivateKey
 	privKeyFilePath_tmp := WithDefaultEnvVar(&privKeyFilePath, "HZN_PRIVATE_KEY_FILE")
-	privKeyFilePath = VerifySigningKeyInput(*privKeyFilePath_tmp, false)
-	privKey = getPrivateKeyFromFile(privKeyFilePath)
+	privKeyFilePath = WithDefaultKeyFile(*privKeyFilePath_tmp, false)
+
+	// if a valid private key was given or found at default location, load it
+	if privKeyFilePath != "" {
+		privKey = getPrivateKeyFromFile(privKeyFilePath)
+	// otherwise, generate a random key
+	} else if privKey, err = rsa.GenerateKey(rand.Reader, 2048); err != nil {
+		Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("private key could not be generated; error: %v", err))
+	}
 
 	// Load in public key, if given
 	var pubKeyBytes []byte
@@ -1592,8 +1652,8 @@ func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, []byte, str
 			Bytes:   pubKeyBytes,
 		}
 		pubKeyBytes = pem.EncodeToMemory(pubEnc)
-		}
-	return privKeyFilePath, pubKeyBytes, publicKeyName
+	}
+	return privKey, pubKeyBytes, publicKeyName
 }
 
 // Run a command with optional stdin and args, and return stdout, stderr

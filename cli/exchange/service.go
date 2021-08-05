@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"bytes"
+	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -124,6 +125,9 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
+	if pubKeyFilePath != "" && keyFilePath == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Flag -K cannot be specified without -k flag."))
+	}
 	if dontTouchImage && pullImage {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Flags -I and -P are mutually exclusive."))
 	}
@@ -280,6 +284,7 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 			}
 		}
 	}
+
 	return
 }
 
@@ -300,6 +305,7 @@ func SignDeployment(deployment interface{}, deploymentSignature string, baseDir 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
 	var newDeployment, newDeploymentSignature, newPubKeyName string
 	var newPubKeyToStore []byte
+	var newPrivKeyToStore *rsa.PrivateKey
 	switch dep := deployment.(type) {
 	case nil:
 		deployment = ""
@@ -310,7 +316,7 @@ func SignDeployment(deployment interface{}, deploymentSignature string, baseDir 
 
 	case map[string]interface{}:
 		// We know we need to sign the deployment config, so make sure a real key file was provided.
-		keyFilePath, newPubKeyToStore, newPubKeyName = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
+		newPrivKeyToStore, newPubKeyToStore, newPubKeyName = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 
 		// Construct and sign the deployment string.
 		msgPrinter.Printf("Signing service...")
@@ -323,7 +329,7 @@ func SignDeployment(deployment interface{}, deploymentSignature string, baseDir 
 		ctx.Add("pullImage", pullImage)
 
 		// Allow the right plugin to sign the deployment configuration.
-		depStr, sig, err := plugin_registry.DeploymentConfigPlugins.SignByOne(dep, keyFilePath, ctx)
+		depStr, sig, err := plugin_registry.DeploymentConfigPlugins.SignByOne(dep, newPrivKeyToStore, ctx)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to sign deployment config: %v", err))
 		}
