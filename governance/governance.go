@@ -1197,7 +1197,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			// archive the agreement if all the cleanup processes are done
 			if archive {
 				glog.V(5).Infof(logString(fmt.Sprintf("archiving agreement %v", cmd.AgreementId)))
-				if err := persistence.ArchiveMicroserviceInstAndDef(w.db, cmd.AgreementId); err != nil {
+				if err := persistence.ArchiveMicroserviceInstAndDef(w.db, cmd.AgreementId, w.devicePattern == ""); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error archiving terminated agreement: %v, error: %v", cmd.AgreementId, err)))
 				}
 

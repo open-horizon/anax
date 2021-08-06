@@ -882,6 +882,7 @@ func (w *AgreementWorker) advertiseAllPolicies() error {
 				continue
 			} else {
 				newMS.Url = cutil.FormOrgSpecUrl(p.APISpecs[0].SpecRef, p.APISpecs[0].Org)
+				newMS.Version = p.APISpecs[0].Version
 			}
 
 			// The version property needs special handling

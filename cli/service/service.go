@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"net/http"
 	"runtime"
 	"strings"
@@ -186,7 +187,7 @@ func ListConfigState() {
 	fmt.Printf("%s\n", jsonBytes)
 }
 
-func Suspend(forceSuspend bool, applyAll bool, serviceOrg string, serviceUrl string) {
+func Suspend(forceSuspend bool, applyAll bool, serviceOrg string, serviceUrl string, serviceVer string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -194,9 +195,21 @@ func Suspend(forceSuspend bool, applyAll bool, serviceOrg string, serviceUrl str
 	if !applyAll {
 		if serviceOrg != "" {
 			if serviceUrl != "" {
-				msg_part = msgPrinter.Sprintf("service %v/%v", serviceOrg, serviceUrl)
+				if serviceVer != "" {
+					if semanticversion.IsVersionString(serviceVer) {
+						msg_part = msgPrinter.Sprintf("service %v/%v version %v", serviceOrg, serviceUrl, serviceVer)
+					} else {
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid version format: %v.", serviceVer))
+					}
+				} else {
+					msg_part = msgPrinter.Sprintf("all the versions for service %v/%v", serviceOrg, serviceUrl)
+				}
 			} else {
-				msg_part = msgPrinter.Sprintf("all the registered services from organization %v", serviceOrg)
+				if serviceVer == "" {
+					msg_part = msgPrinter.Sprintf("all the registered services from organization %v", serviceOrg)
+				} else {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the service name for version %v.", serviceVer))
+				}
 			}
 		} else if serviceUrl != "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the organization for service %v.", serviceUrl))
@@ -213,20 +226,27 @@ func Suspend(forceSuspend bool, applyAll bool, serviceOrg string, serviceUrl str
 	if applyAll {
 		serviceOrg = ""
 		serviceUrl = ""
+		serviceVer = ""
 	}
 	apiInput := exchange.ServiceConfigState{
 		Url:         serviceUrl,
 		Org:         serviceOrg,
+		Version:     serviceVer,
 		ConfigState: exchange.SERVICE_CONFIGSTATE_SUSPENDED,
 	}
 
-	cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200}, apiInput, true)
-
-	msgPrinter.Printf("Service suspending request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.")
+	httpCode, respBody, err := cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200, 400}, apiInput, false)
+	if httpCode == 200 || httpCode == 201 {
+		msgPrinter.Printf("Service suspending request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.")
+	} else if httpCode == 400 {
+		msgPrinter.Printf("Error returned suspending the service: %v", respBody)
+	} else {
+		msgPrinter.Printf("Error: %v", err)
+	}
 	msgPrinter.Println()
 }
 
-func Resume(applyAll bool, serviceOrg string, serviceUrl string) {
+func Resume(applyAll bool, serviceOrg string, serviceUrl string, serviceVer string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -234,9 +254,21 @@ func Resume(applyAll bool, serviceOrg string, serviceUrl string) {
 	if !applyAll {
 		if serviceOrg != "" {
 			if serviceUrl != "" {
-				msg_part = msgPrinter.Sprintf("service %v/%v", serviceOrg, serviceUrl)
+				if serviceVer != "" {
+					if semanticversion.IsVersionString(serviceVer) {
+						msg_part = msgPrinter.Sprintf("service %v/%v version %v", serviceOrg, serviceUrl, serviceVer)
+					} else {
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid version format: %v.", serviceVer))
+					}
+				} else {
+					msg_part = msgPrinter.Sprintf("all the versions for service %v/%v", serviceOrg, serviceUrl)
+				}
 			} else {
-				msg_part = msgPrinter.Sprintf("all the registered services from organization %v", serviceOrg)
+				if serviceVer == "" {
+					msg_part = msgPrinter.Sprintf("all the registered services from organization %v", serviceOrg)
+				} else {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the service name for version %v.", serviceVer))
+				}
 			}
 		} else if serviceUrl != "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the organization for service %v.", serviceUrl))
@@ -249,15 +281,23 @@ func Resume(applyAll bool, serviceOrg string, serviceUrl string) {
 	if applyAll {
 		serviceOrg = ""
 		serviceUrl = ""
+		serviceVer = ""
 	}
 	apiInput := exchange.ServiceConfigState{
 		Url:         serviceUrl,
 		Org:         serviceOrg,
+		Version:     serviceVer,
 		ConfigState: exchange.SERVICE_CONFIGSTATE_ACTIVE,
 	}
 
-	cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200}, apiInput, true)
+	httpCode, respBody, err := cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200, 400}, apiInput, false)
 
-	msgPrinter.Printf("Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.")
+	if httpCode == 200 || httpCode == 201 {
+		msgPrinter.Printf("Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.")
+	} else if httpCode == 400 {
+		msgPrinter.Printf("Error returned resuming the service: %v", respBody)
+	} else {
+		msgPrinter.Printf("Error: %v", err)
+	}
 	msgPrinter.Println()
 }

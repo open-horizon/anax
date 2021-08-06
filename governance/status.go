@@ -121,8 +121,8 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to retrieve previous device status from local database: %v", err)))
 	} else {
-		nonChangedServices := getNonChangedServices(device_status.Services, oldWlStatus)
-		device_status.Services = append(device_status.Services, nonChangedServices...)
+		newServiceStatus := updateWithOldSuspendedServices(device_status.Services, oldWlStatus)
+		device_status.Services = newServiceStatus
 	}
 
 	// When cfgStates is not empty, it contains the config state for all the services.
@@ -141,9 +141,10 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 			}
 
 			for i, workload := range device_status.Services {
-				if cfgState.Org == workload.Org && cfgState.Url == workload.ServiceURL {
+				if cfgState.Org == workload.Org && cfgState.Url == workload.ServiceURL && (cfgState.Version == "" || workload.Version == "" || cfgState.Version == workload.Version) {
 					device_status.Services[i].ConfigState = cfs
 					found = true
+					break
 				}
 			}
 
@@ -190,20 +191,26 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 	return 60
 }
 
-// getNonChangedServices returns old services that don't have any updates, so their statuses will not be lost
-func getNonChangedServices(updatedServices []WorkloadStatus, oldServices []persistence.WorkloadStatus) (suspendedSvcs []WorkloadStatus) {
+// Update the services with configstate of the old suspended services.
+func updateWithOldSuspendedServices(updatedServices []WorkloadStatus, oldServices []persistence.WorkloadStatus) []WorkloadStatus {
+	newStatus := make([]WorkloadStatus, len(updatedServices))
+	copy(newStatus, updatedServices)
 	for _, svc := range oldServices {
-		hasUpdates := false
-		for _, updSvc := range updatedServices {
-			if updSvc.ServiceURL == svc.ServiceURL && updSvc.Org == svc.Org {
-				hasUpdates = true
-			}
-		}
-		if hasUpdates {
-			continue
-		}
 		if svc.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
-			suspendedSvcs = append(suspendedSvcs, WorkloadStatus{
+			hasUpdates := false
+			// if the new is found in the old service list, update the suspended state
+			for i, updSvc := range updatedServices {
+				if updSvc.ServiceURL == svc.ServiceURL && updSvc.Org == svc.Org && (updSvc.Version == svc.Version || updSvc.Version == "" || svc.Version == "") {
+					hasUpdates = true
+					newStatus[i].ConfigState = svc.ConfigState
+				}
+			}
+			if hasUpdates {
+				continue
+			}
+
+			// if not found, add to the new list
+			newStatus = append(newStatus, WorkloadStatus{
 				ServiceURL:  svc.ServiceURL,
 				Org:         svc.Org,
 				Version:     svc.Version,
@@ -212,7 +219,7 @@ func getNonChangedServices(updatedServices []WorkloadStatus, oldServices []persi
 			})
 		}
 	}
-	return suspendedSvcs
+	return newStatus
 }
 
 // Find the status for all the Services.
@@ -418,6 +425,7 @@ func changeInWorkloadStatuses(newStatuses []WorkloadStatus, oldStatuses []persis
 		return true
 	}
 	matches := 0
+
 	for _, oldStatus := range oldStatuses {
 		for _, newStatus := range newStatuses {
 			if statusMatch(newStatus, oldStatus) {
@@ -441,7 +449,10 @@ func changeInWorkloadStatuses(newStatuses []WorkloadStatus, oldStatuses []persis
 }
 
 func statusMatch(newStatus WorkloadStatus, oldStatus persistence.WorkloadStatus) bool {
-	return oldStatus.AgreementId == newStatus.AgreementId && oldStatus.ServiceURL == newStatus.ServiceURL && oldStatus.Org == newStatus.Org
+	return oldStatus.AgreementId == newStatus.AgreementId &&
+		oldStatus.ServiceURL == newStatus.ServiceURL &&
+		oldStatus.Org == newStatus.Org &&
+		(oldStatus.Version == newStatus.Version || oldStatus.Version == "" || newStatus.Version == "")
 }
 
 func changeInContainerStatuses(newContainers []ContainerStatus, oldContainers []persistence.ContainerStatus) bool {

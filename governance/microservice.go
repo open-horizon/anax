@@ -379,7 +379,7 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 	}
 
 	// archive this microservice instance
-	if err := persistence.ArchiveMicroserviceInstAndDef(w.db, inst_key); err != nil {
+	if err := persistence.ArchiveMicroserviceInstAndDef(w.db, inst_key, w.devicePattern == ""); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", inst_key, err)))
 		return fmt.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", inst_key, err)))
 	}
@@ -440,7 +440,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 
 	if unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to remove service policy for service def %v/%v version %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, unregError)))
-	} else if unregError = microservice.UnregisterMicroserviceExchange(exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPatchDeviceHandler(w.limitedRetryEC), msdef.SpecRef, msdef.Org, w.GetExchangeId(), w.GetExchangeToken(), w.db); unregError != nil {
+	} else if unregError = microservice.UnregisterMicroserviceExchange(exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPatchDeviceHandler(w.limitedRetryEC), msdef.SpecRef, msdef.Org, msdef.Version, w.GetExchangeId(), w.GetExchangeToken(), w.db); unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to unregister service from the exchange for service def %v/%v. %v", msdef.Org, msdef.SpecRef, unregError)))
 	}
 
@@ -651,7 +651,7 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 									glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for %v", msi.GetKey())))
 									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE, msi.GetKey())
 								}
-								if err := persistence.ArchiveMicroserviceInstAndDef(w.db, msi.GetKey()); err != nil {
+								if err := persistence.ArchiveMicroserviceInstAndDef(w.db, msi.GetKey(), w.devicePattern == ""); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", msi.GetKey(), err)))
 								}
 							} else {
@@ -673,6 +673,14 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 								if msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE || msd.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON {
 									glog.V(5).Infof(logString(fmt.Sprintf("Remove extra networks for %v all context msi: %v", msi.GetKey(), msi)))
 									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE_NETWORK, msi.GetKey())
+								}
+							}
+
+							// handle inactive microservice upgrade, upgrade the microservice if needed
+							if !skipUpgrade && w.devicePattern != "" {
+								if msd.AutoUpgrade && !msd.ActiveUpgrade {
+									cmd := w.NewUpgradeMicroserviceCommand(msd.Id)
+									w.Commands <- cmd
 								}
 							}
 						}
@@ -972,41 +980,6 @@ func (w *GovernanceWorker) handleServiceSuspended(service_cs []events.ServiceCon
 	return nil
 }
 
-// get the all the top level and dependent services the given agreements are using
-func (w *GovernanceWorker) getAllServicesFromAgreements() (*policy.APISpecList, error) {
-
-	ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()})
-	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve unarchived agreements from database. %v", err)
-	}
-
-	apiSpecs := new(policy.APISpecList)
-
-	if ags != nil {
-		for _, ag := range ags {
-			workload := ag.RunningWorkload
-			if workload.URL == "" || workload.Org == "" {
-				continue
-			}
-
-			apiSpecs.Add_API_Spec(policy.APISpecification_Factory(workload.URL, workload.Org, "", workload.Arch))
-
-			asl, _, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.URL, workload.Org, workload.Version, workload.Arch)
-			if err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
-			}
-
-			if asl != nil {
-				for _, s := range *asl {
-					apiSpecs.Add_API_Spec(policy.APISpecification_Factory(s.SpecRef, s.Org, "", s.Arch))
-				}
-			}
-		}
-	}
-
-	return apiSpecs, nil
-}
-
 // For the policy case, the registeredServices is not used except for service suspension and resumption
 // We need to update the registeredServices when an agreement created and canceled.
 func (w *GovernanceWorker) UpdateRegisteredServicesWithAgreement() {
@@ -1017,22 +990,21 @@ func (w *GovernanceWorker) UpdateRegisteredServicesWithAgreement() {
 
 	glog.V(3).Infof(logString(fmt.Sprintf("Start updating the registeredServices %v in the exchange for policy case.", w.GetExchangeId())))
 
-	// get current services from agreements
-	apiSpecs, err := w.getAllServicesFromAgreements()
+	activeServices := []exchange.Microservice{}
+
+	msdefs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()})
 	if err != nil {
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_GOV_ERR_GET_ALL_SVCS_FROM_AGS, err.Error()),
+			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_ALL_SDEFS_FROM_DB, err.Error()),
 			persistence.EC_DATABASE_ERROR)
-		glog.Errorf(logString(fmt.Sprintf("Error getting all the services from agreements: %v", err)))
+		glog.Errorf(logString(fmt.Sprintf("Error retrieving all service definitions from database. %v", err)))
 		return
-	}
-
-	// create a registeredServices object from the services. assume all are active for now
-	activeServices := []exchange.Microservice{}
-	if apiSpecs != nil {
-		for _, a := range *apiSpecs {
+	} else if msdefs != nil {
+		// create a registeredServices object from the services. assume all are active for now
+		for _, msdef := range msdefs {
 			new_s := exchange.Microservice{
-				Url:         cutil.FormOrgSpecUrl(a.SpecRef, a.Org),
+				Url:         cutil.FormOrgSpecUrl(msdef.SpecRef, msdef.Org),
+				Version:     msdef.Version,
 				ConfigState: exchange.SERVICE_CONFIGSTATE_ACTIVE,
 			}
 			activeServices = append(activeServices, new_s)
@@ -1095,7 +1067,7 @@ func composeNewRegisteredServices(activeServices []exchange.Microservice, oldReg
 	for _, rs := range oldRegisteredServices {
 		found := false
 		for i, nrs := range activeServices {
-			if rs.Url == nrs.Url {
+			if rs.Url == nrs.Url && (rs.Version == nrs.Version || rs.Version == "" || nrs.Version == "") {
 				found = true
 				if rs.ConfigState != nrs.ConfigState {
 					isSame = false

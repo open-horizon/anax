@@ -331,7 +331,7 @@ func DeleteSecrets(db *bolt.DB, secName string, msInstId string) (*PersistedServ
 				}
 			})
 		} else if err = SaveAllSecretsForService(db, msInstId, allSec); err != nil {
-			return nil, err		
+			return nil, err
 		}
 	}
 	return nil, nil
