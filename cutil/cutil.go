@@ -54,23 +54,26 @@ func FirstN(n int, ss []string) []string {
 func SecureRandomString() (string, error) {
 
 	random := mrand.New(mrand.NewSource(int64(time.Now().Nanosecond())))
-	
+
 	randStr := ""
-	randStr += string(rune(random.Intn(10) + 48))
-	randStr += string(rune(random.Intn(26) + 65))
-	randStr += string(rune(random.Intn(26) + 97))
-	
+	randStr += string(rune(random.Intn(10) + 48)) // add a random digit to the string
+	randStr += string(rune(random.Intn(26) + 65)) // add an uppercase letter to the string
+	randStr += string(rune(random.Intn(26) + 97)) // add a lowercase letter to the string
+	randStr += string(rune(random.Intn(10) + 48)) // add one more random digit so we reach 64 bytes at the end
+
+	// pad out the password to make it <=15 chars
 	bytes := make([]byte, 63)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
 	randStr += base64.URLEncoding.EncodeToString(bytes)
-	
+
+	// shuffle the string
 	shuffledStr := []rune(randStr)
-    mrand.Shuffle(len(shuffledStr), func(i, j int) {
-        shuffledStr[i], shuffledStr[j] = shuffledStr[j], shuffledStr[i]
-    })
-	
+	mrand.Shuffle(len(shuffledStr), func(i, j int) {
+		shuffledStr[i], shuffledStr[j] = shuffledStr[j], shuffledStr[i]
+	})
+
 	return string(shuffledStr), nil
 }
 

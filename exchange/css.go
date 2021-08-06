@@ -58,11 +58,21 @@ func (d ObjectDestinationPolicy) String() string {
 	return fmt.Sprintf("Object Destination Policy: Org %v, Type %v, ID %v, %v, Destinations %v", d.OrgID, d.ObjectType, d.ObjectID, d.DestinationPolicy, d.Destinations)
 }
 
+type PostDestsRequest struct {
+	// Action is "add" or "remove"
+	Action string `json:"action"`
+
+	// Destinations is an array of destinations, each entry is an string in form of "<destinationType>:<destinationID>"
+	Destinations []string `json:"destinations"`
+}
+
 type ObjectDestinationPolicies []ObjectDestinationPolicy
 
 type ObjectDestinationStatuses []common.DestinationsStatus
 
-type PutDestinationListRequest []string
+type ObjectDestinationsToAdd []string
+
+type ObjectDestinationsToDelete []string
 
 // Query the CSS to retrieve object policy for a given service id.
 func GetObjectsByService(ec ExchangeContext, org string, serviceId string) (*ObjectDestinationPolicies, error) {
@@ -140,19 +150,19 @@ func GetUpdatedObjects(ec ExchangeContext, org string, since int64) (*ObjectDest
 	}
 }
 
-// Update the destination list of the object when that object's policy enables it to be placed on the node.
-func UpdateObjectDestinationList(ec ExchangeContext, org string, objPol *ObjectDestinationPolicy, dests *PutDestinationListRequest) error {
-
+// Add or Remove the destinations of the object when that object's policy enables it to be placed on the node.
+func AddOrRemoveDestinations(ec ExchangeContext, org string, objType string, objID string, postDestsRequest *PostDestsRequest) error {
 	// There is no response to CSS API.
 	var resp interface{}
 
-	url := path.Join("/api/v1/objects", org, objPol.ObjectType, objPol.ObjectID, "destinations")
+	url := path.Join("/api/v1/objects", org, objType, objID, "destinations")
 	url = ec.GetCSSURL() + url
 
 	retryCount := ec.GetHTTPFactory().RetryCount
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
+
 	for {
-		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "PUT", url, ec.GetExchangeId(), ec.GetExchangeToken(), dests, &resp); err != nil {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "POST", url, ec.GetExchangeId(), ec.GetExchangeToken(), postDestsRequest, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -168,11 +178,10 @@ func UpdateObjectDestinationList(ec ExchangeContext, org string, objPol *ObjectD
 				continue
 			}
 		} else {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("updated destination list for object %v of type %v with %v", objPol.ObjectID, objPol.ObjectType, dests)))
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with %v", postDestsRequest.Action, objID, objType, postDestsRequest.Destinations)))
 			return nil
 		}
 	}
-
 }
 
 // Get the object's metadata.
