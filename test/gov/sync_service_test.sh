@@ -97,7 +97,7 @@ then
 fi
 
 # Test what happens when a valid node tries to access an API
-KNODE=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u userdev/susehello/an12345:abcdefg  "${CSS_URL}/api/v1/destinations/userdev")
+KNODE=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u userdev/susehello/an12345:Abcdefghijklmno1  "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$KNODE" != "Unauthorized403" ]
 then
