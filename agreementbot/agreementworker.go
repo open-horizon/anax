@@ -1072,10 +1072,12 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 						objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
 
-						if _, err := AssignObjectToNode(b, objPolicies, agreement.DeviceId, nodePolicy, false); err != nil {
+						destsToAddMap := make(map[string]*exchange.ObjectDestinationsToAdd, 0)
+						if addedToList, _, err := AssignObjectToNodes(b, objPolicies, agreement.DeviceId, nodePolicy, destsToAddMap, false); err != nil {
 							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
+						} else if addedToList {
+							AddDestinationsForObjects(b, destsToAddMap)
 						}
-
 					}
 				} else if b.GetCSSURL() == "" {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
