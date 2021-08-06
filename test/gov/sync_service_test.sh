@@ -97,7 +97,7 @@ then
 fi
 
 # Test what happens when a valid node tries to access an API
-KNODE=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u userdev/susehello/an12345:abcdefg  "${CSS_URL}/api/v1/destinations/userdev")
+KNODE=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u userdev/susehello/an12345:Abcdefghijklmno1  "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$KNODE" != "Unauthorized403" ]
 then
@@ -1019,7 +1019,7 @@ verifyUserAccessForPublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $
 
 # node e2edev@somecomp.com/an12345 has READ and WRITE access to all object types in e2edev@somecomp.com org
 NODE_ID="an12345"
-NODE_TOKEN="abcdefg"
+NODE_TOKEN="Abcdefghijklmno1"
 TARGET_NUM_OBJS=0
 testUserNotHaveAccessToPrivateObjects  $USER_ORG $NODE_ID $NODE_TOKEN $TARGET_NUM_OBJS "test" "test_user_access"
 verifyUserAccessForPublicObject $USER_ORG $NODE_ID $NODE_TOKEN $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
