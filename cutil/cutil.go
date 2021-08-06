@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"math"
+	mrand "math/rand"
 	"net"
 	"os"
 	"path"
@@ -51,13 +52,29 @@ func FirstN(n int, ss []string) []string {
 }
 
 func SecureRandomString() (string, error) {
-	bytes := make([]byte, 64)
 
+	random := mrand.New(mrand.NewSource(int64(time.Now().Nanosecond())))
+
+	randStr := ""
+	randStr += string(rune(random.Intn(10) + 48)) // add a random digit to the string
+	randStr += string(rune(random.Intn(26) + 65)) // add an uppercase letter to the string
+	randStr += string(rune(random.Intn(26) + 97)) // add a lowercase letter to the string
+	randStr += string(rune(random.Intn(10) + 48)) // add one more random digit so we reach 64 bytes at the end
+
+	// pad out the password to make it <=15 chars
+	bytes := make([]byte, 63)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
-	} else {
-		return base64.URLEncoding.EncodeToString(bytes), nil
 	}
+	randStr += base64.URLEncoding.EncodeToString(bytes)
+
+	// shuffle the string
+	shuffledStr := []rune(randStr)
+	mrand.Shuffle(len(shuffledStr), func(i, j int) {
+		shuffledStr[i], shuffledStr[j] = shuffledStr[j], shuffledStr[i]
+	})
+
+	return string(shuffledStr), nil
 }
 
 func GenerateAgreementId() (string, error) {
