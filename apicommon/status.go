@@ -24,7 +24,8 @@ type Configuration struct {
 
 // These fields are filled in by the API specific code, not the common code.
 type HealthTimestamps struct {
-	LastDBHeartbeatTime uint64 `json:"lastDBHeartbeat"`
+	LastDBHeartbeatTime  uint64 `json:"lastDBHeartbeat"`
+	LastVaultInteraction uint64 `json:"lastVaultInteraction"`
 }
 
 type Info struct {

@@ -22,6 +22,9 @@ const HTTPIdleConnectionTimeoutS = 120
 
 const HZN_VAR_BASE_DEFAULT = "/var/horizon"
 
+// The default location for ess authentication and secret manager files
+const HZN_VAR_RUN_BASE_DEFAULT = "/var/run/horizon"
+
 // The path to the agent's unix domain socket for the file sync service
 const HZN_FSS_DOMAIN_SOCKET_PATH = "/var/run/horizon"
 const HZN_FSS_DOMAIN_SOCKET = "essapi.sock"
@@ -56,6 +59,9 @@ const HZN_FSS_CERT_KEY_FILE = "key.pem"
 
 // The number of seconds between polls to the CSS for updates.
 const HZN_FSS_POLLING_RATE = 60
+
+// The name of the folder where secrets from the agreement protocol will be stored within a workload container
+const HZN_SECRETS_MOUNT = "/open-horizon-secrets"
 
 // The Default starting exchange message polling interval.
 const ExchangeMessagePollInterval_DEFAULT = 20
@@ -107,3 +113,6 @@ const AgbotProtocolTimeoutScaleFactor_DEFAULT = 2
 
 // Time to allow a kube agent to attempt to install a custom resource before timing out
 const K8sCRInstallTimeoutS_DEFAULT = 180
+
+// Time between secret update checks
+const SecretsUpdateCheck_DEFAULT = 60

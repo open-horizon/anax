@@ -13,7 +13,6 @@ import (
 	"github.com/open-horizon/anax/helm"
 	"github.com/open-horizon/anax/kube_operator"
 	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/policy"
 	"reflect"
 	"time"
 )
@@ -116,127 +115,115 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 		device_status.Services = ms_status
 	}
 
-	if cfgStates != nil && len(cfgStates) != 0 {
-		// updating services cfg states
-		for _, cfgState := range cfgStates {
-			found := false
-			for i, workload := range device_status.Services {
-				if cfgState.Org == workload.Org && cfgState.Url == workload.ServiceURL {
-					device_status.Services[i].ConfigState = cfgState.ConfigState
-					found = true
-					glog.Errorf(logString(fmt.Sprintf("FOUND ALREADY -----: %v", cfgState)))
-				}
-			}
-			if !found {
-				// service has been suspended so it wasn't found, adding it to the status
-				glog.Errorf(logString(fmt.Sprintf("ADDING bcs 0 -----: %v", cfgState)))
-				device_status.Services = append(device_status.Services, WorkloadStatus{
-					ServiceURL:  cfgState.Url,
-					Org:         cfgState.Org,
-					Version:     cfgState.Version,
-					Arch:        cfgState.Arch,
-					ConfigState: cfgState.ConfigState,
-				})
-			}
-		}
-	}
-
-	// report the status to the exchange
-	w.deviceStatus = &device_status
-
+	// Add the old suspended ones
 	statusChanged := true
 	oldWlStatus, err := persistence.FindNodeStatus(w.db)
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to retrieve previous device status from local database: %v", err)))
 	} else {
-		nonChangedServices := getNonChangedServices(device_status.Services, oldWlStatus)
-		device_status.Services = append(device_status.Services, nonChangedServices...)
-
-		statusChanged = changeInWorkloadStatuses(device_status.Services, oldWlStatus)
+		newServiceStatus := updateWithOldSuspendedServices(device_status.Services, oldWlStatus)
+		device_status.Services = newServiceStatus
 	}
 
-	if statusChanged {
-		glog.V(5).Infof(logString(fmt.Sprintf("device status to report to the exchange: %v", device_status)))
+	// When cfgStates is not empty, it contains the config state for all the services.
+	// The getServiceStatus() may miss the ones that already suspended and the ones just
+	// turned into active.
+	// This part update the service config states with the new ones .
+	if cfgStates != nil && len(cfgStates) != 0 {
+		// updating services cfg states
+		for _, cfgState := range cfgStates {
+			found := false
 
-		if err := w.writeStatusToExchange(&device_status); err != nil {
+			// fill the default for the empty config state
+			cfs := cfgState.ConfigState
+			if cfs == "" {
+				cfs = exchange.SERVICE_CONFIGSTATE_ACTIVE
+			}
+
+			for i, workload := range device_status.Services {
+				if cfgState.Org == workload.Org && cfgState.Url == workload.ServiceURL && (cfgState.Version == "" || workload.Version == "" || cfgState.Version == workload.Version) {
+					device_status.Services[i].ConfigState = cfs
+					found = true
+					break
+				}
+			}
+
+			// add the new suspended ones
+			if cfs == exchange.SERVICE_CONFIGSTATE_SUSPENDED && !found {
+				// service has been suspended so it wasn't found, adding it to the status
+				device_status.Services = append(device_status.Services, WorkloadStatus{
+					ServiceURL:  cfgState.Url,
+					Org:         cfgState.Org,
+					Version:     cfgState.Version,
+					Arch:        cfgState.Arch,
+					ConfigState: cfs,
+				})
+			}
+		}
+	}
+
+	// only save the ones that have non empty containers or config state as suspended
+	var device_status_new DeviceStatus
+	device_status_new.Services = make([]WorkloadStatus, 0)
+	for i, workload := range device_status.Services {
+		if workload.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED || len(workload.Containers) > 0 {
+			device_status_new.Services = append(device_status_new.Services, device_status.Services[i])
+		}
+	}
+
+	// report the status to the exchange
+	w.deviceStatus = &device_status_new
+
+	statusChanged = changeInWorkloadStatuses(device_status_new.Services, oldWlStatus)
+
+	if statusChanged {
+		glog.V(5).Infof(logString(fmt.Sprintf("device status to report to the exchange: %v", device_status_new)))
+
+		if err := w.writeStatusToExchange(&device_status_new); err != nil {
 			glog.Errorf(logString(err))
 		}
-		if err := persistence.SaveNodeStatus(w.db, convertToPersistenceType(device_status.Services)); err != nil {
+		if err := persistence.SaveNodeStatus(w.db, convertToPersistenceType(device_status_new.Services)); err != nil {
 			glog.Errorf(logString(err))
 		}
 	} else {
-		glog.V(5).Infof(logString(fmt.Sprintf("device status unchanged, skipping report to exchange: %v", device_status)))
+		glog.V(5).Infof(logString(fmt.Sprintf("device status unchanged, skipping report to exchange: %v", device_status_new)))
 	}
 	return 60
 }
 
-// getNonChangedServices returns old services that don't have any updates, so their statuses will not be lost
-func getNonChangedServices(updatedServices []WorkloadStatus, oldServices []persistence.WorkloadStatus) (suspendedSvcs []WorkloadStatus) {
+// Update the services with configstate of the old suspended services.
+func updateWithOldSuspendedServices(updatedServices []WorkloadStatus, oldServices []persistence.WorkloadStatus) []WorkloadStatus {
+	newStatus := make([]WorkloadStatus, len(updatedServices))
+	copy(newStatus, updatedServices)
 	for _, svc := range oldServices {
-		hasUpdates := false
-		for _, updSvc := range updatedServices {
-			if updSvc.ServiceURL == svc.ServiceURL && updSvc.Org == svc.Org {
-				hasUpdates = true
+		if svc.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
+			hasUpdates := false
+			// if the new is found in the old service list, update the suspended state
+			for i, updSvc := range updatedServices {
+				if updSvc.ServiceURL == svc.ServiceURL && updSvc.Org == svc.Org && (updSvc.Version == svc.Version || updSvc.Version == "" || svc.Version == "") {
+					hasUpdates = true
+					newStatus[i].ConfigState = svc.ConfigState
+				}
 			}
+			if hasUpdates {
+				continue
+			}
+
+			// if not found, add to the new list
+			newStatus = append(newStatus, WorkloadStatus{
+				ServiceURL:  svc.ServiceURL,
+				Org:         svc.Org,
+				Version:     svc.Version,
+				Arch:        svc.Arch,
+				ConfigState: svc.ConfigState,
+			})
 		}
-		if hasUpdates {
-			continue
-		}
-		suspendedSvcs = append(suspendedSvcs, WorkloadStatus{
-			ServiceURL:  svc.ServiceURL,
-			Org:         svc.Org,
-			Version:     svc.Version,
-			Arch:        svc.Arch,
-			ConfigState: svc.ConfigState,
-		})
 	}
-	return suspendedSvcs
+	return newStatus
 }
 
 // Find the status for all the Services.
 func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) ([]WorkloadStatus, error) {
-
-	// Get all top level (agreement) services and related metadata.
-	tempWS, err := w.getWorkloadStatus(containers)
-	if err != nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving agreement services from database, error: %v", err)))
-	}
-
-	// Get all dependent services and related metadata.
-	tempMS, err := w.getMicroserviceStatus(containers)
-	if err != nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving services from database, error: %v", err)))
-	}
-
-	for _, ms := range tempMS {
-		// In the services model, there will be duplicates in the microservice list and the workload list. Skip the duplicates
-		// from the microservice list, and prefer the service from the workload list.
-		duplicate := false
-		for _, ws := range tempWS {
-			if ws.ServiceURL == ms.ServiceURL && ws.Org == ms.Org {
-				duplicate = true
-				break
-			}
-		}
-
-		if !duplicate {
-			tempWS = append(tempWS, ms)
-		}
-	}
-
-	return tempWS, nil
-}
-
-// Find the status for all the microservices
-func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContainers) ([]WorkloadStatus, error) {
-
-	// Filter to return all instances for a msdef
-	msdefFilter := func(msdef_id string) persistence.MIFilter {
-		return func(a persistence.MicroserviceInstance) bool {
-			return a.MicroserviceDefId == msdef_id
-		}
-	}
-
 	status := make([]WorkloadStatus, 0)
 
 	if msdefs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
@@ -249,93 +236,43 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 			msdef_status.Version = msdef.Version
 			msdef_status.Arch = msdef.Arch
 			msdef_status.Containers = make([]ContainerStatus, 0)
-			deployment, _ := msdef.GetDeployment()
-			if msdef.ClusterDeployment != "" {
-				opStatus, err := GetOperatorStatus(msdef.ClusterDeployment)
-				if err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Error getting operator status: %v", err)))
-				} else {
-					msdef_status.OperatorStatus = opStatus
+			deployment := ""
+			if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+				deployment, _ = msdef.GetDeployment()
+			} else {
+				deployment = msdef.ClusterDeployment
+				if deployment != "" {
+					opStatus, err := GetOperatorStatus(deployment)
+					if err != nil {
+						glog.Errorf(logString(fmt.Sprintf("Error getting operator status: %v", err)))
+					} else {
+						msdef_status.OperatorStatus = opStatus
+					}
 				}
 			}
-			if msinsts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), msdefFilter(msdef.Id)}); err != nil {
+			if msinsts, err := persistence.GetAllMicroserviceInstancesWithDefId(w.db, msdef.Id, false, false); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service instances for %v from database, error: %v", msdef.SpecRef, err)))
 			} else if msinsts != nil {
 				for _, msi := range msinsts {
 					glog.V(3).Infof("Gathering status for msdef: %v/%v, working on instance %v", msdef.Org, msdef.SpecRef, msi.GetKey())
-					if deployment == "" {
-						deployment = msdef.ClusterDeployment
-					}
 					if deployment != "" {
-						if cstatus, err := GetContainerStatus(deployment, msi.GetKey(), true, containers); err != nil {
+						if cstatus, err := GetContainerStatus(deployment, msi.GetKey(), !msi.IsTopLevelService(), containers); err != nil {
 							return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting service container status for %v. %v", msdef.SpecRef, err)))
 						} else {
 							msdef_status.Containers = append(msdef_status.Containers, cstatus...)
 						}
 					}
-				}
-			}
-			if len(msdef_status.Containers) > 0 {
-				status = append(status, msdef_status)
-			}
-		}
-	}
 
-	return status, nil
-}
-
-// Find the status for all the workloads
-func (w *GovernanceWorker) getWorkloadStatus(containers []docker.APIContainers) ([]WorkloadStatus, error) {
-
-	status := make([]WorkloadStatus, 0)
-
-	if establishedAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database: %v. Error: %v", err, err)))
-	} else {
-		for _, ag := range establishedAgreements {
-			if ag.AgreementTerminatedTime != 0 {
-				continue // skip those terminated but not archived ones
-			}
-
-			if ag.Proposal != "" {
-				protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "", "")
-				if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database, error %v", ag.CurrentAgreementId, err)))
-				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
-				} else if tcPolicy.Workloads != nil {
-					for _, wl := range tcPolicy.Workloads {
-						var wl_status WorkloadStatus
-						wl_status.AgreementId = ag.CurrentAgreementId
-						wl_status.ServiceURL = wl.WorkloadURL
-						wl_status.Org = wl.Org
-						wl_status.Version = wl.Version
-						wl_status.Arch = wl.Arch
-						wl_status.ConfigState = exchange.SERVICE_CONFIGSTATE_ACTIVE
-
-						if wl.ClusterDeployment != "" {
-							opStatus, opErr := GetOperatorStatus(wl.ClusterDeployment)
-							if opErr != nil {
-								glog.Errorf(logString(fmt.Sprintf("Error finding workload operator status for %v: %v.", ag, opErr)))
-							} else {
-								wl_status.OperatorStatus = opStatus
-							}
-						}
-
-						deployment := wl.Deployment
-						if deployment == "" {
-							deployment = wl.ClusterDeployment
-						}
-						cstatus, cErr := GetContainerStatus(deployment, ag.CurrentAgreementId, false, containers)
-						if cErr == nil {
-							wl_status.Containers = append(wl_status.Containers, cstatus...)
-						} else {
-							return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding workload status for %v: %v.", ag, cErr)))
-						}
-						status = append(status, wl_status)
+					if msi.IsTopLevelService() {
+						msdef_status.AgreementId = msi.GetKey()
 					}
 				}
 			}
+			if msdef_status.ConfigState == "" {
+				msdef_status.ConfigState = exchange.SERVICE_CONFIGSTATE_ACTIVE
+			}
+
+			status = append(status, msdef_status)
 		}
 	}
 
@@ -443,7 +380,6 @@ func (w *GovernanceWorker) writeStatusToExchange(device_status *DeviceStatus) er
 	retryInterval := httpClientFactory.GetRetryInterval()
 
 	for {
-		glog.Errorf(logString(fmt.Sprintf("WRITING TO EX ---- %v", device_status.Services)))
 		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), device_status, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
@@ -489,6 +425,7 @@ func changeInWorkloadStatuses(newStatuses []WorkloadStatus, oldStatuses []persis
 		return true
 	}
 	matches := 0
+
 	for _, oldStatus := range oldStatuses {
 		for _, newStatus := range newStatuses {
 			if statusMatch(newStatus, oldStatus) {
@@ -512,7 +449,10 @@ func changeInWorkloadStatuses(newStatuses []WorkloadStatus, oldStatuses []persis
 }
 
 func statusMatch(newStatus WorkloadStatus, oldStatus persistence.WorkloadStatus) bool {
-	return oldStatus.AgreementId == newStatus.AgreementId && oldStatus.ServiceURL == newStatus.ServiceURL && oldStatus.Org == newStatus.Org
+	return oldStatus.AgreementId == newStatus.AgreementId &&
+		oldStatus.ServiceURL == newStatus.ServiceURL &&
+		oldStatus.Org == newStatus.Org &&
+		(oldStatus.Version == newStatus.Version || oldStatus.Version == "" || newStatus.Version == "")
 }
 
 func changeInContainerStatuses(newContainers []ContainerStatus, oldContainers []persistence.ContainerStatus) bool {

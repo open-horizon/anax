@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cli/deploycheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"strings"
@@ -22,7 +23,7 @@ type serviceSpec struct {
 }
 
 // Check if service type and node type match
-func CheckService(name string, org string, arch string, version string, nodeType string, userOrg string, userPw string) bool {
+func CheckService(name string, org string, arch string, version string, nodeType string, nodeOrg string, nodeIdTok string) bool {
 	var services exchange.GetServicesResponse
 
 	// get message printer
@@ -30,14 +31,14 @@ func CheckService(name string, org string, arch string, version string, nodeType
 
 	// get service from exchange
 	id := cutil.FormExchangeIdForService(name, version, arch)
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+id, cliutils.OrgAndCreds(userOrg, userPw), []int{200, 404}, &services)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+id, cliutils.OrgAndCreds(nodeOrg, nodeIdTok), []int{200, 404}, &services)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", id, org))
 	}
 	// Check in the service type
 	for _, s := range services.Services {
 		serviceType := s.GetServiceType()
-		return nodeType == serviceType || serviceType == exchange.SERVICE_TYPE_BOTH
+		return nodeType == serviceType || serviceType == exchangecommon.SERVICE_TYPE_BOTH
 	}
 	return false
 }
@@ -102,7 +103,7 @@ func ServiceAllSucess(servSpecArr []serviceSpec) (bool, bool) {
 }
 
 // Wait for the specified service to start running on this node.
-func WaitForService(org string, waitService string, waitTimeout int, pattern string, pat exchange.Pattern, nodeType string, nodeArch, userOrg string, userPw string) {
+func WaitForService(org string, waitService string, waitTimeout int, pattern string, pat exchange.Pattern, nodeType string, nodeArch, nodeOrg string, nodeIdTok string, userOrg string, userPw string) {
 
 	const UpdateThreshold = 5    // How many service check iterations before updating the user with a msg on the console.
 	const ServiceUpThreshold = 5 // How many service check iterations before deciding that the service is up.
@@ -119,7 +120,7 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 	if pattern != "" {
 		for _, s := range pat.Services {
 			if (waitService == "*" || waitService == s.ServiceURL) && (org == "*" || org == s.ServiceOrg) && (s.ServiceArch == "*" || nodeArch == s.ServiceArch) {
-				if len(s.ServiceVersions) > 0 && CheckService(s.ServiceURL, s.ServiceOrg, nodeArch, s.ServiceVersions[0].Version, nodeType, userOrg, userPw) {
+				if len(s.ServiceVersions) > 0 && CheckService(s.ServiceURL, s.ServiceOrg, nodeArch, s.ServiceVersions[0].Version, nodeType, nodeOrg, nodeIdTok) {
 					servSpecArr = append(servSpecArr, serviceSpec{name: s.ServiceURL, org: s.ServiceOrg, status: 0, serviceUp: 0})
 				}
 			}
@@ -315,13 +316,31 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 		msgPrinter.Printf("Currently, there are no errors recorded in the node's event log.")
 		msgPrinter.Println()
 		if pattern == "" {
-			msgPrinter.Printf("Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy is compatible.")
+			msgPrinter.Printf("Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy are compatible.")
 			msgPrinter.Println()
 		} else {
-			msgPrinter.Printf("Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.")
-			msgPrinter.Println()
-			deploycheck.AllCompatible(userOrg, userPw, "", nodeArch, nodeType, "", "",
-				"", "", pattern, "", "", []string{}, false, false)
+
+			if userPw != "" {
+				// check everything
+				msgPrinter.Printf("Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern are compatible.")
+				msgPrinter.Println()
+				msgPrinter.Printf("Command output:")
+				msgPrinter.Println()
+				deploycheck.AllCompatible(userOrg, userPw, "", nodeArch, nodeType, nodeOrg, "", "",
+					"", "", pattern, "", "", []string{}, false, false)
+			} else {
+				msgPrinter.Printf("Using the 'hzn deploycheck userinput -p' command to verify that node, service configuration and pattern are compatible.")
+				msgPrinter.Println()
+
+				// check everything except secret binding because it requires user credential
+				msgPrinter.Printf("Command output:")
+				msgPrinter.Println()
+				deploycheck.UserInputCompatible(nodeOrg, nodeIdTok, "", nodeArch, nodeType,
+					"", "", "", pattern, "", []string{}, false, false)
+
+				msgPrinter.Printf("The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.")
+				msgPrinter.Println()
+			}
 		}
 	} else {
 		for _, ss := range servSpecArr {

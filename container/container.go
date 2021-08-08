@@ -252,6 +252,12 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		// Add a filesystem binding for the FSS (ESS) API SSL client certificate.
 		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.Config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_MOUNT))
 
+		// check if the service has any secrets
+		if _, err := os.Stat(w.GetSecretsManager().GetSecretsPath(agreementId)); err == nil {
+			// Add a filesystem binding for secrets from the agreement protocol to be stored.
+			service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.GetSecretsManager().GetSecretsPath(agreementId), config.HZN_SECRETS_MOUNT))
+		}
+
 		// Get the group id that owns the service ess auth folder/file. Add this group id in the GroupAdd fields in docker.HostConfig. So that service account in service container can read ess auth folder/file (750)
 		groupAdds := make([]string, 0)
 		if !w.IsDevInstance() {
@@ -531,6 +537,7 @@ type ContainerWorker struct {
 	client            *docker.Client
 	iptables          *iptables.IPTables
 	authMgr           *resource.AuthenticationManager
+	secretMgr         *resource.SecretsManager
 	pattern           string
 	isDevInstance     bool
 	apiServerType     string
@@ -546,6 +553,10 @@ func (cw *ContainerWorker) IsDevInstance() bool {
 
 func (cw *ContainerWorker) GetAuthenticationManager() *resource.AuthenticationManager {
 	return cw.authMgr
+}
+
+func (cw *ContainerWorker) GetSecretsManager() *resource.SecretsManager {
+	return cw.secretMgr
 }
 
 func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, error) {
@@ -566,13 +577,14 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		client:        client,
 		iptables:      nil,
 		authMgr:       resource.NewAuthenticationManager(config.GetFileSyncServiceAuthPath()),
+		secretMgr:     resource.NewSecretsManager(config.GetSecretsManagerFilePath(), nil),
 		pattern:       "",
 		isDevInstance: true,
 		apiServerType: svType,
 	}, nil
 }
 
-func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, am *resource.AuthenticationManager) *ContainerWorker {
+func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, am *resource.AuthenticationManager, sm *resource.SecretsManager) *ContainerWorker {
 
 	// do not start this container if the the node is registered and the type is cluster
 	dev, _ := persistence.FindExchangeDevice(db)
@@ -636,6 +648,7 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, 
 		client:        client,
 		iptables:      ipt,
 		authMgr:       am,
+		secretMgr:     sm,
 		pattern:       pattern,
 		apiServerType: svType,
 	}
@@ -1191,7 +1204,7 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) (string, bool) 
 }
 
 // This function creates the containers, volumes, networks for the given agreement or service.
-func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]string, serviceURL string, sVer string) (persistence.DeploymentConfig, error) {
+func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]string, serviceURL string, sVer string, originalAgreementId string) (persistence.DeploymentConfig, error) {
 
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
@@ -1270,8 +1283,28 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	if b.pattern == "" {
 		serviceVersion = sVer
 	}
-	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion, !b.isDevInstance); err != nil {
+	cred, err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion, !b.isDevInstance)
+	if err != nil {
 		glog.Errorf("Failed to create MMS Authentication credential file for %v, error %v", agreementId, err)
+	}
+
+	if !b.IsDevInstance() {
+		msInstKey := agreementId
+		// Make sure miroservice instance exsits
+		if msInstInterface, err := persistence.GetMicroserviceInstIWithKey(b.db, msInstKey); err != nil {
+			return nil, err
+		} else if msInstInterface == nil {
+			return nil, errors.New(fmt.Sprintf("Failed to find microservice instance interface for key: %v", msInstKey))
+		} else if mssInst, err := persistence.NewMSSInst(b.db, msInstKey, cred.Token); err != nil {
+			return nil, errors.New(fmt.Sprintf("Failed to persist MicroserviceSecretStatusInstance, err: %v", err))
+		} else {
+			glog.V(5).Infof("microservice secret status record saved: %v", mssInst)
+		}
+	}
+
+	// Save service secrets with the microservice id and write them to the agent filesystem
+	if err := b.GetSecretsManager().ProcessServiceSecretsWithInstanceId(originalAgreementId, agreementId); err != nil {
+		glog.Errorf("Error writing service secrets for agreement %v to file: %v", agreementId, err)
 	}
 
 	servicePairs, err := b.finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet, b.Config.GetFileSyncServiceAPIUnixDomainSocketPath())
@@ -1338,6 +1371,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			return nil, err
 		}
 	}
+
 	// finished pre-processing
 
 	// process shared by finding existing or creating new then hooking up "private" in pattern to the shared by adding two endpoints. Note! a shared container is not in the agreement bridge it came from
@@ -1546,7 +1580,8 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			sVer := ags[0].RunningWorkload.Version
 
 			// Create the docker configuration and launch the containers.
-			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
+			// agreementId is the MSSInstanceKey
+			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer, agreementId); err != nil {
 				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
 					persistence.NewMessageMeta(EL_CONT_START_CONTAINER_ERROR, err.Error()),
 					persistence.EC_ERROR_START_CONTAINER,
@@ -1699,8 +1734,13 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(serviceInfo.URL), serviceInfo.Org)
 		sVer := serviceInfo.Version
 
+		containerName := lc.Name
+		if len(lc.AgreementIds) > 0 {
+			containerName = lc.AgreementIds[0]
+		}
+
 		// Get the container started
-		if deployment, err := b.ResourcesCreate(lc.Name, "", deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
+		if deployment, err := b.ResourcesCreate(lc.Name, "", deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer, containerName); err != nil {
 			log_str := EL_CONT_START_CONTAINER_ERROR_FOR_AG
 			if lc.IsRetry {
 				log_str = EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG
@@ -1851,7 +1891,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 				// ask governer to record it into the db
 				cc := events.NewContainerConfig("", "", "", "", "", "", nil)
-				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, []string{}, []events.MicroserviceSpec{}, []persistence.ServiceInstancePathElement{}, false)
+				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, msinst.AssociatedAgreements, []events.MicroserviceSpec{}, []persistence.ServiceInstancePathElement{}, false)
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 			}
 		}
@@ -2432,6 +2472,13 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		glog.Errorf("Error removing containers for %v. Error: %v", agreements, err)
 	}
 
+	// Remove the secrets for these agreements from the agent filesystem and db
+	for _, agId := range agreements {
+		if err = b.GetSecretsManager().DeleteAllSecForAgreement(b.db, agId); err != nil {
+			glog.Errorf("Error removing service secrets for agreement %v: %v", agId, err)
+		}
+	}
+
 	// Remove the pieces of the host file system that are no longer needed.
 	for _, agreementId := range agreements {
 		// Remove workspaceROStorage directory and docker volume.
@@ -2450,8 +2497,13 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		}
 
 		// Remove the File Sync Service API authentication credential file.
-		if err := b.GetAuthenticationManager().RemoveCredential(agreementId, !b.isDevInstance); err != nil {
+		if essToken, err := b.GetAuthenticationManager().RemoveCredential(agreementId, !b.isDevInstance); err != nil {
 			glog.Errorf("Failed to remove FSS Authentication credential file for %v, error %v", agreementId, err)
+		} else if !b.IsDevInstance() {
+			if _, err := persistence.DeleteMSSInstWithESSToken(b.db, essToken); err != nil {
+				// Remove MSInstSecretStatus by essToken
+				glog.Errorf("Failed to remove MicroserviceSecretStatus record for %v, error %v", agreementId, err)
+			}
 		}
 
 	}
@@ -2700,7 +2752,7 @@ func (b *ContainerWorker) findParentContainersForService(msinst_key string) ([]d
 		return nil, errors.New(fmt.Sprintf("unable to read active agreements from db, error %v", err))
 	} else {
 		for _, ag := range ags {
-			top_level_msinsts = append(top_level_msinsts, *persistence.AgreementToMicroserviceInstance(ag, ""))
+			top_level_msinsts = append(top_level_msinsts, *persistence.AgreementToMicroserviceInstance(ag))
 		}
 	}
 

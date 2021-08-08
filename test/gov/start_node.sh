@@ -9,7 +9,7 @@
 # export DEVICE_NAME="anaxdev1"
 # export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
 # export EXCH="${EXCH_APP_HOST}"
-# export TOKEN="abcdefg"
+# export TOKEN="Abcdefghijklmno1"
 # This env var can be changed to whatever pattern you want to run.
 # export PATTERN="sall"
 

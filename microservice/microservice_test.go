@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/stretchr/testify/assert"
@@ -63,7 +64,7 @@ func TestMicroserviceReadyForUpgrade(t *testing.T) {
 	pms.UpgradeStartTime = uint64(0)
 
 	pms.Id = "1"
-	msi, err := persistence.NewMicroserviceInstance(db, pms.SpecRef, pms.Org, pms.Version, pms.Id, []persistence.ServiceInstancePathElement{})
+	msi, err := persistence.NewMicroserviceInstance(db, pms.SpecRef, pms.Org, pms.Version, pms.Id, []persistence.ServiceInstancePathElement{}, false)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
 	pms.AutoUpgrade = true
@@ -166,18 +167,21 @@ func TestUnregisterServiceExchange(t *testing.T) {
 
 	m1 := exchange.Microservice{
 		Url:           "myorg/gps",
+		Version:       "1.0",
 		Properties:    nil,
 		NumAgreements: 0,
 		Policy:        "blahblah",
 	}
 	m2 := exchange.Microservice{
 		Url:           "myorg/network",
+		Version:       "1.0",
 		Properties:    nil,
 		NumAgreements: 0,
 		Policy:        "blahblah",
 	}
 	m3 := exchange.Microservice{
 		Url:           "myorg/pwsms",
+		Version:       "1.0",
 		Properties:    nil,
 		NumAgreements: 0,
 		Policy:        "blahblah",
@@ -189,6 +193,7 @@ func TestUnregisterServiceExchange(t *testing.T) {
 	device_token := "mytoken"
 	device_name := "mydevicename"
 	url := "network"
+	version := "1.0"
 
 	// save device in db
 	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, "device", false, org, "netspeed-amd64", "configuring")
@@ -196,12 +201,12 @@ func TestUnregisterServiceExchange(t *testing.T) {
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, nil),
 		checkPatchDeviceHandler(t, nil, url),
-		url, org, device_id, device_token, db)
+		url, org, version, device_id, device_token, db)
 	assert.Nil(t, err, "no registered ms, nothing to do")
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
 		checkPatchDeviceHandler(t, mss, url),
-		url, org, device_id, device_token, db)
+		url, org, version, device_id, device_token, db)
 	assert.Nil(t, err, "eveything should have worked")
 
 	err = cleanupDB(dir)
@@ -213,19 +218,19 @@ func createService(t *testing.T) *persistence.MicroserviceDefinition {
 		"USBDeviceIds": "1546:01a7",
 		"Devfiles":     "/dev/ttyUSB*,/dev/ttyACM*",
 	}
-	ut1 := exchange.UserInput{
+	ut1 := exchangecommon.UserInput{
 		Name:         "foo1",
 		Label:        "The Foo1 Value",
 		Type:         "string",
 		DefaultValue: "bar1",
 	}
-	ut2 := exchange.UserInput{
+	ut2 := exchangecommon.UserInput{
 		Name:         "foo2",
 		Label:        "The Foo2 Value",
 		Type:         "string",
 		DefaultValue: "bar2",
 	}
-	sd := exchange.ServiceDependency{
+	sd := exchangecommon.ServiceDependency{
 		URL:     "https://bluehorizon.network/services/other",
 		Org:     "myorg",
 		Version: "1.0.0",
@@ -242,8 +247,8 @@ func createService(t *testing.T) *persistence.MicroserviceDefinition {
 		Arch:                cutil.ArchString(),
 		Sharable:            "singleton",
 		MatchHardware:       hwm,
-		RequiredServices:    []exchange.ServiceDependency{sd},
-		UserInputs:          []exchange.UserInput{ut1, ut2},
+		RequiredServices:    []exchangecommon.ServiceDependency{sd},
+		UserInputs:          []exchangecommon.UserInput{ut1, ut2},
 		Deployment:          "",
 		DeploymentSignature: "",
 		LastUpdated:         "2017-11-14T22:36:52.748Z[UTC]",
@@ -274,9 +279,9 @@ func getVariableServiceHandler(version string) exchange.ServiceHandler {
 			URL:           mUrl,
 			Version:       version,
 			Arch:          mArch,
-			Sharable:      exchange.MS_SHARING_MODE_EXCLUSIVE,
+			Sharable:      exchangecommon.SERVICE_SHARING_MODE_EXCLUSIVE,
 			MatchHardware: exchange.HardwareRequirement{},
-			UserInputs:    []exchange.UserInput{},
+			UserInputs:    []exchangecommon.UserInput{},
 			LastUpdated:   "today",
 		}
 		return &md, "service-id", nil
@@ -292,9 +297,9 @@ func getVariableExchangeDefinitionHandler(version string) exchange.ServiceResolv
 			URL:           mUrl,
 			Version:       version,
 			Arch:          mArch,
-			Sharable:      exchange.MS_SHARING_MODE_EXCLUSIVE,
+			Sharable:      exchangecommon.SERVICE_SHARING_MODE_EXCLUSIVE,
 			MatchHardware: exchange.HardwareRequirement{},
-			UserInputs:    []exchange.UserInput{},
+			UserInputs:    []exchangecommon.UserInput{},
 			LastUpdated:   "today",
 		}
 

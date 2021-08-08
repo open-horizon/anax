@@ -1,7 +1,6 @@
 package sync_service
 
 import (
-	"bytes"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
@@ -38,38 +37,20 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 	}
 
 	// Call the MMS service over HTTP to download the object data.
-	var data []byte
+	var data io.Reader
 	urlPath := path.Join("api/v1/objects/", org, objType, objId, "/data")
-	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &data)
-	if httpCode == 404 {
+	resp := cliutils.ExchangeGetResponse("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw))
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+	if resp.StatusCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object '%s' of type '%s' not found in org %s", objId, objType, org))
 	}
+	data = resp.Body
 
 	// Restore HTTP request override if necessary.
 	if setHTTPOverride {
 		os.Setenv(config.HTTPRequestTimeoutOverride, "")
-	}
-
-	// Verify digital signature
-	if !skipDigitalSigVerify {
-		// Call the MMS service over HTTP to get object metadata
-		var objectMeta common.MetaData
-		urlPath = path.Join("api/v1/objects/", org, objType, objId)
-		httpCode = cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectMeta)
-		if httpCode == 404 {
-			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object metadata '%s' of type '%s' not found in org %s", objId, objType, org))
-		}
-
-		if objectMeta.HashAlgorithm != "" && objectMeta.PublicKey != "" && objectMeta.Signature != "" {
-			// verify data
-			dataReader := bytes.NewReader(data)
-			msgPrinter.Println("Verifying data with digital signature....")
-			if verified, err := VerifyDataSig(dataReader, objectMeta.PublicKey, objectMeta.Signature, objectMeta.HashAlgorithm); !verified {
-				cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to verify data: %s", err.Error()))
-			}
-			msgPrinter.Println("Verifying digital signature is done.")
-
-		}
 	}
 
 	var fileName string
@@ -109,15 +90,38 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 		}
 	}
 
-	file, err := os.Create(fileName)
-	if err != nil {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to create file: %s", fileName))
+	var verified bool
+	var err error
+	if !skipDigitalSigVerify {
+		// Verify digital signature, save to a tmp file, rename tmp file
+		// Call the MMS service over HTTP to get object metadata
+		var objectMeta common.MetaData
+		urlPath = path.Join("api/v1/objects/", org, objType, objId)
+		httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectMeta)
+		if httpCode == 404 {
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object metadata '%s' of type '%s' not found in org %s", objId, objType, org))
+		}
+
+		if objectMeta.HashAlgorithm != "" && objectMeta.PublicKey != "" && objectMeta.Signature != "" {
+			// verify data
+			//dataReader := bytes.NewReader(data)
+			msgPrinter.Println("Verifying data with digital signature....")
+			if verified, err = VerifyDataSig(data, objectMeta.PublicKey, objectMeta.Signature, objectMeta.HashAlgorithm, fileName); !verified {
+				cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to verify data: %s", err.Error()))
+			}
+			msgPrinter.Println("Verifying digital signature is done.")
+		}
+
 	}
-
-	defer file.Close()
-
-	if _, err := file.Write(data); err != nil {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to save data for object '%s' of type '%s' to file %s", objId, objType, fileName))
+	if !verified {
+		// verify process will save the data to file, if verify process not execute, then stream data directly to a file
+		// Reach here if:
+		// 1) use --noIntegrity flag,
+		// or
+		// 2) object metadata doesn't have HashAlgorithm, or publicKey or signature field
+		if err := writeDateStreamToFile(data, fileName); err != nil {
+			cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to save data for object '%s' of type '%s' to file %s, err: %v", objId, objType, fileName, err))
+		}
 	}
 
 	msgPrinter.Printf("Data of object %v saved to file %v", objId, fileName)
@@ -125,7 +129,7 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 
 }
 
-func VerifyDataSig(dataReader io.Reader, publicKey string, signature string, hashAlgo string) (bool, error) {
+func VerifyDataSig(dataReader io.Reader, publicKey string, signature string, hashAlgo string, fileName string) (bool, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -144,11 +148,18 @@ func VerifyDataSig(dataReader io.Reader, publicKey string, signature string, has
 	} else {
 		if dataHash, err := GetHash(hashAlgo); err != nil {
 			return false, err
-		} else if _, err := io.Copy(dataHash, dataReader); err != nil {
-			return false, err
 		} else if pubKey, err := x509.ParsePKIXPublicKey(publicKeyBytes); err != nil {
 			return false, err
 		} else {
+			dr2 := io.TeeReader(dataReader, dataHash)
+
+			// write dr2 to a tmp file
+			tmpFileName := fmt.Sprintf("%s.tmp", fileName)
+			if err := writeDateStreamToFile(dr2, tmpFileName); err != nil {
+				return false, err
+			}
+
+			// verify datahash
 			dataHashSum := dataHash.Sum(nil)
 			pubKeyToUse := pubKey.(*rsa.PublicKey)
 			if cryptoHashType, err := GetCryptoHashType(hashAlgo); err != nil {
@@ -157,7 +168,30 @@ func VerifyDataSig(dataReader io.Reader, publicKey string, signature string, has
 				return false, err
 			}
 
+			// rename the .tmp file
+			if err := os.Rename(tmpFileName, fileName); err != nil {
+				return false, err
+			}
+
 			return true, nil
 		}
 	}
+}
+
+func writeDateStreamToFile(dataReader io.Reader, fileName string) error {
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+
+	if _, err := io.Copy(file, dataReader); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
 }

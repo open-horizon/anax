@@ -262,9 +262,15 @@ func (db *AgbotPostgresqlDB) MovePartition(timeout uint64) (bool, error) {
 			return false, err
 		} else if _, err := tx.Exec(db.GetWorkloadUsagePartitionMove(fromPartition, db.PrimaryPartition())); err != nil {
 			return false, err
+		} else if _, err := tx.Exec(db.GetSecretPartitionMove(fromPartition, db.PrimaryPartition())); err != nil {
+			return false, err
 		} else if _, err := tx.Exec(db.GetAgreementPartitionTableDrop(fromPartition)); err != nil {
 			return false, err
 		} else if _, err := tx.Exec(db.GetWorkloadUsagePartitionTableDrop(fromPartition)); err != nil {
+			return false, err
+		} else if _, err := tx.Exec(db.GetSecretPartitionTableDropPolicy(fromPartition)); err != nil {
+			return false, err
+		} else if _, err := tx.Exec(db.GetSecretPartitionTableDropPattern(fromPartition)); err != nil {
 			return false, err
 		} else if _, err := tx.Exec(PARTITION_DELETE, fromPartition); err != nil {
 			return false, err
@@ -272,7 +278,7 @@ func (db *AgbotPostgresqlDB) MovePartition(timeout uint64) (bool, error) {
 			if err := tx.Commit(); err != nil {
 				return false, errors.New(fmt.Sprintf("unable to commit transaction for moving agreements, error: %v", err))
 			}
-			glog.V(3).Infof("AgreementBot %v moved agreements from partition %v to %v", db.identity, fromPartition, db.PrimaryPartition())
+			glog.V(3).Infof("AgreementBot %v moved agreements, workload usage and secrets from partition %v to %v", db.identity, fromPartition, db.PrimaryPartition())
 		}
 	}
 	// We found a partition and moved all the records.

@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -212,7 +213,7 @@ func GetDependencyFiles(directory string, fileSuffix string) ([]os.FileInfo, err
 
 }
 
-func GetServiceDependencies(directory string, deps []exchange.ServiceDependency) ([]*common.ServiceFile, error) {
+func GetServiceDependencies(directory string, deps []exchangecommon.ServiceDependency) ([]*common.ServiceFile, error) {
 	res := make([]*common.ServiceFile, 0, 10)
 	depFiles, err := GetDependencyFiles(directory, SERVICE_DEFINITION_FILE)
 	if err != nil {
@@ -325,7 +326,7 @@ func ValidateService(directory string, fInfo os.FileInfo, userInputs *common.Use
 	return validateDependencyUserInputs(d, d.GetUserInputs(), userInputs.Services, userInputsFilePath)
 }
 
-func validateDependencyUserInputs(d common.AbstractServiceFile, uis []exchange.UserInput, configUserInputs []policy.AbstractUserInput, userInputsFilePath string) error {
+func validateDependencyUserInputs(d common.AbstractServiceFile, uis []exchangecommon.UserInput, configUserInputs []policy.AbstractUserInput, userInputsFilePath string) error {
 	for _, ui := range uis {
 		if ui.DefaultValue == "" {
 			found := false

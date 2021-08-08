@@ -1,6 +1,8 @@
 package secrets
 
 import (
+	"fmt"
+
 	"github.com/open-horizon/anax/config"
 )
 
@@ -15,24 +17,46 @@ type AgbotSecrets interface {
 	Renew() error
 	Close()
 	IsReady() bool
+	GetLastVaultStatus() uint64
 
-	ListOrgSecret(user, token, org, name string) (map[string]string, error)
-	ListOrgSecrets(user, token, org string) ([]string, error)
-	CreateOrgSecret(user, token, org, vaultSecretName string, data SecretDetails) error
-	DeleteOrgSecret(user, token, org, name string) error
+	ListOrgSecret(user, token, org, path string) error
+	ListOrgSecrets(user, token, org, path string) ([]string, error)
+	CreateOrgSecret(user, token, org, path string, data SecretDetails) error
+	DeleteOrgSecret(user, token, org, path string) error
 
-	ListOrgUserSecret(user, token, org, name string) (map[string]string, error)
-	CreateOrgUserSecret(user, token, org, vaultSecretName string, data SecretDetails) error
-	DeleteOrgUserSecret(user, token, org, name string) error
+	ListOrgUserSecret(user, token, org, path string) error
+	ListOrgUserSecrets(user, token, org, path string) ([]string, error)
+	CreateOrgUserSecret(user, token, org, path string, data SecretDetails) error
+	DeleteOrgUserSecret(user, token, org, path string) error
 
 	// This function assumes that the plugin maintains an authentication to the secret manager that it can use
 	// when it doesnt need to call APIs with user creds. The creds used instead have the ability to READ secrets.
-	GetSecretDetails(org, secretUser, secretName string) (SecretDetails, error)
+	// "user" argument is the user who is accessing the secret, "secretUser" is the owner of the secret being accessed,
+	// if an org-level secret then this will be empty
+	GetSecretDetails(user, token, org, secretUser, secretName string) (SecretDetails, error)
+
+	// This function returns the secret manager's metadata about a given secret.
+	// "user" argument is the user who is accessing the secret, "secretUser" is the owner of the secret being accessed,
+	// if an org-level secret then this will be empty
+	GetSecretMetadata(secretOrg, secretUser, secretName string) (SecretMetadata, error)
 }
 
 type SecretDetails struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
+}
+
+func (m SecretDetails) String() string {
+	return fmt.Sprintf("Key: %v, Value: ********", m.Key)
+}
+
+type SecretMetadata struct {
+	CreationTime int64 `json:"created_time"`
+	UpdateTime   int64 `json:"updated_time"`
+}
+
+func (m SecretMetadata) String() string {
+	return fmt.Sprintf("Created: %v, Updated: %v", m.CreationTime, m.UpdateTime)
 }
 
 type ErrorResponse struct {

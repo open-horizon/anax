@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -81,6 +82,23 @@ type BaseProducerProtocolHandler struct {
 	db     *bolt.DB
 	config *config.HorizonConfig
 	ec     exchange.ExchangeContext
+}
+
+// Since we changed to saving the signing key with the agreement id, we need to make sure we delete the key when done with it
+// to avoid filling up the filesystem
+func (w *BaseProducerProtocolHandler) cleanupSigningKeys(keys []string) {
+
+	errHandler := func(keyname string) api.ErrorHandler {
+		return func(err error) bool {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error when deleting the signing key file %v to anax. %v", keyname, err)))
+			return true
+		}
+	}
+
+	for _, key := range keys {
+		glog.V(3).Info(fmt.Sprintf("About to delete signing key %s", key))
+		api.DeletePublicKey(key, w.config, errHandler(key))
+	}
 }
 
 func (w *BaseProducerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {
@@ -222,19 +240,10 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 
 		err_log_event := ""
 
-		if err := w.saveSigningKeys(tcPolicy); err != nil {
-			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error handling signing keys from the exchange: %v", err)))
-			err_log_event = fmt.Sprintf("Received error handling signing keys from the exchange: %v", err)
-			handled = true
-		} else if pemFiles, err := w.config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
-			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting pem key files: %v", err)))
-			err_log_event = fmt.Sprintf("Received error getting pem key files: %v", err)
-			handled = true
-		} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetServiceResolver()); err != nil {
-			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
-			err_log_event = fmt.Sprintf("Received error checking self consistency of TsAndCs: %v", err)
-			handled = true
-		} else if dev, err := persistence.FindExchangeDevice(w.db); err != nil {
+		// Keep track of any signing keys we download so we can delete them when done
+		signingKeys := make([]string, 0)
+
+		if dev, err := persistence.FindExchangeDevice(w.db); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("device is not configured to accept agreement yet.")))
 			err_log_event = fmt.Sprintf("Device is not configured to accept agreement yet.")
 			handled = true
@@ -275,6 +284,18 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 				proposal.ConsumerId(),
 				proposal.Protocol())
 			handled = true
+		} else if err := w.saveSigningKeys(tcPolicy, proposal.AgreementId(), &signingKeys); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error handling signing keys from the exchange: %v", err)))
+			err_log_event = fmt.Sprintf("Received error handling signing keys from the exchange: %v", err)
+			handled = true
+		} else if pemFiles, err := w.config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting pem key files: %v", err)))
+			err_log_event = fmt.Sprintf("Received error getting pem key files: %v", err)
+			handled = true
+		} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetServiceResolver()); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
+			err_log_event = fmt.Sprintf("Received error checking self consistency of TsAndCs: %v", err)
+			handled = true
 		} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating message target: %v", err)))
 			err_log_event = fmt.Sprintf("Error creating message target: %v", err)
@@ -304,9 +325,11 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 						proposal.ConsumerId(),
 						proposal.Protocol())
 				}
+				w.cleanupSigningKeys(signingKeys)
 				return handled, r, tcPolicy
 			}
 		}
+		w.cleanupSigningKeys(signingKeys)
 
 		if err_log_event != "" {
 			eventlog.LogAgreementEvent2(
@@ -325,7 +348,10 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 }
 
 // This function gets the pattern and workload's signing keys and save them to anax
-func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy) error {
+func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy, agreementId string, signingKeys *[]string) error {
+
+	num_signing_keys := 0
+
 	// do nothing if the config does not allow using the certs from the org on the exchange
 	if !w.config.Edge.TrustCertUpdatesFromOrg {
 		return nil
@@ -351,7 +377,14 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy) error 
 					fn = fmt.Sprintf("%v.pem", key)
 				}
 
-				api.UploadPublicKey(fn, []byte(content), w.config, errHandler(fn))
+				// Keys for different services might have the same key name like service.public.pem so prepend something unique like the agreement id
+				// but then we have to make sure we delete the key when done with it
+				prepend_string := agreementId + "_" + strconv.Itoa(num_signing_keys) + "_"
+				num_signing_keys += 1
+				key_name := prepend_string + fn
+
+				api.UploadPublicKey(key_name, []byte(content), w.config, errHandler(fn))
+				(*signingKeys) = append((*signingKeys), key_name)
 			}
 		}
 	}
@@ -369,7 +402,14 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy) error 
 						fn = fmt.Sprintf("%v.pem", key)
 					}
 
-					api.UploadPublicKey(fn, []byte(content), w.config, errHandler(fn))
+					// Keys for different services might have the same key name like service.public.pem so prepend something unique like the agreement id
+					// but then we have to make sure we delete the key when done with it
+					prepend_string := agreementId + "_" + strconv.Itoa(num_signing_keys) + "_"
+					num_signing_keys += 1
+					key_name := prepend_string + fn
+
+					api.UploadPublicKey(key_name, []byte(content), w.config, errHandler(fn))
+					(*signingKeys) = append((*signingKeys), key_name)
 				}
 			}
 		}

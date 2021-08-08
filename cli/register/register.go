@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
@@ -381,7 +382,11 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			msgPrinter.Println()
 
 			// Wait for the service to be started.
-			WaitForService(waitOrg, waitService, waitTimeout, pattern, pat, nodeType, anaxArch, org, nodeIdTok)
+			var userOrg, userAuth string
+			if userPw != "" {
+				userOrg, userAuth = cliutils.TrimOrg(org, userPw)
+			}
+			WaitForService(waitOrg, waitService, waitTimeout, pattern, pat, nodeType, anaxArch, org, nodeIdTok, userOrg, userAuth)
 		}
 	} else {
 		msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
@@ -496,46 +501,6 @@ func SetUserInput(timeout int, resource string, value interface{}) error {
 			totalWait = totalWait - channelWait
 			if totalWait <= 0 {
 				return fmt.Errorf(msgPrinter.Sprintf("Call to %s timed out.", resource))
-			}
-		}
-	}
-}
-
-// SetServiceConfig sets the service variables provided at registration locally in the node.
-// timeout parameter is the time in seconds to wait before returning an error if the call does not return.
-func SetServiceConfig(timeout int, inputFile string, value interface{}) (error, int) {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
-
-	c := make(chan string, 1)
-	go func() {
-		httpCode, respBody, err := cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{200, 201, 400}, value, false)
-		if err != nil {
-			c <- err.Error()
-		}
-		if httpCode == 400 {
-			if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
-				c <- msgPrinter.Sprintf("Registration failed because %v Please update the services section in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[0], inputFile)
-			}
-			c <- msgPrinter.Sprintf("Error setting service variables from user input file: %v", respBody)
-		}
-		c <- "done"
-	}()
-
-	channelWait := 15
-	totalWait := timeout
-
-	for {
-		select {
-		case output := <-c:
-			if output == "done" {
-				return nil, 0
-			}
-			return fmt.Errorf(output), cliutils.CLI_INPUT_ERROR
-		case <-time.After(time.Duration(channelWait) * time.Second):
-			totalWait = totalWait - channelWait
-			if totalWait <= 0 {
-				return fmt.Errorf(msgPrinter.Sprintf("Call to set service config resource timed out.")), cliutils.INTERNAL_ERROR
 			}
 		}
 	}
@@ -731,7 +696,7 @@ type SvcMapValue struct {
 	Arch           string
 	VersionRanges  []string // all the version ranges we find for this service as we descend thru the required services
 	HighestVersion string   // filled in when we have to find the highest service to get its required services. Is valid at the end if len(VersionRanges)==1
-	UserInputs     []exchange.UserInput
+	UserInputs     []exchangecommon.UserInput
 	Privileged     bool
 }
 
@@ -752,7 +717,7 @@ func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequi
 	// Make sure that the node type and the service type match
 	serviceType := highestSvc.GetServiceType()
 	for nId, n := range nodes.Devices {
-		if serviceType != exchange.SERVICE_TYPE_BOTH && n.GetNodeType() != serviceType {
+		if serviceType != exchangecommon.SERVICE_TYPE_BOTH && n.GetNodeType() != serviceType {
 			msgPrinter.Printf("Ignoring version %s of service %s/%s with node type mismatch: the service type '%v' does not match the node type '%v' of the Exchange node %v.", versionRange, org, url, serviceType, n.GetNodeType(), nId)
 			msgPrinter.Println()
 			return
@@ -832,7 +797,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 	containsPrivilegedSvc := false
 	for _, s := range allRequiredSvcs {
-		var userInput []exchange.UserInput
+		var userInput []exchangecommon.UserInput
 		if s.HighestVersion != "" && len(s.VersionRanges) <= 1 {
 			// When we were finding the required services we only encountered this service once, so the user input we found then is valid
 			userInput = s.UserInputs

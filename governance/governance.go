@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
@@ -660,6 +661,11 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 			}
 		}
 
+		// Remove the agreement secrets from the database
+		if err := persistence.DeleteAgreementSecrets(w.db, agreementId); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error deleting secrets for agreement %v from the database: %v", agreementId, err)))
+		}
+
 		// If we can do the termination now, do it. Otherwise we will queue a command to do it later.
 		w.externalTermination(ag, agreementId, agreementProtocol, reason)
 		if !w.producerPH[agreementProtocol].IsBlockchainWritable(ag) {
@@ -1191,7 +1197,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			// archive the agreement if all the cleanup processes are done
 			if archive {
 				glog.V(5).Infof(logString(fmt.Sprintf("archiving agreement %v", cmd.AgreementId)))
-				if _, err := persistence.ArchiveEstablishedAgreement(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
+				if err := persistence.ArchiveMicroserviceInstAndDef(w.db, cmd.AgreementId, w.devicePattern == ""); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error archiving terminated agreement: %v, error: %v", cmd.AgreementId, err)))
 				}
 
@@ -1505,13 +1511,30 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		// The workload config we have might be from a lower version of the workload. Go to the exchange and
 		// get the metadata for the version we are running and then add in any unset default user inputs.
 		var serviceDef *exchange.ServiceDefinition
-		if _, sDef, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-			return fmt.Errorf("Received error querying exchange for service metadata: %v/%v, error %v", workload.Org, workload.WorkloadURL, err)
+		serviceId := ""
+		if _, sDef, allIDs, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+			return fmt.Errorf(logString(fmt.Sprintf("Received error querying exchange for service metadata: %v/%v, error %v", workload.Org, workload.WorkloadURL, err)))
 		} else if sDef == nil {
-			return fmt.Errorf("Cound not find service metadata for %v/%v.", workload.Org, workload.WorkloadURL)
+			return fmt.Errorf(logString(fmt.Sprintf("Cound not find service metadata for %v/%v.", workload.Org, workload.WorkloadURL)))
 		} else {
 			serviceDef = sDef
 			sDef.PopulateDefaultUserInput(envAdds)
+			if allIDs != nil && len(allIDs) > 0 {
+				serviceId = allIDs[0]
+			}
+		}
+
+		// create microservice def for this agreement
+		var msdef *persistence.MicroserviceDefinition
+		msFilters := []persistence.MSFilter{persistence.UrlOrgVersionMSFilter(serviceDef.URL, exchange.GetOrg(serviceId), serviceDef.Version), persistence.UnarchivedMSFilter()}
+		if msdefs, err := persistence.FindMicroserviceDefs(w.db, msFilters); err != nil {
+			return fmt.Errorf(logString(fmt.Sprintf("Error finding service definition from the local db for %v. %v", serviceId, err)))
+		} else if msdefs == nil || len(msdefs) == 0 {
+			if msdef, err = microservice.CreateMicroserviceDefWithServiceDef(w.db, serviceDef, serviceId); err != nil {
+				return fmt.Errorf(logString(fmt.Sprintf("failed to create service definition for %v for agreement %v: %v", serviceId, proposal.AgreementId(), err)))
+			}
+		} else {
+			msdef = &msdefs[0]
 		}
 
 		cutil.SetPlatformEnvvars(envAdds,
@@ -1519,7 +1542,6 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			proposal.AgreementId(),
 			exchange.GetId(w.GetExchangeId()),
 			exchange.GetOrg(w.GetExchangeId()),
-			workload.WorkloadPassword,
 			w.GetExchangeURL(),
 			w.devicePattern,
 			w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),
@@ -1529,6 +1551,9 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		lc.EnvironmentAdditions = &envAdds
 
 		if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+			if err := w.processServiceSecrets(tcPolicy, proposal.AgreementId()); err != nil {
+				return err
+			}
 			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
 			deps := serviceDef.GetServiceDependencies()
 
@@ -1553,12 +1578,18 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				// the services that are going to be network accessible to the workload container(s).
 				lc.Microservices = ms_specs
 			}
+
 		}
 
 		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
 			persistence.NewMessageMeta(EL_GOV_START_WORKLOAD_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL),
 			persistence.EC_START_SERVICE,
 			*ag)
+
+		// add microservice def id to agreement, the agreement object is doubled as a microservice instance.
+		if _, err := persistence.SetAgreementServiceDefId(w.db, proposal.AgreementId(), protocol, msdef.Id); err != nil {
+			return fmt.Errorf(logString(fmt.Sprintf("failed to set the service definition id for agreement %v. %v", proposal.AgreementId(), err)))
+		}
 
 		w.BaseWorker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
 
@@ -1571,16 +1602,28 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 	return nil
 }
 
+// Save the secrets by agreement id since we don't have an instance id for the services yet
+func (w *GovernanceWorker) processServiceSecrets(tcPolicy *policy.Policy, agId string) error {
+	glog.V(5).Infof(logString(fmt.Sprintf("process service secrets for agreement: %v", agId)))
+
+	allSecrets := persistence.PersistedSecretFromPolicySecret(tcPolicy.SecretDetails, agId)
+
+	if err := persistence.SaveAgreementSecrets(w.db, agId, &allSecrets); err != nil {
+		return fmt.Errorf(logString(fmt.Sprintf("Failed to save agreement secrets for agreement: %v", agId)))
+	}
+	return nil
+}
+
 // Run through the list of service dependencies and start each one. This function is used recursively to start leaf nodes first,
 // and then their parents.
-func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.ServiceInstancePathElement, deps *[]exchange.ServiceDependency, agreementId string, protocol string) ([]events.MicroserviceSpec, error) {
+func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.ServiceInstancePathElement, deps *[]exchangecommon.ServiceDependency, agreementId string, protocol string) ([]events.MicroserviceSpec, error) {
 	ms_specs := []events.MicroserviceSpec{}
 
 	glog.V(5).Infof(logString(fmt.Sprintf("processDependencies %v for agreement %v. The dependency path is: %v", *deps, agreementId, dependencyPath)))
 
 	for _, sDep := range *deps {
 
-		msdef, err := microservice.FindOrCreateMicroserviceDef(w.db, sDep.URL, sDep.Org, sDep.Version, sDep.Arch, exchange.GetHTTPServiceHandler(w))
+		msdef, err := microservice.FindOrCreateMicroserviceDef(w.db, sDep.URL, sDep.Org, sDep.Version, sDep.Arch, false, exchange.GetHTTPServiceHandler(w))
 		if err != nil {
 			return ms_specs, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for dependent service for agreement %v. %v", agreementId, err)))
 		}

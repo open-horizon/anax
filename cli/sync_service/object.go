@@ -17,6 +17,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
+	"github.com/open-horizon/rsapss-tool/sign"
 	"hash"
 	"io"
 	"net/http"
@@ -281,7 +282,7 @@ func ObjectNew(org string) {
 
 // Upload an object to the MMS. The user can provide a copy of the object's metadata in a file, or they can simply provide
 // object id and type.
-func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string, skipDigitalSig bool, dsHashAlgo string, dsHash string) {
+func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string, skipDigitalSig bool, dsHashAlgo string, dsHash string, privKeyFilePath string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -337,7 +338,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		msgPrinter.Printf("Digital sign with %s will be performed for data integrity. It will delay the MMS object publish.\n", hashAlgorithm)
 
 		// Create public key. Sign data. Set "hashAlgorithm", "publicKey" and "signature" field
-		if publicKey, signature, err := signObjData(objFile, hashAlgorithm, dsHash); err != nil {
+		if publicKey, signature, err := signObjData(objFile, hashAlgorithm, dsHash, privKeyFilePath); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("failed to digital sign the file %v, Error: %v", objFile, err))
 		} else {
 			objectMeta.HashAlgorithm = hashAlgorithm
@@ -452,7 +453,7 @@ func timeIsValid(timestamp string) (bool, string) {
 	return true, ""
 }
 
-func signObjData(objFile string, dsHashAlgo string, dsHash string) (string, string, error) {
+func signObjData(objFile string, dsHashAlgo string, dsHash string, privKeyFilePath string) (string, string, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -489,23 +490,31 @@ func signObjData(objFile string, dsHashAlgo string, dsHash string) (string, stri
 		msgPrinter.Println()
 	}
 
-	if privateKey, err = rsa.GenerateKey(rand.Reader, 2048); err != nil {
-		return "", "", err
-	} else {
-		// get public key
-		if publicKeyBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey); err != nil {
+	// use given key pair, if given, otherwise try to fetch default key file
+	privKeyFilePath_tmp := cliutils.WithDefaultEnvVar(&privKeyFilePath, "HZN_PRIVATE_KEY_FILE")
+	privKeyFilePath = cliutils.WithDefaultKeyFile(*privKeyFilePath_tmp, false)
+	if privKeyFilePath != "" {
+		if privateKey, err = sign.ReadPrivateKey(privKeyFilePath); err != nil {
 			return "", "", err
-		} else if cryptoHash, err := GetCryptoHashType(dsHashAlgo); err != nil {
-			return "", "", err
-		} else if signature, err := rsa.SignPSS(rand.Reader, privateKey, cryptoHash, fileHashSum, nil); err != nil {
-			return "", "", err
-		} else {
-			publicKeyString := base64.StdEncoding.EncodeToString(publicKeyBytes)
-			signatureString := base64.StdEncoding.EncodeToString(signature)
-			return publicKeyString, signatureString, nil
 		}
+		// if there is no given private key or defualt value, generate private
+		// and public key pair
+	} else if privateKey, err = rsa.GenerateKey(rand.Reader, 2048); err != nil {
+		return "", "", err
 	}
 
+	if publicKeyBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey); err != nil {
+		return "", "", err
+	} else if cryptoHash, err := GetCryptoHashType(dsHashAlgo); err != nil {
+		return "", "", err
+	} else if signature, err := rsa.SignPSS(rand.Reader, privateKey, cryptoHash, fileHashSum, nil); err != nil {
+		return "", "", err
+	} else {
+		publicKeyString := base64.StdEncoding.EncodeToString(publicKeyBytes)
+		signatureString := base64.StdEncoding.EncodeToString(signature)
+
+		return publicKeyString, signatureString, nil
+	}
 }
 
 func GetHash(hashAlgo string) (hash.Hash, error) {

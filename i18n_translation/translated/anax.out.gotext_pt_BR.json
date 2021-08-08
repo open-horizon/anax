@@ -99,6 +99,10 @@
       "translation": "Não foi possível desserializar o corpo de entrada para o objeto UserInputCheck. {Err}"
     },
     {
+      "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "translation": "O corpo de entrada não pôde ser desserializado para o objeto SecretBindingCheck. {Err}"
+    },
+    {
       "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
       "translation": "O corpo de entrada não pôde ser desserializado para o objeto CompCheck. {Err}"
     },
@@ -121,6 +125,54 @@
     {
       "id": "Internal server error",
       "translation": "Erro interno do servidor"
+    },
+    {
+      "id": "There is no secrets provider configured, secrets are unavailable.",
+      "translation": "Não há provedor de segredos configurado; os segredos estão indisponíveis."
+    },
+    {
+      "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
+      "translation": "O provedor de segredos não está pronto. O responsável pela chamada deve tentar novamente esta chamada da API algumas vezes com um curto atraso entre as chamadas para assegurar que o provedor de segredos está indisponível."
+    },
+    {
+      "id": "Unable to read request body, error: {Err}.",
+      "translation": "Não é possível ler o corpo da solicitação, erro: {Err}."
+    },
+    {
+      "id": "Request body is empty.",
+      "translation": "O corpo da solicitação está  vazio."
+    },
+    {
+      "id": "Request body parse error, {Uerr}",
+      "translation": "Erro de análise do corpo da solicitação, {Uerr}"
+    },
+    {
+      "id": "Unable to access secrets provider, error: {Serr}.",
+      "translation": "Não é possível acessar o provedor de segredos, erro: {Serr}."
+    },
+    {
+      "id": "org must be specified in the API path",
+      "translation": "organização deve ser especificada no caminho da API"
+    },
+    {
+      "id": "user must be specified in the API path",
+      "translation": "usuário deve ser especificado no caminho da API"
+    },
+    {
+      "id": "{Serr}",
+      "translation": "{Serr}"
+    },
+    {
+      "id": "Error checking secret {FullSecretName} in the secret manager.",
+      "translation": "Erro ao verificar segredo {FullSecretName} no gerenciador de segredos."
+    },
+    {
+      "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "translation": "Tipo errado retornado ao verificar o nome do segredo no gerenciador de segredos: {Payload}"
+    },
+    {
+      "id": "Secret {FullSecretName} does not exist in the secret manager.",
+      "translation": "O segredo {FullSecretName} não existe no gerenciador de secretos."
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -407,6 +459,10 @@
       "translation": "domainName de autenticação do Docker: {DomainName}"
     },
     {
+      "id": "unable to load docker credentials for {Domain}: {Err}",
+      "translation": "não é possível carregar as credenciais do Docker para {Domain}: {Err}"
+    },
+    {
       "id": "unable to find docker credentials for {Domain}",
       "translation": "Não é possível localizar credenciais do Docker para {Domain}"
     },
@@ -427,8 +483,12 @@
       "translation": "Extraindo {ImageName}..."
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "Não é possível extrair a imagem do Docker {Repository____tag}. As credenciais do Docker não foram localizadas. Talvez seja necessário executar 'docker login ...' se o registro de imagem for privado. Erro: {Err}"
+      "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "translation": "não é possível obter autenticação do Docker para docker.io ou {Domain} domain: {Err}"
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "translation": "Não é possível extrair a imagem do Docker {Repository____tag}. As credenciais do Docker não foram localizadas. Talvez seja necessário executar 'docker login ...' se o registro de imagem for privado. Erro: {Err}: {LoginErr}"
     },
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
@@ -469,6 +529,30 @@
     {
       "id": "Exiting.",
       "translation": "Saindo."
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "Falha ao obter o caminho absoluto para o arquivo {KeyFile}. {Err}"
+    },
+    {
+      "id": "Error parsing HORIZON_URL: {Err}",
+      "translation": "Erro ao analisar HORIZON_URL: {Err}"
+    },
+    {
+      "id": "Error parsing host of the HORIZON_URL: {Err}",
+      "translation": "Erro ao analisar host do HORIZON_URL: {Err}"
+    },
+    {
+      "id": "Error parsing port of the HORIZON_URL: {Err}",
+      "translation": "Erro ao analisar porta do HORIZON_URL: {Err}"
+    },
+    {
+      "id": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "translation": "Porta inesperada do HORIZON_URL: {PortInt}"
+    },
+    {
+      "id": "The agbot url: {EnvVar}",
+      "translation": "A URL do agbot: {EnvVar}"
     },
     {
       "id": "Error reading HTTP response, error {Err}",
@@ -521,6 +605,22 @@
     {
       "id": "failed to marshal body for {ApiMsg}: {Err}",
       "translation": "Falha ao serializar o corpo para {ApiMsg}: {Err}"
+    },
+    {
+      "id": "HZN_AGBOT_URL is not defined",
+      "translation": "HZN_AGBOT_URL não está definido"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "Código HTTP inválido {HttpCode} de {ApiMsg}, saída: {StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "Falha ao desserializar a resposta do corpo do Exchange de {ApiMsg}: {Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "Falha ao serializar a saída do Exchange de {ApiMsg}: {Err}"
     },
     {
       "id": "Failed to unmarshal bytes. {Err}",
@@ -623,18 +723,6 @@
       "translation": "Erro de HTTP encontrado: {Err} chamando a API de REST {ApiMsg} de {Service}. Status do HTTP: {Httpstatus}."
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "Código HTTP inválido {HttpCode} de {ApiMsg}, saída: {StringbodyBytes}"
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "Falha ao desserializar a resposta do corpo do Exchange de {ApiMsg}: {Err}"
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "Falha ao serializar a saída do Exchange de {ApiMsg}: {Err}"
-    },
-    {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
       "translation": "Falha ao ler a resposta do corpo do Exchange de {ApiMsg}: {Err}"
     },
@@ -665,10 +753,6 @@
     {
       "id": "provided private key is not valid; error: {Err}",
       "translation": "a chave privada fornecida não é válida; erro: {Err}"
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "Falha ao obter o caminho absoluto para o arquivo {KeyFile}. {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
@@ -741,6 +825,10 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Aviso: não foi possível analisar o caminho da imagem '{Image}'. Não será enviado por push para um registro do Docker, apenas incluído no campo 'deployment' no estado em que se encontra."
+    },
+    {
+      "id": "Docker pull failure: {Err}",
+      "translation": "Falha de pull do Docker: {Err}"
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
@@ -843,14 +931,6 @@
       "translation": "Compatível"
     },
     {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "translation": "Erro ao serializar objeto {In}. {Arg_2}"
-    },
-    {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "Falha ao converter a entrada para o objeto PolicyCheck. {Err}"
-    },
-    {
       "id": "The given node id is empty.",
       "translation": "O ID do nó fornecido está vazio."
     },
@@ -865,10 +945,6 @@
     {
       "id": "No node found for this node id {NodeId}.",
       "translation": "Nenhum nó encontrado para este ID do nó {NodeId}."
-    },
-    {
-      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "Falha ao localizar a definição para serviços dependentes do {TopSvcId}. Não é possível avaliar completamente a compatibilidade do {PROPNODEPRIVILEGED} até que todos os serviços estejam no Exchange."
     },
     {
       "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
@@ -889,6 +965,18 @@
     {
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "O serviço não tem configuração de implementação de cluster para o tipo de nó 'cluster'."
+    },
+    {
+      "id": "Unable to create version expression from {VersionRange}. {Err}",
+      "translation": "Não é possível criar expressão de versão de {VersionRange}. {Err}"
+    },
+    {
+      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "translation": "Erro ao recuperar os serviços dependentes por meio do Exchange para {SDep}. {Err}"
+    },
+    {
+      "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "Falha ao localizar definição para serviços dependentes de {TopId}. Não é possível avaliar completamente a compatibilidade do {PROPNODEPRIVILEGED} até que todos os serviços estejam no Exchange."
     },
     {
       "id": "The PolicyCheck input cannot be null",
@@ -1055,44 +1143,16 @@
       "translation": "Erro ao mesclar a política de implementação com a política de serviço. {Err}"
     },
     {
-      "id": "The deployment policy should not be null.",
-      "translation": "A política de implementação não deve ser nula."
-    },
-    {
-      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "translation": "A política de implementação {Header} não pode ter {PROPNODEPRIVILEGED}=true ao referir-se a um serviço que requer privilégio para execução."
-    },
-    {
-      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "translation": "Erro ao recuperar o serviço {Org}/{WorkloadURL} {Version} {Arch} e seus dependentes por meio do Exchange. {Err}"
-    },
-    {
-      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Falha ao serializar a configuração de implementação para o serviço {SIdTop}, erro {Err}"
-    },
-    {
-      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Falha ao serializar a configuração de implementação de cluster para o serviço {SIdTop}, erro {Err}"
-    },
-    {
       "id": "Unable to find service definition from the input services.",
       "translation": "Não é possível localizar a definição de serviço por meio dos serviços de entrada."
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "Não é possível criar a expressão de versão por meio de {Version}. {Err}"
+      "id": "The SecretBindingCheck input cannot be null",
+      "translation": "A entrada SecretBindingCheck não pode ser nula"
     },
     {
-      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "translation": "Erro ao recuperar os serviços dependentes por meio do Exchange para {SDep}. {Err}"
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "A entrada UserInputCheck não pode ser nula"
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "Tanto a entrada do usuário do nó quanto o ID do nó não são especificados."
+      "id": "Node type '{NodeType}' does not support secret binding check.",
+      "translation": "O tipo de nó '{NodeType}' não suporta verificação de ligação de segredo."
     },
     {
       "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
@@ -1103,8 +1163,12 @@
       "translation": "Nenhuma versão de serviço especificada na política de implementação ou padrão."
     },
     {
-      "id": "User Input Incompatible",
-      "translation": "Entrada do usuário incompatível"
+      "id": "Secret Binding Incompatible",
+      "translation": "Ligação de segredo incompatível"
+    },
+    {
+      "id": "Type Incompatible",
+      "translation": "Tipo incompatível"
     },
     {
       "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
@@ -1113,6 +1177,86 @@
     {
       "id": "Service definition not found in the input.",
       "translation": "Definição de serviço não localizada na entrada."
+    },
+    {
+      "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "translation": "Aviso: as ligações de segredo a seguir não são requeridas por nenhum serviço: {ExtraneousSB}"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "O serviço com 'arch' {NodeArch} não pode ser localizado na política de implementação ou padrão."
+    },
+    {
+      "id": "No services found in the deployment policy or pattern.",
+      "translation": "Nenhum serviço localizado na política de implementação ou padrão."
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "translation": "O objeto de definição de serviço de entrada não pode ser nulo."
+    },
+    {
+      "id": "Error verifying secret in the secret manager. {Err}",
+      "translation": "Erro ao verificar o segredo no gerenciador de segredo. {Err}"
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "translation": "O objeto de especificação do serviço de entrada não pode ser nulo."
+    },
+    {
+      "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "translation": "Falha ao localizar os serviços dependentes para {Org}/{URL} {Arch} {Version}. {Err}"
+    },
+    {
+      "id": "Secret binding for a cluster service is not supported.",
+      "translation": "A ligação de segredo para um serviço de cluster não é suportada."
+    },
+    {
+      "id": "No secret binding found for the following service secrets: {NbArray}.",
+      "translation": "Nenhuma ligação de segredo localizada para os segredos de serviço a seguir: {NbArray}."
+    },
+    {
+      "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "translation": "Sequência de versões errada {ServiceVersionRange} especificada na ligação de segredo para o serviço {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, erro {Err}"
+    },
+    {
+      "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "translation": "Erro ao verificar a versão {SvcVersion} no intervalo {VExp}. {Err}"
+    },
+    {
+      "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "translation": "A URL de agbot não pode ser uma sequência vazia ao verificar a ligação de segredo. Certifique-se de que HZN_AGBOT_URL esteja configurado."
+    },
+    {
+      "id": "The node organization must be provided.",
+      "translation": "A organização do nó deve ser fornecida."
+    },
+    {
+      "id": "Error parsing secret name in the secret binding. {Errparse}",
+      "translation": "Erro ao analisar o nome do segredo na ligação do segredo. {Errparse}"
+    },
+    {
+      "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "translation": "Erro ao verificar o segredo {VaultSecretName} no gerenciador de segredo. {Err}"
+    },
+    {
+      "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "O nome do segredo da ligação não pode ser uma sequência vazia. Os formatos válidos são: '<secretname>' para o segredo de nível de organização e 'user/<username>/<secretname>' para o segredo de nível de usuário."
+    },
+    {
+      "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "Formato inválido para o nome do segredo da ligação: {SecretName}. Os formatos válidos são: '<secretname>' para o segredo de nível de organização e 'user/<username>/<secretname>' para o segredo de nível de usuário."
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "translation": "A entrada UserInputCheck não pode ser nula"
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "translation": "Tanto a entrada do usuário do nó quanto o ID do nó não são especificados."
+    },
+    {
+      "id": "User Input Incompatible",
+      "translation": "Entrada do usuário incompatível"
     },
     {
       "id": "Warning: checking node user input:  {Err}",
@@ -1125,18 +1269,6 @@
     {
       "id": "Warning: checking user input for the pattern: {Err}",
       "translation": "Aviso: verificando a entrada do usuário para o padrão: {Err}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "translation": "O serviço com 'arch' {NodeArch} não pode ser localizado na política de implementação ou padrão."
-    },
-    {
-      "id": "No services found in the deployment policy or pattern.",
-      "translation": "Nenhum serviço localizado na política de implementação ou padrão."
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "translation": "O objeto de especificação do serviço de entrada não pode ser nulo."
     },
     {
       "id": "Error verifing user input for service {SId}. {Err}",
@@ -1153,10 +1285,6 @@
     {
       "id": "Failed to verify user input for dependent service {Id}. {Reason}",
       "translation": "Falha ao verificar a entrada do usuário para o serviço dependente {Id}. {Reason}"
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "translation": "O objeto de definição de serviço de entrada não pode ser nulo."
     },
     {
       "id": "Failed to get the service from the Exchange. {Err}",
@@ -1765,6 +1893,22 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "Não é possível fechar o arquivo de chave privado do certificado de API do MMS {ServerKey}, erro {Err}"
+    },
+    {
+      "id": "Unable to authenticate nil request for secrets API",
+      "translation": "Não é possível autenticar a solicitação de nil para a API de segredos"
+    },
+    {
+      "id": "Unable to extract basic auth for request",
+      "translation": "Não é possível extrair a autenticação básica para a solicitação"
+    },
+    {
+      "id": "unable to verify {AppKey}, error {Err}",
+      "translation": "não é possível verificar {AppKey}, erro {Err}"
+    },
+    {
+      "id": "credentials for {AppKey} are not valid",
+      "translation": "credenciais para {AppKey} não são válidas"
     },
     {
       "id": "Version_Expression: Empty string is not a valid version.",

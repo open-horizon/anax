@@ -383,12 +383,12 @@ func GetHTTPObjectDestinationQueryHandler(ec ExchangeContext) ObjectDestinationQ
 	}
 }
 
-// A handler for updating the list of object destinations in the Model Management System.
-type UpdateObjectDestinationHandler func(org string, objPol *ObjectDestinationPolicy, dests *PutDestinationListRequest) error
+// A handler for add or delete the object destinations in the Model Management System.
+type AddOrRemoveObjectDestinationHandler func(org string, objType string, objID string, destsRequest *PostDestsRequest) error
 
-func GetHTTPUpdateObjectDestinationHandler(ec ExchangeContext) UpdateObjectDestinationHandler {
-	return func(org string, objPol *ObjectDestinationPolicy, dests *PutDestinationListRequest) error {
-		return UpdateObjectDestinationList(ec, org, objPol, dests)
+func GetHTTPAddOrRemoveObjectDestinationHandler(ec ExchangeContext) AddOrRemoveObjectDestinationHandler {
+	return func(org string, objType string, objID string, destsRequest *PostDestsRequest) error {
+		return AddOrRemoveDestinations(ec, org, objType, objID, destsRequest)
 	}
 }
 

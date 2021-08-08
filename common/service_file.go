@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
 	"golang.org/x/text/message"
@@ -16,8 +17,8 @@ type AbstractServiceFile interface {
 	GetVersion() string
 	GetArch() string
 	GetServiceType() string // device, cluster or both
-	GetRequiredServices() []exchange.ServiceDependency
-	GetUserInputs() []exchange.UserInput
+	GetRequiredServices() []exchangecommon.ServiceDependency
+	GetUserInputs() []exchangecommon.UserInput
 	NeedsUserInput() bool
 	GetDeployment() interface{}
 	GetClusterDeployment() interface{}
@@ -26,22 +27,22 @@ type AbstractServiceFile interface {
 // An implementation of AbstractServiceFile
 // It is used when reading json file the user gives us as input to create the service
 type ServiceFile struct {
-	Org                        string                       `json:"org"` // optional
-	Label                      string                       `json:"label"`
-	Description                string                       `json:"description"`
-	Public                     bool                         `json:"public"`
-	Documentation              string                       `json:"documentation"`
-	URL                        string                       `json:"url"`
-	Version                    string                       `json:"version"`
-	Arch                       string                       `json:"arch"`
-	Sharable                   string                       `json:"sharable"`
-	MatchHardware              map[string]interface{}       `json:"matchHardware,omitempty"`
-	RequiredServices           []exchange.ServiceDependency `json:"requiredServices"`
-	UserInputs                 []exchange.UserInput         `json:"userInput"`
-	Deployment                 interface{}                  `json:"deployment,omitempty"` // interface{} because pre-signed services can be stringified json
-	DeploymentSignature        string                       `json:"deploymentSignature,omitempty"`
-	ClusterDeployment          interface{}                  `json:"clusterDeployment,omitempty"`
-	ClusterDeploymentSignature string                       `json:"clusterDeploymentSignature,omitempty"`
+	Org                        string                             `json:"org"` // optional
+	Label                      string                             `json:"label"`
+	Description                string                             `json:"description"`
+	Public                     bool                               `json:"public"`
+	Documentation              string                             `json:"documentation"`
+	URL                        string                             `json:"url"`
+	Version                    string                             `json:"version"`
+	Arch                       string                             `json:"arch"`
+	Sharable                   string                             `json:"sharable"`
+	MatchHardware              map[string]interface{}             `json:"matchHardware,omitempty"`
+	RequiredServices           []exchangecommon.ServiceDependency `json:"requiredServices"`
+	UserInputs                 []exchangecommon.UserInput         `json:"userInput"`
+	Deployment                 interface{}                        `json:"deployment,omitempty"` // interface{} because pre-signed services can be stringified json
+	DeploymentSignature        string                             `json:"deploymentSignature,omitempty"`
+	ClusterDeployment          interface{}                        `json:"clusterDeployment,omitempty"`
+	ClusterDeploymentSignature string                             `json:"clusterDeploymentSignature,omitempty"`
 }
 
 func (sf *ServiceFile) GetOrg() string {
@@ -60,11 +61,11 @@ func (sf *ServiceFile) GetArch() string {
 	return sf.Arch
 }
 
-func (sf *ServiceFile) GetRequiredServices() []exchange.ServiceDependency {
+func (sf *ServiceFile) GetRequiredServices() []exchangecommon.ServiceDependency {
 	return sf.RequiredServices
 }
 
-func (sf *ServiceFile) GetUserInputs() []exchange.UserInput {
+func (sf *ServiceFile) GetUserInputs() []exchangecommon.UserInput {
 	return sf.UserInputs
 }
 
@@ -92,12 +93,12 @@ func (sf *ServiceFile) GetClusterDeployment() interface{} {
 // Get the service type
 // Check for nil, "" and {} for deployment and cluster deployment.
 func (s *ServiceFile) GetServiceType() string {
-	sType := exchange.SERVICE_TYPE_DEVICE
+	sType := exchangecommon.SERVICE_TYPE_DEVICE
 	if s.ClusterDeployment != nil && s.ClusterDeployment != "" {
 		if s.Deployment == nil || s.Deployment == "" {
-			sType = exchange.SERVICE_TYPE_CLUSTER
+			sType = exchangecommon.SERVICE_TYPE_CLUSTER
 		} else {
-			sType = exchange.SERVICE_TYPE_BOTH
+			sType = exchangecommon.SERVICE_TYPE_BOTH
 		}
 	}
 	return sType
@@ -122,7 +123,7 @@ func (sf *ServiceFile) HasDependencies() bool {
 }
 
 // Return true if the service definition is a dependency in the input list of service references.
-func (sf *ServiceFile) IsDependent(deps []exchange.ServiceDependency) bool {
+func (sf *ServiceFile) IsDependent(deps []exchangecommon.ServiceDependency) bool {
 	for _, dep := range deps {
 		if sf.URL == dep.URL && sf.Org == dep.Org {
 			return true
@@ -193,7 +194,7 @@ func ValidateService(serviceDefResolverHandler exchange.ServiceDefResolverHandle
 	// cluster type, userinput and requiredServices are not allowed
 	topSvcType := svcFile.GetServiceType()
 	requiredServices := svcFile.GetRequiredServices()
-	if topSvcType == exchange.SERVICE_TYPE_CLUSTER {
+	if topSvcType == exchangecommon.SERVICE_TYPE_CLUSTER {
 		if requiredServices != nil && len(requiredServices) != 0 {
 			return fmt.Errorf(msgPrinter.Sprintf("'requiredServices' is not supported for cluster type service."))
 		}
@@ -215,14 +216,14 @@ func ValidateService(serviceDefResolverHandler exchange.ServiceDefResolverHandle
 
 				// check the node type for the required service
 				sType := sDef.GetServiceType()
-				if sType == exchange.SERVICE_TYPE_CLUSTER {
+				if sType == exchangecommon.SERVICE_TYPE_CLUSTER {
 					return fmt.Errorf(msgPrinter.Sprintf("The required service %v has the wrong service type: %v.", sId, sType))
 				}
 
 				// check the node type of the dependent services of the required service
 				for id, s := range svc_map {
 					sType1 := s.GetServiceType()
-					if sType == exchange.SERVICE_TYPE_CLUSTER {
+					if sType == exchangecommon.SERVICE_TYPE_CLUSTER {
 						return fmt.Errorf(msgPrinter.Sprintf("The dependent service %v for the required service %v has the wrong service type: %v.", id, sId, sType1))
 					}
 				}

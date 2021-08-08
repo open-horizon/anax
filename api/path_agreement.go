@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -29,6 +30,9 @@ func FindAgreementsForOutput(db *bolt.DB) (map[string]map[string][]persistence.E
 	wrap[agreementsKey][activeKey] = []persistence.EstablishedAgreement{}
 
 	for _, agreement := range agreements {
+		if agreement.Proposal, err = abstractprotocol.ObscureProposalSecret(agreement.Proposal); err != nil {
+			glog.V(3).Infof(apiLogString(fmt.Sprintf("failed to obscure secret details, error: %v", err)))
+		}
 		// The archived agreements and the agreements being terminated are returned as archived.
 		if agreement.Archived || agreement.AgreementTerminatedTime != 0 {
 			wrap[agreementsKey][archivedKey] = append(wrap[agreementsKey][archivedKey], agreement)

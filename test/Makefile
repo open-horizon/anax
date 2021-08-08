@@ -69,13 +69,13 @@ AGBOT_API ?= http://agbot:8080
 AGBOT2_API ?= http://agbot2:8080
 AGBOT_SAPI_URL ?= https://agbot:8083
 AGBOT_NAME ?= agbot
-AGBOT_TOKEN ?= abcdefg
+AGBOT_TOKEN ?= Abcdefghijklmno1
 
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
 DOCKER_EXCH_TAG := testing
-DOCKER_EXCH ?= http://exchange-api:8080/v1
+DOCKER_EXCH ?= http://exchange-api:8081/v1
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
 EXCHANGE_SYSTEM_ADMIN_PW ?= ibmadminpw
@@ -431,7 +431,7 @@ run-mgmthub: get-agbot-image get-css-image get-anax-images
 	export MONGO_IMAGE_TAG=$(DOCKER_CSSDB_TAG); \
 	export POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) POSTGRES_USER=$(EXCHDB_USER); \
 	export HZN_TRANSPORT=https; \
-	export ANAX_SOURCE=$(ANAX_SOURCE); \
+	export ANAX_SOURCE=$(ANAX_SOURCE) ANAX_LOG_LEVEL=5; \
 	$(TEST_VARS) $(ANAX_SOURCE)/test/gov/start_mgmt_hub.sh
 	cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/css.crt
 	cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/agbotapi.crt

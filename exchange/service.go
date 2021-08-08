@@ -7,17 +7,12 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"strings"
 	"time"
 )
-
-// service types, they are node defined in the exchange.
-// they are derived from the Deployment and ClusterDeployment attributes of a service definition.
-const SERVICE_TYPE_DEVICE = "device"
-const SERVICE_TYPE_CLUSTER = "cluster"
-const SERVICE_TYPE_BOTH = "both"
 
 // Types and functions used to work with the exchange's service objects.
 
@@ -37,67 +32,25 @@ func (h HardwareRequirement) String() string {
 	return res
 }
 
-// This type is a tuple used to refer to a specific service that is a dependency for the referencing service.
-type ServiceDependency struct {
-	URL          string `json:"url"`
-	Org          string `json:"org"`
-	Version      string `json:"version,omitempty"`
-	VersionRange string `json:"versionRange"`
-	Arch         string `json:"arch"`
-}
-
-func (sd ServiceDependency) String() string {
-	return fmt.Sprintf("{URL: %v, Org: %v, Version: %v, VersionRange: %v, Arch: %v}", sd.URL, sd.Org, sd.Version, sd.VersionRange, sd.Arch)
-}
-
-func (sd ServiceDependency) GetVersionRange() string {
-	if sd.VersionRange != "" {
-		return sd.VersionRange
-	} else if sd.Version != "" {
-		return sd.Version
-	} else {
-		return "[0.0.0,INFINITY)"
-	}
-}
-
-// This type is used to describe a configuration variable that the node owner/user has to set before the
-// service is able to execute on the edge node.
-type UserInput struct {
-	Name         string `json:"name"`
-	Label        string `json:"label"`
-	Type         string `json:"type"` // Valid values are "string", "int", "float", "boolean", "list of strings"
-	DefaultValue string `json:"defaultValue"`
-}
-
-func (ui UserInput) String() string {
-	return fmt.Sprintf("{Name: %v, :Label: %v, Type: %v, DefaultValue: %v}", ui.Name, ui.Label, ui.Type, ui.DefaultValue)
-}
-
 // This is the structure of the object returned on a GET /service.
-// microservice sharing mode
-const MS_SHARING_MODE_EXCLUSIVE = "exclusive"
-const MS_SHARING_MODE_SINGLE = "single" // deprecated, use singleton instead. but leave it here for backward compatibility
-const MS_SHARING_MODE_SINGLETON = "singleton"
-const MS_SHARING_MODE_MULTIPLE = "multiple"
-
 type ServiceDefinition struct {
-	Owner                      string              `json:"owner,omitempty"`
-	Label                      string              `json:"label"`
-	Description                string              `json:"description"`
-	Documentation              string              `json:"documentation"`
-	Public                     bool                `json:"public"`
-	URL                        string              `json:"url"`
-	Version                    string              `json:"version"`
-	Arch                       string              `json:"arch"`
-	Sharable                   string              `json:"sharable"`
-	MatchHardware              HardwareRequirement `json:"matchHardware"`
-	RequiredServices           []ServiceDependency `json:"requiredServices"`
-	UserInputs                 []UserInput         `json:"userInput"`
-	Deployment                 string              `json:"deployment"`
-	DeploymentSignature        string              `json:"deploymentSignature"`
-	ClusterDeployment          string              `json:"clusterDeployment"`          // used for cluster node type
-	ClusterDeploymentSignature string              `json:"clusterDeploymentSignature"` // used for cluster node type
-	LastUpdated                string              `json:"lastUpdated,omitempty"`
+	Owner                      string                             `json:"owner,omitempty"`
+	Label                      string                             `json:"label"`
+	Description                string                             `json:"description"`
+	Documentation              string                             `json:"documentation"`
+	Public                     bool                               `json:"public"`
+	URL                        string                             `json:"url"`
+	Version                    string                             `json:"version"`
+	Arch                       string                             `json:"arch"`
+	Sharable                   string                             `json:"sharable"`
+	MatchHardware              HardwareRequirement                `json:"matchHardware"`
+	RequiredServices           []exchangecommon.ServiceDependency `json:"requiredServices"`
+	UserInputs                 []exchangecommon.UserInput         `json:"userInput"`
+	Deployment                 string                             `json:"deployment"`
+	DeploymentSignature        string                             `json:"deploymentSignature"`
+	ClusterDeployment          string                             `json:"clusterDeployment"`          // used for cluster node type
+	ClusterDeploymentSignature string                             `json:"clusterDeploymentSignature"` // used for cluster node type
+	LastUpdated                string                             `json:"lastUpdated,omitempty"`
 }
 
 func (s ServiceDefinition) String() string {
@@ -158,7 +111,7 @@ func (s ServiceDefinition) ShortString() string {
 		s.URL, s.Version, s.Arch, s.RequiredServices)
 }
 
-func (s *ServiceDefinition) GetUserInputName(name string) *UserInput {
+func (s *ServiceDefinition) GetUserInputName(name string) *exchangecommon.UserInput {
 	for _, ui := range s.UserInputs {
 		if ui.Name == name {
 			return &ui
@@ -210,7 +163,7 @@ func (s *ServiceDefinition) HasDependencies() bool {
 	return len(s.RequiredServices) != 0
 }
 
-func (s *ServiceDefinition) GetServiceDependencies() *[]ServiceDependency {
+func (s *ServiceDefinition) GetServiceDependencies() *[]exchangecommon.ServiceDependency {
 	return &s.RequiredServices
 }
 
@@ -219,12 +172,12 @@ func (s *ServiceDefinition) GetVersion() string {
 }
 
 func (s *ServiceDefinition) GetServiceType() string {
-	sType := SERVICE_TYPE_DEVICE
+	sType := exchangecommon.SERVICE_TYPE_DEVICE
 	if s.ClusterDeployment != "" {
 		if s.Deployment == "" {
-			sType = SERVICE_TYPE_CLUSTER
+			sType = exchangecommon.SERVICE_TYPE_CLUSTER
 		} else {
-			sType = SERVICE_TYPE_BOTH
+			sType = exchangecommon.SERVICE_TYPE_BOTH
 		}
 	}
 	return sType
@@ -286,17 +239,19 @@ const SERVICE_CONFIGSTATE_ACTIVE = "active"
 type ServiceConfigState struct {
 	Url         string `json:"url"`
 	Org         string `json:"org"`
+	Version     string `json:"version"`
 	ConfigState string `json:"configState"`
 }
 
 func (s *ServiceConfigState) String() string {
-	return fmt.Sprintf("Url: %v, Org: %v, ConfigState: %v", s.Url, s.Org, s.ConfigState)
+	return fmt.Sprintf("Url: %v, Org: %v, Version: %v, ConfigState: %v", s.Url, s.Org, s.Version, s.ConfigState)
 }
 
-func NewServiceConfigState(url, org, state string) *ServiceConfigState {
+func NewServiceConfigState(url, org, version, state string) *ServiceConfigState {
 	return &ServiceConfigState{
 		Url:         url,
 		Org:         org,
+		Version:     version,
 		ConfigState: state,
 	}
 }
@@ -679,7 +634,7 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 
 				// Capture the current service dependency as an API Spec object and add it to the running list of API specs.
 				newAPISpec := policy.APISpecification_Factory(sDep.URL, sDep.Org, sDep.Version, sDep.Arch)
-				if serviceDef.Sharable == MS_SHARING_MODE_SINGLETON || serviceDef.Sharable == MS_SHARING_MODE_SINGLE {
+				if serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE {
 					newAPISpec.ExclusiveAccess = false
 				}
 				res.Add_API_Spec(newAPISpec)
@@ -832,7 +787,7 @@ func GetServicesConfigState(httpClientFactory *config.HTTPClientFactory, dev_id 
 			config_state = SERVICE_CONFIGSTATE_ACTIVE
 		}
 
-		mcs := NewServiceConfigState(url, org, config_state)
+		mcs := NewServiceConfigState(url, org, service.Version, config_state)
 		service_cs = append(service_cs, *mcs)
 	}
 
@@ -843,12 +798,13 @@ func GetServicesConfigState(httpClientFactory *config.HTTPClientFactory, dev_id 
 
 // check the registered services to see if the given service is suspended or not
 // returns (found, suspended)
-func ServiceSuspended(registered_services []Microservice, service_url string, service_org string) (bool, bool) {
+func ServiceSuspended(registered_services []Microservice, service_url string, service_org string, service_ver string) (bool, bool) {
 	if registered_services == nil {
 		return false, false
 	}
 	for _, svc := range registered_services {
-		if svc.Url == cutil.FormOrgSpecUrl(service_url, service_org) || svc.Url == service_url {
+		if (svc.Url == cutil.FormOrgSpecUrl(service_url, service_org) || svc.Url == service_url) &&
+			(svc.Version == "" || service_ver == "" || service_ver == svc.Version) {
 			if svc.ConfigState == SERVICE_CONFIGSTATE_SUSPENDED {
 				return true, true
 			} else {

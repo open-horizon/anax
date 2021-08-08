@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -374,7 +375,7 @@ func ValidateNewPattern(nodeType string, new_pattern string,
 
 			// ignore the services that do not match the node type
 			serviceType := serviceDef.GetServiceType()
-			if serviceType != exchange.SERVICE_TYPE_BOTH && nodeType != serviceType {
+			if serviceType != exchangecommon.SERVICE_TYPE_BOTH && nodeType != serviceType {
 				break
 			}
 

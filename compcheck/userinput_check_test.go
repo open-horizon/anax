@@ -5,6 +5,7 @@ package compcheck
 import (
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
 	"strings"
 	"testing"
@@ -18,18 +19,18 @@ func Test_CheckRedundantUserinput(t *testing.T) {
 			URL:     "cpu1",
 			Version: "1.0.0",
 			Arch:    "amd64",
-			UserInputs: []exchange.UserInput{
-				exchange.UserInput{
+			UserInputs: []exchangecommon.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var1",
 					Type:         "string",
 					DefaultValue: "",
 				},
-				exchange.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var2",
 					Type:         "string",
 					DefaultValue: "",
 				},
-				exchange.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var3",
 					Type:         "string",
 					DefaultValue: "",
@@ -43,13 +44,13 @@ func Test_CheckRedundantUserinput(t *testing.T) {
 			URL:     "cpu2",
 			Version: "2.0.0",
 			Arch:    "amd64",
-			UserInputs: []exchange.UserInput{
-				exchange.UserInput{
+			UserInputs: []exchangecommon.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var21",
 					Type:         "string",
 					DefaultValue: "",
 				},
-				exchange.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var22",
 					Type:         "string",
 					DefaultValue: "",
@@ -77,14 +78,14 @@ func Test_CheckRedundantUserinput(t *testing.T) {
 
 	// good case
 	ui1 := []policy.UserInput{svcUserInput1, svcUserInput2}
-	if err := CheckRedundantUserinput(services, ui1, nil); err != nil {
+	if err := CheckRedundantUserinput(services, nil, ui1, nil); err != nil {
 		t.Errorf("CheckRedundantUserinput should have returned nil but got %v", err)
 	}
 
 	// redundant variable name
 	svcUserInput2.Inputs = []policy.Input{policy.Input{Name: "var21", Value: "val21"}, policy.Input{Name: "var22", Value: "val22"}, policy.Input{Name: "var23", Value: "val23"}}
 	ui2 := []policy.UserInput{svcUserInput1, svcUserInput2}
-	if err := CheckRedundantUserinput(services, ui2, nil); err == nil {
+	if err := CheckRedundantUserinput(services, nil, ui2, nil); err == nil {
 		t.Errorf("CheckRedundantUserinput should not have returned nil")
 	} else if !strings.Contains(err.Error(), "Variable var23") {
 		t.Errorf("CheckRedundantUserinput returned wrong error: %v", err)
@@ -99,7 +100,7 @@ func Test_CheckRedundantUserinput(t *testing.T) {
 		Inputs:              []policy.Input{policy.Input{Name: "var21", Value: "val21"}, policy.Input{Name: "var22", Value: "val22"}},
 	}
 	ui3 := []policy.UserInput{svcUserInput1, svcUserInput3}
-	if err := CheckRedundantUserinput(services, ui3, nil); err == nil {
+	if err := CheckRedundantUserinput(services, nil, ui3, nil); err == nil {
 		t.Errorf("CheckRedundantUserinput should not have returned nil")
 	} else if !strings.Contains(err.Error(), "is not referenced by the pattern or deployment policy") {
 		t.Errorf("CheckRedundantUserinput returned wrong error: %v", err)
@@ -113,13 +114,13 @@ func Test_CheckRedundantUserinput(t *testing.T) {
 		ServiceVersionRange: "",
 	}
 	ui4 := []policy.UserInput{svcUserInput1, svcUserInput4}
-	if err := CheckRedundantUserinput(services, ui4, nil); err != nil {
+	if err := CheckRedundantUserinput(services, nil, ui4, nil); err != nil {
 		t.Errorf("CheckRedundantUserinput should have returned nil but got %v", err)
 	}
 
 	// no user input at all for a service
 	ui5 := []policy.UserInput{svcUserInput4}
-	if err := CheckRedundantUserinput(services, ui5, nil); err != nil {
+	if err := CheckRedundantUserinput(services, nil, ui5, nil); err != nil {
 		t.Errorf("CheckRedundantUserinput should have returned nil but got %v", err)
 	}
 }

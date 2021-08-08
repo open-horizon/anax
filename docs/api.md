@@ -1785,7 +1785,7 @@ Set the node's user input for the service configuration. The node on the exchang
 
 body:
 
-The bosy is an array of the following: 
+The body is an array of the following: 
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -1830,7 +1830,7 @@ Patch the node's user input for the service configuration. The node on the excha
 
 body:
 
-The bosy is an array of the following: 
+The body is an array of the following: 
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -1966,7 +1966,7 @@ Set the node policy. The node on the exchange will be updated too with the new p
 
 body:
 
-The bosy is an array of the following: 
+The body is an array of the following: 
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -2011,7 +2011,7 @@ Patch the properties or the constraints for the node policy. The node on the exc
 
 body:
 
-The bosy is an array of the following: 
+The body is an array of the following: 
 
 | name | type | description |
 | ---- | ---- | ---------------- |

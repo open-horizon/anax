@@ -59,6 +59,7 @@ func (p MSProp) String() string {
 
 type Microservice struct {
 	Url           string   `json:"url"`
+	Version       string   `json:"version"`
 	Properties    []MSProp `json:"properties"`
 	NumAgreements int      `json:"numAgreements"`
 	Policy        string   `json:"policy"`
@@ -66,15 +67,15 @@ type Microservice struct {
 }
 
 func (m Microservice) String() string {
-	return fmt.Sprintf("URL: %v, Properties: %v, NumAgreements: %v, Policy: %v, ConfigState: %v", m.Url, m.Properties, m.NumAgreements, m.Policy, m.ConfigState)
+	return fmt.Sprintf("URL: %v, Version: %v, Properties: %v, NumAgreements: %v, Policy: %v, ConfigState: %v", m.Url, m.Version, m.Properties, m.NumAgreements, m.Policy, m.ConfigState)
 }
 
 func (m Microservice) ShortString() string {
-	return fmt.Sprintf("URL: %v, NumAgreements: %v, ConfigState: %v", m.Url, m.NumAgreements, m.ConfigState)
+	return fmt.Sprintf("URL: %v, Version: %v, NumAgreements: %v, ConfigState: %v", m.Url, m.Version, m.NumAgreements, m.ConfigState)
 }
 
 func (m Microservice) DeepCopy() *Microservice {
-	svcCopy := Microservice{Url: m.Url, NumAgreements: m.NumAgreements, Policy: m.Policy, ConfigState: m.ConfigState}
+	svcCopy := Microservice{Url: m.Url, Version: m.Version, NumAgreements: m.NumAgreements, Policy: m.Policy, ConfigState: m.ConfigState}
 	for _, msprop := range m.Properties {
 		svcCopy.Properties = append(svcCopy.Properties, msprop)
 	}
@@ -441,7 +442,7 @@ func (p PutDeviceRequest) ShortString() string {
 	str := fmt.Sprintf("Token: %v, Name: %v, NodeType: %v, MsgEndPoint %v, Arch: %v, SoftwareVersions %v", "*****", p.Name, p.NodeType, p.MsgEndPoint, p.Arch, p.SoftwareVersions)
 	str += ", Service URLs: "
 	for _, ms := range p.RegisteredServices {
-		str += fmt.Sprintf("%v,", ms.Url)
+		str += fmt.Sprintf("%v %v,", ms.Url, ms.Version)
 	}
 	return str
 }
@@ -979,9 +980,11 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 
 	if reflect.ValueOf(params).Kind() == reflect.Ptr {
 		paramValue := reflect.Indirect(reflect.ValueOf(params))
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, paramValue)))
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, paramValue)))
+		//fmt.Printf("Invoking exchange %v at %v with %v\n", method, urlPath, paramValue)
 	} else {
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params)))
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params)))
+		//fmt.Printf("Invoking exchange %v at %v with %v\n", method, urlPath, params)
 	}
 
 	requestBody := bytes.NewBuffer(nil)

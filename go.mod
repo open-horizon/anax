@@ -11,7 +11,7 @@ require (
 	github.com/boltdb/bolt v1.3.2-0.20180302180052-fd01fc79c553
 	github.com/coreos/go-iptables v0.4.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/docker/docker-credential-helpers v0.6.3
+	github.com/docker/docker-credential-helpers v0.6.3 // indirect
 	github.com/docker/go-connections v0.4.1-0.20180821093606-97c2040d34df // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0 // indirect
 	github.com/etcd-io/bbolt v1.3.3-0.20190528202153-2eb7227adea1 // indirect
@@ -27,7 +27,7 @@ require (
 	github.com/mibk/dupl v1.0.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/open-horizon/edge-sync-service v1.6.4
+	github.com/open-horizon/edge-sync-service v1.6.5
 	github.com/open-horizon/edge-utilities v0.0.0-20190711093331-0908b45a7152
 	github.com/open-horizon/rsapss-tool v0.0.0-20190416131035-2fc75eb3b6ea
 	github.com/opencontainers/image-spec v1.0.2-0.20181011182654-b6e51fa50549 // indirect
@@ -39,8 +39,9 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/vbatts/tar-split v0.11.1 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/sys v0.0.0-20210216224549-f992740a1bac
-	golang.org/x/text v0.3.3
+	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
+	golang.org/x/text v0.3.6
+	golang.org/x/tools v0.1.5 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20200420144010-e5e8543f8aeb // indirect
 	google.golang.org/grpc v1.28.1 // indirect

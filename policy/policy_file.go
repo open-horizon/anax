@@ -70,8 +70,8 @@ type Policy struct {
 	HAGroup            HighAvailabilityGroup               `json:"ha_group,omitempty"`         // Version 2.0
 	NodeH              NodeHealth                          `json:"nodeHealth,omitempty"`       // Version 2.0
 	UserInput          []UserInput                         `json:"userInput,omitempty"`
-	SecretBinding      []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"`
-	SecretDetails      []exchangecommon.BoundSecret        `json:"secretDetails,omitempty"` // Filled in for agreement proposals, with secret details from the secret manager.
+	SecretBinding      []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"` // This structure has the servive secret name to secret provider name mappings
+	SecretDetails      []exchangecommon.SecretBinding      `json:"secretDetails,omitempty"` // This structure has the service secret name to secret details mappings
 }
 
 // These functions are used to create Policy objects. You can create the base object
@@ -125,6 +125,12 @@ func (self *Policy) DeepCopy() *Policy {
 	for _, sb := range self.SecretBinding {
 		newSB := sb.MakeCopy()
 		newPolicy.SecretBinding = append(newPolicy.SecretBinding, newSB)
+	}
+
+	newPolicy.SecretDetails = make([]exchangecommon.SecretBinding, 0)
+	for _, sd := range self.SecretDetails {
+		newSD := sd.MakeCopy()
+		newPolicy.SecretDetails = append(newPolicy.SecretDetails, newSD)
 	}
 
 	return newPolicy
@@ -364,11 +370,11 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 			}
 		}
 
-		// the secret details are only contained within proposals (which is a merged policy document).
+		// the secret details contain the mapping of service secrets to secret details.
 		if consumer_policy.SecretDetails != nil && len(consumer_policy.SecretDetails) != 0 {
-			for _, bs := range consumer_policy.SecretDetails {
-				newBS := bs.MakeCopy()
-				merged_pol.SecretDetails = append(merged_pol.SecretDetails, newBS)
+			for _, sd := range consumer_policy.SecretDetails {
+				newSD := sd.MakeCopy()
+				merged_pol.SecretDetails = append(merged_pol.SecretDetails, newSD)
 			}
 		}
 
@@ -1143,4 +1149,26 @@ func NewPolicyCompError1(err error) *PolicyCompError {
 	return &PolicyCompError{
 		Err: err.Error(),
 	}
+}
+
+// Obscure the secret details within the policy
+func ObscureSecretDetails(policy string) (string, error) {
+	if policy != "" {
+		var err error
+		var pol *Policy
+		if pol, err = DemarshalPolicy(policy); err != nil {
+			return "", err
+		}
+		for _, secretBinding := range pol.SecretDetails {
+			for _, secret := range secretBinding.Secrets {
+				for secretName := range secret {
+					secret[secretName] = "********"
+				}
+			}
+		}
+		if policy, err = MarshalPolicy(pol); err != nil {
+			return "", err
+		}
+	}
+	return policy, nil
 }

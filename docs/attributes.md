@@ -25,7 +25,7 @@ Valid values are:
 * [MeteringAttributes](#ma)
 * [AgreementProtocolAttributes](#agpa)
 
-Each attrinbute type is described in it's own section below.
+Each attribute type is described in it's own section below.
 
 The `label` field is a string that is displayed in the Horizon user interface when working with this attribute.
 
@@ -48,7 +48,7 @@ The value for `publishable` should be `true`.
 
 The value for `host_only` should be `false`.
 
-The `service_specs` specifies what services the attribue applies to. If the `url` is an empty string, it applies to all the services. If you set the UserInputAttributes through the `/service/config` api, you do not need to specify the `service_specs` becuase the serivce is specified in other fields. However, if you use `/attribute` api to set the UserInputAttributes, you must specify the `service_specs`. 
+The `service_specs` specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the UserInputAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the UserInputAttributes, you must specify the `service_specs`. 
 
 The variables you can set are defined by the service definition.
 Suppose the service definition contained the following userInputs section:
@@ -222,11 +222,11 @@ The variables that can be configured are:
 * `tokens` - The number of tokens to be granted per unit time as specified below.
 * `perTimeUnit` - The unit of time over which the tokens are granted. Valid values are: `min`, `hour`, `day`.
 * `notificationInterval` - An integer indication how often, in seconds, the agbot should notify the node that tokens are being granted.
-* `service_specs` - An array specifies what services the attribue applies to. If the `url` is an empty string, it applies to all the services. If you set the MeteringAttributes through the `/service/config` api, you do not need to specify the `service_specs` becuase the serivce is specified in other fields. However, if you use `/attribute` api to set the MeteringAttributes, you must specify the `service_specs`. 
+* `service_specs` - An array specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the MeteringAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the MeteringAttributes, you must specify the `service_specs`. 
 
 If the agbot also specifies a metering policy, the metering attributes specified by the node must be satisfied by the agbot's policy.
 If a nodes wants more token per unit time than the agbot is willing to provide, then an agreement cannot be made.
-If an agbot is able to satisfy the node, then the tokens per unit time specified by the node willbe used.
+If an agbot is able to satisfy the node, then the tokens per unit time specified by the node will be used.
 
 For example, the service wants the agbot to grant 2 tokens per hour, and notify the mode that the agreement is still valid every hour (3600 seconds).
 ```
@@ -257,7 +257,7 @@ By default, the Horizon system uses the "Basic" protocol (which requires nothing
 
 Agreement protocols are chosen by the agbot based on the order they appear in the node's service's attributes.
 
-The `service_specs` specifies what services the attribue applies to. If the `url` is an empty string, it applies to all the services. If you set the AgreementProtocolAttributes through the `/service/config` api, you do not need to specify the `service_specs` becuase the serivce is specified in other fields. However, if you use `/attribute` api to set the AgreementProtocolAttributes, you must specify the `service_specs`. 
+The `service_specs` specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the AgreementProtocolAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the AgreementProtocolAttributes, you must specify the `service_specs`. 
 
 ```
     {

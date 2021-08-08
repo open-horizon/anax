@@ -12,7 +12,7 @@ function set_exports {
     export DEVICE_ID="an12345"
     export DEVICE_NAME="anaxdev1"
     export DEVICE_ORG="e2edev@somecomp.com"
-    export TOKEN="abcdefg"
+    export TOKEN="Abcdefghijklmno1"
 
     export HZN_AGENT_PORT=8510
     export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
@@ -170,7 +170,7 @@ then
   export HZN_AGENT_PORT=8510
   export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
   export EXCH="${EXCH_APP_HOST}"
-  export TOKEN="abcdefg"
+  export TOKEN="Abcdefghijklmno1"
 
   if [ ${CERT_LOC} -eq "1" ]; then
     export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
@@ -199,6 +199,7 @@ then
   then
     echo "API Test failure."
     TESTFAIL="1"
+    exit 1
   else
     echo "API tests completed SUCCESSFULLY."
 
@@ -213,7 +214,7 @@ echo -e "No agbot setting is $NOAGBOT"
 HZN_AGBOT_API=${AGBOT_API}
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
-  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
     # Check that the agbot is still alive
     if ! curl -sSL ${AGBOT_API}/agreement > /dev/null; then
       echo "Agreement Bot 1 verification failure."
@@ -397,6 +398,15 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
       echo "Policy compatibility test using hzn command failure."
       exit 1
     fi
+
+    if [ "$HZN_VAULT" == "true" ]; then 
+      ./hzn_secretsmanager.sh 
+      if [ $? -ne 0 ]
+      then
+        echo "Policy compatibility test using hzn secretsmanager command failure."
+        exit 1
+      fi
+    fi
   fi
 
 fi
@@ -409,19 +419,19 @@ if [ "$NOSDO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   fi
 fi
 
-if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8080/v1" ]; then
+if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8081/v1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
     ./verify_surfaced_error.sh
     if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
   fi
 fi
 
-if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8080/v1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ]; then
-    ./service_upgrading_downgrading_test.sh
-    if [ $? -ne 0 ]; then echo "Service upgrading/downgrading test failure."; exit 1; fi
-  fi
-fi
+#if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8081/v1" ]; then
+#  if [ "$TEST_PATTERNS" == "sall" ]; then
+#    ./service_upgrading_downgrading_test.sh
+#    if [ $? -ne 0 ]; then echo "Service upgrading/downgrading test failure."; exit 1; fi
+#  fi
+#fi
 
 if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ]; then
@@ -481,7 +491,7 @@ else
 fi
 
 # Clean up remote environment
-if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" != "http://exchange-api:8081/v1" ]; then
   echo "Clean up remote environment"
   echo "Delete e2edev@somecomp.com..."
   DL8ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')

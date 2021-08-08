@@ -23,7 +23,7 @@ func (vs *AgbotVaultSecrets) Initialize(cfg *config.HorizonConfig) (err error) {
 
 	glog.V(1).Infof(vaultPluginLogString("Initialized vault as the secrets plugin"))
 
-	return nil
+	return err
 
 }
 
@@ -127,4 +127,8 @@ func (vs *AgbotVaultSecrets) IsReady() bool {
 
 func (vs *AgbotVaultSecrets) Close() {
 	glog.V(2).Infof("Closed Vault secrets implementation")
+}
+
+func (vs *AgbotVaultSecrets) GetLastVaultStatus() uint64 {
+	return vs.lastVaultInteraction
 }

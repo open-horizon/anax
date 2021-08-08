@@ -145,7 +145,15 @@ fi
 
 # suspending the two services: e2edev@somecomp.com/netspeed, e2edev@somecomp.com/location
 echo -e "${PREFIX} suspending the e2edev@somecomp.com/netspeed service..."
-out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/netspeed -f)
+
+# specify a wrong version
+out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/netspeed 6.7.8 -f)
+if [[ $out != *"does not exist or is not a registered service in the exchange"* ]]; then
+    echo -e "${PREFIX} unexpected result returned for suspending a service with wrong version: $out"
+fi
+
+# specify correct version
+out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/netspeed 2.3.0 -f)
 if [ $? -ne 0 ]; then
 	echo -e "${PREFIX} error suspending e2edev@somecomp.com/netspeed: $out"
     exit 2
@@ -175,7 +183,7 @@ fi
 loop_cnt=0
 ag_canceled=0
 test_good_togo=0
-if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
+if [ "${EXCH_APP_HOST}" != "http://exchange-api:8081/v1" ]; then
   loop_max=40
 else
   loop_max=18

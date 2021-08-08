@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/config"
 	"io"
 	"io/ioutil"
@@ -21,6 +22,10 @@ import (
 // Retry intervals when connecting to the vault
 const EX_MAX_RETRY = 10
 const EX_RETRY_INTERVAL = 2
+
+type ErrorResponse struct {
+	Errors []string `json:"errors"`
+}
 
 type LoginBody struct {
 	Id    string `json:"id"`
@@ -51,28 +56,34 @@ type RenewBody struct {
 	Token string `json:"token"`
 }
 
-type RenewResponse struct {
-	Auth RenewAuthResponse `json:"auth"`
+type SecretCreateRequest struct {
+	Options map[string]string     `json:"options,omitempty"`
+	Data    secrets.SecretDetails `json:"data"`
 }
 
-type RenewAuthResponse struct {
-	ClientToken   string            `json:"client_token"`
-	Policies      []string          `json:"policies"`
-	Metadata      map[string]string `json:"metadata"`
-	LeaseDuration int               `json:"lease_duration"`
-	Renewable     bool              `json:"renewable"`
+type ListSecretResponse struct {
+	Data SecretMetadata `json:"data"`
 }
 
 type KeyData struct {
 	Keys []string `json:"keys"`
 }
 
-type ListSecretResponse struct {
-	Data map[string]string `json:"data"`
-}
-
 type ListSecretsResponse struct {
 	Data KeyData `json:"data"`
+}
+
+type SecretData struct {
+	Data secrets.SecretDetails `json:"data"`
+}
+
+type GetSecretResponse struct {
+	Data SecretData `json:"data"`
+}
+
+type SecretMetadata struct {
+	CreationTime string `json:"created_time"` // Has format 2018-03-22T02:24:06.945319214Z
+	UpdateTime   string `json:"updated_time"`
 }
 
 // Create an https connection, using a supplied SSL CA certificate.
@@ -155,7 +166,7 @@ func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, meth
 
 			currRetry--
 			time.Sleep(time.Duration(EX_RETRY_INTERVAL) * time.Second)
-		} else if token == "" && resp.StatusCode == http.StatusForbidden {
+		} else if token == "" && resp != nil && resp.StatusCode == http.StatusForbidden {
 			// The agbot failed to authenticate, something must have happened to the agbot's token, so login again to get a new token.
 			glog.Warningf(vaultPluginLogString("unexpected agbot token expiration, logging in again"))
 			err := vs.Login()
@@ -213,6 +224,11 @@ func (vs *AgbotVaultSecrets) invokeVault(token string, url string, method string
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to send HTTP request for %v, error %v", apiMsg, err))
 	} else {
+		// NOTE: 500, 502, 503 are the only server error status codes returned by the vault API
+		// https://www.vaultproject.io/api#http-status-codes
+		if resp.StatusCode < 500 {
+			vs.lastVaultInteraction = uint64(time.Now().Unix())
+		}
 		return resp, nil
 	}
 }

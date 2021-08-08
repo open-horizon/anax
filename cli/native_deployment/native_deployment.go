@@ -116,7 +116,8 @@ func (p *NativeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) inte
 		return map[string]interface{}{
 			"services": map[string]*containermessage.Service{
 				"": &containermessage.Service{
-					Image: "",
+					Image:   "",
+					Secrets: map[string]containermessage.Secret{},
 				},
 			},
 		}
@@ -124,7 +125,8 @@ func (p *NativeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) inte
 		serviceDep := make(map[string]*containermessage.Service, len(imageList))
 		for image_name, image := range imageList {
 			serviceDep[image_name] = &containermessage.Service{
-				Image: image,
+				Image:   image,
+				Secrets: map[string]containermessage.Secret{},
 			}
 		}
 		return map[string]interface{}{"services": serviceDep}
@@ -171,7 +173,7 @@ func (p *NativeDeploymentConfigPlugin) Validate(dep interface{}, cdep interface{
 }
 
 // This can't be a const because a map literal isn't a const in go
-var VALID_DEPLOYMENT_FIELDS = map[string]int8{"image": 1, "privileged": 1, "cap_add": 1, "environment": 1, "devices": 1, "binds": 1, "specific_ports": 1, "command": 1, "ports": 1, "ephemeral_ports": 1, "tmpfs": 1, "network": 1, "entrypoint": 1, "max_memory_mb": 1, "max_cpus": 1, "log_driver": 1}
+var VALID_DEPLOYMENT_FIELDS = map[string]int8{"image": 1, "privileged": 1, "cap_add": 1, "environment": 1, "devices": 1, "binds": 1, "specific_ports": 1, "command": 1, "ports": 1, "ephemeral_ports": 1, "tmpfs": 1, "network": 1, "entrypoint": 1, "max_memory_mb": 1, "max_cpus": 1, "log_driver": 1, "secrets": 1}
 
 // CheckDeploymentService verifies it has the required 'image' key, and checks for keys we don't recognize.
 // For now it only prints a warning for unrecognized keys, in case we recently added a key to anax and haven't updated hzn yet.
@@ -279,7 +281,7 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 }
 
 // Start the native deployment config in test mode. Only services are supported.
-func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string) bool {
+func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string, secretsFiles map[string]string) bool {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -319,6 +321,8 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' unable to get service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, derr))
 	}
 
+	dev.AddDependentServiceSecretBinds(deps, secretsFiles)
+
 	// Log the starting of dependencies if there are any.
 	if len(deps) != 0 {
 		cliutils.Verbose(msgPrinter.Sprintf("Starting dependencies."))
@@ -350,6 +354,8 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 		}
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, cerr)
 	}
+
+	dev.AddTopLevelServiceSecretBinds(deployment, secretsFiles)
 
 	// Now we can start the service container.
 	_, err := dev.StartContainers(deployment, serviceDef.URL, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, msNetworks, true, true, agreementId)

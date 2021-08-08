@@ -15,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
@@ -330,7 +331,68 @@ func (b *BaseAgreementWorker) AgreementLockManager() *AgreementLockManager {
 	return b.alm
 }
 
+func (b *BaseAgreementWorker) checkPolicyCompatibility(workerId string, wi *InitiateAgreement, nodePolicy *policy.Policy, businessPolicy *policy.Policy, mergedServicePolicy *externalpolicy.ExternalPolicy, nodeArch string, msgPrinter *message.Printer) (bool, *policy.Policy, error) {
+
+	if compatible, reason, _, consumPol, err := compcheck.CheckPolicyCompatiblility(nodePolicy, businessPolicy, mergedServicePolicy, "", msgPrinter); err != nil {
+		glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error checking policy compatibility. %v.", err.Error())))
+		return false, nil, err
+	} else {
+		if compatible {
+			if glog.V(5) {
+				glog.Infof(BAWlogstring(workerId, fmt.Sprintf("Node %v is compatible", wi.Device.Id)))
+			}
+			return true, consumPol, nil
+		} else {
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("failed matching node policy %v and %v, error: %v", wi.ProducerPolicy, wi.ConsumerPolicy, reason)))
+			return false, nil, nil
+		}
+	}
+}
+
 func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, wi *InitiateAgreement, random *rand.Rand, workerId string) {
+
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// get node policy
+	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
+	_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, wi.Device.Id, msgPrinter)
+	if err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
+		return
+	} else if nodePolicy == nil {
+		glog.Warning(BAWlogstring(workerId, fmt.Sprintf("Cannot find node policy for this node %v.", wi.Device.Id)))
+		return
+	} else {
+		if glog.V(5) {
+			glog.Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
+		}
+	}
+
+	// If a deployment policy is being used, set wi.ProducerPolicy to the node policy
+	if wi.ConsumerPolicy.PatternId == "" {
+		// non pattern case
+
+		// If a deployment policy is being used and multiple service versions are possible, do an initial check of just the policy constraints of the deployment policy
+		// with the node properties to see if those match before we get too far invested in checking matches of all the different service versions.
+		// In the case were have thousands of deployment policies, this can avoid lots of calls to check and create workload_usages in the DB if there isn't a match at this level
+		//
+		// If the node policy has constraints, we can't do the check without the service properties so we need to find the workload.
+		// Also, if there is only 1 workload possibility, skip the check here and just do the check with the service included to avoid checking twice
+		// for the case where the node does match the policy
+		if len(nodePolicy.Constraints) == 0 && len(wi.ConsumerPolicy.Workloads) > 1 {
+			EmptySvcPolicy := externalpolicy.ExternalPolicy{
+				Properties:  []externalpolicy.Property{},
+				Constraints: []string{},
+			}
+
+			compatible, _, _ := b.checkPolicyCompatibility(workerId, wi, nodePolicy, &wi.ConsumerPolicy, &EmptySvcPolicy, "", msgPrinter)
+			if !compatible {
+				// Not compatible with the constraints of the deployment policy so no need to continue checking with the service versions
+				return
+			}
+		}
+		wi.ProducerPolicy = *nodePolicy
+	}
 
 	// Generate an agreement ID
 	agreementIdString, aerr := cutil.GenerateAgreementId()
@@ -338,7 +400,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error generating agreement id %v", aerr)))
 		return
 	}
-	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("using AgreementId %v", agreementIdString)))
+	if glog.V(5) {
+		glog.Infof(BAWlogstring(workerId, fmt.Sprintf("using AgreementId %v", agreementIdString)))
+	}
 
 	bcType, bcName, bcOrg := (&wi.ProducerPolicy).RequiresKnownBC(cph.Name())
 
@@ -367,35 +431,29 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 	// get the node type for later use
 	nodeType := wi.Device.GetNodeType()
-	// get the node max heartbeat interval if it's set on the node
-	nodeMaxHBInterval := exchangeDev.HeartbeatIntv.MaxInterval
-
-	// if the node max heartbeat interval is not set on the node, then get if from the org
-	if nodeMaxHBInterval == 0 {
-		exchOrg, err := exchange.GetOrganization(b.config.Collaborators.HTTPClientFactory, exchange.GetOrg(wi.Device.Id), b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken())
-		if err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Errorf("Unable to get org %v from exchange: %v", exchange.GetOrg(wi.Device.Id), err)))
-		}
-		nodeMaxHBInterval = exchOrg.HeartbeatIntv.MaxInterval
-	}
 
 	// There could be more than 1 workload version in the consumer policy, and each version might NOT require the exact same
 	// services/microservices (and versions), so we first need to choose a workload. Choosing a workload is based on the priority of
 	// each workload and whether or not this workload has been tried before. Also, iterate the loop more than once if we choose
 	// a workload entry that turns out to be unsupportable by the device.
-	msgPrinter := i18n.GetMessagePrinter()
 	foundWorkload := false
 	var workload, lastWorkload *policy.Workload
 	svcIds := []string{} // stores the service ids for all the services, top level and dependent services
 	found := true        // if the service policy can be found from the businesspol_manager
 	var servicePol *externalpolicy.ExternalPolicy
+	var wlUsage *persistence.WorkloadUsage = nil
 
 	for !foundWorkload {
 
-		if wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-			return
-		} else if wlUsage == nil {
+		//If number of workloads > 1, then we need to utilize the workload_usages to find the best workload
+		if len(wi.ConsumerPolicy.Workloads) > 1 {
+			if wlUsage, err = b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+				return
+			}
+		}
+
+		if wlUsage == nil {
 			workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(0, 0, 0)
 		} else if wlUsage.DisableRetry {
 			workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, 0, wlUsage.FirstTryTime)
@@ -408,16 +466,19 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		if (lastWorkload == workload) || (lastWorkload != nil && workload != nil && lastWorkload.IsSame(*workload)) {
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to find supported workload for %v within %v", wi.Device.Id, wi.ConsumerPolicy.Workloads)))
 
-			// If we created a workload usage record during this process, get rid of it.
-			if err := b.db.DeleteWorkloadUsage(wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
-				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to delete workload usage record for %v with %v because %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+			if workload != nil && !workload.HasEmptyPriority() {
+				// If we created a workload usage record during this process, get rid of it.
+				if err := b.db.DeleteWorkloadUsage(wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
+					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to delete workload usage record for %v with %v because %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+				}
 			}
 			return
+
 		}
 
 		// If the service is suspended, then do not make an agreement.
-		if found, suspended := exchange.ServiceSuspended(exchangeDev.RegisteredServices, workload.WorkloadURL, workload.Org); found && suspended {
-			glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org))))
+		if found, suspended := exchange.ServiceSuspended(exchangeDev.RegisteredServices, workload.WorkloadURL, workload.Org, workload.Version); found && suspended {
+			glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v version %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org), workload.Version)))
 			// When the service's config state is resumed, the agent will update the node resource and the agbot will be returned this node
 			// in a search result.
 			return
@@ -466,9 +527,11 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
 			return
 		}
+		topSvcDef := compcheck.ServiceDefinition{Org: workload.Org, ServiceDefinition: *workloadDetails}
+		sIdTop := sIds[0]
 
 		// Do not make proposals for services without a deployment configuration got its node type.
-		t_comp, t_reason := compcheck.CheckTypeCompatibility(nodeType, &compcheck.ServiceDefinition{Org: workload.Org, ServiceDefinition: *workloadDetails}, msgPrinter)
+		t_comp, t_reason := compcheck.CheckTypeCompatibility(nodeType, &topSvcDef, msgPrinter)
 		if !t_comp {
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with node %v for service %v/%v %v. %v", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version, t_reason)))
 			return
@@ -479,7 +542,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			asl = new(policy.APISpecList)
 		}
 
-		// Canonicalize the arch field in the API spec list
+		// Canonicalize the arch field in the API spec
 		for ix, apiSpec := range *asl {
 			if apiSpec.Arch != "" && b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != "" {
 				(*asl)[ix].Arch = b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch)
@@ -502,6 +565,13 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 		}
 
+		// get dependent service definitions for later use
+		depServices, _, _, err := exchange.GetHTTPServiceDefResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+		if err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for dependent service details for %v, error: %v", workload, err)))
+			return
+		}
+
 		// check if merged producer policy matches the consumer policy
 		if wi.ConsumerPolicy.PatternId != "" {
 			mergedProducer, err := b.GetMergedProducerPolicyForPattern(wi.Device.Id, exchangeDev, *asl)
@@ -512,11 +582,11 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				wi.ProducerPolicy = *mergedProducer
 			}
 			svcDefResolverHandler := exchange.GetHTTPServiceDefResolverHandler(b)
-			svcHandler := exchange.GetHTTPServiceHandler(b)
 			patternHandler := exchange.GetHTTPExchangePatternHandler(b)
 			nodePolHandler := exchange.GetHTTPNodePolicyHandler(b)
-			cc := compcheck.CompCheck{NodeId: wi.Device.Id, PatternId: wi.ConsumerPolicy.PatternId}
-			ccOutput, err := compcheck.EvaluatePatternPrivilegeCompatability(svcDefResolverHandler, svcHandler, patternHandler, nodePolHandler, &cc, &compcheck.CompCheckResource{}, msgPrinter, false, false)
+			cc := compcheck.CompCheck{NodeId: wi.Device.Id, PatternId: wi.ConsumerPolicy.PatternId, Service: []common.AbstractServiceFile{&topSvcDef}}
+			resourceCC := compcheck.CompCheckResource{DepServices: depServices, NodeArch: exchangeDev.Arch}
+			ccOutput, err := compcheck.EvaluatePatternPrivilegeCompatability(svcDefResolverHandler, patternHandler, nodePolHandler, &cc, &resourceCC, msgPrinter, false, false)
 			// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
 			// device requirements not being met. This will cause agreement cancellation to try the highest priority workload again
 			// even if retries have been disabled.
@@ -534,29 +604,16 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 
 		} else {
-			// non patten case
-			// get node policy
-			nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
-			_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, wi.Device.Id, msgPrinter)
-			if err != nil {
-				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
-				return
-			} else if nodePolicy == nil {
-				glog.Warning(BAWlogstring(workerId, fmt.Sprintf("Cannot find node policy for this node %v.", wi.Device.Id)))
-				return
-			} else {
-				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
-				wi.ProducerPolicy = *nodePolicy
-			}
+			// non pattern case
 
 			// get service policy
-			servicePolTemp, foundTemp := wi.ServicePolicies[sIds[0]]
+			servicePolTemp, foundTemp := wi.ServicePolicies[sIdTop]
 			if !foundTemp {
 				var errTemp error
 				serviceIdPolicyHandler := exchange.GetHTTPServicePolicyWithIdHandler(b)
-				servicePol, errTemp = compcheck.GetServicePolicyWithId(serviceIdPolicyHandler, sIds[0], msgPrinter)
+				servicePol, errTemp = compcheck.GetServicePolicyWithId(serviceIdPolicyHandler, sIdTop, msgPrinter)
 				if errTemp != nil {
-					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error getting service policy for service %v. %v", sIds[0], errTemp)))
+					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error getting service policy for service %v. %v", sIdTop, errTemp)))
 					return
 				}
 			} else {
@@ -567,25 +624,20 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			//merge the service policy with the built-in service policy
 			builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 			// add built-in service properties to the service policy
-			getResolvedServiceDef := exchange.GetHTTPServiceDefResolverHandler(b)
-			getService := exchange.GetHTTPServiceHandler(b)
 			mergedServicePol := compcheck.AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, nil)
-			if mergedServicePol, _, _, err = compcheck.SetServicePolicyPrivilege(getResolvedServiceDef, getService, *workload, mergedServicePol, nil, msgPrinter); err != nil {
+			if mergedServicePol, err = b.SetServicePolicyPrivilege(mergedServicePol, &topSvcDef, sIdTop, depServices, msgPrinter); err != nil {
+				glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error setting the privilege for the merged service policy. %v.", err)))
 				return
 			}
 
-			if compatible, reason, _, consumPol, err := compcheck.CheckPolicyCompatiblility(nodePolicy, &wi.ConsumerPolicy, mergedServicePol, "", msgPrinter); err != nil {
-				glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error checking policy compatibility. %v.", err.Error())))
+			if compatible, consumPol, err := b.checkPolicyCompatibility(workerId, wi, nodePolicy, &wi.ConsumerPolicy, mergedServicePol, "", msgPrinter); err != nil {
 				return
 			} else {
 				if compatible {
 					if consumPol != nil {
 						wi.ConsumerPolicy = *consumPol
 					}
-					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Node %v is compatible", wi.Device.Id)))
 					policy_match = true
-				} else {
-					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("failed matching node policy %v and %v, error: %v", wi.ProducerPolicy, wi.ConsumerPolicy, reason)))
 				}
 			}
 		}
@@ -593,35 +645,20 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// Make sure the user inputs are all there
 		userInput_match := true
 		if policy_match {
-			svcDef := compcheck.ServiceDefinition{Org: workload.Org, ServiceDefinition: *workloadDetails}
-			if compatible, reason, _, err := compcheck.VerifyUserInputForSingleServiceDef(&svcDef, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput, nil); err != nil {
+			if compatible, reason, err := compcheck.VerifyUserInputForServiceCache(&topSvcDef, depServices, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput, nodeType, msgPrinter); err != nil {
 				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Error validating the user input for service %v/%v %v %v: %v", workload.Org, workloadDetails.URL, workloadDetails.Version, workloadDetails.Arch, err)))
 				userInput_match = false
 			} else if !compatible {
 				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("User input does not meet the requirement for service %v/%v %v %v: %v", workload.Org, workloadDetails.URL, workloadDetails.Version, workloadDetails.Arch, reason)))
 				userInput_match = false
-			} else {
-				for _, apiSpec := range *asl {
-					svcSpec := compcheck.NewServiceSpec(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)
-					getService := exchange.GetHTTPServiceHandler(b)
-					if compatible, reason, _, err := compcheck.VerifyUserInputForSingleService(svcSpec, getService, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput, nil); err != nil {
-						glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Error validating the user input for dependent service %v/%v %v %v. %v", apiSpec.Org, apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch, err)))
-						userInput_match = false
-						break
-					} else if !compatible {
-						glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("User input does not meet the requirement for dependent service %v/%v %v %v. %v", apiSpec.Org, apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch, reason)))
-						userInput_match = false
-						break
-					}
-				}
 			}
 		}
 
 		// Make sure the deployment policy or pattern has all the right secret bindings in place and extract the secret details for the agent.
 		secrets_match := true
-		if policy_match && userInput_match {
+		if policy_match && userInput_match && nodeType == persistence.DEVICE_TYPE_DEVICE {
 
-			err := b.ValidateAndExtractSecrets(&wi.ConsumerPolicy, wi.Device.Id, workload.Org, workloadDetails, workerId, msgPrinter)
+			err := b.ValidateAndExtractSecrets(&wi.ConsumerPolicy, wi.Device.Id, &topSvcDef, depServices, workerId, msgPrinter)
 			if err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Error processing secrets for policy %v, error: %v", wi.ConsumerPolicy.Header.Name, err)))
 				secrets_match = false
@@ -651,6 +688,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		} else {
 
 			foundWorkload = true
+
+			// copy all the service ids
 			svcIds = make([]string, len(sIds))
 			copy(svcIds, sIds)
 
@@ -667,10 +706,10 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				}
 				polString, err := json.Marshal(servicePol)
 				if err != nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sIds[0], err)))
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sIdTop, err)))
 					return
 				}
-				cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sIds[0], string(polString)))
+				cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sIdTop, string(polString)))
 			}
 
 			// The device seems to support the required API specs, so augment the consumer policy file with the workload
@@ -689,10 +728,24 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
 			}
 
-			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
+			if glog.V(5) {
+				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
+			}
 		}
 
 		lastWorkload = workload
+	}
+
+	// get the node max heartbeat interval if it's set on the node
+	nodeMaxHBInterval := exchangeDev.HeartbeatIntv.MaxInterval
+
+	// if the node max heartbeat interval is not set on the node, then get if from the org
+	if nodeMaxHBInterval == 0 {
+		exchOrg, err := exchange.GetOrganization(b.config.Collaborators.HTTPClientFactory, exchange.GetOrg(wi.Device.Id), b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken())
+		if err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Errorf("Unable to get org %v from exchange: %v", exchange.GetOrg(wi.Device.Id), err)))
+		}
+		nodeMaxHBInterval = exchOrg.HeartbeatIntv.MaxInterval
 	}
 
 	// Call the exchange to make sure that all partners are registered in the exchange. We can do this check now that we know
@@ -768,42 +821,63 @@ func (b *BaseAgreementWorker) GetMergedProducerPolicyForPattern(deviceId string,
 	return mergedProducer, nil
 }
 
+// This function sets a property on the service privilege that indicates if the service uses a workload that requires privileged mode or network=host
+// This will not overwrite openhorizon.allowPrivileged=true if the service is found to not require privileged mode.
+func (b *BaseAgreementWorker) SetServicePolicyPrivilege(svcPolicy *externalpolicy.ExternalPolicy, topSvc common.AbstractServiceFile, topSvcId string,
+	depServiceDefs map[string]exchange.ServiceDefinition, msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, error) {
+
+	runtimePriv, err, _ := compcheck.ServicesRequirePrivilege(topSvc, topSvcId, depServiceDefs, msgPrinter)
+	if err != nil {
+		return nil, err
+	}
+
+	svcPolicy.Properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_PRIVILEGED, runtimePriv), true)
+
+	if runtimePriv {
+		svcPolicy.Constraints.Add_Constraint(fmt.Sprintf("%s = %t", externalpolicy.PROP_SVC_PRIVILEGED, runtimePriv))
+	}
+	return svcPolicy, nil
+}
+
 // When deploying a service that is configured with secrets, the agbot needs to revalidate that all the necessary secrets have been bound to
 // secret manager secrets, and then extract those secrets and put them into the agreement proposal. This function returns true when
 // all the required secrets ave been validated and extracted, otherwise and error is returned.
-func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.Policy, deviceId string, workloadOrg string, workloadDetails *exchange.ServiceDefinition, workerId string, msgPrinter *message.Printer) error {
+func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.Policy, deviceId string, topSvcDef common.AbstractServiceFile,
+	depServices map[string]exchange.ServiceDefinition, workerId string, msgPrinter *message.Printer) error {
 
 	// When services and policies are published, the following validation is performed. Doing it here again in case something changed. The
 	// exchange does not maintain referential integrity for these aspects of the user's metadata.
 
-	// No need to check architectures of the services, we know the node's architecture at this point.
-	checkAllArches := false
-
-	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("validating secret bindings for service %v/%v %v %v and dependencies, bindings: %v", workloadOrg, workloadDetails.URL, workloadDetails.Version, workloadDetails.Arch, consumerPolicy.SecretBinding)))
+	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("validating secret bindings for service %v/%v %v %v and dependencies, bindings: %v", topSvcDef.GetOrg(), topSvcDef.GetURL(), topSvcDef.GetVersion(), topSvcDef.GetArch(), consumerPolicy.SecretBinding)))
 
 	// Validate that the secret bindings are still correct.
-	resMap, err := common.ValidateSecretBindingForSvcAndDep(
+
+	compatible, reason, resMap, err := compcheck.VerifySecretBindingForServiceCache(
+		topSvcDef,
+		depServices,
 		consumerPolicy.SecretBinding,
-		workloadOrg,
-		workloadDetails.URL,
-		workloadDetails.Version,
-		workloadDetails.Arch,
-		checkAllArches,
-		exchange.GetHTTPServiceDefResolverHandler(b),
-		exchange.GetHTTPSelectedServicesHandler(b),
+		nil,
+		"",
+		exchange.GetOrg(deviceId),
 		msgPrinter)
 
 	if err != nil {
-		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error validating secret bindings for policy %v, service %v/%v %v, error: %v", consumerPolicy.Header.Name, workloadOrg, workloadDetails.URL, workloadDetails.Version, err)))
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error validating secret bindings for policy %v, service %v/%v %v, error: %v", consumerPolicy.Header.Name, topSvcDef.GetOrg(), topSvcDef.GetURL(), topSvcDef.GetVersion(), err)))
 		return err
 	}
 
+	if !compatible {
+		err_msg := fmt.Sprintf("secret bindings for policy %v, service %v/%v %v not compatible, reason: %v", consumerPolicy.Header.Name, topSvcDef.GetOrg(), topSvcDef.GetURL(), topSvcDef.GetVersion(), reason)
+		glog.Errorf(BAWlogstring(workerId, err_msg))
+		return fmt.Errorf(err_msg)
+	}
+
 	if len(resMap) == 0 {
-		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("no secrets for service %v/%v %v", workloadOrg, workloadDetails.URL, workloadDetails.Version)))
+		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("no secrets for service %v/%v %v", topSvcDef.GetOrg(), topSvcDef.GetURL(), topSvcDef.GetVersion())))
 	}
 
 	// Get the list of secret bindings that are needed so that we know which secrets to extract from the secret manager.
-	neededSB, _ := common.GroupSecretBindings(consumerPolicy.SecretBinding, resMap)
+	neededSB, _ := compcheck.GroupSecretBindings(consumerPolicy.SecretBinding, resMap)
 
 	// If the agreement needs secrets, make sure the secrets manager is available.
 	if len(neededSB) != 0 && (b.secretsMgr == nil || !b.secretsMgr.IsReady()) {
@@ -812,15 +886,19 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 		return err
 	}
 
+	newBindings := make([]exchangecommon.SecretBinding, 0)
+
 	// Add the bound secrets with details into the consumer policy for transport to the agent in the proposal.
 	for _, binding := range neededSB {
+
+		// The secret details are transported within the proposal in the SecretBinding section where the secret provider secret name is
+		// replaced with the secret details.
+		sb := binding.MakeCopy()
+		sb.Secrets = make([]exchangecommon.BoundSecret, 0)
+
 		for _, boundSecret := range binding.Secrets {
 
-			// The secret details are transported within the proposal in their own section of the internal policy, called SecretDetails.
-			// The schema of the secret details is the same as the schema of the bound secrets (map[string]string), except that the secret
-			// manager secret name is replaced with the actual secret details. This is why we are making a copy of the bound secret, so that
-			// the copy can be appended into the secret details section of the internal policy with the secret details inside of it.
-			bs := boundSecret.MakeCopy()
+			newBS := boundSecret.MakeCopy()
 
 			// Iterate the bound secrets, extracting the details for each secret.
 			for serviceSecretName, secretName := range boundSecret {
@@ -828,14 +906,14 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("extracting secret details for %v:%v", serviceSecretName, secretName)))
 
 				// The secret name might be a user private or org wide secret. Parse the name to determine which it is.
-				secretUser, shortSecretName, err := common.ParseVaultSecretName(secretName, msgPrinter)
+				secretUser, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error parsing secret %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))
 					return err
 				}
 
 				// Call the secret manager plugin to get the secret details.
-				details, err := b.secretsMgr.GetSecretDetails(exchange.GetOrg(deviceId), secretUser, shortSecretName)
+				details, err := b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, shortSecretName)
 
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error retrieving secret %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))
@@ -848,11 +926,16 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 					return err
 				}
 
-				bs[serviceSecretName] = base64.StdEncoding.EncodeToString(detailBytes)
-				consumerPolicy.SecretDetails = append(consumerPolicy.SecretDetails, bs)
+				newBS[serviceSecretName] = base64.StdEncoding.EncodeToString(detailBytes)
 			}
+			sb.Secrets = append(sb.Secrets, newBS)
+
 		}
+		newBindings = append(newBindings, sb)
+
 	}
+	consumerPolicy.SecretDetails = newBindings
+
 	return nil
 
 }
@@ -989,10 +1072,12 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 						objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
 
-						if _, err := AssignObjectToNode(b, objPolicies, agreement.DeviceId, nodePolicy, false); err != nil {
+						destsToAddMap := make(map[string]*exchange.ObjectDestinationsToAdd, 0)
+						if addedToList, _, err := AssignObjectToNodes(b, objPolicies, agreement.DeviceId, nodePolicy, destsToAddMap, false); err != nil {
 							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
+						} else if addedToList {
+							AddDestinationsForObjects(b, destsToAddMap)
 						}
-
 					}
 				} else if b.GetCSSURL() == "" {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))

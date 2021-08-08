@@ -37,8 +37,9 @@ Because Horizon uses the Docker API to start the containers on an edge node, man
     - `network`: `"host"` - start the container with host network mode. When network is set to host, the service can only be deployed to nodes with property openhorizon.allowPrivileged set to true.
     - `entrypoint`: `["executable", "param1", "param2"]` - override ENTRYPOINT specified in the dockerfile.
     - `max_memory_mb`: `4096` - the maximum amount of memory the service's container can use
-    - `max_cpus`: `1.5` - how much of the available CPU resources ther service's container can use. For instance, if the host machine has two CPUs and you set value to 1.5, the container is guaranteed to use at most one and a half of the CPUs
+    - `max_cpus`: `1.5` - how much of the available CPU resources the service's container can use. For instance, if the host machine has two CPUs and you set value to 1.5, the container is guaranteed to use at most one and a half of the CPUs
     - `log_driver`: the logging driver (e.g. `json-file`) to use for container logs, instead of default one (syslog)
+    - `secrets`: `{"ai_secret": {"description": "The token for cloud AI service."}, "sql_secret": {}}` - a list of secret names and the descriptions. The `description` can be omitted. A secret name is just a user defined string. A pattern or a deployment policy will associate it with the name of the secret in the secret provider. The horizon agent will mount the secrets at '/open-horizon-secrets' within the service's containers. Each secret name appears as a file in that directory, containing the details of the secret from the secret provider. Each secret file is a JSON encoded file containing the "key" and "value" set when the secret was created with the hzn secretsmanager secret add command.
 
 ## clusterDeployment String Fields
 

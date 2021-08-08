@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"math"
+	mrand "math/rand"
 	"net"
 	"os"
 	"path"
@@ -51,13 +52,29 @@ func FirstN(n int, ss []string) []string {
 }
 
 func SecureRandomString() (string, error) {
-	bytes := make([]byte, 64)
 
+	random := mrand.New(mrand.NewSource(int64(time.Now().Nanosecond())))
+
+	randStr := ""
+	randStr += string(rune(random.Intn(10) + 48)) // add a random digit to the string
+	randStr += string(rune(random.Intn(26) + 65)) // add an uppercase letter to the string
+	randStr += string(rune(random.Intn(26) + 97)) // add a lowercase letter to the string
+	randStr += string(rune(random.Intn(10) + 48)) // add one more random digit so we reach 64 bytes at the end
+
+	// pad out the password to make it <=15 chars
+	bytes := make([]byte, 63)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
-	} else {
-		return base64.URLEncoding.EncodeToString(bytes), nil
 	}
+	randStr += base64.URLEncoding.EncodeToString(bytes)
+
+	// shuffle the string
+	shuffledStr := []rune(randStr)
+	mrand.Shuffle(len(shuffledStr), func(i, j int) {
+		shuffledStr[i], shuffledStr[j] = shuffledStr[j], shuffledStr[i]
+	})
+
+	return string(shuffledStr), nil
 }
 
 func GenerateAgreementId() (string, error) {
@@ -227,7 +244,7 @@ func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
 
 // This function may seem simple but since it is shared with the hzn dev CLI, an update to it will cause a compile error in the CLI
 // code. This will prevent us from adding a new platform env var but forgetting to update the CLI.
-func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId string, deviceId string, org string, workloadPW string, exchangeURL string, pattern string, fssProtocol string, fssAddress string, fssPort string) {
+func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId string, deviceId string, org string, exchangeURL string, pattern string, fssProtocol string, fssAddress string, fssPort string) {
 
 	// The agreement id that is controlling the lifecycle of this container.
 	if agreementId != "" {
@@ -245,11 +262,6 @@ func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId st
 
 	// The pattern that the node is hosting.
 	envAdds[prefix+"PATTERN"] = pattern
-
-	// Deprecated workload password, used only by legacy POC workloads.
-	if workloadPW != "" {
-		envAdds[prefix+"HASH"] = workloadPW
-	}
 
 	// Add in the exchange URL so that the workload knows which ecosystem its part of
 	envAdds[prefix+"EXCHANGE_URL"] = exchangeURL
@@ -536,6 +548,18 @@ func SliceContains(a []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// merge 2 slices, removing duplicates
+func MergeSlices(a []string, b []string) []string {
+	ret := make([]string, len(a))
+	copy(ret, a)
+	for _, bEle := range b {
+		if !SliceContains(a, bEle) {
+			ret = append(ret, bEle)
+		}
+	}
+	return ret
 }
 
 // it returns the org/url form for an api spec

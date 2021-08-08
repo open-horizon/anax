@@ -864,6 +864,129 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	return
 }
 
+// Runs a GET to the agbot secure API and fills in the specified json structure. if the structure is just a string, fill in the raw json.
+// If the list of goodHttpCodes is non-empty and none match the actual http code, it will exit with an error; otherwise, the actual code is returned
+func AgbotGet(urlSuffix, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// check the agbot url
+	agbot_url := GetAgbotSecureAPIUrlBase()
+	if agbot_url == "" {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("HZN_AGBOT_URL is not defined"))
+	}
+
+	// query the agbot secure api
+	httpCode = ExchangeGet("Agbot", agbot_url, urlSuffix, credentials, goodHttpCodes, structure)
+
+	// ExchangeGet checks the http code, so we can just directly return
+	return httpCode
+}
+
+// Runs a LIST to the agbot secure API and fills in the specified json structure. if the structure is just a string, fill in the raw json.
+// If the list of goodHttpCodes is non-empty and none match the actual http code, it will exit with an error; otherwise, the actual code is returned
+func AgbotList(urlSuffix, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// check the agbot url
+	agbot_url := GetAgbotSecureAPIUrlBase()
+	if agbot_url == "" {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("HZN_AGBOT_URL is not defined"))
+	}
+
+	// query the agbot secure api
+	url := agbot_url + "/" + urlSuffix
+	apiMsg := "LIST " + url
+
+	Verbose(apiMsg)
+
+	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
+
+	resp := InvokeRestApi(httpClient, "LIST", url, credentials, nil, "Agbot", apiMsg)
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	respBody := io.Reader(resp.Body)
+	bodyBytes, err := ioutil.ReadAll(respBody)
+	if err != nil {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("failed to read body response from %s: %v", apiMsg, err))
+	}
+	httpCode = resp.StatusCode
+	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
+	if !isGoodCode(httpCode, goodHttpCodes) {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s, output: %s", httpCode, apiMsg, string(bodyBytes)))
+	}
+
+	if len(bodyBytes) > 0 && structure != nil { // the DP front-end of exchange will return nothing when auth problem
+		switch s := structure.(type) {
+		case *[]byte:
+			// This is the signal that they want the raw body back
+			*s = bodyBytes
+		case *string:
+			// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
+			//todo: this gets it in json indented form, but also returns the fields in random order (because they were interpreted as a map)
+			var jsonStruct interface{}
+			err = json.Unmarshal(bodyBytes, &jsonStruct)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal exchange body response from %s: %v", apiMsg, err))
+			}
+			jsonBytes, err := json.MarshalIndent(jsonStruct, "", JSON_INDENT)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal exchange output from %s: %v", apiMsg, err))
+			}
+			*s = string(jsonBytes)
+		default:
+			err = json.Unmarshal(bodyBytes, structure)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal exchange body response from %s: %v", apiMsg, err))
+			}
+		}
+	}
+	return
+}
+
+// Runs a PUT, POST, or PATCH to the agbot secure API to create or update a resource. If body is a string, it will be given to the exhcnage
+// as json. Otherwise, the struct will be marshaled to json.
+// If the list of goodHttpCodes is non-empty and none match the actual http code, it will exit with an error; otherwise, the actual code is returned
+func AgbotPutPost(method, urlSuffix, credentials string, goodHttpCodes []int, body interface{}, structure interface{}) (httpCode int) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// check the agbot url
+	agbot_url := GetAgbotSecureAPIUrlBase()
+	if agbot_url == "" {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("HZN_AGBOT_URL is not defined"))
+	}
+
+	// query the agbot secure api
+	httpCode = ExchangePutPost("Agbot", method, agbot_url, urlSuffix, credentials, goodHttpCodes, body, structure)
+
+	// ExchangePutPost checks the http code, so we can just directly return
+	return httpCode
+}
+
+// Runs a DELETE to the agbot secure API to delete a resource.
+// If the list of goodHttpCodes is non-empty and none match the actual http code, it will exit with an error; otherwise, the actual code is returned
+func AgbotDelete(urlSuffix, credentials string, goodHttpCodes []int) (httpCode int) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// check the agbot url
+	agbot_url := GetAgbotSecureAPIUrlBase()
+	if agbot_url == "" {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("HZN_AGBOT_URL is not defined"))
+	}
+
+	// query the agbot secure api
+	httpCode = ExchangeDelete("Agbot", agbot_url, urlSuffix, credentials, goodHttpCodes)
+
+	// ExchangeDelete checks the http code, so we can just directly return
+	return httpCode
+}
+
 // get a value keyed by key in a file. The file contains key=value for each line.
 func GetEnvVarFromFile(filename string, key string) (string, error) {
 	fHandle, err := os.Open(filename)
@@ -1367,6 +1490,19 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 		}
 	}
 	return
+}
+
+// This function will return response directly, the resp need to be closed by caller
+func ExchangeGetResponse(service string, urlBase string, urlSuffix string, credentials string) *http.Response {
+	url := urlBase + "/" + urlSuffix
+	apiMsg := http.MethodGet + " " + url
+
+	Verbose(apiMsg)
+
+	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
+
+	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg)
+	return resp
 }
 
 // ExchangePutPost runs a PUT, POST or PATCH to the exchange api to create of update a resource. If body is a string, it will be given to the exchange

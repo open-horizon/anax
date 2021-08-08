@@ -116,7 +116,7 @@ func (p *BusinessPolicyEntry) DeepCopy() *BusinessPolicyEntry {
 }
 
 // Create a new BusinessPolicyEntry. It converts the businesspolicy to internal policy format.
-// the business policy exchange id (or/id) is the header name for the internal generated policy.
+// The business policy exchange id (or/id) is the header name for the internal generated policy.
 func NewBusinessPolicyEntry(pol *businesspolicy.BusinessPolicy, polId string) (*BusinessPolicyEntry, error) {
 	pBE := new(BusinessPolicyEntry)
 	pBE.Updated = uint64(time.Now().Unix())
@@ -130,7 +130,6 @@ func NewBusinessPolicyEntry(pol *businesspolicy.BusinessPolicy, polId string) (*
 	// validate and convert the exchange business policy to internal policy format
 	if err := pol.Validate(); err != nil {
 		return nil, fmt.Errorf("Failed to validate the business policy %v. %v", *pol, err)
-		//} else if pPolicy, err := pol.GenPolicyFromBusinessPolicy(polId); err != nil {
 	} else if pPolicy, err := pol.GenPolicyFromBusinessPolicy(polId); err != nil {
 		return nil, fmt.Errorf("Failed to convert the business policy to internal policy format: %v. %v", *pol, err)
 	} else {

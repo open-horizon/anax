@@ -58,6 +58,8 @@ type Agreement struct {
 	ServiceId                      []string `json:"service_id"`                        // All the service ids whose policy is used to make the agreement, used for policy case only
 	ProtocolTimeoutS               uint64   `json:"protocol_timeout_sec"`              // Number of seconds to wait before declaring proposal response is lost
 	AgreementTimeoutS              uint64   `json:"agreement_timeout_sec"`
+	LastSecretUpdateTime           uint64   `json:"last_secret_update_time"`     // The secret update time corresponding to the most recent secret update protocol msg sent for this agreement
+	LastSecretUpdateTimeAck        uint64   `json:"last_secret_update_time_ack"` // Will match the LastSecretUpdateTime when the agreement update ACK is received
 }
 
 func (a Agreement) String() string {
@@ -102,7 +104,9 @@ func (a Agreement) String() string {
 		"Pattern: %v, "+
 		"ServiceId: %v, "+
 		"ProtocolTimeoutS: %v, "+
-		"AgreementTimeoutS: %v",
+		"AgreementTimeoutS: %v, "+
+		"LastSecretUpdateTime: %v, "+
+		"LastSecretUpdateTimeAck: %v",
 		a.Archived, a.CurrentAgreementId, a.Org, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.DeviceType, a.HAPartners,
 		a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
@@ -110,7 +114,8 @@ func (a Agreement) String() string {
 		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent,
 		a.MeteringTokens, a.MeteringPerTimeUnit, a.MeteringNotificationInterval, a.MeteringNotificationSent, a.MeteringNotificationMsgs,
 		a.TerminatedReason, a.TerminatedDescription, a.BlockchainType, a.BlockchainName, a.BlockchainOrg, a.BCUpdateAckTime,
-		a.NHMissingHBInterval, a.NHCheckAgreementStatus, a.Pattern, a.ServiceId, a.ProtocolTimeoutS, a.AgreementTimeoutS)
+		a.NHMissingHBInterval, a.NHCheckAgreementStatus, a.Pattern, a.ServiceId, a.ProtocolTimeoutS, a.AgreementTimeoutS,
+		a.LastSecretUpdateTime, a.LastSecretUpdateTimeAck)
 }
 
 // Factory method for agreement w/out persistence safety.
@@ -350,6 +355,28 @@ func SetAgreementTimeouts(db AgbotDatabase, agreementid string, protocol string,
 	}
 }
 
+func AgreementSecretUpdateTime(db AgbotDatabase, agreementid string, protocol string, secretUpdateTime uint64) (*Agreement, error) {
+	if agreement, err := db.SingleAgreementUpdate(agreementid, protocol, func(a Agreement) *Agreement {
+		a.LastSecretUpdateTime = secretUpdateTime
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
+func AgreementSecretUpdateAckTime(db AgbotDatabase, agreementid string, protocol string, secretUpdateAckTime uint64) (*Agreement, error) {
+	if agreement, err := db.SingleAgreementUpdate(agreementid, protocol, func(a Agreement) *Agreement {
+		a.LastSecretUpdateTimeAck = secretUpdateAckTime
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
 // This code is running in a database transaction. Within the tx, the current record is
 // read and then updated according to the updates within the input update record. It is critical
 // to check for correct data transitions within the tx .
@@ -449,6 +476,12 @@ func ValidateStateTransition(mod *Agreement, update *Agreement) {
 	}
 	if mod.BCUpdateAckTime == 0 { // 1 transition from zero to non-zero
 		mod.BCUpdateAckTime = update.BCUpdateAckTime
+	}
+	if mod.LastSecretUpdateTime < update.LastSecretUpdateTime { // Valid transitions must move forward
+		mod.LastSecretUpdateTime = update.LastSecretUpdateTime
+	}
+	if mod.LastSecretUpdateTimeAck < update.LastSecretUpdateTimeAck { // Valid transitions must move forward
+		mod.LastSecretUpdateTimeAck = update.LastSecretUpdateTimeAck
 	}
 }
 

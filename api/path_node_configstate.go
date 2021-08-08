@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -395,7 +396,7 @@ func getSpecRefsForPattern(nodeType string, patName string,
 
 			// skip the service because the type mis-match.
 			serviceType := serviceDef.GetServiceType()
-			if serviceType != exchange.SERVICE_TYPE_BOTH && nodeType != serviceType {
+			if serviceType != exchangecommon.SERVICE_TYPE_BOTH && nodeType != serviceType {
 				glog.Infof(apiLogString(fmt.Sprintf("skipping service %v/%v because it's type %v does not match the node type %v. ", service.ServiceOrg, service.ServiceURL, serviceType, nodeType)))
 				break
 			}
@@ -429,14 +430,14 @@ func getSpecRefsForPattern(nodeType string, patName string,
 
 					// generate apiSpecList from dependent def
 					newAPISpec := policy.APISpecification_Factory(dDef.URL, exchange.GetOrg(sId), dDef.Version, dDef.Arch)
-					if dDef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || dDef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
+					if dDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || dDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE {
 						newAPISpec.ExclusiveAccess = false
 					}
 					apiSpecList.Add_API_Spec(newAPISpec)
 				}
 
 				if checkNodePrivilege {
-					if svcPriv, err, privSvcs := compcheck.ServicesRequirePrivilege(&dependentDefs, nil); err != nil {
+					if svcPriv, err, privSvcs := compcheck.ServicesRequirePrivilege(nil, "", dependentDefs, nil); err != nil {
 						return nil, nil, NewSystemError(fmt.Sprintf("Error checking if dependent services for %v require privileged mode. %v", topSvcID, err))
 					} else if svcPriv && !nodePriv {
 						return nil, nil, NewSystemError(fmt.Sprintf("Dependent services %v for %v require privileged mode, but the node does not have openhorizon.allowPrivileged property set to true.", privSvcs, topSvcID))

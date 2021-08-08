@@ -3,6 +3,7 @@ package resource
 import (
 	"errors"
 	"fmt"
+	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
@@ -58,7 +59,7 @@ func (r ResourceManager) String() string {
 		r.org, r.pattern, r.id, r.token)
 }
 
-func (r ResourceManager) StartFileSyncService(am *AuthenticationManager) error {
+func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 
 	// Generate a self signed certificate to be used for TLS between a service and the embedded ESS API.
 	// The SSL private key is stored in a different location from the certificate so that the services
@@ -151,14 +152,32 @@ func (r ResourceManager) StartFileSyncService(am *AuthenticationManager) error {
 	// Set the authenticator that we're going to use.
 	security.SetAuthentication(&FSSAuthenticate{nodeOrg: r.org, nodeID: r.id, nodeToken: r.token, AuthMgr: am})
 
-	// Start the embedded ESS.
+	return nil
+
+}
+
+func (r ResourceManager) setupSecretsAPI(am *AuthenticationManager, db *bolt.DB) {
+	glog.V(5).Infof(rmLogString(fmt.Sprintf("Setup secret API")))
+	secretAPIs := NewSecretAPI(db, am)
+	secretAPIs.SetupHttpHandler()
+}
+
+// StartFileSyncServiceAndSecretAPI will start embeded ESS and agent secrets API server
+func (r ResourceManager) StartFileSyncServiceAndSecretsAPI(am *AuthenticationManager, db *bolt.DB) error {
+	if err := r.setupFileSyncService(am); err != nil {
+		glog.Errorf(rmLogString(fmt.Sprintf("ESS Setup error: %v", err)))
+		os.Exit(98)
+	}
+
+	r.setupSecretsAPI(am, db)
+
+	// Start the embedded ESS and secret APIs
 	if err := base.Start("", true); err != nil {
 		glog.Errorf(rmLogString(fmt.Sprintf("ESS Start error: %v", err)))
 		os.Exit(98)
 	}
 
-	glog.V(3).Infof(rmLogString(fmt.Sprintf("ESS Started")))
-
+	glog.V(3).Infof(rmLogString(fmt.Sprintf("ESS and Secrets API Started")))
 	return nil
 
 }

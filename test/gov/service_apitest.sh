@@ -773,48 +773,4 @@ if [ "$ERR" != "null" ]; then
   exit 2
 fi
 
-# try to config again, get an error
-read -d '' snsconfig <<EOF
-{
-  "url": "https://bluehorizon.network/services/testservice",
-  "version": "2.2.0",
-  "organization": "e2edev@somecomp.com",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "var1": "aString",
-        "var2": 5,
-        "var3": 10.2,
-        "var4": ["abc", "123"],
-        "var5": "override"
-      }
-    }
-  ]
-}
-EOF
-
-echo -e "\n\n[D] testservice service config payload: $snsconfig"
-
-echo "Registering testservice service config on node again"
-
-RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
-if [ "$RES" == "" ]
-then
-  echo -e "$snsconfig \nresulted in empty response"
-  exit 2
-fi
-
-ERR=$(echo $RES | jq -r ".error")
-if [ "${ERR:0:95}" != "Duplicate registration for e2edev@somecomp.com/https://bluehorizon.network/services/testservice" ]
-then
-  echo -e "$snsconfig \nresulted in incorrect response: $RES"
-  exit 2
-else
-  echo -e "found expected response: $RES"
-fi
-
 echo "End Testing Service APIs"

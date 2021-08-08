@@ -99,6 +99,10 @@
       "translation": "输入主体未能反序列化为 UserInputCheck 对象。 {Err}"
     },
     {
+      "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 SecretBindingCheck 对象。{Err}"
+    },
+    {
       "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
       "translation": "输入主体未能反序列化为 CompCheck 对象。 {Err}"
     },
@@ -121,6 +125,54 @@
     {
       "id": "Internal server error",
       "translation": "内部服务器错误"
+    },
+    {
+      "id": "There is no secrets provider configured, secrets are unavailable.",
+      "translation": "未配置私钥提供出现，私钥不可用。"
+    },
+    {
+      "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
+      "translation": "私钥提供程序未就绪。调用者应重试此 API 调用少数几次，并在相邻调用之间短暂延迟，以确保私钥提供程序可用。"
+    },
+    {
+      "id": "Unable to read request body, error: {Err}.",
+      "translation": "无法读取请求主体，错误：{Err}。"
+    },
+    {
+      "id": "Request body is empty.",
+      "translation": "请求主体为空。"
+    },
+    {
+      "id": "Request body parse error, {Uerr}",
+      "translation": "请求主体解析错误，{Uerr}"
+    },
+    {
+      "id": "Unable to access secrets provider, error: {Serr}.",
+      "translation": "无法访问私钥提供程序，错误：{Serr}。"
+    },
+    {
+      "id": "org must be specified in the API path",
+      "translation": "必须在 API 路径中指定组织"
+    },
+    {
+      "id": "user must be specified in the API path",
+      "translation": "必须在 API 路径中指定用户"
+    },
+    {
+      "id": "{Serr}",
+      "translation": "{Serr}"
+    },
+    {
+      "id": "Error checking secret {FullSecretName} in the secret manager.",
+      "translation": "在私钥管理器中检查私钥 {FullSecretName} 时出错。"
+    },
+    {
+      "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+      "translation": "在私钥管理器中检查私钥名称时返回错误的类型：{Payload}"
+    },
+    {
+      "id": "Secret {FullSecretName} does not exist in the secret manager.",
+      "translation": "私钥 {FullSecretName} 在私钥管理器中不存在。"
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -407,6 +459,10 @@
       "translation": "Docker 认证域名：{DomainName}"
     },
     {
+      "id": "unable to load docker credentials for {Domain}: {Err}",
+      "translation": "无法装入 {Domain} 的 Docker 凭证：{Err}"
+    },
+    {
       "id": "unable to find docker credentials for {Domain}",
       "translation": "找不到 {Domain} 的 Docker 凭证"
     },
@@ -427,8 +483,12 @@
       "translation": "正在拉取 {ImageName}..."
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "无法拉取 Docker 映像 {Repository____tag}。 找不到 Docker 凭证。 如果映像注册表是私有的，您可能需要运行 'docker login ...'。 错误：{Err}"
+      "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+      "translation": "无法获取 docker.io 或 {Domain} 域的 Docker 认证：{Err}"
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+      "translation": "无法拉取 Docker 映像 {Repository____tag}。 找不到 Docker 凭证。 如果映像注册表是私有的，您可能需要运行 'docker login ...'。 错误：{Err}：{LoginErr}"
     },
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
@@ -469,6 +529,30 @@
     {
       "id": "Exiting.",
       "translation": "正在退出。"
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "获取 {KeyFile} 文件的绝对路径失败。 {Err}"
+    },
+    {
+      "id": "Error parsing HORIZON_URL: {Err}",
+      "translation": "解析 HORIZON_URL 时出错：{Err}"
+    },
+    {
+      "id": "Error parsing host of the HORIZON_URL: {Err}",
+      "translation": "解析 HORIZON_URL 的主机时出错：{Err}"
+    },
+    {
+      "id": "Error parsing port of the HORIZON_URL: {Err}",
+      "translation": "解析 HORIZON_URL 的端口时出错：{Err}"
+    },
+    {
+      "id": "Unexpected port of the HORIZON_URL: {PortInt}",
+      "translation": "HORIZON_URL 的意外端口：{PortInt}"
+    },
+    {
+      "id": "The agbot url: {EnvVar}",
+      "translation": "agbot URL：{EnvVar}"
     },
     {
       "id": "Error reading HTTP response, error {Err}",
@@ -521,6 +605,22 @@
     {
       "id": "failed to marshal body for {ApiMsg}: {Err}",
       "translation": "对 {ApiMsg} 的主体进行序列化失败：{Err}"
+    },
+    {
+      "id": "HZN_AGBOT_URL is not defined",
+      "translation": "未定义 HZN_AGBOT_URL"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确，输出：{StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的 Exchange 主体响应进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的 Exchange 输出进行序列化失败：{Err}"
     },
     {
       "id": "Failed to unmarshal bytes. {Err}",
@@ -623,18 +723,6 @@
       "translation": "调用 {Service} REST API {ApiMsg} 时遇到 HTTP 错误：{Err}。 HTTP 状态：{Httpstatus}。"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确，输出：{StringbodyBytes}"
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "对来自 {ApiMsg} 的 Exchange 主体响应进行取消序列化失败：{Err}"
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "对来自 {ApiMsg} 的 Exchange 输出进行序列化失败：{Err}"
-    },
-    {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
       "translation": "读取来自 {ApiMsg} 的 Exchange 主体响应失败：{Err}"
     },
@@ -665,10 +753,6 @@
     {
       "id": "provided private key is not valid; error: {Err}",
       "translation": "提供的专用密钥无效；错误：{Err}"
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "获取 {KeyFile} 文件的绝对路径失败。 {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
@@ -741,6 +825,10 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "警告：未能解析映像路径 '{Image}'。 不会将其推送到 Docker 注册表，而只是将其按原样包括在 'deployment' 字段中。"
+    },
+    {
+      "id": "Docker pull failure: {Err}",
+      "translation": "Docker 拉取失败：{Err}"
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
@@ -843,14 +931,6 @@
       "translation": "兼容"
     },
     {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "translation": "序列化对象 {In} 时出错。 {Arg_2}"
-    },
-    {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "未能将输入转换为 PolicyCheck 对象。 {Err}"
-    },
-    {
       "id": "The given node id is empty.",
       "translation": "给定的节点标识为空。"
     },
@@ -865,10 +945,6 @@
     {
       "id": "No node found for this node id {NodeId}.",
       "translation": "找不到节点标识为 {NodeId} 的节点。"
-    },
-    {
-      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "未能找到 {TopSvcId} 的相依服务的定义。 在所有服务都处于 Exchange 中之前，无法完全评估 {PROPNODEPRIVILEGED} 的兼容性。"
     },
     {
       "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
@@ -889,6 +965,18 @@
     {
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "服务没有节点类型“cluster”的集群部署配置。"
+    },
+    {
+      "id": "Unable to create version expression from {VersionRange}. {Err}",
+      "translation": "无法从 {VersionRange} 创建版本表达式。{Err}"
+    },
+    {
+      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "translation": "从 Exchange 检索 {SDep} 的相依服务时发生错误。 {Err}"
+    },
+    {
+      "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "找不到 {TopId} 的相依服务的定义。在所有服务都处于 Exchange 中之前，无法完全评估 {PROPNODEPRIVILEGED} 的兼容性。"
     },
     {
       "id": "The PolicyCheck input cannot be null",
@@ -1055,44 +1143,16 @@
       "translation": "将部署策略与服务策略合并时发生错误。 {Err}"
     },
     {
-      "id": "The deployment policy should not be null.",
-      "translation": "部署策略不应为空。"
-    },
-    {
-      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "translation": "引用需要权限才能运行的服务时，部署策略 {Header} 的 {PROPNODEPRIVILEGED} 不得为 true。"
-    },
-    {
-      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "translation": "检索 Exchange 中的服务 {Org}/{WorkloadURL} {Version} {Arch} 及其相关服务时发生错误。 {Err}"
-    },
-    {
-      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "未能对服务 {SIdTop} 的部署配置进行序列化，错误 {Err}"
-    },
-    {
-      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "未能对服务 {SIdTop} 的集群部署配置进行序列化，错误 {Err}"
-    },
-    {
       "id": "Unable to find service definition from the input services.",
       "translation": "输入服务中找不到服务定义。"
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "无法从 {Version} 创建版本表达式。 {Err}"
+      "id": "The SecretBindingCheck input cannot be null",
+      "translation": "SecretBindingCheck 输入不得为 Null"
     },
     {
-      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "translation": "从 Exchange 检索 {SDep} 的相依服务时发生错误。 {Err}"
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "UserInputCheck 输入不得为 Null"
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "既未指定节点用户输入也未指定节点标识。"
+      "id": "Node type '{NodeType}' does not support secret binding check.",
+      "translation": "节点类型“{NodeType}”不支持私钥绑定检查。"
     },
     {
       "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
@@ -1103,8 +1163,12 @@
       "translation": "部署策略或模式中未指定任何服务版本。"
     },
     {
-      "id": "User Input Incompatible",
-      "translation": "用户输入不兼容"
+      "id": "Secret Binding Incompatible",
+      "translation": "私钥绑定不兼容"
+    },
+    {
+      "id": "Type Incompatible",
+      "translation": "类型不兼容"
     },
     {
       "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
@@ -1113,6 +1177,86 @@
     {
       "id": "Service definition not found in the input.",
       "translation": "在输入中找不到服务定义。"
+    },
+    {
+      "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+      "translation": "警告：任何服务都不需要以下私钥绑定：{ExtraneousSB}"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "部署策略或模式中找不到“arch”{NodeArch} 的服务。"
+    },
+    {
+      "id": "No services found in the deployment policy or pattern.",
+      "translation": "部署策略或模式中找不到任何服务。"
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "translation": "输入服务定义对象不得为 Null。"
+    },
+    {
+      "id": "Error verifying secret in the secret manager. {Err}",
+      "translation": "验证私钥管理器中的私钥时出错。{Err}"
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "translation": "输入服务规范对象不得为 Null。"
+    },
+    {
+      "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+      "translation": "找不到 {Org}/{URL} {Arch} {Version} 的相依服务。{Err}"
+    },
+    {
+      "id": "Secret binding for a cluster service is not supported.",
+      "translation": "不支持集群服务的私钥绑定。"
+    },
+    {
+      "id": "No secret binding found for the following service secrets: {NbArray}.",
+      "translation": "找不到以下服务私钥的私钥绑定：{NbArray}。"
+    },
+    {
+      "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "translation": "服务 {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 的私钥绑定中指定了错误的版本字符串 {ServiceVersionRange}，错误 {Err}"
+    },
+    {
+      "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+      "translation": "检查范围 {VExp} 中的版本 {SvcVersion} 时出错。{Err}"
+    },
+    {
+      "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+      "translation": "agbot URL 在检查私钥绑定时不能是空字符串。请确保已设置 HZN_AGBOT_URL。"
+    },
+    {
+      "id": "The node organization must be provided.",
+      "translation": "必须提供节点组织。"
+    },
+    {
+      "id": "Error parsing secret name in the secret binding. {Errparse}",
+      "translation": "解析私钥绑定中的私钥名称时出错。{Errparse}"
+    },
+    {
+      "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+      "translation": "在私钥管理器中检查私钥 {VaultSecretName} 时出错。{Err}"
+    },
+    {
+      "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "绑定私钥名称不能是空字符串。有效格式为：“<secretname>”（对于组织级别私钥）和“user/<username>/<secretname>”（对于用户级别私钥）。"
+    },
+    {
+      "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+      "translation": "绑定私钥名称的格式无效：{SecretName}。有效格式为：“<secretname>”（对于组织级别私钥）和“user/<username>/<secretname>”（对于用户级别私钥）。"
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "translation": "UserInputCheck 输入不得为 Null"
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "translation": "既未指定节点用户输入也未指定节点标识。"
+    },
+    {
+      "id": "User Input Incompatible",
+      "translation": "用户输入不兼容"
     },
     {
       "id": "Warning: checking node user input:  {Err}",
@@ -1125,18 +1269,6 @@
     {
       "id": "Warning: checking user input for the pattern: {Err}",
       "translation": "警告：正在检查模式的用户输入：{Err}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "translation": "部署策略或模式中找不到“arch”{NodeArch} 的服务。"
-    },
-    {
-      "id": "No services found in the deployment policy or pattern.",
-      "translation": "部署策略或模式中找不到任何服务。"
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "translation": "输入服务规范对象不得为 Null。"
     },
     {
       "id": "Error verifing user input for service {SId}. {Err}",
@@ -1153,10 +1285,6 @@
     {
       "id": "Failed to verify user input for dependent service {Id}. {Reason}",
       "translation": "验证相依服务 {Id} 的用户输入失败。 {Reason}"
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "translation": "输入服务定义对象不得为 Null。"
     },
     {
       "id": "Failed to get the service from the Exchange. {Err}",
@@ -1765,6 +1893,22 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "无法关闭 MMS API 证书专用密钥文件 {ServerKey}，错误：{Err}"
+    },
+    {
+      "id": "Unable to authenticate nil request for secrets API",
+      "translation": "无法认证针对私钥 API 的 nil 请求"
+    },
+    {
+      "id": "Unable to extract basic auth for request",
+      "translation": "无法抽取请求的基本认证"
+    },
+    {
+      "id": "unable to verify {AppKey}, error {Err}",
+      "translation": "无法验证 {AppKey}，错误 {Err}"
+    },
+    {
+      "id": "credentials for {AppKey} are not valid",
+      "translation": "{AppKey} 的凭证无效"
     },
     {
       "id": "Version_Expression: Empty string is not a valid version.",

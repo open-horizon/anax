@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/microservice"
@@ -126,6 +127,11 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 }
 
 // Given a demarshalled Service object, validate it and save it, returning any errors.
+// This function is called by 2 places:
+// 1. User pass in userinput through /service/config API (from_user is true). This one is deprecated. User
+// should call /node/userinput API instead.
+// 2. User runs 'hzn register' command, which calls /node/configstate API (from_user is false). This API
+// calls CreateService for each top level service and dependent services for the pattern case.
 func CreateService(service *Service,
 	errorhandler ErrorHandler,
 	getPatterns exchange.PatternHandler,
@@ -276,7 +282,7 @@ func CreateService(service *Service,
 
 	// make sure that the node type and the service type match
 	serviceType := sdef.GetServiceType()
-	if serviceType != exchange.SERVICE_TYPE_BOTH && nodeType != serviceType {
+	if serviceType != exchangecommon.SERVICE_TYPE_BOTH && nodeType != serviceType {
 		return errorhandler(NewTypeMismatchError(fmt.Sprintf("Type mismatch. The service %v/%v is for '%v' node type but the current node type is '%v'.", *service.Org, *service.Url, serviceType, nodeType), "service")), nil, nil
 	}
 
@@ -331,7 +337,7 @@ func CreateService(service *Service,
 			// type matches.
 			for varName, varValue := range attr.GetGenericMappings() {
 				glog.V(5).Infof(apiLogString(fmt.Sprintf("checking input variable: %v", varName)))
-				if ui := msdef.GetUserInputName(varName); ui != nil {
+				if ui := msdef.GetUserInputByName(varName); ui != nil {
 					if err := cutil.VerifyWorkloadVarTypes(varValue, ui.Type); err != nil {
 						return errorhandler(NewAPIUserInputError(fmt.Sprintf(cutil.ANAX_SVC_WRONG_TYPE+"%v", varName, cutil.FormOrgSpecUrl(*service.Url, *service.Org), err), "variables")), nil
 					}
@@ -479,9 +485,11 @@ func CreateService(service *Service,
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Complete Attr list for registration of service %v/%v: %v", *service.Org, *service.Url, attributes)))
 
-	// Save the service definition in the local database.
-	if err := persistence.SaveOrUpdateMicroserviceDef(db, msdef); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Error saving service definition %v into db: %v", *msdef, err))), nil, nil
+	// Do not create service definiton when this function is called from /service/config for passing in user input.
+	if !from_user {
+		if err := persistence.SaveOrUpdateMicroserviceDef(db, msdef); err != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("Error saving service definition %v into db: %v", *msdef, err))), nil, nil
+		}
 	}
 
 	if pDevice.Pattern == "" {
@@ -501,7 +509,7 @@ func CreateService(service *Service,
 
 		// Set max number of agreements for this service's policy.
 		maxAgreements := 1
-		if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
+		if msdef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || msdef.Sharable == exchangecommon.SERVICE_SHARING_MODE_MULTIPLE || msdef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE {
 			maxAgreements = 0 // no limites for pattern
 		}
 

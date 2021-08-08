@@ -54,7 +54,7 @@ func (c *HorizonConfig) GetFileSyncServiceAPIListen() string {
 		if filepath.IsAbs(c.Edge.FileSyncService.APIListen) {
 			return c.Edge.FileSyncService.APIListen
 		} else {
-			return path.Join(HZN_FSS_DOMAIN_SOCKET_PATH, HZN_FSS_DOMAIN_SOCKET)
+			return path.Join(getDefaultRunBase(), HZN_FSS_DOMAIN_SOCKET)
 		}
 	} else if c.Edge.FileSyncService.APIListen == "" {
 		return HZN_FSS_API_LISTEN_DEFAULT
@@ -69,7 +69,7 @@ func (c *HorizonConfig) GetFileSyncServiceAPIUnixDomainSocketPath() string {
 		if filepath.IsAbs(c.Edge.FileSyncService.APIListen) {
 			return filepath.Dir(c.Edge.FileSyncService.APIListen)
 		} else {
-			return HZN_FSS_DOMAIN_SOCKET_PATH
+			return getDefaultRunBase()
 		}
 	}
 	return ""

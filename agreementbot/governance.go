@@ -1,13 +1,18 @@
 package agreementbot
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/basicprotocol"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
 	"math"
 	"net/http"
@@ -16,21 +21,10 @@ import (
 
 func (w *AgreementBotWorker) GovernAgreements() int {
 
-	unarchived := []persistence.AFilter{persistence.UnarchivedAFilter()}
-
-	// The length of time this governance routine waits is based on several factors. The data verification check rate
-	// of any agreements that are being maintained and the default time specified in the agbot config. Assume that we
-	// start with the default and adjust as necessary. The node health check rate also applies to the amount of time
-	// this routine can wait.
-	waitTime := w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS
-
 	// This is the amount of time for the routine to wait as discovered through scanning active agreements. Node health
-	// checks and data verification checks might be skipped if they each dont have to occur every time this function
-	// wakes up. The idea is to do one scan of all agreements and do as much checking as necessary, but not more.
-	discoveredDVWaitTime := uint64(0) // Shortest data verification check rate value across all agreements.
+	// checks might be skipped if they dont have to occur every time this function wakes up. The idea is to do one scan
+	// of all agreements and do as much checking as necessary, but not more.
 	discoveredNHWaitTime := uint64(0) // Shortest node health check rate value across all agreements.
-	w.GovTiming.dvSkip = uint64(0)    // Number of times to skip data verification checks before actually doing the check.
-	w.GovTiming.nhSkip = uint64(0)    // Number of times to skip node health checks before actually doing the check.
 
 	// A filter for limiting the returned set of agreements just to those that are in progress and not yet timed out.
 	notYetFinalFilter := func() persistence.AFilter {
@@ -39,7 +33,12 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 	// Reset the updated status of the Node Health manager. This ensures that the agbot will attempt to get updated status
 	// info from the exchange. The exchange might return no updates, but at least the agbot asked for updates.
-	w.NHManager.ResetUpdateStatus()
+	if w.GovTiming.nhSkip == 0 {
+		w.NHManager.ResetUpdateStatus()
+	}
+
+	// Grab the next set of secret updates to process.
+	secretUpdates := w.secretUpdateManager.GetNextUpdateEvent()
 
 	// Look at all agreements across all protocols
 	for _, agp := range policy.AllAgreementProtocols() {
@@ -48,12 +47,12 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
 		if agreements, err := w.db.FindAgreements([]persistence.AFilter{notYetFinalFilter(), persistence.UnarchivedAFilter()}, agp); err == nil {
-			activeDataVerification := true
-			allActiveAgreements := make(map[string][]string)
 
 			// set the node orgs for the given agreement protocol
-			glog.V(5).Infof("AgreementBot Governance saving the node orgs to the node health manager for all active agreements under %v protocol.", agp)
-			w.NHManager.SetNodeOrgs(agreements, agp)
+			if w.GovTiming.nhSkip == 0 {
+				glog.V(5).Infof("AgreementBot Governance saving the node orgs to the node health manager for all active agreements under %v protocol.", agp)
+				w.NHManager.SetNodeOrgs(agreements, agp)
+			}
 
 			for _, ag := range agreements {
 
@@ -72,101 +71,6 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 						if ag.AgreementCreationTime+timeout < now {
 							// Start timing out the agreement
 							w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NOT_FINALIZED_TIMEOUT))
-						}
-					}
-
-					// Do DV check only if not skipping it this time.
-					if w.GovTiming.dvSkip == 0 {
-
-						// Check for the receipt of data in the data ingest system (if necessary)
-						if !ag.DisableDataVerificationChecks {
-
-							// Capture the data verification check rate for later
-							if discoveredDVWaitTime == 0 || (discoveredDVWaitTime != 0 && uint64(ag.DataVerificationCheckRate) < discoveredDVWaitTime) {
-								discoveredDVWaitTime = uint64(ag.DataVerificationCheckRate)
-							}
-
-							// First check to see if this agreement is just not sending data. If so, terminate the agreement.
-							now := uint64(time.Now().Unix())
-							noDataLimit := w.BaseWorker.Manager.Config.AgreementBot.NoDataIntervalS
-							if ag.DataVerificationNoDataInterval != 0 {
-								noDataLimit = uint64(ag.DataVerificationNoDataInterval)
-							}
-							if now-ag.DataVerifiedTime >= noDataLimit {
-								// No data is being received, terminate the agreement
-								glog.V(3).Infof(logString(fmt.Sprintf("cancelling agreement %v due to lack of data", ag.CurrentAgreementId)))
-								w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_DATA_RECEIVED))
-
-							} else if activeDataVerification {
-								// Otherwise make sure the device is still sending data
-								if ag.DataVerifiedTime+uint64(ag.DataVerificationCheckRate) > now {
-									// It's not time to check again
-									continue
-								} else if activeAgreements, err := GetActiveAgreements(allActiveAgreements, ag, w.BaseWorker.Manager.Config); err != nil {
-									glog.Errorf(logString(fmt.Sprintf("unable to retrieve active agreement list. Terminating data verification loop early, error: %v", err)))
-									activeDataVerification = false
-								} else if ActiveAgreementsContains(activeAgreements, ag, w.Config.AgreementBot.DVPrefix) {
-									if _, err := w.db.DataVerified(ag.CurrentAgreementId, agp); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("unable to record data verification, error: %v", err)))
-									}
-
-									if ag.DataNotificationSent == 0 {
-										// Get message address of the device from the exchange. The device ensures that the exchange is kept current.
-										// If the address happens to be invalid, that should be a temporary condition. We will keep sending until
-										// we get an ack to our verification message.
-										if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("error obtaining message target for data notification: %v", err)))
-										} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-										} else if err := protocolHandler.AgreementProtocolHandler("", "", "").NotifyDataReceipt(ag.CurrentAgreementId, mt, protocolHandler.GetSendMessage()); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("unable to send data notification, error: %v", err)))
-										}
-									}
-
-									// Check to see if it's time to send a metering notification
-									// Create Metering notification. If the policy is empty, there's nothing to do.
-									mp := policy.Meter{Tokens: ag.MeteringTokens, PerTimeUnit: ag.MeteringPerTimeUnit, NotificationIntervalS: ag.MeteringNotificationInterval}
-									if mp.IsEmpty() {
-										continue
-									} else if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent+uint64(ag.MeteringNotificationInterval)) <= now) {
-										// Grab the blockchain info from the agreement if there is any
-
-										bcType, bcName, bcOrg := protocolHandler.GetKnownBlockchain(&ag)
-										glog.V(5).Info(logString(fmt.Sprintf("metering on %v %v", bcType, bcName)))
-
-										// If we can write to the blockchain then we have all the info we need to do metering.
-										if protocolHandler.IsBlockchainWritable(bcType, bcName, bcOrg) && protocolHandler.CanSendMeterRecord(&ag) {
-											if mn, err := protocolHandler.CreateMeteringNotification(mp, &ag); err != nil {
-												glog.Errorf(logString(fmt.Sprintf("unable to create metering notification, error: %v", err)))
-											} else if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
-												glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
-											} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
-												glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-											} else if msg, err := protocolHandler.AgreementProtocolHandler(bcType, bcName, bcOrg).NotifyMetering(ag.CurrentAgreementId, mn, mt, protocolHandler.GetSendMessage()); err != nil {
-												glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
-											} else if _, err := w.db.MeteringNotification(ag.CurrentAgreementId, agp, msg); err != nil {
-												glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
-											}
-										}
-									}
-
-									// Data verification has occured. If it has been maintained for the specified duration then we can turn off the
-									// workload rollback retry checking feature.
-									if wlUsage, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("unable to find workload usage record, error: %v", err)))
-									} else if wlUsage != nil && !wlUsage.DisableRetry {
-										if wlUsage.VerifiedDurationS == 0 || (wlUsage.VerifiedDurationS != 0 && ag.DataNotificationSent != 0 && ag.DataVerifiedTime != ag.AgreementCreationTime && (ag.DataVerifiedTime > ag.DataNotificationSent) && ((ag.DataVerifiedTime - ag.DataNotificationSent) >= uint64(wlUsage.VerifiedDurationS))) {
-											glog.V(5).Infof(logString(fmt.Sprintf("disabling workload rollback for %v after %v seconds", ag.CurrentAgreementId, (ag.DataVerifiedTime - ag.DataNotificationSent))))
-											if _, err := w.db.DisableRollbackChecking(ag.DeviceId, ag.PolicyName); err != nil {
-												glog.Errorf(logString(fmt.Sprintf("unable to disable workload rollback retries, error: %v", err)))
-											}
-										}
-									}
-
-								} else if _, err := w.db.DataNotVerified(ag.CurrentAgreementId, agp); err != nil {
-									glog.Errorf(logString(fmt.Sprintf("unable to record data not verified, error: %v", err)))
-								}
-							}
 						}
 					}
 
@@ -195,25 +99,164 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 						w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_REPLY))
 					}
 				}
+
+				// If any secrets have changed, existing agreements will need to be updated with the new secrets. Check this agreement
+				// to see if it needs to be updated.
+				if secretUpdates != nil {
+
+					// Is the current agreement affected by secrets that have changed? If so, return the secrets that have changed.
+					var updatedSecrets []string
+					var newestUpdateTime uint64
+					if ag.Pattern != "" {
+						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPattern(ag.Pattern, ag.LastSecretUpdateTime)
+					} else {
+						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPolicy(ag.PolicyName, ag.LastSecretUpdateTime)
+					}
+
+					// If there are secret updates for this agreement AND the agreement has not seen these updates yet, then process them for this agreement.
+					if len(updatedSecrets) != 0 && ag.LastSecretUpdateTime < newestUpdateTime {
+
+						// Extract the consumer policy from agreement.
+						pol, err := policy.DemarshalPolicy(ag.Policy)
+						if err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to demarshal consumer policy for agreement %s, error: %v", ag.CurrentAgreementId, err)))
+						}
+
+						// Collect the updated secrets into a list of new secret bindings to send to the agent.
+						updatedBindings := make([]exchangecommon.SecretBinding, 0)
+
+						glog.V(3).Infof(logString(fmt.Sprintf("handling %s with %v for updated secrets %v, newest update time %v", ag.CurrentAgreementId, pol.SecretBinding, updatedSecrets, newestUpdateTime)))
+
+						for _, binding := range pol.SecretBinding {
+
+							// The secret details are transported within the proposal in the SecretBinding section where the secret provider secret name is
+							// replaced with the secret details.
+							sb := binding.MakeCopy()
+							sb.Secrets = make([]exchangecommon.BoundSecret, 0)
+							bindingUpdate := false
+
+							for _, bs := range binding.Secrets {
+
+								serviceSecretName, smSecretName := bs.GetBinding()
+								for _, updatedSecretName := range updatedSecrets {
+									glog.V(5).Infof(logString(fmt.Sprintf("checking secret %v against %v", updatedSecretName, bs)))
+									if smSecretName == exchange.GetId(updatedSecretName) {
+
+										// Call the secret manager plugin to get the secret details.
+										secretUser, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
+										if err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error parsing secret %s, error: %v", updatedSecretName, err)))
+											continue
+										}
+
+										details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), ag.Org, secretUser, secretName)
+										if err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
+											continue
+										}
+
+										detailBytes, err := json.Marshal(details)
+										if err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error marshalling secret details of %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
+											continue
+										}
+
+										newBS := make(exchangecommon.BoundSecret)
+										newBS[serviceSecretName] = base64.StdEncoding.EncodeToString(detailBytes)
+										sb.Secrets = append(sb.Secrets, newBS)
+										bindingUpdate = true
+
+										break
+									}
+								}
+							}
+
+							if bindingUpdate {
+								updatedBindings = append(updatedBindings, sb)
+							}
+
+						}
+
+						glog.V(5).Infof(logString(fmt.Sprintf("sending secret updates %v to the agent for %s", updatedBindings, ag.CurrentAgreementId)))
+
+						// Send the Update Agreement protocol message
+						protocolHandler.UpdateAgreement(&ag, basicprotocol.MsgUpdateTypeSecret, updatedBindings, protocolHandler)
+
+						if _, err := w.db.AgreementSecretUpdateTime(ag.CurrentAgreementId, agp, newestUpdateTime); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to save secret update time for %s, error: %v", ag.CurrentAgreementId, err)))
+						}
+
+					}
+				}
 			}
+
 		} else {
 			glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database, error: %v", err)))
 		}
 	}
 
-	// Proactively check the state of pending workload upgrades for HA devices. When the need for an upgrade is detected, one of the
-	// devices in the HA group is chosen for upgrade and the others are marked for a pending upgrade (in their workload usage record).
-	// The goal of this routine is to detect when 1 member of the group is upgraded and it's safe to start to upgrade another member.
-	//
-	// Workload usage records survive agreement cancellations. They track the current workload being run on the device. We can be certain of
-	// this because proposals from agbots to devices only contain a single workload choice.
+	// After processing all agreements, update the agbot's secret manager DB to indicate that all secrets have been processed.
+	if secretUpdates != nil {
+		for _, su := range secretUpdates.Updates {
+			glog.V(5).Infof(logString(fmt.Sprintf("updating secret DB %s/%s with time %v", su.SecretOrg, su.SecretFullName, su.SecretUpdateTime)))
 
-	// First, make a more optimized quick check to see if there is anything we need to do by looking for any workload
-	// usage records that need to be upgraded. If there are none, then there is no need to do a more exhaustive analysis of
-	// the state of the HA group. Non-HA workload usages dont have the concern about incremental workload upgrades, so they are ignored
-	// by this routine.
+			err := w.db.SetSecretUpdate(su.SecretOrg, su.SecretFullName, su.SecretUpdateTime)
+			if err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to save secret update time for %s/%s, error: %v", su.SecretOrg, su.SecretFullName, err)))
+			}
+		}
+	}
+
+	// Govern the HA partners by examining workload usage records.
+	w.governHAPartners()
+
+	// Dynamically adjust skips to account for long NH check rates.
+	if w.GovTiming.nhSkip == 0 {
+		w.GovTiming.nhSkip = calculateSkipTime(discoveredNHWaitTime, w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS)
+	} else {
+		// Decrement skip count here to prepare for next iteration
+		if w.GovTiming.nhSkip > 0 {
+			w.GovTiming.nhSkip = w.GovTiming.nhSkip - 1
+		}
+	}
+	glog.V(5).Infof(logString(fmt.Sprintf("sleeping for %v seconds, skipping node health %v time(s).", w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS, w.GovTiming.nhSkip)))
+	return int(w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS)
+
+}
+
+// Calculate wait time intervals for node health checks before we run the next agreement iteration(s). When the skip count is zero, this function
+// will get called again to recalculate the skips.
+func calculateSkipTime(nhCheckrate uint64, pgi uint64) uint64 {
+
+	var nhSkip uint64
+
+	if nhCheckrate > pgi {
+		nhSkip = uint64(math.Abs((float64(nhCheckrate) / float64(pgi)) - 1.0))
+		if nhCheckrate > 60 {
+			nhSkip = nhSkip / 2
+		}
+	}
+
+	return nhSkip
+}
+
+// Proactively check the state of pending workload upgrades for HA devices. When the need for an upgrade is detected, one of the
+// devices in the HA group is chosen for upgrade and the others are marked for a pending upgrade (in their workload usage record).
+// The goal of this routine is to detect when 1 member of the group is upgraded and it's safe to start to upgrade another member.
+//
+// Workload usage records survive agreement cancellations. They track the current workload being run on the device. We can be certain of
+// this because proposals from agbots to devices only contain a single workload choice.
+
+// First, make a more optimized quick check to see if there is anything we need to do by looking for any workload
+// usage records that need to be upgraded. If there are none, then there is no need to do a more exhaustive analysis of
+// the state of the HA group. Non-HA workload usages dont have the concern about incremental workload upgrades, so they are ignored
+// by this routine.
+
+func (w *AgreementBotWorker) governHAPartners() {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("checking for HA partners needing a workload upgrade.")))
+
+	unarchived := []persistence.AFilter{persistence.UnarchivedAFilter()}
 
 	HAPartnerUpgradeWUFilter := func() persistence.WUFilter {
 		return func(a persistence.WorkloadUsage) bool { return len(a.HAPartners) != 0 && a.PendingUpgradeTime != 0 }
@@ -221,6 +264,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 	if upgrades, err := w.db.FindWorkloadUsages([]persistence.WUFilter{HAPartnerUpgradeWUFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error searching for HA devices that need their workloads upgraded, error: %v", err)))
+		return
 	} else if len(upgrades) != 0 {
 
 		for _, wlu := range upgrades {
@@ -288,57 +332,6 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 		}
 
 	}
-
-	// Dynamically adjust wait time to account for large differential between DV check rates and NH check rates.
-	if w.GovTiming.dvSkip == 0 && w.GovTiming.nhSkip == 0 {
-		w.GovTiming.dvSkip, w.GovTiming.nhSkip, waitTime = calculateSkipTime(discoveredDVWaitTime, discoveredNHWaitTime, w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS)
-	} else {
-		// Decrement skip counts here to prepare for next iteration
-		if w.GovTiming.dvSkip > 0 {
-			w.GovTiming.dvSkip = w.GovTiming.dvSkip - 1
-		}
-		if w.GovTiming.nhSkip > 0 {
-			w.GovTiming.nhSkip = w.GovTiming.nhSkip - 1
-		}
-	}
-	glog.V(5).Infof(logString(fmt.Sprintf("sleeping for %v seconds, skipping data verification %v time(s), and skipping node health %v time(s).", waitTime, w.GovTiming.dvSkip, w.GovTiming.nhSkip)))
-	return int(waitTime)
-
-}
-
-// Calculate wait time intervals for data verification and node health checks and come up with an aggregate wait time before we run
-// the next agreement iteration(s) again. When all skip counts are zero, this function will get called again to recalculate wait and skips.
-func calculateSkipTime(dvCheckrate uint64, nhCheckrate uint64, pgi uint64) (uint64, uint64, uint64) {
-
-	var dvSkip, nhSkip, waitTime uint64
-
-	if dvCheckrate == 0 && nhCheckrate == 0 {
-		// No skips, default wait time.
-		waitTime = pgi
-	} else if cutil.Minuint64(dvCheckrate, nhCheckrate) == 0 {
-		// No skips, non-zero wait time.
-		waitTime = cutil.Maxuint64(dvCheckrate, nhCheckrate)
-		if waitTime > 60 {
-			waitTime = uint64(float64(waitTime) / 2)
-		}
-	} else {
-		// Wait time is min of check rates and skips are calculated.
-		waitTime = cutil.Minuint64(dvCheckrate, nhCheckrate)
-		// Skips are a multiple of the 2 check rates, minus 1.
-		if dvCheckrate == waitTime {
-			diffRatio := math.Abs((float64(nhCheckrate) / float64(dvCheckrate)) - 1.0)
-			nhSkip = uint64(diffRatio)
-		} else {
-			diffRatio := math.Abs((float64(dvCheckrate) / float64(nhCheckrate)) - 1.0)
-			dvSkip = uint64(diffRatio)
-		}
-		// Down scale the wait time for long times
-		if waitTime > 60 {
-			waitTime = uint64(float64(waitTime) / 2)
-		}
-	}
-
-	return dvSkip, nhSkip, waitTime
 }
 
 // This function is used to determine if a device is actively trying to make an agreement. This is important to know because

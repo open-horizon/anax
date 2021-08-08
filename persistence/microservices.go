@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/satori/go.uuid"
 	"strconv"
 	"time"
@@ -15,22 +16,6 @@ import (
 // microdevice definition table name
 const MICROSERVICE_INSTANCES = "microdevice_instances"
 const MICROSERVICE_DEFINITIONS = "microdevice_definitions"
-
-type UserInput struct {
-	Name         string `json:"name"`
-	Label        string `json:"label"`
-	Type         string `json:"type"`
-	DefaultValue string `json:"defaultValue"`
-}
-
-func NewUserInput(name string, label string, stype string, default_value string) *UserInput {
-	return &UserInput{
-		Name:         name,
-		Label:        label,
-		Type:         stype,
-		DefaultValue: default_value,
-	}
-}
 
 type WorkloadDeployment struct {
 	Deployment          string `json:"deployment"`
@@ -46,59 +31,44 @@ func NewWorkloadDeployment(deployment string, deploy_sig string) *WorkloadDeploy
 
 type HardwareMatch map[string]interface{}
 
-type ServiceDependency struct {
-	URL     string `json:"url"`
-	Org     string `json:"org"`
-	Version string `json:"version"`
-	Arch    string `json:"arch"`
-}
-
-func NewServiceDependency(url string, org string, version string, arch string) *ServiceDependency {
-	return &ServiceDependency{
-		URL:     url,
-		Org:     org,
-		Version: version,
-		Arch:    arch,
-	}
-}
-
+// It implements MicroserviceDefInterface
 type MicroserviceDefinition struct {
-	Id                           string               `json:"record_id"` // unique primary key for records
-	Owner                        string               `json:"owner"`
-	Label                        string               `json:"label"`
-	Description                  string               `json:"description"`
-	SpecRef                      string               `json:"specRef"`
-	Org                          string               `json:"organization"`
-	Version                      string               `json:"version"`
-	Arch                         string               `json:"arch"`
-	Sharable                     string               `json:"sharable"`
-	DownloadURL                  string               `json:"downloadUrl"`
-	MatchHardware                HardwareMatch        `json:"matchHardware"`
-	UserInputs                   []UserInput          `json:"userInput"`
-	Workloads                    []WorkloadDeployment `json:"workloads"`                  // Only used by old microservice definitions
-	Public                       bool                 `json:"public"`                     // Used by only services, indicates if the definition is public or not.
-	RequiredServices             []ServiceDependency  `json:"requiredServices"`           // Used only by services, the list of services that this service depends on.
-	Deployment                   string               `json:"deployment"`                 // Used only by services, the deployment configuration of the implementation packages.
-	DeploymentSignature          string               `json:"deployment_signature"`       // Used only by services, the signature of the deployment configuration.
-	ClusterDeployment            string               `json:"clusterDeployment"`          // used for cluster node type
-	ClusterDeploymentSignature   string               `json:"clusterDeploymentSignature"` // used for cluster node type
-	LastUpdated                  string               `json:"lastUpdated"`
-	Archived                     bool                 `json:"archived"`
-	Name                         string               `json:"name"`                  //the sensor_name passed in from the POST /service call
-	RequestedArch                string               `json:"requested_arch"`        //the arch from user input or from the ms referenced by a workload, it can be a synonym of the node arch.
-	UpgradeVersionRange          string               `json:"upgrade_version_range"` //the sensor_version passed in from the POST service call
-	AutoUpgrade                  bool                 `json:"auto_upgrade"`          // passed in from the POST service call
-	ActiveUpgrade                bool                 `json:"active_upgrade"`        // passed in from the POST service call
-	UpgradeStartTime             uint64               `json:"upgrade_start_time"`
-	UpgradeMsUnregisteredTime    uint64               `json:"upgrade_ms_unregistered_time"`
-	UpgradeAgreementsClearedTime uint64               `json:"upgrade_agreements_cleared_time"`
-	UpgradeExecutionStartTime    uint64               `json:"upgrade_execution_start_time"`
-	UpgradeMsReregisteredTime    uint64               `json:"upgrade_ms_reregistered_time"`
-	UpgradeFailedTime            uint64               `json:"upgrade_failed_time"`
-	UngradeFailureReason         uint64               `json:"upgrade_failure_reason"`
-	UngradeFailureDescription    string               `json:"upgrade_failure_description"`
-	UpgradeNewMsId               string               `json:"upgrade_new_ms_id"`
-	MetadataHash                 []byte               `json:"metadata_hash"` // the hash of the whole exchange.MicroserviceDefinition
+	Id                           string                             `json:"record_id"` // unique primary key for records
+	Owner                        string                             `json:"owner"`
+	Label                        string                             `json:"label"`
+	Description                  string                             `json:"description"`
+	SpecRef                      string                             `json:"specRef"`
+	Org                          string                             `json:"organization"`
+	Version                      string                             `json:"version"`
+	Arch                         string                             `json:"arch"`
+	Sharable                     string                             `json:"sharable"`
+	DownloadURL                  string                             `json:"downloadUrl"`
+	MatchHardware                HardwareMatch                      `json:"matchHardware"`
+	UserInputs                   []exchangecommon.UserInput         `json:"userInput"`
+	Workloads                    []WorkloadDeployment               `json:"workloads"`                  // Only used by old microservice definitions
+	Public                       bool                               `json:"public"`                     // Used by only services, indicates if the definition is public or not.
+	RequiredServices             []exchangecommon.ServiceDependency `json:"requiredServices"`           // Used only by services, the list of services that this service depends on.
+	Deployment                   string                             `json:"deployment"`                 // Used only by services, the deployment configuration of the implementation packages.
+	DeploymentSignature          string                             `json:"deployment_signature"`       // Used only by services, the signature of the deployment configuration.
+	ClusterDeployment            string                             `json:"clusterDeployment"`          // used for cluster node type
+	ClusterDeploymentSignature   string                             `json:"clusterDeploymentSignature"` // used for cluster node type
+	LastUpdated                  string                             `json:"lastUpdated"`
+	Archived                     bool                               `json:"archived"`
+	Name                         string                             `json:"name"`                  //the sensor_name passed in from the POST /service call
+	RequestedArch                string                             `json:"requested_arch"`        //the arch from user input or from the ms referenced by a workload, it can be a synonym of the node arch.
+	UpgradeVersionRange          string                             `json:"upgrade_version_range"` //the sensor_version passed in from the POST service call
+	AutoUpgrade                  bool                               `json:"auto_upgrade"`          // passed in from the POST service call
+	ActiveUpgrade                bool                               `json:"active_upgrade"`        // passed in from the POST service call
+	UpgradeStartTime             uint64                             `json:"upgrade_start_time"`
+	UpgradeMsUnregisteredTime    uint64                             `json:"upgrade_ms_unregistered_time"`
+	UpgradeAgreementsClearedTime uint64                             `json:"upgrade_agreements_cleared_time"`
+	UpgradeExecutionStartTime    uint64                             `json:"upgrade_execution_start_time"`
+	UpgradeMsReregisteredTime    uint64                             `json:"upgrade_ms_reregistered_time"`
+	UpgradeFailedTime            uint64                             `json:"upgrade_failed_time"`
+	UngradeFailureReason         uint64                             `json:"upgrade_failure_reason"`
+	UngradeFailureDescription    string                             `json:"upgrade_failure_description"`
+	UpgradeNewMsId               string                             `json:"upgrade_new_ms_id"`
+	MetadataHash                 []byte                             `json:"metadata_hash"` // the hash of the whole exchange.MicroserviceDefinition
 
 }
 
@@ -147,7 +117,7 @@ func (w MicroserviceDefinition) String() string {
 		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)
 }
 
-func (w MicroserviceDefinition) ShortString() string {
+func (w *MicroserviceDefinition) ShortString() string {
 	return fmt.Sprintf("Owner: %v, "+
 		"Label: %v, "+
 		"Description: %v, "+
@@ -175,6 +145,96 @@ func (w MicroserviceDefinition) ShortString() string {
 		w.Archived, w.Name, w.RequestedArch, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
 		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
 		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)
+}
+
+func (w *MicroserviceDefinition) GetKey() string {
+	return w.Id
+}
+
+func (w *MicroserviceDefinition) GetOrg() string {
+	return w.Org
+}
+
+func (w *MicroserviceDefinition) GetURL() string {
+	return w.SpecRef
+
+}
+
+func (w *MicroserviceDefinition) GetVersion() string {
+	return w.Version
+}
+
+func (w *MicroserviceDefinition) GetArch() string {
+	return w.Arch
+}
+
+func (w *MicroserviceDefinition) GetServiceType() string {
+	sType := exchangecommon.SERVICE_TYPE_DEVICE
+	if w.ClusterDeployment != "" {
+		if w.Deployment == "" {
+			sType = exchangecommon.SERVICE_TYPE_CLUSTER
+		} else {
+			sType = exchangecommon.SERVICE_TYPE_BOTH
+		}
+	}
+	return sType
+}
+
+func (w *MicroserviceDefinition) GetRequiredServices() []exchangecommon.ServiceDependency {
+	return w.RequiredServices
+}
+
+func (w *MicroserviceDefinition) GetUserInputs() []exchangecommon.UserInput {
+	return w.UserInputs
+}
+
+func (w *MicroserviceDefinition) GetDeploymentString() string {
+	return w.Deployment
+}
+
+func (w *MicroserviceDefinition) GetExtendedDeploymentString() string {
+	return w.ClusterDeployment
+}
+
+func (w *MicroserviceDefinition) IsPublic() bool {
+	return w.Public
+}
+
+func (w *MicroserviceDefinition) GetSharable() string {
+	return w.Sharable
+}
+
+func (w *MicroserviceDefinition) IsArchived() bool {
+	return w.Archived
+}
+
+func (w *MicroserviceDefinition) GetUpgradeVersionRange() string {
+	return w.UpgradeVersionRange
+}
+
+func (w *MicroserviceDefinition) GetUpgradeNewDefId() string {
+	return w.UpgradeNewMsId
+}
+
+func (w *MicroserviceDefinition) GetUpgradeStartedTime() uint64 {
+	return w.UpgradeStartTime
+}
+
+func (w *MicroserviceDefinition) GetUpgradeFailedTime() uint64 {
+	return w.UpgradeFailedTime
+}
+
+func (w *MicroserviceDefinition) GetUpgradeUngradeFailureReason() uint64 {
+	return w.UngradeFailureReason
+}
+
+func (w *MicroserviceDefinition) GetUngradeFailureDescription() string {
+	return w.UngradeFailureDescription
+}
+
+func (w *MicroserviceDefinition) Archive(db *bolt.DB) error {
+	_, err := MsDefArchived(db, w.GetKey())
+	return err
 }
 
 func (m *MicroserviceDefinition) HasDeployment() bool {
@@ -206,7 +266,7 @@ func (m *MicroserviceDefinition) NeedsUserInput() string {
 	return ""
 }
 
-func (w *MicroserviceDefinition) GetUserInputName(name string) *UserInput {
+func (w *MicroserviceDefinition) GetUserInputByName(name string) *exchangecommon.UserInput {
 	for _, ui := range w.UserInputs {
 		if ui.Name == name {
 			return &ui
@@ -517,6 +577,7 @@ func persistUpdatedMicroserviceDef(db *bolt.DB, key string, update *Microservice
 // Service/Microservice instance object
 //
 
+// It implements MicroserviceInstInterface.
 type MicroserviceInstance struct {
 	SpecRef              string                         `json:"ref_url"`
 	Org                  string                         `json:"organization"`
@@ -538,6 +599,7 @@ type MicroserviceInstance struct {
 	CurrentRetryCount    uint                           `json:"current_retry_count"`
 	RetryStartTime       uint64                         `json:"retry_start_time"`
 	EnvVars              map[string]string              `json:"env_vars"`
+	TopLevelService      bool                           `json:"top_level_service"`
 }
 
 func (w MicroserviceInstance) String() string {
@@ -560,30 +622,140 @@ func (w MicroserviceInstance) String() string {
 		"MaxRetryDuration: %v, "+
 		"CurrentRetryCount: %v, "+
 		"RetryStartTime: %v, "+
-		"EnvVars: %v",
+		"EnvVars: %v, "+
+		"TopLevelService: %v",
 		w.SpecRef, w.Org, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
 		w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc,
 		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId, w.ParentPath, w.AgreementLess,
-		w.MaxRetries, w.MaxRetryDuration, w.CurrentRetryCount, w.RetryStartTime, w.EnvVars)
+		w.MaxRetries, w.MaxRetryDuration, w.CurrentRetryCount, w.RetryStartTime, w.EnvVars, w.TopLevelService)
+}
+
+func (w *MicroserviceInstance) ShortString() string {
+	return fmt.Sprintf("SpecRef: %v, "+
+		"Org: %v, "+
+		"Version: %v, "+
+		"Arch: %v, "+
+		"InstanceId: %v, "+
+		"Archived: %v, "+
+		"InstanceCreationTime: %v, "+
+		"ExecutionStartTime: %v, "+
+		"ExecutionFailureCode: %v, "+
+		"ExecutionFailureDesc: %v, "+
+		"CleanupStartTime: %v, "+
+		"AssociatedAgreements: %v, "+
+		"MicroserviceDefId: %v, "+
+		"AgreementLess: %v, "+
+		"MaxRetries: %v, "+
+		"MaxRetryDuration: %v, "+
+		"CurrentRetryCount: %v, "+
+		"RetryStartTime: %v, "+
+		"TopLevelService: %v",
+		w.SpecRef, w.Org, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
+		w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc,
+		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId, w.AgreementLess,
+		w.MaxRetries, w.MaxRetryDuration, w.CurrentRetryCount, w.RetryStartTime, w.TopLevelService)
+}
+
+func (w *MicroserviceInstance) GetInstanceId() string {
+	return w.InstanceId
 }
 
 // create a unique name for a microservice def
 // If SpecRef is https://bluehorizon.network/microservices/network, Org is myorg, version is 2.3.1 and the instance id is "abcd1234"
 // the output string will be "myorg_bluehorizon.network-microservices-network_2.3.1_abcd1234"
-func (m MicroserviceInstance) GetKey() string {
-	return cutil.MakeMSInstanceKey(m.SpecRef, m.Org, m.Version, m.InstanceId)
+func (w *MicroserviceInstance) GetKey() string {
+	if w.TopLevelService {
+		return w.InstanceId
+	} else {
+		return cutil.MakeMSInstanceKey(w.SpecRef, w.Org, w.Version, w.InstanceId)
+	}
 }
 
-// Check if this microservice instance has a container dpeloyment.
-// If it does not, then there is no nothing to execute.
-func (m MicroserviceInstance) HasWorkload(db *bolt.DB) (bool, error) {
-	if msdef, err := FindMicroserviceDefWithKey(db, m.MicroserviceDefId); err != nil {
-		return false, err
-	} else if msdef.HasDeployment() {
-		return true, nil
-	}
+func (w *MicroserviceInstance) GetServiceDefId() string {
+	return w.MicroserviceDefId
 
-	return false, nil
+}
+
+func (w *MicroserviceInstance) GetOrg() string {
+	return w.Org
+}
+
+func (w *MicroserviceInstance) GetURL() string {
+	return w.SpecRef
+
+}
+
+func (w *MicroserviceInstance) GetVersion() string {
+	return w.Version
+}
+
+func (w *MicroserviceInstance) GetArch() string {
+	return w.Arch
+}
+
+func (w *MicroserviceInstance) IsArchived() bool {
+	return w.Archived
+}
+
+func (w *MicroserviceInstance) IsTopLevelService() bool {
+	return w.TopLevelService
+}
+
+func (w *MicroserviceInstance) IsAgreementLess() bool {
+	return w.AgreementLess
+}
+
+func (w *MicroserviceInstance) GetEnvVars() map[string]string {
+	return w.EnvVars
+}
+
+func (w *MicroserviceInstance) GetAssociatedAgreements() []string {
+	return w.AssociatedAgreements
+}
+
+func (w *MicroserviceInstance) GetParentPath() [][]ServiceInstancePathElement {
+	return w.ParentPath
+}
+
+func (w *MicroserviceInstance) GetInstanceCreationTime() uint64 {
+	return w.InstanceCreationTime
+}
+
+func (w *MicroserviceInstance) GetExecutionStartTime() uint64 {
+	return w.ExecutionStartTime
+}
+
+func (w *MicroserviceInstance) GetExecutionFailureCode() uint {
+	return w.ExecutionFailureCode
+}
+
+func (w *MicroserviceInstance) GetExecutionFailureDesc() string {
+	return w.ExecutionFailureDesc
+}
+
+func (w *MicroserviceInstance) GetCleanupStartTime() uint64 {
+	return w.CleanupStartTime
+}
+
+func (w *MicroserviceInstance) GetMaxRetries() uint {
+	return w.MaxRetries
+}
+
+func (w *MicroserviceInstance) GetMaxRetryDuration() uint {
+	return w.MaxRetryDuration
+}
+
+func (w *MicroserviceInstance) GetCurrentRetryCount() uint {
+	return w.CurrentRetryCount
+}
+
+func (w *MicroserviceInstance) GetRetryStartTime() uint64 {
+	return w.RetryStartTime
+}
+
+func (w *MicroserviceInstance) Archive(db *bolt.DB) error {
+	_, err := ArchiveMicroserviceInstance(db, w.GetKey())
+	return err
 }
 
 // Check if this microservice instance has the given service as a direct parent.
@@ -596,6 +768,18 @@ func (m *MicroserviceInstance) HasDirectParent(parent *ServiceInstancePathElemen
 		}
 	}
 	return false
+}
+
+// Check if this microservice instance has a container dpeloyment.
+// If it does not, then there is no nothing to execute.
+func (m MicroserviceInstance) HasWorkload(db *bolt.DB) (bool, error) {
+	if msdef, err := FindMicroserviceDefWithKey(db, m.MicroserviceDefId); err != nil {
+		return false, err
+	} else if msdef.HasDeployment() {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // It returns a an array of direct parents for this service instance.
@@ -624,7 +808,7 @@ func (m *MicroserviceInstance) GetDirectParents() []ServiceInstancePathElement {
 }
 
 // create a new microservice instance and save it to db.
-func NewMicroserviceInstance(db *bolt.DB, ref_url string, org string, version string, msdef_id string, dependencyPath []ServiceInstancePathElement) (*MicroserviceInstance, error) {
+func NewMicroserviceInstance(db *bolt.DB, ref_url string, org string, version string, msdef_id string, dependencyPath []ServiceInstancePathElement, topLevel bool) (*MicroserviceInstance, error) {
 
 	if ref_url == "" || org == "" || version == "" {
 		return nil, errors.New("Microservice ref url id, org or version is empty, cannot persist")
@@ -660,30 +844,10 @@ func NewMicroserviceInstance(db *bolt.DB, ref_url string, org string, version st
 		MaxRetryDuration:     0,
 		CurrentRetryCount:    1, // the original execution is counted as the first one.
 		RetryStartTime:       0,
+		TopLevelService:      topLevel,
 	}
 
 	return saveMicroserviceInstance(db, new_inst)
-}
-
-// Create an microservice instance object out of an agreement. The object is not be saved into the db.
-func AgreementToMicroserviceInstance(ag EstablishedAgreement, msdef_id string) *MicroserviceInstance {
-	sipe := NewServiceInstancePathElement(ag.RunningWorkload.URL, ag.RunningWorkload.Org, ag.RunningWorkload.Version)
-	return &MicroserviceInstance{
-		SpecRef:              ag.RunningWorkload.URL,
-		Org:                  ag.RunningWorkload.Org,
-		Version:              ag.RunningWorkload.Version,
-		Arch:                 ag.RunningWorkload.Arch,
-		InstanceId:           ag.CurrentAgreementId,
-		Archived:             ag.Archived,
-		InstanceCreationTime: ag.AgreementCreationTime,
-		ExecutionStartTime:   ag.AgreementExecutionStartTime,
-		ExecutionFailureCode: uint(ag.TerminatedReason),
-		ExecutionFailureDesc: ag.TerminatedDescription,
-		CleanupStartTime:     ag.AgreementTerminatedTime,
-		AssociatedAgreements: []string{ag.CurrentAgreementId},
-		MicroserviceDefId:    msdef_id,
-		ParentPath:           [][]ServiceInstancePathElement{[]ServiceInstancePathElement{*sipe}},
-	}
 }
 
 // find the microservice instance from the db
@@ -732,6 +896,9 @@ func FindMicroserviceInstanceWithKey(db *bolt.DB, key string) (*MicroserviceInst
 
 		if b := tx.Bucket([]byte(MICROSERVICE_INSTANCES)); b != nil {
 			v := b.Get([]byte(key))
+			if v == nil {
+				return nil
+			}
 
 			var ms MicroserviceInstance
 
@@ -781,6 +948,10 @@ func UnarchivedMIFilter() MIFilter {
 
 func NotCleanedUpMIFilter() MIFilter {
 	return func(e MicroserviceInstance) bool { return e.CleanupStartTime == 0 }
+}
+
+func ServiceDefMIFilter(msdefId string) MIFilter {
+	return func(e MicroserviceInstance) bool { return e.MicroserviceDefId == msdefId }
 }
 
 // find the microservice instance from the db
