@@ -7420,6 +7420,31 @@
             "fuzzy": true
         },
         {
+            "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+            "message": "Malformed URL: {UrlPath}. {ErrUrl}",
+            "translation": "Malformed URL: {UrlPath}. {ErrUrl}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "UrlPath",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "urlPath"
+                },
+                {
+                    "id": "ErrUrl",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "errUrl"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
             "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
             "translation": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
@@ -9962,6 +9987,73 @@
             "fuzzy": true
         },
         {
+            "id": "Failed to marshal deps: {Err}",
+            "message": "Failed to marshal deps: {Err}",
+            "translation": "Failed to marshal deps: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to unmarshal deps: {Err}",
+            "message": "Failed to unmarshal deps: {Err}",
+            "translation": "Failed to unmarshal deps: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
+            "message": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
+            "translation": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SecName",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "secName"
+                },
+                {
+                    "id": "SvcName",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "svcName"
+                },
+                {
+                    "id": "SERVICESTARTCOMMAND",
+                    "string": "%[3]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "SERVICE_START_COMMAND"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
             "message": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
             "translation": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
@@ -12171,6 +12263,48 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "name"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to list docker networks, error {Err}",
+            "message": "unable to list docker networks, error {Err}",
+            "translation": "unable to list docker networks, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to remove docker network {Name}, error {Err}",
+            "message": "unable to remove docker network {Name}, error {Err}",
+            "translation": "unable to remove docker network {Name}, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "name"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
                 }
             ],
             "fuzzy": true
@@ -15926,6 +16060,48 @@
             "fuzzy": true
         },
         {
+            "id": "service id does not exist in the Exchange: {SvcOrg}/{SvcId}",
+            "message": "service id does not exist in the Exchange: {SvcOrg}/{SvcId}",
+            "translation": "service id does not exist in the Exchange: {SvcOrg}/{SvcId}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SvcOrg",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "svcOrg"
+                },
+                {
+                    "id": "SvcId",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "svcId"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "failed to marshal 'hzn exchange service listnode' output: {Err}",
+            "message": "failed to marshal 'hzn exchange service listnode' output: {Err}",
+            "translation": "failed to marshal 'hzn exchange service listnode' output: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "user '{TrimPrefixtheUser_}' not found in org {Org}",
             "message": "user '{TrimPrefixtheUser_}' not found in org {Org}",
             "translation": "user '{TrimPrefixtheUser_}' not found in org {Org}",
@@ -17957,6 +18133,23 @@
             "fuzzy": true
         },
         {
+            "id": "Registration failed because {Matches0}",
+            "message": "Registration failed because {Matches0}",
+            "translation": "Registration failed because {Matches0}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Matches0",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "matches[0]"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
             "message": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
             "translation": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
@@ -19377,6 +19570,40 @@
             "fuzzy": true
         },
         {
+            "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
+            "message": "Secret \"{SecretName}\" successfully added to the secrets manager.",
+            "translation": "Secret \"{SecretName}\" successfully added to the secrets manager.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SecretName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "secretName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
+            "message": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
+            "translation": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SecretName",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "secretName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Bad request, secret name \"{SecretName}\" invalid.",
             "message": "Bad request, secret name \"{SecretName}\" invalid.",
             "translation": "Bad request, secret name \"{SecretName}\" invalid.",
@@ -20108,6 +20335,13 @@
             "fuzzy": true
         },
         {
+            "id": "Verifying data with digital signature....",
+            "message": "Verifying data with digital signature....",
+            "translation": "Verifying data with digital signature....",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Failed to verify data: {Error}",
             "message": "Failed to verify data: {Error}",
             "translation": "Failed to verify data: {Error}",
@@ -20122,6 +20356,13 @@
                     "expr": "err.Error()"
                 }
             ],
+            "fuzzy": true
+        },
+        {
+            "id": "Verifying digital signature is done.",
+            "message": "Verifying digital signature is done.",
+            "translation": "Verifying digital signature is done.",
+            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
@@ -20188,6 +20429,27 @@
                     "expr": "fileName"
                 }
             ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+            "message": "Failed to verify digital signature because the hashAlgorithm is empty",
+            "translation": "Failed to verify digital signature because the hashAlgorithm is empty",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to verify digital signature because the publicKey string is empty",
+            "message": "Failed to verify digital signature because the publicKey string is empty",
+            "translation": "Failed to verify digital signature because the publicKey string is empty",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to verify digital signature because the signature string is empty",
+            "message": "Failed to verify digital signature because the signature string is empty",
+            "translation": "Failed to verify digital signature because the signature string is empty",
+            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
@@ -20632,6 +20894,13 @@
                     "expr": "err"
                 }
             ],
+            "fuzzy": true
+        },
+        {
+            "id": "Digital sign finished.",
+            "message": "Digital sign finished.",
+            "translation": "Digital sign finished.",
+            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
@@ -22213,6 +22482,13 @@
                     "expr": "err"
                 }
             ],
+            "fuzzy": true
+        },
+        {
+            "id": "Backing up eventlogs...",
+            "message": "Backing up eventlogs...",
+            "translation": "Backing up eventlogs...",
+            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
