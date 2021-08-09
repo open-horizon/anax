@@ -51,6 +51,10 @@
       "translation": "Wrong organization id, user id or password."
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Exchange user {Key} is not in the correct format, should be org/username."
+    },
+    {
       "id": "Internal server error",
       "translation": "Internal server error"
     },
@@ -61,6 +65,10 @@
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
       "translation": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "Secret name must be provided"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -75,20 +83,56 @@
       "translation": "Request body parse error, {Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "Unable to access secrets provider, error: {Serr}."
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\""
     },
     {
-      "id": "org must be specified in the API path",
-      "translation": "org must be specified in the API path"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\""
     },
     {
-      "id": "user must be specified in the API path",
-      "translation": "user must be specified in the API path"
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "Unable to read the vault response: {Error}"
     },
     {
-      "id": "{Serr}",
-      "translation": "{Serr}"
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "Unable to parse the vault response \"{Response}\": {Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider."
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider."
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "Secrets provider received a bad request, please check all the provided inputs."
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "Response: {Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "No secret(s) found in organization \"{Org}\""
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "No secret(s) found under secret name \"{SecretName}\""
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider."
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "translation": "Organization must be specified in the API path"
+    },
+    {
+      "id": "User must be specified in the API path",
+      "translation": "User must be specified in the API path"
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -1979,12 +2023,16 @@
       "translation": "The organization of the service that should be resumed."
     },
     {
-      "id": "The name of the service that should be resumed.",
-      "translation": "The name of the service that should be resumed."
+      "id": "The name of the service that should be resumed. If omitted, all the services for the organization will be resumed.",
+      "translation": "The name of the service that should be resumed. If omitted, all the services for the organization will be resumed."
     },
     {
-      "id": "Change the configuration state to 'suspend' for a service.",
-      "translation": "Change the configuration state to 'suspend' for a service."
+      "id": "The version of the service that should be resumed. If omitted, all the versions for this service will be resumed.",
+      "translation": "The version of the service that should be resumed. If omitted, all the versions for this service will be resumed."
+    },
+    {
+      "id": "Change the configuration state to 'suspend' for a service. Parent and child dependencies of the suspended service will be stopped until the service is resumed.",
+      "translation": "Change the configuration state to 'suspend' for a service. Parent and child dependencies of the suspended service will be stopped until the service is resumed."
     },
     {
       "id": "Suspend all registerd services.",
@@ -1995,8 +2043,12 @@
       "translation": "The organization of the service that should be suspended."
     },
     {
-      "id": "The name of the service that should be suspended.",
-      "translation": "The name of the service that should be suspended."
+      "id": "The name of the service that should be suspended. If omitted, all the services for the organization will be suspended.",
+      "translation": "The name of the service that should be suspended. If omitted, all the services for the organization will be suspended."
+    },
+    {
+      "id": "The version of the service that should be suspended. If omitted, all the versions for this service will be suspended.",
+      "translation": "The version of the service that should be suspended. If omitted, all the versions for this service will be suspended."
     },
     {
       "id": "Show the container logs for a service.",
@@ -3835,6 +3887,30 @@
       "translation": "The input variables to be set."
     },
     {
+      "id": "A list of secret bindings for the secret names defined in the services, listed by service.",
+      "translation": "A list of secret bindings for the secret names defined in the services, listed by service."
+    },
+    {
+      "id": "The service version range.",
+      "translation": "The service version range."
+    },
+    {
+      "id": "The secret bindings.",
+      "translation": "The secret bindings."
+    },
+    {
+      "id": "The valid formats for secret provider secret names are:",
+      "translation": "The valid formats for secret provider secret names are:"
+    },
+    {
+      "id": "'<secretname>' for organization level secret.",
+      "translation": "'<secretname>' for organization level secret."
+    },
+    {
+      "id": "'user/<username>/<secretname>' for user level secret.",
+      "translation": "'user/<username>/<secretname>' for user level secret."
+    },
+    {
       "id": "Flags -s and -l are mutually exclusive.",
       "translation": "Flags -s and -l are mutually exclusive."
     },
@@ -4315,8 +4391,8 @@
       "translation": "service '{Service}' not found in org {SvcOrg}"
     },
     {
-      "id": "Ignoring -f because the clusterDepolyment attribute is empty for this service.",
-      "translation": "Ignoring -f because the clusterDepolyment attribute is empty for this service."
+      "id": "Ignoring -f because the clusterDeployment attribute is empty for this service.",
+      "translation": "Ignoring -f because the clusterDeployment attribute is empty for this service."
     },
     {
       "id": "Flags -I and -P are mutually exclusive.",
@@ -5159,12 +5235,24 @@
       "translation": "Currently, there are no errors recorded in the node's event log."
     },
     {
-      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy is compatible.",
-      "translation": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy is compatible."
+      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy are compatible.",
+      "translation": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy are compatible."
     },
     {
-      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.",
-      "translation": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible."
+      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern are compatible.",
+      "translation": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern are compatible."
+    },
+    {
+      "id": "Command output:",
+      "translation": "Command output:"
+    },
+    {
+      "id": "Using the 'hzn deploycheck userinput -p' command to verify that node, service configuration and pattern are compatible.",
+      "translation": "Using the 'hzn deploycheck userinput -p' command to verify that node, service configuration and pattern are compatible."
+    },
+    {
+      "id": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.",
+      "translation": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify."
     },
     {
       "id": "{Format2006_01_02_150405}: {Message}",
@@ -5275,16 +5363,24 @@
       "translation": "Must specify either -f or --secretDetail."
     },
     {
+      "id": "Incorrect secret name given: {SecretName}",
+      "translation": "Incorrect secret name given: {SecretName}"
+    },
+    {
       "id": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?",
       "translation": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?"
     },
     {
-      "id": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\".",
-      "translation": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\"."
+      "id": "Bad request, secret name \"{SecretName}\" invalid.",
+      "translation": "Bad request, secret name \"{SecretName}\" invalid."
     },
     {
-      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete.",
-      "translation": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete."
+      "id": "Permission denied, user \"{User}\" cannot access \"{SecretName}\".",
+      "translation": "Permission denied, user \"{User}\" cannot access \"{SecretName}\"."
+    },
+    {
+      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to remove.",
+      "translation": "Secret \"{SecretName}\" not found in the secrets manager, nothing to remove."
     },
     {
       "id": "Vault component not found in the management hub.",
@@ -5355,12 +5451,20 @@
       "translation": "all the registered services"
     },
     {
-      "id": "service {ServiceOrg}/{ServiceUrl}",
-      "translation": "service {ServiceOrg}/{ServiceUrl}"
+      "id": "service {ServiceOrg}/{ServiceUrl} version {ServiceVer}",
+      "translation": "service {ServiceOrg}/{ServiceUrl} version {ServiceVer}"
+    },
+    {
+      "id": "all the versions for service {ServiceOrg}/{ServiceUrl}",
+      "translation": "all the versions for service {ServiceOrg}/{ServiceUrl}"
     },
     {
       "id": "all the registered services from organization {ServiceOrg}",
       "translation": "all the registered services from organization {ServiceOrg}"
+    },
+    {
+      "id": "Please specify the service name for version {ServiceVer}.",
+      "translation": "Please specify the service name for version {ServiceVer}."
     },
     {
       "id": "Please specify the organization for service {ServiceUrl}.",
@@ -5379,12 +5483,24 @@
       "translation": "Service suspending request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes."
     },
     {
+      "id": "Error returned suspending the service: {RespBody}",
+      "translation": "Error returned suspending the service: {RespBody}"
+    },
+    {
+      "id": "Error: {Err}",
+      "translation": "Error: {Err}"
+    },
+    {
       "id": "Resuming {Msgpart} ...",
       "translation": "Resuming {Msgpart} ..."
     },
     {
       "id": "Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
       "translation": "Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes."
+    },
+    {
+      "id": "Error returned resuming the service: {RespBody}",
+      "translation": "Error returned resuming the service: {RespBody}"
     },
     {
       "id": "failed to marshal 'hzn status -l' output: {Err}",

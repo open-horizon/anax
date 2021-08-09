@@ -123,6 +123,10 @@
       "translation": "Wrong organization id, user id or password."
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Exchange user {Key} is not in the correct format, should be org/username."
+    },
+    {
       "id": "Internal server error",
       "translation": "Internal server error"
     },
@@ -133,6 +137,10 @@
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
       "translation": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "Secret name must be provided"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -147,20 +155,56 @@
       "translation": "Request body parse error, {Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "Unable to access secrets provider, error: {Serr}."
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\""
     },
     {
-      "id": "org must be specified in the API path",
-      "translation": "org must be specified in the API path"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\""
     },
     {
-      "id": "user must be specified in the API path",
-      "translation": "user must be specified in the API path"
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "Unable to read the vault response: {Error}"
     },
     {
-      "id": "{Serr}",
-      "translation": "{Serr}"
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "Unable to parse the vault response \"{Response}\": {Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider."
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider."
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "Secrets provider received a bad request, please check all the provided inputs."
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "Response: {Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "No secret(s) found in organization \"{Org}\""
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "No secret(s) found under secret name \"{SecretName}\""
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider."
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "translation": "Organization must be specified in the API path"
+    },
+    {
+      "id": "User must be specified in the API path",
+      "translation": "User must be specified in the API path"
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -1521,6 +1565,10 @@
     {
       "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
       "translation": "Error getting service definitions {Arg_1} from db. {Arg_2}"
+    },
+    {
+      "id": "Error retrieving all service definitions from db. {Arg_1}",
+      "translation": "Error retrieving all service definitions from db. {Arg_1}"
     },
     {
       "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
