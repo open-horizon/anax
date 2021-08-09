@@ -3716,6 +3716,31 @@
             "fuzzy": true
         },
         {
+            "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+            "message": "Malformed URL: {UrlPath}. {ErrUrl}",
+            "translation": "Malformed URL: {UrlPath}. {ErrUrl}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "UrlPath",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "urlPath"
+                },
+                {
+                    "id": "ErrUrl",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "errUrl"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
             "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
             "translation": "Uploading: {Float32totalSent__float32bodyLen__100} {}",

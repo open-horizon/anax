@@ -751,6 +751,10 @@
       "translation": "Failed to get file info: {Err}"
     },
     {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "Malformed URL: {UrlPath}. {ErrUrl}"
+    },
+    {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "translation": "Uploading: {Float32totalSent__float32bodyLen__100} {}"
     },

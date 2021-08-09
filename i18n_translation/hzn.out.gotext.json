@@ -2731,6 +2731,10 @@
       "translation": "Failed to get file info: {Err}"
     },
     {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "Malformed URL: {UrlPath}. {ErrUrl}"
+    },
+    {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "translation": "Uploading: {Float32totalSent__float32bodyLen__100} {}"
     },
@@ -3275,6 +3279,18 @@
       "translation": "Pattern for $SERVICE_NAME"
     },
     {
+      "id": "Failed to marshal deps: {Err}",
+      "translation": "Failed to marshal deps: {Err}"
+    },
+    {
+      "id": "Failed to unmarshal deps: {Err}",
+      "translation": "Failed to unmarshal deps: {Err}"
+    },
+    {
+      "id": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
+      "translation": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command."
+    },
+    {
       "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
       "translation": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}"
     },
@@ -3677,6 +3693,14 @@
     {
       "id": "Created network {Name}",
       "translation": "Created network {Name}"
+    },
+    {
+      "id": "unable to list docker networks, error {Err}",
+      "translation": "unable to list docker networks, error {Err}"
+    },
+    {
+      "id": "unable to remove docker network {Name}, error {Err}",
+      "translation": "unable to remove docker network {Name}, error {Err}"
     },
     {
       "id": "invalid image format: {Image}",
@@ -4551,6 +4575,14 @@
       "translation": "error decoding the cluster deployment configuration: {Err}"
     },
     {
+      "id": "service id does not exist in the Exchange: {SvcOrg}/{SvcId}",
+      "translation": "service id does not exist in the Exchange: {SvcOrg}/{SvcId}"
+    },
+    {
+      "id": "failed to marshal 'hzn exchange service listnode' output: {Err}",
+      "translation": "failed to marshal 'hzn exchange service listnode' output: {Err}"
+    },
+    {
       "id": "user '{TrimPrefixtheUser_}' not found in org {Org}",
       "translation": "user '{TrimPrefixtheUser_}' not found in org {Org}"
     },
@@ -5043,6 +5075,10 @@
       "translation": "Call to {Resource} timed out."
     },
     {
+      "id": "Registration failed because {Matches0}",
+      "translation": "Registration failed because {Matches0}"
+    },
+    {
       "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "translation": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again"
     },
@@ -5371,6 +5407,14 @@
       "translation": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?"
     },
     {
+      "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
+      "translation": "Secret \"{SecretName}\" successfully added to the secrets manager."
+    },
+    {
+      "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
+      "translation": "Secret \"{SecretName}\" successfully deleted from the secrets manager."
+    },
+    {
       "id": "Bad request, secret name \"{SecretName}\" invalid.",
       "translation": "Bad request, secret name \"{SecretName}\" invalid."
     },
@@ -5527,8 +5571,16 @@
       "translation": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}"
     },
     {
+      "id": "Verifying data with digital signature....",
+      "translation": "Verifying data with digital signature...."
+    },
+    {
       "id": "Failed to verify data: {Error}",
       "translation": "Failed to verify data: {Error}"
+    },
+    {
+      "id": "Verifying digital signature is done.",
+      "translation": "Verifying digital signature is done."
     },
     {
       "id": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}, err: {Err}",
@@ -5537,6 +5589,18 @@
     {
       "id": "Data of object {ObjId} saved to file {FileName}",
       "translation": "Data of object {ObjId} saved to file {FileName}"
+    },
+    {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "Failed to verify digital signature because the hashAlgorithm is empty"
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "Failed to verify digital signature because the publicKey string is empty"
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "translation": "Failed to verify digital signature because the signature string is empty"
     },
     {
       "id": "must specify exchange credentials to access the model management service.",
@@ -5721,6 +5785,10 @@
     {
       "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
       "translation": "failed to digital sign the file {ObjFile}, Error: {Err}"
+    },
+    {
+      "id": "Digital sign finished.",
+      "translation": "Digital sign finished."
     },
     {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
@@ -6085,6 +6153,10 @@
     {
       "id": "Error pruning docker networks. {Err}",
       "translation": "Error pruning docker networks. {Err}"
+    },
+    {
+      "id": "Backing up eventlogs...",
+      "translation": "Backing up eventlogs..."
     },
     {
       "id": "cannot marshal eventlogs from local anax DB, eventlogs will not be saved",
