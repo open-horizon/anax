@@ -105,11 +105,13 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 		if objectMeta.HashAlgorithm != "" && objectMeta.PublicKey != "" && objectMeta.Signature != "" {
 			// verify data
 			//dataReader := bytes.NewReader(data)
-			msgPrinter.Println("Verifying data with digital signature....")
+			msgPrinter.Printf("Verifying data with digital signature....")
+			msgPrinter.Println()
 			if verified, err = VerifyDataSig(data, objectMeta.PublicKey, objectMeta.Signature, objectMeta.HashAlgorithm, fileName); !verified {
 				cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to verify data: %s", err.Error()))
 			}
-			msgPrinter.Println("Verifying digital signature is done.")
+			msgPrinter.Printf("Verifying digital signature is done.")
+			msgPrinter.Println()
 		}
 
 	}
@@ -134,11 +136,11 @@ func VerifyDataSig(dataReader io.Reader, publicKey string, signature string, has
 	msgPrinter := i18n.GetMessagePrinter()
 
 	if hashAlgo == "" {
-		return false, errors.New(msgPrinter.Sprintln("Failed to verify digital signature because the hashAlgorithm is empty"))
+		return false, errors.New(msgPrinter.Sprintf("Failed to verify digital signature because the hashAlgorithm is empty"))
 	} else if publicKey == "" {
-		return false, errors.New(msgPrinter.Sprintln("Failed to verify digital signature because the publicKey string is empty"))
+		return false, errors.New(msgPrinter.Sprintf("Failed to verify digital signature because the publicKey string is empty"))
 	} else if signature == "" {
-		return false, errors.New(msgPrinter.Sprintln("Failed to verify digital signature because the signature string is empty"))
+		return false, errors.New(msgPrinter.Sprintf("Failed to verify digital signature because the signature string is empty"))
 	}
 
 	if publicKeyBytes, err := base64.StdEncoding.DecodeString(publicKey); err != nil {

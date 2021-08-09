@@ -696,6 +696,9 @@ type ServiceNode struct {
 
 // List the nodes that a service is running on.
 func ListServiceNodes(org, userPw, svcId, nodeOrg string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	//check for ExchangeUrl early on
 	var exchUrl = cliutils.GetExchangeUrl()
 
@@ -712,7 +715,7 @@ func ListServiceNodes(org, userPw, svcId, nodeOrg string) {
 	var services exchange.GetServicesResponse
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcOrg+"/services"+cliutils.AddSlash(svcId), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &services)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, fmt.Sprintf("service id does not exist in the Exchange: %v/%v", svcOrg, svcId))
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("service id does not exist in the Exchange: %v/%v", svcOrg, svcId))
 	} else {
 		// extract org id, service url, version, and arch from Exchange
 		var svcNode ServiceNode
@@ -731,7 +734,7 @@ func ListServiceNodes(org, userPw, svcId, nodeOrg string) {
 		} else {
 			jsonBytes, err := json.MarshalIndent(nodes, "", cliutils.JSON_INDENT)
 			if err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, fmt.Sprintf("failed to marshal 'hzn exchange service listnode' output: %v", err))
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service listnode' output: %v", err))
 			}
 			fmt.Printf("%s\n", jsonBytes)
 		}

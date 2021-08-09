@@ -347,7 +347,8 @@ func backupEventLogs() error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	msgPrinter.Println("Backing up eventlogs...")
+	msgPrinter.Printf("Backing up eventlogs...")
+	msgPrinter.Println()
 
 	// get the eventlog from anax
 	elogs := make([]persistence.EventLogRaw, 0)

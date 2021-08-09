@@ -869,17 +869,19 @@ func CreateNetwork(client *docker.Client, name string) (*docker.Network, error) 
 }
 
 func RemoveNetwork(client *docker.Client, name string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Remove named network
 	networks, err := client.ListNetworks()
 	if err != nil {
-		return errors.New(fmt.Sprintf("unable to list docker networks, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to list docker networks, error %v", err))
 	}
 
 	for _, net := range networks {
 		if net.Name == name {
 			if err := client.RemoveNetwork(net.ID); err != nil {
-				return errors.New(fmt.Sprintf("unable to remove docker network %v, error %v", name, err))
+				return errors.New(msgPrinter.Sprintf("unable to remove docker network %v, error %v", name, err))
 			} else {
 				return nil
 			}
@@ -913,6 +915,9 @@ func GetDevWorkingDirectory() string {
 // It is used by "hzn dev service new" when the specRef is an empty string.
 // This function generates a service specRef and version from the image name provided by the user.
 func GetServiceSpecFromImage(image string) (string, string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	if image == "" {
 		return "", "", nil
 	}
@@ -923,7 +928,7 @@ func GetServiceSpecFromImage(image string) (string, string, error) {
 	// parse the image
 	_, path, tag, _ := cutil.ParseDockerImagePath(image)
 	if path == "" {
-		return "", "", errors.New(fmt.Sprintf("invalid image format: %v", image))
+		return "", "", errors.New(msgPrinter.Sprintf("invalid image format: %v", image))
 	} else {
 		// get last part as the service ref
 		s := strings.Split(path, "/")

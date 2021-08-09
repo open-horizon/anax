@@ -205,7 +205,8 @@ func SecretAdd(org, credToUse, secretName, secretFile, secretKey, secretDetail s
 
 	// output success or failure
 	if retCode == 201 {
-		fmt.Printf("Secret \"%s\" successfully added to the secrets manager.\n", secretName)
+		msgPrinter.Printf("Secret \"%s\" successfully added to the secrets manager.", secretName)
+		msgPrinter.Println()
 	} else if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 503 {
 		respString, _ := strconv.Unquote(string(resp2))
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, respString)
@@ -232,7 +233,8 @@ func SecretRemove(org, credToUse, secretName string) {
 
 	// output success or failure
 	if retCode == 204 {
-		fmt.Printf("Secret \"%v\" successfully deleted from the secrets manager.\n", secretName)
+		msgPrinter.Printf("Secret \"%v\" successfully deleted from the secrets manager.", secretName)
+		msgPrinter.Println()
 	} else if retCode == 400 {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Bad request, secret name \"%s\" invalid.", secretName))
 	} else if retCode == 401 || retCode == 403 {
