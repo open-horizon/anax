@@ -3,10 +3,6 @@ package main
 
 import (
 	"flag"
-	"os"
-	"runtime"
-	"strings"
-
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
@@ -37,6 +33,9 @@ import (
 	"github.com/open-horizon/anax/version"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/client-go/rest"
+	"os"
+	"runtime"
+	"strings"
 )
 
 func main() {
@@ -686,6 +685,7 @@ Environment Variables:
 	smSecretAddDetail := smSecretAddCmd.Flag("secretDetail", msgPrinter.Sprintf("The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.")).Short('d').String()
 	smSecretAddOverwrite := smSecretAddCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.")).Short('O').Bool()
 	smSecretRemoveCmd := smSecretCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a secret in the secrets manager.")).Alias("rm").Alias("remove")
+	smSecretRemoveForce := smSecretRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	smSecretRemoveName := smSecretRemoveCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret to be removed from the secrets manager.")).Required().String()
 	smSecretReadCmd := smSecretCmd.Command("read", msgPrinter.Sprintf("Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation."))
 	smSecretReadName := smSecretReadCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret to read in the secrets manager.")).Required().String()
@@ -1167,7 +1167,7 @@ Environment Variables:
 	case smSecretAddCmd.FullCommand():
 		secret_manager.SecretAdd(*smOrg, *smUserPw, *smSecretAddName, *smSecretAddFile, *smSecretAddKey, *smSecretAddDetail, *smSecretAddOverwrite)
 	case smSecretRemoveCmd.FullCommand():
-		secret_manager.SecretRemove(*smOrg, *smUserPw, *smSecretRemoveName)
+		secret_manager.SecretRemove(*smOrg, *smUserPw, *smSecretRemoveName, *smSecretRemoveForce)
 	case smSecretReadCmd.FullCommand():
 		secret_manager.SecretRead(*smOrg, *smUserPw, *smSecretReadName)
 	}
