@@ -214,13 +214,18 @@ func SecretAdd(org, credToUse, secretName, secretFile, secretKey, secretDetail s
 }
 
 // Removes a secret in the secrets manager. If the secret does not exist, an error (fatal) is raised
-func SecretRemove(org, credToUse, secretName string) {
+func SecretRemove(org, credToUse, secretName string, forceRemoval bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// get rid of trailing / from secret name
 	if strings.HasSuffix(secretName, "/") {
 		secretName = secretName[:len(secretName)-1]
+	}
+
+	// confirm secret removal
+	if !forceRemoval {
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove secret %s from the secrets manager?", secretName))
 	}
 
 	// query the agbot secure api

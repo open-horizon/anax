@@ -103,7 +103,7 @@ verify "$CMD" "$RES" "password321" "secret detail should have been updated after
 # remove the org secret and check existence
 echo -e "$PREFIX remove an org secret and check its existence using 'list'"
 
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test-password"
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
@@ -156,7 +156,7 @@ verify "$CMD" "$RES" "password321" "secret detail should have been updated after
 # remove the user secret and check existence 
 echo -e "$PREFIX remove a user secret and check its existence using 'list'"
 
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
@@ -237,21 +237,21 @@ verify "$CMD" "$RES" "Permission denied" "shouldn't be able to list a secret own
 # error on `remove` - secret owned by a different user
 echo -e "$PREFIX removing a secret owned by a different user"
 
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/e2edevadmin/test-password"  
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/e2edevadmin/test-password"  
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "shouldn't be able to remove a secret owned by a different user"
 
 # error on `remove` - secret doesn't exist at the org level
 echo -e "$PREFIX removing a secret that doesn't exist at the org level"
 
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} fake-password"
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} fake-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "nothing to remove" "shouldn't be able to remove a secret that doesn't exist"
 
 # error on `remove` - secret doesn't exist at the user level
 echo -e "$PREFIX removing a secret that doesn't exist at the user level"
 
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/fake-password"
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/fake-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "nothing to remove" "shouldn't be able to remove a secret that doesn't exist"
 
@@ -311,25 +311,25 @@ echo -e "$PREFIX starting cleanup"
 
 # remove secrets
 echo -e "$PREFIX removing org secrets"
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test-password"
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
 echo -e "$PREFIX removing user secrets"
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
-CMD="hzn sm secret remove -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} user/e2edevadmin/test-password"
+CMD="hzn sm secret remove -f -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} user/e2edevadmin/test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
 echo -e "$PREFIX removing multi-part secrets"
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test/password1"
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test/password1"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
-CMD="hzn sm secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test/more-passwords/password2"
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test/more-passwords/password2"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
