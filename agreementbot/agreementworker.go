@@ -566,7 +566,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		}
 
 		// get dependent service definitions for later use
-		depServices, _, _, err := exchange.GetHTTPServiceDefResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+		_, depServices, _, _, err := exchange.GetHTTPServiceDefResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 		if err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for dependent service details for %v, error: %v", workload, err)))
 			return

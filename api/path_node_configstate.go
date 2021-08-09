@@ -389,7 +389,7 @@ func getSpecRefsForPattern(nodeType string, patName string,
 		// we need to iterate each "workloadChoice" to grab the version.
 		for _, serviceChoice := range service.ServiceVersions {
 
-			dependentDefs, serviceDef, topSvcID, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
+			apiSpecList, dependentDefs, serviceDef, topSvcID, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
 			if err != nil {
 				return nil, nil, NewSystemError(fmt.Sprintf("Error resolving service %v/%v %v %v, error %v", service.ServiceOrg, service.ServiceURL, serviceChoice.Version, thisArch, err))
 			}
@@ -419,21 +419,12 @@ func getSpecRefsForPattern(nodeType string, patName string,
 				}
 			}
 
-			if dependentDefs != nil {
-				apiSpecList := new(policy.APISpecList)
-
-				for sId, dDef := range dependentDefs {
-					// Look for inconsistencies in the hardware architecture of the list of dependencies.
-					if dDef.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(dDef.Arch) != thisArch {
-						return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v/%v has a hardware architecture that is not supported by this node: %v.", sId, service.ServiceOrg, service.ServiceURL, thisArch))
+			// Look for inconsistencies in the hardware architecture of the list of dependencies.
+			if apiSpecList != nil {
+				for _, apiSpec := range *apiSpecList {
+					if apiSpec.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != thisArch {
+						return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v/%v has a hardware architecture that is not supported by this node: %v.", apiSpec, service.ServiceOrg, service.ServiceURL, thisArch))
 					}
-
-					// generate apiSpecList from dependent def
-					newAPISpec := policy.APISpecification_Factory(dDef.URL, exchange.GetOrg(sId), dDef.Version, dDef.Arch)
-					if dDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || dDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE {
-						newAPISpec.ExclusiveAccess = false
-					}
-					apiSpecList.Add_API_Spec(newAPISpec)
 				}
 
 				if checkNodePrivilege {

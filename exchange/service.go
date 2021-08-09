@@ -648,22 +648,28 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 
 }
 
-// The purpose of this function is to get the service definitions of all the dependents for the given service.
-// The returned map is keyed by the service id and its element is the ServiceDefinition for that service.
-func ServiceDefResolver(wURL string, wOrg string, wVersion string, wArch string, serviceHandler ServiceHandler) (map[string]ServiceDefinition, *ServiceDefinition, string, error) {
+// Get the service definitions for the given service and all of its dependents.
+// It returns:
+// 1. the dependent service API Specs (with version range)
+// 2. depenent service defintions. The  map is keyed by the service id.
+// 3. service definiton for the given service
+// 4. the service id for the given service
+// 5. error
+func ServiceDefResolver(wURL string, wOrg string, wVersion string, wArch string, serviceHandler ServiceHandler) (*policy.APISpecList, map[string]ServiceDefinition, *ServiceDefinition, string, error) {
 
 	resolveRequiredServices := true
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving service definition for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 
+	res := new(policy.APISpecList)
 	service_map := map[string]ServiceDefinition{}
 
 	// Get a version specific service definition.
 	tlService, sId, werr := serviceHandler(wURL, wOrg, wVersion, wArch)
 	if werr != nil {
-		return nil, nil, "", werr
+		return nil, nil, nil, "", werr
 	} else if tlService == nil {
-		return nil, nil, "", errors.New(fmt.Sprintf("unable to find service %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
+		return nil, nil, nil, "", errors.New(fmt.Sprintf("unable to find service %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
 	} else {
 
 		// We found the service definition. Required services are referred to within a service definition by URL, org, architecture,
@@ -679,23 +685,38 @@ func ServiceDefResolver(wURL string, wOrg string, wVersion string, wArch string,
 				// Make sure the required service has the same arch as the service.
 				// Convert version to a version range expression (if it's not already an expression) so that the underlying GetService
 				// will return us something in the range required by the service.
+				var serviceDef *ServiceDefinition
 				if sDep.Arch != wArch {
-					return nil, nil, "", errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", sDep))
+					return nil, nil, nil, "", errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", sDep))
 				} else if vExp, err := semanticversion.Version_Expression_Factory(sDep.Version); err != nil {
-					return nil, nil, "", errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", sDep.Version, err))
-				} else if s_map, s_def, s_id, err := ServiceDefResolver(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch, serviceHandler); err != nil {
-					return nil, nil, "", err
+					return nil, nil, nil, "", errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", sDep.Version, err))
+				} else if apiSpecs, s_map, s_def, s_id, err := ServiceDefResolver(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch, serviceHandler); err != nil {
+					return nil, nil, nil, "", err
 				} else {
 					service_map[s_id] = *s_def
 					for id, s := range s_map {
 						service_map[id] = s
 					}
+
+					// Add all service dependencies to the running list of API specs.
+					serviceDef = s_def
+					for _, as := range *apiSpecs {
+						// If the apiSpec is already in the list, ignore it by ignoring the returned error.
+						res.Add_API_Spec(&as)
+					}
 				}
+
+				// Capture the current service dependency as an API Spec object and add it to the running list of API specs.
+				newAPISpec := policy.APISpecification_Factory(sDep.URL, sDep.Org, sDep.Version, sDep.Arch)
+				if serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE {
+					newAPISpec.ExclusiveAccess = false
+				}
+				res.Add_API_Spec(newAPISpec)
 			}
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved required service definition for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 		}
 		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved service definition for %v %v %v %v.", wURL, wOrg, wVersion, wArch)))
-		return service_map, tlService, sId, nil
+		return res, service_map, tlService, sId, nil
 	}
 }
 

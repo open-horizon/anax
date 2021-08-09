@@ -806,7 +806,7 @@ func GetServiceDependentDefs(sDef common.AbstractServiceFile,
 				return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
 			} else if vExp, err := semanticversion.Version_Expression_Factory(sDep.VersionRange); err != nil {
 				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.VersionRange, err)), COMPCHECK_GENERAL_ERROR)
-			} else if s_map, s_def, s_id, err = serviceDefResolverHandler(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch); err != nil {
+			} else if _, s_map, s_def, s_id, err = serviceDefResolverHandler(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch); err != nil {
 				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving dependent services from the Exchange for %v. %v", sDep, err)), COMPCHECK_EXCHANGE_ERROR)
 			} else {
 				service_map[s_id] = *s_def
@@ -905,7 +905,7 @@ func GetServiceAndDeps(svcUrl, svcOrg, svcVersion, svcArch string,
 		}
 	} else {
 		// not found, get it and dependents from the exchange
-		depSvcs, exchTopSvc, topId, err = getServiceResolvedDef(svcUrl, svcOrg, svcVersion, svcArch)
+		_, depSvcs, exchTopSvc, topId, err = getServiceResolvedDef(svcUrl, svcOrg, svcVersion, svcArch)
 		if err != nil {
 			return nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s. Compatability of %s cannot be fully evaluated until all services are in the Exchange.", topId, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
 		}
