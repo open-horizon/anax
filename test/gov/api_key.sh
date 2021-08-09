@@ -16,7 +16,7 @@ fi
 
 MAIN_AUTH="iamapikey:${API_KEY}"
 
-HZN_EXCHANGE_NODE_AUTH="testNode:testToken"
+HZN_EXCHANGE_NODE_AUTH="testNode:Abcdefghijklmno1"
 NODE_NAME="testNode"
 
 if [ "${ORG_ID}" = "" ]; then
