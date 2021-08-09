@@ -1,0 +1,4601 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "This is the main package of the cloud synchronization service",
+    "title": "Cloud Syncronization Service",
+    "version": "0.0.1"
+  },
+  "host": "localhost",
+  "basePath": "/",
+  "paths": {
+    "/api/v1/destinations/{orgID}": {
+      "get": {
+        "description": "Provides a list of destinations for an organization, i.e., ESS nodes (belonging to orgID) that have registered with the CSS.\nThis is a CSS only API.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "List all known destinations.",
+        "operationId": "handleDestinations",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the destinations to return.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Destinations response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Destination"
+              }
+            }
+          },
+          "404": {
+            "description": "No destinations found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the destinations",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/destinations/{orgID}/{destType}/{destID}/objects": {
+      "get": {
+        "description": "Provides a list of objects that are in use by the destination ESS node.\nThis is a CSS only API.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "List all objects that are in use by the destination.",
+        "operationId": "handleDestinationObjects",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the destination to retrieve objects for.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The destType of the destination to retrieve objects for.",
+            "name": "destType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The destID of the destination to retrieve objects for.",
+            "name": "destID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Objects response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ObjectStatus"
+              }
+            }
+          },
+          "404": {
+            "description": "No objects found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the objects",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "description": "Get health status of the sync service node.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS",
+          "ESS"
+        ],
+        "summary": "Get health status of the sync service node.",
+        "operationId": "handleHealth",
+        "parameters": [
+          {
+            "type": "boolean",
+            "description": "Whether or not to include the detailed health status",
+            "name": "details",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Health status",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/healthReport"
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to send health status.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{objectType}": {
+      "get": {
+        "description": "Get objects of the specified object type. Either get all of the objects or just those objects that have pending (unconsumed) updates.\nAn application would typically invoke the latter API periodically to check for updates (an alternative is to use a webhook).",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Get objects of the specified type.",
+        "operationId": "handleListObjects",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the objects to return",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "When returning updated objects only, whether or not to include the objects that have been marked as received by the application",
+            "name": "received",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated objects response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MetaData"
+              }
+            }
+          },
+          "404": {
+            "description": "No updated objects found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the updated objects",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Register or delete a webhook for the specified object type.\nA webhook is used to process notifications on updates for objects of the specified object type.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Register or delete a webhook.",
+        "operationId": "handleWebhook",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the objects for the webhook",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "The webhook's data",
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/webhookUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Webhook registered/deleted",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to update the webhook's data",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{objectType}/{objectID}": {
+      "get": {
+        "description": "Get the metadata of an object of the specified object type and object ID.\nThe metadata indicates if the objects includes data which can then be obtained using the appropriate API.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Get an object.",
+        "operationId": "handleGetObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object to return",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to return",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object response",
+            "schema": {
+              "$ref": "#/definitions/MetaData"
+            }
+          },
+          "404": {
+            "description": "Object not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the object",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Update/create the object of the specified object type and object ID.\nIf an object with the same type and ID exists that object is updated, otherwise a new object is created.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Update/create an object.",
+        "operationId": "handleUpdateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object to update/create",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to update/create",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/objectUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object updated",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to update/create the object",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete the object of the specified object type and object ID.\nDestinations of the object will be notified that the object has been deleted.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Delete an object.",
+        "operationId": "handleDeleteObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object to delete",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to delete",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object deleted",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to delete the object",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{objectType}/{objectID}/activate": {
+      "put": {
+        "description": "Mark the object of the specified object type and object ID as active.\nAn object can be created as inactive which means it is not delivered to its destinations.\nThis API is used to activate such objects and initiate the distribution of the object to its destinations.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Mark an object as active.",
+        "operationId": "handleActivateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object to mark as active",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to mark as active",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object marked as active",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to mark the object active",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{objectType}/{objectID}/consumed": {
+      "put": {
+        "description": "Mark the object of the specified object type and object ID as having been consumed by the application.\nAfter the object is marked as consumed it will not be delivered to the application again (even if the sync service is restarted).",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Mark an object as consumed.",
+        "operationId": "handleObjectConsumed",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object to mark as consumed",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to mark as consumed",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object marked as consumed",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to mark the object consumed",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{objectType}/{objectID}/data": {
+      "get": {
+        "description": "Get the data of the object of the specified object type and object ID.\nThe metadata of the object indicates if the object includes data (noData is false).",
+        "produces": [
+          "application/octet-stream",
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Get the data of an object.",
+        "operationId": "handleObjectGetData",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object whose data will be retrieved",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object whose data will be retrieved",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object data",
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the object's data",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Update the data of the object of the specified object type and object ID.\nThe data can be updated without modifying the object's metadata.",
+        "consumes": [
+          "application/octet-stream"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Update the data of an object.",
+        "operationId": "handleObjectPutData",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object whose data will be updated",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object whose data will be updated",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "The object's new data. When read data bytes from a file, please set application/octet-stream as Content-Type in header.",
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object data updated",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "The specified object doesn't exist",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to update the object's data",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{objectType}/{objectID}/received": {
+      "put": {
+        "description": "Mark the object of the specified object type and object ID as having been received by the application.\nAfter the object is marked as received it will only be delivered to the application again if specified in the objects request.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Mark an object as received.",
+        "operationId": "handleObjectReceived",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object to mark as received",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to mark as received",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object marked as received",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to mark the object received",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{objectType}/{objectID}/status": {
+      "get": {
+        "description": "Get the status of the object of the specified object type and object ID.\nThe status can be one of the following:\nnotReady - The object is not ready to be sent to destinations.\nready - The object is ready to be sent to destinations.\nreceived - The object's metadata has been received but not all its data.\ncompletelyReceived - The full object (metadata and data) has been received.\nconsumed - The object has been consumed by the application.\ndeleted - The object was deleted.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Get the status of an object.",
+        "operationId": "handleObjectStatus",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object whose status will be retrieved",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object whose status will be retrieved",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "notReady",
+                "ready",
+                "received",
+                "completelyReceived",
+                "consumed",
+                "deleted"
+              ]
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the object's status",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{objectType}?all_objects=true": {
+      "get": {
+        "description": "Get all objects of the specified object type that have a destination policy.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Get objects with a destination policy of the specified type.",
+        "operationId": "handleListAllObjects",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the objects to return",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Whether or not to include all objects. If false only updated objects will be returned.",
+            "name": "all_objects",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Objects with a destination policy response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ObjectDestinationPolicy"
+              }
+            }
+          },
+          "404": {
+            "description": "No objects with a destination policy found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the updated objects",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}": {
+      "get": {
+        "description": "Get objects of the specified object type. Either get all of the objects or just those objects that have pending (unconsumed) updates.\nAn application would typically invoke the latter API periodically to check for updates (an alternative is to use a webhook).",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get objects of the specified type.",
+        "operationId": "handleListObjects",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the objects to return",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the objects to return",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "When returning updated objects only, whether or not to include the objects that have been marked as received by the application",
+            "name": "received",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated objects response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MetaData"
+              }
+            }
+          },
+          "404": {
+            "description": "No updated objects found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the updated objects",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Register or delete a webhook for the specified object type.\nA webhook is used to process notifications on updates for objects of the specified object type.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Register or delete a webhook.",
+        "operationId": "handleWebhook",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the objects for the webhook",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the objects for the webhook",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "The webhook's data",
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/webhookUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Webhook registered/deleted",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to update the webhook's data",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}/{objectID}": {
+      "get": {
+        "description": "Get the metadata of an object of the specified object type and object ID.\nThe metadata indicates if the objects includes data which can then be obtained using the appropriate API.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get an object.",
+        "operationId": "handleGetObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object to return.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object to return",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to return",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object response",
+            "schema": {
+              "$ref": "#/definitions/MetaData"
+            }
+          },
+          "404": {
+            "description": "Object not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the object",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Update/create the object of the specified object type and object ID.\nIf an object with the same type and ID exists that object is updated, otherwise a new object is created.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Update/create an object.",
+        "operationId": "handleUpdateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object to update/create",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object to update/create",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to update/create",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/objectUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object updated",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to update/create the object",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete the object of the specified object type and object ID.\nDestinations of the object will be notified that the object has been deleted.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Delete an object.",
+        "operationId": "handleDeleteObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object to delete.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object to delete",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to delete",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object deleted",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to delete the object",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}/{objectID}/activate": {
+      "put": {
+        "description": "Mark the object of the specified object type and object ID as active.\nAn object can be created as inactive which means it is not delivered to its destinations.\nThis API is used to activate such objects and initiate the distribution of the object to its destinations.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Mark an object as active.",
+        "operationId": "handleActivateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object to mark as active",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object to mark as active",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to mark as active",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object marked as active",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to mark the object active",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}/{objectID}/consumed": {
+      "put": {
+        "description": "Mark the object of the specified object type and object ID as having been consumed by the application.\nAfter the object is marked as consumed it will not be delivered to the application again (even if the sync service is restarted).",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Mark an object as consumed.",
+        "operationId": "handleObjectConsumed",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object to mark as consumed.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object to mark as consumed",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to mark as consumed",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object marked as consumed",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to mark the object consumed",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}/{objectID}/data": {
+      "get": {
+        "description": "Get the data of the object of the specified object type and object ID.\nThe metadata of the object indicates if the object includes data (noData is false).",
+        "produces": [
+          "application/octet-stream",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get the data of an object.",
+        "operationId": "handleObjectGetData",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object whose data will be retrieved",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object whose data will be retrieved",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object whose data will be retrieved",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object data",
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the object's data",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Update the data of the object of the specified object type and object ID.\nThe data can be updated without modifying the object's metadata.",
+        "consumes": [
+          "application/octet-stream"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Update the data of an object.",
+        "operationId": "handleObjectPutData",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object whose data will be updated",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object whose data will be updated",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object whose data will be updated",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "The object's new data. When read data bytes from a file, please set application/octet-stream as Content-Type in header.",
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object data updated",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "The specified object doesn't exist",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to update the object's data",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}/{objectID}/deleted": {
+      "put": {
+        "description": "Confirm the deletion of the object of the specified object type and object ID by the application.\nThe application should invoke this API after it completed the actions associated with deleting the object.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS",
+          "ESS"
+        ],
+        "summary": "The service confirms object deletion.",
+        "operationId": "handleObjectDeleted",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object to confirm its deletion. Present only when working with a CSS, removed from the path when working with an ESS",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object to confirm its deletion",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to confirm its deletion",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object's deletion confirmed",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to confirm the object's deletion",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}/{objectID}/destinations": {
+      "get": {
+        "description": "Get the list of sync service (ESS) nodes which are the destinations of the object of the specified object type and object ID.\nThe delivery status of the object is provided for each destination along with its type and ID.\nThis is a CSS only API.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get the destinations of an object.",
+        "operationId": "handleObjectDestinations",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object whose destinations will be retrieved. Present only when working with a CSS, removed from the path when working with an ESS",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object whose destinations will be retrieved",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object whose destinations will be retrieved",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object destinations and their status",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DestinationsStatus"
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the object's destinations",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Set the list of sync service (ESS) nodes to be the destinations of the object of the specified object type and object ID.\nThis is a CSS only API.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Set the destinations of an object.",
+        "operationId": "handleObjectDestinationsUpdate",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object whose destinations will be updated",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object whose destinations will be updated",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object whose destinations will be updated",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "The object's destination list",
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object destinations updated",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to update the object's destinations",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}/{objectID}/policyreceived": {
+      "put": {
+        "description": "Mark the object of the specified object type and object ID as having its destination policy received\nAfter the object is marked as such it will not be delivered to the application listing objects with\na destination policy, unless it adds \"received=true\" to the query parameters.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Mark an object's destination policy as having been received. This is a CSS only API",
+        "operationId": "handlePolicyReceived",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object to mark as having its destination policy received.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object to mark as having its destination policy received",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to mark as having its destination policy received",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object marked as having its destination policy received",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to mark the object as having its destination policy received",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}/{objectID}/received": {
+      "put": {
+        "description": "Mark the object of the specified object type and object ID as having been received by the application.\nAfter the object is marked as received it will only be delivered to the application again if specified in the objects request.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Mark an object as received.",
+        "operationId": "handleObjectReceived",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object to mark as received",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object to mark as received",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to mark as received",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object marked as received",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to mark the object received",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}/{objectID}/status": {
+      "get": {
+        "description": "Get the status of the object of the specified object type and object ID.\nThe status can be one of the following:\nnotReady - The object is not ready to be sent to destinations.\nready - The object is ready to be sent to destinations.\nreceived - The object's metadata has been received but not all its data.\ncompletelyReceived - The full object (metadata and data) has been received.\nconsumed - The object has been consumed by the application.\ndeleted - The object was deleted.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get the status of an object.",
+        "operationId": "handleObjectStatus",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object whose status will be retrieved",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the object whose status will be retrieved",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object whose status will be retrieved",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "notReady",
+                "ready",
+                "received",
+                "completelyReceived",
+                "consumed",
+                "deleted"
+              ]
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the object's status",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}/{objectType}?all_objects=true": {
+      "get": {
+        "description": "Get all objects of the specified object type that have a destination policy.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get objects with a destination policy of the specified type.",
+        "operationId": "handleListAllObjects",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the objects to return",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object type of the objects to return",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Whether or not to include all objects. If false only updated objects will be returned.",
+            "name": "all_objects",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Objects with a destination policy response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ObjectDestinationPolicy"
+              }
+            }
+          },
+          "404": {
+            "description": "No objects with a destination policy found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the updated objects",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}?destination_policy=true": {
+      "get": {
+        "description": "Get the list of objects that have destination policies.\nAn application would typically invoke this API periodically to check for updates.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get objects that have destination policies.",
+        "operationId": "handleListObjectsWithDestinationPolicy",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the updated objects to return",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Must be true to indicate that objects with destinationPolicy are to be retrieved",
+            "name": "destination_policy",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Whether or not to include the objects that have been marked as received by the application",
+            "name": "received",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The ID of the service (orgID/serviceName) to which objects have affinity, whose Destination Policy should be fetched.",
+            "name": "service",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "Objects that have a Destination Policy which was updated since the specified UTC time in nanoseconds should be fetched.",
+            "name": "since",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object destination policy response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ObjectDestinationPolicy"
+              }
+            }
+          },
+          "404": {
+            "description": "No updated objects found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the updated objects",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects/{orgID}?filters=true": {
+      "get": {
+        "description": "Get the list of objects that satisfy the given filters\nThis is a CSS only API.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get objects satisfy the given filters",
+        "operationId": "handleListObjectsWithFilters",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the updated objects to return. Present only when working with a CSS, removed from the path when working with an ESS",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Must be true to indicate that objects with filters are to be retrieved",
+            "name": "filters",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Must be true to indicate that objects with destinationPolicy are to be retrieved",
+            "name": "destinationPolicy",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The ID of the service (orgID/serviceName) to which objects have affinity, whose Destination Policy should be fetched.",
+            "name": "dpService",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The property name defined inside destination policy to which objects have affinity, whose Destination Policy should be fetched.",
+            "name": "dpPropertyName",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Objects that have a Destination Policy which was updated since the specified timestamp in RFC3339 should be fetched.",
+            "name": "since",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Fetch the objects with given object type",
+            "name": "objectType",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Fetch the objects with given object id",
+            "name": "objectID",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Fetch the objects with given destination type",
+            "name": "destinationType",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Fetch the objects with given destination id",
+            "name": "destinationID",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "Fetch the objects with noData marked to true",
+            "name": "noData",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Fetch the objects with expiration time before specified timestamp in RFC3339 format",
+            "name": "expirationTimeBefore",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Objects response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MetaData"
+              }
+            }
+          },
+          "404": {
+            "description": "No objects found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the objects",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/objects?destination_policy=true": {
+      "get": {
+        "description": "Get the list of objects that have destination policies.\nAn application would typically invoke this API periodically to check for updates.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Get objects that have destination policies.",
+        "operationId": "handleListObjectsWithDestinationPolicy",
+        "parameters": [
+          {
+            "type": "boolean",
+            "description": "Must be true to indicate that objects with destinationPolicy are to be retrieved",
+            "name": "destination_policy",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Whether or not to include the objects that have been marked as received by the application",
+            "name": "received",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The ID of the service (orgID/serviceName) to which objects have affinity, whose Destination Policy should be fetched.",
+            "name": "service",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "Objects that have a Destination Policy which was updated since the specified UTC time in nanoseconds should be fetched.",
+            "name": "since",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object destination policy response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ObjectDestinationPolicy"
+              }
+            }
+          },
+          "404": {
+            "description": "No updated objects found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the updated objects",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations": {
+      "get": {
+        "description": "Get the list of existing organizations. Relevant to CSS only.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get organizations.",
+        "operationId": "handleGetOrganizations",
+        "responses": {
+          "200": {
+            "description": "Organizations response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/organization"
+              }
+            }
+          },
+          "404": {
+            "description": "No organizations found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the organizations",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/{orgID}": {
+      "put": {
+        "description": "Store organization information. Relevant to CSS only.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Update organization.",
+        "operationId": "handleOrganizations",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the organization to update.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Organization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The organization was successfuly updated",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to update the organization",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Remove organization information and clean up all resources (objects, destinations, etc.) all resources (objects, destinations, etc.) associated\nwith the deleted organization. Relevant to CSS only.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Delete organization.",
+        "operationId": "handleDeleteOrganization",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the organization to delete.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The organization was successfuly deleted",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to delete the organization",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/resend": {
+      "post": {
+        "description": "Used by an ESS to ask the CSS to resend it all the objects (supported only for ESS to CSS requests).\nAn application only needs to use this API in case the data it previously obtained from the ESS was lost.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Request to resend objects.",
+        "operationId": "handleResend",
+        "responses": {
+          "204": {
+            "description": "The request will be sent",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "The request is not allowed on Cloud Sync-Service",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/secrets": {
+      "get": {
+        "description": "Get the list of updated secrets.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Get secrets.",
+        "operationId": "handleGetSecrets",
+        "responses": {
+          "200": {
+            "description": "Secrets response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "404": {
+            "description": "No updated secrets found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the secret names of updated secrets",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/secrets/{secretName}": {
+      "get": {
+        "description": "Get the details of a secret.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Get a secret.",
+        "operationId": "handleGetSecret",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The secret name of the secret object to return",
+            "name": "secretName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Secret response",
+            "schema": {
+              "$ref": "#/definitions/secretObject"
+            }
+          },
+          "400": {
+            "description": "Secret name not specified",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "Secret not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to retrieve the secret",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/secrets/{secretName}?received=true": {
+      "post": {
+        "description": "Mark the secret as having been received by the service.\nAfter the secret is marked as received, it will no longer be returned by GET /secrets again.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "Secrets"
+        ],
+        "summary": "Mark a secret as received.",
+        "operationId": "handleSecretReceived",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The secret name of the secret to mark as received",
+            "name": "secretName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Secret marked as received",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Secret name not specified",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "Secret not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to mark the object consumed",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/security/{type}/{orgID}": {
+      "get": {
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Retrieve the list of destination type or object type of ACLs for an organization.",
+        "operationId": "handleACLGetAll",
+        "parameters": [
+          {
+            "enum": [
+              "destinations",
+              "objects"
+            ],
+            "type": "string",
+            "description": "The type of the ACL whose username list should be retrieved.",
+            "name": "type",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The orgID in which the ACL for the destination type or object type exists.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "If true, display object/destination types that has ACL list associated with",
+            "name": "all_keys",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The destination type or object type that is being protected by the ACL.",
+            "name": "key",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The acl user type (user or node) to retrieve.",
+            "name": "acl_usertype",
+            "in": "query"
+          }
+        ]
+      },
+      "put": {
+        "description": "Bulk add/remove of user(s) to/from an ACL for all destination types or all object types. If the\nfirst username is being added, the ACL is created. If the last username is removed, the ACL\nis deleted.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Bulk add/remove of user(s) to/from an ACL for all destination types or all object types.",
+        "operationId": "handleBulkACLUpdateForAllTypes",
+        "parameters": [
+          {
+            "enum": [
+              "destinations",
+              "objects"
+            ],
+            "type": "string",
+            "description": "The type of the ACL to which the specified username(s) will be added/removed.",
+            "name": "type",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The orgID in which the ACL for the destination type or object type exists.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/bulkACLUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The username(s) were added/removed to/from the specified ACL.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to add/remove the username(s) to/from the specified ACL.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/security/{type}/{orgID}/{key}": {
+      "put": {
+        "description": "Bulk add/remove of username(s) to/from an ACL for a destination type or an object type. If the\nfirst username is being added, the ACL is created. If the last username is removed, the ACL\nis deleted.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Bulk add/remove of username(s) to/from an ACL for a destination type or an object type.",
+        "operationId": "handleBulkACLUpdate",
+        "parameters": [
+          {
+            "enum": [
+              "destinations",
+              "objects"
+            ],
+            "type": "string",
+            "description": "The type of the ACL to which the specified user(s) will be added/removed.",
+            "name": "type",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The orgID in which the ACL for the destination type or object type exists.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The destination type or object type that is being protected by the ACL.",
+            "name": "key",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/bulkACLUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The user(s) were added/removed to/from the specified ACL.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to add/remove the user(s)to/from the specified ACL.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/security/{type}/{orgID}/{key}/{aclUserType}/{username}": {
+      "delete": {
+        "description": "Remove a user from an ACL for a destination type or an object type. If the last username is removed,\nthe ACL is deleted as well.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Remove a user from an ACL for a destination type or an object type.",
+        "operationId": "handleACLDelete",
+        "parameters": [
+          {
+            "enum": [
+              "destinations",
+              "objects"
+            ],
+            "type": "string",
+            "description": "The type of the ACL to remove the specified username from.",
+            "name": "type",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The orgID in which the ACL for the destination type or object type exists.",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The destination type or object type that is being protected by the ACL.",
+            "name": "key",
+            "in": "path",
+            "required": true
+          },
+          {
+            "enum": [
+              "user",
+              "node"
+            ],
+            "type": "string",
+            "description": "The acl user type of given username to be deleted",
+            "name": "acl_usertype",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The username to remove from the specified ACL.",
+            "name": "username",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The username was removed from the specified ACL.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to remove the username from the specified ACL.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/deploycheck/deploycompatible": {
+      "get": {
+        "description": "This API does compatibility check for the given deployment policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Check deployment compatibility. ",
+        "operationId": "deploy_compatible",
+        "parameters": [
+          {
+            "type": "bool",
+            "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
+            "name": "checkAll",
+            "in": "query"
+          },
+          {
+            "type": "bool",
+            "description": "Show the input which was used to come up with the result.",
+            "name": "long",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the node. Mutually exclusive with node_policy and node_user_input.",
+            "name": "node_id",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The architecture of the node.",
+            "name": "node_arch",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The organization of the node.",
+            "name": "node_org",
+            "in": "body"
+          },
+          {
+            "description": "The node policy that will be put in the exchange. Mutually exclusive with node_id.",
+            "name": "node_policy",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ExternalPolicy"
+            }
+          },
+          {
+            "description": "The user input that will be put in the exchange for the services. Mutually exclusive with node_id.",
+            "name": "node_user_input",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserInput"
+            }
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
+            "name": "business_policy_id",
+            "in": "body"
+          },
+          {
+            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
+            "name": "business_policy",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/BusinessPolicy"
+            }
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
+            "name": "pattern_id",
+            "in": "body"
+          },
+          {
+            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
+            "name": "pattern",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PatternFile"
+            }
+          },
+          {
+            "description": "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy.",
+            "name": "service_policy",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ExternalPolicy"
+            }
+          },
+          {
+            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange.",
+            "name": "service",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ServiceFile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "compcheck.CompCheckOutput",
+              "$ref": "#/definitions/CompCheckOutput"
+            }
+          },
+          "400": {
+            "description": "Failure - No input found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "Failure - Failed to authenticate",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failure - Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/deploycheck/policycompatible": {
+      "get": {
+        "description": "This API does the policy compatibility check for the given deployment policy, node policy and service policy. The deployment policy and the service policy will be merged to check against the node policy. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Check the policy compatibility",
+        "operationId": "deployCheckPolicyCompatible",
+        "parameters": [
+          {
+            "type": "bool",
+            "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
+            "name": "checkAll",
+            "in": "query"
+          },
+          {
+            "type": "bool",
+            "description": "Show the input which was used to come up with the result.",
+            "name": "long",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the node. Mutually exclusive with node_policy.",
+            "name": "node_id",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The architecture of the node.",
+            "name": "node_arch",
+            "in": "body"
+          },
+          {
+            "description": "The node policy that will be put in the exchange. Mutually exclusive with node_id.",
+            "name": "node_policy",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ExternalPolicy"
+            }
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy.",
+            "name": "business_policy_id",
+            "in": "body"
+          },
+          {
+            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id.",
+            "name": "business_policy",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/BusinessPolicy"
+            }
+          },
+          {
+            "description": "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy.",
+            "name": "service_policy",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ExternalPolicy"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "compcheck.CompCheckOutput",
+              "$ref": "#/definitions/CompCheckOutput"
+            }
+          },
+          "400": {
+            "description": "Failure - No input found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failure - Error",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "501": {
+            "description": "Failure - Failed to authenticate",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/deploycheck/secretbindingcompatible": {
+      "get": {
+        "description": "This API does the secret binding compatibility check for the given deployment policy (or a pattern) and service definition. It checks if each secret defined in a serice has a binding associated in the given deployment policy (or pattern) and each bound secret exists in the secret manager. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Check the secret binding compatibility. ",
+        "operationId": "secretbinding_compatible",
+        "parameters": [
+          {
+            "type": "bool",
+            "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
+            "name": "checkAll",
+            "in": "query"
+          },
+          {
+            "type": "bool",
+            "description": "Show the input which was used to come up with the result.",
+            "name": "long",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the node. Mutually exclusive with node_user_input.",
+            "name": "node_id",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The architecture of the node.",
+            "name": "node_arch",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The organization of the node.",
+            "name": "node_org",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
+            "name": "business_policy_id",
+            "in": "body"
+          },
+          {
+            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
+            "name": "business_policy",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/BusinessPolicy"
+            }
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
+            "name": "pattern_id",
+            "in": "body"
+          },
+          {
+            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
+            "name": "pattern",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PatternFile"
+            }
+          },
+          {
+            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange.",
+            "name": "service",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ServiceFile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "compcheck.CompCheckOutput",
+              "$ref": "#/definitions/CompCheckOutput"
+            }
+          },
+          "400": {
+            "description": "Failure - No input found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "Failure - Failed to authenticate",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failure - Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/deploycheck/userinputcompatible": {
+      "get": {
+        "description": "This API does the user input compatibility check for the given deployment policy (or a pattern), service definition and node user input. The user input values in the deployment policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Check the user input compatibility.",
+        "operationId": "userinputCompatible",
+        "parameters": [
+          {
+            "type": "bool",
+            "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
+            "name": "checkAll",
+            "in": "query"
+          },
+          {
+            "type": "bool",
+            "description": "Show the input which was used to come up with the result.",
+            "name": "long",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the node. Mutually exclusive with node_user_input.",
+            "name": "node_id",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The architecture of the node.",
+            "name": "node_arch",
+            "in": "body"
+          },
+          {
+            "description": "The user input that will be put in the exchange for the services. Mutually exclusive with node_id.",
+            "name": "node_user_input",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserInput"
+            }
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
+            "name": "business_policy_id",
+            "in": "body"
+          },
+          {
+            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
+            "name": "business_policy",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/BusinessPolicy"
+            }
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
+            "name": "pattern_id",
+            "in": "body"
+          },
+          {
+            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
+            "name": "pattern",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PatternFile"
+            }
+          },
+          {
+            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange.",
+            "name": "service",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ServiceFile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "compcheck.CompCheckOutput",
+              "$ref": "#/definitions/CompCheckOutput"
+            }
+          },
+          "400": {
+            "description": "Failure - No input found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "Failure - Failed to authenticate",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failure - Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/org/{org}/secrets": {},
+    "/org/{org}/secrets/*": {
+      "get": {
+        "description": "Authenticates the node user with the exchange. Checks if the vault plugin being used is ready. \nPerforms sanity checks on the secret user and secret name provided.",
+        "consumes": [
+          "application/json"
+        ],
+        "summary": "Common setup required before using the vault to manage secrets.",
+        "operationId": "secrets_setup",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to. Must be the same as the org the user node belongs to.",
+            "name": "org",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The user owning the secret.",
+            "name": "user",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Secret org or name does not meet constraints.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "503": {
+            "description": "Secret provider not ready or not configured.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ACLentry": {
+      "description": "ACLentry contains ACL information about each user",
+      "type": "object",
+      "properties": {
+        "ACLRole": {
+          "type": "string"
+        },
+        "ACLUserType": {
+          "type": "string"
+        },
+        "Username": {
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "AbstractPatternFile": {
+      "type": "object",
+      "properties": {
+        "GetOrg": {
+          "type": "string"
+        },
+        "GetSecretBinding": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SecretBinding"
+          }
+        },
+        "GetServices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceReference"
+          }
+        },
+        "GetUserInputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          }
+        },
+        "IsPublic": {
+          "type": "boolean"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/common"
+    },
+    "AbstractServiceFile": {
+      "type": "object",
+      "properties": {
+        "GetArch": {
+          "type": "string"
+        },
+        "GetClusterDeployment": {
+          "type": "object"
+        },
+        "GetDeployment": {
+          "type": "object"
+        },
+        "GetOrg": {
+          "type": "string"
+        },
+        "GetRequiredServices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceDependency"
+          }
+        },
+        "GetServiceType": {
+          "type": "string"
+        },
+        "GetURL": {
+          "type": "string"
+        },
+        "GetUserInputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          }
+        },
+        "GetVersion": {
+          "type": "string"
+        },
+        "NeedsUserInput": {
+          "type": "boolean"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/common"
+    },
+    "AgreementProtocol": {
+      "type": "object",
+      "properties": {
+        "blockchains": {
+          "$ref": "#/definitions/BlockchainList"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "protocolVersion": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ProtocolVersion"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "AuthenticateOKBody": {
+      "description": "AuthenticateOKBody authenticate o k body",
+      "type": "object",
+      "required": [
+        "IdentityToken",
+        "Status"
+      ],
+      "properties": {
+        "IdentityToken": {
+          "description": "An opaque token used to authenticate a user after a successful login",
+          "type": "string"
+        },
+        "Status": {
+          "description": "The status of the authentication",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/registry"
+    },
+    "Blockchain": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "organization": {
+          "type": "string",
+          "x-go-name": "Org"
+        },
+        "type": {
+          "type": "string",
+          "x-go-name": "Type"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "BlockchainList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Blockchain"
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "BoundSecret": {
+      "type": "object",
+      "title": "a binding that maps a secret name to a secret manager secret name.",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
+    },
+    "BusinessPolicy": {
+      "description": "BusinessPolicy the business policy",
+      "type": "object",
+      "properties": {
+        "constraints": {
+          "$ref": "#/definitions/ConstraintExpression"
+        },
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "properties": {
+          "$ref": "#/definitions/PropertyList"
+        },
+        "secretBinding": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SecretBinding"
+          },
+          "x-go-name": "SecretBinding"
+        },
+        "service": {
+          "$ref": "#/definitions/ServiceRef"
+        },
+        "userInput": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          },
+          "x-go-name": "UserInput"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
+    },
+    "CompCheckOutput": {
+      "description": "CompCheckOutput The output format for the compatibility check",
+      "type": "object",
+      "properties": {
+        "compatible": {
+          "type": "boolean",
+          "x-go-name": "Compatible"
+        },
+        "input": {
+          "$ref": "#/definitions/CompCheckResource"
+        },
+        "reason": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Reason"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
+    "CompCheckResource": {
+      "description": "To store the resource (pattern, bp, services etc) used for compatibility check",
+      "type": "object",
+      "properties": {
+        "business_policy": {
+          "$ref": "#/definitions/BusinessPolicy"
+        },
+        "business_policy_id": {
+          "type": "string",
+          "x-go-name": "BusinessPolId"
+        },
+        "dependent_services": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ServiceDefinition"
+          },
+          "x-go-name": "DepServices"
+        },
+        "extraneous_secret_binding": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SecretBinding"
+          },
+          "x-go-name": "ExtraneousSB"
+        },
+        "needed_secret_binding": {
+          "description": "It is either empty or provides ALL the dependent services needed. It is expected the top level service definitions are provided\nin the 'Service' attribute when this attribute is not empty.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SecretBinding"
+          },
+          "x-go-name": "NeededSB"
+        },
+        "node_arch": {
+          "type": "string",
+          "x-go-name": "NodeArch"
+        },
+        "node_id": {
+          "type": "string",
+          "x-go-name": "NodeId"
+        },
+        "node_org": {
+          "type": "string",
+          "x-go-name": "NodeOrg"
+        },
+        "node_policy": {
+          "$ref": "#/definitions/ExternalPolicy"
+        },
+        "node_type": {
+          "type": "string",
+          "x-go-name": "NodeType"
+        },
+        "node_user_input": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          },
+          "x-go-name": "NodeUserInput"
+        },
+        "pattern": {
+          "$ref": "#/definitions/AbstractPatternFile"
+        },
+        "pattern_id": {
+          "type": "string",
+          "x-go-name": "PatternId"
+        },
+        "service": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AbstractServiceFile"
+          },
+          "x-go-name": "Service"
+        },
+        "service_policy": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ExternalPolicy"
+          },
+          "x-go-name": "ServicePolicy"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
+    "ConstraintExpression": {
+      "type": "array",
+      "title": "This type implements all the ConstraintLanguage Plugin methods and delegates to plugin system.",
+      "items": {
+        "type": "string"
+      },
+      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
+    },
+    "ContainerChangeResponseItem": {
+      "description": "ContainerChangeResponseItem change item in response to ContainerChanges operation",
+      "type": "object",
+      "required": [
+        "Kind",
+        "Path"
+      ],
+      "properties": {
+        "Kind": {
+          "description": "Kind of change",
+          "type": "integer",
+          "format": "uint8"
+        },
+        "Path": {
+          "description": "Path to file that has changed",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerCreateCreatedBody": {
+      "description": "ContainerCreateCreatedBody OK response to ContainerCreate operation",
+      "type": "object",
+      "required": [
+        "Id",
+        "Warnings"
+      ],
+      "properties": {
+        "Id": {
+          "description": "The ID of the created container",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "Warnings": {
+          "description": "Warnings encountered when creating the container",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerTopOKBody": {
+      "description": "ContainerTopOKBody OK response to ContainerTop operation",
+      "type": "object",
+      "required": [
+        "Processes",
+        "Titles"
+      ],
+      "properties": {
+        "Processes": {
+          "description": "Each process running in the container, where each is process\nis an array of values corresponding to the titles.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "Titles": {
+          "description": "The ps column titles",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerUpdateOKBody": {
+      "description": "ContainerUpdateOKBody OK response to ContainerUpdate operation",
+      "type": "object",
+      "required": [
+        "Warnings"
+      ],
+      "properties": {
+        "Warnings": {
+          "description": "warnings",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerWaitOKBody": {
+      "description": "ContainerWaitOKBody OK response to ContainerWait operation",
+      "type": "object",
+      "required": [
+        "Error",
+        "StatusCode"
+      ],
+      "properties": {
+        "Error": {
+          "$ref": "#/definitions/ContainerWaitOKBodyError"
+        },
+        "StatusCode": {
+          "description": "Exit code of the container",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "ContainerWaitOKBodyError": {
+      "description": "ContainerWaitOKBodyError container waiting error, if any",
+      "type": "object",
+      "properties": {
+        "Message": {
+          "description": "Details of an error",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "DBHealthStatusInfo": {
+      "description": "DBHealthStatusInfo describes the health status of the database of the sync-service node",
+      "type": "object",
+      "properties": {
+        "dbReadFailures": {
+          "type": "integer",
+          "format": "uint32",
+          "x-go-name": "DBReadFailures"
+        },
+        "dbStatus": {
+          "type": "string",
+          "x-go-name": "DBStatus"
+        },
+        "dbWriteFailures": {
+          "type": "integer",
+          "format": "uint32",
+          "x-go-name": "DBWriteFailures"
+        },
+        "disconnectedFromDB": {
+          "type": "boolean",
+          "x-go-name": "DisconnectedFromDB"
+        },
+        "lastDisconnectFromDBDuration": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "LastDisconnectFromDBDuration"
+        },
+        "timeSinceLastReadWriteError": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TimeSinceLastReadWriteError"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "DataVerification": {
+      "type": "object",
+      "properties": {
+        "URL": {
+          "type": "string"
+        },
+        "check_rate": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "CheckRate"
+        },
+        "enabled": {
+          "type": "boolean",
+          "x-go-name": "Enabled"
+        },
+        "interval": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Interval"
+        },
+        "metering": {
+          "$ref": "#/definitions/Meter"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "URLPassword"
+        },
+        "user": {
+          "type": "string",
+          "x-go-name": "URLUser"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "Destination": {
+      "description": "Each sync service edge node (ESS) has an address that is composed of the node's ID, Type, and Organization.\nAn ESS node communicates with the CSS using either MQTT or HTTP.",
+      "type": "object",
+      "title": "Destination describes a sync service node.",
+      "required": [
+        "destinationType",
+        "destinationID",
+        "communication",
+        "codeVersion"
+      ],
+      "properties": {
+        "codeVersion": {
+          "description": "CodeVersion is the sync service code version used by the destination",
+          "type": "string",
+          "x-go-name": "CodeVersion"
+        },
+        "communication": {
+          "description": "Communication is the communication protocol used by the destination to connect (can be MQTT or HTTP)",
+          "type": "string",
+          "enum": [
+            "HTTP",
+            "MQTT"
+          ],
+          "x-go-name": "Communication"
+        },
+        "destinationID": {
+          "description": "DestID is the destination ID",
+          "type": "string",
+          "x-go-name": "DestID"
+        },
+        "destinationOrgID": {
+          "description": "DestOrgID is the destination organization ID\nEach sync service object belongs to a single organization",
+          "type": "string",
+          "x-go-name": "DestOrgID"
+        },
+        "destinationType": {
+          "description": "DestType is the destination type",
+          "type": "string",
+          "x-go-name": "DestType"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "DestinationsStatus": {
+      "description": "DestinationsStatus describes the delivery status of an object for a destination\nDestinationsStatus provides information about the delivery status of an object for a certain destination.\nThe status can be one of the following:\nIndication whether the object has been delivered to the destination\npending - inidicates that the object is pending delivery to this destination\ndelivering - indicates that the object is being delivered to this destination\ndelivered - indicates that the object was delivered to this destination\nconsumed - indicates that the object was consumed by this destination\ndeleted - indicates that this destination acknowledged the deletion of the object\nerror - indicates that a feedback error message was received from this destination",
+      "type": "object",
+      "required": [
+        "destinationType",
+        "destinationID",
+        "status"
+      ],
+      "properties": {
+        "destinationID": {
+          "description": "DestID is the destination ID",
+          "type": "string",
+          "x-go-name": "DestID"
+        },
+        "destinationType": {
+          "description": "DestType is the destination type",
+          "type": "string",
+          "x-go-name": "DestType"
+        },
+        "message": {
+          "description": "Message is the message for the destination",
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "status": {
+          "description": "Status is the destination status",
+          "type": "string",
+          "enum": [
+            "pending",
+            "delivering",
+            "delivered",
+            "consumed",
+            "deleted",
+            "error"
+          ],
+          "x-go-name": "Status"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "ExternalPolicy": {
+      "description": "BusinessPolicy the external policy",
+      "type": "object",
+      "properties": {
+        "constraints": {
+          "$ref": "#/definitions/ConstraintExpression"
+        },
+        "properties": {
+          "$ref": "#/definitions/PropertyList"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
+    },
+    "HardwareRequirement": {
+      "type": "object",
+      "title": "This type is used to abstract the various edge node hardware requirements. The schema is left wide open.",
+      "additionalProperties": {
+        "type": "object"
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "HealthStatusInfo": {
+      "description": "HealthStatusInfo describes the health status of the sync-service node",
+      "type": "object",
+      "properties": {
+        "healthStatus": {
+          "type": "string",
+          "x-go-name": "HealthStatus"
+        },
+        "nodeType": {
+          "type": "string",
+          "x-go-name": "NodeType"
+        },
+        "upTime": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "UpTime"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "Input": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "value": {
+          "type": "object",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/policy"
+    },
+    "MQTTHealthStatusInfo": {
+      "description": "MQTTHealthStatusInfo describes the health status of the MQTT connection of the sync-service node",
+      "type": "object",
+      "properties": {
+        "disconnectedFromMQTTBroker": {
+          "type": "boolean",
+          "x-go-name": "DisconnectedFromMQTTBroker"
+        },
+        "lastDisconnectFromBrokerDuration": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "LastDisconnectFromBrokerDuration"
+        },
+        "mqttConnectionStatus": {
+          "type": "string",
+          "x-go-name": "MQTTConnectionStatus"
+        },
+        "publishFailures": {
+          "type": "integer",
+          "format": "uint32",
+          "x-go-name": "PublishFailures"
+        },
+        "subscribeFailures": {
+          "type": "integer",
+          "format": "uint32",
+          "x-go-name": "SubscribeFailures"
+        },
+        "timeSinceLastPublishError": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TimeSinceLastPublishError"
+        },
+        "timeSinceLastSubscribeError": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TimeSinceLastSubscribeError"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "MetaData": {
+      "description": "Every object includes metadata (mandatory) and data (optional). The metadata and data can be updated independently.\nEach sync service node (ESS) has an address that is composed of the node's ID, Type, and Organization.\nTo send an object to a single node set the destinationType and destinationID fields to match the node's Type and ID.\nTo send an object to all the nodes of a certain type set destinationType to the appropriate type and leave destinationID empty.\nIf both destinationType and destinationID are empty the object is sent to all nodes.",
+      "type": "object",
+      "title": "MetaData is the metadata that identifies and defines the sync service object.",
+      "required": [
+        "objectID",
+        "objectType"
+      ],
+      "properties": {
+        "activationTime": {
+          "description": "ActivationTime is a timestamp/date as to when this object should automatically be activated.\nThe timestamp should be provided in RFC3339 format.\nOptional field, if omitted (and Inactive is true) the object is never automatically activated.",
+          "type": "string",
+          "x-go-name": "ActivationTime"
+        },
+        "autodelete": {
+          "description": "AutoDelete is a flag indicating whether to delete the object after it is delivered to all its destinations from the DestinationsList.\nOptional field, default is false (do not delete).\nThis field is used only when working with the CSS. Objects are always deleted after delivery on the ESS.",
+          "type": "boolean",
+          "x-go-name": "AutoDelete"
+        },
+        "chunkSize": {
+          "description": "ChunkSize is an internal field indicating the maximal message payload size.\nThis field should not be set by users.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ChunkSize"
+        },
+        "consumers": {
+          "description": "ExpectedConsumers is the number of applications that are expected to indicate that they have consumed the object.\nOptional field, default is 1.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ExpectedConsumers"
+        },
+        "dataID": {
+          "description": "DataID is an internal data ID.\nThis field should not be set by users.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "DataID"
+        },
+        "deleted": {
+          "description": "Deleted is a flag indicating to applications polling for updates that this object has been deleted.\nRead only field, should not be set by users.",
+          "type": "boolean",
+          "x-go-name": "Deleted"
+        },
+        "description": {
+          "description": "Description is a textual description of the object.\nOptional field, empty by default.",
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "destinationDataUri": {
+          "description": "DestinationDataURI is a URI indicating where the receiver of the object should store it.\nCurrently only file URIs are supported.\nThis field is available only when working with the CSS.\nOptional field, if omitted the object is stored in the node's internal storage.",
+          "type": "string",
+          "x-go-name": "DestinationDataURI"
+        },
+        "destinationID": {
+          "description": "DestID is the ID of the destination. If omitted the object is sent to all ESSs with the same DestType.\nThis field is ignored when working with ESS (the destination is the CSS).",
+          "type": "string",
+          "x-go-name": "DestID"
+        },
+        "destinationOrgID": {
+          "description": "DestOrgID is the organization ID of the object (an object belongs to exactly one organization).\nThis field is ignored when working with ESS (the ESS's orgID is used).",
+          "type": "string",
+          "x-go-name": "DestOrgID"
+        },
+        "destinationPolicy": {
+          "$ref": "#/definitions/Policy"
+        },
+        "destinationType": {
+          "description": "DestType is the type of destination to send the object to.\nIf omitted (and if DestinationsList is omitted too) the object is broadcasted to all known destinations.\nThis field is ignored when working with ESS (the destination is always the CSS).",
+          "type": "string",
+          "x-go-name": "DestType"
+        },
+        "destinationsList": {
+          "description": "DestinationsList is the list of destinations as type:id pairs to send the object to.\nWhen a DestinationsList is provided DestType and DestID must be omitted.\nThis field is ignored when working with ESS (the destination is always the CSS).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "DestinationsList"
+        },
+        "expiration": {
+          "description": "Expiration is a timestamp/date indicating when the object expires.\nWhen the object expires it is automatically deleted.\nThe timestamp should be provided in RFC3339 format.\nThis field is available only when working with the CSS.\nOptional field, if omitted the object doesn't expire.",
+          "type": "string",
+          "x-go-name": "Expiration"
+        },
+        "hashAlgorithm": {
+          "description": "HashAlgorithm used for data signature sign/verification. \"SHA1\" and \"SHA256\" are supported hash algorithms.\nValid values are: \"SHA1\", \"SHA256\"\nOptional field, if omitted the data signature/verification will not be applied",
+          "type": "string",
+          "x-go-name": "HashAlgorithm"
+        },
+        "inactive": {
+          "description": "Inactive is a flag indicating that this object is inactive for now.\nAn object can be created as inactive which means it is not delivered to its destination. The object can be activated later.\nOptional field, default is false (object active).",
+          "type": "boolean",
+          "x-go-name": "Inactive"
+        },
+        "instanceID": {
+          "description": "InstanceID is an internal instance ID.\nThis field should not be set by users.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "InstanceID"
+        },
+        "link": {
+          "description": "Link is a link to where the data for this object can be fetched from.\nThe link is set and used by the application. The sync service does not access the link.\nOptional field, if omitted the data must be provided by the application.",
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "metaOnly": {
+          "description": "MetaOnly is a flag that indicates that this update is only of the metadata. The current object's data is left unchanged.\nOptional field, default is false (both data and metadata are updated).",
+          "type": "boolean",
+          "x-go-name": "MetaOnly"
+        },
+        "noData": {
+          "description": "NoData is a flag indicating that there is no data for this object.\nObjects with no data can be used, for example, to send notifications.\nOptional field, default is false (object includes data).",
+          "type": "boolean",
+          "x-go-name": "NoData"
+        },
+        "objectID": {
+          "description": "ObjectID is a unique identifier of the object",
+          "type": "string",
+          "x-go-name": "ObjectID"
+        },
+        "objectSize": {
+          "description": "ObjectSize is an internal field indicating the size of the object's data.\nThis field should not be set by users.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ObjectSize"
+        },
+        "objectType": {
+          "description": "ObjectType is the type of the object.\nThe type is used to group multiple objects, for example when checking for object updates.",
+          "type": "string",
+          "x-go-name": "ObjectType"
+        },
+        "originID": {
+          "description": "OriginID is the ID of origin of the object. Set by the internal code.\nRead only field, should not be set by users.",
+          "type": "string",
+          "x-go-name": "OriginID"
+        },
+        "originType": {
+          "description": "OriginType is the type of origin of the object. Set by the internal code.\nRead only field, should not be set by users.",
+          "type": "string",
+          "x-go-name": "OriginType"
+        },
+        "ownerID": {
+          "description": "OwnerID is an internal field indicating who creates the object\nThis field should not be set by users",
+          "type": "string",
+          "x-go-name": "OwnerID"
+        },
+        "public": {
+          "description": "Public is a flag indicate this object is visiable to all users in all orgs\nOptional field, default is false (not visiable to all users)",
+          "type": "boolean",
+          "x-go-name": "Public"
+        },
+        "publicKey": {
+          "description": "PublicKey is a base64 encoded string. It is the publicKey to verify the data of the object\nOptional field, if omitted the data will not be verified with public key and signature",
+          "type": "string",
+          "x-go-name": "PublicKey"
+        },
+        "signature": {
+          "description": "Signature is a base64 encoded string. It is the data signature to verify data of the object\nOptional field, if omitted the data will not be verified with public key and signature",
+          "type": "string",
+          "x-go-name": "Signature"
+        },
+        "sourceDataUri": {
+          "description": "SourceDataURI is a URI indicating where the sender of the object should read the data from.\nCurrently only file URIs are supported.\nThis field is available only when working with the ESS.\nOptional field, if omitted the object's data should be provided by the user.",
+          "type": "string",
+          "x-go-name": "SourceDataURI"
+        },
+        "version": {
+          "description": "Version is the object's version (as used by the application).\nOptional field, empty by default.",
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "Meter": {
+      "type": "object",
+      "properties": {
+        "notification_interval": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "NotificationIntervalS"
+        },
+        "per_time_unit": {
+          "type": "string",
+          "x-go-name": "PerTimeUnit"
+        },
+        "tokens": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "Tokens"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "NodeHealth": {
+      "type": "object",
+      "properties": {
+        "check_agreement_status": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "CheckAgreementStatus"
+        },
+        "missing_heartbeat_interval": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "MissingHBInterval"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
+    },
+    "ObjectDestinationPolicy": {
+      "type": "object",
+      "title": "ObjectDestinationPolicy contains information about an object that has a Destination Policy.",
+      "required": [
+        "orgID",
+        "objectType",
+        "objectID"
+      ],
+      "properties": {
+        "destinationPolicy": {
+          "$ref": "#/definitions/Policy"
+        },
+        "destinations": {
+          "description": "Destinations is the list of the object's current destinations",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DestinationsStatus"
+          },
+          "x-go-name": "Destinations"
+        },
+        "objectID": {
+          "description": "ObjectID is a unique identifier of the object",
+          "type": "string",
+          "x-go-name": "ObjectID"
+        },
+        "objectType": {
+          "description": "ObjectType is the type of the object.\nThe type is used to group multiple objects, for example when checking for object updates.",
+          "type": "string",
+          "x-go-name": "ObjectType"
+        },
+        "orgID": {
+          "description": "OrgID is the organization ID of the object (an object belongs to exactly one organization).",
+          "type": "string",
+          "x-go-name": "OrgID"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "ObjectStatus": {
+      "description": "ObjectStatus describes the delivery status of an object for a destination\nThe status can be one of the following:\nIndication whether the object has been delivered to the destination\ndelivering - indicates that the object is being delivered\ndelivered - indicates that the object was delivered\nconsumed - indicates that the object was consumed\ndeleted - indicates that this destination acknowledged the deletion of the object\nerror - indicates that a feedback error message was received",
+      "type": "object",
+      "required": [
+        "objectType",
+        "objectID",
+        "status"
+      ],
+      "properties": {
+        "objectID": {
+          "description": "ObjectID is the object ID",
+          "type": "string",
+          "x-go-name": "ObjectID"
+        },
+        "objectType": {
+          "description": "ObjectType is the object type",
+          "type": "string",
+          "x-go-name": "ObjectType"
+        },
+        "orgID": {
+          "description": "OrgID is the organization ID of the organization",
+          "type": "string",
+          "x-go-name": "OrgID"
+        },
+        "status": {
+          "description": "Status is the object status for this destination",
+          "type": "string",
+          "enum": [
+            "delivering",
+            "delivered",
+            "consumed",
+            "deleted",
+            "error"
+          ],
+          "x-go-name": "Status"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "Organization": {
+      "description": "Organization contains organization's information",
+      "type": "object",
+      "properties": {
+        "address": {
+          "description": "Address is the broker address to be used when connecting to this organization",
+          "type": "string",
+          "x-go-name": "Address"
+        },
+        "orgID": {
+          "description": "OrgID is the organization ID of the organization",
+          "type": "string",
+          "x-go-name": "OrgID"
+        },
+        "password": {
+          "description": "Password is the password to be used when connecting to this organization",
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "user": {
+          "description": "User is the user name to be used when connecting to this organization",
+          "type": "string",
+          "x-go-name": "User"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "PatternFile": {
+      "description": "It is used when reading json file the user gives us as an input to create the pattern",
+      "type": "object",
+      "title": "PatternFile An implementation of AbstractPatternFile.",
+      "properties": {
+        "agreementProtocols": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AgreementProtocol"
+          },
+          "x-go-name": "AgreementProtocols"
+        },
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "org": {
+          "type": "string",
+          "x-go-name": "Org"
+        },
+        "public": {
+          "type": "boolean",
+          "x-go-name": "Public"
+        },
+        "secretBinding": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SecretBinding"
+          },
+          "x-go-name": "SecretBinding"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceReferenceFile"
+          },
+          "x-go-name": "Services"
+        },
+        "userInput": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          },
+          "x-go-name": "UserInput"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/common"
+    },
+    "Policy": {
+      "description": "Policy describes a policy made up of a set of properties and constraints",
+      "type": "object",
+      "properties": {
+        "constraints": {
+          "description": "Constraints is a set of expressions that form the constraints for the policy",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Constraints"
+        },
+        "properties": {
+          "description": "Properties is the set of properties for a particular policy",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PolicyProperty"
+          },
+          "x-go-name": "Properties"
+        },
+        "services": {
+          "description": "Services is the list of services this object has affinity for",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceID"
+          },
+          "x-go-name": "Services"
+        },
+        "timestamp": {
+          "description": "Timestamp indicates when the policy was last updated (result of time.Now().UTC().UnixNano())",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Timestamp"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "PolicyProperty": {
+      "description": "PolicyProperty is a property in a policy",
+      "type": "object",
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "description": "Name is the name of the property",
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "type": {
+          "description": "Type is the type of the property.\nIt is only required where the system can't interpret the value correctly by context.",
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "value": {
+          "description": "Value is the value of the property",
+          "type": "object",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "Property": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "value": {
+          "type": "object",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
+    },
+    "PropertyList": {
+      "description": "This struct represents property values advertised by the policy",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Property"
+      },
+      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
+    },
+    "SecretBinding": {
+      "description": "The secret binding that maps service secret names to secret manager secret names",
+      "type": "object",
+      "properties": {
+        "secrets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BoundSecret"
+          },
+          "x-go-name": "Secrets"
+        },
+        "serviceArch": {
+          "type": "string",
+          "x-go-name": "ServiceArch"
+        },
+        "serviceOrgid": {
+          "type": "string",
+          "x-go-name": "ServiceOrgid"
+        },
+        "serviceUrl": {
+          "type": "string",
+          "x-go-name": "ServiceUrl"
+        },
+        "serviceVersionRange": {
+          "type": "string",
+          "x-go-name": "ServiceVersionRange"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
+    },
+    "ServiceChoiceFile": {
+      "type": "object",
+      "properties": {
+        "deployment_overrides": {
+          "type": "object",
+          "x-go-name": "DeploymentOverrides"
+        },
+        "deployment_overrides_signature": {
+          "type": "string",
+          "x-go-name": "DeploymentOverridesSignature"
+        },
+        "priority": {
+          "$ref": "#/definitions/WorkloadPriority"
+        },
+        "upgradePolicy": {
+          "$ref": "#/definitions/UpgradePolicy"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/common"
+    },
+    "ServiceDefinition": {
+      "type": "object",
+      "title": "This is the structure of the object returned on a GET /service.",
+      "properties": {
+        "arch": {
+          "type": "string",
+          "x-go-name": "Arch"
+        },
+        "clusterDeployment": {
+          "type": "string",
+          "x-go-name": "ClusterDeployment"
+        },
+        "clusterDeploymentSignature": {
+          "type": "string",
+          "x-go-name": "ClusterDeploymentSignature"
+        },
+        "deployment": {
+          "type": "string",
+          "x-go-name": "Deployment"
+        },
+        "deploymentSignature": {
+          "type": "string",
+          "x-go-name": "DeploymentSignature"
+        },
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "documentation": {
+          "type": "string",
+          "x-go-name": "Documentation"
+        },
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "x-go-name": "LastUpdated"
+        },
+        "matchHardware": {
+          "$ref": "#/definitions/HardwareRequirement"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "public": {
+          "type": "boolean",
+          "x-go-name": "Public"
+        },
+        "requiredServices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceDependency"
+          },
+          "x-go-name": "RequiredServices"
+        },
+        "sharable": {
+          "type": "string",
+          "x-go-name": "Sharable"
+        },
+        "url": {
+          "type": "string",
+          "x-go-name": "URL"
+        },
+        "userInput": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          },
+          "x-go-name": "UserInputs"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "ServiceDependency": {
+      "type": "object",
+      "title": "This type is a tuple used to refer to a specific service that is a dependency for the referencing service.",
+      "properties": {
+        "arch": {
+          "type": "string",
+          "x-go-name": "Arch"
+        },
+        "org": {
+          "type": "string",
+          "x-go-name": "Org"
+        },
+        "url": {
+          "type": "string",
+          "x-go-name": "URL"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        },
+        "versionRange": {
+          "type": "string",
+          "x-go-name": "VersionRange"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
+    },
+    "ServiceFile": {
+      "description": "It is used when reading json file the user gives us as input to create the service",
+      "type": "object",
+      "title": "ServiceFile An implementation of AbstractServiceFile",
+      "properties": {
+        "arch": {
+          "type": "string",
+          "x-go-name": "Arch"
+        },
+        "clusterDeployment": {
+          "type": "object",
+          "x-go-name": "ClusterDeployment"
+        },
+        "clusterDeploymentSignature": {
+          "type": "string",
+          "x-go-name": "ClusterDeploymentSignature"
+        },
+        "deployment": {
+          "type": "object",
+          "x-go-name": "Deployment"
+        },
+        "deploymentSignature": {
+          "type": "string",
+          "x-go-name": "DeploymentSignature"
+        },
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "documentation": {
+          "type": "string",
+          "x-go-name": "Documentation"
+        },
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "matchHardware": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-go-name": "MatchHardware"
+        },
+        "org": {
+          "type": "string",
+          "x-go-name": "Org"
+        },
+        "public": {
+          "type": "boolean",
+          "x-go-name": "Public"
+        },
+        "requiredServices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceDependency"
+          },
+          "x-go-name": "RequiredServices"
+        },
+        "sharable": {
+          "type": "string",
+          "x-go-name": "Sharable"
+        },
+        "url": {
+          "type": "string",
+          "x-go-name": "URL"
+        },
+        "userInput": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          },
+          "x-go-name": "UserInputs"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/common"
+    },
+    "ServiceID": {
+      "description": "ServiceID contains the ID of a service to which an object may have affinity for",
+      "type": "object",
+      "properties": {
+        "arch": {
+          "description": "Arch is the architecture of the service",
+          "type": "string",
+          "x-go-name": "Arch"
+        },
+        "orgID": {
+          "description": "OrgID is the organization ID of the service",
+          "type": "string",
+          "x-go-name": "OrgID"
+        },
+        "serviceName": {
+          "description": "ServiceName is the name of the service",
+          "type": "string",
+          "x-go-name": "ServiceName"
+        },
+        "version": {
+          "description": "Version is the version of the service",
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "ServiceRef": {
+      "type": "object",
+      "properties": {
+        "arch": {
+          "type": "string",
+          "x-go-name": "Arch"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "nodeHealth": {
+          "$ref": "#/definitions/NodeHealth"
+        },
+        "org": {
+          "type": "string",
+          "x-go-name": "Org"
+        },
+        "serviceVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkloadChoice"
+          },
+          "x-go-name": "ServiceVersions"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
+    },
+    "ServiceReference": {
+      "type": "object",
+      "properties": {
+        "agreementLess": {
+          "type": "boolean",
+          "x-go-name": "AgreementLess"
+        },
+        "dataVerification": {
+          "$ref": "#/definitions/DataVerification"
+        },
+        "nodeHealth": {
+          "$ref": "#/definitions/NodeHealth"
+        },
+        "serviceArch": {
+          "type": "string",
+          "x-go-name": "ServiceArch"
+        },
+        "serviceOrgid": {
+          "type": "string",
+          "x-go-name": "ServiceOrg"
+        },
+        "serviceUrl": {
+          "type": "string",
+          "x-go-name": "ServiceURL"
+        },
+        "serviceVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkloadChoice"
+          },
+          "x-go-name": "ServiceVersions"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "ServiceReferenceFile": {
+      "type": "object",
+      "properties": {
+        "agreementLess": {
+          "type": "boolean",
+          "x-go-name": "AgreementLess"
+        },
+        "dataVerification": {
+          "$ref": "#/definitions/DataVerification"
+        },
+        "nodeHealth": {
+          "$ref": "#/definitions/NodeHealth"
+        },
+        "serviceArch": {
+          "type": "string",
+          "x-go-name": "ServiceArch"
+        },
+        "serviceOrgid": {
+          "type": "string",
+          "x-go-name": "ServiceOrg"
+        },
+        "serviceUrl": {
+          "type": "string",
+          "x-go-name": "ServiceURL"
+        },
+        "serviceVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceChoiceFile"
+          },
+          "x-go-name": "ServiceVersions"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/common"
+    },
+    "UpgradePolicy": {
+      "type": "object",
+      "properties": {
+        "lifecycle": {
+          "type": "string",
+          "x-go-name": "Lifecycle"
+        },
+        "time": {
+          "type": "string",
+          "x-go-name": "Time"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "UsageInfo": {
+      "description": "UsageInfo describes the usage of the sync-service node",
+      "type": "object",
+      "properties": {
+        "clientRequests": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "ClientRequests"
+        },
+        "registeredESS": {
+          "type": "integer",
+          "format": "uint32",
+          "x-go-name": "RegisteredESS"
+        },
+        "storedObjects": {
+          "type": "integer",
+          "format": "uint32",
+          "x-go-name": "StoredObjects"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+    },
+    "UserInput": {
+      "type": "object",
+      "title": "UserInput This type is used to describe a configuration variable that the node owner/user has to set before the service is able to execute on the edge node.",
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Input"
+          },
+          "x-go-name": "Inputs"
+        },
+        "serviceArch": {
+          "type": "string",
+          "x-go-name": "ServiceArch"
+        },
+        "serviceOrgid": {
+          "type": "string",
+          "x-go-name": "ServiceOrgid"
+        },
+        "serviceUrl": {
+          "type": "string",
+          "x-go-name": "ServiceUrl"
+        },
+        "serviceVersionRange": {
+          "type": "string",
+          "x-go-name": "ServiceVersionRange"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/policy"
+    },
+    "WorkloadChoice": {
+      "type": "object",
+      "properties": {
+        "deployment_overrides": {
+          "type": "string",
+          "x-go-name": "DeploymentOverrides"
+        },
+        "deployment_overrides_signature": {
+          "type": "string",
+          "x-go-name": "DeploymentOverridesSignature"
+        },
+        "priority": {
+          "$ref": "#/definitions/WorkloadPriority"
+        },
+        "upgradePolicy": {
+          "$ref": "#/definitions/UpgradePolicy"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "WorkloadPriority": {
+      "type": "object",
+      "properties": {
+        "priority_value": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "PriorityValue"
+        },
+        "retries": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Retries"
+        },
+        "retry_durations": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RetryDurationS"
+        },
+        "verified_durations": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "VerifiedDurationS"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
+    },
+    "bulkACLUpdate": {
+      "description": "bulkACLUpdate is the payload used when performing a bulk update on an ACL (either adding uses to an\nACL or removing users from an ACL.",
+      "type": "object",
+      "properties": {
+        "action": {
+          "description": "Action is an action, which can be either add (to add users) or remove (to remove users)",
+          "type": "string",
+          "x-go-name": "Action"
+        },
+        "users": {
+          "description": "aclUsers is an array of ACL entries to be added or removed from the ACL as appropriate. Don's specify ACLRole if action is \"remove\"",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ACLentry"
+          },
+          "x-go-name": "Users"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/core/base"
+    },
+    "healthReport": {
+      "type": "object",
+      "properties": {
+        "dbHealth": {
+          "$ref": "#/definitions/DBHealthStatusInfo"
+        },
+        "general": {
+          "$ref": "#/definitions/HealthStatusInfo"
+        },
+        "mqttHealth": {
+          "$ref": "#/definitions/MQTTHealthStatusInfo"
+        },
+        "usage": {
+          "$ref": "#/definitions/UsageInfo"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/core/base"
+    },
+    "objectUpdate": {
+      "description": "objectUpdate includes the object's metadata and data\nA sync service object includes metadata and optionally binary data.\nWhen an object is created the metadata must be provided. The metadata and the data can then be updated together or one at a time.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "Data is a the object's binary data",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8"
+          },
+          "x-go-name": "Data"
+        },
+        "meta": {
+          "$ref": "#/definitions/MetaData"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/core/base"
+    },
+    "organization": {
+      "description": "organization includes the organization's id and broker address",
+      "type": "object",
+      "properties": {
+        "address": {
+          "description": "Broker address",
+          "type": "string",
+          "x-go-name": "Address"
+        },
+        "org-id": {
+          "description": "Organization ID",
+          "type": "string",
+          "x-go-name": "OrgID"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/core/base"
+    },
+    "secretObject": {
+      "type": "object",
+      "title": "secretObject includes the secret key and secret value.",
+      "properties": {
+        "key": {
+          "type": "string",
+          "x-go-name": "Key"
+        },
+        "value": {
+          "type": "string",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/resource"
+    },
+    "webhookUpdate": {
+      "description": "webhookUpdate includes the webhook's action and URL\nA webhook can be used to allow the sync service to invoke actions when new information becomes available.\nAn application can choose between using a webhook and periodically polling the sync service for updates.",
+      "type": "object",
+      "properties": {
+        "action": {
+          "description": "Action is an action can be either register (create/update a webhook) or delete (delete the webhook)",
+          "type": "string",
+          "x-go-name": "Action"
+        },
+        "url": {
+          "description": "URL is the URL to invoke when new information for the object is available",
+          "type": "string",
+          "x-go-name": "URL"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/edge-sync-service/core/base"
+    }
+  }
+}

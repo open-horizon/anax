@@ -80,6 +80,15 @@ Note that this target is automatically executed when executing targets `check` a
 * Reload the systemd unit file with `systemctl daemon-reload`.
 * Restart the anax process with `systemctl restart horizon.service`.
 
+#### Generate swagger documentation
+
+    swagger generate spec -o ./swagger.json --scan-model
+
+*Note - Place agbot secure api swagger file in `docs/agbot_secure_api`*
+
+    cd agreementbot
+    swagger generate spec -o ../docs/agbot_secure_api.json --scan-model
+
 ### Internationalization
 
     make i18n-catalog

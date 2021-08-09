@@ -135,7 +135,8 @@ func (p *CompCheck) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// The output format for the compatibility check
+// CompCheckOutput The output format for the compatibility check
+// swagger:model
 type CompCheckOutput struct {
 	Compatible bool               `json:"compatible"`
 	Reason     map[string]string  `json:"reason"` // set when not compatible
