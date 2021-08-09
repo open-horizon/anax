@@ -401,7 +401,7 @@ func RegistrationFailure() {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	msgPrinter.Printf("Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.")
-	msgPrinter.Println("")
+	msgPrinter.Println()
 
 	retries := 3
 	for i := 0; i < retries; i++ {
@@ -521,7 +521,7 @@ func SetConfigState(timeout int, inputFile string) error {
 			c <- err.Error()
 		}
 		if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 && httpCode == 400 {
-			err_string := fmt.Sprintf("Registration failed because %v", matches[0])
+			err_string := msgPrinter.Sprintf("Registration failed because %v", matches[0])
 			if inputFile != "" {
 				c <- msgPrinter.Sprintf("%v. Please define variables for service %v in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", err_string, matches[2], inputFile)
 			} else {

@@ -346,7 +346,8 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 			objectMeta.Signature = signature
 		}
 
-		msgPrinter.Println("Digital sign finished.")
+		msgPrinter.Printf("Digital sign finished.")
+		msgPrinter.Println()
 	}
 
 	type ObjectWrapper struct {

@@ -15,7 +15,6 @@ import (
 	"strings"
 )
 
-
 // This function is called when an object is ready to be deployed to a node. It will perform the policy compatibility test
 // if necessary and will then update the object's destination list in the CSS.
 func AssignObjectToNodes(ec exchange.ExchangeContext, objPolicies *exchange.ObjectDestinationPolicies, nodeId string, nodePolicy *policy.Policy, destsToAddMap map[string]*exchange.ObjectDestinationsToAdd, knownCompatible bool) (bool, map[string]*exchange.ObjectDestinationsToAdd, error) {
@@ -62,7 +61,7 @@ func AssignObjectToNodes(ec exchange.ExchangeContext, objPolicies *exchange.Obje
 			}
 		}
 
-		// Policies are compatible so add this node to destination list for the object. 
+		// Policies are compatible so add this node to destination list for the object.
 		dest := "openhorizon.edgenode:" + exchange.GetId(nodeId)
 		glog.V(5).Infof(opLogstring(fmt.Sprintf("adding node %v to destination list for object %v:%v:%v", dest, objPol.OrgID, objPol.ObjectType, objPol.ObjectID)))
 
@@ -128,14 +127,14 @@ func DeleteDestinationsForObjects(ec exchange.ExchangeContext, destsToDeleteMap 
 	getObjectHandler := exchange.GetHTTPObjectQueryHandler(ec)
 	for key, destsToDelete := range destsToDeleteMap {
 		objOrg, objType, objID := extractObjectKey(key)
-		glog.V(3).Infof(opLogstring(fmt.Sprintf("deleting %d destinations %v for object %v of type %v", len(*destsToDelete) , *destsToDelete, objID, objType)))
+		glog.V(3).Infof(opLogstring(fmt.Sprintf("deleting %d destinations %v for object %v of type %v", len(*destsToDelete), *destsToDelete, objID, objType)))
 
 		postDestRequest := exchange.PostDestsRequest{
 			Action:       common.RemoveAction,
 			Destinations: *destsToDelete,
 		}
 
-		 // The update could fail if the object has been deleted. That should be treated as an expected error.
+		// The update could fail if the object has been deleted. That should be treated as an expected error.
 		if obj, err := getObjectHandler(objOrg, objID, objType); err != nil {
 			glog.Errorf(opLogstring(fmt.Sprintf("object %v %v %v destination cannot be deleted, %v", objOrg, objType, objID, err)))
 		} else if obj == nil {
@@ -252,7 +251,7 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 	objPolicies := new(exchange.ObjectDestinationPolicies)
 	(*objPolicies) = append((*objPolicies), newPolicy)
 
-	// Key: {objOrg}:{objType}:{objID}, value: list of destinations to add/delete 
+	// Key: {objOrg}:{objType}:{objID}, value: list of destinations to add/delete
 	destsToAddMap := make(map[string]*exchange.ObjectDestinationsToAdd, 0)
 	destsToDeleteMap := make(map[string]*exchange.ObjectDestinationsToDelete, 0)
 	for _, agreement := range agreements {
@@ -493,4 +492,3 @@ func extractObjectKey(objKey string) (string, string, string) {
 var opLogstring = func(v interface{}) string {
 	return fmt.Sprintf("Object Policy: %v", v)
 }
-
