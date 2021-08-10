@@ -29,6 +29,11 @@ func printResponse(resp []byte, structure interface{}) {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal REST API response: %v", perr))
 	}
 
+	// replace nil with empty slice if needed
+	if _, ok := structure.([]string); ok && structure == nil {
+		structure = make([]string, 0)
+	}
+
 	// print the parsed structure
 	jsonBytes, jerr := json.MarshalIndent(structure, "", cliutils.JSON_INDENT)
 	if jerr != nil {

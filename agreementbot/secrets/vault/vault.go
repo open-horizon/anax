@@ -127,7 +127,7 @@ func (vs *AgbotVaultSecrets) ListOrgUserSecrets(user, token, org, path string) (
 	}
 
 	// trim the user/<user> prefix from the names
-	var secretList []string
+	secretList := make([]string, 0)
 	for _, secret := range secrets {
 		secretList = append(secretList, strings.TrimPrefix(secret, path+"/"))
 	}
@@ -139,7 +139,7 @@ func (vs *AgbotVaultSecrets) ListOrgUserSecrets(user, token, org, path string) (
 // of the names in the input queue ("" if top-level vault directory)
 func (vs *AgbotVaultSecrets) gatherSecretNames(user, token, org, path string, queue []string) []string {
 
-	var secretNames []string
+	secretNames := make([]string, 0)
 
 	// go through the queue and check for directories and names
 	for _, secret := range queue {
@@ -217,7 +217,7 @@ func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url, path string) ([]
 	}
 
 	// filter out user/ directory if top-level
-	var secrets []string
+	secrets := make([]string, 0)
 	if path == "" {
 		for _, secret := range respMsg.Data.Keys {
 			if secret != "user/" {

@@ -1037,7 +1037,7 @@ func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error
 
 	userPath := "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
 	if info.vaultSecretName == "" {
-		var secretNames []string
+		secretNames := make([]string, 0)
 		var err error
 		if info.user != "" {
 			// listing user level secrets
