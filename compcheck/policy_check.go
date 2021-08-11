@@ -765,6 +765,10 @@ func getServiceListFromInputDefs(getServiceResolvedDef exchange.ServiceDefResolv
 	workload policy.Workload, svcDefs []common.AbstractServiceFile,
 	msgPrinter *message.Printer) (map[string]exchange.ServiceDefinition, common.AbstractServiceFile, string, error) {
 
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
 	// find the top level service that matches the workload from the input services
 	var sDefTop common.AbstractServiceFile
 	sIdTop := ""

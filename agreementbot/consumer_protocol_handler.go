@@ -152,7 +152,7 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 					logMsg = ""
 				}
 			}
-		} 
+		}
 	}
 
 	// Grab the exchange ID of the message receiver

@@ -2,8 +2,8 @@ package events
 
 import (
 	"fmt"
-	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
@@ -1468,7 +1468,7 @@ func (m ExchangeDeviceMessage) String() string {
 					pm = ""
 				}
 			}
-		} 
+		}
 	}
 	return fmt.Sprintf("Event: %v, AgbotId: %v, ProtocolMessage: %v, Time: %v, ExchangeMessage: %s", m.event, m.agbotId, pm, m.Time, m.exchangeMessage)
 }

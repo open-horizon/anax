@@ -747,6 +747,10 @@ func DeploymentRequiresPrivilege(deploymentString string, msgPrinter *message.Pr
 
 // verifies the input node type has valid value and it matches the exchange node type.
 func VerifyNodeType(nodeType string, exchNodeType string, nodeId string, msgPrinter *message.Printer) (string, error) {
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
 	if nodeType != "" {
 		if nodeType != persistence.DEVICE_TYPE_DEVICE && nodeType != persistence.DEVICE_TYPE_CLUSTER {
 			return "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Invalid node type: %v. It must be 'device' or 'cluster'.", nodeType)), COMPCHECK_INPUT_ERROR)
@@ -765,6 +769,10 @@ func VerifyNodeType(nodeType string, exchNodeType string, nodeId string, msgPrin
 
 // Check if the node type is compatible with the serivce
 func CheckTypeCompatibility(nodeType string, serviceDef common.AbstractServiceFile, msgPrinter *message.Printer) (bool, string) {
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
 	if (nodeType == "" || nodeType == persistence.DEVICE_TYPE_DEVICE) && common.DeploymentIsEmpty(serviceDef.GetDeployment()) {
 		return false, msgPrinter.Sprintf("Service does not have deployment configuration for node type 'device'.")
 	}
@@ -886,6 +894,10 @@ func GetServiceAndDeps(svcUrl, svcOrg, svcVersion, svcArch string,
 	inServices []common.AbstractServiceFile, inDepServices map[string]exchange.ServiceDefinition,
 	getServiceResolvedDef exchange.ServiceDefResolverHandler,
 	msgPrinter *message.Printer) (common.AbstractServiceFile, string, map[string]exchange.ServiceDefinition, error) {
+
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
 
 	var topSvc common.AbstractServiceFile
 	var exchTopSvc *exchange.ServiceDefinition
