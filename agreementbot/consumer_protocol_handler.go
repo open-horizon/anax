@@ -139,9 +139,25 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 		return errors.New(fmt.Sprintf("input message target is %T, expecting exchange.MessageTarget", mt))
 	}
 
+	logMsg := string(pay)
+
+	// Try to demarshal pay into Proposal struct
+	if glog.V(5) {
+		if newProp, err := abstractprotocol.DemarshalProposal(logMsg); err == nil {
+			// check if log message is a byte-encoded Proposal struct
+			if len(newProp.AgreementId()) > 0 {
+				// if it is a proposal, obscure the secrets
+				if logMsg, err = abstractprotocol.ObscureProposalSecret(logMsg); err != nil {
+					// something went wrong, send empty string to ensure secret protection
+					logMsg = ""
+				}
+			}
+		} 
+	}
+
 	// Grab the exchange ID of the message receiver
 	glog.V(3).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, cutil.TruncateDisplayString(string(pay), 300))))
-	glog.V(5).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))))
+	glog.V(5).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, logMsg)))
 
 	// Get my own keys
 	myPubKey, myPrivKey, keyErr := exchange.GetKeys(w.config.AgreementBot.MessageKeyPath)
