@@ -134,6 +134,7 @@ VAULT_DEV_LISTEN_ADDRESS := $(shell jq ".VAULT_DEV_LISTEN_ADDRESS" $(VAULT_CONFI
 
 #sdo
 DOCKER_SDO_CNAME := sdo-owner-services
+HZN_SDO_SVC_URL := https://sdo-owner-services:9008/api
 
 ifndef verbose
 .SILENT:
@@ -202,6 +203,7 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "HZN_VAULT_ADDR"="$(VAULT_ADDR)" \
 		-e "VAULT_TOKEN"="$(VAULT_DEV_ROOT_TOKEN_ID)" \
 		-e "VAULT_ADDR"="$(VAULT_ADDR)" \
+		-e "HZN_SDO_SVC_URL"="$(HZN_SDO_SVC_URL)" \
 		-t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)
 	docker cp $(E2EDEVTEST_TEMPFS)/. $(DOCKER_TEST_CNAME):/
 

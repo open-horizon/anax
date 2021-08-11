@@ -412,9 +412,9 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 fi
 
 if [ "$NOSDO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  ./hzn_voucher.sh
+  ./hzn_sdo.sh
   if [ $? -ne 0 ]; then
-    echo "SDO Voucher test using hzn command failure."
+    echo "SDO test using hzn command failure."
     exit 1
   fi
 fi

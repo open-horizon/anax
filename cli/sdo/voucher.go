@@ -50,7 +50,7 @@ type InspectOutput struct {
 	Voucher InspectVoucher `json:"voucher"`
 }
 
-// hzn voucher inspect <voucher-file>
+// hzn sdo voucher inspect <voucher-file>
 func VoucherInspect(voucherFile *os.File) {
 	defer voucherFile.Close()
 	cliutils.Verbose("Inspecting voucher file name: %s", voucherFile.Name())
@@ -67,6 +67,11 @@ func VoucherInspect(voucherFile *os.File) {
 
 	output := cliutils.MarshalIndent(outStruct, "voucher inspect")
 	fmt.Println(output)
+}
+
+func DeprecatedVoucherInspect(voucherFile *os.File) {
+	fmt.Fprintf(os.Stderr, "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.\n")
+	VoucherInspect(voucherFile)
 }
 
 func parseVoucherBytes(voucherBytes []byte, outStruct *InspectOutput) error {
@@ -163,9 +168,9 @@ func getVouchers(org, userCreds, apiMsg string, voucher string) ([]byte, string)
 	url := cliutils.GetSdoSvcUrl()
 
 	if voucher == "" {
-		sdoURL = url + "/vouchers"
+		sdoURL = url + "/orgs/" + org + "/vouchers"
 	} else {
-		sdoURL = url + "/vouchers" + "/" + voucher
+		sdoURL = url + "/orgs/" + org + "/vouchers" + "/" + voucher
 	}
 
 	creds := cliutils.OrgAndCreds(org, userCreds)
@@ -184,7 +189,16 @@ func getVouchers(org, userCreds, apiMsg string, voucher string) ([]byte, string)
 	if err != nil {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
-	if httpCode != 200 {
+	if httpCode == 404 || httpCode == 403 {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid voucher name. Voucher \"%s\" does not exist in org \"%s\".\n", voucher, org))
+	} else if httpCode == 401 {
+		user, _ := cliutils.SplitIdToken(userCreds)
+		if voucher == "" {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid credentials. User \"%s\" cannot access vouchers in org \"%s\" with given credentials.\n", user, org))
+		} else {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid credentials. User \"%s\" cannot access voucher \"%s\" in org \"%s\" with given credentials.\n", user, voucher, org))
+		}
+	} else if httpCode != 200 {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, string(respBodyBytes)))
 	}
 
@@ -231,7 +245,7 @@ func VoucherList(org, userCreds, voucher string, namesOnly bool) {
 
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn sdo voucher list' output: %v", err))
 		}
 
 		// list only the uuid's of imported vouchers
@@ -260,7 +274,7 @@ func VoucherList(org, userCreds, voucher string, namesOnly bool) {
 
 			jsonBytes, err := json.MarshalIndent(vouch, "", cliutils.JSON_INDENT)
 			if err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn sdo voucher list' output: %v", err))
 			}
 			fmt.Printf("%s\n", jsonBytes)
 
@@ -271,7 +285,32 @@ func VoucherList(org, userCreds, voucher string, namesOnly bool) {
 	}
 }
 
-// hzn voucher inspect <voucher-file>
+func DeprecatedVoucherList(org, userCreds, voucher string, namesOnly bool) {
+	fmt.Fprintf(os.Stderr, "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.\n")
+	VoucherList(org, userCreds, voucher, namesOnly)
+}
+
+// download the specified device-id voucher to file on disk
+func VoucherDownload(org, userCreds, device, outputFile string, overwrite bool) {
+	msgPrinter := i18n.GetMessagePrinter()
+	cliutils.Verbose(msgPrinter.Sprintf("Listing imported SDO vouchers."))
+
+	// call the ocs-api to get the uploaded vouchers
+	var respBodyBytes []byte
+	var apiMsg string
+	respBodyBytes, _ = getVouchers(org, userCreds, apiMsg, device)
+
+	// Download response body directly to file
+	if outputFile != "" {
+		fileName := cliutils.DownloadToFile(outputFile, device, respBodyBytes, ".json", 0600, overwrite)
+		fmt.Printf("Voucher \"%s\" successfully downloaded to %s from the SDO owner services.\n", device, fileName)
+	} else {
+		// List voucher on screen
+		fmt.Printf("%s\n", respBodyBytes)
+	}
+}
+
+// hzn sdo voucher import <voucher-file>
 func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyFilePath, patternName string) {
 	defer voucherFile.Close()
 	msgPrinter := i18n.GetMessagePrinter()
@@ -304,6 +343,11 @@ func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyF
 	} else {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unsupported voucher file type extension: %s", voucherFile.Name()))
 	}
+}
+
+func DeprecatedVoucherImport(org, userCreds string, voucherFile *os.File, example, policyFilePath, patternName string) {
+	fmt.Fprintf(os.Stderr, "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.\n")
+	VoucherImport(org, userCreds, voucherFile, example, policyFilePath, patternName)
 }
 
 func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath, patternName string) {
@@ -371,7 +415,7 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 	// Import the voucher to the SDO owner service
 	creds := cliutils.OrgAndCreds(org, userCreds)
 	importResponse := ImportResponse{}
-	SdoPostVoucher(sdoUrl+"/voucher", creds, voucherBytes, &importResponse)
+	SdoPostVoucher(sdoUrl+"/orgs/" + org + "/vouchers", creds, org, voucherBytes, &importResponse)
 	if !quieter {
 		msgPrinter.Printf("Voucher imported. Node id: %s, token: %s", importResponse.NodeId, importResponse.NodeToken)
 		msgPrinter.Println()
@@ -401,7 +445,7 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 }
 
 // Like cliutils.ExchangePutPost, except it gets a response body on success
-func SdoPostVoucher(url string, creds string, requestBodyBytes []byte, respBody *ImportResponse) {
+func SdoPostVoucher(url, creds, org string, requestBodyBytes []byte, respBody *ImportResponse) {
 	msgPrinter := i18n.GetMessagePrinter()
 	method := http.MethodPost
 	apiMsg := method + " " + url
@@ -417,7 +461,12 @@ func SdoPostVoucher(url string, creds string, requestBodyBytes []byte, respBody 
 	if err != nil {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
-	if httpCode != 201 {
+	if httpCode == 400 {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid voucher file format: %s.\n", string(respBodyBytes)))
+	} else if httpCode == 401 {
+		user, _ := cliutils.SplitIdToken(creds)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid credentials. User \"%s\" cannot access vouchers in org \"%s\" with given credentials.\n", user, org))
+	} else if httpCode != 201 {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, string(respBodyBytes)))
 	}
 	err = json.Unmarshal(respBodyBytes, respBody)
