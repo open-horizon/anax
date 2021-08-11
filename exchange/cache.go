@@ -135,8 +135,8 @@ func (s ServiceDockerAuth) DeepCopy() []ImageDockerAuth {
 }
 
 // GetServiceKeysFromCache returns the service keys from the exchange cache if it is present, or nil if it is not
-func GetServiceKeysFromCache(svcOrg string, svcId string, svcArch string, svcVersion string) *map[string]string {
-	svcKeys := GetResourceFromCache(ServicePolicyCacheMapKey(svcOrg, svcId, svcArch, svcVersion), SVC_KEY_TYPE_CACHE, 0)
+func GetServiceKeysFromCache(sId string) *map[string]string {
+	svcKeys := GetResourceFromCache(sId, SVC_KEY_TYPE_CACHE, 0)
 
 	if typedSvcKeys, ok := svcKeys.(map[string]string); ok {
 		return &typedSvcKeys
@@ -381,17 +381,19 @@ func UpdateCacheNodePatchWriteThru(nodeOrg string, nodeId string, cachedDevice *
 // DeleteCacheResourceFromChange takes an ExchangeChange and attempts to delete the now out-of-date exchange cache resource if it is present
 func DeleteCacheResourceFromChange(change ExchangeChange, nodeId string) {
 	if change.IsService() {
-		id, arch, vers := svcInformationFromSvcId(change.ID)
+		id, arch, _ := svcInformationFromSvcId(change.ID)
 		DeleteCacheResource(SVC_DEF_TYPE_CACHE, ServiceCacheMapKey(change.OrgID, id, arch))
-		DeleteCacheResource(SVC_KEY_TYPE_CACHE, ServicePolicyCacheMapKey(change.OrgID, id, arch, vers))
-		DeleteCacheResource(SVC_DOCKAUTH_TYPE_CACHE, change.ID)
+
+		sIdWithOrg := fmt.Sprintf("%s/%s", change.OrgID, change.ID)
+		DeleteCacheResource(SVC_KEY_TYPE_CACHE, sIdWithOrg)
+		DeleteCacheResource(SVC_DOCKAUTH_TYPE_CACHE, sIdWithOrg)
 	} else if change.IsNode(nodeId) || change.IsNodeAgreement(nodeId) || change.IsNodeServiceConfigState(nodeId) {
 		DeleteCacheResource(NODE_DEF_TYPE_CACHE, NodeCacheMapKey(change.OrgID, change.ID))
 	} else if change.IsNodePolicy(nodeId) {
 		DeleteCacheResource(NODE_POL_TYPE_CACHE, NodeCacheMapKey(change.OrgID, change.ID))
 	} else if change.IsServicePolicy() {
-		id, arch, vers := svcInformationFromSvcId(change.ID)
-		DeleteCacheResource(SVC_POL_TYPE_CACHE, ServicePolicyCacheMapKey(change.OrgID, id, arch, vers))
+		sIdWithOrg := fmt.Sprintf("%s/%s", change.OrgID, change.ID)
+		DeleteCacheResource(SVC_POL_TYPE_CACHE, sIdWithOrg)
 	} else if change.IsOrg() && (change.Operation == CHANGE_OPERATION_CREATED || change.Operation == CHANGE_OPERATION_DELETED) {
 		DeleteOrgCachedResources(change.OrgID)
 	} else if change.IsOrg() {
