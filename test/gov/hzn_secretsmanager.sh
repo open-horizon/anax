@@ -56,7 +56,6 @@ E2EDEV_ORG="e2edev@somecomp.com"
 E2EDEV_ADMIN_AUTH="e2edevadmin:e2edevadminpw"
 USERDEV_ORG="userdev"
 USERDEV_ADMIN_AUTH="userdevadmin:userdevadminpw"
-USERDEV_USER_AUTH="userdevuser:userdevuserpw"
 
 # -----------------------
 # ----- ORG SECRETS -----
@@ -212,32 +211,32 @@ CMD="hzn sm secret add --secretKey password -d password123 -o ${USERDEV_ORG} -u 
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
+echo -e "$PREFIX adding test user 1 for ${USERDEV_ORG} organization"
+CMD="hzn exchange user create -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} userdevuser1 userdevuser1pw"
+RES=$($CMD)
+print_command_and_response "$CMD" "$RES"
+
+echo -e "$PREFIX adding test user 2 for ${USERDEV_ORG} organization"
+CMD="hzn exchange user create -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} userdevuser2 userdevuser2pw"
+RES=$($CMD)
+print_command_and_response "$CMD" "$RES"
+
 echo -e "$PREFIX adding user secret for ${USERDEV_ORG} organization"
-CMD="hzn sm secret add --secretKey password -d password123 -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
-RES=$($CMD)
-print_command_and_response "$CMD" "$RES"
-
-echo -e "$PREFIX adding user secret for ${E2EDEV_ORG} organization"
-CMD="hzn sm secret add --secretKey password -d password321 -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} user/e2edevadmin/test-password"
-RES=$($CMD)
-print_command_and_response "$CMD" "$RES"
-
-echo -e "$PREFIX adding test user for ${USERDEV_ORG} organization"
-CMD="hzn exchange user create -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} userdevuser userdevuserpw"
+CMD="hzn sm secret add --secretKey password -d password123 -o ${USERDEV_ORG} -u userdevuser1:userdevuser1pw user/userdevuser1/test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
 # error on `list` - secret owned by a different user 
 echo -e "$PREFIX listing a secret owned by a different user"
 
-CMD="hzn sm secret list -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/e2edevadmin/test-password"
+CMD="hzn sm secret list -o ${USERDEV_ORG} -u userdevuser2:userdevuser2pw user/userdevuser1/test-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "shouldn't be able to list a secret owned by a different user"
 
 # error on `remove` - secret owned by a different user
 echo -e "$PREFIX removing a secret owned by a different user"
 
-CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/e2edevadmin/test-password"  
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u userdevuser2:userdevuser2pw user/userdevuser1/test-password"  
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "shouldn't be able to remove a secret owned by a different user"
 
@@ -265,21 +264,21 @@ verify "$CMD" "$RES" "No secret(s) found" "shouldn't be able to read a secret th
 # error on `read` - user can't read org level secrets 
 echo -e "$PREFIX non-admin shouldn't read org level secrets"
 
-CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_USER_AUTH} test-password"
+CMD="hzn sm secret read -o ${USERDEV_ORG} -u userdevuser1:userdevuser1pw test-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "user shouldn't be able to read org-level secrets"
 
 # error on `read` - user can't read another user's secrets
 echo -e "$PREFIX user shouldn't read another user's secrets"
 
-CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_USER_AUTH} user/userdevadmin/test-password"
+CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevuser1/test-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "user shouldn't be able to read another user's secrets"
 
 # error on `add` - secret owned by a different user 
 echo -e "$PREFIX adding a secret owned by a different user"
 
-CMD="hzn sm secret add --secretKey password -d password456 -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/e2edevadmin/fake-password"
+CMD="hzn sm secret add --secretKey password -d password456 -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevuser1/fake-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "user shouldn't be able to add to another user's secrets"
 
@@ -316,11 +315,7 @@ RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
 echo -e "$PREFIX removing user secrets"
-CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
-RES=$($CMD)
-print_command_and_response "$CMD" "$RES"
-
-CMD="hzn sm secret remove -f -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} user/e2edevadmin/test-password"
+CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevuser1/test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
@@ -334,8 +329,12 @@ RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
 # remove test user
-echo -e "$PREFIX removing test user"
-CMD="hzn exchange user remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} -f userdevuser"
+echo -e "$PREFIX removing test users"
+CMD="hzn exchange user remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} -f userdevuser1"
+RES=$($CMD)
+print_command_and_response "$CMD" "$RES"
+
+CMD="hzn exchange user remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} -f userdevuser2"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
