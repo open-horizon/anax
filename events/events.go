@@ -119,6 +119,9 @@ const (
 
 	// Secret related
 	UPDATED_SECRETS EventId = "SECRET_UPDATES"
+
+	// ESS related
+	ESS_UNCONFIG EventId = "ESS_UNCONFIG"
 )
 
 type EndContractCause string
@@ -1740,6 +1743,36 @@ func (n NodeShutdownCompleteMessage) Err() string {
 
 func NewNodeShutdownCompleteMessage(id EventId, errorMsg string) *NodeShutdownCompleteMessage {
 	return &NodeShutdownCompleteMessage{
+		event: Event{
+			Id: id,
+		},
+		err: errorMsg,
+	}
+}
+
+type SyncServiceCleanedUpMessage struct {
+	event Event
+	err   string
+}
+
+func (n *SyncServiceCleanedUpMessage) Event() Event {
+	return n.event
+}
+
+func (n SyncServiceCleanedUpMessage) String() string {
+	return n.ShortString()
+}
+
+func (n SyncServiceCleanedUpMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, Error: %v", n.event, n.err)
+}
+
+func (n SyncServiceCleanedUpMessage) Err() string {
+	return n.err
+}
+
+func NewSyncServiceCleanedUpMessage(id EventId, errorMsg string) *SyncServiceCleanedUpMessage {
+	return &SyncServiceCleanedUpMessage{
 		event: Event{
 			Id: id,
 		},

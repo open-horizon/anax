@@ -55,6 +55,7 @@ type GovernanceWorker struct {
 	limitedRetryEC    exchange.ExchangeContext
 	exchErrors        cache.Cache
 	noworkDispatch    int64 // The last time the NoWorkHandler was dispatched.
+	essCleanedUp      bool
 }
 
 func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -82,6 +83,7 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 		limitedRetryEC:  lrec,
 		exchErrors:      cache.NewSimpleMapCache(),
 		noworkDispatch:  time.Now().Unix(),
+		essCleanedUp:    false,
 	}
 
 	// Start the worker and set the no work interval to 10 seconds.
@@ -309,6 +311,10 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		case events.UNCONFIGURE_COMPLETE:
 			w.Commands <- worker.NewTerminateCommand("shutdown")
 		}
+
+	case *events.SyncServiceCleanedUpMessage:
+		w.essCleanedUp = true
+		glog.V(5).Infof(logString(fmt.Sprintf("Receive SyncServiceCleanedUpMessage event, set ess.CleanUp to %t for governance worker.", w.essCleanedUp)))
 
 	case *events.NodeHeartbeatStateChangeMessage:
 		msg, _ := incoming.(*events.NodeHeartbeatStateChangeMessage)
@@ -1400,12 +1406,14 @@ func (w *GovernanceWorker) NoWorkHandler() {
 
 	// When all subworkers are down, start the shutdown process.
 	if w.IsWorkerShuttingDown() && w.ShuttingDownCmd != nil {
-		if w.AreAllSubworkersTerminated() {
+		if w.AreAllSubworkersTerminated() && w.essCleanedUp {
 			glog.V(5).Infof(logString(fmt.Sprintf("GovernanceWorker initiating async shutdown.")))
 			cmd := w.ShuttingDownCmd
 			// This is one of the few go routines that should NOT be abstracted as a subworker.
 			go w.nodeShutdown(cmd)
 			w.ShuttingDownCmd = nil
+		} else if !w.essCleanedUp {
+			glog.V(5).Infof(logString(fmt.Sprintf("GovernanceWorker waiting for ESS to finish cleanup.")))
 		} else {
 			glog.V(5).Infof(logString(fmt.Sprintf("GovernanceWorker waiting for subworkers to terminate.")))
 		}
