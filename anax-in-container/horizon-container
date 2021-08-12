@@ -177,9 +177,10 @@ start() {
 			fi
 		fi
 
-		# create fss domain socket path and ess auth path
+		# create fss domain socket path, ess auth path and secret path
 		mkdir -p ${fssHostSharePath}/fss-domain-socket
 		mkdir -p ${fssHostSharePath}/ess-auth
+		mkdir -p ${fssHostSharePath}/secrets
 	else
 		: # updating will keep files inside $fssHostSharePath
 	fi
