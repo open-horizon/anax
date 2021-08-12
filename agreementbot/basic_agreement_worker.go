@@ -398,8 +398,15 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 					// Record the secret update ACK message.
 					if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.Reply.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{}); err != nil {
 						glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.Reply.AgreementId(), err)))
-					} else if _, err := a.db.AgreementSecretUpdateAckTime(wi.Reply.AgreementId(), a.protocolHandler.Name(), agreement.LastSecretUpdateTime); err != nil {
-						glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("unable to save secret update ack time for %s, error: %v", wi.Reply.AgreementId(), err)))
+					} else {
+						if agreement != nil {
+							if _, err := a.db.AgreementSecretUpdateAckTime(wi.Reply.AgreementId(), a.protocolHandler.Name(), agreement.LastSecretUpdateTime); err != nil {
+								glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("unable to save secret update ack time for %s, error: %v", wi.Reply.AgreementId(), err)))
+							}
+						} else {
+							// Agreement must belong to other agbot
+							deleteMessage = false
+						}
 					}
 
 				}
