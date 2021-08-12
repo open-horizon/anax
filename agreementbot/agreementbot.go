@@ -313,6 +313,9 @@ func (w *AgreementBotWorker) Initialize() bool {
 	// Start the go thread that heartbeats to the database.
 	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3), false)
 
+	// Login the agbot to the secrets provider.
+	w.secretsProviderMaintenance()
+
 	// Start the go thread that ensures the secrets provider remains logged in.
 	if w.secretProvider != nil {
 		w.DispatchSubworker(SECRETS_PROVIDER, w.secretsProviderMaintenance, 60, false)
@@ -1483,6 +1486,10 @@ func (w *AgreementBotWorker) messageKeyCheck() int {
 
 // This function is called by the secrets provider sub worker to ensure that the secrets provider remains logged in.
 func (w *AgreementBotWorker) secretsProviderMaintenance() int {
+
+	if w.secretProvider == nil {
+		return 0
+	}
 
 	if !w.secretProvider.IsReady() {
 		if err := w.secretProvider.Login(); err != nil {
