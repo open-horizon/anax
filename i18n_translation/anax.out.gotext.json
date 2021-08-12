@@ -867,6 +867,14 @@
       "translation": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}"
     },
     {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag."
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}"
+    },
+    {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
       "translation": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}"
     },

@@ -387,8 +387,8 @@
       "translation": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false)."
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}"
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "translation": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -2227,6 +2227,70 @@
       "translation": "Show the Horizon version."
     },
     {
+      "id": "List and manage resources in SDO owner services",
+      "translation": "List and manage resources in SDO owner services"
+    },
+    {
+      "id": "List and manage Horizon SDO ownership keys.",
+      "translation": "List and manage Horizon SDO ownership keys."
+    },
+    {
+      "id": "List the SDO ownership keys stored in SDO owner services.",
+      "translation": "List the SDO ownership keys stored in SDO owner services."
+    },
+    {
+      "id": "List the full details of this SDO ownership key.",
+      "translation": "List the full details of this SDO ownership key."
+    },
+    {
+      "id": "Create a new key in SDO owner services.",
+      "translation": "Create a new key in SDO owner services."
+    },
+    {
+      "id": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
+      "translation": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension."
+    },
+    {
+      "id": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
+      "translation": "The file that the returned public key is written to. If omit, the key will be printed to the console."
+    },
+    {
+      "id": "Overwrite the existing output public key file if it exists.",
+      "translation": "Overwrite the existing output public key file if it exists."
+    },
+    {
+      "id": "Download the specified key from SDO owner services.",
+      "translation": "Download the specified key from SDO owner services."
+    },
+    {
+      "id": "The name of the key to be downloaded from SDO owner services.",
+      "translation": "The name of the key to be downloaded from SDO owner services."
+    },
+    {
+      "id": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
+      "translation": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console."
+    },
+    {
+      "id": "Overwrite the existing file if it exists.",
+      "translation": "Overwrite the existing file if it exists."
+    },
+    {
+      "id": "Remove a key from SDO owner services.",
+      "translation": "Remove a key from SDO owner services."
+    },
+    {
+      "id": "The name of the key to be removed from SDO owner services.",
+      "translation": "The name of the key to be removed from SDO owner services."
+    },
+    {
+      "id": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
+      "translation": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services."
+    },
+    {
+      "id": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
+      "translation": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console."
+    },
+    {
       "id": "List and manage Horizon SDO ownership vouchers.",
       "translation": "List and manage Horizon SDO ownership vouchers."
     },
@@ -2251,16 +2315,12 @@
       "translation": "The SDO ownership voucher file."
     },
     {
-      "id": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered. HZN_SDO_SVC_URL must be set in the environment, /etc/default/horizon, or one of the hzn.json files.",
-      "translation": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered. HZN_SDO_SVC_URL must be set in the environment, /etc/default/horizon, or one of the hzn.json files."
+      "id": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+      "translation": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered."
     },
     {
       "id": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).",
       "translation": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored)."
-    },
-    {
-      "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
-      "translation": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value."
     },
     {
       "id": "Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.",
@@ -2273,6 +2333,38 @@
     {
       "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
       "translation": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy."
+    },
+    {
+      "id": "Download the specified SDO ownership voucher from SDO owner services.",
+      "translation": "Download the specified SDO ownership voucher from SDO owner services."
+    },
+    {
+      "id": "The SDO ownership voucher to download.",
+      "translation": "The SDO ownership voucher to download."
+    },
+    {
+      "id": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
+      "translation": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory."
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
+      "translation": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers."
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
+      "translation": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers."
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
+      "translation": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher."
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
+      "translation": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher"
+    },
+    {
+      "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
+      "translation": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value."
     },
     {
       "id": "The mms command is not supported on an edge cluster node.",
@@ -2845,6 +2937,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag."
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
@@ -5303,12 +5403,80 @@
       "translation": "Analysis complete."
     },
     {
-      "id": "reading the bytes from {Name}: {Err}",
-      "translation": "reading the bytes from {Name}: {Err}"
+      "id": "Importing key file name: {Name}",
+      "translation": "Importing key file name: {Name}"
     },
     {
-      "id": "parsing the json from {Name}: {Err}",
-      "translation": "parsing the json from {Name}: {Err}"
+      "id": "unsupported key file type extension: {Name}",
+      "translation": "unsupported key file type extension: {Name}"
+    },
+    {
+      "id": "Listing SDO keys.",
+      "translation": "Listing SDO keys."
+    },
+    {
+      "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
+      "translation": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}"
+    },
+    {
+      "id": "SDO key name {KeyName} not found",
+      "translation": "SDO key name {KeyName} not found"
+    },
+    {
+      "id": "failed to marshal 'hzn sdo keys list' output: {Err}",
+      "translation": "failed to marshal 'hzn sdo keys list' output: {Err}"
+    },
+    {
+      "id": "Downloading SDO key \"{KeyName}\".",
+      "translation": "Downloading SDO key \"{KeyName}\"."
+    },
+    {
+      "id": "Removing SDO key \"{KeyName}\".",
+      "translation": "Removing SDO key \"{KeyName}\"."
+    },
+    {
+      "id": "Creating SDO key template at \"{OutputFile}\".",
+      "translation": "Creating SDO key template at \"{OutputFile}\"."
+    },
+    {
+      "id": "parsing the json: {Err}",
+      "translation": "parsing the json: {Err}"
+    },
+    {
+      "id": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
+      "translation": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\"."
+    },
+    {
+      "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\"."
+    },
+    {
+      "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\"."
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access keys in org \"{Org}\" with given credentials.",
+      "translation": "Invalid credentials. User \"{User}\" cannot access keys in org \"{Org}\" with given credentials."
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
+      "translation": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials."
+    },
+    {
+      "id": "reading the bytes from {KeyFileName}: {Err}",
+      "translation": "reading the bytes from {KeyFileName}: {Err}"
+    },
+    {
+      "id": "parsing the json from {KeyFileName}: {Err}",
+      "translation": "parsing the json from {KeyFileName}: {Err}"
+    },
+    {
+      "id": "given key {KeyFileName} has missing fields:\n{Err}",
+      "translation": "given key {KeyFileName} has missing fields:\n{Err}"
+    },
+    {
+      "id": "JSON Body:{StringkeyBytes}",
+      "translation": "JSON Body:{StringkeyBytes}"
     },
     {
       "id": "base64 decoding {T4}: {Err}",
@@ -5319,8 +5487,20 @@
       "translation": "Listing imported SDO vouchers."
     },
     {
-      "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
-      "translation": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}"
+      "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+      "translation": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\"."
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+      "translation": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials."
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+      "translation": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials."
+    },
+    {
+      "id": "failed to marshal 'hzn sdo voucher list' output: {Err}",
+      "translation": "failed to marshal 'hzn sdo voucher list' output: {Err}"
     },
     {
       "id": "Importing voucher file name: {Name}",
@@ -5367,6 +5547,10 @@
       "translation": "Using node policy: {PolicyStr}"
     },
     {
+      "id": "Invalid voucher file format: {StringrespBodyBytes}.",
+      "translation": "Invalid voucher file format: {StringrespBodyBytes}."
+    },
+    {
       "id": "Adding/updating node...",
       "translation": "Adding/updating node..."
     },
@@ -5409,6 +5593,10 @@
     {
       "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
       "translation": "Secret \"{SecretName}\" successfully added to the secrets manager."
+    },
+    {
+      "id": "Are you sure you want to remove secret {SecretName} from the secrets manager?",
+      "translation": "Are you sure you want to remove secret {SecretName} from the secrets manager?"
     },
     {
       "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
@@ -5561,10 +5749,6 @@
     {
       "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
       "translation": "object '{ObjId}' of type '{ObjType}' not found in org {Org}"
-    },
-    {
-      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag."
     },
     {
       "id": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
