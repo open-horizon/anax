@@ -4313,6 +4313,56 @@
             "fuzzy": true
         },
         {
+            "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+            "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+            "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "FileName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "fileName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+            "message": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+            "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "DefaultFileName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "defaultFileName"
+                },
+                {
+                    "id": "FileName",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "fileName"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[3]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 3,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
             "message": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
             "translation": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
