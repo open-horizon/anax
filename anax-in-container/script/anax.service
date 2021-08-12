@@ -93,6 +93,10 @@ defaultEnv() {
 		anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"${base_host_dir}/fss-domain-socket/essapi.sock\" " <<< $anaxJson)
 		checkrc $? "change FileSyncService.APIListen"
 	fi
+	if [[ -d ${base_host_dir}/secrets ]]; then
+		anaxJson=$(jq ".Edge.SecretsManagerFilePath = \"${base_host_dir}/secrets\" " <<< $anaxJson)
+		checkrc $? "change SecretsManagerFilePath"
+	fi
 
 
 	# Write the new json back to the file
