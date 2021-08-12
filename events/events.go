@@ -1448,11 +1448,7 @@ func (m *ExchangeDeviceMessage) ProtocolMessage() string {
 }
 
 func (m *ExchangeDeviceMessage) ShortProtocolMessage() string {
-	end := 200
-	if len(m.protocolMessage) < end {
-		end = len(m.protocolMessage)
-	}
-	return m.protocolMessage[:end]
+	return cutil.TruncateDisplayString(m.protocolMessage, 200)
 }
 
 func (m ExchangeDeviceMessage) String() string {
