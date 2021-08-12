@@ -2,6 +2,7 @@ package abstractprotocol
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/cutil"
 )
 
 // =======================================================================================================
@@ -51,8 +52,8 @@ func (bp *BaseProposal) String() string {
 func (bp *BaseProposal) ShortString() string {
 	res := ""
 	res += bp.BaseProtocolMessage.String() + fmt.Sprintf(", ConsumerId: %v", bp.Consumerid)
-	res += fmt.Sprintf(", TsAndCs: %v", bp.TsandCs[:40])
-	res += fmt.Sprintf(", Producer Policy: %v", bp.Producerpolicy[:40])
+	res += fmt.Sprintf(", TsAndCs: %v", cutil.TruncateDisplayString(bp.TsandCs, 40))
+	res += fmt.Sprintf(", Producer Policy: %v", cutil.TruncateDisplayString(bp.Producerpolicy, 40))
 	return res
 }
 

@@ -67,7 +67,7 @@ type AgbotMessage struct {
 }
 
 func (a AgbotMessage) String() string {
-	return fmt.Sprintf("MsgId: %v, DeviceId: %v, TimeSent %v, TimeExpires %v, DevicePubKey %v, Message %v", a.MsgId, a.DeviceId, a.TimeSent, a.TimeExpires, a.DevicePubKey, a.Message[:32])
+	return fmt.Sprintf("MsgId: %v, DeviceId: %v, TimeSent %v, TimeExpires %v, DevicePubKey %v, Message %v", a.MsgId, a.DeviceId, a.TimeSent, a.TimeExpires, a.DevicePubKey, cutil.TruncateDisplayString(string(a.Message), 32))
 }
 
 type GetAgbotMessageResponse struct {
