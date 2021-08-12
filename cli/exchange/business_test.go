@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
+	"github.com/open-horizon/anax/policy"
 	"strings"
 	"testing"
 )
@@ -66,7 +67,7 @@ func getVariableSelectedServicesHandler(arches []string) exchange.SelectedServic
 }
 
 func getVariableServiceDefResolverHandler(mUrl, mOrg, mVersion, mArch string, secrets_top []string, secrets_dep []string) exchange.ServiceDefResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
 		sd := []exchangecommon.ServiceDependency{}
 		dep_defs := map[string]exchange.ServiceDefinition{}
 		if mUrl != "" {
@@ -93,7 +94,7 @@ func getVariableServiceDefResolverHandler(mUrl, mOrg, mVersion, mArch string, se
 			RequiredServices: sd,
 			Deployment:       getDeploymentString(wUrl, secrets_top),
 		}
-		return dep_defs, &wl, "top_svc_id", nil
+		return nil, dep_defs, &wl, "top_svc_id", nil
 	}
 }
 

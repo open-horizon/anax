@@ -24,8 +24,8 @@ func getDummyServiceResolver() exchange.ServiceResolverHandler {
 }
 
 func getDummyServiceDefResolver() exchange.ServiceDefResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
-		return nil, nil, "", nil
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
+		return nil, nil, nil, "", nil
 	}
 }
 
@@ -165,7 +165,8 @@ func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange
 }
 
 func getVariableServiceDefResolver(mUrl, mOrg, mVersion, mArch string, ui *exchangecommon.UserInput) exchange.ServiceDefResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
+		sl := policy.APISpecList{}
 		sd := []exchangecommon.ServiceDependency{}
 		dep_defs := map[string]exchange.ServiceDefinition{}
 		if mUrl != "" {
@@ -191,6 +192,15 @@ func getVariableServiceDefResolver(mUrl, mOrg, mVersion, mArch string, ui *excha
 				Version: mVersion,
 				Arch:    mArch,
 			})
+			sl = policy.APISpecList{
+				policy.APISpecification{
+					SpecRef:         mUrl,
+					Org:             mOrg,
+					Version:         mVersion,
+					ExclusiveAccess: true,
+					Arch:            mArch,
+				},
+			}
 		}
 
 		uis := []exchangecommon.UserInput{}
@@ -212,7 +222,7 @@ func getVariableServiceDefResolver(mUrl, mOrg, mVersion, mArch string, ui *excha
 			DeploymentSignature: "",
 			LastUpdated:         "updated",
 		}
-		return dep_defs, &wl, "x1", nil
+		return &sl, dep_defs, &wl, "x1", nil
 	}
 }
 

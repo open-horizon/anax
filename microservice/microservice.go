@@ -430,7 +430,8 @@ func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 // the microservice definiton within the range will be returned if found instances. If not found,
 // the microservice definition for the highest version within the range will be returned.
 func FindOrCreateMicroserviceDef(db *bolt.DB, service_name string, service_org string, service_version string, service_arch string,
-	exactVersion bool, getService exchange.ServiceHandler) (*persistence.MicroserviceDefinition, error) {
+	exactVersion bool, forPattern bool, getService exchange.ServiceHandler) (*persistence.MicroserviceDefinition, error) {
+	glog.V(5).Infof("Find or create MicroserviceDefinition object for %v/%v version %v", service_org, service_name, service_version)
 
 	var backupMsdef *persistence.MicroserviceDefinition
 
@@ -461,13 +462,6 @@ func FindOrCreateMicroserviceDef(db *bolt.DB, service_name string, service_org s
 		// it is further optimized to use the one that is used by dependent services if possible.
 		for i, msdef := range msdefs {
 
-			// get dependent instances
-			filter := []persistence.MIFilter{persistence.ServiceDefMIFilter(msdef.Id), persistence.UnarchivedMIFilter()}
-			msInsts, err := persistence.FindMicroserviceInstances(db, filter)
-			if err != nil {
-				return nil, fmt.Errorf("Error finding service instances with service def id %v. %v", msdef.Id, err)
-			}
-
 			// check if this def is witin the given version range
 			inRange, err := vExp.Is_within_range(msdef.Version)
 			if err != nil {
@@ -482,11 +476,11 @@ func FindOrCreateMicroserviceDef(db *bolt.DB, service_name string, service_org s
 			} else {
 				// dependent servivce case with existing dependents.
 				// for the singleton case use the same version as other dependents.
-				if msInsts != nil && len(msInsts) != 0 && (msdef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || msdef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE) {
+				// for the pattern case, always use the same version.
+				if forPattern || (msdef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || msdef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE) {
 					if inRange {
 						return &msdefs[i], nil
 					} else {
-						glog.V(5).Infof("***msInsts=%v", msInsts)
 						return nil, fmt.Errorf("Failed to create service definition for %v/%v version range %v because the service is in 'singleton' sharing mode."+
 							" There is another dependent service with version %v exist."+
 							" But it is not within the version range of this service.", service_org, service_name, service_version, msdef.Version)
@@ -525,7 +519,12 @@ func FindOrCreateMicroserviceDef(db *bolt.DB, service_name string, service_org s
 			return backupMsdef, nil
 		}
 	}
-	return CreateMicroserviceDefWithServiceDef(db, sdef, sId)
+
+	if msdef_new, err := CreateMicroserviceDefWithServiceDef(db, sdef, sId, vExp.Get_expression()); err != nil {
+		return nil, err
+	} else {
+		return msdef_new, nil
+	}
 }
 
 // Create and save the MicroserviceDefiniton for given service. The service_version is a version range.
@@ -549,14 +548,18 @@ func CreateMicroserviceDef(db *bolt.DB, service_name string, service_org string,
 		return nil, fmt.Errorf("Unable to find the service definition using  %v/%v %v %v in the exchange.", service_org, service_name, vExp.Get_expression(), service_arch)
 	}
 
-	return CreateMicroserviceDefWithServiceDef(db, sdef, sId)
+	if msdef_new, err := CreateMicroserviceDefWithServiceDef(db, sdef, sId, vExp.Get_expression()); err != nil {
+		return nil, err
+	} else {
+		return msdef_new, nil
+	}
 }
 
 // Create and save the MicroserviceDefiniton for given service. This function is used
 // for top level service when agreement is formated. The version is not a version range.
-// It has to be exactly the same.
+// upgradeVerExpr is a full semantic version expression, representing upgrade or downgrade version range.
 // Please make sure there is no MicroserviceDefinition for this service before calling this function.
-func CreateMicroserviceDefWithServiceDef(db *bolt.DB, sdef *exchange.ServiceDefinition, sId string) (*persistence.MicroserviceDefinition, error) {
+func CreateMicroserviceDefWithServiceDef(db *bolt.DB, sdef *exchange.ServiceDefinition, sId string, upgradeVerExpr string) (*persistence.MicroserviceDefinition, error) {
 	glog.V(3).Infof("Create service definition in local db for for %v", sId)
 
 	// Convert the service definition to a persistent format so that it can be saved to the db.
@@ -565,15 +568,9 @@ func CreateMicroserviceDefWithServiceDef(db *bolt.DB, sdef *exchange.ServiceDefi
 		return nil, fmt.Errorf("Error converting the service def to persistent.MicroserviceDefinition for %v. %v", sId, err)
 	}
 
-	// Convert the version to a version expression.
-	vExp, err := semanticversion.Version_Expression_Factory(sdef.Version)
-	if err != nil {
-		return nil, fmt.Errorf("VersionRange %v cannot be converted to a version expression, error %v", sdef.Version, err)
-	}
-
 	msdef.Name = sId
 	msdef.RequestedArch = sdef.Arch
-	msdef.UpgradeVersionRange = vExp.Get_expression()
+	msdef.UpgradeVersionRange = upgradeVerExpr
 
 	// Save the service definition in the local database.
 	if err := persistence.SaveOrUpdateMicroserviceDef(db, msdef); err != nil {

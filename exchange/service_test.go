@@ -763,7 +763,7 @@ func TestServiceDefResolver1(t *testing.T) {
 	myArch := "amd64"
 
 	sh := getVariableServiceHandler([]exchangecommon.UserInput{}, []exchangecommon.ServiceDependency{})
-	service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
+	apiSpecs, service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
 		t.Errorf("received unexpected error: %v", err)
@@ -773,6 +773,8 @@ func TestServiceDefResolver1(t *testing.T) {
 		t.Errorf("should have received empty service map: %v", service_map)
 	} else if sd.HasDependencies() {
 		t.Errorf("should not have dependencies: %v", sd.RequiredServices)
+	} else if len(*apiSpecs) != 0 {
+		t.Errorf("should not have api spec list but got: %v", apiSpecs)
 	}
 }
 
@@ -833,7 +835,7 @@ func TestServiceDefResolver2(t *testing.T) {
 	sdMap[myURL] = sDep
 
 	sh := getRecursiveVariableServiceHandler([]exchangecommon.UserInput{}, sdMap)
-	service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
+	apiSpecs, service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
 		t.Errorf("received unexpected error: %v", err)
@@ -843,8 +845,17 @@ func TestServiceDefResolver2(t *testing.T) {
 		t.Errorf("should not have received empty service map.")
 	} else if !sd.HasDependencies() {
 		t.Errorf("should have dependencies")
+	} else if apiSpecs == nil {
+		t.Errorf("apiSpecs should not be nil")
+	} else if len(*apiSpecs) != 1 {
+		t.Errorf("Should have 1 api spec but got %v.", len(*apiSpecs))
+	} else {
+		for _, a := range *apiSpecs {
+			if a.SpecRef != "http://my.com/ms/ms1" || a.Org != "otherOrg" || a.Version != "1.5.0" || a.ExclusiveAccess != true {
+				t.Errorf("Wrong apiSpecs returned: %v", a)
+			}
+		}
 	}
-
 }
 
 func Test_RecursiveServiceResolver_1level(t *testing.T) {
@@ -939,7 +950,7 @@ func Test_RecursiveServiceDefResolver_1level(t *testing.T) {
 	sh := getRecursiveVariableServiceHandler([]exchangecommon.UserInput{}, sdMap)
 
 	// Test the resolver API
-	service_map, sd, sId, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
+	apiSpecs, service_map, sd, sId, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
 		t.Errorf("should not have returned err: %v", err)
@@ -953,6 +964,16 @@ func Test_RecursiveServiceDefResolver_1level(t *testing.T) {
 		t.Errorf("http://my.com/ms/ms1 should be in the service map but not")
 	} else if _, ok := service_map["http://my.com/ms/ms2"]; !ok {
 		t.Errorf("http://my.com/ms/ms2 should be in the service map but not")
+	} else if apiSpecs == nil {
+		t.Errorf("apiSpecs should not be nil")
+	} else if len(*apiSpecs) != 2 {
+		t.Errorf("Should have 2 api spec but got %v.", len(*apiSpecs))
+	} else {
+		for _, a := range *apiSpecs {
+			if a.SpecRef != "http://my.com/ms/ms1" && a.SpecRef != "http://my.com/ms/ms2" || a.ExclusiveAccess != true {
+				t.Errorf("Wrong apiSpecs returned: %v", a)
+			}
+		}
 	}
 }
 
@@ -1105,7 +1126,7 @@ func Test_RecursiveServiceDefResolver_2level(t *testing.T) {
 	sh := getRecursiveVariableServiceHandler([]exchangecommon.UserInput{}, sdMap)
 
 	// Test the resolver API
-	service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
+	apiSpecs, service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	//number of unique API specs returned. -1 is applied because there is a dup ms1->msa and ms2->msa.
 	num := len(sDep1) + len(sDep21) + len(sDep22) - 1
@@ -1113,6 +1134,12 @@ func Test_RecursiveServiceDefResolver_2level(t *testing.T) {
 	if err != nil {
 		t.Errorf("should not have returned err: %v", err)
 	} else if len(service_map) != num {
+		t.Errorf("there should %v api specs returned", num)
+	} else if sd == nil {
+		t.Errorf("should have returned a service def")
+	}
+
+	if len(*apiSpecs) != num {
 		t.Errorf("there should %v api specs returned", num)
 	} else if sd == nil {
 		t.Errorf("should have returned a service def")

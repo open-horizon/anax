@@ -19,6 +19,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
+	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"strconv"
@@ -1530,7 +1531,12 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		if msdefs, err := persistence.FindMicroserviceDefs(w.db, msFilters); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Error finding service definition from the local db for %v. %v", serviceId, err)))
 		} else if msdefs == nil || len(msdefs) == 0 {
-			if msdef, err = microservice.CreateMicroserviceDefWithServiceDef(w.db, serviceDef, serviceId); err != nil {
+			vExp, err1 := semanticversion.Version_Expression_Factory(serviceDef.Version)
+			if err1 != nil {
+				return fmt.Errorf("VersionRange %v cannot be converted to a version expression, error %v", serviceDef.Version, err1)
+			}
+
+			if msdef, err = microservice.CreateMicroserviceDefWithServiceDef(w.db, serviceDef, serviceId, vExp.Get_expression()); err != nil {
 				return fmt.Errorf(logString(fmt.Sprintf("failed to create service definition for %v for agreement %v: %v", serviceId, proposal.AgreementId(), err)))
 			}
 		} else {
@@ -1623,7 +1629,7 @@ func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.Serv
 
 	for _, sDep := range *deps {
 
-		msdef, err := microservice.FindOrCreateMicroserviceDef(w.db, sDep.URL, sDep.Org, sDep.Version, sDep.Arch, false, exchange.GetHTTPServiceHandler(w))
+		msdef, err := microservice.FindOrCreateMicroserviceDef(w.db, sDep.URL, sDep.Org, sDep.Version, sDep.Arch, false, w.devicePattern != "", exchange.GetHTTPServiceHandler(w))
 		if err != nil {
 			return ms_specs, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for dependent service for agreement %v. %v", agreementId, err)))
 		}

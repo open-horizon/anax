@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/policy"
 	"strings"
 	"testing"
 )
@@ -1243,10 +1244,10 @@ func getServicePolicyHandler_Error() exchange.ServicePolicyHandler {
 }
 
 func getServiceDefResolverHandler() exchange.ServiceDefResolverHandler {
-	return func(sUrl string, sOrg string, sVersion string, sArch string) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
+	return func(sUrl string, sOrg string, sVersion string, sArch string) (*policy.APISpecList, map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
 		sId := cutil.FormExchangeIdForService(sUrl, sVersion, sArch)
 		sId = fmt.Sprintf("%v/%v", sOrg, sId)
 		service := &exchange.ServiceDefinition{URL: sUrl, Version: sVersion, Arch: sArch, Deployment: "{\"services\":{\"cpu\":{\"image\":\"cpu:1.2.2\"}}}"}
-		return map[string]exchange.ServiceDefinition{}, service, sId, nil
+		return nil, map[string]exchange.ServiceDefinition{}, service, sId, nil
 	}
 }

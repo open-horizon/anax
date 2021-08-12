@@ -189,7 +189,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			// be greater than the dependency version.
 			ms_specs := []events.MicroserviceSpec{}
 			for _, rs := range msdef.RequiredServices {
-				msdef_dep, err := microservice.FindOrCreateMicroserviceDef(w.db, rs.URL, rs.Org, rs.Version, rs.Arch, false, exchange.GetHTTPServiceHandler(w))
+				msdef_dep, err := microservice.FindOrCreateMicroserviceDef(w.db, rs.URL, rs.Org, rs.Version, rs.Arch, false, w.devicePattern != "", exchange.GetHTTPServiceHandler(w))
 				if err != nil {
 					return nil, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for for %v/%v: %v", rs.Org, rs.URL, err)))
 				} else {

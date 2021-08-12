@@ -209,7 +209,7 @@ func ValidateService(serviceDefResolverHandler exchange.ServiceDefResolverHandle
 				if err != nil {
 					return fmt.Errorf(msgPrinter.Sprintf("Failed to convert version %v for service %v to version range expression.", ver, reqSvc))
 				}
-				svc_map, sDef, sId, err := serviceDefResolverHandler(reqSvc.URL, reqSvc.Org, vExp.Get_expression(), reqSvc.Arch)
+				_, svc_map, sDef, sId, err := serviceDefResolverHandler(reqSvc.URL, reqSvc.Org, vExp.Get_expression(), reqSvc.Arch)
 				if err != nil {
 					return fmt.Errorf(msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", reqSvc, err))
 				}

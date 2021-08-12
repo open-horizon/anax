@@ -367,7 +367,7 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 	}
 
 	for _, arch := range arches {
-		svc_map, sDef, sId, err := getServiceResolvedDef(serviceName, serviceOrg, serviceVersion, arch)
+		_, svc_map, sDef, sId, err := getServiceResolvedDef(serviceName, serviceOrg, serviceVersion, arch)
 		if err != nil {
 			return nil, fmt.Errorf(msgPrinter.Sprintf("Error retrieving service %v/%v version %v from the Exchange. %v", serviceOrg, serviceName, serviceVersion, err))
 		} else {
