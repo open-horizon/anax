@@ -134,7 +134,7 @@ VAULT_DEV_LISTEN_ADDRESS := $(shell jq ".VAULT_DEV_LISTEN_ADDRESS" $(VAULT_CONFI
 
 #sdo
 DOCKER_SDO_CNAME := sdo-owner-services
-HZN_SDO_SVC_URL := https://sdo-owner-services:9008/api
+HZN_SDO_SVC_URL ?= https://sdo-owner-services:9008/api
 
 ifndef verbose
 .SILENT:
