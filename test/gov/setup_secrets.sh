@@ -5,7 +5,7 @@ if [ "${EXCH_APP_HOST}" != "http://exchange-api:8081/v1" ]; then
   exit 0
 fi
 
-if [ "$HZN_VAULT" != "true" ]
+if [ "${NOVAULT}" == "1" ]
 then
   echo -e "Skipping secret setup"
   exit 0

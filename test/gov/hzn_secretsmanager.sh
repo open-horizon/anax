@@ -33,7 +33,7 @@ function verify {
 # ----------------------------
 
 # check environment variables
-if [ "$HZN_VAULT" != "true" ]
+if [ "${NOVAULT}" == "1" ]
 then
   echo -e "Skipping hzn secretsmanager tests"
   exit 0
