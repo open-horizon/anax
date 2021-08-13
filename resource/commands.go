@@ -26,7 +26,7 @@ func NewNodeConfigCommand(msg *events.EdgeRegisteredExchangeMessage) *NodeConfig
 
 // This worker command is used to tell the worker than the node is done shutting down and so it can terminate itself.
 type NodeUnconfigCommand struct {
-	msg *events.NodeShutdownCompleteMessage
+	msg *events.NodeShutdownMessage
 }
 
 func (n NodeUnconfigCommand) String() string {
@@ -37,7 +37,7 @@ func (n NodeUnconfigCommand) ShortString() string {
 	return fmt.Sprintf("NodeUnconfig Command, Msg: %v", n.msg)
 }
 
-func NewNodeUnconfigCommand(msg *events.NodeShutdownCompleteMessage) *NodeUnconfigCommand {
+func NewNodeUnconfigCommand(msg *events.NodeShutdownMessage) *NodeUnconfigCommand {
 	return &NodeUnconfigCommand{
 		msg: msg,
 	}

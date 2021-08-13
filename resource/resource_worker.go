@@ -77,10 +77,10 @@ func (w *ResourceWorker) NewEvent(incoming events.Message) {
 		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
 		w.Commands <- NewNodeConfigCommand(msg)
 
-	case *events.NodeShutdownCompleteMessage:
-		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+	case *events.NodeShutdownMessage:
+		msg, _ := incoming.(*events.NodeShutdownMessage)
 		switch msg.Event().Id {
-		case events.UNCONFIGURE_COMPLETE:
+		case events.START_UNCONFIGURE:
 			w.Commands <- NewNodeUnconfigCommand(msg)
 		}
 
@@ -103,9 +103,13 @@ func (w *ResourceWorker) CommandHandler(command worker.Command) bool {
 
 	case *NodeUnconfigCommand:
 		cmd, _ := command.(*NodeUnconfigCommand)
-		if err := w.handleNodeUnconfigCommand(cmd); err != nil {
+		err := w.handleNodeUnconfigCommand(cmd)
+		errMsg := ""
+		if err != nil {
 			glog.Errorf(reslog(fmt.Sprintf("Error handling node unconfig command: %v", err)))
+			errMsg = err.Error()
 		}
+		w.Messages() <- events.NewSyncServiceCleanedUpMessage(events.ESS_UNCONFIG, errMsg)
 
 	default:
 		return false
