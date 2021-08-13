@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"sync"
+	"time"
 )
 
 // The main component which holds secret updates for the governance functions.
@@ -86,9 +87,12 @@ func (sm *SecretUpdateManager) CheckForUpdates(secretProvider secrets.AgbotSecre
 
 		glog.V(5).Infof(smlogString(fmt.Sprintf("Checking for changes to secret %s", fullSecretName)))
 
+		// All secrets that are referenced by a policy or pattern are in the secret update tables, but some of these secrets
+		// might not exist yet.
 		secretMetadata, err := secretProvider.GetSecretMetadata(secretOrg, secretUser, secretName)
 		if err != nil {
-			glog.Errorf(smlogString(fmt.Sprintf("Error retrieving metadata for secret %s for user %s in org %s metadata, error: %v", secretName, secretUser, secretOrg, err)))
+			// For secrets that dont exist yet, just ignore them.
+			glog.Warningf(smlogString(fmt.Sprintf("Error retrieving metadata for secret %s for user %s in org %s metadata, error: %v", secretName, secretUser, secretOrg, err)))
 			continue
 		}
 
@@ -101,7 +105,7 @@ func (sm *SecretUpdateManager) CheckForUpdates(secretProvider secrets.AgbotSecre
 			continue
 		}
 
-		// If there are policies returned, then it means that the secret has been updated.
+		// If there are policies returned, then it means that the policy references the secret and the secret has been updated.
 		if len(policyNames) != 0 {
 			su := events.NewSecretUpdate(secretOrg, exchange.GetId(fullSecretName), secretMetadata.UpdateTime, policyNames, []string{})
 			secretUpdates.AddSecretUpdate(su)
@@ -183,16 +187,24 @@ func (sm *SecretUpdateManager) UpdatePolicies(org string, exchPolsMetadata map[s
 
 				pName := exchange.GetId(policyName)
 
+				// Use now as the last update time for secrets that dont exist yet.
+				secretLastUpdateTime := time.Now().Unix()
+
+				// Get the secret's metadata, if it exists
 				sm, err := secretProvider.GetSecretMetadata(org, secretUser, secretName)
 				if err != nil {
-					glog.Errorf(smlogString(fmt.Sprintf("unable to retrieve metadata for %s %s, error: %v", org, secretFullName, err)))
-					continue
+					// The secret should be stored in the table even if it doesnt exist, so that if it is created later
+					// changes to it will be recognized.
+					glog.Warningf(smlogString(fmt.Sprintf("unable to retrieve metadata for %s %s, error: %v", org, secretFullName, err)))
+					//continue
+				} else {
+					secretLastUpdateTime = sm.UpdateTime
 				}
 
 				glog.V(5).Infof(smlogString(fmt.Sprintf("storing managed secret %v %v from %v/%v", org, secretFullName, org, pName)))
 
 				// Only secrets that have never been referenced before are added to the DB. DB rows that already exist will not be updated.
-				err = db.AddManagedPolicySecret(org, secretFullName, org, pName, sm.UpdateTime)
+				err = db.AddManagedPolicySecret(org, secretFullName, org, pName, secretLastUpdateTime)
 				if err != nil {
 					glog.Errorf(smlogString(fmt.Sprintf("unable to persist secret %v %v from %v/%v, error: %v", org, secretFullName, org, pName, err)))
 				}
@@ -271,16 +283,24 @@ func (sm *SecretUpdateManager) UpdatePatterns(org string, exchPatternMetadata ma
 
 				pName := exchange.GetId(patName)
 
+				// Use now as the last update time for secrets that dont exist yet.
+				secretLastUpdateTime := time.Now().Unix()
+
+				// Get the secret's metadata, if it exists
 				sm, err := secretProvider.GetSecretMetadata(org, secretUser, secretName)
 				if err != nil {
-					glog.Errorf(smlogString(fmt.Sprintf("unable to retrieve metadata for %s %s, error: %v", org, secretFullName, err)))
-					continue
+					// The secret should be stored in the table even if it doesnt exist, so that if it is created later
+					// changes to it will be recognized.
+					glog.Warningf(smlogString(fmt.Sprintf("unable to retrieve metadata for %s %s, error: %v", org, secretFullName, err)))
+					//continue
+				} else {
+					secretLastUpdateTime = sm.UpdateTime
 				}
 
 				glog.V(5).Infof(smlogString(fmt.Sprintf("storing managed secret %v %v from %v/%v", org, secretFullName, org, pName)))
 
 				// Only secrets that have never been referenced before are added to the DB. DB rows that already exist will not be updated.
-				err = db.AddManagedPatternSecret(org, secretFullName, org, pName, sm.UpdateTime)
+				err = db.AddManagedPatternSecret(org, secretFullName, org, pName, secretLastUpdateTime)
 				if err != nil {
 					glog.Errorf(smlogString(fmt.Sprintf("unable to persist secret %v %v from %v/%v, error: %v", org, secretFullName, org, pName, err)))
 				}

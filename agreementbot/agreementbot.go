@@ -259,9 +259,24 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 		}
 
 	case *events.SecretUpdatesMessage:
-		// Queue up the secret updates for the governance function the next time it runs.
 		msg, _ := incoming.(*events.SecretUpdatesMessage)
 		sus := msg.GetSecretUpdates()
+
+		// For each affected policy, make sure the agbot performs a search of this policy again.
+		// For affected patterns, just ensure that the agbot does a search again.
+		// The updated secret could have been created, enabling the policy to be deployable to nodes.
+		for _, su := range sus.Updates {
+			for _, policyName := range su.PolicyNames {
+				w.nodeSearch.AddRetry(policyName, 0)
+			}
+
+			// Tell the agbot to search again if there are affected patterns.
+			if len(su.PatternNames) != 0 {
+				w.nodeSearch.SetRescanNeeded()
+			}
+		}
+
+		// Queue up the secret updates for the governance function so that it can update agreements, the next time it runs.
 		w.secretUpdateManager.SetUpdateEvent(&sus)
 
 	default: //nothing
