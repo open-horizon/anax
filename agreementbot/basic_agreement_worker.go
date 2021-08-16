@@ -392,6 +392,11 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 
 			if wi.Reply.IsAccepted() {
 				if wi.Reply.IsSecretUpdate() {
+
+					// Get the agreement id lock to prevent any other thread from processing this same agreement.
+					lock := a.alm.getAgreementLock(wi.Reply.AgreementId())
+					lock.Lock()
+
 					// update the system to indicate that the secret update is complete.
 					glog.V(5).Infof(bwlogstring(a.workerID, fmt.Sprintf("secret update accepted %v", wi.Reply.ShortString())))
 
@@ -408,6 +413,9 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 							deleteMessage = false
 						}
 					}
+
+					// Drop the agreement lock
+					lock.Unlock()
 
 				}
 

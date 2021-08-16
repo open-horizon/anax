@@ -10,7 +10,7 @@ type SecretUpdate struct {
 	SecretFullName   string // This name is not org qualified
 	SecretUpdateTime int64
 	PolicyNames      []string // An array of org qualified policy names
-	PatternNames     []string // An array of org aualified pattern names
+	PatternNames     []string // An array of org qualified pattern names
 }
 
 // Returns a new SecretUpdate object with a copied policy and pattern name list.
