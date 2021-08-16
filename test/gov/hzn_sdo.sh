@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PREFIX="hzn sdo voucher test:"
+PREFIX="hzn sdo test:"
 
 echo ""
 echo -e "${PREFIX} Inspecting and importing vouchers with hzn command."
@@ -508,663 +508,663 @@ else
 fi
 
 echo -e "${PREFIX} removing test key from SDO owner services, if exists..."
-hzn sdo keys rm test-sdo-key &> /dev/null
+hzn sdo key rm test-sdo-key &> /dev/null
 echo -e "${PREFIX} done."
 echo -e "${PREFIX} removing second test key from SDO owner services, if exists..."
-hzn sdo keys rm test-sdo-key2 &> /dev/null
+hzn sdo key rm test-sdo-key2 &> /dev/null
 echo -e "${PREFIX} done."
 
-# Test hzn sdo keys new
+# Test hzn sdo key new
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new' without HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key new' without HZN_EXCHANGE_USER_AUTH set"
 unset HZN_EXCHANGE_USER_AUTH
-cmdOutput=$(hzn sdo keys new -f /tmp/sample_key.json 2>&1)
+cmdOutput=$(hzn sdo key new -f /tmp/sample_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
 rm /tmp/sample_key.json
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new' with incorrect HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key new' with incorrect HZN_EXCHANGE_USER_AUTH set"
 export HZN_EXCHANGE_USER_AUTH=fakeuser:fakepw
-cmdOutput=$(hzn sdo keys new -f /tmp/sample_key.json 2>&1)
+cmdOutput=$(hzn sdo key new -f /tmp/sample_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
 rm /tmp/sample_key.json
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new' without HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key new' without HZN_ORG_ID set"
 unset HZN_ORG_ID
-cmdOutput=$(hzn sdo keys new -f /tmp/sample_key.json 2>&1)
+cmdOutput=$(hzn sdo key new -f /tmp/sample_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 rm /tmp/sample_key.json
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new' with incorrect HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key new' with incorrect HZN_ORG_ID set"
 export HZN_ORG_ID=fakeorg
-cmdOutput=$(hzn sdo keys new -f /tmp/sample_key.json 2>&1)
+cmdOutput=$(hzn sdo key new -f /tmp/sample_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 rm /tmp/sample_key.json
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new' without HZN_SDO_SVC_URL set"
+echo -e "${PREFIX} Testing 'hzn sdo key new' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
-cmdOutput=$(hzn sdo keys new -f /tmp/sample_key.json 2>&1)
+cmdOutput=$(hzn sdo key new -f /tmp/sample_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
 rm /tmp/sample_key.json
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new'"
-cmdOutput=$(hzn sdo keys new 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key new'"
+cmdOutput=$(hzn sdo key new 2>&1)
 rc=$?
 if [[ $rc -eq 0 && "$cmdOutput" == *"$inspectSampleKey"* ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new -f /tmp/sample_key.json'"
-cmdOutput=$(hzn sdo keys new -f /tmp/sample_key.json 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key new -f /tmp/sample_key.json'"
+cmdOutput=$(hzn sdo key new -f /tmp/sample_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	if [[ -f /tmp/sample_key.json && "$(cat /tmp/sample_key.json)" == $inspectSampleKey ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/sample_key.json ]]; then
-		echo -e "${PREFIX} Failed: 'hzn sdo keys new <file-path> -f /tmp/sample_key.json' not downloaded to /tmp/sample_key.json"
+		echo -e "${PREFIX} Failed: 'hzn sdo key new <file-path> -f /tmp/sample_key.json' not downloaded to /tmp/sample_key.json"
 		exit 1
 	else
-		echo -e "${PREFIX} Failed: 'hzn sdo keys new <file-path> -f /tmp/sample_key.json': downloaded file does not match expected output."
+		echo -e "${PREFIX} Failed: 'hzn sdo key new <file-path> -f /tmp/sample_key.json': downloaded file does not match expected output."
 		exit 1
 	fi
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new -f /tmp/sample_key.json' when /tmp/sample_key.json already exists"
-cmdOutput=$(hzn sdo keys new -f /tmp/sample_key.json 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key new -f /tmp/sample_key.json' when /tmp/sample_key.json already exists"
+cmdOutput=$(hzn sdo key new -f /tmp/sample_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new' when /tmp/sample_key.json already exists: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' when /tmp/sample_key.json already exists: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new -f /tmp/sample_key.json -O' when /tmp/sample_key.json already exists"
-cmdOutput=$(hzn sdo keys new -f /tmp/sample_key.json -O 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key new -f /tmp/sample_key.json -O' when /tmp/sample_key.json already exists"
+cmdOutput=$(hzn sdo key new -f /tmp/sample_key.json -O 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	if [[ -f /tmp/sample_key.json && "$(cat /tmp/sample_key.json)" == $inspectSampleKey ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/sample_key.json ]]; then
-		echo -e "${PREFIX} Failed: 'hzn sdo keys new <file-path> -f /tmp/sample_key.json' not downloaded to /tmp/sample_key.json"
+		echo -e "${PREFIX} Failed: 'hzn sdo key new <file-path> -f /tmp/sample_key.json' not downloaded to /tmp/sample_key.json"
 		exit 1
 	else
-		echo -e "${PREFIX} Failed: 'hzn sdo keys new <file-path> -f /tmp/sample_key.json': downloaded file does not match expected output."
+		echo -e "${PREFIX} Failed: 'hzn sdo key new <file-path> -f /tmp/sample_key.json': downloaded file does not match expected output."
 		exit 1
 	fi
 elif [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
-	echo -e "${PREFIX} Failed: 'hzn sdo keys new' did not overwrite output file with -O flag set."
+	echo -e "${PREFIX} Failed: 'hzn sdo key new' did not overwrite output file with -O flag set."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 rm /tmp/sample_key.json
 
-echo -e "${PREFIX} Testing 'hzn sdo keys new -f /tmp/sample_key.json'"
-cmdOutput=$(hzn sdo keys new 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key new -f /tmp/sample_key.json'"
+cmdOutput=$(hzn sdo key new 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	if [[ -f /tmp/sample_key.json && "$cmdOutput" == *"$inspectSampleKey"* ]]; then
 		echo -e "${PREFIX} completed."
 	fi
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys new': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-# Test hzn sdo keys create
+# Test hzn sdo key create
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create' without HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key create' without HZN_EXCHANGE_USER_AUTH set"
 unset HZN_EXCHANGE_USER_AUTH
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json 2>&1)
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must be specified'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create' with incorrect HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key create' with incorrect HZN_EXCHANGE_USER_AUTH set"
 export HZN_EXCHANGE_USER_AUTH=fakeuser:fakepw
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json 2>&1)
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create' without HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key create' without HZN_ORG_ID set"
 unset HZN_ORG_ID
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json 2>&1)
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create' with incorrect HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key create' with incorrect HZN_ORG_ID set"
 export HZN_ORG_ID=fakeorg
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json 2>&1)
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create' without HZN_SDO_SVC_URL set"
+echo -e "${PREFIX} Testing 'hzn sdo key create' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json 2>&1)
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create <key-file>'"
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key create <key-file>'"
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 0 && "$cmdOutput" == *'-----BEGIN PUBLIC KEY-----'*'-----END PUBLIC KEY-----'* ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
 echo -e "${PREFIX} creating template key..."
-hzn sdo keys new -f /tmp/sample_key.json
+hzn sdo key new -f /tmp/sample_key.json
 echo -e "${PREFIX} done."
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create <key-file>' with empty fields"
-cmdOutput=$(hzn sdo keys create /tmp/sample_key.json 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key create <key-file>' with empty fields"
+cmdOutput=$(hzn sdo key create /tmp/sample_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'given key'*'has missing fields:'*'field'*'is missing'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 rm /tmp/sample_key.json
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create <key-file>' when <key-file> already exists in SDO owner services"
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key create <key-file>' when <key-file> already exists in SDO owner services"
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid key file.'*'Key'*'already exists in SDO owner services'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-# Test hzn sdo keys remove
+# Test hzn sdo key remove
 
-echo -e "${PREFIX} Testing 'hzn sdo keys remove' without HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key remove' without HZN_EXCHANGE_USER_AUTH set"
 unset HZN_EXCHANGE_USER_AUTH
-cmdOutput=$(hzn sdo keys remove test-sdo-key 2>&1)
+cmdOutput=$(hzn sdo key remove test-sdo-key 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must be specified'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys remove' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
 
-echo -e "${PREFIX} Testing 'hzn sdo keys remove' with incorrect HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key remove' with incorrect HZN_EXCHANGE_USER_AUTH set"
 export HZN_EXCHANGE_USER_AUTH=fakeuser:fakepw
-cmdOutput=$(hzn sdo keys remove test-sdo-key 2>&1)
+cmdOutput=$(hzn sdo key remove test-sdo-key 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys remove' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
 
-echo -e "${PREFIX} Testing 'hzn sdo keys remove' without HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key remove' without HZN_ORG_ID set"
 unset HZN_ORG_ID
-cmdOutput=$(hzn sdo keys remove test-sdo-key 2>&1)
+cmdOutput=$(hzn sdo key remove test-sdo-key 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys remove' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys remove' with incorrect HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key remove' with incorrect HZN_ORG_ID set"
 export HZN_ORG_ID=fakeorg
-cmdOutput=$(hzn sdo keys remove test-sdo-key 2>&1)
+cmdOutput=$(hzn sdo key remove test-sdo-key 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys remove' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys remove ' without HZN_SDO_SVC_URL set"
+echo -e "${PREFIX} Testing 'hzn sdo key remove ' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
-cmdOutput=$(hzn sdo keys remove test-sdo-key 2>&1)
+cmdOutput=$(hzn sdo key remove test-sdo-key 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys remove' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys remove <keyName>'"
-cmdOutput=$(hzn sdo keys remove test-sdo-key 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key remove <keyName>'"
+cmdOutput=$(hzn sdo key remove test-sdo-key 2>&1)
 rc=$?
 if [[ $rc -eq 0 && "$cmdOutput" == *'Key'*'successfully deleted from the SDO owner services.'* ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys remove': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing 'hzn sdo keys remove <keyName>' when key does not exist"
-cmdOutput=$(hzn sdo keys remove test-sdo-key 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key remove <keyName>' when key does not exist"
+cmdOutput=$(hzn sdo key remove test-sdo-key 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid key name.'* ]]; then
 	echo -e "${PREFIX} received expected error response.."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys remove' when key does not exist: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' when key does not exist: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
 echo -e "${PREFIX} adding test key to SDO owner services..."
-hzn sdo keys create /tmp/sdo_key.json &> /dev/null
+hzn sdo key create /tmp/sdo_key.json &> /dev/null
 echo -e "${PREFIX} done."
 
-# Test hzn sdo keys list
+# Test hzn sdo key list
 
-echo -e "${PREFIX} Testing 'hzn sdo keys list' without HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key list' without HZN_EXCHANGE_USER_AUTH set"
 unset HZN_EXCHANGE_USER_AUTH
-cmdOutput=$(hzn sdo keys list 2>&1)
+cmdOutput=$(hzn sdo key list 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must be specified'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys list' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
 
-echo -e "${PREFIX} Testing 'hzn sdo keys list' with incorrect HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key list' with incorrect HZN_EXCHANGE_USER_AUTH set"
 export HZN_EXCHANGE_USER_AUTH=fakeuser:fakepw
-cmdOutput=$(hzn sdo keys list 2>&1)
+cmdOutput=$(hzn sdo key list 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys list' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
 
-echo -e "${PREFIX} Testing 'hzn sdo keys list' without HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key list' without HZN_ORG_ID set"
 unset HZN_ORG_ID
-cmdOutput=$(hzn sdo keys list 2>&1)
+cmdOutput=$(hzn sdo key list 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys list' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys list' with incorrect HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key list' with incorrect HZN_ORG_ID set"
 export HZN_ORG_ID=fakeorg
-cmdOutput=$(hzn sdo keys list 2>&1)
+cmdOutput=$(hzn sdo key list 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys list' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys list' without HZN_SDO_SVC_URL set"
+echo -e "${PREFIX} Testing 'hzn sdo key list' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
-cmdOutput=$(hzn sdo keys list 2>&1)
+cmdOutput=$(hzn sdo key list 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys list' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys list' with 1 keys in SDO owner services"
-cmdOutput=$(hzn sdo keys list 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key list' with 1 keys in SDO owner services"
+cmdOutput=$(hzn sdo key list 2>&1)
 rc=$?
 if [[ $rc -eq 0 && "$cmdOutput" == "$inspectSingleKeyList" ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys list': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
 echo -e "${PREFIX} adding test key to SDO owner services..."
-hzn sdo keys create /tmp/sdo_key2.json &> /dev/null
+hzn sdo key create /tmp/sdo_key2.json &> /dev/null
 echo -e "${PREFIX} done."
 
-echo -e "${PREFIX} Testing 'hzn sdo keys list' with 2 keys in SDO owner services"
-cmdOutput=$(hzn sdo keys list 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key list' with 2 keys in SDO owner services"
+cmdOutput=$(hzn sdo key list 2>&1)
 rc=$?
 if [[ $rc -eq 0 && "$cmdOutput" == "$inspectDoubleKeyList" ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys list': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing 'hzn sdo keys list <keyName>' with incorrect key name argument"
-cmdOutput=$(hzn sdo keys list fake-sdo-key 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key list <keyName>' with incorrect key name argument"
+cmdOutput=$(hzn sdo key list fake-sdo-key 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'SDO key name'*'not found'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys list': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
 echo -e "${PREFIX} removing test key from SDO owner services..."
-hzn sdo keys rm test-sdo-key &> /dev/null
+hzn sdo key rm test-sdo-key &> /dev/null
 echo -e "${PREFIX} done."
 echo -e "${PREFIX} removing second test key from SDO owner services..."
-hzn sdo keys rm test-sdo-key2 &> /dev/null
+hzn sdo key rm test-sdo-key2 &> /dev/null
 echo -e "${PREFIX} done."
 
-echo -e "${PREFIX} Testing 'hzn sdo keys list' with 0 keys in SDO owner services"
-cmdOutput=$(hzn sdo keys list 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key list' with 0 keys in SDO owner services"
+cmdOutput=$(hzn sdo key list 2>&1)
 rc=$?
 if [[ $rc -eq 0 && "$cmdOutput" == *'[]'* ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys list': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 echo -e "${PREFIX} adding test key to SDO owner services..."
-hzn sdo keys create /tmp/sdo_key.json &> /dev/null
+hzn sdo key create /tmp/sdo_key.json &> /dev/null
 echo -e "${PREFIX} done."
-# Test hzn sdo keys download
+# Test hzn sdo key download
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download' without HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key download' without HZN_EXCHANGE_USER_AUTH set"
 unset HZN_EXCHANGE_USER_AUTH
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME 2>&1)
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must be specified'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download' with incorrect HZN_EXCHANGE_USER_AUTH set"
+echo -e "${PREFIX} Testing 'hzn sdo key download' with incorrect HZN_EXCHANGE_USER_AUTH set"
 export HZN_EXCHANGE_USER_AUTH=fakeuser:fakepw
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME 2>&1)
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download' without HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key download' without HZN_ORG_ID set"
 unset HZN_ORG_ID
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME 2>&1)
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download' with incorrect HZN_ORG_ID set"
+echo -e "${PREFIX} Testing 'hzn sdo key download' with incorrect HZN_ORG_ID set"
 export HZN_ORG_ID=fakeorg
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME 2>&1)
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download' without HZN_SDO_SVC_URL set"
+echo -e "${PREFIX} Testing 'hzn sdo key download' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME 2>&1)
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download <keyName>"
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key download <keyName>"
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME 2>&1)
 rc=$?
 if [[ $rc -eq 0 && "$cmdOutput" == *'-----BEGIN PUBLIC KEY-----'*'-----END PUBLIC KEY-----'* ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download <keyName> -f /tmp/test_sdo_key'"
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME -f /tmp/test_sdo_key 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key download <keyName> -f /tmp/test_sdo_key'"
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME -f /tmp/test_sdo_key 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	if [[ -f /tmp/test_sdo_key && "$(cat /tmp/test_sdo_key)" == *'-----BEGIN PUBLIC KEY-----'*'-----END PUBLIC KEY-----'* ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_sdo_key ]]; then
-		echo -e "${PREFIX} Failed: 'hzn sdo keys download <keyName> -f /tmp/test_sdo_key' not downloaded to /tmp/test_sdo_key"
+		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp/test_sdo_key' not downloaded to /tmp/test_sdo_key"
 		exit 1
 	else
-		echo -e "${PREFIX} Failed: 'hzn sdo keys download <keyName> -f /tmp/test_sdo_key': downloaded file does not match expected output."
+		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp/test_sdo_key': downloaded file does not match expected output."
 		exit 1
 	fi
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download <keyName> -f /tmp/test_sdo_key' when /tmp/test_sdo_key already exists"
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME -f /tmp/test_sdo_key 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key download <keyName> -f /tmp/test_sdo_key' when /tmp/test_sdo_key already exists"
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME -f /tmp/test_sdo_key 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download' when /tmp/test_sdo_key already exists: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' when /tmp/test_sdo_key already exists: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download <keyName> -f /tmp/test_sdo_key -O' when /tmp/test_sdo_key already exists"
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME -f /tmp/test_sdo_key -O 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key download <keyName> -f /tmp/test_sdo_key -O' when /tmp/test_sdo_key already exists"
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME -f /tmp/test_sdo_key -O 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	if [[ -f /tmp/test_sdo_key && "$(cat /tmp/test_sdo_key)" == *'-----BEGIN PUBLIC KEY-----'*'-----END PUBLIC KEY-----'* ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_sdo_key ]]; then
-		echo -e "${PREFIX} Failed: 'hzn sdo keys download <keyName> -f /tmp/test_sdo_key' not downloaded to /tmp/test_sdo_key"
+		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp/test_sdo_key' not downloaded to /tmp/test_sdo_key"
 		exit 1
 	else
-		echo -e "${PREFIX} Failed: 'hzn sdo keys download <keyName> -f /tmp/test_sdo_key': downloaded file does not match expected output."
+		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp/test_sdo_key': downloaded file does not match expected output."
 		exit 1
 	fi
 elif [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
-	echo -e "${PREFIX} Failed: 'hzn sdo keys download' did not overwrite output file with -O flag set."
+	echo -e "${PREFIX} Failed: 'hzn sdo key download' did not overwrite output file with -O flag set."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 rm /tmp/test_sdo_key
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download <keyName> -f /tmp'"
-cmdOutput=$(hzn sdo keys download $SDO_KEY_NAME -f /tmp 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key download <keyName> -f /tmp'"
+cmdOutput=$(hzn sdo key download $SDO_KEY_NAME -f /tmp 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	if [[ -f /tmp/$SDO_KEY_NAME && "$(cat /tmp/$SDO_KEY_NAME)" == *'-----BEGIN PUBLIC KEY-----'*'-----END PUBLIC KEY-----'* ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/$SDO_KEY_NAME ]]; then
-		echo -e "${PREFIX} Failed: 'hzn sdo keys download <keyName> -f /tmp' not downloaded to /tmp/$SDO_KEY_NAME"
+		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp' not downloaded to /tmp/$SDO_KEY_NAME"
 		exit 1
 	else
-		echo -e "${PREFIX} Failed: 'hzn sdo keys download <keyName> -f /tmp': downloaded file does not match expected output."
+		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp': downloaded file does not match expected output."
 		exit 1
 	fi
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 rm /tmp/$SDO_KEY_NAME
 
-echo -e "${PREFIX} Testing 'hzn sdo keys download' with incorrect key name argument"
-cmdOutput=$(hzn sdo keys download wrong_key_name -f /tmp/test_sdo_key 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key download' with incorrect key name argument"
+cmdOutput=$(hzn sdo key download wrong_key_name -f /tmp/test_sdo_key 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid key name.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys download' with incorrect key name argument: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' with incorrect key name argument: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
 # More sdo keys create tests
 
 echo -e "${PREFIX} removing test key from SDO owner services..."
-hzn sdo keys rm test-sdo-key &> /dev/null
+hzn sdo key rm test-sdo-key &> /dev/null
 echo -e "${PREFIX} done."
 echo -e "${PREFIX} removing second test key from SDO owner services..."
-hzn sdo keys rm test-sdo-key2 &> /dev/null
+hzn sdo key rm test-sdo-key2 &> /dev/null
 echo -e "${PREFIX} done."
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key'"
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key'"
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	if [[ -f /tmp/test_sdo_pub_key && "$(cat /tmp/test_sdo_pub_key)" == *'-----BEGIN PUBLIC KEY-----'*'-----END PUBLIC KEY-----'* ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_sdo_pub_key ]]; then
-		echo -e "${PREFIX} Failed: 'hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key' not downloaded to /tmp/test_sdo_pub_key"
+		echo -e "${PREFIX} Failed: 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key' not downloaded to /tmp/test_sdo_pub_key"
 		exit 1
 	else
-		echo -e "${PREFIX} Failed: 'hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key': downloaded file does not match expected output."
+		echo -e "${PREFIX} Failed: 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key': downloaded file does not match expected output."
 		exit 1
 	fi
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
 echo -e "${PREFIX} removing test key from SDO owner services..."
-hzn sdo keys rm test-sdo-key &> /dev/null
+hzn sdo key rm test-sdo-key &> /dev/null
 echo -e "${PREFIX} done."
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key' when /tmp/test_sdo_pub_key already exists"
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key' when /tmp/test_sdo_pub_key already exists"
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key 2>&1)
 rc=$?
 if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create' when /tmp/test_sdo_pub_key already exists: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' when /tmp/test_sdo_pub_key already exists: exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing 'hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key -O' when /tmp/test_sdo_pub_key already exists"
-cmdOutput=$(hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key -O 2>&1)
+echo -e "${PREFIX} Testing 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key -O' when /tmp/test_sdo_pub_key already exists"
+cmdOutput=$(hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key -O 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	if [[ -f /tmp/test_sdo_pub_key && "$(cat /tmp/test_sdo_pub_key)" == *'-----BEGIN PUBLIC KEY-----'*'-----END PUBLIC KEY-----'* ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_sdo_pub_key ]]; then
-		echo -e "${PREFIX} Failed: 'hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key' not downloaded to /tmp/test_sdo_pub_key"
+		echo -e "${PREFIX} Failed: 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key' not downloaded to /tmp/test_sdo_pub_key"
 		exit 1
 	else
-		echo -e "${PREFIX} Failed: 'hzn sdo keys create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key': downloaded file does not match expected output."
+		echo -e "${PREFIX} Failed: 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key': downloaded file does not match expected output."
 		exit 1
 	fi
 elif [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
-	echo -e "${PREFIX} Failed: 'hzn sdo keys new' did not overwrite output file with -O flag set."
+	echo -e "${PREFIX} Failed: 'hzn sdo key new' did not overwrite output file with -O flag set."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo keys create': exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
 	exit 1
 fi
 rm /tmp/test_sdo_pub_key
 
 # Cleanup
 echo -e "${PREFIX} removing test key from SDO owner services..."
-hzn sdo keys rm test-sdo-key &> /dev/null
+hzn sdo key rm test-sdo-key &> /dev/null
 echo -e "${PREFIX} done."
 rm /tmp/sdo_key.json
 rm /tmp/sdo_key2.json

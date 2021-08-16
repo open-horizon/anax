@@ -34,7 +34,7 @@ type KeyFile struct {
 }
 
 // Create key in SDO owner services from given keyFile
-func KeysCreate(org, userCreds string, keyFile *os.File, outputFile string, overwrite bool) {
+func KeyCreate(org, userCreds string, keyFile *os.File, outputFile string, overwrite bool) {
 	defer keyFile.Close()
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Importing key file name: %s", keyFile.Name()))
@@ -65,7 +65,7 @@ func KeysCreate(org, userCreds string, keyFile *os.File, outputFile string, over
 }
 
 // List keys that are stored in SDO owner services
-func KeysList(org, userCreds, keyName string) {
+func KeyList(org, userCreds, keyName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 	var respBodyBytes []byte
 	var emptyBody []byte
@@ -117,7 +117,7 @@ func KeysList(org, userCreds, keyName string) {
 }
 
 // Download specified key from SDO owner services to file
-func KeysDownload(org, userCreds, keyName, outputFile string, overwrite bool) {
+func KeyDownload(org, userCreds, keyName, outputFile string, overwrite bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 	var emptyBody []byte
 	var fileExtension string
@@ -137,7 +137,7 @@ func KeysDownload(org, userCreds, keyName, outputFile string, overwrite bool) {
 }
 
 // Remove sepcified key form SDO owner services
-func KeysRemove(org, userCreds, keyName string) {
+func KeyRemove(org, userCreds, keyName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Removing SDO key \"%s\".", keyName))
 
@@ -149,7 +149,7 @@ func KeysRemove(org, userCreds, keyName string) {
 }
 
 // Download a sample key template. If file path specified, template will be written to given file, otherwise "sample-sdo-key.json"
-func KeysNew(outputFile string, overwrite bool) {
+func KeyNew(outputFile string, overwrite bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Creating SDO key template at \"%s\".", outputFile))
 

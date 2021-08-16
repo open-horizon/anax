@@ -94,7 +94,7 @@ Subcommands Description:
   userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.
   util: Utility commands.
   version: Show the Horizon version.
-  voucher: List and manage Horizon SDO ownership vouchers.
+  sdo: List and manage Horizon SDO ownership vouchers and keys.
 
 Environment Variables:
   HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.
@@ -699,23 +699,23 @@ Environment Variables:
 	sdoOrg := sdoCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	sdoUserPw := sdoCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
 	
-  	sdoKeysCmd := sdoCmd.Command("keys", msgPrinter.Sprintf("List and manage Horizon SDO ownership keys."))
+  	sdoKeyCmd := sdoCmd.Command("key", msgPrinter.Sprintf("List and manage Horizon SDO ownership keys."))
 
-	sdoKeysListCmd := sdoKeysCmd.Command("list | ls", msgPrinter.Sprintf("List the SDO ownership keys stored in SDO owner services.")).Alias("ls").Alias("list")
-	sdoKeyToList := sdoKeysListCmd.Arg("keyName", msgPrinter.Sprintf("List the full details of this SDO ownership key.")).String()
-	sdoKeysCreateCmd := sdoKeysCmd.Command("create | cr", msgPrinter.Sprintf("Create a new key in SDO owner services.")).Alias("cr").Alias("create")
-	sdoKeysCreateInputFile := sdoKeysCreateCmd.Arg("key-meta-file", msgPrinter.Sprintf("The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.")).Required().File()
-	sdoKeysCreateFile := sdoKeysCreateCmd.Flag("file-path", msgPrinter.Sprintf("The file that the returned public key is written to. If omit, the key will be printed to the console.")).Short('f').String()
-	sdoKeysCreateOverwrite := sdoKeysCreateCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing output public key file if it exists.")).Short('O').Bool()
-	sdoKeysDownloadCmd := sdoKeysCmd.Command("download | dl", msgPrinter.Sprintf("Download the specified key from SDO owner services.")).Alias("dl").Alias("download")
-	sdoKeyToDownload := sdoKeysDownloadCmd.Arg("keyName", msgPrinter.Sprintf("The name of the key to be downloaded from SDO owner services.")).Required().String()
-	sdoKeysDownloadFile := sdoKeysDownloadCmd.Flag("file-path", msgPrinter.Sprintf("The file that the data of downloaded key is written to. If omit, the key will be printed to the console.")).Short('f').String()
-	sdoKeysDownloadOverwrite := sdoKeysDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
-	sdoKeysRemoveCmd := sdoKeysCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a key from SDO owner services.")).Alias("rm").Alias("remove")
-	sdoKeysToRemove := sdoKeysRemoveCmd.Arg("keyName", msgPrinter.Sprintf("The name of the key to be removed from SDO owner services.")).Required().String()
-  	sdoKeysNewCmd := sdoKeysCmd.Command("new", msgPrinter.Sprintf("Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services."))
-	sdoKeysNewFile := sdoKeysNewCmd.Flag("file-path", msgPrinter.Sprintf("The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.")).Short('f').String()
-	sdoKeysNewOverwrite := sdoKeysNewCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
+	sdoKeyListCmd := sdoKeyCmd.Command("list | ls", msgPrinter.Sprintf("List the SDO ownership keys stored in SDO owner services.")).Alias("ls").Alias("list")
+	sdoKeyToList := sdoKeyListCmd.Arg("keyName", msgPrinter.Sprintf("List the full details of this SDO ownership key.")).String()
+	sdoKeyCreateCmd := sdoKeyCmd.Command("create | cr", msgPrinter.Sprintf("Create a new key in SDO owner services.")).Alias("cr").Alias("create")
+	sdoKeyCreateInputFile := sdoKeyCreateCmd.Arg("key-meta-file", msgPrinter.Sprintf("The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.")).Required().File()
+	sdoKeyCreateFile := sdoKeyCreateCmd.Flag("file-path", msgPrinter.Sprintf("The file that the returned public key is written to. If omit, the key will be printed to the console.")).Short('f').String()
+	sdoKeyCreateOverwrite := sdoKeyCreateCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing output public key file if it exists.")).Short('O').Bool()
+	sdoKeyDownloadCmd := sdoKeyCmd.Command("download | dl", msgPrinter.Sprintf("Download the specified key from SDO owner services.")).Alias("dl").Alias("download")
+	sdoKeyToDownload := sdoKeyDownloadCmd.Arg("keyName", msgPrinter.Sprintf("The name of the key to be downloaded from SDO owner services.")).Required().String()
+	sdoKeyDownloadFile := sdoKeyDownloadCmd.Flag("file-path", msgPrinter.Sprintf("The file that the data of downloaded key is written to. If omit, the key will be printed to the console.")).Short('f').String()
+	sdoKeyDownloadOverwrite := sdoKeyDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
+	sdoKeyRemoveCmd := sdoKeyCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a key from SDO owner services.")).Alias("rm").Alias("remove")
+	sdoKeyToRemove := sdoKeyRemoveCmd.Arg("keyName", msgPrinter.Sprintf("The name of the key to be removed from SDO owner services.")).Required().String()
+  	sdoKeyNewCmd := sdoKeyCmd.Command("new", msgPrinter.Sprintf("Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services."))
+	sdoKeyNewFile := sdoKeyNewCmd.Flag("file-path", msgPrinter.Sprintf("The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.")).Short('f').String()
+	sdoKeyNewOverwrite := sdoKeyNewCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
 
 	sdoVoucherCmd := sdoCmd.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
 	
@@ -918,7 +918,7 @@ Environment Variables:
 		sdoOrg = cliutils.RequiredWithDefaultEnvVar(sdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		sdoUserPw = cliutils.RequiredWithDefaultEnvVar(sdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
-	if strings.HasPrefix(fullCmd, "sdo keys") && !strings.HasPrefix(fullCmd, "sdo keys new"){
+	if strings.HasPrefix(fullCmd, "sdo key") && !strings.HasPrefix(fullCmd, "sdo key new"){
 		sdoOrg = cliutils.RequiredWithDefaultEnvVar(sdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		sdoUserPw = cliutils.RequiredWithDefaultEnvVar(sdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
@@ -1216,16 +1216,16 @@ Environment Variables:
 	case voucherListCmd.FullCommand():
 		sdo.DeprecatedVoucherList(*voucherOrg, *voucherUserPw, *voucherToList, !*voucherListLong)
 	
-	case sdoKeysCreateCmd.FullCommand():
-		sdo.KeysCreate(*sdoOrg, *sdoUserPw, *sdoKeysCreateInputFile, *sdoKeysCreateFile, *sdoKeysCreateOverwrite)
-	case sdoKeysListCmd.FullCommand():
-		sdo.KeysList(*sdoOrg, *sdoUserPw, *sdoKeyToList)
-	case sdoKeysDownloadCmd.FullCommand():
-		sdo.KeysDownload(*sdoOrg, *sdoUserPw, *sdoKeyToDownload, *sdoKeysDownloadFile, *sdoKeysDownloadOverwrite)
-	case sdoKeysRemoveCmd.FullCommand():
-		sdo.KeysRemove(*sdoOrg, *sdoUserPw, *sdoKeysToRemove)
-	case sdoKeysNewCmd.FullCommand():
-		sdo.KeysNew(*sdoKeysNewFile, *sdoKeysNewOverwrite)
+	case sdoKeyCreateCmd.FullCommand():
+		sdo.KeyCreate(*sdoOrg, *sdoUserPw, *sdoKeyCreateInputFile, *sdoKeyCreateFile, *sdoKeyCreateOverwrite)
+	case sdoKeyListCmd.FullCommand():
+		sdo.KeyList(*sdoOrg, *sdoUserPw, *sdoKeyToList)
+	case sdoKeyDownloadCmd.FullCommand():
+		sdo.KeyDownload(*sdoOrg, *sdoUserPw, *sdoKeyToDownload, *sdoKeyDownloadFile, *sdoKeyDownloadOverwrite)
+	case sdoKeyRemoveCmd.FullCommand():
+		sdo.KeyRemove(*sdoOrg, *sdoUserPw, *sdoKeyToRemove)
+	case sdoKeyNewCmd.FullCommand():
+		sdo.KeyNew(*sdoKeyNewFile, *sdoKeyNewOverwrite)
 	case sdoVoucherInspectCmd.FullCommand():
 		sdo.VoucherInspect(*sdoVoucherInspectFile)
 	case sdoVoucherImportCmd.FullCommand():
