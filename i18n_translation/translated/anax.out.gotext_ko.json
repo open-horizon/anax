@@ -123,6 +123,10 @@
       "translation": "조직 ID, 사용자 ID 또는 비밀번호가 잘못되었습니다."
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Exchange 사용자 {Key}은(는) 올바른 형식이 아닙니다. org/username이어야 합니다."
+    },
+    {
       "id": "Internal server error",
       "translation": "내부 서버 오류"
     },
@@ -133,6 +137,10 @@
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
       "translation": "시크릿 제공자가 준비되지 않았습니다. 호출자는 시크릿 제공자를 사용할 수 없도록 하기 위해 호출 사이에 짧은 지연을 두고 이 API 호출을 몇 번 재시도해야 합니다."
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "시크릿 이름이 제공되어야 함"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -147,20 +155,56 @@
       "translation": "요청 본문 구문 분석 오류. {Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "시크릿 제공자에 액세스할 수 없음. 오류: {Serr}."
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "권한이 거부되었습니다. \"{ExUser}\" 사용자는 \"{Org}\" 조직의 시크릿을 {Action}할 수 없습니다."
     },
     {
-      "id": "org must be specified in the API path",
-      "translation": "API 경로에 org를 지정해야 함"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "권한이 거부되었습니다. \"{ExUser}\" 사용자는 \"{Org}\" 조직의 시크릿 \"{SecretName}\"을(를) {Action}할 수 없습니다."
     },
     {
-      "id": "user must be specified in the API path",
-      "translation": "API 경로에 user를 지정해야 함"
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "볼트 응답을 읽을 수 없음: {Error}"
     },
     {
-      "id": "{Serr}",
-      "translation": "{Serr}"
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "볼트 응답 \"{Response}\"을(를) 구문 분석할 수 없음: {Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "\"{Org}\" 조직의 시크릿을 {Action}할 수 없습니다. 시크릿 제공자가 지원하지 않는 오퍼레이션입니다."
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "\"{Org}\" 조직에서 \"{SecretName}\" 시크릿을 {Action}할 수 없습니다. 시크릿 제공자가 지원하지 않는 오퍼레이션입니다."
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "시크릿 제공자가 잘못된 요청을 수신했습니다. 제공된 모든 입력을 확인하십시오."
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "응답: {Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "\"{Org}\" 조직에서 시크릿을 찾을 수 없음"
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "시크릿 이름 \"{SecretName}\"에서 시크릿을 찾을 수 없음"
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "알 수 없는 오류가 발생했습니다. 시크릿 제공자로부터 응답 코드 {ResponseCode}이(가) 수신되었습니다."
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "translation": "API 경로에 조직을 지정해야 함"
+    },
+    {
+      "id": "User must be specified in the API path",
+      "translation": "API 경로에 사용자를 지정해야 함"
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -705,6 +749,10 @@
     {
       "id": "Failed to get file info: {Err}",
       "translation": "파일 정보를 가져올 수 없음: {Err}"
+    },
+    {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "잘못된 형식의 URL: {UrlPath}. {ErrUrl}"
     },
     {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
@@ -1521,6 +1569,10 @@
     {
       "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
       "translation": "데이터베이스에서 서비스 정의 {Arg_1}을(를) 가져오는 중에 오류가 발생했습니다. {Arg_2}"
+    },
+    {
+      "id": "Error retrieving all service definitions from db. {Arg_1}",
+      "translation": "db에서 모든 서비스 정의를 검색하는 중에 오류가 발생했습니다. {Arg_1}"
     },
     {
       "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",

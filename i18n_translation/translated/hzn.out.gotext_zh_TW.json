@@ -28,7 +28,7 @@
     },
     {
       "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
-      "translation": "輸入內文無法解除序列化為 SecretBindingCheck 物件。{Err}"
+      "translation": "輸入內文無法解除序列化為 SecretBindingCheck 物件。 {Err}"
     },
     {
       "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
@@ -51,6 +51,10 @@
       "translation": "錯誤的組織 ID、使用者 ID 或密碼。"
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Exchange 使用者 {Key} 未採用正確格式，應該採用 org/username 格式。"
+    },
+    {
       "id": "Internal server error",
       "translation": "內部伺服器錯誤"
     },
@@ -60,7 +64,11 @@
     },
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
-      "translation": "密碼提供者尚未備妥。呼叫者應該重試進行幾次此 API 呼叫且兩次呼叫之間經歷短暫延遲，以確保密碼提供者無法使用。"
+      "translation": "密碼提供者尚未備妥。 呼叫者應該重試進行幾次此 API 呼叫且兩次呼叫之間經歷短暫延遲，以確保密碼提供者無法使用。"
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "必須提供密碼名稱"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -75,20 +83,56 @@
       "translation": "要求內文剖析錯誤：{Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "無法存取密碼提供者，錯誤：{Serr}。"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "許可權遭拒，使用者 \"{ExUser}\" 無法{Action}組織 \"{Org}\" 中的密碼"
     },
     {
-      "id": "org must be specified in the API path",
-      "translation": "必須在 API 路徑中指定組織"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "許可權遭拒，使用者 \"{ExUser}\" 無法{Action}組織 \"{Org}\" 中的密碼 \"{SecretName}\""
     },
     {
-      "id": "user must be specified in the API path",
-      "translation": "必須在 API 路徑中指定使用者"
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "無法讀取儲存庫回應：{Error}"
     },
     {
-      "id": "{Serr}",
-      "translation": "{Serr}"
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "無法剖析儲存庫回應 \"{Response}\"：{Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "無法{Action}組織 \"{Org}\" 中的密碼，密碼提供者不支援該作業。"
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "無法{Action}組織 \"{Org}\" 中的密碼 \"{SecretName}\"，密碼提供者不支援該作業。"
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "密碼提供者接收到不正確的要求，請檢查所有提供的輸入。"
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "回應：{Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "在組織 \"{Org}\" 中找不到密碼"
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "找不到密碼名稱為 \"{SecretName}\" 的密碼"
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "發生不明錯誤。 回應碼 {ResponseCode} 接收自密碼提供者。"
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "translation": "組織必須在 API 路徑中指定"
+    },
+    {
+      "id": "User must be specified in the API path",
+      "translation": "使用者必須在 API 路徑中指定"
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -344,7 +388,7 @@
     },
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon 代理程式的指令行介面。 大部分次指令使用位於預設位置 http://localhost 的 Horizon 代理程式 API（請參閱「環境變數」區段以置換此項）。\n\n次指令說明：\n  agbot：列出並管理 Horizon 合約機器人資源。\n  agreement：列出或管理此邊緣節點使用 Horizon 合約機器人建立的作用中合約或保存合約。\n  architecture：顯示此機器的架構（如 Horizon 和 golang 所定義）。\n  attribute：列出或管理目前登錄在這個 Horizon 邊緣節點上的廣域屬性。\n  deploycheck：檢查部署相容性。\n  dev：用於建立服務的開發工具。\n  env：顯示 Horizon 環境變數。\n  eventlog：列出現行或所有登錄的事件日誌。\n  exchange：列出並管理 Horizon Exchange 資源。\n  key：列出並管理用於簽署和驗證服務的金鑰。\n  metering：列出或管理作用中合約或保存合約的計量（付款）資訊。\n  mms：列出並管理 Horizon 模型管理服務資源。\n  node：列出並管理關於這個 Horizon 邊緣節點的一般資訊。\n  policy：列出並管理這個 Horizon 邊緣節點的原則。\n  reginput：針對可用於 'hzn register' 指令（一旦填寫）的這個型樣建立一個輸入檔範本。\n            這會檢查指定的型樣使用的服務並判定這些服務所需的節點擁有者輸入。\n  register：向管理中心登錄這個邊緣節點。\n  service：列出或管理目前登錄在這個 Horizon 邊緣節點上的服務。\n  status：顯示節點目前的 Horizon 內部狀態。\n  unregister：取消登錄並重設這個 Horizon 邊緣節點以便備妥進行重新登錄。\n  userinput：列出或管理目前登錄在這個 Horizon 邊緣節點上的服務使用者輸入。\n  util：公用程式指令。\n  version：顯示 Horizon 版本。\n  voucher：列出並管理 Horizon SDO 所有權憑證。\n\n環境變數：\n  HORIZON_URL：置換 hzn 在其中聯絡 Horizon 代理程式 API 的 URL。\n      這樣做可協助透過 ssh 通道使用 Horizon 代理程式。\n  HZN_EXCHANGE_URL：置換 'hzn exchange' 次指令用來\n與 Horizon Exchange 通訊的 URL，例如\n      https://exchange.bluehorizon.network/api/v1。 （依預設，hzn 將要求\n      Horizon 代理程式提供 URL。）\n  HZN_ORG_ID：'hzn exchange -o' 旗標的預設值，\n用來指定組織 ID。\n  HZN_EXCHANGE_USER_AUTH：'hzn exchange -u' 或 'hzn\n\t  register -u' 旗標的預設值，格式為 '[org/]user:pw'。 請注意，當設定了 HZN_EXCHANGE_USER_AUTH 時，可以設定 HZN_ORG_ID\n\t（如果已省略組織）。\n  HZN_FSS_CSSURL：置換 'hzn mms' 次指令\n用來與 Horizon 模型管理服務通訊的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （依預設，hzn 將要求\n      Horizon 代理程式提供 URL。）\n\n可在 JSON 格式的使用者配置檔 ~/.hzn/hzn.json 中指定\n所有上述環境變數以及指令說明中提到的環境變數。\n  例如：\n  {Com____}"
+      "translation": "Horizon 代理程式的指令行介面。 大部分次指令使用位於預設位置 http://localhost 的 Horizon 代理程式 API（請參閱「環境變數」區段以置換此項）。\n\n次指令說明：\n  agbot：列出並管理 Horizon 合約機器人資源。\n  agreement：列出或管理此邊緣節點使用 Horizon 合約機器人建立的作用中合約或保存合約。\n  architecture：顯示此機器的架構（如 Horizon 和 golang 所定義）。 \n  attribute：列出或管理目前登錄在這個 Horizon 邊緣節點上的廣域屬性。\n  deploycheck：檢查部署相容性。\n  dev：用於建立服務的開發工具。\n  env：顯示 Horizon 環境變數。\n  eventlog：列出現行或所有登錄的事件日誌。\n  exchange：列出並管理 Horizon Exchange 資源。\n  key：列出並管理用於簽署和驗證服務的金鑰。 \n  metering：列出或管理作用中合約或保存合約的計量（付款）資訊。\n  mms：列出並管理 Horizon 模型管理服務資源。\n  node：列出並管理關於這個 Horizon 邊緣節點的一般資訊。\n  policy：列出並管理這個 Horizon 邊緣節點的原則。 \n  reginput：針對可用於 'hzn register' 指令（一旦填寫）的這個型樣建立一個輸入檔範本。 \n            這會檢查指定的型樣使用的服務並判定這些服務所需的節點擁有者輸入。 \n  register：向管理中心登錄這個邊緣節點。\n  service：列出或管理目前登錄在這個 Horizon 邊緣節點上的服務。\n  status：顯示節點目前的 Horizon 內部狀態。\n  unregister：取消登錄並重設這個 Horizon 邊緣節點以便備妥進行重新登錄。\n  userinput：列出或管理目前登錄在這個 Horizon 邊緣節點上的服務使用者輸入。\n  util：公用程式指令。\n  version：顯示 Horizon 版本。\n  voucher：列出並管理 Horizon SDO 所有權憑證。\n\n環境變數：\n  HORIZON_URL：置換 hzn 在其中聯絡 Horizon 代理程式 API 的 URL。\n      這樣做可協助透過 ssh 通道使用 Horizon 代理程式。\n  HZN_EXCHANGE_URL：置換 'hzn exchange' 次指令用來\n與 Horizon Exchange 通訊的 URL，例如\n      https://exchange.bluehorizon.network/api/v1。 （依預設，hzn 將要求\n      Horizon 代理程式提供 URL。）\n  HZN_ORG_ID：'hzn exchange -o' 旗標的預設值，\n用來指定組織 ID。\n  HZN_EXCHANGE_USER_AUTH：'hzn exchange -u' 或 'hzn\n\t  register -u' 旗標的預設值，格式為 '[org/]user:pw'。 請注意，當設定了 HZN_EXCHANGE_USER_AUTH 時，可以設定 HZN_ORG_ID\n\t（如果已省略組織）。\n  HZN_FSS_CSSURL：置換 'hzn mms' 次指令\n用來與 Horizon 模型管理服務通訊的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （依預設，hzn 將要求\n      Horizon 代理程式提供 URL。）\n\n可在 JSON 格式的使用者配置檔 ~/.hzn/hzn.json 中指定\n所有上述環境變數以及指令說明中提到的環境變數。\n  例如：\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -520,7 +564,7 @@
     },
     {
       "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
-      "translation": "節點的組織。預設值是由 -n 或現行已登錄裝置提供之節點的組織（如果已省略的話）。"
+      "translation": "節點的組織。 預設值是由 -n 或現行已登錄裝置提供之節點的組織（如果已省略的話）。"
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -688,7 +732,7 @@
     },
     {
       "id": "The name of the service container whose log records should be displayed. Can be omitted if the service definition has only one container in its deployment config.",
-      "translation": "應顯示其日誌記錄的服務儲存器的名稱。如果服務定義的部署配置中只有一個儲存器，則可以省略此項。"
+      "translation": "應顯示其日誌記錄的服務儲存器的名稱。 如果服務定義的部署配置中只有一個儲存器，則可以省略此項。"
     },
     {
       "id": "Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.",
@@ -756,7 +800,7 @@
     },
     {
       "id": "Filepath of a file containing a secret that is required by the service or one of its dependent services. The filename must match a secret name in the service definition. The file is encoded in JSON as an object containing two keys both typed as a string; \"key\" is used to indicate the kind of secret, and \"value\" is the string form of the secret. This flag can be repeated.",
-      "translation": "服務或服務的其中一個相依服務需要的密碼所在的檔案的檔案路徑。檔名必須符合服務定義中的密碼名稱。檔案以 JSON 形式編碼為一個物件，其中包含兩個金鑰（均為字串形式）；\"key\" 用來表示密碼類型，而 \"value\" 是字串形式的密碼。此旗標可以重複。"
+      "translation": "服務或服務的其中一個相依服務需要的密碼所在的檔案的檔案路徑。 檔名必須符合服務定義中的密碼名稱。 檔案以 JSON 形式編碼為一個物件，其中包含兩個金鑰（均為字串形式）；\"key\" 用來表示密碼類型，而 \"value\" 是字串形式的密碼。 此旗標可以重複。"
     },
     {
       "id": "Stop a service that is running in a mocked Horizon Agent environment. This command is not supported for services using the {KUBEDEPLOYMENTCONFIGTYPE} deployment configuration.",
@@ -1820,19 +1864,19 @@
     },
     {
       "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
-      "translation": "發佈指令將不會對上傳的物件資料執行資料完整性檢查。它與 --hashAlgo 和 --hash 互斥"
+      "translation": "發佈指令將不會對上傳的物件資料執行資料完整性檢查。 它與 --hashAlgo 和 --hash 互斥"
     },
     {
       "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-      "translation": "雜湊演算法用來在簽署物件資料之前對其進行混合，以確保上傳和下載期間的資料完整性。支援的雜湊演算法為 SHA1 或 SHA256，預設值為 SHA1。它與 --noIntegrity 旗標互斥"
+      "translation": "雜湊演算法用來在簽署物件資料之前對其進行混合，以確保上傳和下載期間的資料完整性。 支援的雜湊演算法為 SHA1 或 SHA256，預設值為 SHA1。 它與 --noIntegrity 旗標互斥"
     },
     {
       "id": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
-      "translation": "所上傳或下載的物件資料的雜湊。如果您想要提供雜湊，而不是容許指令自動計算雜湊，請使用此旗標。必須使用 SHA1 或 SHA256 演算法產生雜湊。如果是使用 SHA256 產生雜湊，則必須指定 -a 旗標。此旗標與 --noIntegrity 互斥。"
+      "translation": "所上傳或下載的物件資料的雜湊。 如果您想要提供雜湊，而不是容許指令自動計算雜湊，請使用此旗標。 必須使用 SHA1 或 SHA256 演算法產生雜湊。 如果是使用 SHA256 產生雜湊，則必須指定 -a 旗標。 此旗標與 --noIntegrity 互斥。"
     },
     {
       "id": "The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
-      "translation": "要用來簽署物件之私密金鑰檔的路徑。對應的公開金鑰將儲存在 MMS 中，以確保物件的完整性。如果未指定，則將會使用環境變數 HZN_PRIVATE_KEY_FILE 來尋找私密金鑰。如果未設定，則將使用 ~/.hzn/keys/service.private.key。如果它不存在，則只會針對此發佈作業產生 RSA 金鑰組，私密金鑰隨後被捨棄。"
+      "translation": "要用來簽署物件之私密金鑰檔的路徑。 對應的公開金鑰將儲存在 MMS 中，以確保物件的完整性。 如果未指定，則將會使用環境變數 HZN_PRIVATE_KEY_FILE 來尋找私密金鑰。 如果未設定，則將使用 ~/.hzn/keys/service.private.key。 如果它不存在，則只會針對此發佈作業產生 RSA 金鑰組，私密金鑰隨後被捨棄。"
     },
     {
       "id": "Display the status of the Horizon Model Management Service.",
@@ -1979,12 +2023,16 @@
       "translation": "應該回復的服務的組織。"
     },
     {
-      "id": "The name of the service that should be resumed.",
-      "translation": "應該回復的服務的名稱。"
+      "id": "The name of the service that should be resumed. If omitted, all the services for the organization will be resumed.",
+      "translation": "應該回復的服務的名稱。 如果省略，系統將會回復組織的所有服務。"
     },
     {
-      "id": "Change the configuration state to 'suspend' for a service.",
-      "translation": "將服務的配置狀態變更為「暫停」。"
+      "id": "The version of the service that should be resumed. If omitted, all the versions for this service will be resumed.",
+      "translation": "應該回復之服務的版本。 如果省略，系統將會回復此服務的所有版本。"
+    },
+    {
+      "id": "Change the configuration state to 'suspend' for a service. Parent and child dependencies of the suspended service will be stopped until the service is resumed.",
+      "translation": "將服務的配置狀態變更為「暫停」。 在回復已暫停的服務之前，系統將會停止該服務的母項和子項相依關係。"
     },
     {
       "id": "Suspend all registerd services.",
@@ -1995,8 +2043,12 @@
       "translation": "應該暫停的服務的組織。"
     },
     {
-      "id": "The name of the service that should be suspended.",
-      "translation": "應該暫停的服務的名稱。"
+      "id": "The name of the service that should be suspended. If omitted, all the services for the organization will be suspended.",
+      "translation": "應該暫停的服務的名稱。 如果省略，系統將會暫停組織的所有服務。"
+    },
+    {
+      "id": "The version of the service that should be suspended. If omitted, all the versions for this service will be suspended.",
+      "translation": "應該暫停之服務的版本。 如果省略，系統將會暫停此服務的所有版本。"
     },
     {
       "id": "Show the container logs for a service.",
@@ -2112,11 +2164,11 @@
     },
     {
       "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "translation": "列出並管理密碼管理程式中的密碼。附註：您必須以管理者身分進行鑑別，才能列出可供整個組織使用的密碼。"
+      "translation": "列出並管理密碼管理程式中的密碼。 附註：您必須以管理者身分進行鑑別，才能列出可供整個組織使用的密碼。"
     },
     {
       "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-      "translation": "用於查詢密碼管理程式資源的 Horizon Exchange 認證。預設值是 HZN_EXCHANGE_USER_AUTH 環境變數。 如果您未在它前面加上使用者的組織，則它前面會自動加上 HZN_ORG_ID 環境變數的值。"
+      "translation": "用於查詢密碼管理程式資源的 Horizon Exchange 認證。 預設值是 HZN_EXCHANGE_USER_AUTH 環境變數。 如果您未在它前面加上使用者的組織，則它前面會自動加上 HZN_ORG_ID 環境變數的值。"
     },
     {
       "id": "List and manage secrets in the secrets manager.",
@@ -2128,7 +2180,7 @@
     },
     {
       "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
-      "translation": "僅列出這一個密碼。傳回一個布林值，指出密碼存在。這是密碼管理程式中使用的密碼名稱。如果密碼不存在，則傳回結束碼 1。"
+      "translation": "僅列出這一個密碼。 傳回一個布林值，指出密碼存在。 這是密碼管理程式中使用的密碼名稱。 如果密碼不存在，則傳回結束碼 1。"
     },
     {
       "id": "Add a secret to the secrets manager.",
@@ -2136,11 +2188,11 @@
     },
     {
       "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
-      "translation": "密碼的名稱。它在您的組織內必須是唯一的。在部署原則和型樣中使用此名稱，以將此密碼連結至服務定義中的密碼名稱。"
+      "translation": "密碼的名稱。 它在您的組織內必須是唯一的。 在部署原則和型樣中使用此名稱，以將此密碼連結至服務定義中的密碼名稱。"
     },
     {
       "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
-      "translation": "包含密碼詳細資料之檔案的檔案路徑。與 --secretDetail 互斥。指定 -f- 以從 stdin 中讀取。"
+      "translation": "包含密碼詳細資料之檔案的檔案路徑。 與 --secretDetail 互斥。 指定 -f- 以從 stdin 中讀取。"
     },
     {
       "id": "A key for the secret.",
@@ -2148,11 +2200,11 @@
     },
     {
       "id": "The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.",
-      "translation": "密碼詳細資料（字串形式）。密碼詳細資料本身是實際的密碼，而不是密碼的名稱。例如，密碼、私密金鑰等都是密碼詳細資料的範例。與 --secretFile 互斥。"
+      "translation": "密碼詳細資料（字串形式）。 密碼詳細資料本身是實際的密碼，而不是密碼的名稱。 例如，密碼、私密金鑰等都是密碼詳細資料的範例。 與 --secretFile 互斥。"
     },
     {
       "id": "Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.",
-      "translation": "如果密碼管理程式中存在現有的密碼，則改寫它。它將會跳過「要改寫嗎」提示。"
+      "translation": "如果密碼管理程式中存在現有的密碼，則改寫它。 它將會跳過「要改寫嗎」提示。"
     },
     {
       "id": "Remove a secret in the secrets manager.",
@@ -2164,7 +2216,7 @@
     },
     {
       "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
-      "translation": "讀取儲存在密碼管理程式中的密碼的詳細資料。其中包含建立密碼時提供的金鑰和值配對。"
+      "translation": "讀取儲存在密碼管理程式中的密碼的詳細資料。 其中包含建立密碼時提供的金鑰和值配對。"
     },
     {
       "id": "The name of the secret to read in the secrets manager.",
@@ -2679,6 +2731,10 @@
       "translation": "無法取得檔案資訊：{Err}"
     },
     {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "形態異常的 URL：{UrlPath}。{ErrUrl}"
+    },
+    {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "translation": "正在上傳：{Float32totalSent__float32bodyLen__100} {}"
     },
@@ -2936,7 +2992,7 @@
     },
     {
       "id": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
-      "translation": "未指定節點架構、組織或類型，且未指定節點 ID。請從本端節點取得節點資訊。"
+      "translation": "未指定節點架構、組織或類型，且未指定節點 ID。 請從本端節點取得節點資訊。"
     },
     {
       "id": "failed to marshal 'hzn deploycheck secretbinding' output: {Err}",
@@ -3223,6 +3279,18 @@
       "translation": "$SERVICE_NAME 的型樣"
     },
     {
+      "id": "Failed to marshal deps: {Err}",
+      "translation": "無法配置部署：{Err}"
+    },
+    {
+      "id": "Failed to unmarshal deps: {Err}",
+      "translation": "無法取消配置部署：{Err}"
+    },
+    {
+      "id": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
+      "translation": "警告：未使用 {SERVICESTARTCOMMAND} 指令指定服務 {SvcName} 的密碼 {SecName}。"
+    },
+    {
       "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
       "translation": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' 無法從映像檔名稱中取得服務名稱。 {Err}"
     },
@@ -3296,7 +3364,7 @@
     },
     {
       "id": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
-      "translation": "在現行專案中找不到服務 {ServiceName}。如果這是新的相依服務，請使用 'hzn dev dependency fetch' 指令來更新相依關係清單。"
+      "translation": "在現行專案中找不到服務 {ServiceName}。 如果這是新的相依服務，請使用 'hzn dev dependency fetch' 指令來更新相依關係清單。"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
@@ -3627,6 +3695,14 @@
       "translation": "已建立網路 {Name}"
     },
     {
+      "id": "unable to list docker networks, error {Err}",
+      "translation": "無法列出 Docker 網路，錯誤 {Err}"
+    },
+    {
+      "id": "unable to remove docker network {Name}, error {Err}",
+      "translation": "無法移除 Docker 網路 {Name}，錯誤 {Err}"
+    },
+    {
       "id": "invalid image format: {Image}",
       "translation": "映像檔格式無效：{Image}"
     },
@@ -3756,7 +3832,7 @@
     },
     {
       "id": "Failed to validate the secret binding. {Err}",
-      "translation": "無法驗證密碼連結。{Err}"
+      "translation": "無法驗證密碼連結。 {Err}"
     },
     {
       "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
@@ -3764,7 +3840,7 @@
     },
     {
       "id": "Failed to verify the binding secret in the secret manager. {Err}",
-      "translation": "無法驗證密碼管理程式中的連結密碼。{Err}"
+      "translation": "無法驗證密碼管理程式中的連結密碼。 {Err}"
     },
     {
       "id": "Warning: The following binding secrets cannot be verified in the secret manager:",
@@ -3772,19 +3848,19 @@
     },
     {
       "id": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
-      "translation": "無法從所有架構的 Exchange 中取得服務 {ServiceOrg}/{ServiceName} {ServiceVersion} 版。{Err}"
+      "translation": "無法從所有架構的 Exchange 中取得服務 {ServiceOrg}/{ServiceName} {ServiceVersion} 版。 {Err}"
     },
     {
       "id": "Error retrieving service {ServiceOrg}/{ServiceName} version {ServiceVersion} from the Exchange. {Err}",
-      "translation": "從 Exchange 擷取服務 {ServiceOrg}/{ServiceName} {ServiceVersion} 版時發生錯誤。{Err}"
+      "translation": "從 Exchange 擷取服務 {ServiceOrg}/{ServiceName} {ServiceVersion} 版時發生錯誤。 {Err}"
     },
     {
       "id": "Error validating secret bindings for service {SId}. {Err}",
-      "translation": "驗證服務 {SId} 的密碼連結時發生錯誤。{Err}"
+      "translation": "驗證服務 {SId} 的密碼連結時發生錯誤。 {Err}"
     },
     {
       "id": "Error validating secret bindings for dependent service {Id}. {Err}",
-      "translation": "驗證相依服務 {Id} 的密碼連結時發生錯誤。{Err}"
+      "translation": "驗證相依服務 {Id} 的密碼連結時發生錯誤。 {Err}"
     },
     {
       "id": "Deployment policy label.",
@@ -3833,6 +3909,30 @@
     {
       "id": "The input variables to be set.",
       "translation": "要設定的輸入變數。"
+    },
+    {
+      "id": "A list of secret bindings for the secret names defined in the services, listed by service.",
+      "translation": "服務中定義之密碼名稱的密碼連結的清單（依服務列出）。"
+    },
+    {
+      "id": "The service version range.",
+      "translation": "服務版本範圍。"
+    },
+    {
+      "id": "The secret bindings.",
+      "translation": "密碼連結。"
+    },
+    {
+      "id": "The valid formats for secret provider secret names are:",
+      "translation": "密碼提供者密碼名稱的有效格式為："
+    },
+    {
+      "id": "'<secretname>' for organization level secret.",
+      "translation": "組織層次密碼的 '<secretname>'。"
+    },
+    {
+      "id": "'user/<username>/<secretname>' for user level secret.",
+      "translation": "使用者層次密碼的 'user/<username>/<secretname>'。"
     },
     {
       "id": "Flags -s and -l are mutually exclusive.",
@@ -4292,11 +4392,11 @@
     },
     {
       "id": "Note: The fully qualified binding secret name is 'openhorizon/<node_org>/<secret_binding_name>'. The binding secret cannot be verified in the secret manager for a public pattern because the node organization can be different from the pattern organization.",
-      "translation": "附註：完整的連結密碼名稱為'openhorizon/<node_org>/<secret_binding_name>'。無法在密碼管理程式中驗證公用型樣的連結密碼，因為節點組織可能與型樣組織不同。"
+      "translation": "附註：完整的連結密碼名稱為'openhorizon/<node_org>/<secret_binding_name>'。 無法在密碼管理程式中驗證公用型樣的連結密碼，因為節點組織可能與型樣組織不同。"
     },
     {
       "id": "No secret is defined for any of the services. The secret binding is not needed: {SecretBinding}.",
-      "translation": "未針對任何服務定義密碼。不需要密碼連結：{SecretBinding}。"
+      "translation": "未針對任何服務定義密碼。 不需要密碼連結：{SecretBinding}。"
     },
     {
       "id": "-f can only be used when one service is specified.",
@@ -4315,8 +4415,8 @@
       "translation": "在組織 {SvcOrg} 中找不到服務 '{Service}'"
     },
     {
-      "id": "Ignoring -f because the clusterDepolyment attribute is empty for this service.",
-      "translation": "因為此服務的 clusterDepolyment 屬性為空，忽略 -f。"
+      "id": "Ignoring -f because the clusterDeployment attribute is empty for this service.",
+      "translation": "由於此服務的 clusterDeployment 屬性為空，因此忽略 -f。"
     },
     {
       "id": "Flags -I and -P are mutually exclusive.",
@@ -4473,6 +4573,14 @@
     {
       "id": "error decoding the cluster deployment configuration: {Err}",
       "translation": "解碼叢集部署配置時發生錯誤：{Err}"
+    },
+    {
+      "id": "service id does not exist in the Exchange: {SvcOrg}/{SvcId}",
+      "translation": "服務 ID 未存在於 Exchange 中：{SvcOrg}/{SvcId}"
+    },
+    {
+      "id": "failed to marshal 'hzn exchange service listnode' output: {Err}",
+      "translation": "無法配置 'hzn exchange service listnode' 輸出：{Err}"
     },
     {
       "id": "user '{TrimPrefixtheUser_}' not found in org {Org}",
@@ -4967,6 +5075,10 @@
       "translation": "呼叫 {Resource} 逾時。"
     },
     {
+      "id": "Registration failed because {Matches0}",
+      "translation": "登錄失敗，因為 {Matches0}"
+    },
+    {
       "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "translation": "{Errstring}。 請在輸入檔 {InputFile} 中為服務 {Matches2} 定義變數。 執行 'hzn unregister'，然後再次執行 'hzn register...'"
     },
@@ -5159,12 +5271,24 @@
       "translation": "目前，節點的事件日誌中未記錄任何錯誤。"
     },
     {
-      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy is compatible.",
+      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy are compatible.",
       "translation": "使用 'hzn deploycheck all -b' 或 'hzn deploycheck all -B' 指令，以驗證節點、服務配置及部署原則是否相容。"
     },
     {
-      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.",
+      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern are compatible.",
       "translation": "使用 'hzn deploycheck all -p' 指令，以驗證節點、服務配置及型樣是否相容。"
+    },
+    {
+      "id": "Command output:",
+      "translation": "指令輸出："
+    },
+    {
+      "id": "Using the 'hzn deploycheck userinput -p' command to verify that node, service configuration and pattern are compatible.",
+      "translation": "使用 'hzn deploycheck userinput -p' 指令，以驗證節點、服務配置及型樣是否相容。"
+    },
+    {
+      "id": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.",
+      "translation": "無法驗證密碼連結相容性，因為未提供使用者認證。 請使用 'hzn deploycheck secretbinding -p' 指令來驗證。"
     },
     {
       "id": "{Format2006_01_02_150405}: {Message}",
@@ -5275,16 +5399,32 @@
       "translation": "必須指定 -f 或 --secretDetail。"
     },
     {
+      "id": "Incorrect secret name given: {SecretName}",
+      "translation": "給定的密碼名稱不正確：{SecretName}"
+    },
+    {
       "id": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?",
-      "translation": "密碼管理程式中已存在密碼 \"{SecretName}\"。要改寫它嗎？"
+      "translation": "密碼管理程式中已存在密碼 \"{SecretName}\"。 要改寫它嗎？"
     },
     {
-      "id": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\".",
-      "translation": "認證無效。 使用者 \"{User}\" 無法存取 \"{SecretName}\"。"
+      "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
+      "translation": "密碼 \"{SecretName}\" 已順利新增至密碼管理程式。"
     },
     {
-      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete.",
-      "translation": "在密碼管理程式中找不到密碼 \"{SecretName}\"，沒有可刪除的內容。"
+      "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
+      "translation": "已順利從密碼管理程式中移除密碼 \"{SecretName}\"。"
+    },
+    {
+      "id": "Bad request, secret name \"{SecretName}\" invalid.",
+      "translation": "要求不正確，密碼名稱 \"{SecretName}\" 無效。"
+    },
+    {
+      "id": "Permission denied, user \"{User}\" cannot access \"{SecretName}\".",
+      "translation": "許可權遭拒，使用者 \"{User}\" 無法存取 \"{SecretName}\"。"
+    },
+    {
+      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to remove.",
+      "translation": "在密碼管理程式中找不到密碼 \"{SecretName}\"，沒有可移除的內容。"
     },
     {
       "id": "Vault component not found in the management hub.",
@@ -5316,7 +5456,7 @@
     },
     {
       "id": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-      "translation": "服務定義 {ServiceName} 由多個儲存器組成。請使用 -c 旗標指定儲存器名稱。"
+      "translation": "服務定義 {ServiceName} 由多個儲存器組成。 請使用 -c 旗標指定儲存器名稱。"
     },
     {
       "id": "Service logs are unavailable: {Err}",
@@ -5355,12 +5495,20 @@
       "translation": "所有登錄服務"
     },
     {
-      "id": "service {ServiceOrg}/{ServiceUrl}",
-      "translation": "服務 {ServiceOrg}/{ServiceUrl}"
+      "id": "service {ServiceOrg}/{ServiceUrl} version {ServiceVer}",
+      "translation": "服務 {ServiceOrg}/{ServiceUrl} 版本 {ServiceVer}"
+    },
+    {
+      "id": "all the versions for service {ServiceOrg}/{ServiceUrl}",
+      "translation": "服務 {ServiceOrg}/{ServiceUrl} 的所有版本"
     },
     {
       "id": "all the registered services from organization {ServiceOrg}",
       "translation": "組織 {ServiceOrg} 中的所有登錄服務"
+    },
+    {
+      "id": "Please specify the service name for version {ServiceVer}.",
+      "translation": "請指定版本 {ServiceVer} 的服務名稱。"
     },
     {
       "id": "Please specify the organization for service {ServiceUrl}.",
@@ -5379,12 +5527,24 @@
       "translation": "已順利傳送服務暫停要求，請使用 'hzn agreement' 和 'docker ps' 以確保移除相關的合約和服務儲存器。 完成此作業可能需要幾分鐘。"
     },
     {
+      "id": "Error returned suspending the service: {RespBody}",
+      "translation": "暫停服務時傳回錯誤：{RespBody}"
+    },
+    {
+      "id": "Error: {Err}",
+      "translation": "錯誤為：{Err}"
+    },
+    {
       "id": "Resuming {Msgpart} ...",
       "translation": "正在回復{Msgpart} ..."
     },
     {
       "id": "Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
       "translation": "已順利傳送服務回復要求，請使用 'hzn agreement' 和 'docker ps' 以確保啟動相關的合約和服務儲存器。 完成此作業可能需要幾分鐘。"
+    },
+    {
+      "id": "Error returned resuming the service: {RespBody}",
+      "translation": "回復服務時傳回錯誤：{RespBody}"
     },
     {
       "id": "failed to marshal 'hzn status -l' output: {Err}",
@@ -5411,8 +5571,16 @@
       "translation": "在組織 {Org} 中找不到類型為 '{ObjType}' 的物件 meta 資料 '{ObjId}'"
     },
     {
+      "id": "Verifying data with digital signature....",
+      "translation": "正在使用數位簽章驗證資料...."
+    },
+    {
       "id": "Failed to verify data: {Error}",
       "translation": "找不到驗證資料：{Error}"
+    },
+    {
+      "id": "Verifying digital signature is done.",
+      "translation": "驗證數位簽章已完成。"
     },
     {
       "id": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}, err: {Err}",
@@ -5421,6 +5589,18 @@
     {
       "id": "Data of object {ObjId} saved to file {FileName}",
       "translation": "物件 {ObjId} 的資料已儲存至檔案 {FileName}"
+    },
+    {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "無法驗證數位簽章，因為雜湊演算法是空的"
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "無法驗證數位簽章，因為公開金鑰字串是空的"
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "translation": "無法驗證數位簽章，因為簽章字串是空的"
     },
     {
       "id": "must specify exchange credentials to access the model management service.",
@@ -5600,11 +5780,15 @@
     },
     {
       "id": "Digital sign with {HashAlgorithm} will be performed for data integrity. It will delay the MMS object publish.",
-      "translation": "將對資料完整性執行使用 {HashAlgorithm} 進行的數位簽署。它將延遲 MMS 物件發佈。"
+      "translation": "將對資料完整性執行使用 {HashAlgorithm} 進行的數位簽署。 它將延遲 MMS 物件發佈。"
     },
     {
       "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
       "translation": "無法以數位方式簽署檔案 {ObjFile}，錯誤為：{Err}"
+    },
+    {
+      "id": "Digital sign finished.",
+      "translation": "數位簽署已完成。"
     },
     {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
@@ -5632,7 +5816,7 @@
     },
     {
       "id": "Data hash is generated. Start digital signing with the data hash...",
-      "translation": "已產生資料雜湊。開始使用資料雜湊進行數位簽署..."
+      "translation": "已產生資料雜湊。 開始使用資料雜湊進行數位簽署..."
     },
     {
       "id": "Hash algorithm {HashAlgo} is not supported",
@@ -5971,6 +6155,10 @@
       "translation": "刪改 Docker 網路時發生錯誤。 {Err}"
     },
     {
+      "id": "Backing up eventlogs...",
+      "translation": "正在備份事件日誌..."
+    },
+    {
       "id": "cannot marshal eventlogs from local anax DB, eventlogs will not be saved",
       "translation": "無法從本端 anax DB 配置事件日誌，不會儲存事件日誌"
     },
@@ -6144,7 +6332,7 @@
     },
     {
       "id": "Unable to create version expression from {VersionRange}. {Err}",
-      "translation": "無法從 {VersionRange} 建立版本表示式。{Err}"
+      "translation": "無法從 {VersionRange} 建立版本表示式。 {Err}"
     },
     {
       "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
@@ -6152,7 +6340,7 @@
     },
     {
       "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "找不到 {TopId} 的相依服務的定義。無法完整評估 {PROPNODEPRIVILEGED} 的相容性，除非所有服務都在 Exchange 中。"
+      "translation": "找不到 {TopId} 的相依服務的定義。 無法完整評估 {PROPNODEPRIVILEGED} 的相容性，除非所有服務都在 Exchange 中。"
     },
     {
       "id": "The PolicyCheck input cannot be null",
@@ -6372,7 +6560,7 @@
     },
     {
       "id": "Error verifying secret in the secret manager. {Err}",
-      "translation": "驗證密碼管理程式中的密碼時發生錯誤。{Err}"
+      "translation": "驗證密碼管理程式中的密碼時發生錯誤。 {Err}"
     },
     {
       "id": "The input service spec object cannot be null.",
@@ -6380,7 +6568,7 @@
     },
     {
       "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
-      "translation": "找不到 {Org}/{URL} {Arch} {Version} 的相依服務。{Err}"
+      "translation": "找不到 {Org}/{URL} {Arch} {Version} 的相依服務。 {Err}"
     },
     {
       "id": "Secret binding for a cluster service is not supported.",
@@ -6396,11 +6584,11 @@
     },
     {
       "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
-      "translation": "在範圍 {VExp} 中檢查版本 {SvcVersion} 時發生錯誤。{Err}"
+      "translation": "在範圍 {VExp} 中檢查版本 {SvcVersion} 時發生錯誤。 {Err}"
     },
     {
       "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
-      "translation": "在檢查密碼連結時 agbot URL 不能為空字串。請確保已設定 HZN_AGBOT_URL。"
+      "translation": "在檢查密碼連結時 agbot URL 不能為空字串。 請確保已設定 HZN_AGBOT_URL。"
     },
     {
       "id": "The node organization must be provided.",
@@ -6408,19 +6596,19 @@
     },
     {
       "id": "Error parsing secret name in the secret binding. {Errparse}",
-      "translation": "剖析密碼連結中的密碼名稱時發生錯誤。{Errparse}"
+      "translation": "剖析密碼連結中的密碼名稱時發生錯誤。 {Errparse}"
     },
     {
       "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
-      "translation": "在密碼管理程式中檢查密碼 {VaultSecretName} 時發生錯誤。{Err}"
+      "translation": "在密碼管理程式中檢查密碼 {VaultSecretName} 時發生錯誤。 {Err}"
     },
     {
       "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "連結密碼名稱不能為空字串。對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
+      "translation": "連結密碼名稱不能為空字串。 對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
     },
     {
       "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "連結密碼名稱的格式無效：{SecretName}。對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
+      "translation": "連結密碼名稱的格式無效：{SecretName}。 對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
     },
     {
       "id": "The UserInputCheck input cannot be null",

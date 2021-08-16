@@ -496,6 +496,22 @@
       "fuzzy": true
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "message": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Exchange 사용자 {Key}은(는) 올바른 형식이 아닙니다. org/username이어야 합니다.",
+      "placeholders": [
+        {
+          "id": "Key",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "key"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Internal server error",
       "message": "Internal server error",
       "translation": "내부 서버 오류",
@@ -514,6 +530,12 @@
       ],
       "message": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
       "translation": "시크릿 제공자가 준비되지 않았습니다. 호출자는 시크릿 제공자를 사용할 수 없도록 하기 위해 호출 사이에 짧은 지연을 두고 이 API 호출을 몇 번 재시도해야 합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Secret name must be provided",
+      "message": "Secret name must be provided",
+      "translation": "시크릿 이름이 제공되어야 함",
       "fuzzy": true
     },
     {
@@ -555,47 +577,253 @@
       "fuzzy": true
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "message": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "시크릿 제공자에 액세스할 수 없음. 오류: {Serr}.",
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "message": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "권한이 거부되었습니다. \"{ExUser}\" 사용자는 \"{Org}\" 조직의 시크릿을 {Action}할 수 없습니다.",
       "placeholders": [
         {
-          "id": "Serr",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/agreementbot/secrets.ErrorResponse",
-          "underlyingType": "struct{Msg string; Details string; RespCode int}",
+          "id": "ExUser",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "serr"
+          "expr": "info.exUser"
+        },
+        {
+          "id": "Action",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "action"
+        },
+        {
+          "id": "Org",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "info.org"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "org must be specified in the API path",
-      "message": "org must be specified in the API path",
-      "translation": "API 경로에 org를 지정해야 함",
-      "fuzzy": true
-    },
-    {
-      "id": "user must be specified in the API path",
-      "message": "user must be specified in the API path",
-      "translation": "API 경로에 user를 지정해야 함",
-      "fuzzy": true
-    },
-    {
-      "id": "{Serr}",
-      "message": "{Serr}",
-      "translation": "{Serr}",
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "message": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "권한이 거부되었습니다. \"{ExUser}\" 사용자는 \"{Org}\" 조직의 시크릿 \"{SecretName}\"을(를) {Action}할 수 없습니다.",
       "placeholders": [
         {
-          "id": "Serr",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/agreementbot/secrets.ErrorResponse",
-          "underlyingType": "struct{Msg string; Details string; RespCode int}",
+          "id": "ExUser",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "serr"
+          "expr": "info.exUser"
+        },
+        {
+          "id": "Action",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "action"
+        },
+        {
+          "id": "SecretName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "secretName"
+        },
+        {
+          "id": "Org",
+          "string": "%[4]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "info.org"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to read the vault response: {Error}",
+      "message": "Unable to read the vault response: {Error}",
+      "translation": "볼트 응답을 읽을 수 없음: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "e.ReadError.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "message": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "볼트 응답 \"{Response}\"을(를) 구문 분석할 수 없음: {Error}",
+      "placeholders": [
+        {
+          "id": "Response",
+          "string": "%[1]s",
+          "type": "[]byte",
+          "underlyingType": "[]byte",
+          "argNum": 1,
+          "expr": "e.Response"
+        },
+        {
+          "id": "Error",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "e.ParseError.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "message": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "\"{Org}\" 조직의 시크릿을 {Action}할 수 없습니다. 시크릿 제공자가 지원하지 않는 오퍼레이션입니다.",
+      "placeholders": [
+        {
+          "id": "Action",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "action"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "info.org"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "message": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "\"{Org}\" 조직에서 \"{SecretName}\" 시크릿을 {Action}할 수 없습니다. 시크릿 제공자가 지원하지 않는 오퍼레이션입니다.",
+      "placeholders": [
+        {
+          "id": "Action",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "action"
+        },
+        {
+          "id": "SecretName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "secretName"
+        },
+        {
+          "id": "Org",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "info.org"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "message": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "시크릿 제공자가 잘못된 요청을 수신했습니다. 제공된 모든 입력을 확인하십시오.",
+      "fuzzy": true
+    },
+    {
+      "id": "Response: {Response}",
+      "message": "Response: {Response}",
+      "translation": "응답: {Response}",
+      "placeholders": [
+        {
+          "id": "Response",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "secrets.RespToString(e.Response)"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "message": "No secret(s) found in organization \"{Org}\"",
+      "translation": "\"{Org}\" 조직에서 시크릿을 찾을 수 없음",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "info.org"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "message": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "시크릿 이름 \"{SecretName}\"에서 시크릿을 찾을 수 없음",
+      "placeholders": [
+        {
+          "id": "SecretName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "secretName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "message": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "알 수 없는 오류가 발생했습니다. 시크릿 제공자로부터 응답 코드 {ResponseCode}이(가) 수신되었습니다.",
+      "placeholders": [
+        {
+          "id": "ResponseCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "e.ResponseCode"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "message": "Organization must be specified in the API path",
+      "translation": "API 경로에 조직을 지정해야 함",
+      "fuzzy": true
+    },
+    {
+      "id": "User must be specified in the API path",
+      "message": "User must be specified in the API path",
+      "translation": "API 경로에 사용자를 지정해야 함",
       "fuzzy": true
     },
     {
@@ -3301,6 +3529,30 @@
       "fuzzy": true
     },
     {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "message": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "잘못된 형식의 URL: {UrlPath}. {ErrUrl}",
+      "placeholders": [
+        {
+          "id": "UrlPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "urlPath"
+        },
+        {
+          "id": "ErrUrl",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "errUrl"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "translation": "업로드 중: {Float32totalSent__float32bodyLen__100} {}",
@@ -3840,6 +4092,54 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "placeholders": [
+        {
+          "id": "FileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "message": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "placeholders": [
+        {
+          "id": "DefaultFileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "defaultFileName"
+        },
+        {
+          "id": "FileName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "fileName"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -7101,6 +7401,24 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_ERR_RETRIEVE_ALL_SDEFS_FROM_DB",
+        "Error retrieving all service definitions from db. {Arg_1}"
+      ],
+      "message": "Error retrieving all service definitions from db. {Arg_1}",
+      "translation": "db에서 모든 서비스 정의를 검색하는 중에 오류가 발생했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true

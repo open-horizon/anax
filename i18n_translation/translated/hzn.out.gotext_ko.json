@@ -51,6 +51,10 @@
       "translation": "조직 ID, 사용자 ID 또는 비밀번호가 잘못되었습니다."
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Exchange 사용자 {Key}은(는) 올바른 형식이 아닙니다. org/username이어야 합니다."
+    },
+    {
       "id": "Internal server error",
       "translation": "내부 서버 오류"
     },
@@ -61,6 +65,10 @@
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
       "translation": "시크릿 제공자가 준비되지 않았습니다. 호출자는 시크릿 제공자를 사용할 수 없도록 하기 위해 호출 사이에 짧은 지연을 두고 이 API 호출을 몇 번 재시도해야 합니다."
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "시크릿 이름이 제공되어야 함"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -75,20 +83,56 @@
       "translation": "요청 본문 구문 분석 오류. {Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "시크릿 제공자에 액세스할 수 없음. 오류: {Serr}."
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "권한이 거부되었습니다. \"{ExUser}\" 사용자는 \"{Org}\" 조직의 시크릿을 {Action}할 수 없습니다."
     },
     {
-      "id": "org must be specified in the API path",
-      "translation": "API 경로에 org를 지정해야 함"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "권한이 거부되었습니다. \"{ExUser}\" 사용자는 \"{Org}\" 조직의 시크릿 \"{SecretName}\"을(를) {Action}할 수 없습니다."
     },
     {
-      "id": "user must be specified in the API path",
-      "translation": "API 경로에 user를 지정해야 함"
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "볼트 응답을 읽을 수 없음: {Error}"
     },
     {
-      "id": "{Serr}",
-      "translation": "{Serr}"
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "볼트 응답 \"{Response}\"을(를) 구문 분석할 수 없음: {Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "\"{Org}\" 조직의 시크릿을 {Action}할 수 없습니다. 시크릿 제공자가 지원하지 않는 오퍼레이션입니다."
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "\"{Org}\" 조직에서 \"{SecretName}\" 시크릿을 {Action}할 수 없습니다. 시크릿 제공자가 지원하지 않는 오퍼레이션입니다."
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "시크릿 제공자가 잘못된 요청을 수신했습니다. 제공된 모든 입력을 확인하십시오."
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "응답: {Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "\"{Org}\" 조직에서 시크릿을 찾을 수 없음"
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "시크릿 이름 \"{SecretName}\"에서 시크릿을 찾을 수 없음"
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "알 수 없는 오류가 발생했습니다. 시크릿 제공자로부터 응답 코드 {ResponseCode}이(가) 수신되었습니다."
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "translation": "API 경로에 조직을 지정해야 함"
+    },
+    {
+      "id": "User must be specified in the API path",
+      "translation": "API 경로에 사용자를 지정해야 함"
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -344,7 +388,7 @@
     },
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon 에이전트의 명령행 인터페이스입니다. 대부분의 하위 명령은 기본 위치 http://localhost(이를 겹쳐쓰려면 환경 변수 섹션 참조)의 Horizon 에이전트 API를 사용합니다.\n\n하위 명령 설명:\n  agbot: Horizon 계약 봇(agbot) 리소스를 나열하고 관리합니다.\n  agreement: 이 에지 노드가 Horizon 계약 봇(agbot)과 맺은 활성 또는 아카이브된 계약을 나열하거나 관리합니다.\n  architecture: 이 시스템의 아키텍처를 표시합니다(Horizon 및 golang에서 정의된 대로).\n  attribute: 이 Horizon 에지 노드에 현재 등록된 글로벌 속성을 나열하거나 관리합니다.\n  deploycheck: 배치 호환성을 확인합니다.\n  dev: 서비스 작성을 위한 개발 도구입니다.\n  env: Horizon 환경 변수를 표시합니다.\n  eventlog: 현재 또는 모든 등록에 대한 이벤트 로그를 나열합니다.\n  exchange: Horizon Exchange 리소스를 나열하고 관리합니다.\n  key: 서비스를 서명하고 확인하기 위한 키를 나열하고 관리합니다.\n  metering: 활성 또는 아카이브된 계약에 대한 비용 측정(지불) 정보를 나열하거나 관리합니다.\n  mms: Horizon 모델 관리 서비스 리소스를 나열하고 관리합니다.\n  node: 이 Horizon 에지 노드에 대한 일반 정보를 나열하고 관리합니다.\n  policy: 이 Horizon 에지 노드에 대한 정책을 나열하고 관리합니다.\n  reginput: (일단 입력되면) 'hzn register' 명령에 사용할 수 있는 이 패턴의 입력 파일 템플리트를 작성합니다.\n            이는 지정된 패턴이 사용하는 서비스를 검토하고 이 서비스에 필요한 노드 소유자 입력을 판별합니다. \n  register: 관리 허브에 이 에지 노드를 등록합니다.\n  service: 이 Horizon 에지 노드에 현재 등록된 서비스를 나열하거나 관리합니다.\n  status: 노드에 대한 현재 horizon 내부 상태를 표시합니다.\n  unregister: 다시 등록할 수 있도록 이 Horizon 에지 노드를 등록 취소하고 재설정합니다.\n  userinput: 이 Horizon 에지 노드에 현재 등록된 서비스 사용자 입력을 나열하거나 관리합니다.\n  util: 유틸리티 명령입니다.\n  version: Horizon 버전을 표시합니다.\n  voucher: Horizon SDO 소유권 바우처를 나열하고 관리합니다.\n\n환경 변수:\n  HORIZON_URL:  hzn이 Horizon 에이전트 API에 접속하는 URL을 겹쳐씁니다.\n      이렇게 하면 ssh 터널을 통해 원격 Horizon 에이전트 사용이 용이하게 됩니다.\n  HZN_EXCHANGE_URL:  'hzn exchange' 하위 명령이 Horizon Exchange와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/api/v1. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n  HZN_ORG_ID:  'hzn exchange -o' 플래그의 기본값이며,\n      조직 ID를 지정합니다.\n  HZN_EXCHANGE_USER_AUTH:  'hzn exchange -u' 또는 'hzn\n\t  register -u' 플래그의 기본값이며, 양식은 '[org/]user:pw'입니다. HZN_EXCHANGE_USER_AUTH가 설정될 때 \n\t  조직이 생략되면 HZN_ORG_ID를 설정할 수 있습니다.\n  HZN_FSS_CSSURL:  'hzn mms' 하위 명령이 Horizon 모델 관리 서비스와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/css/. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n\n  이러한 모든 환경 변수와 명령 도움말에 언급된 변수를\n  사용자의 구성 파일 ~/.hzn/hzn.json에 JSON 형식으로 지정할 수 있습니다.\n  예:\n  {Com____}"
+      "translation": "Horizon 에이전트의 명령행 인터페이스입니다. 대부분의 하위 명령은 기본 위치 http://localhost(이를 겹쳐쓰려면 환경 변수 섹션 참조)의 Horizon 에이전트 API를 사용합니다.\n\n하위 명령 설명:\n  agbot: Horizon 계약 봇(agbot) 리소스를 나열하고 관리합니다.\n  agreement: 이 에지 노드가 Horizon 계약 봇(agbot)과 맺은 활성 또는 아카이브된 계약을 나열하거나 관리합니다.\n  architecture: 이 시스템의 아키텍처를 표시합니다(Horizon 및 golang에서 정의된 대로). \n  attribute: 이 Horizon 에지 노드에 현재 등록된 글로벌 속성을 나열하거나 관리합니다.\n  deploycheck: 배치 호환성을 확인합니다.\n  dev: 서비스 작성을 위한 개발 도구입니다.\n  env: Horizon 환경 변수를 표시합니다.\n  eventlog: 현재 또는 모든 등록에 대한 이벤트 로그를 나열합니다.\n  exchange: Horizon Exchange 리소스를 나열하고 관리합니다.\n  key: 서비스를 서명하고 확인하기 위한 키를 나열하고 관리합니다. \n  metering: 활성 또는 아카이브된 계약에 대한 비용 측정(지불) 정보를 나열하거나 관리합니다.\n  mms: Horizon 모델 관리 서비스 리소스를 나열하고 관리합니다.\n  node: 이 Horizon 에지 노드에 대한 일반 정보를 나열하고 관리합니다.\n  policy: 이 Horizon 에지 노드에 대한 정책을 나열하고 관리합니다. \n  reginput: (일단 입력되면) 'hzn register' 명령에 사용할 수 있는 이 패턴의 입력 파일 템플리트를 작성합니다. \n            이는 지정된 패턴이 사용하는 서비스를 검토하고 이 서비스에 필요한 노드 소유자 입력을 판별합니다. \n  register: 관리 허브에 이 에지 노드를 등록합니다.\n  service: 이 Horizon 에지 노드에 현재 등록된 서비스를 나열하거나 관리합니다.\n  status: 노드에 대한 현재 horizon 내부 상태를 표시합니다.\n  unregister: 다시 등록할 수 있도록 이 Horizon 에지 노드를 등록 취소하고 재설정합니다.\n  userinput: 이 Horizon 에지 노드에 현재 등록된 서비스 사용자 입력을 나열하거나 관리합니다.\n  util: 유틸리티 명령입니다.\n  version: Horizon 버전을 표시합니다.\n  voucher: Horizon SDO 소유권 바우처를 나열하고 관리합니다.\n\n환경 변수:\n  HORIZON_URL:  hzn이 Horizon 에이전트 API에 접속하는 URL을 겹쳐씁니다.\n      이렇게 하면 ssh 터널을 통해 원격 Horizon 에이전트 사용이 용이하게 됩니다.\n  HZN_EXCHANGE_URL:  'hzn exchange' 하위 명령이 Horizon Exchange와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/api/v1. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n  HZN_ORG_ID:  'hzn exchange -o' 플래그의 기본값이며,\n      조직 ID를 지정합니다.\n  HZN_EXCHANGE_USER_AUTH:  'hzn exchange -u' 또는 'hzn\n\t  register -u' 플래그의 기본값이며, 양식은 '[org/]user:pw'입니다. HZN_EXCHANGE_USER_AUTH가 설정될 때 \n\t  조직이 생략되면 HZN_ORG_ID를 설정할 수 있습니다.\n  HZN_FSS_CSSURL:  'hzn mms' 하위 명령이 Horizon 모델 관리 서비스와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/css/. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n\n  이러한 모든 환경 변수와 명령 도움말에 언급된 변수를\n  사용자의 구성 파일 ~/.hzn/hzn.json에 JSON 형식으로 지정할 수 있습니다.\n  예:\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -1979,12 +2023,16 @@
       "translation": "재개할 서비스의 조직입니다."
     },
     {
-      "id": "The name of the service that should be resumed.",
-      "translation": "재개할 서비스의 이름입니다."
+      "id": "The name of the service that should be resumed. If omitted, all the services for the organization will be resumed.",
+      "translation": "재개할 서비스의 이름입니다. 생략되면 조직의 모든 서비스가 재개됩니다."
     },
     {
-      "id": "Change the configuration state to 'suspend' for a service.",
-      "translation": "서비스에 대해 구성 상태를 '일시중단'으로 변경합니다."
+      "id": "The version of the service that should be resumed. If omitted, all the versions for this service will be resumed.",
+      "translation": "재개할 서비스의 버전입니다. 생략되면 이 서비스의 모든 버전이 재개됩니다."
+    },
+    {
+      "id": "Change the configuration state to 'suspend' for a service. Parent and child dependencies of the suspended service will be stopped until the service is resumed.",
+      "translation": "서비스에 대해 구성 상태를 '일시중단'으로 변경합니다. 일시중단된 서비스의 상위 및 하위 종속 항목은 서비스가 재개될 때까지 중지됩니다."
     },
     {
       "id": "Suspend all registerd services.",
@@ -1995,8 +2043,12 @@
       "translation": "일시중단할 서비스의 조직입니다."
     },
     {
-      "id": "The name of the service that should be suspended.",
-      "translation": "일시중단할 서비스의 이름입니다."
+      "id": "The name of the service that should be suspended. If omitted, all the services for the organization will be suspended.",
+      "translation": "일시중단할 서비스의 이름입니다. 생략되면 조직의 모든 서비스가 일시중단됩니다."
+    },
+    {
+      "id": "The version of the service that should be suspended. If omitted, all the versions for this service will be suspended.",
+      "translation": "일시중단할 서비스의 버전입니다. 생략되면 이 서비스의 모든 버전이 일시중단됩니다."
     },
     {
       "id": "Show the container logs for a service.",
@@ -2012,7 +2064,7 @@
     },
     {
       "id": "The name of the container within the service whose log records should be displayed.",
-      "translation": "로그 레코드를 표시해야 하는 서비스 내 컨테이너의 이름입니다. "
+      "translation": "로그 레코드를 표시해야 하는 서비스 내 컨테이너의 이름입니다."
     },
     {
       "id": "List the services variable configuration that has been done on this Horizon edge node.",
@@ -2679,6 +2731,10 @@
       "translation": "파일 정보를 가져올 수 없음: {Err}"
     },
     {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "잘못된 형식의 URL: {UrlPath}. {ErrUrl}"
+    },
+    {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "translation": "업로드 중: {Float32totalSent__float32bodyLen__100} {}"
     },
@@ -3223,6 +3279,18 @@
       "translation": "$SERVICE_NAME에 대한 패턴"
     },
     {
+      "id": "Failed to marshal deps: {Err}",
+      "translation": "deps를 마샬링하는 데 실패함: {Err}"
+    },
+    {
+      "id": "Failed to unmarshal deps: {Err}",
+      "translation": "deps를 역마샬링하는 데 실패함: {Err}"
+    },
+    {
+      "id": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
+      "translation": "경고: {SERVICESTARTCOMMAND} 명령으로 {SvcName} 서비스에 대한 시크릿 {SecName}이(가) 지정되지 않았습니다."
+    },
+    {
       "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
       "translation": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}'이(가) 이미지 이름에서 서비스 이름을 가져오는 데 실패했습니다. {Err}"
     },
@@ -3627,6 +3695,14 @@
       "translation": "{Name} 네트워크가 작성됨"
     },
     {
+      "id": "unable to list docker networks, error {Err}",
+      "translation": "Docker 네트워크를 나열할 수 없습니다. 오류 {Err}"
+    },
+    {
+      "id": "unable to remove docker network {Name}, error {Err}",
+      "translation": "Docker 네트워크 {Name}을(를) 제거할 수 없습니다. 오류 {Err}"
+    },
+    {
       "id": "invalid image format: {Image}",
       "translation": "올바르지 않은 이미지 형식: {Image}"
     },
@@ -3833,6 +3909,30 @@
     {
       "id": "The input variables to be set.",
       "translation": "설정할 입력 변수입니다."
+    },
+    {
+      "id": "A list of secret bindings for the secret names defined in the services, listed by service.",
+      "translation": "서비스별로 나열된, 서비스에 정의된 시크릿 이름에 대한 시크릿 바인딩 목록입니다."
+    },
+    {
+      "id": "The service version range.",
+      "translation": "서비스 버전 범위입니다."
+    },
+    {
+      "id": "The secret bindings.",
+      "translation": "서비스 바인딩."
+    },
+    {
+      "id": "The valid formats for secret provider secret names are:",
+      "translation": "시크릿 제공자 시크릿 이름의 유효한 형식은 다음과 같습니다."
+    },
+    {
+      "id": "'<secretname>' for organization level secret.",
+      "translation": "조직 레벨 시크릿의 경우 '<secretname>'."
+    },
+    {
+      "id": "'user/<username>/<secretname>' for user level secret.",
+      "translation": "사용자 레벨 시크릿의 경우 'user/<username>/<secretname>'."
     },
     {
       "id": "Flags -s and -l are mutually exclusive.",
@@ -4315,8 +4415,8 @@
       "translation": "'{Service}' 서비스를 {SvcOrg} 조직에서 찾을 수 없음"
     },
     {
-      "id": "Ignoring -f because the clusterDepolyment attribute is empty for this service.",
-      "translation": "이 서비스의 clusterDepolyment 속성이 비어 있어서 -f를 무시합니다."
+      "id": "Ignoring -f because the clusterDeployment attribute is empty for this service.",
+      "translation": "이 서비스의 clusterDeployment 속성이 비어 있어서 -f를 무시합니다."
     },
     {
       "id": "Flags -I and -P are mutually exclusive.",
@@ -4473,6 +4573,14 @@
     {
       "id": "error decoding the cluster deployment configuration: {Err}",
       "translation": "클러스터 배치 구성을 디코딩하는 중에 오류 발생: {Err}"
+    },
+    {
+      "id": "service id does not exist in the Exchange: {SvcOrg}/{SvcId}",
+      "translation": "서비스 ID가 Exchange: {SvcOrg}/{SvcId}에 존재하지 않습니다."
+    },
+    {
+      "id": "failed to marshal 'hzn exchange service listnode' output: {Err}",
+      "translation": "'hzn exchange service listnode' 출력을 마샬링하는 데 실패함: {Err}"
     },
     {
       "id": "user '{TrimPrefixtheUser_}' not found in org {Org}",
@@ -4967,6 +5075,10 @@
       "translation": "{Resource}에 대한 호출이 제한시간 초과되었습니다."
     },
     {
+      "id": "Registration failed because {Matches0}",
+      "translation": "{Matches0}(으)로 인해 등록에 실패함"
+    },
+    {
       "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "translation": "{Errstring}. 입력 파일 {InputFile}에서 {Matches2} 서비스의 변수를 정의하십시오. 'hzn unregister'를 실행한 다음 'hzn register...'를 다시 실행하십시오."
     },
@@ -5159,12 +5271,24 @@
       "translation": "현재 노드의 이벤트 로그에 기록된 오류가 없습니다."
     },
     {
-      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy is compatible.",
+      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy are compatible.",
       "translation": "'hzn deploycheck all -b' 또는 'hzn deploycheck all -B' 명령을 사용하여 노드, 서비스 구성 및 배치 정책이 호환되는지 확인하십시오."
     },
     {
-      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.",
+      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern are compatible.",
       "translation": "'hzn deploycheck all -p' 명령을 사용하여 노드, 서비스 구성 및 패턴이 호환되는지 확인하십시오."
+    },
+    {
+      "id": "Command output:",
+      "translation": "명령 출력: "
+    },
+    {
+      "id": "Using the 'hzn deploycheck userinput -p' command to verify that node, service configuration and pattern are compatible.",
+      "translation": "'hzn deploycheck userinput -p' 명령을 사용하여 노드, 서비스 구성 및 패턴이 호환되는지 확인하십시오."
+    },
+    {
+      "id": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.",
+      "translation": "사용자 인증 정보가 제공되지 않았기 때문에 시크릿 바인딩 호환성을 확인할 수 없습니다. 'hzn deploycheck secretbinding -p' 명령을 사용하여 확인하십시오."
     },
     {
       "id": "{Format2006_01_02_150405}: {Message}",
@@ -5275,16 +5399,32 @@
       "translation": "-f 또는 --secretDetail을 지정해야 합니다."
     },
     {
+      "id": "Incorrect secret name given: {SecretName}",
+      "translation": "올바르지 않은 시크릿 이름이 제공됨: {SecretName}"
+    },
+    {
       "id": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?",
       "translation": "\"{SecretName}\" 시크릿은 시크릿 관리자에 이미 있습니다. 겹쳐쓰시겠습니까?"
     },
     {
-      "id": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\".",
-      "translation": "올바르지 않은 인증 정보입니다. \"{User}\" 사용자가 \"{SecretName}\"에 액세스할 수 없습니다."
+      "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
+      "translation": "시크릿 \"{SecretName}\"이(가) 시크릿 관리자에 추가되었습니다."
     },
     {
-      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete.",
-      "translation": "\"{SecretName}\" 시크릿을 시크릿 관리자에서 찾을 수 없으며, 삭제할 항목이 없습니다."
+      "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
+      "translation": "시크릿 \"{SecretName}\"이(가) 시크릿 관리자에서 삭제되었습니다."
+    },
+    {
+      "id": "Bad request, secret name \"{SecretName}\" invalid.",
+      "translation": "잘못된 요청, 시크릿 이름 \"{SecretName}\"이(가) 올바르지 않습니다."
+    },
+    {
+      "id": "Permission denied, user \"{User}\" cannot access \"{SecretName}\".",
+      "translation": "권한이 거부되었습니다. 사용자 \"{User}\"은(는) \"{SecretName}\"에 액세스할 수 없습니다."
+    },
+    {
+      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to remove.",
+      "translation": "시크릿 \"{SecretName}\"을(를) 시크릿 관리자에서 찾을 수 없으며, 제거할 항목이 없습니다."
     },
     {
       "id": "Vault component not found in the management hub.",
@@ -5355,12 +5495,20 @@
       "translation": "등록된 모든 서비스"
     },
     {
-      "id": "service {ServiceOrg}/{ServiceUrl}",
-      "translation": "서비스 {ServiceOrg}/{ServiceUrl}"
+      "id": "service {ServiceOrg}/{ServiceUrl} version {ServiceVer}",
+      "translation": "서비스 {ServiceOrg}/{ServiceUrl} 버전 {ServiceVer}"
+    },
+    {
+      "id": "all the versions for service {ServiceOrg}/{ServiceUrl}",
+      "translation": "서비스 {ServiceOrg}/{ServiceUrl}의 모든 버전"
     },
     {
       "id": "all the registered services from organization {ServiceOrg}",
       "translation": "조직의 등록된 모든 서비스 {ServiceOrg}"
+    },
+    {
+      "id": "Please specify the service name for version {ServiceVer}.",
+      "translation": "버전 {ServiceVer}의 서비스 이름을 지정하십시오."
     },
     {
       "id": "Please specify the organization for service {ServiceUrl}.",
@@ -5379,12 +5527,24 @@
       "translation": "서비스 일시중단 요청이 전송되었습니다. 'hzn agreement' 및 'docker ps'를 사용하여 관련 계약 및 서비스 컨테이너가 제거되었는지 확인하십시오. 몇 분 정도 걸릴 수 있습니다."
     },
     {
+      "id": "Error returned suspending the service: {RespBody}",
+      "translation": "서비스 일시중단 중 오류가 리턴됨: {RespBody}"
+    },
+    {
+      "id": "Error: {Err}",
+      "translation": "오류: {Err}"
+    },
+    {
       "id": "Resuming {Msgpart} ...",
       "translation": "{Msgpart} 재개 중 ..."
     },
     {
       "id": "Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
       "translation": "서비스 재개 요청이 전송되었습니다. 'hzn agreement' 및 'docker ps'를 사용하여 관련 계약 및 서비스 컨테이너가 시작되었는지 확인하십시오. 몇 분 정도 걸릴 수 있습니다."
+    },
+    {
+      "id": "Error returned resuming the service: {RespBody}",
+      "translation": "서비스 재개 중 오류가 리턴됨: {RespBody}"
     },
     {
       "id": "failed to marshal 'hzn status -l' output: {Err}",
@@ -5411,8 +5571,16 @@
       "translation": "'{ObjType}' 유형의 '{ObjId}' 오브젝트 메타데이터를 {Org} 조직에서 찾을 수 없음"
     },
     {
+      "id": "Verifying data with digital signature....",
+      "translation": "디지털 서명으로 데이터 확인 중...."
+    },
+    {
       "id": "Failed to verify data: {Error}",
       "translation": "데이터를 확인하는 데 실패함: {Error}"
+    },
+    {
+      "id": "Verifying digital signature is done.",
+      "translation": "디지털 서명 확인이 완료되었습니다."
     },
     {
       "id": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}, err: {Err}",
@@ -5421,6 +5589,18 @@
     {
       "id": "Data of object {ObjId} saved to file {FileName}",
       "translation": "오브젝트 {ObjId}의 데이터를 파일 {FileName}에 저장하지 못함"
+    },
+    {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "hashAlgorithm이 비어 있기 때문에 디지털 서명을 확인하는 데 실패했습니다."
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "publicKey 문자열이 비어 있기 때문에 디지털 서명을 확인하는 데 실패했습니다."
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "translation": "서명 문자열이 비어 있기 때문에 디지털 서명을 확인하는 데 실패했습니다."
     },
     {
       "id": "must specify exchange credentials to access the model management service.",
@@ -5605,6 +5785,10 @@
     {
       "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
       "translation": "{ObjFile} 파일에 대한 디지털 서명에 실패함. 오류: {Err}"
+    },
+    {
+      "id": "Digital sign finished.",
+      "translation": "디지털 서명이 완료되었습니다."
     },
     {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
@@ -5969,6 +6153,10 @@
     {
       "id": "Error pruning docker networks. {Err}",
       "translation": "Docker 네트워크를 제거하는 중에 오류가 발생했습니다. {Err}"
+    },
+    {
+      "id": "Backing up eventlogs...",
+      "translation": "이벤트 로그 백업 중..."
     },
     {
       "id": "cannot marshal eventlogs from local anax DB, eventlogs will not be saved",
