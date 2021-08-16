@@ -1,6 +1,7 @@
 package plugin_registry
 
 import (
+	"crypto/rsa"
 	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/i18n"
@@ -8,7 +9,7 @@ import (
 
 // Each deployment config plugin implements this interface.
 type DeploymentConfigPlugin interface {
-	Sign(dep map[string]interface{}, keyFilePath string, ctx PluginContext) (bool, string, string, error)
+	Sign(dep map[string]interface{}, keyFilePath *rsa.PrivateKey, ctx PluginContext) (bool, string, string, error)
 	GetContainerImages(dep interface{}) (bool, []string, error)
 	DefaultConfig(imageInfo interface{}) interface{}
 	DefaultClusterConfig() interface{}
@@ -31,9 +32,9 @@ func Register(name string, p DeploymentConfigPlugin) {
 // until one of them claims ownership of the deployment config. If no error is
 // returned, then one of the plugins has signed the deployment config, and returns
 // the deployment config as a string and the signature of the string.
-func (d DeploymentConfigRegistry) SignByOne(dep map[string]interface{}, keyFilePath string, ctx PluginContext) (string, string, error) {
+func (d DeploymentConfigRegistry) SignByOne(dep map[string]interface{}, privKey *rsa.PrivateKey, ctx PluginContext) (string, string, error) {
 	for _, p := range d {
-		if owned, depStr, sig, err := p.Sign(dep, keyFilePath, ctx); owned {
+		if owned, depStr, sig, err := p.Sign(dep, privKey, ctx); owned {
 			return depStr, sig, err
 		}
 	}

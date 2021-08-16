@@ -1,6 +1,8 @@
 package kube_deployment
 
 import (
+	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -28,7 +30,7 @@ func NewKubeDeploymentConfigPlugin() plugin_registry.DeploymentConfigPlugin {
 	return new(KubeDeploymentConfigPlugin)
 }
 
-func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePath string, ctx plugin_registry.PluginContext) (bool, string, string, error) {
+func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, privKey *rsa.PrivateKey, ctx plugin_registry.PluginContext) (bool, string, string, error) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -64,9 +66,15 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 	}
 	depStr := string(deployment)
 
-	sig, err := sign.Input(keyFilePath, deployment)
+	hasher := sha256.New()
+	_, err = hasher.Write(deployment)
 	if err != nil {
-		return true, "", "", errors.New(msgPrinter.Sprintf("problem signing %v deployment string with %s: %v", KUBE_DEPLOYMENT_CONFIG_TYPE, keyFilePath, err))
+		return true, "", "", err
+	}
+	sig, err := sign.Sha256HashOfInput(privKey, hasher)
+	
+	if err != nil {
+		return true, "", "", errors.New(msgPrinter.Sprintf("problem signing %v deployment string: %v", KUBE_DEPLOYMENT_CONFIG_TYPE, err))
 	}
 
 	return true, depStr, sig, nil

@@ -1,6 +1,8 @@
 package exchange
 
 import (
+	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
@@ -231,6 +233,10 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	ec := cliutils.GetUserExchangeContext(org, userPw)
 	verifySecretBindingForPattern(patFile.GetSecretBinding(), patFile.GetServices(), patFile.GetOrg(), ec, patFile.IsPublic())
 
+	// variables to store public key data
+	var newPubKeyToStore []byte
+	var newPubKeyName string
+
 	keyVerified := false
 	// Loop thru the services array and the servicesVersions array and sign the deployment_overrides fields
 	if patFile.Services != nil && len(patFile.Services) > 0 {
@@ -273,14 +279,20 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 					}
 					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = string(deployment)
 					// We know we need to sign the overrides, so make sure a real key file was provided.
+					var privKey *rsa.PrivateKey
 					if !keyVerified {
-						keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
+						privKey, newPubKeyToStore, newPubKeyName = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 						keyVerified = true
 					}
 
-					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
+					hasher := sha256.New()
+					_, err = hasher.Write(deployment)
 					if err != nil {
-						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem signing the deployment_overrides string with %s: %v", keyFilePath, err))
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem signing the deployment_overrides string: %v", err))
+					}
+					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature, err = sign.Sha256HashOfInput(privKey, hasher)
+					if err != nil {
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem signing the deployment_overrides string: %v", err))
 					}
 				}
 			}
@@ -315,18 +327,13 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput, nil)
 	}
 
-	// Store the public key in the exchange, if they gave it to us
-	if pubKeyFilePath != "" {
-		// Note: already verified the file exists
-		if !keyVerified {
-			pubKeyFilePath = cliutils.GetAndVerifyPublicKey(pubKeyFilePath)
-		}
-		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
-		baseName := filepath.Base(pubKeyFilePath)
-		msgPrinter.Printf("Storing %s with the pattern in the Exchange...", baseName)
-		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes, nil)
+	// Store the public key in the exchange
+	if !keyVerified {
+		_, newPubKeyToStore, newPubKeyName = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 	}
+	msgPrinter.Printf("Storing %s with the pattern in the Exchange...", newPubKeyName)
+	msgPrinter.Println()
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId+"/keys/"+newPubKeyName, cliutils.OrgAndCreds(org, userPw), []int{201}, newPubKeyToStore, nil)
 }
 
 // Verify that the deployment_overrides_signature is valid for the given key.
