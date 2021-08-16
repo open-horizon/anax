@@ -123,6 +123,10 @@
       "translation": "Id organizzazione, id utente o password errati."
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "La chiave {Key} dell'utente Exchange non è nel formato corretto, deve essere org/username."
+    },
+    {
       "id": "Internal server error",
       "translation": "Errore interno del server"
     },
@@ -132,11 +136,15 @@
     },
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
-      "translation": "Il provider dei segreti non è pronto. Il chiamante deve eseguire la chiamata a questa API per un numero ridotto di volte con un breve intervallo tra le chiamate per verificare se il provider dei segreti è disponibile. "
+      "translation": "Il provider dei segreti non è pronto. Il chiamante deve eseguire la chiamata a questa API per un numero ridotto di volte con un breve intervallo tra le chiamate per verificare se il provider dei segreti è disponibile."
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "È necessario fornire il nome segreto "
     },
     {
       "id": "Unable to read request body, error: {Err}.",
-      "translation": "Impossibile leggere il corpo della richiesta, errore: {Err}. "
+      "translation": "Impossibile leggere il corpo della richiesta, errore: {Err}."
     },
     {
       "id": "Request body is empty.",
@@ -147,32 +155,68 @@
       "translation": "Errore di analisi del corpo della richiesta, {Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "Impossibile accedere al provider dei segreti, errore: {Serr}. "
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "Autorizzazione negata, l'utente \"{ExUser}\" non può {Action} i segreti nell'organizzazione \"{Org}\""
     },
     {
-      "id": "org must be specified in the API path",
-      "translation": "È necessario specificare org nel percorso API"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "Autorizzazione negata, l'utente \"{ExUser}\" non può {Action} il segreto \"{SecretName}\" nell'organizzazione \"{Org}\""
     },
     {
-      "id": "user must be specified in the API path",
-      "translation": "È necessario specificare user nel percorso API "
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "Impossibile leggere la risposta del vault: {Error}"
     },
     {
-      "id": "{Serr}",
-      "translation": "{Serr}"
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "Impossibile analizzare la risposta del vault \"{Response}\": {Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Impossibile {Action} i segreti nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti. "
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Impossibile {Action} il segreto \"{SecretName}\" nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti. "
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "Il provider dei segreti ha ricevuto una richiesta errata, controllare tutti gli input forniti. "
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "Risposta: {Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "Nessun segreto trovato nell'organizzazione \"{Org}\""
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "Nessun segreto trovato nel nome segreto \"{SecretName}\""
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "Si è verificato un errore sconosciuto. Codice di risposta {ResponseCode} ricevuto dal provider dei segreti. "
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "translation": "È necessario specificare l'organizzazione nel percorso API "
+    },
+    {
+      "id": "User must be specified in the API path",
+      "translation": "È necessario specificare l'utente nel percorso API "
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
-      "translation": "Errore durante il controllo del segreto {FullSecretName} nel gestore dei segreti. "
+      "translation": "Errore durante il controllo del segreto {FullSecretName} nel gestore dei segreti."
     },
     {
       "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
-      "translation": "È stato restituito un tipo errato dopo il controllo del nome del segreto nel gestore dei segreti: {Payload} "
+      "translation": "È stato restituito un tipo errato dopo il controllo del nome del segreto nel gestore dei segreti: {Payload}"
     },
     {
       "id": "Secret {FullSecretName} does not exist in the secret manager.",
-      "translation": "Il segreto {FullSecretName} non esiste nel gestore dei segreti. "
+      "translation": "Il segreto {FullSecretName} non esiste nel gestore dei segreti."
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -460,7 +504,7 @@
     },
     {
       "id": "unable to load docker credentials for {Domain}: {Err}",
-      "translation": "impossibile caricare le credenziali docker per {Domain}: {Err} "
+      "translation": "impossibile caricare le credenziali docker per {Domain}: {Err}"
     },
     {
       "id": "unable to find docker credentials for {Domain}",
@@ -468,7 +512,7 @@
     },
     {
       "id": "Pushing {ImageName}...",
-      "translation": "Esecuzione del push di {ImageName}... "
+      "translation": "Esecuzione del push di {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -480,15 +524,15 @@
     },
     {
       "id": "Pulling {ImageName}...",
-      "translation": "Esecuzione del pull di {ImageName}... "
+      "translation": "Esecuzione del pull di {ImageName}..."
     },
     {
       "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
-      "translation": "impossibile ottenere l'autenticazione docker per docker.io o per il dominio {Domain}: {Err} "
+      "translation": "impossibile ottenere l'autenticazione docker per docker.io o per il dominio {Domain}: {Err}"
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
-      "translation": "impossibile eseguire il pull dell'immagine docker {Repository____tag}. Le credenziali docker non sono state trovate. Potrebbe essere necessario eseguire 'docker login ...' se il registro di immagini è privato. Errore: {Err}: {LoginErr} "
+      "translation": "impossibile eseguire il pull dell'immagine docker {Repository____tag}. Le credenziali docker non sono state trovate. Potrebbe essere necessario eseguire 'docker login ...' se il registro di immagini è privato. Errore: {Err}: {LoginErr}"
     },
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
@@ -496,15 +540,15 @@
     },
     {
       "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
-      "translation": "Impossibile trovare il digest dell'immagine nell'output del doker, recuperando il digest dell'immagine direttamente dall'immagine. "
+      "translation": "Impossibile trovare il digest dell'immagine nell'output del doker, recuperando il digest dell'immagine direttamente dall'immagine."
     },
     {
       "id": "could not inspect image {ImageName}: {Err}.",
-      "translation": "impossibile analizzare l'immagine {ImageName}: {Err}. "
+      "translation": "impossibile analizzare l'immagine {ImageName}: {Err}."
     },
     {
       "id": "could not find digest for image {ImageName}.",
-      "translation": "impossibile trovare il digest per l'immagine {ImageName}. "
+      "translation": "impossibile trovare il digest per l'immagine {ImageName}."
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -536,7 +580,7 @@
     },
     {
       "id": "Error parsing HORIZON_URL: {Err}",
-      "translation": "Errore durante l'analisi HORIZON_URL: {Err} "
+      "translation": "Errore durante l'analisi HORIZON_URL: {Err}"
     },
     {
       "id": "Error parsing host of the HORIZON_URL: {Err}",
@@ -544,15 +588,15 @@
     },
     {
       "id": "Error parsing port of the HORIZON_URL: {Err}",
-      "translation": "Errore durante l'analisi della porte di HORIZON_URL: {Err} "
+      "translation": "Errore durante l'analisi della porte di HORIZON_URL: {Err}"
     },
     {
       "id": "Unexpected port of the HORIZON_URL: {PortInt}",
-      "translation": "Porta di HORIZON_URL non prevista: {PortInt} "
+      "translation": "Porta di HORIZON_URL non prevista: {PortInt}"
     },
     {
       "id": "The agbot url: {EnvVar}",
-      "translation": "L'url di agbot: {EnvVar} "
+      "translation": "L'url di agbot: {EnvVar}"
     },
     {
       "id": "Error reading HTTP response, error {Err}",
@@ -608,7 +652,7 @@
     },
     {
       "id": "HZN_AGBOT_URL is not defined",
-      "translation": "HZN_AGBOT_URL non definito "
+      "translation": "HZN_AGBOT_URL non definito"
     },
     {
       "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
@@ -705,6 +749,10 @@
     {
       "id": "Failed to get file info: {Err}",
       "translation": "Impossibile ottenere le informazioni sul file: {Err}"
+    },
+    {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "Formato URL non corretto: {UrlPath}. {ErrUrl}"
     },
     {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
@@ -828,7 +876,7 @@
     },
     {
       "id": "Docker pull failure: {Err}",
-      "translation": "Errore di pull del docker: {Err} "
+      "translation": "Errore di pull del docker: {Err}"
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
@@ -1148,11 +1196,11 @@
     },
     {
       "id": "The SecretBindingCheck input cannot be null",
-      "translation": "L'input di SecretBindingCheck non può essere null "
+      "translation": "L'input di SecretBindingCheck non può essere null"
     },
     {
       "id": "Node type '{NodeType}' does not support secret binding check.",
-      "translation": "Il tipo di nodo '{NodeType}' non supporta la verifica del bind del segreto. "
+      "translation": "Il tipo di nodo '{NodeType}' non supporta la verifica del bind del segreto."
     },
     {
       "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
@@ -1164,11 +1212,11 @@
     },
     {
       "id": "Secret Binding Incompatible",
-      "translation": "Bind del segreto incompatibile "
+      "translation": "Bind del segreto incompatibile"
     },
     {
       "id": "Type Incompatible",
-      "translation": "Tipo incompatibile "
+      "translation": "Tipo incompatibile"
     },
     {
       "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
@@ -1180,7 +1228,7 @@
     },
     {
       "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
-      "translation": "Avvertenza: I seguenti bind dei segreti non sono richiesti da alcun servizio: {ExtraneousSB} "
+      "translation": "Avvertenza: I seguenti bind dei segreti non sono richiesti da alcun servizio: {ExtraneousSB}"
     },
     {
       "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
@@ -1208,15 +1256,15 @@
     },
     {
       "id": "Secret binding for a cluster service is not supported.",
-      "translation": " Il bind del segreto di un servizio cluster non è supportato."
+      "translation": "Il bind del segreto di un servizio cluster non è supportato."
     },
     {
       "id": "No secret binding found for the following service secrets: {NbArray}.",
-      "translation": "Nessun bind del segreto trovato per i seguenti segreti del servizio: {NbArray}. "
+      "translation": "Nessun bind del segreto trovato per i seguenti segreti del servizio: {NbArray}."
     },
     {
       "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
-      "translation": "Specificata stringa di versione errata {ServiceVersionRange} nel bind del segreta del servizio {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err} "
+      "translation": "Specificata stringa di versione errata {ServiceVersionRange} nel bind del segreta del servizio {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}"
     },
     {
       "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
@@ -1224,11 +1272,11 @@
     },
     {
       "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
-      "translation": "L'URL di agbot non può essere una stringa vuota durante la verifica del bind del segreto. Assicurarsi che HZN_AGBOT_URL sia impostato. "
+      "translation": "L'URL di agbot non può essere una stringa vuota durante la verifica del bind del segreto. Assicurarsi che HZN_AGBOT_URL sia impostato."
     },
     {
       "id": "The node organization must be provided.",
-      "translation": "È necessario fornire l'organizzazione del nodo. "
+      "translation": "È necessario fornire l'organizzazione del nodo."
     },
     {
       "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -1240,11 +1288,11 @@
     },
     {
       "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "Il nome segreto del bind non può essere una stringa vuota. I formati validi sono: '<secretname>' per il segreto a livello organizzazione e 'user/<username>/<secretname>' per il segreto a livello utente. "
+      "translation": "Il nome segreto del bind non può essere una stringa vuota. I formati validi sono: '<secretname>' per il segreto a livello organizzazione e 'user/<username>/<secretname>' per il segreto a livello utente."
     },
     {
       "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "Formato non valido per il nome segreto del bind: {SecretName}. I formati validi sono: '<secretname>' per il segreto a livello organizzazione e 'user/<username>/<secretname>' per il segreto a livello utente. "
+      "translation": "Formato non valido per il nome segreto del bind: {SecretName}. I formati validi sono: '<secretname>' per il segreto a livello organizzazione e 'user/<username>/<secretname>' per il segreto a livello utente."
     },
     {
       "id": "The UserInputCheck input cannot be null",
@@ -1521,6 +1569,10 @@
     {
       "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
       "translation": "Errore durante il richiamo delle definizioni del servizio {Arg_1} da db. {Arg_2}"
+    },
+    {
+      "id": "Error retrieving all service definitions from db. {Arg_1}",
+      "translation": "Errore durante il richiamo di tutte le definizioni del servizio dA db. {Arg_1}"
     },
     {
       "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
@@ -1896,23 +1948,23 @@
     },
     {
       "id": "Unable to authenticate nil request for secrets API",
-      "translation": "Impossibile autenticare la richiesta nil per l'API dei segreti "
+      "translation": "Impossibile autenticare la richiesta nil per l'API dei segreti"
     },
     {
       "id": "Unable to extract basic auth for request",
-      "translation": "Impossibile estrarre l'auth di base della richiesta "
+      "translation": "Impossibile estrarre l'auth di base della richiesta"
     },
     {
       "id": "unable to verify {AppKey}, error {Err}",
-      "translation": "impossibile verificare {AppKey}, errore {Err} "
+      "translation": "impossibile verificare {AppKey}, errore {Err}"
     },
     {
       "id": "credentials for {AppKey} are not valid",
-      "translation": "credenziali di {AppKey} non valide "
+      "translation": "credenziali di {AppKey} non valide"
     },
     {
       "id": "Version_Expression: Empty string is not a valid version.",
-      "translation": "Version_Expression: Una stringa vuota non è una versione valida. "
+      "translation": "Version_Expression: Una stringa vuota non è una versione valida."
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

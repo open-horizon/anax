@@ -123,6 +123,10 @@
       "translation": "Falsche Organisations-ID, falsche Benutzer-ID oder falsches Kennwort. "
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Der Exchange-Benutzer {Key} hat nicht das korrekte Format. Es sollte 'Organisation/Benutzername' (org/username) sein."
+    },
+    {
       "id": "Internal server error",
       "translation": "Interner Serverfehler"
     },
@@ -133,6 +137,10 @@
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
       "translation": "Der Provider für geheime Schlüssel ist nicht bereit. Der Aufrufende sollte diesen API-Aufruf einige Male mit einem kurzen zeitlichen Abstand zwischen den Aufrufen wiederholen, um sich zu vergewissern, dass der Provider für geheime Schlüssel nicht verfügbar ist."
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "Der Name des geheimen Schlüssels muss angegeben werden"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -147,20 +155,56 @@
       "translation": "Parsing-Fehler im Anforderungshauptteil. {Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "Auf den Provider für geheime Schlüssel kann nicht zugegriffen werden. Fehler: {Serr}."
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "Berechtigung verweigert. Der Benutzer \"{ExUser}\" kann keine geheimen Schlüssel in der Organisation \"{Org}\" {Action}."
     },
     {
-      "id": "org must be specified in the API path",
-      "translation": "Die Organisation (org) muss im API-Pfad angegeben werden."
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "Berechtigung verweigert. Der Benutzer \"{ExUser}\" kann den geheimen Schlüssel \"{SecretName}\" nicht in der Organisation \"{Org}\" {Action}."
     },
     {
-      "id": "user must be specified in the API path",
-      "translation": "Der Benutzer (user) muss im API-Pfad angegeben werden."
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "Die Vault-Antwort kann nicht gelesen werden: {Error}"
     },
     {
-      "id": "{Serr}",
-      "translation": "{Serr}"
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "Die Vault-Antwort \"{Response}\" kann nicht geparst werden: {Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Das {Action} der geheimen Schlüssel in der Organisation \"{Org}\" ist nicht möglich. Die Operation wird vom Provider für geheime Schlüssel nicht unterstützt."
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Das {Action} des geheimen Schlüssels \"{SecretName}\" in der Organisation \"{Org}\" ist nicht möglich. Die Operation wird vom Provider für geheime Schlüssel nicht unterstützt."
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "Der Provider für geheime Schlüssel hat eine ungültige Anforderung erhalten. Überprüfen Sie die gesamte Eingabe."
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "Antwort: {Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "In der Organisation \"{Org}\" wurden keine geheimen Schlüssel gefunden"
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "Unter dem Namen \"{SecretName}\" wurden keine geheimen Schlüssel gefunden"
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "Ein unbekannter Fehler ist aufgetreten. Der Antwortcodes {ResponseCode} des Providers für geheime Schlüssel wurde empfangen."
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "translation": "Die Organisation muss im API-Pfad angegeben werden."
+    },
+    {
+      "id": "User must be specified in the API path",
+      "translation": "Der Benutzer muss im API-Pfad angegeben werden."
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -705,6 +749,10 @@
     {
       "id": "Failed to get file info: {Err}",
       "translation": "Dateiinformationen konnten nicht abgerufen werden: {Err}"
+    },
+    {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "Fehlerhafte URL: {UrlPath}. {ErrUrl}"
     },
     {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
@@ -1521,6 +1569,10 @@
     {
       "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
       "translation": "Fehler beim Abrufen der Servicedefinitionen {Arg_1} aus der Datenbank. {Arg_2}"
+    },
+    {
+      "id": "Error retrieving all service definitions from db. {Arg_1}",
+      "translation": "Fehler beim Abrufen aller Servicedefinitionen aus der Datenbank. {Arg_1}"
     },
     {
       "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",

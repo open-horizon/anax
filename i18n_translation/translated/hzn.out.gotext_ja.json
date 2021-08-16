@@ -51,6 +51,10 @@
       "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Exchange ユーザー {Key} の形式が正しくありません。org/username でなければなりません。"
+    },
+    {
       "id": "Internal server error",
       "translation": "内部サーバー・エラー"
     },
@@ -60,7 +64,11 @@
     },
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
-      "translation": "秘密プロバイダーの準備ができていません。呼び出し元は、秘密プロバイダーが使用不可であることを確認するため、呼び出しと呼び出しの間で少し遅延させてこの API 呼び出しを数回再試行するべきです。"
+      "translation": "秘密プロバイダーの準備ができていません。 呼び出し元は、秘密プロバイダーが使用不可であることを確認するため、呼び出しと呼び出しの間で少し遅延させてこの API 呼び出しを数回再試行するべきです。"
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "秘密名を指定してください"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -75,20 +83,56 @@
       "translation": "要求ボディ構文解析エラー: {Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "秘密プロバイダーにアクセスできません。エラー: {Serr}。"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "許可が拒否されました。ユーザー「{ExUser}」は、組織「{Org}」で秘密の {Action} を行うことはできません"
     },
     {
-      "id": "org must be specified in the API path",
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "許可が拒否されました。ユーザー「{ExUser}」は、組織「{Org}」で秘密「{SecretName}」の {Action} を行うことはできません"
+    },
+    {
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "ボールトの応答を読み取ることができません: {Error}"
+    },
+    {
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "ボールトの応答「{Response}」を構文解析できません: {Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "組織「{Org}」で秘密の {Action} を行うことはできません。秘密プロバイダーでサポートされていない操作です。"
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "組織「{Org}」で秘密「{SecretName}」の {Action} を行うことはできません。秘密プロバイダーでサポートされていない操作です。"
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "秘密プロバイダーは不正な要求を受け取りました。指定した入力をすべて確認してください。"
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "応答: {Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "組織「{Org}」内で秘密が見つかりません"
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "秘密名「{SecretName}」の下で秘密が見つかりません"
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "不明なエラーが発生しました。 秘密プロバイダーから応答コード {ResponseCode} を受け取りました。"
+    },
+    {
+      "id": "Organization must be specified in the API path",
       "translation": "API パスに組織を指定する必要があります"
     },
     {
-      "id": "user must be specified in the API path",
+      "id": "User must be specified in the API path",
       "translation": "API パスにユーザーを指定する必要があります"
-    },
-    {
-      "id": "{Serr}",
-      "translation": "{Serr}"
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -344,7 +388,7 @@
     },
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルトのロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには、環境の環境変数セクションを参照してください)。\n\nサブコマンドの説明:\n  agbot: Horizon 契約 bot のリソースをリストおよび管理します。\n  agreement: このエッジ・ノードで Horizon 契約 bot との間で締結されたアクティブな契約またはアーカイブ済み契約をリストまたは管理します。\n  architecture: このマシンのアーキテクチャー (Horizon および golang によって定義されているとおり) を表示します。 \n  attribute: この Horizon エッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n  deploycheck: デプロイメント互換性を検査します。\n  dev: サービス作成用開発ツール。\n  env: Horizon 環境変数を表示します。\n  eventlog: 現在の登録またはすべての登録のイベント・ログをリストします。\n  exchange: Horizon Exchange のリソースをリストおよび管理します。\n  key: サービスの署名および検査に使用する鍵をリストおよび管理します。\n  metering: アクティブな契約またはアーカイブ済み契約の課金 (支払) 情報をリストまたは管理します。\n  mms: Horizon モデル管理サービスのリソースをリストおよび管理します。\n  node: この Horizon エッジ・ノードに関する一般情報をリストおよび管理します。\n  policy: この Horizon エッジ・ノードのポリシーをリストおよび管理します。\n  reginput: (入力した後)「hzn register」コマンドで使用できるこのパターン用の入力ファイル・テンプレートを作成します。\n            これは、指定されたパターンが使用するサービスを調査して、それらに必要なノード所有者入力を判別します。\n  register: このエッジ・ノードを管理ハブに登録します。\n  service: この Horizon エッジ・ノードに現在登録されているサービスをリストまたは管理します。\n  status: ノードの現在の Horizon 内部状況を表示します。\n  unregister: この Horizon エッジ・ノードを登録抹消し、再登録できるようにリセットします。\n  userinput: この Horizon エッジ・ノードに現在登録されているサービス利用者の入力をリストまたは管理します。\n  util: ユーティリティー・コマンド。\n  version: Horizon バージョンを表示します。\n  voucher: Horizon SDO 所有権証明書をリストおよび管理します。\n\n環境変数:\n  HORIZON_URL:  hzn が Horizon エージェント API に接続する URL をオーバーライドします。\n      これによって、ssh トンネルを介したリモート Horizon エージェントの使用が容易になります。\n  HZN_EXCHANGE_URL: 「hzn exhchange」サブコマンドが Horizon Exchange と通信するために\n使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/api/v1。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n  HZN_ORG_ID:  「hzn exchange -o」フラグのデフォルト値。\n      組織 ID を指定するためのものです。\n  HZN_EXCHANGE_USER_AUTH:  「hzn exchange -u」または「hzn\n\t  register -u」フラグのデフォルト値。形式は、「[org/]user:pw」。 HZN_EXCHANGE_USER_AUTH を設定した時に\n\t org を省略した場合は、HZN_ORG_ID を設定できることに注意してください。\n  HZN_FSS_CSSURL: 「hzn mms」サブコマンドが Horizon モデル管理サービスと\n     通信するために使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/css/。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n\n  これらすべての環境変数およびコマンド・ヘルプに記載されている変数は、\n  ユーザーの構成ファイル: ~/.hzn/hzn.json に JSON フォーマットで指定できます。\n  例えば、\n  {Com____}"
+      "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルトのロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには、環境の環境変数セクションを参照してください)。\n\nサブコマンドの説明:\n  agbot: Horizon 契約 bot のリソースをリストおよび管理します。\n  agreement: このエッジ・ノードで Horizon 契約 bot との間で締結されたアクティブな契約またはアーカイブ済み契約をリストまたは管理します。\n  architecture: このマシンのアーキテクチャー (Horizon および golang によって定義されているとおり) を表示します。 \n  attribute: この Horizon エッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n  deploycheck: デプロイメント互換性を検査します。\n  dev: サービス作成用開発ツール。\n  env: Horizon 環境変数を表示します。\n  eventlog: 現在の登録またはすべての登録のイベント・ログをリストします。\n  exchange: Horizon Exchange のリソースをリストおよび管理します。\n  key: サービスの署名および検査に使用する鍵をリストおよび管理します。 \n  metering: アクティブな契約またはアーカイブ済み契約の課金 (支払) 情報をリストまたは管理します。\n  mms: Horizon モデル管理サービスのリソースをリストおよび管理します。\n  node: この Horizon エッジ・ノードに関する一般情報をリストおよび管理します。\n  policy: この Horizon エッジ・ノードのポリシーをリストおよび管理します。 \n  reginput: (入力した後)「hzn register」コマンドで使用できるこのパターン用の入力ファイル・テンプレートを作成します。 \n            これは、指定されたパターンが使用するサービスを調査して、それらに必要なノード所有者入力を判別します。 \n  register: このエッジ・ノードを管理ハブに登録します。\n  service: この Horizon エッジ・ノードに現在登録されているサービスをリストまたは管理します。\n  status: ノードの現在の Horizon 内部状況を表示します。\n  unregister: この Horizon エッジ・ノードを登録抹消し、再登録できるようにリセットします。\n  userinput: この Horizon エッジ・ノードに現在登録されているサービス利用者の入力をリストまたは管理します。\n  util: ユーティリティー・コマンド。\n  version: Horizon バージョンを表示します。\n  voucher: Horizon SDO 所有権証明書をリストおよび管理します。\n\n環境変数:\n  HORIZON_URL:  hzn が Horizon エージェント API に接続する URL をオーバーライドします。\n      これによって、ssh トンネルを介したリモート Horizon エージェントの使用が容易になります。\n  HZN_EXCHANGE_URL: 「hzn exhchange」サブコマンドが Horizon Exchange と通信するために\n使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/api/v1。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n  HZN_ORG_ID:  「hzn exchange -o」フラグのデフォルト値。\n      組織 ID を指定するためのものです。\n  HZN_EXCHANGE_USER_AUTH:  「hzn exchange -u」または「hzn\n\t  register -u」フラグのデフォルト値。形式は、「[org/]user:pw」。 HZN_EXCHANGE_USER_AUTH を設定した時に\n\t org を省略した場合は、HZN_ORG_ID を設定できることに注意してください。\n  HZN_FSS_CSSURL: 「hzn mms」サブコマンドが Horizon モデル管理サービスと\n     通信するために使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/css/。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n\n  これらすべての環境変数およびコマンド・ヘルプに記載されている変数は、\n  ユーザーの構成ファイル: ~/.hzn/hzn.json に JSON フォーマットで指定できます。\n  例えば、\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -520,7 +564,7 @@
     },
     {
       "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
-      "translation": "ノードの組織。省略した場合は、デフォルト値は -n または現在の登録済みデバイスによって提供されるノードの組織です。"
+      "translation": "ノードの組織。 省略した場合は、デフォルト値は -n または現在の登録済みデバイスによって提供されるノードの組織です。"
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -688,7 +732,7 @@
     },
     {
       "id": "The name of the service container whose log records should be displayed. Can be omitted if the service definition has only one container in its deployment config.",
-      "translation": "ログ・レコードを表示する対象のサービス・コンテナーの名前。サービス定義のデプロイメント構成にコンテナーが 1 つしかない場合は省略可能です。"
+      "translation": "ログ・レコードを表示する対象のサービス・コンテナーの名前。 サービス定義のデプロイメント構成にコンテナーが 1 つしかない場合は省略可能です。"
     },
     {
       "id": "Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.",
@@ -756,7 +800,7 @@
     },
     {
       "id": "Filepath of a file containing a secret that is required by the service or one of its dependent services. The filename must match a secret name in the service definition. The file is encoded in JSON as an object containing two keys both typed as a string; \"key\" is used to indicate the kind of secret, and \"value\" is the string form of the secret. This flag can be repeated.",
-      "translation": "サービスまたはいずれかの従属サービスで必要とされる秘密を含んでいるファイルのファイル・パス。ファイル名は、サービス定義内の秘密名と一致している必要があります。ファイルは、どちらもストリングとして入力される次の 2 つのキーを含んでいる 1 つのオブジェクトとして JSON でエンコードされます。「key」が秘密の種類を示すために使用され、「value」がストリング形式の秘密です。このフラグは繰り返すことができます。"
+      "translation": "サービスまたはいずれかの従属サービスで必要とされる秘密を含んでいるファイルのファイル・パス。 ファイル名は、サービス定義内の秘密名と一致している必要があります。 ファイルは、どちらもストリングとして入力される次の 2 つのキーを含んでいる 1 つのオブジェクトとして JSON でエンコードされます。「key」が秘密の種類を示すために使用され、「value」がストリング形式の秘密です。 このフラグは繰り返すことができます。"
     },
     {
       "id": "Stop a service that is running in a mocked Horizon Agent environment. This command is not supported for services using the {KUBEDEPLOYMENTCONFIGTYPE} deployment configuration.",
@@ -792,7 +836,7 @@
     },
     {
       "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-      "translation": "選択ストリング。 このフラグは繰り返し指定でき、「AND」の意味になります。 個々のフラグは、attribute=value、attribute~value、\"attribute>value\" または\"attribute<value\" の形式にする必要があります。ここで、「~」は「含む」を意味します。 共通の属性名は、timestamp、severity、message、event_code、source_type、agreement_id、service_url 等です。すべての属性名を表示するには「-l」フラグを使用します。TWBTAG>"
+      "translation": "選択ストリング。 このフラグは繰り返し指定でき、「AND」の意味になります。 個々のフラグは、attribute=value、attribute~value、\"attribute>value\" または\"attribute<value\" の形式にする必要があります。ここで、「~」は「含む」を意味します。 共通の属性名は、timestamp、severity、message、event_code、source_type、agreement_id、service_url 等です。すべての属性名を表示するには「-l」フラグを使用します。"
     },
     {
       "id": "List all the active errors that will be shared with the Exchange if the node is online.",
@@ -1820,19 +1864,19 @@
     },
     {
       "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
-      "translation": "publish コマンドは、アップロードされたオブジェクト・データに対してデータ保全性検査を実行しません。これは、--hashAlgo および --hash と同時に指定することはできません"
+      "translation": "publish コマンドは、アップロードされたオブジェクト・データに対してデータ保全性検査を実行しません。 これは、--hashAlgo および --hash と同時に指定することはできません"
     },
     {
       "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-      "translation": "アップロードおよびダウンロード中にデータ保全性を確保するために署名前にオブジェクト・データをハッシュするのに使用されるハッシュ・アルゴリズム。サポートされるハッシュ・アルゴリズムは SHA1 または SHA256 であり、デフォルトは SHA1 です。--noIntegrity フラグと同時に指定することはできません"
+      "translation": "アップロードおよびダウンロード中にデータ保全性を確保するために署名前にオブジェクト・データをハッシュするのに使用されるハッシュ・アルゴリズム。 サポートされるハッシュ・アルゴリズムは SHA1 または SHA256 であり、デフォルトは SHA1 です。 --noIntegrity フラグと同時に指定することはできません"
     },
     {
       "id": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
-      "translation": "アップロードまたはダウンロードされるオブジェクト・データのハッシュ。コマンドが自動的にハッシュを計算するのを許可するのではなく、ハッシュを指定したい場合、このフラグを使用します。ハッシュは、SHA1 アルゴリズムまたは SHA256 アルゴリズムのいずれかを使用して生成される必要があります。SHA256 を使用してハッシュが生成された場合は、-a フラグが指定される必要があります。このフラグは、--noIntegrity と同時に指定することはできません。"
+      "translation": "アップロードまたはダウンロードされるオブジェクト・データのハッシュ。 コマンドが自動的にハッシュを計算するのを許可するのではなく、ハッシュを指定したい場合、このフラグを使用します。 ハッシュは、SHA1 アルゴリズムまたは SHA256 アルゴリズムのいずれかを使用して生成される必要があります。 SHA256 を使用してハッシュが生成された場合は、-a フラグが指定される必要があります。 このフラグは、--noIntegrity と同時に指定することはできません。"
     },
     {
       "id": "The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
-      "translation": "オブジェクトに署名するために使用される秘密鍵ファイルのパス。オブジェクトの保全性を確保するため、対応する公開鍵は MMS に保管されます。指定されていない場合、秘密鍵を見つけるために環境変数 HZN_PRIVATE_KEY_FILE が使用されます。設定されていない場合、~/.hzn/keys/service.private.key が使用されます。これが存在しない場合、このパブリッシュ操作用にのみ RSA 鍵ペアが生成され、その後で秘密鍵は破棄されます。"
+      "translation": "オブジェクトに署名するために使用される秘密鍵ファイルのパス。 オブジェクトの保全性を確保するため、対応する公開鍵は MMS に保管されます。 指定されていない場合、秘密鍵を見つけるために環境変数 HZN_PRIVATE_KEY_FILE が使用されます。 設定されていない場合、~/.hzn/keys/service.private.key が使用されます。 これが存在しない場合、このパブリッシュ操作用にのみ RSA 鍵ペアが生成され、その後で秘密鍵は破棄されます。"
     },
     {
       "id": "Display the status of the Horizon Model Management Service.",
@@ -1979,12 +2023,16 @@
       "translation": "再開すべきサービスの組織。"
     },
     {
-      "id": "The name of the service that should be resumed.",
-      "translation": "再開すべきサービスの名前。"
+      "id": "The name of the service that should be resumed. If omitted, all the services for the organization will be resumed.",
+      "translation": "再開すべきサービスの名前。 省略した場合、組織のすべてのサービスが再開されます。"
     },
     {
-      "id": "Change the configuration state to 'suspend' for a service.",
-      "translation": "サービスの構成状態を「suspend」に変更します。"
+      "id": "The version of the service that should be resumed. If omitted, all the versions for this service will be resumed.",
+      "translation": "再開すべきサービスのバージョン。 省略した場合、このサービスのすべてのバージョンが再開されます。"
+    },
+    {
+      "id": "Change the configuration state to 'suspend' for a service. Parent and child dependencies of the suspended service will be stopped until the service is resumed.",
+      "translation": "サービスの構成状態を「suspend」に変更します。 中断されたサービスが再開されるまで、このサービスの親と子の依存関係が停止されます。"
     },
     {
       "id": "Suspend all registerd services.",
@@ -1995,8 +2043,12 @@
       "translation": "中断すべきサービスの組織。"
     },
     {
-      "id": "The name of the service that should be suspended.",
-      "translation": "中断すべきサービスの名前。"
+      "id": "The name of the service that should be suspended. If omitted, all the services for the organization will be suspended.",
+      "translation": "中断すべきサービスの名前。 省略した場合、組織のすべてのサービスが中断されます。"
+    },
+    {
+      "id": "The version of the service that should be suspended. If omitted, all the versions for this service will be suspended.",
+      "translation": "中断すべきサービスのバージョン。 省略した場合、このサービスのすべてのバージョンが中断されます。"
     },
     {
       "id": "Show the container logs for a service.",
@@ -2012,7 +2064,7 @@
     },
     {
       "id": "The name of the container within the service whose log records should be displayed.",
-      "translation": "ログ・レコードを表示する対象のサービス内のコンテナーの名前。 "
+      "translation": "ログ・レコードを表示する対象のサービス内のコンテナーの名前。"
     },
     {
       "id": "List the services variable configuration that has been done on this Horizon edge node.",
@@ -2112,7 +2164,7 @@
     },
     {
       "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "translation": "秘密マネージャー内の秘密をリストおよび管理します。注: 組織全体で使用可能な秘密をリストするには、管理者として認証する必要があります。"
+      "translation": "秘密マネージャー内の秘密をリストおよび管理します。 注: 組織全体で使用可能な秘密をリストするには、管理者として認証する必要があります。"
     },
     {
       "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
@@ -2128,7 +2180,7 @@
     },
     {
       "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
-      "translation": "この 1 つの秘密のみをリストします。 秘密の存在を示すブール値を返します。これは、秘密マネージャー内で使用される秘密の名前です。秘密が存在しない場合、終了コード 1 で戻ります。"
+      "translation": "この 1 つの秘密のみをリストします。 秘密の存在を示すブール値を返します。 これは、秘密マネージャー内で使用される秘密の名前です。 秘密が存在しない場合、終了コード 1 で戻ります。"
     },
     {
       "id": "Add a secret to the secrets manager.",
@@ -2136,11 +2188,11 @@
     },
     {
       "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
-      "translation": "秘密の名前。組織内で固有である必要があります。この名前は、デプロイメントのポリシーおよびパターンにおいて、サービス定義内の秘密名にこの秘密をバインドするために使用されます。"
+      "translation": "秘密の名前。 組織内で固有である必要があります。 この名前は、デプロイメントのポリシーおよびパターンにおいて、サービス定義内の秘密名にこの秘密をバインドするために使用されます。"
     },
     {
       "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
-      "translation": "秘密詳細を含んでいるファイルへのファイル・パス。--secretDetail と同時に指定することはできません。標準入力から読み取るには、-f- を指定します。"
+      "translation": "秘密詳細を含んでいるファイルへのファイル・パス。 --secretDetail と同時に指定することはできません。 標準入力から読み取るには、-f- を指定します。"
     },
     {
       "id": "A key for the secret.",
@@ -2148,11 +2200,11 @@
     },
     {
       "id": "The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.",
-      "translation": "ストリングとしての秘密詳細。秘密詳細は、実際の秘密自体であり、秘密の名前ではありません。例えば、パスワードや秘密鍵などは、秘密詳細の例です。--secretFile と同時に指定することはできません。"
+      "translation": "ストリングとしての秘密詳細。 秘密詳細は、実際の秘密自体であり、秘密の名前ではありません。 例えば、パスワードや秘密鍵などは、秘密詳細の例です。 --secretFile と同時に指定することはできません。"
     },
     {
       "id": "Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.",
-      "translation": "秘密マネージャー内に存在する場合は既存の秘密を上書きします。「上書きしますか?」プロンプトはスキップされます。"
+      "translation": "秘密マネージャー内に存在する場合は既存の秘密を上書きします。 「上書きしますか?」プロンプトはスキップされます。"
     },
     {
       "id": "Remove a secret in the secrets manager.",
@@ -2164,7 +2216,7 @@
     },
     {
       "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
-      "translation": "秘密マネージャーに保管された秘密の詳細を読み取ります。これは、秘密の作成時に指定されたキーと値のペアからなります。"
+      "translation": "秘密マネージャーに保管された秘密の詳細を読み取ります。 これは、秘密の作成時に指定されたキーと値のペアからなります。"
     },
     {
       "id": "The name of the secret to read in the secrets manager.",
@@ -2679,6 +2731,10 @@
       "translation": "ファイル情報の取得に失敗しました: {Err}"
     },
     {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "URL の形式に誤りがあります: {UrlPath}。{ErrUrl}"
+    },
+    {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "translation": "アップロード中: {Float32totalSent__float32bodyLen__100} {}"
     },
@@ -2936,7 +2992,7 @@
     },
     {
       "id": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
-      "translation": "ノードのアーキテクチャー、組織、またはタイプが指定されておらず、ノード ID が指定されていません。ローカル・ノードからノード情報を取得します。"
+      "translation": "ノードのアーキテクチャー、組織、またはタイプが指定されておらず、ノード ID が指定されていません。 ローカル・ノードからノード情報を取得します。"
     },
     {
       "id": "failed to marshal 'hzn deploycheck secretbinding' output: {Err}",
@@ -3223,6 +3279,18 @@
       "translation": "$SERVICE_NAME のパターン"
     },
     {
+      "id": "Failed to marshal deps: {Err}",
+      "translation": "依存関係のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Failed to unmarshal deps: {Err}",
+      "translation": "依存関係のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
+      "translation": "警告: サービス {SvcName} の秘密 {SecName} が {SERVICESTARTCOMMAND} コマンドで指定されていません。"
+    },
+    {
       "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
       "translation": "「{SERVICECOMMAND} {SERVICECREATIONCOMMAND}」イメージ名からサービス名の取得に失敗しました。 {Err}"
     },
@@ -3296,7 +3364,7 @@
     },
     {
       "id": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
-      "translation": "現行プロジェクト内でサービス {ServiceName} を検出できませんでした。これが新しい従属サービスである場合、「hzn dev dependency fetch」コマンドを使用して従属リストを更新してください。"
+      "translation": "現行プロジェクト内でサービス {ServiceName} を検出できませんでした。 これが新しい従属サービスである場合、「hzn dev dependency fetch」コマンドを使用して従属リストを更新してください。"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
@@ -3627,6 +3695,14 @@
       "translation": "ネットワーク {Name} を作成しました"
     },
     {
+      "id": "unable to list docker networks, error {Err}",
+      "translation": "Docker ネットワークをリストできません、エラー {Err}"
+    },
+    {
+      "id": "unable to remove docker network {Name}, error {Err}",
+      "translation": "Docker ネットワーク {Name} を削除できません、エラー {Err}"
+    },
+    {
       "id": "invalid image format: {Image}",
       "translation": "無効なイメージ・フォーマット: {Image}"
     },
@@ -3756,7 +3832,7 @@
     },
     {
       "id": "Failed to validate the secret binding. {Err}",
-      "translation": "秘密バインディングの検証に失敗しました。{Err}"
+      "translation": "秘密バインディングの検証に失敗しました。 {Err}"
     },
     {
       "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
@@ -3764,7 +3840,7 @@
     },
     {
       "id": "Failed to verify the binding secret in the secret manager. {Err}",
-      "translation": "秘密マネージャー内のバインディング秘密の検証に失敗しました。{Err}"
+      "translation": "秘密マネージャー内のバインディング秘密の検証に失敗しました。 {Err}"
     },
     {
       "id": "Warning: The following binding secrets cannot be verified in the secret manager:",
@@ -3772,15 +3848,15 @@
     },
     {
       "id": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
-      "translation": "すべてのアーキテクチャーで Exchange からサービス {ServiceOrg}/{ServiceName} バージョン {ServiceVersion} を取得するのに失敗しました。{Err}"
+      "translation": "すべてのアーキテクチャーで Exchange からサービス {ServiceOrg}/{ServiceName} バージョン {ServiceVersion} を取得するのに失敗しました。 {Err}"
     },
     {
       "id": "Error retrieving service {ServiceOrg}/{ServiceName} version {ServiceVersion} from the Exchange. {Err}",
-      "translation": "Exchange からサービス {ServiceOrg}/{ServiceName} バージョン {ServiceVersion} を取得中にエラーが発生しました。{Err}"
+      "translation": "Exchange からサービス {ServiceOrg}/{ServiceName} バージョン {ServiceVersion} を取得中にエラーが発生しました。 {Err}"
     },
     {
       "id": "Error validating secret bindings for service {SId}. {Err}",
-      "translation": "サービス {SId} の秘密バインディングの検証中にエラーが発生しました。{Err}"
+      "translation": "サービス {SId} の秘密バインディングの検証中にエラーが発生しました。 {Err}"
     },
     {
       "id": "Error validating secret bindings for dependent service {Id}. {Err}",
@@ -3833,6 +3909,30 @@
     {
       "id": "The input variables to be set.",
       "translation": "設定する入力変数。"
+    },
+    {
+      "id": "A list of secret bindings for the secret names defined in the services, listed by service.",
+      "translation": "サービスで定義された秘密名の秘密バインディングのリスト (サービス別のリスト)。"
+    },
+    {
+      "id": "The service version range.",
+      "translation": "サービス・バージョン範囲。"
+    },
+    {
+      "id": "The secret bindings.",
+      "translation": "秘密バインディング。"
+    },
+    {
+      "id": "The valid formats for secret provider secret names are:",
+      "translation": "秘密プロバイダー秘密名の有効な形式:"
+    },
+    {
+      "id": "'<secretname>' for organization level secret.",
+      "translation": "組織レベルの秘密の「<secretname>」"
+    },
+    {
+      "id": "'user/<username>/<secretname>' for user level secret.",
+      "translation": "ユーザー・レベルの秘密の「user/<username>/<secretname>」。"
     },
     {
       "id": "Flags -s and -l are mutually exclusive.",
@@ -4292,11 +4392,11 @@
     },
     {
       "id": "Note: The fully qualified binding secret name is 'openhorizon/<node_org>/<secret_binding_name>'. The binding secret cannot be verified in the secret manager for a public pattern because the node organization can be different from the pattern organization.",
-      "translation": "注: 完全修飾バインディング秘密名は「openhorizon/<node_org>/<secret_binding_name>」です。ノード組織とパターン組織は異なっていてもかまわないため、パブリック・パターンについて秘密マネージャー内でバインディング秘密を検証することはできません。"
+      "translation": "注: 完全修飾バインディング秘密名は「openhorizon/<node_org>/<secret_binding_name>」です。 ノード組織とパターン組織は異なっていてもかまわないため、パブリック・パターンについて秘密マネージャー内でバインディング秘密を検証することはできません。"
     },
     {
       "id": "No secret is defined for any of the services. The secret binding is not needed: {SecretBinding}.",
-      "translation": "どのサービスにも秘密が定義されていません。秘密バインディングは必要ありません: {SecretBinding}。"
+      "translation": "どのサービスにも秘密が定義されていません。 秘密バインディングは必要ありません: {SecretBinding}。"
     },
     {
       "id": "-f can only be used when one service is specified.",
@@ -4315,8 +4415,8 @@
       "translation": "サービス「{Service}」は組織 {SvcOrg} 内で検出されませんでした"
     },
     {
-      "id": "Ignoring -f because the clusterDepolyment attribute is empty for this service.",
-      "translation": "このサービスの clusterDepolyment 属性が空であるため、-f を無視します。"
+      "id": "Ignoring -f because the clusterDeployment attribute is empty for this service.",
+      "translation": "このサービスの clusterDeployment 属性が空であるため、-f を無視します。"
     },
     {
       "id": "Flags -I and -P are mutually exclusive.",
@@ -4473,6 +4573,14 @@
     {
       "id": "error decoding the cluster deployment configuration: {Err}",
       "translation": "クラスター・デプロイメント構成のデコードでエラーが発生しました。{Err}"
+    },
+    {
+      "id": "service id does not exist in the Exchange: {SvcOrg}/{SvcId}",
+      "translation": "Exchange にサービス ID が存在しません: {SvcOrg}/{SvcId}"
+    },
+    {
+      "id": "failed to marshal 'hzn exchange service listnode' output: {Err}",
+      "translation": "「hzn exchange service listnode」の出力のマーシャルに失敗しました: {Err}"
     },
     {
       "id": "user '{TrimPrefixtheUser_}' not found in org {Org}",
@@ -4967,6 +5075,10 @@
       "translation": "{Resource} の呼び出しがタイムアウトになりました。"
     },
     {
+      "id": "Registration failed because {Matches0}",
+      "translation": "{Matches0} のために登録に失敗しました "
+    },
+    {
       "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "translation": "{Errstring}。 入力ファイル {InputFile} でサービス {Matches2} 用の変数を定義してください。 「hzn unregister」を実行してから、「hzn register...」を再度実行してください"
     },
@@ -5159,12 +5271,24 @@
       "translation": "現在、ノードのイベント・ログに記録されているエラーはありません。"
     },
     {
-      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy is compatible.",
+      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy are compatible.",
       "translation": "ノード、サービス構成、およびデプロイメント・ポリシーに互換性があることを確認するには、「hzn deploycheck all -b」コマンドまたは「hzn deploycheck all -B」コマンドを使用します。"
     },
     {
-      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.",
+      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern are compatible.",
       "translation": "「hzn deploycheck all -p」コマンドを使用して、ノード、サービス構成、およびパターンに互換性があることを確認します。"
+    },
+    {
+      "id": "Command output:",
+      "translation": "コマンド出力:"
+    },
+    {
+      "id": "Using the 'hzn deploycheck userinput -p' command to verify that node, service configuration and pattern are compatible.",
+      "translation": "「hzn deploycheck userinput -p」コマンドを使用して、ノード、サービス構成、およびパターンに互換性があることを確認します。"
+    },
+    {
+      "id": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.",
+      "translation": "ユーザー資格情報が指定されていないため、秘密バインディング互換性を検証できません。検証するには、「hzn deploycheck secretbinding -p」コマンドを使用してください。"
     },
     {
       "id": "{Format2006_01_02_150405}: {Message}",
@@ -5275,15 +5399,31 @@
       "translation": "-f または --secretDetail のいずれかを指定する必要があります。"
     },
     {
+      "id": "Incorrect secret name given: {SecretName}",
+      "translation": "正しくない秘密名が指定されています: {SecretName}"
+    },
+    {
       "id": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?",
-      "translation": "秘密「{SecretName}」は既に秘密マネージャー内に存在します。上書きしますか?"
+      "translation": "秘密「{SecretName}」は既に秘密マネージャー内に存在します。 上書きしますか?"
     },
     {
-      "id": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\".",
-      "translation": "無効な資格情報です。 ユーザー「{User}」は「{SecretName}」にアクセスできません。"
+      "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
+      "translation": "秘密「{SecretName}」が秘密マネージャーに正常に追加されました。"
     },
     {
-      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete.",
+      "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
+      "translation": "秘密「{SecretName}」が秘密マネージャーから正常に削除されました。"
+    },
+    {
+      "id": "Bad request, secret name \"{SecretName}\" invalid.",
+      "translation": "不正な要求です。秘密名「{SecretName}」は無効です。"
+    },
+    {
+      "id": "Permission denied, user \"{User}\" cannot access \"{SecretName}\".",
+      "translation": "許可が拒否されました。ユーザー「{User}」は「{SecretName}」にアクセスできません。"
+    },
+    {
+      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to remove.",
       "translation": "秘密「{SecretName}」は秘密マネージャー内で見つかりません。削除するものはありません。"
     },
     {
@@ -5316,7 +5456,7 @@
     },
     {
       "id": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-      "translation": "サービス定義 {ServiceName} は複数のコンテナーで構成されています。-c フラグを使用してコンテナー名を指定してください。"
+      "translation": "サービス定義 {ServiceName} は複数のコンテナーで構成されています。 -c フラグを使用してコンテナー名を指定してください。"
     },
     {
       "id": "Service logs are unavailable: {Err}",
@@ -5355,12 +5495,20 @@
       "translation": "すべての登録済みサービス"
     },
     {
-      "id": "service {ServiceOrg}/{ServiceUrl}",
-      "translation": "サービス {ServiceOrg}/{ServiceUrl}"
+      "id": "service {ServiceOrg}/{ServiceUrl} version {ServiceVer}",
+      "translation": "サービス {ServiceOrg}/{ServiceUrl} バージョン {ServiceVer}"
+    },
+    {
+      "id": "all the versions for service {ServiceOrg}/{ServiceUrl}",
+      "translation": "サービス {ServiceOrg}/{ServiceUrl} のすべてのバージョン"
     },
     {
       "id": "all the registered services from organization {ServiceOrg}",
       "translation": "組織 {ServiceOrg} のすべての登録済みサービス"
+    },
+    {
+      "id": "Please specify the service name for version {ServiceVer}.",
+      "translation": "バージョン {ServiceVer} のサービス名を指定してください。"
     },
     {
       "id": "Please specify the organization for service {ServiceUrl}.",
@@ -5379,12 +5527,24 @@
       "translation": "サービスの中断要求が正常に送信されました。「hzn agreement」および「docker ps」を使用して、関連する契約およびサービス・コンテナーが削除されたことを確認してください。 これには数分かかる場合があります。"
     },
     {
+      "id": "Error returned suspending the service: {RespBody}",
+      "translation": "サービスの一時停止中にエラーが返されました: {RespBody}"
+    },
+    {
+      "id": "Error: {Err}",
+      "translation": "エラー: {Err}"
+    },
+    {
       "id": "Resuming {Msgpart} ...",
       "translation": "{Msgpart}を再開中..."
     },
     {
       "id": "Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
       "translation": "サービスの再開要求が正常に送信されました。「hzn agreement」および「docker ps」を使用して、関連する契約およびサービス・コンテナーが開始されたことを確認してください。 これには数分かかる場合があります。"
+    },
+    {
+      "id": "Error returned resuming the service: {RespBody}",
+      "translation": "サービスの再開中にエラーが返されました: {RespBody}"
     },
     {
       "id": "failed to marshal 'hzn status -l' output: {Err}",
@@ -5411,8 +5571,16 @@
       "translation": "タイプ「{ObjType}」のオブジェクト・メタデータ「{ObjId}」は組織 {Org} 内で検出されませんでした"
     },
     {
+      "id": "Verifying data with digital signature....",
+      "translation": "デジタル署名を持つデータを検証しています...."
+    },
+    {
       "id": "Failed to verify data: {Error}",
       "translation": "データの検証に失敗しました: {Error}"
+    },
+    {
+      "id": "Verifying digital signature is done.",
+      "translation": "デジタル署名の検証が完了しました。"
     },
     {
       "id": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}, err: {Err}",
@@ -5421,6 +5589,18 @@
     {
       "id": "Data of object {ObjId} saved to file {FileName}",
       "translation": "オブジェクト {ObjId} のデータがファイル {FileName} に保存されました"
+    },
+    {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "hashAlgorithm が空であるため、デジタル署名の検証に失敗しました"
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "publicKey ストリングが空であるため、デジタル署名の検証に失敗しました"
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "translation": "署名ストリングが空であるため、デジタル署名の検証に失敗しました"
     },
     {
       "id": "must specify exchange credentials to access the model management service.",
@@ -5600,11 +5780,15 @@
     },
     {
       "id": "Digital sign with {HashAlgorithm} will be performed for data integrity. It will delay the MMS object publish.",
-      "translation": "データ保全性のために {HashAlgorithm} でのデジタル署名が実行されます。これは MMS オブジェクトのパブリッシュを遅らせます。"
+      "translation": "データ保全性のために {HashAlgorithm} でのデジタル署名が実行されます。 これは MMS オブジェクトのパブリッシュを遅らせます。"
     },
     {
       "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
       "translation": "ファイル {ObjFile} へのデジタル署名に失敗しました: {Err}"
+    },
+    {
+      "id": "Digital sign finished.",
+      "translation": "デジタル署名が完了しました。"
     },
     {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
@@ -5632,7 +5816,7 @@
     },
     {
       "id": "Data hash is generated. Start digital signing with the data hash...",
-      "translation": "データ・ハッシュが生成されました。データ・ハッシュを使用したデジタル署名を開始します..."
+      "translation": "データ・ハッシュが生成されました。 データ・ハッシュを使用したデジタル署名を開始します..."
     },
     {
       "id": "Hash algorithm {HashAlgo} is not supported",
@@ -5908,7 +6092,7 @@
     },
     {
       "id": "Looking for horizon container by name: {ContainerName}",
-      "translation": "Horizon コンテナーを名前 {ContainerName} で探しています "
+      "translation": "Horizon コンテナーを名前 {ContainerName} で探しています"
     },
     {
       "id": "Error during checking if anax container is running: {ErrBytes}",
@@ -5969,6 +6153,10 @@
     {
       "id": "Error pruning docker networks. {Err}",
       "translation": "Docker ネットワークの削除中にエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Backing up eventlogs...",
+      "translation": "イベント・ログをバックアップしています..."
     },
     {
       "id": "cannot marshal eventlogs from local anax DB, eventlogs will not be saved",
@@ -6396,11 +6584,11 @@
     },
     {
       "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
-      "translation": "範囲 {VExp} のバージョン {SvcVersion} の検査中にエラーが発生しました。{Err}"
+      "translation": "範囲 {VExp} のバージョン {SvcVersion} の検査中にエラーが発生しました。 {Err}"
     },
     {
       "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
-      "translation": "秘密バインディングの検査時に agbot URL が空ストリングであってはなりません。HZN_AGBOT_URL が設定されていることを確認してください。"
+      "translation": "秘密バインディングの検査時に agbot URL が空ストリングであってはなりません。 HZN_AGBOT_URL が設定されていることを確認してください。"
     },
     {
       "id": "The node organization must be provided.",
@@ -6412,11 +6600,11 @@
     },
     {
       "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
-      "translation": "秘密マネージャー内で秘密 {VaultSecretName} を検査中にエラーが発生しました。{Err}"
+      "translation": "秘密マネージャー内で秘密 {VaultSecretName} を検査中にエラーが発生しました。 {Err}"
     },
     {
       "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "バインディング秘密名を空ストリングにすることはできません。有効なフォーマットは、「<secretname>」(組織レベルの秘密の場合) および「user/<username>/<secretname>」(ユーザー・レベルの秘密の場合) です。"
+      "translation": "バインディング秘密名を空ストリングにすることはできません。 有効なフォーマットは、「<secretname>」(組織レベルの秘密の場合) および「user/<username>/<secretname>」(ユーザー・レベルの秘密の場合) です。"
     },
     {
       "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",

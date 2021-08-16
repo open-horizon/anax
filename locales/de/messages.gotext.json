@@ -496,6 +496,22 @@
       "fuzzy": true
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "message": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Der Exchange-Benutzer {Key} hat nicht das korrekte Format. Es sollte 'Organisation/Benutzername' (org/username) sein.",
+      "placeholders": [
+        {
+          "id": "Key",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "key"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Internal server error",
       "message": "Internal server error",
       "translation": "Interner Serverfehler",
@@ -514,6 +530,12 @@
       ],
       "message": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
       "translation": "Der Provider für geheime Schlüssel ist nicht bereit. Der Aufrufende sollte diesen API-Aufruf einige Male mit einem kurzen zeitlichen Abstand zwischen den Aufrufen wiederholen, um sich zu vergewissern, dass der Provider für geheime Schlüssel nicht verfügbar ist.",
+      "fuzzy": true
+    },
+    {
+      "id": "Secret name must be provided",
+      "message": "Secret name must be provided",
+      "translation": "Der Name des geheimen Schlüssels muss angegeben werden",
       "fuzzy": true
     },
     {
@@ -555,47 +577,253 @@
       "fuzzy": true
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "message": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "Auf den Provider für geheime Schlüssel kann nicht zugegriffen werden. Fehler: {Serr}.",
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "message": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "Berechtigung verweigert. Der Benutzer \"{ExUser}\" kann keine geheimen Schlüssel in der Organisation \"{Org}\" {Action}.",
       "placeholders": [
         {
-          "id": "Serr",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/agreementbot/secrets.ErrorResponse",
-          "underlyingType": "struct{Msg string; Details string; RespCode int}",
+          "id": "ExUser",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "serr"
+          "expr": "info.exUser"
+        },
+        {
+          "id": "Action",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "action"
+        },
+        {
+          "id": "Org",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "info.org"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "org must be specified in the API path",
-      "message": "org must be specified in the API path",
-      "translation": "Die Organisation (org) muss im API-Pfad angegeben werden.",
-      "fuzzy": true
-    },
-    {
-      "id": "user must be specified in the API path",
-      "message": "user must be specified in the API path",
-      "translation": "Der Benutzer (user) muss im API-Pfad angegeben werden.",
-      "fuzzy": true
-    },
-    {
-      "id": "{Serr}",
-      "message": "{Serr}",
-      "translation": "{Serr}",
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "message": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "Berechtigung verweigert. Der Benutzer \"{ExUser}\" kann den geheimen Schlüssel \"{SecretName}\" nicht in der Organisation \"{Org}\" {Action}.",
       "placeholders": [
         {
-          "id": "Serr",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/agreementbot/secrets.ErrorResponse",
-          "underlyingType": "struct{Msg string; Details string; RespCode int}",
+          "id": "ExUser",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "serr"
+          "expr": "info.exUser"
+        },
+        {
+          "id": "Action",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "action"
+        },
+        {
+          "id": "SecretName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "secretName"
+        },
+        {
+          "id": "Org",
+          "string": "%[4]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "info.org"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to read the vault response: {Error}",
+      "message": "Unable to read the vault response: {Error}",
+      "translation": "Die Vault-Antwort kann nicht gelesen werden: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "e.ReadError.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "message": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "Die Vault-Antwort \"{Response}\" kann nicht geparst werden: {Error}",
+      "placeholders": [
+        {
+          "id": "Response",
+          "string": "%[1]s",
+          "type": "[]byte",
+          "underlyingType": "[]byte",
+          "argNum": 1,
+          "expr": "e.Response"
+        },
+        {
+          "id": "Error",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "e.ParseError.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "message": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Das {Action} der geheimen Schlüssel in der Organisation \"{Org}\" ist nicht möglich. Die Operation wird vom Provider für geheime Schlüssel nicht unterstützt.",
+      "placeholders": [
+        {
+          "id": "Action",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "action"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "info.org"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "message": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Das {Action} des geheimen Schlüssels \"{SecretName}\" in der Organisation \"{Org}\" ist nicht möglich. Die Operation wird vom Provider für geheime Schlüssel nicht unterstützt.",
+      "placeholders": [
+        {
+          "id": "Action",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "action"
+        },
+        {
+          "id": "SecretName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "secretName"
+        },
+        {
+          "id": "Org",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "info.org"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "message": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "Der Provider für geheime Schlüssel hat eine ungültige Anforderung erhalten. Überprüfen Sie die gesamte Eingabe.",
+      "fuzzy": true
+    },
+    {
+      "id": "Response: {Response}",
+      "message": "Response: {Response}",
+      "translation": "Antwort: {Response}",
+      "placeholders": [
+        {
+          "id": "Response",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "secrets.RespToString(e.Response)"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "message": "No secret(s) found in organization \"{Org}\"",
+      "translation": "In der Organisation \"{Org}\" wurden keine geheimen Schlüssel gefunden",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "info.org"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "message": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "Unter dem Namen \"{SecretName}\" wurden keine geheimen Schlüssel gefunden",
+      "placeholders": [
+        {
+          "id": "SecretName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "secretName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "message": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "Ein unbekannter Fehler ist aufgetreten. Der Antwortcodes {ResponseCode} des Providers für geheime Schlüssel wurde empfangen.",
+      "placeholders": [
+        {
+          "id": "ResponseCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "e.ResponseCode"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "message": "Organization must be specified in the API path",
+      "translation": "Die Organisation muss im API-Pfad angegeben werden.",
+      "fuzzy": true
+    },
+    {
+      "id": "User must be specified in the API path",
+      "message": "User must be specified in the API path",
+      "translation": "Der Benutzer muss im API-Pfad angegeben werden.",
       "fuzzy": true
     },
     {
@@ -3301,6 +3529,30 @@
       "fuzzy": true
     },
     {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "message": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "Fehlerhafte URL: {UrlPath}. {ErrUrl}",
+      "placeholders": [
+        {
+          "id": "UrlPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "urlPath"
+        },
+        {
+          "id": "ErrUrl",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "errUrl"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "translation": "Upload: {Float32totalSent__float32bodyLen__100} {}",
@@ -3840,6 +4092,54 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "placeholders": [
+        {
+          "id": "FileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "message": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "placeholders": [
+        {
+          "id": "DefaultFileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "defaultFileName"
+        },
+        {
+          "id": "FileName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "fileName"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -7101,6 +7401,24 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_ERR_RETRIEVE_ALL_SDEFS_FROM_DB",
+        "Error retrieving all service definitions from db. {Arg_1}"
+      ],
+      "message": "Error retrieving all service definitions from db. {Arg_1}",
+      "translation": "Fehler beim Abrufen aller Servicedefinitionen aus der Datenbank. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true

@@ -51,6 +51,10 @@
       "translation": "Falsche Organisations-ID, falsche Benutzer-ID oder falsches Kennwort. "
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Der Exchange-Benutzer {Key} hat nicht das korrekte Format. Es sollte 'Organisation/Benutzername' (org/username) sein."
+    },
+    {
       "id": "Internal server error",
       "translation": "Interner Serverfehler"
     },
@@ -61,6 +65,10 @@
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
       "translation": "Der Provider für geheime Schlüssel ist nicht bereit. Der Aufrufende sollte diesen API-Aufruf einige Male mit einem kurzen zeitlichen Abstand zwischen den Aufrufen wiederholen, um sich zu vergewissern, dass der Provider für geheime Schlüssel nicht verfügbar ist."
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "Der Name des geheimen Schlüssels muss angegeben werden"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -75,20 +83,56 @@
       "translation": "Parsing-Fehler im Anforderungshauptteil. {Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "Auf den Provider für geheime Schlüssel kann nicht zugegriffen werden. Fehler: {Serr}."
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "Berechtigung verweigert. Der Benutzer \"{ExUser}\" kann keine geheimen Schlüssel in der Organisation \"{Org}\" {Action}."
     },
     {
-      "id": "org must be specified in the API path",
-      "translation": "Die Organisation (org) muss im API-Pfad angegeben werden."
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "Berechtigung verweigert. Der Benutzer \"{ExUser}\" kann den geheimen Schlüssel \"{SecretName}\" nicht in der Organisation \"{Org}\" {Action}."
     },
     {
-      "id": "user must be specified in the API path",
-      "translation": "Der Benutzer (user) muss im API-Pfad angegeben werden."
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "Die Vault-Antwort kann nicht gelesen werden: {Error}"
     },
     {
-      "id": "{Serr}",
-      "translation": "{Serr}"
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "Die Vault-Antwort \"{Response}\" kann nicht geparst werden: {Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Das {Action} der geheimen Schlüssel in der Organisation \"{Org}\" ist nicht möglich. Die Operation wird vom Provider für geheime Schlüssel nicht unterstützt."
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "Das {Action} des geheimen Schlüssels \"{SecretName}\" in der Organisation \"{Org}\" ist nicht möglich. Die Operation wird vom Provider für geheime Schlüssel nicht unterstützt."
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "Der Provider für geheime Schlüssel hat eine ungültige Anforderung erhalten. Überprüfen Sie die gesamte Eingabe."
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "Antwort: {Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "In der Organisation \"{Org}\" wurden keine geheimen Schlüssel gefunden"
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "Unter dem Namen \"{SecretName}\" wurden keine geheimen Schlüssel gefunden"
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "Ein unbekannter Fehler ist aufgetreten. Der Antwortcodes {ResponseCode} des Providers für geheime Schlüssel wurde empfangen."
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "translation": "Die Organisation muss im API-Pfad angegeben werden."
+    },
+    {
+      "id": "User must be specified in the API path",
+      "translation": "Der Benutzer muss im API-Pfad angegeben werden."
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -1979,12 +2023,16 @@
       "translation": "Die Organisation des Service, der wiederaufgenommen werden soll."
     },
     {
-      "id": "The name of the service that should be resumed.",
-      "translation": "Der Name des Service, der wiederaufgenommen werden soll."
+      "id": "The name of the service that should be resumed. If omitted, all the services for the organization will be resumed.",
+      "translation": "Der Name des Service, der wiederaufgenommen werden soll. Wird kein Name angegeben, werden alle Services für die Organisation wiederaufgenommen."
     },
     {
-      "id": "Change the configuration state to 'suspend' for a service.",
-      "translation": "Ändert den Konfigurationsstatus für einen Service in 'Ausgesetzt'."
+      "id": "The version of the service that should be resumed. If omitted, all the versions for this service will be resumed.",
+      "translation": "Die Version des Service, der wiederaufgenommen werden soll. Wird keine Version angegeben, werden alle Versionen für diesen Service wiederaufgenommen."
+    },
+    {
+      "id": "Change the configuration state to 'suspend' for a service. Parent and child dependencies of the suspended service will be stopped until the service is resumed.",
+      "translation": "Ändert den Konfigurationsstatus für einen Service in 'Ausgesetzt'. Die über- und untergeordneten Abhängigkeiten des ausgesetzten Service werden gestoppt, bis der Service wiederaufgenommen wird."
     },
     {
       "id": "Suspend all registerd services.",
@@ -1995,8 +2043,12 @@
       "translation": "Die Organisation des Service, der ausgesetzt werden soll."
     },
     {
-      "id": "The name of the service that should be suspended.",
-      "translation": "Der Name des Service, der ausgesetzt werden soll."
+      "id": "The name of the service that should be suspended. If omitted, all the services for the organization will be suspended.",
+      "translation": "Der Name des Service, der ausgesetzt werden soll. Wird kein Name angegeben, werden alle Services für die Organisation ausgesetzt."
+    },
+    {
+      "id": "The version of the service that should be suspended. If omitted, all the versions for this service will be suspended.",
+      "translation": "Die Version des Service, der ausgesetzt werden soll. Wird keine Version angegeben, werden alle Versionen für diesen Service ausgesetzt."
     },
     {
       "id": "Show the container logs for a service.",
@@ -2679,6 +2731,10 @@
       "translation": "Dateiinformationen konnten nicht abgerufen werden: {Err}"
     },
     {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "Fehlerhafte URL: {UrlPath}. {ErrUrl}"
+    },
+    {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "translation": "Upload: {Float32totalSent__float32bodyLen__100} {}"
     },
@@ -3223,6 +3279,18 @@
       "translation": "Muster für $SERVICE_NAME"
     },
     {
+      "id": "Failed to marshal deps: {Err}",
+      "translation": "Marshalling der Abhängigkeiten ist fehlgeschlagen: {Err}"
+    },
+    {
+      "id": "Failed to unmarshal deps: {Err}",
+      "translation": "Unmarshalling der Abhängigkeiten ist fehlgeschlagen: {Err}"
+    },
+    {
+      "id": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
+      "translation": "Warnung: Der geheime Schlüssel {SecName} für den Service {SvcName} wurde mit dem Befehl {SERVICESTARTCOMMAND} nicht angegeben."
+    },
+    {
       "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
       "translation": "Abrufen des Servicenamens aus Imagenamen unter Verwendung von '{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' fehlgeschlagen. {Err}"
     },
@@ -3627,6 +3695,14 @@
       "translation": "Netz {Name} erstellt"
     },
     {
+      "id": "unable to list docker networks, error {Err}",
+      "translation": "Docker-Netze können nicht aufgelistet werden; Fehler: {Err}"
+    },
+    {
+      "id": "unable to remove docker network {Name}, error {Err}",
+      "translation": "Docker-Netz {Name} kann nicht entfernt werden; Fehler: {Err}"
+    },
+    {
       "id": "invalid image format: {Image}",
       "translation": "Ungültiges Imageformat: {Image}"
     },
@@ -3833,6 +3909,30 @@
     {
       "id": "The input variables to be set.",
       "translation": "Die Eingabevariablen, die festgelegt werden sollen."
+    },
+    {
+      "id": "A list of secret bindings for the secret names defined in the services, listed by service.",
+      "translation": "Eine Liste der Bindungen für geheime Schlüssel für die in den Services definierten Namen der geheimen Schlüssel, aufgelistet nach dem Service."
+    },
+    {
+      "id": "The service version range.",
+      "translation": "Der Bereich der Serviceversionen."
+    },
+    {
+      "id": "The secret bindings.",
+      "translation": "Die Bindungen des geheimen Schlüssels."
+    },
+    {
+      "id": "The valid formats for secret provider secret names are:",
+      "translation": "Die folgenden Formate für Namen von geheimen Schlüsseln des Providers für gehelme schlüssel sind gültig:"
+    },
+    {
+      "id": "'<secretname>' for organization level secret.",
+      "translation": "'<name_des_geheimen_schlüssels>' für einen geheimen Schlüssel auf Organisationsebene."
+    },
+    {
+      "id": "'user/<username>/<secretname>' for user level secret.",
+      "translation": "'user/<benutzername>/<name_des_geheimen_schlüssels>' für einen geheimen Schlüssel auf Benutzerebene."
     },
     {
       "id": "Flags -s and -l are mutually exclusive.",
@@ -4315,8 +4415,8 @@
       "translation": "Service '{Service}' nicht in Organisation {SvcOrg} gefunden"
     },
     {
-      "id": "Ignoring -f because the clusterDepolyment attribute is empty for this service.",
-      "translation": "'-f' wird ignoriert, da das Attribut 'clusterDepolyment' für diesen Service leer ist."
+      "id": "Ignoring -f because the clusterDeployment attribute is empty for this service.",
+      "translation": "'-f' wird ignoriert, da das Attribut 'clusterDeployment' für diesen Service leer ist."
     },
     {
       "id": "Flags -I and -P are mutually exclusive.",
@@ -4473,6 +4573,14 @@
     {
       "id": "error decoding the cluster deployment configuration: {Err}",
       "translation": "Fehler beim Entschlüsseln der Clusterbereitstellungskonfiguration: {Err}"
+    },
+    {
+      "id": "service id does not exist in the Exchange: {SvcOrg}/{SvcId}",
+      "translation": "Die Service-ID ist im Exchange nicht vorhanden: {SvcOrg}/{SvcId}"
+    },
+    {
+      "id": "failed to marshal 'hzn exchange service listnode' output: {Err}",
+      "translation": "Marshalling der Ausgabe von 'hzn exchange service listnode' ist fehlgeschlagen: {Err}"
     },
     {
       "id": "user '{TrimPrefixtheUser_}' not found in org {Org}",
@@ -4967,6 +5075,10 @@
       "translation": "Der Aufruf von {Resource} hat das zulässige Zeitlimit überschritten."
     },
     {
+      "id": "Registration failed because {Matches0}",
+      "translation": "Die Registrierung ist fehlgeschlagen. Ursache: {Matches0}"
+    },
+    {
       "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "translation": "{Errstring}. Definieren Sie Variablen für Service {Matches2} in Eingabedatei {InputFile}. Führen Sie 'hzn unregister' und anschließend wieder 'hzn register...' aus."
     },
@@ -5159,12 +5271,24 @@
       "translation": "Momentan sind im Ereignisprotokoll des Knotens keine Fehler aufgezeichnet."
     },
     {
-      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy is compatible.",
+      "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy are compatible.",
       "translation": "Verwenden Sie den Befehl 'hzn deploycheck all -b' oder 'hzn deploycheck all -B', um zu überprüfen, ob der Knoten, die Servicekonfiguration und die Bereitstellungsrichtlinie kompatibel sind."
     },
     {
-      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.",
+      "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern are compatible.",
       "translation": "Der Befehl 'hzn deploycheck all -p' wird verwendet, um zu überprüfen, ob der Knoten, die Servicekonfiguration und das Muster kompatibel sind."
+    },
+    {
+      "id": "Command output:",
+      "translation": "Befehlsausgabe:"
+    },
+    {
+      "id": "Using the 'hzn deploycheck userinput -p' command to verify that node, service configuration and pattern are compatible.",
+      "translation": "Der Befehl 'hzn deploycheck userinput -p' wird verwendet, um zu überprüfen, ob der Knoten, die Servicekonfiguration und das Muster kompatibel sind."
+    },
+    {
+      "id": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.",
+      "translation": "Die Kompatibilität der Bindungen des geheimen Schlüssels kann nicht verifiziert werden, da keine Benutzerberechtigungsnachweise bereitgestellt wurden. Verwenden Sie den Befehl 'hzn deploycheck secretbinding -p' zum Verifizieren."
     },
     {
       "id": "{Format2006_01_02_150405}: {Message}",
@@ -5275,16 +5399,32 @@
       "translation": "-f oder --secretDetail muss angegeben werden."
     },
     {
+      "id": "Incorrect secret name given: {SecretName}",
+      "translation": "Für den geheimen Schlüssel wurde ein falscher Name angegeben: {SecretName}"
+    },
+    {
       "id": "Secret \"{SecretName}\" already exists in the secrets manager. Do you want to overwrite?",
       "translation": "Der geheime Schlüssel \"{SecretName}\" ist im Manager für geheime Schlüssel bereits vorhanden. Soll er überschrieben werden?"
     },
     {
-      "id": "Invalid credentials. User \"{User}\" cannot access \"{SecretName}\".",
-      "translation": "Ungültige Berechtigungsnachweisee. Der Benutzer \"{User}\" kann nicht auf \"{SecretName}\" zugreifen."
+      "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
+      "translation": "Der geheime Schlüssel \"{SecretName}\" wurde erfolgreich zum Manager für geheime Schlüssel hinzugefügt."
     },
     {
-      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to delete.",
-      "translation": "Der geheime Schlüssel \"{SecretName}\" wurde im Manager für geheime Schlüssel nicht gefunden. Er kann daher nicht gelöscht werden."
+      "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
+      "translation": "Der geheime Schlüssel \"{SecretName}\" wurde erfolgreich aus dem Manager für geheime Schlüssel gelöscht."
+    },
+    {
+      "id": "Bad request, secret name \"{SecretName}\" invalid.",
+      "translation": "Ungültige Anforderung. Der Name \"{SecretName}\" des geheimen Schlüssels ist ungültig."
+    },
+    {
+      "id": "Permission denied, user \"{User}\" cannot access \"{SecretName}\".",
+      "translation": "Berechtigung verweigert. Der Benutzer \"{User}\" kann nicht auf \"{SecretName}\" zugreifen."
+    },
+    {
+      "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to remove.",
+      "translation": "Der geheime Schlüssel \"{SecretName}\" wurde im Manager für geheime Schlüssel nicht gefunden. Er kann daher nicht entfernt werden."
     },
     {
       "id": "Vault component not found in the management hub.",
@@ -5355,12 +5495,20 @@
       "translation": "Alle registrierten Services"
     },
     {
-      "id": "service {ServiceOrg}/{ServiceUrl}",
-      "translation": "Service {ServiceOrg}/{ServiceUrl}"
+      "id": "service {ServiceOrg}/{ServiceUrl} version {ServiceVer}",
+      "translation": "Service {ServiceOrg}/{ServiceUrl}, Version {ServiceVer}"
+    },
+    {
+      "id": "all the versions for service {ServiceOrg}/{ServiceUrl}",
+      "translation": "Alle Versionen für den Service {ServiceOrg}/{ServiceUrl}"
     },
     {
       "id": "all the registered services from organization {ServiceOrg}",
       "translation": "Alle registrierten Services der Organisation {ServiceOrg}"
+    },
+    {
+      "id": "Please specify the service name for version {ServiceVer}.",
+      "translation": "Geben Sie den Servicenamen für Version {ServiceVer} an."
     },
     {
       "id": "Please specify the organization for service {ServiceUrl}.",
@@ -5379,12 +5527,24 @@
       "translation": "Die Anforderung zum Aussetzen des Service wurde erfolgreich gesendet. Verwenden Sie 'hzn agreement' und 'docker ps', um sicherzustellen, dass die zugehörigen Vereinbarungen und Service-Container entfernt werden. Dieser Vorgang kann einige Minuten dauern. "
     },
     {
+      "id": "Error returned suspending the service: {RespBody}",
+      "translation": "Beim Aussetzen des Service wurde ein Fehler zurückgegeben: {RespBody}"
+    },
+    {
+      "id": "Error: {Err}",
+      "translation": "Fehler: {Err}"
+    },
+    {
       "id": "Resuming {Msgpart} ...",
       "translation": "{Msgpart} wird wiederaufgenommen..."
     },
     {
       "id": "Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
       "translation": "Die Anforderung zum Wiederaufnehmen des Service wurde erfolgreich gesendet. Verwenden Sie 'hzn agreement' und 'docker ps', um sicherzustellen, dass die zugehörigen Vereinbarungen und Service-Container gestartet werden. Dieser Vorgang kann einige Minuten dauern. "
+    },
+    {
+      "id": "Error returned resuming the service: {RespBody}",
+      "translation": "Beim Wiederaufnehmen des Service wurde ein Fehler zurückgegeben: {RespBody}"
     },
     {
       "id": "failed to marshal 'hzn status -l' output: {Err}",
@@ -5411,8 +5571,16 @@
       "translation": "Die Objektmetadaten '{ObjId}' des Typs '{ObjType}' wurden nicht in der Organisation {Org} gefunden"
     },
     {
+      "id": "Verifying data with digital signature....",
+      "translation": "Daten mit digitaler Signatur werden verifiziert...."
+    },
+    {
       "id": "Failed to verify data: {Error}",
       "translation": "Daten konnten nicht verifiziert werden: {Error}"
+    },
+    {
+      "id": "Verifying digital signature is done.",
+      "translation": "Die Verifizierung der digitalen Signatur ist abgeschlossen."
     },
     {
       "id": "Failed to save data for object '{ObjId}' of type '{ObjType}' to file {FileName}, err: {Err}",
@@ -5421,6 +5589,18 @@
     {
       "id": "Data of object {ObjId} saved to file {FileName}",
       "translation": "Die Daten des Objekts '{ObjId}' wurden in der datei '{FileName}' gespeichert"
+    },
+    {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "Die digitale Signatur konnte nicht verifiziert werden, da der Hashalgorithmus (hashAlgorithm) leer ist"
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "Die digitale Signatur konnte nicht verifiziert werden, da die 'publicKey'-Zeichenfolge leer ist"
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "translation": "Die digitale Signatur konnte nicht verifiziert werden, da die Signaturzeichenfolge leer ist"
     },
     {
       "id": "must specify exchange credentials to access the model management service.",
@@ -5605,6 +5785,10 @@
     {
       "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
       "translation": "Die Datei {ObjFile} konnte nicht digital signiert werden. Fehler: {Err}"
+    },
+    {
+      "id": "Digital sign finished.",
+      "translation": "Digitale Signatur abgeschlossen"
     },
     {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
@@ -5969,6 +6153,10 @@
     {
       "id": "Error pruning docker networks. {Err}",
       "translation": "Fehler beim Bereinigen von Docker-Netzen. {Err}"
+    },
+    {
+      "id": "Backing up eventlogs...",
+      "translation": "Ereignisprotokolle werden gesichert..."
     },
     {
       "id": "cannot marshal eventlogs from local anax DB, eventlogs will not be saved",

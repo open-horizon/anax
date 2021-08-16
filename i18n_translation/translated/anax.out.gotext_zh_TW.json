@@ -100,7 +100,7 @@
     },
     {
       "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
-      "translation": "輸入內文無法解除序列化為 SecretBindingCheck 物件。{Err}"
+      "translation": "輸入內文無法解除序列化為 SecretBindingCheck 物件。 {Err}"
     },
     {
       "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
@@ -123,6 +123,10 @@
       "translation": "錯誤的組織 ID、使用者 ID 或密碼。"
     },
     {
+      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+      "translation": "Exchange 使用者 {Key} 未採用正確格式，應該採用 org/username 格式。"
+    },
+    {
       "id": "Internal server error",
       "translation": "內部伺服器錯誤"
     },
@@ -132,7 +136,11 @@
     },
     {
       "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
-      "translation": "密碼提供者尚未備妥。呼叫者應該重試進行幾次此 API 呼叫且兩次呼叫之間經歷短暫延遲，以確保密碼提供者無法使用。"
+      "translation": "密碼提供者尚未備妥。 呼叫者應該重試進行幾次此 API 呼叫且兩次呼叫之間經歷短暫延遲，以確保密碼提供者無法使用。"
+    },
+    {
+      "id": "Secret name must be provided",
+      "translation": "必須提供密碼名稱"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -147,20 +155,56 @@
       "translation": "要求內文剖析錯誤：{Uerr}"
     },
     {
-      "id": "Unable to access secrets provider, error: {Serr}.",
-      "translation": "無法存取密碼提供者，錯誤：{Serr}。"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+      "translation": "許可權遭拒，使用者 \"{ExUser}\" 無法{Action}組織 \"{Org}\" 中的密碼"
     },
     {
-      "id": "org must be specified in the API path",
-      "translation": "必須在 API 路徑中指定組織"
+      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+      "translation": "許可權遭拒，使用者 \"{ExUser}\" 無法{Action}組織 \"{Org}\" 中的密碼 \"{SecretName}\""
     },
     {
-      "id": "user must be specified in the API path",
-      "translation": "必須在 API 路徑中指定使用者"
+      "id": "Unable to read the vault response: {Error}",
+      "translation": "無法讀取儲存庫回應：{Error}"
     },
     {
-      "id": "{Serr}",
-      "translation": "{Serr}"
+      "id": "Unable to parse the vault response \"{Response}\": {Error}",
+      "translation": "無法剖析儲存庫回應 \"{Response}\"：{Error}"
+    },
+    {
+      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "無法{Action}組織 \"{Org}\" 中的密碼，密碼提供者不支援該作業。"
+    },
+    {
+      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+      "translation": "無法{Action}組織 \"{Org}\" 中的密碼 \"{SecretName}\"，密碼提供者不支援該作業。"
+    },
+    {
+      "id": "Secrets provider received a bad request, please check all the provided inputs.",
+      "translation": "密碼提供者接收到不正確的要求，請檢查所有提供的輸入。"
+    },
+    {
+      "id": "Response: {Response}",
+      "translation": "回應：{Response}"
+    },
+    {
+      "id": "No secret(s) found in organization \"{Org}\"",
+      "translation": "在組織 \"{Org}\" 中找不到密碼"
+    },
+    {
+      "id": "No secret(s) found under secret name \"{SecretName}\"",
+      "translation": "找不到密碼名稱為 \"{SecretName}\" 的密碼"
+    },
+    {
+      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+      "translation": "發生不明錯誤。 回應碼 {ResponseCode} 接收自密碼提供者。"
+    },
+    {
+      "id": "Organization must be specified in the API path",
+      "translation": "組織必須在 API 路徑中指定"
+    },
+    {
+      "id": "User must be specified in the API path",
+      "translation": "使用者必須在 API 路徑中指定"
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -707,6 +751,10 @@
       "translation": "無法取得檔案資訊：{Err}"
     },
     {
+      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+      "translation": "形態異常的 URL：{UrlPath}。{ErrUrl}"
+    },
+    {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
       "translation": "正在上傳：{Float32totalSent__float32bodyLen__100} {}"
     },
@@ -968,7 +1016,7 @@
     },
     {
       "id": "Unable to create version expression from {VersionRange}. {Err}",
-      "translation": "無法從 {VersionRange} 建立版本表示式。{Err}"
+      "translation": "無法從 {VersionRange} 建立版本表示式。 {Err}"
     },
     {
       "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
@@ -976,7 +1024,7 @@
     },
     {
       "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "找不到 {TopId} 的相依服務的定義。無法完整評估 {PROPNODEPRIVILEGED} 的相容性，除非所有服務都在 Exchange 中。"
+      "translation": "找不到 {TopId} 的相依服務的定義。 無法完整評估 {PROPNODEPRIVILEGED} 的相容性，除非所有服務都在 Exchange 中。"
     },
     {
       "id": "The PolicyCheck input cannot be null",
@@ -1196,7 +1244,7 @@
     },
     {
       "id": "Error verifying secret in the secret manager. {Err}",
-      "translation": "驗證密碼管理程式中的密碼時發生錯誤。{Err}"
+      "translation": "驗證密碼管理程式中的密碼時發生錯誤。 {Err}"
     },
     {
       "id": "The input service spec object cannot be null.",
@@ -1204,7 +1252,7 @@
     },
     {
       "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
-      "translation": "找不到 {Org}/{URL} {Arch} {Version} 的相依服務。{Err}"
+      "translation": "找不到 {Org}/{URL} {Arch} {Version} 的相依服務。 {Err}"
     },
     {
       "id": "Secret binding for a cluster service is not supported.",
@@ -1220,11 +1268,11 @@
     },
     {
       "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
-      "translation": "在範圍 {VExp} 中檢查版本 {SvcVersion} 時發生錯誤。{Err}"
+      "translation": "在範圍 {VExp} 中檢查版本 {SvcVersion} 時發生錯誤。 {Err}"
     },
     {
       "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
-      "translation": "在檢查密碼連結時 agbot URL 不能為空字串。請確保已設定 HZN_AGBOT_URL。"
+      "translation": "在檢查密碼連結時 agbot URL 不能為空字串。 請確保已設定 HZN_AGBOT_URL。"
     },
     {
       "id": "The node organization must be provided.",
@@ -1232,19 +1280,19 @@
     },
     {
       "id": "Error parsing secret name in the secret binding. {Errparse}",
-      "translation": "剖析密碼連結中的密碼名稱時發生錯誤。{Errparse}"
+      "translation": "剖析密碼連結中的密碼名稱時發生錯誤。 {Errparse}"
     },
     {
       "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
-      "translation": "在密碼管理程式中檢查密碼 {VaultSecretName} 時發生錯誤。{Err}"
+      "translation": "在密碼管理程式中檢查密碼 {VaultSecretName} 時發生錯誤。 {Err}"
     },
     {
       "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "連結密碼名稱不能為空字串。對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
+      "translation": "連結密碼名稱不能為空字串。 對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
     },
     {
       "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "連結密碼名稱的格式無效：{SecretName}。對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
+      "translation": "連結密碼名稱的格式無效：{SecretName}。 對於組織層次密碼，有效格式為：'<secretname>'，對於使用者層次密碼，有效格式為 'user/<username>/<secretname>'。"
     },
     {
       "id": "The UserInputCheck input cannot be null",
@@ -1521,6 +1569,10 @@
     {
       "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
       "translation": "從資料庫中獲取服務定義 {Arg_1} 時發生錯誤。 {Arg_2}"
+    },
+    {
+      "id": "Error retrieving all service definitions from db. {Arg_1}",
+      "translation": "從資料庫擷取所有服務定義時發生錯誤。 {Arg_1}"
     },
     {
       "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
