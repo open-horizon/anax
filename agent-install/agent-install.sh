@@ -957,10 +957,11 @@ function is_horizon_defaults_correct() {
 
     if is_device; then
         defaults_file='/etc/default/horizon'
-        if [[ ${AGENT_CERT_FILE:0:1} == '/' && -f $AGENT_CERT_FILE ]]; then
-            cert_file=$AGENT_CERT_FILE
-        elif [[ -f $PERMANENT_CERT_PATH ]]; then
-            cert_file=$PERMANENT_CERT_PATH
+        #if [[ ${AGENT_CERT_FILE:0:1} == '/' && -f $AGENT_CERT_FILE ]]; then
+        if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
+            cert_file=$AGENT_CERT_FILE   # is_horizon_defaults_correct is called before store_cert_file_permanently, so use the cert file the user specified
+        #elif [[ -f $PERMANENT_CERT_PATH ]]; then
+            #cert_file=$PERMANENT_CERT_PATH
         # else leave cert_file empty
         fi
     else   # cluster
@@ -1008,10 +1009,9 @@ function is_horizon_defaults_correct() {
     if [[ $horizon_defaults_value != $NODE_ID ]]; then return 1; fi
 
     if [[ -n $cert_file ]]; then
-        # TODO: we need to compare the content of the value in cert with previous version and this version
         horizon_defaults_value=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' $defaults_file || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-        if [[ $horizon_defaults_value != $cert_file ]]; then return 1; fi
+        if [[ -n $horizon_defaults_value ]] && ! diff -q "$horizon_defaults_value" "$cert_file" >/dev/null; then return 1; fi   # diff is tolerant of the 2 file names being the same
     fi
 
     if [[ -n $anax_port ]]; then
@@ -1053,7 +1053,7 @@ function add_to_or_update_horizon_defaults() {
 function create_or_update_horizon_defaults() {
     log_debug "create_or_update_horizon_defaults() begin"
     local anax_port=$1   # optional
-    local abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")   # can return empty string
+    local abs_certificate   # can't call store_cert_file_permanently yet because that could cause is_horizon_defaults_correct
     log_verbose "Permanent location of certificate file: $abs_certificate"
 
     if [[ ! -f /etc/default/horizon ]]; then
@@ -1066,6 +1066,7 @@ function create_or_update_horizon_defaults() {
         if [[ -n $HZN_SDO_SVC_URL ]]; then
             sudo sh -c "echo 'HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL' >> /etc/default/horizon"
         fi
+        abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")   # can return empty string
         if [[ -n $abs_certificate ]]; then
             sudo sh -c "echo 'HZN_MGMT_HUB_CERT_PATH=$abs_certificate' >> /etc/default/horizon"
         fi
@@ -1089,6 +1090,7 @@ function create_or_update_horizon_defaults() {
         fi
         add_to_or_update_horizon_defaults 'HZN_DEVICE_ID' "$NODE_ID" /etc/default/horizon
         add_to_or_update_horizon_defaults 'HZN_NODE_ID' "$NODE_ID" /etc/default/horizon
+        abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")   # can return empty string
         if [[ -n $abs_certificate ]]; then
             add_to_or_update_horizon_defaults 'HZN_MGMT_HUB_CERT_PATH' "$abs_certificate" /etc/default/horizon
         fi
