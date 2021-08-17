@@ -579,6 +579,10 @@
       "translation": "Failed to get absolute path for file {KeyFile}. {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "Error checking absolute path for file {KeyFile}. {Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "Error parsing HORIZON_URL: {Err}"
     },
@@ -799,12 +803,20 @@
       "translation": "Checking private key file format ..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "provided private key is not valid; error: {Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "provided private key {KeyFile} is not valid; error: {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}. Please create the signing key."
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "private key could not be generated; error: {Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. Public key could not be generated."
     },
     {
       "id": "running: {CmdStr}",
