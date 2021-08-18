@@ -275,6 +275,7 @@ func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds st
 
 	// Shut off the Anax runtime logging.
 	flag.Set("v", "0")
+	flag.Set("log_dir", "/dev/null")
 
 	// Verify that the environment and inputs are usable.
 	dir, err := VerifyEnvironment(homeDirectory, mustExist, needExchange, userCreds)

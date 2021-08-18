@@ -121,8 +121,8 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 	agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
 
 	// compcheck.Compatible function calls the exchange package that calls glog.
-	// set the glog stderrthreshold to 3 (fatal) in order for glog error messages not showing up in the output
-	flag.Set("stderrthreshold", "3")
+	// set glog to log to /dev/null so glog errors will not be printed
+	flag.Set("log_dir", "/dev/null")
 
 	// now we can call the real code to check if the policies are compatible.
 	// the policy validation are done wthin the calling function.
