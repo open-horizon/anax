@@ -1,9 +1,9 @@
 #!/bin/bash
 # First create the secret that the service will need
 
-if [ "${EXCH_APP_HOST}" != "http://exchange-api:8081/v1" ]; then
-  exit 0
-fi
+# if [ "${EXCH_APP_HOST}" != "http://exchange-api:8081/v1" ]; then
+#   exit 0
+# fi
 
 if [ "${NOVAULT}" == "1" ]
 then
