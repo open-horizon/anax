@@ -70,22 +70,28 @@ func Log(serviceName string, serviceVersion, containerName string, tailing bool)
 	// Search the list of services to find one that matches the input service name. The service's instance Id
 	// is what appears in the syslog, so we need to save that.
 	serviceFound := false
+	var serviceInstanceFound *api.MicroserviceInstanceOutput
 	var instanceId string
 	var msdefId string
 	org, name := cutil.SplitOrgSpecUrl(refUrl)
 	for _, serviceInstance := range runningServices.Instances["active"] {
-		if (serviceInstance.SpecRef == name && serviceInstance.Org == org) || strings.Contains(serviceInstance.SpecRef, refUrl) {
-			if serviceVersion == "" || serviceVersion == serviceInstance.Version {
-				instanceId = serviceInstance.InstanceId
-				msdefId = serviceInstance.MicroserviceDefId
+		if (serviceVersion == "" || serviceVersion == serviceInstance.Version) {
+			if serviceInstance.SpecRef == name && (serviceInstance.Org == org || org == "") {
+				serviceInstanceFound = serviceInstance
 				serviceFound = true
-				msgPrinter.Printf("Found service %v with service id %v.", serviceInstance.SpecRef, instanceId)
-				msgPrinter.Println()
 				break
+			} else if !serviceFound && strings.Contains(serviceInstance.SpecRef, name) && (serviceInstance.Org == org || org == "") {
+				serviceInstanceFound = serviceInstance
+				serviceFound = true
 			}
 		}
 	}
-	if !serviceFound {
+	if serviceFound {
+		instanceId = serviceInstanceFound.InstanceId
+		msdefId = serviceInstanceFound.MicroserviceDefId
+		msgPrinter.Printf("Found service %v with service id %v.", serviceInstanceFound.SpecRef, instanceId)
+		msgPrinter.Println()
+	} else {
 		if serviceVersion == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v is not running on the node.", refUrl))
 		} else {
