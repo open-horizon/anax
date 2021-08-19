@@ -403,7 +403,7 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
       ./hzn_secretsmanager.sh 
       if [ $? -ne 0 ]
       then
-        echo "Policy compatibility test using hzn secretsmanager command failure."
+        echo "hzn secretsmanager command test failure."
         exit 1
       fi
     fi

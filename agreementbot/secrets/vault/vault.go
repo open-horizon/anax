@@ -43,7 +43,7 @@ func (vs *AgbotVaultSecrets) ListOrgUserSecret(user, token, org, path string) er
 	return vs.listSecret(user, token, org, path, url)
 }
 
-// Available to only org admin users
+// Available to all users within the org
 func (vs *AgbotVaultSecrets) ListOrgSecret(user, token, org, path string) error {
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v in org %v", path, org)))
 
@@ -105,7 +105,7 @@ func (vs *AgbotVaultSecrets) listSecret(user, token, org, name, url string) erro
 	return nil
 }
 
-// List all org-level secrets at a specified path in vault. Available only to org admin users.
+// List all org-level secrets at a specified path in vault.
 func (vs *AgbotVaultSecrets) ListOrgSecrets(user, token, org, path string) ([]string, error) {
 
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secrets in %v", org)))

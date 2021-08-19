@@ -261,8 +261,12 @@ CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} fake-password
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "No secret(s) found" "shouldn't be able to read a secret that doesn't exist"
 
-# error on `read` - user can't read org level secrets 
+# error on `read` - user can list but can't read org level secrets 
 echo -e "$PREFIX non-admin shouldn't read org level secrets"
+
+CMD="hzn sm secret list -o ${USERDEV_ORG} -u userdevuser1:userdevuser1pw test-password"
+RES=$($CMD 2>&1)
+verify "$CMD" "$RES" "true" "user should be able to list org-level secrets"
 
 CMD="hzn sm secret read -o ${USERDEV_ORG} -u userdevuser1:userdevuser1pw test-password"
 RES=$($CMD 2>&1)
