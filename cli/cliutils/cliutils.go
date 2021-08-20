@@ -620,9 +620,10 @@ func printHorizonRestError(apiMethod string, err error) {
 	msg := ""
 	if os.Getenv("HORIZON_URL") == "" {
 		statusCommand := "systemctl status horizon"
-		statusURL := "curl http://localhost:8081/status"
+		statusURL := "curl " + HZN_API + "/status"
 		if runtime.GOOS == "darwin" {
 			statusCommand = "docker ps | grep horizon"
+			statusURL = "curl " + HZN_API_MAC + "/status"
 		}
 		msg = i18n.GetMessagePrinter().Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMethod, statusCommand, statusURL, err)
 	} else {
@@ -669,9 +670,10 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 		if quiet {
 			if os.Getenv("HORIZON_URL") == "" {
 				statusCommand := "systemctl status horizon"
-				statusURL := "curl http://localhost:8081/status"
+				statusURL := "curl " + HZN_API + "/status"
 				if runtime.GOOS == "darwin" {
 					statusCommand = "docker ps | grep horizon"
+					statusURL = "curl " + HZN_API_MAC + "/status"
 				}
 				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, statusCommand, statusURL, err))
 			} else {
@@ -755,9 +757,10 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes
 		if quiet {
 			if os.Getenv("HORIZON_URL") == "" {
 				statusCommand := "systemctl status horizon"
-				statusURL := "curl http://localhost:8081/status"
+				statusURL := "curl " + HZN_API + "/status"
 				if runtime.GOOS == "darwin" {
 					statusCommand = "docker ps | grep horizon"
+					statusURL = "curl " + HZN_API_MAC + "/status"
 				}
 				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, statusCommand, statusURL, err))
 			} else {
