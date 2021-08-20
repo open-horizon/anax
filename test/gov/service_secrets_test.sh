@@ -17,7 +17,7 @@ INITIAL_SECRET_DETAIL2="netspeed-other-password"
 function get_container_id {
     timeout=$1
     # get the instance id of the specified service with quotes removed
- 	inst=$(curl -s $ANAX_API/service | jq -r --arg SVC_URL "$SVC_URL" --arg SVC_ORG "$SVC_ORG" '.instances.active[] | select (.ref_url==$SVC_URL and .organization==$SVC_ORG)')
+ 	inst=$(curl -s $ANAX_API/service | jq -r --arg SVC_URL "$SVC_URL" --arg SVC_ORG "$SVC_ORG" '.instances.active[] | select (.ref_url==$SVC_URL and .organization==$SVC_ORG and .execution_start_time != "")')
     while [ $timeout -gt 0 ] && [[ $inst == "" ]]; do
         let timeout=$timeout-1
         echo "Waiting for netspeed service to start."

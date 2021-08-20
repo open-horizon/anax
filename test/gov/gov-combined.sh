@@ -433,9 +433,11 @@ if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == 
   fi
 fi
 
-if [ "$TEST_PATTERNS" == "" ] && [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
-  ./service_secrets_test.sh
-  if [ $? -ne 0 ]; then echo "Service secret test failure."; exit 1; fi
+if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
+  if [ "$TEST_PATTERNS" == "" ]; then 
+    ./service_secrets_test.sh
+    if [ $? -ne 0 ]; then echo "Service secret test failure."; exit 1; fi
+  fi
 fi
 
 if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
