@@ -695,11 +695,11 @@ Environment Variables:
 
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 
-  	sdoCmd := app.Command("sdo", msgPrinter.Sprintf("List and manage resources in SDO owner services"))
+	sdoCmd := app.Command("sdo", msgPrinter.Sprintf("List and manage resources in SDO owner services"))
 	sdoOrg := sdoCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	sdoUserPw := sdoCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
-	
-  	sdoKeyCmd := sdoCmd.Command("key", msgPrinter.Sprintf("List and manage Horizon SDO ownership keys."))
+
+	sdoKeyCmd := sdoCmd.Command("key", msgPrinter.Sprintf("List and manage Horizon SDO ownership keys."))
 
 	sdoKeyListCmd := sdoKeyCmd.Command("list | ls", msgPrinter.Sprintf("List the SDO ownership keys stored in SDO owner services.")).Alias("ls").Alias("list")
 	sdoKeyToList := sdoKeyListCmd.Arg("keyName", msgPrinter.Sprintf("List the full details of this SDO ownership key.")).String()
@@ -713,12 +713,12 @@ Environment Variables:
 	sdoKeyDownloadOverwrite := sdoKeyDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
 	sdoKeyRemoveCmd := sdoKeyCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a key from SDO owner services.")).Alias("rm").Alias("remove")
 	sdoKeyToRemove := sdoKeyRemoveCmd.Arg("keyName", msgPrinter.Sprintf("The name of the key to be removed from SDO owner services.")).Required().String()
-  	sdoKeyNewCmd := sdoKeyCmd.Command("new", msgPrinter.Sprintf("Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services."))
+	sdoKeyNewCmd := sdoKeyCmd.Command("new", msgPrinter.Sprintf("Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services."))
 	sdoKeyNewFile := sdoKeyNewCmd.Flag("file-path", msgPrinter.Sprintf("The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.")).Short('f').String()
 	sdoKeyNewOverwrite := sdoKeyNewCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
 
 	sdoVoucherCmd := sdoCmd.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
-	
+
 	sdoVoucherListCmd := sdoVoucherCmd.Command("list | ls", msgPrinter.Sprintf("List the imported SDO ownership vouchers.")).Alias("ls").Alias("list")
 	sdoVoucherToList := sdoVoucherListCmd.Arg("voucher", msgPrinter.Sprintf("List the full details of this SDO ownership voucher.")).String()
 	sdoVoucherListLong := sdoVoucherListCmd.Flag("long", msgPrinter.Sprintf("When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.")).Short('l').Bool()
@@ -918,7 +918,7 @@ Environment Variables:
 		sdoOrg = cliutils.RequiredWithDefaultEnvVar(sdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		sdoUserPw = cliutils.RequiredWithDefaultEnvVar(sdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
-	if strings.HasPrefix(fullCmd, "sdo key") && !strings.HasPrefix(fullCmd, "sdo key new"){
+	if strings.HasPrefix(fullCmd, "sdo key") && !strings.HasPrefix(fullCmd, "sdo key new") {
 		sdoOrg = cliutils.RequiredWithDefaultEnvVar(sdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		sdoUserPw = cliutils.RequiredWithDefaultEnvVar(sdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
@@ -1207,7 +1207,7 @@ Environment Variables:
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	case mmsObjectDownloadCmd.FullCommand():
 		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile, *mmsObjectDownloadOverwrite, *mmsObjectDownloadSkipIntegrityCheck)
-	
+
 	// DEPRECATED (voucherInspectCmd, voucherImportCmd, voucherListCmd are deprecated commands)
 	case voucherInspectCmd.FullCommand():
 		sdo.DeprecatedVoucherInspect(*voucherInspectFile)
@@ -1215,7 +1215,7 @@ Environment Variables:
 		sdo.DeprecatedVoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy, *voucherImportPattern)
 	case voucherListCmd.FullCommand():
 		sdo.DeprecatedVoucherList(*voucherOrg, *voucherUserPw, *voucherToList, !*voucherListLong)
-	
+
 	case sdoKeyCreateCmd.FullCommand():
 		sdo.KeyCreate(*sdoOrg, *sdoUserPw, *sdoKeyCreateInputFile, *sdoKeyCreateFile, *sdoKeyCreateOverwrite)
 	case sdoKeyListCmd.FullCommand():

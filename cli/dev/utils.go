@@ -522,7 +522,8 @@ func getContainerNetworks(depConfig *common.DeploymentConfig, instancePrefix str
 	return containerNetworks, nil
 }
 
-func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []common.GlobalSet, configUserInputs []policy.AbstractUserInput, cw *container.ContainerWorker, serviceInstance string) (map[string]string, error) {
+func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []common.GlobalSet, configUserInputs []policy.AbstractUserInput, cw *container.ContainerWorker,
+	serviceInstance string, secretsFiles map[string]string) (map[string]string, error) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Collect all the service networks that have to be connected to the caller's container.
@@ -530,7 +531,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 
 	for _, depDef := range deps {
 
-		msn, startErr := startDependent(dir, depDef, globals, configUserInputs, cw, serviceInstance)
+		msn, startErr := startDependent(dir, depDef, globals, configUserInputs, cw, serviceInstance, secretsFiles)
 
 		// If there were errors, cleanup any services that are already started.
 		if startErr != nil {
@@ -595,7 +596,8 @@ func startDependent(dir string,
 	globals []common.GlobalSet, // API Attributes
 	configUserInputs []policy.AbstractUserInput, // indicates configured variables
 	cw *container.ContainerWorker,
-	parentServiceInstance string) (map[string]string, error) {
+	parentServiceInstance string,
+	secretsFiles map[string]string) (map[string]string, error) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -650,7 +652,7 @@ func startDependent(dir string,
 		if deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices); err != nil {
 			return nil, errors.New(msgPrinter.Sprintf("unable to retrieve dependency metadata: %v", err))
 			// Start this service's dependencies
-		} else if msn, err := ProcessStartDependencies(dir, deps, globals, configUserInputs, cw, sId); err != nil {
+		} else if msn, err := ProcessStartDependencies(dir, deps, globals, configUserInputs, cw, sId, secretsFiles); err != nil {
 			return nil, errors.New(msgPrinter.Sprintf("unable to start dependencies: %v", err))
 		} else {
 			msNetworks = msn
@@ -661,6 +663,8 @@ func startDependent(dir string,
 	if (serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE) && singletonAlreadyStarted {
 		return nil, nil
 	}
+
+	AddServiceSecretBinds(deployment, secretsFiles)
 
 	// Start the service containers.
 	return StartContainers(deployment, serviceDef.URL, globals, serviceDef.UserInputs, configUserInputs, serviceDef.Org, depConfig, cw, msNetworks, true, false, sId)

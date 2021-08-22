@@ -1,12 +1,11 @@
 package dev
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/i18n"
+	"path/filepath"
 )
 
 const SECRETS_FILE = "servicesecret"
@@ -27,47 +26,25 @@ func CreateSecretsFile(directory string) error {
 	return CreateFile(directory, SECRETS_FILE, fileContents)
 }
 
-// Add binds for the provided service secret files if the secret name is specified in a dependent service
-func AddDependentServiceSecretBinds(deps []*common.ServiceFile, secretsFiles map[string]string) {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
-
-	for _, dep := range deps {
-		typedDeploy := common.DeploymentConfig{}
-
-		if deployBytes, err := json.Marshal(dep.Deployment); err != nil {
-			msgPrinter.Printf("Failed to marshal deps: %v", err)
-			msgPrinter.Println()
-		} else if err = json.Unmarshal(deployBytes, &typedDeploy); err != nil {
-			msgPrinter.Printf("Failed to unmarshal deps: %v", err)
-			msgPrinter.Println()
-		} else {
-			for svcName, svcInfo := range typedDeploy.Services {
-				for secName, _ := range svcInfo.Secrets {
-					if svcPath, ok := secretsFiles[secName]; ok {
-						svcInfo.Binds = append(svcInfo.Binds, fmt.Sprintf("%v:%v/%v", svcPath, config.HZN_SECRETS_MOUNT, secName))
-					} else {
-						msgPrinter.Printf("Warning: Secret %v for service %v not specified with %v command.\n", secName, svcName, SERVICE_START_COMMAND)
-						msgPrinter.Println()
-					}
-				}
-			}
-		}
-		dep.Deployment = typedDeploy
-	}
-}
-
 // Add binds for the provided service secret files to the top-level service container if the secret name is in the service deployment
-func AddTopLevelServiceSecretBinds(deployment *containermessage.DeploymentDescription, secretsFiles map[string]string) {
+func AddServiceSecretBinds(deployment *containermessage.DeploymentDescription, secretsFiles map[string]string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	for svcName, svcInfo := range deployment.Services {
 		for secName, _ := range svcInfo.Secrets {
 			if svcPath, ok := secretsFiles[secName]; ok {
-				svcInfo.Binds = append(svcInfo.Binds, fmt.Sprintf("%v:%v/%v", svcPath, config.HZN_SECRETS_MOUNT, secName))
+				// get full path
+				fullPath, err := filepath.Abs(svcPath)
+				if err != nil {
+					msgPrinter.Printf("Warning: Failed to convert file name %v to absolute path. %v", svcPath, err)
+					msgPrinter.Println()
+				}
+
+				// add binds
+				svcInfo.Binds = append(svcInfo.Binds, fmt.Sprintf("%v:%v/%v", fullPath, config.HZN_SECRETS_MOUNT, secName))
 			} else {
-				msgPrinter.Printf("Warning: Secret %v for service %v not specified with %v command.\n", secName, svcName, SERVICE_START_COMMAND)
+				msgPrinter.Printf("Warning: Secret %v for service %v not specified with %v command.", secName, svcName, SERVICE_START_COMMAND)
 				msgPrinter.Println()
 			}
 		}

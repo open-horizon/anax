@@ -104,7 +104,7 @@ func KeyList(org, userCreds, keyName string) {
 			}
 		}
 
-	// use all the keys in SDO owner services
+		// use all the keys in SDO owner services
 	} else {
 		jsonBytes, err = json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
@@ -227,7 +227,7 @@ func sendSdoKeysApiRequest(org, userCreds, keyName, method string, body interfac
 }
 
 // Helper function to POST a key to SDO owner services
-func import1Key(org, userCreds string, keyFileReader io.Reader, keyFileName string) []byte{
+func import1Key(org, userCreds string, keyFileReader io.Reader, keyFileName string) []byte {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Parse the voucher so we can tell them what we are doing
