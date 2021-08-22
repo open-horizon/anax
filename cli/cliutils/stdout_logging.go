@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"strings"
+	"regexp"
 	"time"
 
 	"github.com/open-horizon/anax/i18n"
@@ -95,7 +95,7 @@ func LogLinux(instanceId string, tailing bool) {
 				// ignore the error and keep trying.
 				Verbose(msgPrinter.Sprintf("Error reading from %v: %v", sysLogPath, err))
 			}
-		} else if strings.Contains(line, "workload-"+instanceId) {
+		} else if found, _ := regexp.MatchString("workload-.*"+instanceId, line); found {
 			// If the requested service id is in the current syslog record, display it.
 			fmt.Print(string(line))
 		}
