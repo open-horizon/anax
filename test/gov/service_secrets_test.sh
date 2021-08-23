@@ -17,12 +17,12 @@ INITIAL_SECRET_DETAIL2="netspeed-other-password"
 function get_container_id {
     timeout=$1
     # get the instance id of the specified service with quotes removed
- 	inst=$(curl -s $ANAX_API/service | jq -r --arg SVC_URL "$SVC_URL" --arg SVC_ORG "$SVC_ORG" '.instances.active[] | select (.ref_url==$SVC_URL and .organization==$SVC_ORG and .execution_start_time != "")')
+ 	inst=$(curl -s $ANAX_API/service | jq -r --arg SVC_URL "$SVC_URL" --arg SVC_ORG "$SVC_ORG" '.instances.active[] | select (.ref_url==$SVC_URL and .organization==$SVC_ORG and .containers[].State=="running")')
     while [ $timeout -gt 0 ] && [[ $inst == "" ]]; do
         let timeout=$timeout-1
         echo "Waiting for netspeed service to start."
         sleep 5s
-        inst=$(curl -s $ANAX_API/service | jq -r --arg SVC_URL "$SVC_URL" --arg SVC_ORG "$SVC_ORG" '.instances.active[] | select (.ref_url==$SVC_URL and .organization==$SVC_ORG)')
+        inst=$(curl -s $ANAX_API/service | jq -r --arg SVC_URL "$SVC_URL" --arg SVC_ORG "$SVC_ORG" '.instances.active[] | select (.ref_url==$SVC_URL and .organization==$SVC_ORG and .containers[].State=="running")')
     done 
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get $SVC_ORG/$SVC_URL service instace."
@@ -207,7 +207,7 @@ get_auth_for_tests
 # Check that the secrets are initially mounted for the top-level netspeed service 
 SVC_URL="https://bluehorizon.network/services/netspeed"
 SVC_ORG="e2edev@somecomp.com"
-get_container_id 6
+get_container_id 8
 
 check_container_secret "sec1" $INITIAL_SECRET_KEY1 $INITIAL_SECRET_DETAIL1 0
 
