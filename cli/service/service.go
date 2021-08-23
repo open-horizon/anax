@@ -111,7 +111,11 @@ func Log(serviceName string, serviceVersion, containerName string, tailing bool)
 				}
 
 				if len(deployment.Services) > 1 && containerName == "" {
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service definition %v consists of more than one container. Please specify the container name using the -c flag.", serviceName))
+					var cNames []string
+					for name, _ := range deployment.Services {
+						cNames = append(cNames, name)
+					}
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service definition %v consists of more than one container: %v. Please specify the service name by -c flag", serviceName, strings.Join(cNames, ", ")))
 				}
 				for deployedContainerName, service := range deployment.Services {
 					if containerName == deployedContainerName || (containerName == "" && len(deployment.Services) == 1) {
@@ -150,9 +154,9 @@ func Log(serviceName string, serviceVersion, containerName string, tailing bool)
 	}
 
 	if runtime.GOOS == "darwin" || nonDefaultLogDriverUsed {
-		cliutils.LogMac(instanceId, tailing)
+		cliutils.LogMac(instanceId+"-"+containerName, tailing)
 	} else {
-		cliutils.LogLinux(instanceId, tailing)
+		cliutils.LogLinux(instanceId+"_"+containerName, tailing)
 	}
 }
 

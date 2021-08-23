@@ -345,8 +345,7 @@ func ServiceLog(homeDirectory string, serviceName string, containerName string, 
 		for name, _ := range dc.Services {
 			containerNames = append(containerNames, name)
 		}
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' More than one container has been found for deployment: "+
-			strings.Join(containerNames, ", ")+". Please specify the service name by -c flag", SERVICE_COMMAND, SERVICE_LOG_COMMAND))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' More than one container has been found for deployment: %v. Please specify the service name by -c flag", SERVICE_COMMAND, SERVICE_LOG_COMMAND, strings.Join(containerNames, ", ")))
 	} else if containerName != "" {
 		found := false
 		for name, svc := range dc.Services {
@@ -392,9 +391,9 @@ func ServiceLog(homeDirectory string, serviceName string, containerName string, 
 			}
 
 			if runtime.GOOS == "darwin" || nonDefaultLogDriverUsed {
-				cliutils.LogMac(msId+"_"+containerName, tailing)
+				cliutils.LogMac(msId+"-"+containerName, tailing)
 			} else {
-				cliutils.LogLinux(msId+"_"+containerName, tailing)
+				cliutils.LogLinux(strings.ToLower(msId)+"_"+containerName, tailing)
 			}
 			return
 		}
