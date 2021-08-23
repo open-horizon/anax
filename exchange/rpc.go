@@ -1036,7 +1036,7 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 				return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, urlPath, requestBody, err))
 			}
 
-			if method == "GET" && httpResp.StatusCode != http.StatusOK {
+			if (method == "GET" || method == "LIST") && httpResp.StatusCode != http.StatusOK {
 				if httpResp.StatusCode == http.StatusNotFound {
 					glog.V(5).Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, urlPath, string(outBytes))))
 					return nil, nil
