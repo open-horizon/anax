@@ -321,8 +321,6 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' unable to get service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, derr))
 	}
 
-	dev.AddDependentServiceSecretBinds(deps, secretsFiles)
-
 	// Log the starting of dependencies if there are any.
 	if len(deps) != 0 {
 		cliutils.Verbose(msgPrinter.Sprintf("Starting dependencies."))
@@ -338,7 +336,7 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 	}
 
 	// If the service has dependencies, get them started first.
-	msNetworks, perr := dev.ProcessStartDependencies(dir, deps, userInputs.Global, userInputs.Services, cw, agreementId)
+	msNetworks, perr := dev.ProcessStartDependencies(dir, deps, userInputs.Global, userInputs.Services, cw, agreementId, secretsFiles)
 	if perr != nil {
 		if !noFSS {
 			sync_service.Stop(cw.GetClient())
@@ -355,7 +353,7 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, cerr)
 	}
 
-	dev.AddTopLevelServiceSecretBinds(deployment, secretsFiles)
+	dev.AddServiceSecretBinds(deployment, secretsFiles)
 
 	// Now we can start the service container.
 	_, err := dev.StartContainers(deployment, serviceDef.URL, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, msNetworks, true, true, agreementId)

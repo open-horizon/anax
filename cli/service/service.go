@@ -75,7 +75,7 @@ func Log(serviceName string, serviceVersion, containerName string, tailing bool)
 	var msdefId string
 	org, name := cutil.SplitOrgSpecUrl(refUrl)
 	for _, serviceInstance := range runningServices.Instances["active"] {
-		if (serviceVersion == "" || serviceVersion == serviceInstance.Version) {
+		if serviceVersion == "" || serviceVersion == serviceInstance.Version {
 			if serviceInstance.SpecRef == name && (serviceInstance.Org == org || org == "") {
 				serviceInstanceFound = serviceInstance
 				serviceFound = true

@@ -72,7 +72,7 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, privKey *r
 		return true, "", "", err
 	}
 	sig, err := sign.Sha256HashOfInput(privKey, hasher)
-	
+
 	if err != nil {
 		return true, "", "", errors.New(msgPrinter.Sprintf("problem signing %v deployment string: %v", KUBE_DEPLOYMENT_CONFIG_TYPE, err))
 	}

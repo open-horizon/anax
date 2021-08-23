@@ -493,10 +493,10 @@ func WithDefaultKeyFile(keyFile string, isPublic bool) string {
 	// get default file names if input is empty
 	if keyFile, err = GetDefaultSigningKeyFile(isPublic); err != nil {
 		Fatal(CLI_GENERAL_ERROR, err.Error())
-	// convert to absolute path
+		// convert to absolute path
 	} else if keyFile, err = filepath.Abs(keyFile); err != nil {
 		Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Failed to get absolute path for file %v. %v", keyFile, err))
-	// check file exist
+		// check file exist
 	} else if _, err := os.Stat(keyFile); err != nil {
 		if os.IsNotExist(err) {
 			return ""
@@ -1765,7 +1765,7 @@ func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (*rsa.PrivateKey, []
 	// if a valid private key was given or found at default location, load it
 	if privKeyFilePath != "" {
 		privKey = getPrivateKeyFromFile(privKeyFilePath)
-	// otherwise, generate a random key
+		// otherwise, generate a random key
 	} else if privKey, err = rsa.GenerateKey(rand.Reader, 2048); err != nil {
 		Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("private key could not be generated; error: %v", err))
 	}
