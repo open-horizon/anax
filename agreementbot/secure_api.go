@@ -1,9 +1,19 @@
-// @APIVersion 1.0.0
-// @APITitle Agreement Bot Secure API
-// @APIDescription This is the secure API for the agreement bot.
-// @BasePath https://host:port/
-// @SubApi Deployment Check API [/deploycheck]
-
+// Package agreementbot Agreement Bot Secure API
+//
+// This is the secure API for the agreement bot.
+//
+//   schemes: https
+//   host: localhost
+//   basePath: https://host:port/
+//   version: 0.0.1
+//
+//   consumes:
+//   - application/json
+//
+//   produces:
+//   - application/json
+//
+// swagger:meta
 package agreementbot
 
 import (
@@ -120,7 +130,7 @@ func (a *SecureAPI) setCommonHeaders(w http.ResponseWriter) http.ResponseWriter 
 func (a *SecureAPI) listen() {
 	glog.Info("Starting AgreementBot SecureAPI server")
 
-	// If there is no ir invalid Agbot config, we will terminate
+	// If there is no invalid Agbot config, we will terminate
 	apiListenHost := a.Config.AgreementBot.SecureAPIListenHost
 	apiListenPort := a.Config.AgreementBot.SecureAPIListenPort
 	certFile := a.Config.AgreementBot.SecureAPIServerCert
@@ -194,28 +204,83 @@ func (a *SecureAPI) listen() {
 	}()
 }
 
-// @Title policy_compatible
-// @Description Check the policy compatibility. This API does the policy compatibility check for the given business policy, node policy and service policy. The business policy and the service policy will be merged to check against the node policy. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
-// @Accept  json
-// @Produce json
-// @Param   checkAll     		query    bool     false        "Return the compatibility check result for all the service versions referenced in the business policy or pattern."
-// @Param   long         		query    bool     false        "Show the input which was used to come up with the result."
-// @Param   node_id      		body     string   false        "The exchange id of the node. Mutually exclusive with node_policy."
-// @Param   node_arch    		body     string   false        "The architecture of the node."
-// @Param   node_policy  		body     externalpolicy.ExternalPolicy     false        "The node policy that will be put in the exchange. Mutually exclusive with node_id."
-// @Param   business_policy_id  body     string   false        "The exchange id of the business policy. Mutually exclusive with business_policy."
-// @Param   business_policy  	body     businesspolicy.BusinessPolicy     false        "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id."
-// @Param   service_policy  	body     externalpolicy.ExternalPolicy     false        "The service policy that will be put in the exchange. They are for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy."
-// @Success 200 {object}  compcheck.CompCheckOutput
-// @Failure 400 {object}  string      "No input found"
-// @Failure 401 {object}  string      "Failed to authenticate"
-// @Failure 500 {object}  string      "Error"
-// @Resource /deploycheck
-// @Router /deploycheck/policycompatible [get]
 // This function does policy compatibility check.
 func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
+	// swagger:operation GET /deploycheck/policycompatible deployCheckPolicyCompatible
+	//
+	// Check the policy compatibility
+	//
+	// This API does the policy compatibility check for the given deployment policy, node policy and service policy. The deployment policy and the service policy will be merged to check against the node policy. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
+	//
+	// ---
+	// consumes:
+	//  - application/json
+	// produces:
+	//  - application/json
+	// parameters:
+	//  - name: checkAll
+	//    in: query
+	//    type: bool
+	//    required: false
+	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
+	//  - name: long
+	//    in: query
+	//    type: bool
+	//    required: false
+	//    description: "Show the input which was used to come up with the result."
+	//  - name: node_id
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The exchange id of the node. Mutually exclusive with node_policy."
+	//  - name: node_arch
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The architecture of the node."
+	//  - name: node_policy
+	//    in: body
+	//    required: false
+	//    description: "The node policy that will be put in the exchange. Mutually exclusive with node_id."
+	//    schema:
+	//     "$ref": "#/definitions/ExternalPolicy"
+	//  - name: business_policy_id
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy."
+	//  - name: business_policy
+	//    in: body
+	//    required: false
+	//    description: "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id."
+	//    schema:
+	//     "$ref": "#/definitions/BusinessPolicy"
+	//  - name: service_policy
+	//    in: body
+	//    required: false
+	//    description: "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy."
+	//    schema:
+	//     "$ref": "#/definitions/ExternalPolicy"
+	// responses:
+	//  '200':
+	//    description: "Success"
+	//    schema:
+	//     type: compcheck.CompCheckOutput
+	//     "$ref": "#/definitions/CompCheckOutput"
+	//  '400':
+	//    description: "Failure - No input found"
+	//    schema:
+	//     type: string
+	//  '501':
+	//    description: "Failure - Failed to authenticate"
+	//    schema:
+	//     type: string
+	//  '500':
+	//    description: "Failure - Error"
+	//    schema:
+	//      type: string
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/policycompatible called.")))
 
@@ -228,7 +293,7 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 			} else if input, err := a.decodePolicyCheckBody(body, msgPrinter); err != nil {
 				writeResponse(w, err.Error(), http.StatusBadRequest)
 			} else {
-				// if checkAll is set, then check all the services defined in the business policy for compatibility.
+				// if checkAll is set, then check all the services defined in the deployment policy for compatibility.
 				checkAll := r.URL.Query().Get("checkAll")
 
 				// do policy compatibility check
@@ -253,30 +318,93 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @Title userinput_compatible
-// @Description Check the user input compatibility. This API does the user input compatibility check for the given business policy (or a pattern), service definition and node user input. The user input values in the business policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
-// @Accept  json
-// @Produce json
-// @Param   checkAll     		query    bool     false        "Return the compatibility check result for all the service versions referenced in the business policy or pattern."
-// @Param   long         		query    bool     false        "Show the input which was used to come up with the result."
-// @Param   node_id      		body     string   false        "The exchange id of the node. Mutually exclusive with node_user_input."
-// @Param   node_arch    		body     string   false        "The architecture of the node."
-// @Param   node_user_input  	body     policy.UserInput    				false        "The user input that will be put in the exchange for the services. Mutually exclusive with node_id."
-// @Param   business_policy_id  body     string   false        "The exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
-// @Param   business_policy  	body     businesspolicy.BusinessPolicy     	false        "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
-// @Param   pattern_id      	body     string   false        "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
-// @Param   pattern  			body     common.PatternFile     			false        "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
-// @Param   service  			body     common.ServiceFile    				false        "An array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange."
-// @Success 200 {object}  compcheck.CompCheckOutput
-// @Failure 400 {object}  string      "No input found"
-// @Failure 401 {object}  string      "Failed to authenticate"
-// @Failure 500 {object}  string      "Error"
-// @Resource /deploycheck
-// @Router /deploycheck/userinputcompatible [get]
-// This function does userinput compatibility check.
 func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
+	// swagger:operation GET /deploycheck/userinputcompatible userinputCompatible
+	//
+	// Check the user input compatibility.
+	//
+	// This API does the user input compatibility check for the given deployment policy (or a pattern), service definition and node user input. The user input values in the deployment policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
+	//
+	// ---
+	// consumes:
+	//  - application/json
+	// produces:
+	//  - application/json
+	// parameters:
+	//  - name: checkAll
+	//    in: query
+	//    type: bool
+	//    required: false
+	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
+	//  - name: long
+	//    in: query
+	//    type: bool
+	//    required: false
+	//    description: "Show the input which was used to come up with the result."
+	//  - name: node_id
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The exchange id of the node. Mutually exclusive with node_user_input."
+	//  - name: node_arch
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The architecture of the node."
+	//  - name: node_user_input
+	//    in: body
+	//    required: false
+	//    description: "The user input that will be put in the exchange for the services. Mutually exclusive with node_id."
+	//    schema:
+	//     "$ref": "#/definitions/UserInput"
+	//  - name: business_policy_id
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
+	//  - name: business_policy
+	//    in: body
+	//    required: false
+	//    description: "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
+	//    schema:
+	//     "$ref": "#/definitions/BusinessPolicy"
+	//  - name: pattern_id
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
+	//  - name: pattern
+	//    in: body
+	//    required: false
+	//    description: "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
+	//    schema:
+	//     "$ref": "#/definitions/PatternFile"
+	//  - name: service
+	//    in: body
+	//    required: false
+	//    description: "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange."
+	//    schema:
+	//     "$ref": "#/definitions/ServiceFile"
+	// responses:
+	//  '200':
+	//    description: "Success"
+	//    schema:
+	//     type: compcheck.CompCheckOutput
+	//     "$ref": "#/definitions/CompCheckOutput"
+	//  '400':
+	//    description: "Failure - No input found"
+	//    schema:
+	//     type: string
+	//  '401':
+	//    description: "Failure - Failed to authenticate"
+	//    schema:
+	//     type: string
+	//  '500':
+	//    description: "Failure - Error"
+	//    schema:
+	//      type: string
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/userinputcompatible called.")))
 
@@ -288,7 +416,7 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 			} else if input, err := a.decodeUserInputCheckBody(body, msgPrinter); err != nil {
 				writeResponse(w, err.Error(), http.StatusBadRequest)
 			} else {
-				// if checkAll is set, then check all the services defined in the business policy for compatibility.
+				// if checkAll is set, then check all the services defined in the deployment policy for compatibility.
 				checkAll := r.URL.Query().Get("checkAll")
 
 				// do user input compatibility check
@@ -313,30 +441,93 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-// @Title secretbinding_compatible
-// @Description Check the secret binding compatibility. This API does the secret binding compatibility check for the given business policy (or a pattern) and service definition. It checks if each secret defined in a serice has a binding associated in the given deployment policy (or pattern) and each bound secret exists in the secret manager. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
-// @Accept  json
-// @Produce json
-// @Param   checkAll     		query    bool     false        "Return the compatibility check result for all the service versions referenced in the business policy or pattern."
-// @Param   long         		query    bool     false        "Show the input which was used to come up with the result."
-// @Param   node_id      		body     string   false        "The exchange id of the node. Mutually exclusive with node_user_input."
-// @Param   node_arch    		body     string   false        "The architecture of the node."
-// @Param   node_org    		body     string   false        "The organization of the node."
-// @Param   business_policy_id  body     string   false        "The exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
-// @Param   business_policy  	body     businesspolicy.BusinessPolicy     	false        "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
-// @Param   pattern_id      	body     string   false        "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
-// @Param   pattern  			body     common.PatternFile     			false        "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
-// @Param   service  			body     common.ServiceFile    				false        "An array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange."
-// @Success 200 {object}  compcheck.CompCheckOutput
-// @Failure 400 {object}  string      "No input found"
-// @Failure 401 {object}  string      "Failed to authenticate"
-// @Failure 500 {object}  string      "Error"
-// @Resource /deploycheck
-// @Router /deploycheck/secretbindingcompatible [get]
 // This function does secret binding compatibility check.
 func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
+	// swagger:operation GET /deploycheck/secretbindingcompatible secretbinding_compatible
+	//
+	// Check the secret binding compatibility. 
+	//
+	// This API does the secret binding compatibility check for the given deployment policy (or a pattern) and service definition. It checks if each secret defined in a serice has a binding associated in the given deployment policy (or pattern) and each bound secret exists in the secret manager. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
+	//
+	// ---
+	// consumes: 
+	//  - application/json 
+	// produces: 
+	//  - application/json
+	// parameters:
+	//  - name: checkAll
+	//    in: query
+	//    type: bool
+	//    required: false
+	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
+	//  - name: long
+	//    in: query
+	//    type: bool     
+	//    required: false
+	//    description: "Show the input which was used to come up with the result."
+	//  - name: node_id
+	//    in: body
+	//    type: string   
+	//    required: false
+	//    description: "The exchange id of the node. Mutually exclusive with node_user_input."
+	//  - name: node_arch
+	//    in: body
+	//    type: string   
+	//    required: false
+	//    description: "The architecture of the node."
+	//  - name: node_org
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The organization of the node."
+	//  - name: business_policy_id
+	//    in: body
+	//    type: string   
+	//    required: false
+	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
+	//  - name: business_policy
+	//    in: body
+	//    required: false
+	//    description: "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
+	//    schema:
+	//     "$ref": "#/definitions/BusinessPolicy"
+	//  - name: pattern_id
+	//    in: body
+	//    type: string   
+	//    required: false
+	//    description: "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
+	//  - name: pattern
+	//    in: body
+	//    required: false
+	//    description: "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
+	//    schema:
+	//     "$ref": "#/definitions/PatternFile"
+	//  - name: service
+	//    in: body
+	//    required: false
+	//    description: "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange."
+	//    schema:
+	//     "$ref": "#/definitions/ServiceFile"
+	// responses:
+	//  '200':
+	//    description: "Success"
+	//    schema:
+	//     type: compcheck.CompCheckOutput
+	//     "$ref": "#/definitions/CompCheckOutput"
+	//  '400':
+	//    description: "Failure - No input found"
+	//    schema:
+	//     type: string
+	//  '401':
+	//    description: "Failure - Failed to authenticate"
+	//    schema:
+	//     type: string
+	//  '500':
+	//    description: "Failure - Error"
+	//    schema:
+	//      type: string
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/secretbindingcompatible called.")))
 
@@ -349,7 +540,7 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 				glog.Errorf(APIlogString(err.Error()))
 				writeResponse(w, err.Error(), http.StatusBadRequest)
 			} else {
-				// if checkAll is set, then check all the services defined in the business policy for compatibility.
+				// if checkAll is set, then check all the services defined in the deployment policy for compatibility.
 				checkAll := r.URL.Query().Get("checkAll")
 
 				// do user input compatibility check
@@ -389,33 +580,111 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// @Title deploy_compatible
-// @Description Check deployment compatibility. This API does compatibility check for the given business policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
-// @Accept  json
-// @Produce json
-// @Param   checkAll     		query    bool     false        "Return the compatibility check result for all the service versions referenced in the business policy or pattern."
-// @Param   long         		query    bool     false        "Show the input which was used to come up with the result."
-// @Param   node_id      		body     string   false        "The exchange id of the node. Mutually exclusive with node_policy and node_user_input."
-// @Param   node_arch    		body     string   false        "The architecture of the node."
-// @Param   node_org    		body     string   false        "The organization of the node."
-// @Param   node_policy  		body     externalpolicy.ExternalPolicy 	false        "The node policy that will be put in the exchange. Mutually exclusive with node_id."
-// @Param   node_user_input  	body     policy.UserInput       		false        "The user input that will be put in the exchange for the services. Mutually exclusive with node_id."
-// @Param   business_policy_id  body     string   false        "The exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
-// @Param   business_policy  	body     businesspolicy.BusinessPolicy  false        "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
-// @Param   pattern_id      	body     string   false        "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
-// @Param   pattern  			body     common.PatternFile      		false        "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
-// @Param   service_policy  	body     externalpolicy.ExternalPolicy 	false        "The service policy that will be put in the exchange. They are for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy."
-// @Param   service  			body     common.ServiceFile     		false        "An array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange."
-// @Success 200 {object}  compcheck.CompCheckOutput
-// @Failure 400 {object}  string      "No input found"
-// @Failure 401 {object}  string      "Failed to authenticate"
-// @Failure 500 {object}  string      "Error"
-// @Resource /deploycheck
-// @Router /deploycheck/deploycompatible [get]
 // This function does policy and userinput compatibility check.
 func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
+	// swagger:operation GET /deploycheck/deploycompatible deploy_compatible
+	//
+	// Check deployment compatibility. 
+	// 
+	// This API does compatibility check for the given deployment policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
+	//
+	// ---
+	// consumes: 
+	//  - application/json 
+	// produces: 
+	//  - application/json
+	// parameters:
+	//  - name: checkAll
+	//    in: query
+	//    type: bool
+	//    required: false
+	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
+	//  - name: long
+	//    in: query
+	//    type: bool     
+	//    required: false
+	//    description: "Show the input which was used to come up with the result."
+	//  - name: node_id
+	//    in: body
+	//    type: string   
+	//    required: false
+	//    description: "The exchange id of the node. Mutually exclusive with node_policy and node_user_input."
+	//  - name: node_arch
+	//    in: body
+	//    type: string   
+	//    required: false
+	//    description: "The architecture of the node."
+	//  - name: node_org
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The organization of the node."
+	//  - name: node_policy
+	//    in: body
+	//    required: false
+	//    description: "The node policy that will be put in the exchange. Mutually exclusive with node_id."
+	//    schema:
+	//     "$ref": "#/definitions/ExternalPolicy"
+	//  - name: node_user_input
+	//    in: body
+	//    required: false
+	//    description: "The user input that will be put in the exchange for the services. Mutually exclusive with node_id."
+	//    schema:
+	//     "$ref": "#/definitions/UserInput"
+	//  - name: business_policy_id
+	//    in: body
+	//    type: string   
+	//    required: false
+	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
+	//  - name: business_policy
+	//    in: body
+	//    required: false
+	//    description: "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
+	//    schema:
+	//     "$ref": "#/definitions/BusinessPolicy"
+	//  - name: pattern_id
+	//    in: body
+	//    type: string   
+	//    required: false
+	//    description: "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
+	//  - name: pattern
+	//    in: body
+	//    required: false
+	//    description: "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
+	//    schema:
+	//     "$ref": "#/definitions/PatternFile"
+	//  - name: service_policy
+	//    in: body
+	//    required: false
+	//    description: "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy."
+	//    schema:
+	//     "$ref": "#/definitions/ExternalPolicy"
+	//  - name: service
+	//    in: body
+	//    required: false
+	//    description: "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange."
+	//    schema:
+	//     "$ref": "#/definitions/ServiceFile"
+	// responses:
+	//  '200':
+	//    description: "Success"
+	//    schema:
+	//     type: compcheck.CompCheckOutput
+	//     "$ref": "#/definitions/CompCheckOutput"
+	//  '400':
+	//    description: "Failure - No input found"
+	//    schema:
+	//     type: string
+	//  '401':
+	//    description: "Failure - Failed to authenticate"
+	//    schema:
+	//     type: string
+	//  '500':
+	//    description: "Failure - Error"
+	//    schema:
+	//      type: string
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/deploycompatible called.")))
 
@@ -427,7 +696,7 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 			} else if input, err := a.decodeCompCheckBody(body, msgPrinter); err != nil {
 				writeResponse(w, err.Error(), http.StatusBadRequest)
 			} else {
-				// if checkAll is set, then check all the services defined in the business policy for compatibility.
+				// if checkAll is set, then check all the services defined in the deployment policy for compatibility.
 				checkAll := r.URL.Query().Get("checkAll")
 
 				// do user input compatibility check
@@ -682,6 +951,41 @@ type SecretRequestInfo struct {
 	msgPrinter *message.Printer
 }
 
+// swagger:operation GET /org/{org}/secrets/* secrets_setup
+//
+// Common setup required before using the vault to manage secrets.
+// 
+// Authenticates the node user with the exchange. Checks if the vault plugin being used is ready. 
+// Performs sanity checks on the secret user and secret name provided.
+//
+// ---
+// consumes: 
+//  - application/json 
+// parameters:
+//  - name: org
+//    in: query
+//    type: string
+//    required: true
+//    description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+//  - name: user
+//    in: query
+//    type: string 
+//    required: false
+//    description: "The user owning the secret."
+//  - name: secret
+//    in: query
+//    type: string
+//    required: false
+//    description: "The secret key (name)."
+// responses:
+//  '400':
+//    description: "Secret org or name does not meet constraints."
+//    schema:
+//     type: string
+//  '503':
+//    description: "Secret provider not ready or not configured."
+//    schema:
+//     type: string
 func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *SecretRequestInfo {
 
 	// Process in the inputs and verify that they are consistent with the logged in user.
@@ -829,7 +1133,6 @@ func (a *SecureAPI) errCheck(err error, action string, info *SecretRequestInfo) 
 	}
 }
 
-// handler for /org/<org>/secrets - LIST, OPTIONS
 func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 	info := a.secretsSetup(w, r)
 	if info == nil {
@@ -838,8 +1141,33 @@ func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 
 	// handle API options
 	switch r.Method {
+	// swagger:operation LIST /org/{org}/secrets orgSecrets
+	// 
+	// List all secrets belonging to the org.
+	// 
+	// ---
+	// consumes:
+	//   - application/json
+	// produces:
+	//   - application/json
+	// responses:
+	//  '200':
+	//    description: "Success or no secrets found."
+	//    type: array
+	//    items: string
+	//  '401':
+	//    description: "Unauthenticated user."
+	//    type: string
+	//  '403':
+	//    description: "Secrets permission denied to user."
+	//    type: string
+	//  '503':
+	//    description: "Secret provider unavailable"
+	//    type: string
+	//  '500':
+	//    description: "Invalid vault response"
+	//    type: string
 	case "LIST":
-		// list org-level secrets
 		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
 			glog.Errorf(APIlogString(err.Error()))
 			writeResponse(w, err.Error(), httpCode)

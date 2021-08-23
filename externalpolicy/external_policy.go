@@ -6,6 +6,8 @@ import (
 	"github.com/open-horizon/anax/i18n"
 )
 
+// BusinessPolicy the external policy
+// swagger:model
 type ExternalPolicy struct {
 	// The properties this node wishes to expose about itself. These properties can be referred to by constraint expressions in other policies,
 	// (e.g. service policy, model policy, business policy).

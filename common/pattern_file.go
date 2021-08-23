@@ -14,8 +14,10 @@ type AbstractPatternFile interface {
 	IsPublic() bool
 }
 
-// An implementation of AbstractPatternFile.
+// PatternFile An implementation of AbstractPatternFile.
+// 
 // It is used when reading json file the user gives us as an input to create the pattern
+// swagger:model
 type PatternFile struct {
 	Name               string                         `json:"name,omitempty"`
 	Org                string                         `json:"org,omitempty"` // optional

@@ -51,8 +51,8 @@ func NewServiceDependency(url string, org string, version string, arch string) *
 	}
 }
 
-// This type is used to describe a configuration variable that the node owner/user has to set before the
-// service is able to execute on the edge node.
+// UserInput This type is used to describe a configuration variable that the node owner/user has to set before the service is able to execute on the edge node.
+// swagger:model
 type UserInput struct {
 	Name         string `json:"name"`
 	Label        string `json:"label"`

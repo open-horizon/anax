@@ -12,7 +12,8 @@ import (
 
 const DEFAULT_MAX_AGREEMENT = 0
 
-// the business policy
+// BusinessPolicy the business policy
+// swagger:model
 type BusinessPolicy struct {
 	Owner         string                              `json:"owner,omitempty"`
 	Label         string                              `json:"label"`
