@@ -176,6 +176,25 @@ func SaveAllSecretsForService(db *bolt.DB, msInstId string, secretToSaveAll *Per
 	return writeErr
 }
 
+func AddAgreementForMSInstSecrets(db *bolt.DB, msInstId string, agId string) error {
+	if db == nil {
+		return nil
+	}
+	if allMsSecrets, err := FindAllSecretsForMS(db, msInstId); err != nil {
+		return err
+	} else if allMsSecrets != nil {
+		for _, secVal := range allMsSecrets.SecretsMap {
+			if !cutil.SliceContains(secVal.AgreementIds, agId) {
+				secVal.AgreementIds = append(secVal.AgreementIds, agId)
+			}
+		}
+		if err = SaveAllSecretsForService(db, msInstId, allMsSecrets); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Gets the secret from the database, no error returned if none is found in the db
 func FindAllSecretsForMS(db *bolt.DB, msInstId string) (*PersistedServiceSecrets, error) {
 	if db == nil {

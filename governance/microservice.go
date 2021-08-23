@@ -559,6 +559,9 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 		needs_new_ms = true
 	} else {
 		msi = &ms_insts[0]
+		if err = persistence.AddAgreementForMSInstSecrets(w.db, msi.GetKey(), agreementId); err != nil {
+			return fmt.Errorf("Error adding agreement id %v to secrets for microservice %v: %v", agreementId, msi.GetKey(), err)
+		}
 		glog.V(3).Infof(logString(fmt.Sprintf("For agreement %v, microservice %v/%v %v %v is already started as dependency %v, was requested as dependency %v.", agreementId, msi.Org, msi.SpecRef, msi.Version, msi.InstanceId, msi.ParentPath, dependencyPath)))
 	}
 
