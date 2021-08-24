@@ -573,6 +573,7 @@ func GetHorizonContainerIndex() (int, error) {
 func GetAgbotUrlBase() string {
 	envVar := os.Getenv("HZN_AGBOT_API")
 	if envVar != "" {
+		envVar = strings.TrimSuffix(envVar, "/")
 		return envVar
 	}
 
@@ -588,6 +589,7 @@ func GetAgbotSecureAPIUrlBase() string {
 
 	envVar := os.Getenv("HZN_AGBOT_URL")
 	Verbose(msgPrinter.Sprintf("The agbot url: %v", envVar))
+	envVar = strings.TrimSuffix(envVar, "/")
 	return envVar
 }
 
