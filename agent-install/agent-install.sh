@@ -1187,7 +1187,7 @@ function debian_device_install_prereqs() {
     if [[ $AGENT_ONLY_CLI == 'true' ]]; then
         runCmdQuietly apt-get install -yqf curl jq
     else
-        runCmdQuietly apt-get install -yqf curl jq software-properties-common
+        runCmdQuietly apt-get install -yqf curl jq software-properties-common net-tools
 
         if ! isCmdInstalled docker; then
             log_info "Docker is required, installing it..."
@@ -1360,6 +1360,7 @@ function redhat_device_install_prereqs() {
     dnf install -yq curl jq
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        dnf install -yq net-tools
         if ! isCmdInstalled docker; then
             # Can't install docker for them on red hat, because they make it difficult. See: https://linuxconfig.org/how-to-install-docker-in-rhel-8
             log_fatal 2 "Docker is required, but not installed. Install it and rerun this script."
