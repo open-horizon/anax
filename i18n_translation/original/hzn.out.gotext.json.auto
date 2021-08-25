@@ -10264,34 +10264,25 @@
             "fuzzy": true
         },
         {
-            "id": "Failed to marshal deps: {Err}",
-            "message": "Failed to marshal deps: {Err}",
-            "translation": "Failed to marshal deps: {Err}",
+            "id": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
+            "message": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
+            "translation": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "Err",
+                    "id": "SvcPath",
                     "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
+                    "type": "string",
+                    "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Failed to unmarshal deps: {Err}",
-            "message": "Failed to unmarshal deps: {Err}",
-            "translation": "Failed to unmarshal deps: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
+                    "expr": "svcPath"
+                },
                 {
                     "id": "Err",
-                    "string": "%[1]v",
+                    "string": "%[2]v",
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
+                    "argNum": 2,
                     "expr": "err"
                 }
             ],
@@ -10715,6 +10706,39 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "serviceName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+            "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+            "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SERVICECOMMAND",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "SERVICE_COMMAND"
+                },
+                {
+                    "id": "SERVICELOGCOMMAND",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "SERVICE_LOG_COMMAND"
+                },
+                {
+                    "id": "JoincontainerNames__",
+                    "string": "%[3]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "strings.Join(containerNames, \", \")"
                 }
             ],
             "fuzzy": true
@@ -20409,7 +20433,7 @@
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "serviceInstance.SpecRef"
+                    "expr": "serviceInstanceFound.SpecRef"
                 },
                 {
                     "id": "InstanceId",
@@ -20482,9 +20506,9 @@
             "fuzzy": true
         },
         {
-            "id": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-            "message": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-            "translation": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
+            "id": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
+            "message": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
+            "translation": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -20494,6 +20518,14 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "serviceName"
+                },
+                {
+                    "id": "JoincNames__",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "strings.Join(cNames, \", \")"
                 }
             ],
             "fuzzy": true
