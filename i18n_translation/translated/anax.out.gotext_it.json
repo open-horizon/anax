@@ -140,7 +140,7 @@
     },
     {
       "id": "Secret name must be provided",
-      "translation": "È necessario fornire il nome segreto "
+      "translation": "È necessario fornire il nome segreto"
     },
     {
       "id": "Unable to read request body, error: {Err}.",
@@ -172,15 +172,15 @@
     },
     {
       "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
-      "translation": "Impossibile {Action} i segreti nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti. "
+      "translation": "Impossibile {Action} i segreti nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti."
     },
     {
       "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
-      "translation": "Impossibile {Action} il segreto \"{SecretName}\" nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti. "
+      "translation": "Impossibile {Action} il segreto \"{SecretName}\" nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti."
     },
     {
       "id": "Secrets provider received a bad request, please check all the provided inputs.",
-      "translation": "Il provider dei segreti ha ricevuto una richiesta errata, controllare tutti gli input forniti. "
+      "translation": "Il provider dei segreti ha ricevuto una richiesta errata, controllare tutti gli input forniti."
     },
     {
       "id": "Response: {Response}",
@@ -196,15 +196,15 @@
     },
     {
       "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
-      "translation": "Si è verificato un errore sconosciuto. Codice di risposta {ResponseCode} ricevuto dal provider dei segreti. "
+      "translation": "Si è verificato un errore sconosciuto. Codice di risposta {ResponseCode} ricevuto dal provider dei segreti."
     },
     {
       "id": "Organization must be specified in the API path",
-      "translation": "È necessario specificare l'organizzazione nel percorso API "
+      "translation": "È necessario specificare l'organizzazione nel percorso API"
     },
     {
       "id": "User must be specified in the API path",
-      "translation": "È necessario specificare l'utente nel percorso API "
+      "translation": "È necessario specificare l'utente nel percorso API"
     },
     {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
@@ -579,6 +579,10 @@
       "translation": "Impossibile ottenere il percorso assoluto per il file {KeyFile}. {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "Errore di verifica del percorso assoluto del file {KeyFile}. {Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "Errore durante l'analisi HORIZON_URL: {Err}"
     },
@@ -799,12 +803,20 @@
       "translation": "Controllo del formato del file di chiave privata..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "la chiave privata fornita non è valida; errore: {Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "la chiave privata {KeyFile} fornita non è valida; errore: {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}. Creare la chiave di firma."
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "impossibile generare la chiave privata; errore: {Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. Impossibile generare la chiave pubblica."
     },
     {
       "id": "running: {CmdStr}",
@@ -865,6 +877,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "Errore durante la conversione della variabile di ambiente HZN_HTTP_RETRY_INTERVAL {RetryIntervals} in numero intero. {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "Il file {FileName} già esiste. Specificare un percorso file o un nome file diverso. Per sovrascrivere il file esistente, utilizzare l'indicatore '--overwrite'."
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Impossibile salvare i dati per l'oggetto '{DefaultFileName}' nel file {FileName}, errore: {Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",

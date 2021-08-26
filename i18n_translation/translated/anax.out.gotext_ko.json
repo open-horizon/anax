@@ -579,6 +579,10 @@
       "translation": "{KeyFile} 파일의 절대 경로를 가져오는 데 실패했습니다. {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "{KeyFile} 파일의 절대 경로를 검사하는 중 오류가 발생했습니다. {Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "HORIZON_URL 구문 분석 중 오류 발생: {Err}"
     },
@@ -799,12 +803,20 @@
       "translation": "개인 키 파일 형식 확인 중..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "제공된 개인 키가 올바르지 않습니다. 오류: {Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "제공된 개인 키 {KeyFile}이(가) 올바르지 않습니다. 오류: {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}. 서명 키를 작성하십시오."
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "개인 키를 생성할 수 없습니다. 오류: {Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. 공개 키를 생성할 수 없습니다. "
     },
     {
       "id": "running: {CmdStr}",
@@ -865,6 +877,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "환경 변수 HZN_HTTP_RETRY_INTERVAL {RetryIntervals}을(를) 정수로 변환하는 중에 오류가 발생했습니다. {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "{FileName} 파일이 이미 있습니다. 다른 파일 경로나 파일 이름을 지정하십시오. 기존 파일을 겹쳐쓰려면 '--overwrite' 플래그를 사용하십시오."
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "오브젝트 '{DefaultFileName}'의 데이터를 {FileName} 파일에 저장하지 못함. 오류: {Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",

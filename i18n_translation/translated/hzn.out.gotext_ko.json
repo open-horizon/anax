@@ -387,8 +387,8 @@
       "translation": "{PROPSVCPRIVILEGED} 특성은 부울 값(true 또는 false)을 가져야 합니다."
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon 에이전트의 명령행 인터페이스입니다. 대부분의 하위 명령은 기본 위치 http://localhost(이를 겹쳐쓰려면 환경 변수 섹션 참조)의 Horizon 에이전트 API를 사용합니다.\n\n하위 명령 설명:\n  agbot: Horizon 계약 봇(agbot) 리소스를 나열하고 관리합니다.\n  agreement: 이 에지 노드가 Horizon 계약 봇(agbot)과 맺은 활성 또는 아카이브된 계약을 나열하거나 관리합니다.\n  architecture: 이 시스템의 아키텍처를 표시합니다(Horizon 및 golang에서 정의된 대로). \n  attribute: 이 Horizon 에지 노드에 현재 등록된 글로벌 속성을 나열하거나 관리합니다.\n  deploycheck: 배치 호환성을 확인합니다.\n  dev: 서비스 작성을 위한 개발 도구입니다.\n  env: Horizon 환경 변수를 표시합니다.\n  eventlog: 현재 또는 모든 등록에 대한 이벤트 로그를 나열합니다.\n  exchange: Horizon Exchange 리소스를 나열하고 관리합니다.\n  key: 서비스를 서명하고 확인하기 위한 키를 나열하고 관리합니다. \n  metering: 활성 또는 아카이브된 계약에 대한 비용 측정(지불) 정보를 나열하거나 관리합니다.\n  mms: Horizon 모델 관리 서비스 리소스를 나열하고 관리합니다.\n  node: 이 Horizon 에지 노드에 대한 일반 정보를 나열하고 관리합니다.\n  policy: 이 Horizon 에지 노드에 대한 정책을 나열하고 관리합니다. \n  reginput: (일단 입력되면) 'hzn register' 명령에 사용할 수 있는 이 패턴의 입력 파일 템플리트를 작성합니다. \n            이는 지정된 패턴이 사용하는 서비스를 검토하고 이 서비스에 필요한 노드 소유자 입력을 판별합니다. \n  register: 관리 허브에 이 에지 노드를 등록합니다.\n  service: 이 Horizon 에지 노드에 현재 등록된 서비스를 나열하거나 관리합니다.\n  status: 노드에 대한 현재 horizon 내부 상태를 표시합니다.\n  unregister: 다시 등록할 수 있도록 이 Horizon 에지 노드를 등록 취소하고 재설정합니다.\n  userinput: 이 Horizon 에지 노드에 현재 등록된 서비스 사용자 입력을 나열하거나 관리합니다.\n  util: 유틸리티 명령입니다.\n  version: Horizon 버전을 표시합니다.\n  voucher: Horizon SDO 소유권 바우처를 나열하고 관리합니다.\n\n환경 변수:\n  HORIZON_URL:  hzn이 Horizon 에이전트 API에 접속하는 URL을 겹쳐씁니다.\n      이렇게 하면 ssh 터널을 통해 원격 Horizon 에이전트 사용이 용이하게 됩니다.\n  HZN_EXCHANGE_URL:  'hzn exchange' 하위 명령이 Horizon Exchange와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/api/v1. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n  HZN_ORG_ID:  'hzn exchange -o' 플래그의 기본값이며,\n      조직 ID를 지정합니다.\n  HZN_EXCHANGE_USER_AUTH:  'hzn exchange -u' 또는 'hzn\n\t  register -u' 플래그의 기본값이며, 양식은 '[org/]user:pw'입니다. HZN_EXCHANGE_USER_AUTH가 설정될 때 \n\t  조직이 생략되면 HZN_ORG_ID를 설정할 수 있습니다.\n  HZN_FSS_CSSURL:  'hzn mms' 하위 명령이 Horizon 모델 관리 서비스와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/css/. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n\n  이러한 모든 환경 변수와 명령 도움말에 언급된 변수를\n  사용자의 구성 파일 ~/.hzn/hzn.json에 JSON 형식으로 지정할 수 있습니다.\n  예:\n  {Com____}"
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "translation": "Horizon 에이전트의 명령행 인터페이스입니다. 대부분의 하위 명령은 기본 위치 http://localhost(이를 겹쳐쓰려면 환경 변수 섹션 참조)의 Horizon 에이전트 API를 사용합니다.\n\n하위 명령 설명:\n  agbot: Horizon 계약 봇(agbot) 리소스를 나열하고 관리합니다.\n  agreement: 이 에지 노드가 Horizon 계약 봇(agbot)과 맺은 활성 또는 아카이브된 계약을 나열하거나 관리합니다.\n  architecture: 이 시스템의 아키텍처를 표시합니다(Horizon 및 golang에서 정의된 대로). \n  attribute: 이 Horizon 에지 노드에 현재 등록된 글로벌 속성을 나열하거나 관리합니다.\n  deploycheck: 배치 호환성을 확인합니다.\n  dev: 서비스 작성을 위한 개발 도구입니다.\n  env: Horizon 환경 변수를 표시합니다.\n  eventlog: 현재 또는 모든 등록에 대한 이벤트 로그를 나열합니다.\n  exchange: Horizon Exchange 리소스를 나열하고 관리합니다.\n  key: 서비스를 서명하고 확인하기 위한 키를 나열하고 관리합니다. \n  metering: 활성 또는 아카이브된 계약에 대한 비용 측정(지불) 정보를 나열하거나 관리합니다.\n  mms: Horizon 모델 관리 서비스 리소스를 나열하고 관리합니다.\n  node: 이 Horizon 에지 노드에 대한 일반 정보를 나열하고 관리합니다.\n  policy: 이 Horizon 에지 노드에 대한 정책을 나열하고 관리합니다. \n  reginput: (일단 입력되면) 'hzn register' 명령에 사용할 수 있는 이 패턴의 입력 파일 템플리트를 작성합니다. \n            이는 지정된 패턴이 사용하는 서비스를 검토하고 이 서비스에 필요한 노드 소유자 입력을 판별합니다. \n  register: 관리 허브에 이 에지 노드를 등록합니다.\n  service: 이 Horizon 에지 노드에 현재 등록된 서비스를 나열하거나 관리합니다.\n  status: 노드에 대한 현재 horizon 내부 상태를 표시합니다.\n  unregister: 다시 등록할 수 있도록 이 Horizon 에지 노드를 등록 취소하고 재설정합니다.\n  userinput: 이 Horizon 에지 노드에 현재 등록된 서비스 사용자 입력을 나열하거나 관리합니다.\n  util: 유틸리티 명령입니다.\n  version: Horizon 버전을 표시합니다.\n  sdo: Horizon SDO 소유권 바우처와 키를 나열하고 관리합니다. \n\n환경 변수:\n  HORIZON_URL:  hzn이 Horizon 에이전트 API에 접속하는 URL을 겹쳐씁니다.\n      이렇게 하면 ssh 터널을 통해 원격 Horizon 에이전트 사용이 용이하게 됩니다.\n  HZN_EXCHANGE_URL:  'hzn exchange' 하위 명령이 Horizon Exchange와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/api/v1. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n  HZN_ORG_ID:  'hzn exchange -o' 플래그의 기본값이며,\n      조직 ID를 지정합니다.\n  HZN_EXCHANGE_USER_AUTH:  'hzn exchange -u' 또는 'hzn\n\t  register -u' 플래그의 기본값이며, 양식은 '[org/]user:pw'입니다. HZN_EXCHANGE_USER_AUTH가 설정될 때 \n\t  조직이 생략되면 HZN_ORG_ID를 설정할 수 있습니다.\n  HZN_FSS_CSSURL:  'hzn mms' 하위 명령이 Horizon 모델 관리 서비스와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/css/. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n  HZN_SDO_SVC_URL:  'hzn sdo' 하위 명령에서 SDO 소유자 서비스와 통신하는 데\n\t  사용하는 URL을 대체합니다. (기본적으로 hzn은 URL의\n\t\t      Horizon 에이전트를 요청합니다.)\n\n  이러한 모든 환경 변수와 명령 도움말에 언급된 변수를\n  사용자의 구성 파일 ~/.hzn/hzn.json에 JSON 형식으로 지정할 수 있습니다.\n  예:\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -1347,12 +1347,12 @@
       "translation": "Horizon exchange에서 패턴을 작성/업데이트하는 데 필요한 메타데이터가 포함된 JSON 파일의 경로입니다. {Sampledir}/pattern.json을 참조하십시오. stdin에서 읽으려면 -f-를 지정하십시오."
     },
     {
-      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "패턴에 서명하는 데 사용할 개인 키 파일의 경로입니다. 지정하지 않으면 환경 변수 HZN_PRIVATE_KEY_FILE이 사용됩니다. 아무 것도 설정하지 않으면 ~/.hzn/keys/service.private.key가 기본값이 됩니다."
+      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the pattern.",
+      "translation": "패턴에 서명하는 데 사용할 개인 키 파일의 경로입니다. 지정하지 않으면 환경 변수 HZN_PRIVATE_KEY_FILE이 사용됩니다. HZN_PRIVATE_KEY_FILE을 지정하지 않으면, ~/.hzn/keys/service.private.key를 사용합니다. 아무 것도 지정하지 않으면, 랜덤 키 쌍이 생성되며 공개 키가 패턴과 함께 저장됩니다. "
     },
     {
-      "id": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "패턴과 함께 저장할 공개 키 파일(개인 키에 해당)의 경로이며, Horizon 에이전트가 서명을 확인하는 데 사용합니다. 이 플래그와 -k 플래그가 둘 다 지정되지 않으면 환경 변수 HZN_PUBLIC_KEY_FILE이 사용됩니다. HZN_PUBLIC_KEY_FILE을 설정하지 않으면 ~/.hzn/keys/service.public.pem이 기본값이 됩니다. -k를 지정하고 이 플래그는 지정하지 않으면 공개 키 파일이 패턴과 함께 저장되지 않습니다. Horizon 에이전트는 공개 키를 가져와 서명을 확인해야 합니다."
+      "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
+      "translation": "(더 이상 사용되지 않음) 패턴과 함께 저장할 공개 키 파일(개인 키에 해당)의 경로이며, Horizon 에이전트가 서명을 확인하는 데 사용합니다. 이 플래그를 지정하지 않으면, 개인 키로부터 공개 키가 계산됩니다. "
     },
     {
       "id": "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.",
@@ -1495,12 +1495,12 @@
       "translation": "Horizon exchange에서 서비스를 작성/업데이트하는 데 필요한 메타데이터가 포함된 JSON 파일의 경로입니다. {Sampledir}/service.json과 {Sampledir_1}/service_cluster.json을 참조하십시오. stdin에서 읽으려면 -f-를 지정하십시오."
     },
     {
-      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "서비스에 서명하는 데 사용할 개인 키 파일의 경로입니다. 지정하지 않으면 환경 변수 HZN_PRIVATE_KEY_FILE이 사용됩니다. 아무 것도 설정하지 않으면 ~/.hzn/keys/service.private.key가 기본값이 됩니다."
+      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the service.",
+      "translation": "서비스에 서명하는 데 사용할 개인 키 파일의 경로입니다. 지정하지 않으면 환경 변수 HZN_PRIVATE_KEY_FILE이 사용됩니다. HZN_PRIVATE_KEY_FILE을 지정하지 않으면, ~/.hzn/keys/service.private.key를 사용합니다. 아무 것도 지정하지 않으면, 랜덤 키 쌍이 생성되며 공개 키가 서비스와 함께 저장됩니다. "
     },
     {
-      "id": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "서비스와 함께 저장할 공개 키 파일(개인 키에 해당)의 경로이며, Horizon 에이전트가 서명을 확인하는 데 사용됩니다. 이 플래그와 -k 플래그가 둘 다 지정되지 않으면 환경 변수 HZN_PUBLIC_KEY_FILE이 사용됩니다. HZN_PUBLIC_KEY_FILE을 설정하지 않으면 ~/.hzn/keys/service.public.pem이 기본값이 됩니다. -k를 지정하고 이 플래그는 지정하지 않으면 공개 키 파일이 서비스와 함께 저장되지 않습니다. Horizon 에이전트는 공개 키를 가져와 서명을 확인해야 합니다."
+      "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
+      "translation": "(더 이상 사용되지 않음) 서비스와 함께 저장할 공개 키 파일(개인 키에 해당)의 경로이며, Horizon 에이전트가 서명을 확인하는 데 사용합니다. 이 플래그를 지정하지 않으면, 개인 키로부터 공개 키가 계산됩니다. "
     },
     {
       "id": "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.",
@@ -2227,6 +2227,70 @@
       "translation": "Horizon 버전을 표시합니다."
     },
     {
+      "id": "List and manage resources in SDO owner services",
+      "translation": "SDO 소유자 서비스에서 자원 나열 및 관리"
+    },
+    {
+      "id": "List and manage Horizon SDO ownership keys.",
+      "translation": "Horizon SDO 소유권 키를 나열하고 관리합니다."
+    },
+    {
+      "id": "List the SDO ownership keys stored in SDO owner services.",
+      "translation": "SDO 소유자 서비스에 저장된 SDO 소유권 키를 나열합니다. "
+    },
+    {
+      "id": "List the full details of this SDO ownership key.",
+      "translation": "이 SDO 소유권 키의 전체 세부사항을 나열합니다."
+    },
+    {
+      "id": "Create a new key in SDO owner services.",
+      "translation": "SDO 소유자 서비스에 새 키를 작성합니다. "
+    },
+    {
+      "id": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
+      "translation": "SDO 소유자 서비스에 작성할 키의 메타데이터가 포함된 파일입니다. JSON 파일 유형 확장자여야 합니다. "
+    },
+    {
+      "id": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
+      "translation": "리턴된 공개 키를 작성하는 파일입니다. 생략 시, 이 키가 콘솔에 인쇄됩니다. "
+    },
+    {
+      "id": "Overwrite the existing output public key file if it exists.",
+      "translation": "기존 출력 공개 키 파일이 있는 경우 덮어씁니다."
+    },
+    {
+      "id": "Download the specified key from SDO owner services.",
+      "translation": "SDO 소유자 서비스에서 지정된 키를 다운로드하십시오. "
+    },
+    {
+      "id": "The name of the key to be downloaded from SDO owner services.",
+      "translation": "SDO 소유자 서비스에서 다운로드할 키의 이름입니다. "
+    },
+    {
+      "id": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
+      "translation": "다운로드된 키의 데이터를 작성하는 파일입니다. 생략 시, 이 키가 콘솔에 인쇄됩니다. "
+    },
+    {
+      "id": "Overwrite the existing file if it exists.",
+      "translation": "기존 파일이 있는 경우 덮어씁니다."
+    },
+    {
+      "id": "Remove a key from SDO owner services.",
+      "translation": "SDO 소유자 서비스에서 키를 제거합니다. "
+    },
+    {
+      "id": "The name of the key to be removed from SDO owner services.",
+      "translation": "SDO 소유자 서비스에서 제거할 키의 이름입니다. "
+    },
+    {
+      "id": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
+      "translation": "새 SDO 키 메타데이터 템플리트 파일을 작성합니다. SDO 소유자 서비스에 추가하기 전에 모든 필드를 입력해야 합니다. "
+    },
+    {
+      "id": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
+      "translation": "SDO 키 템플리트가 JSON 형식으로 작성되는 파일입니다. 생략 시, 이 키 메타데이터가 콘솔에 인쇄됩니다. "
+    },
+    {
       "id": "List and manage Horizon SDO ownership vouchers.",
       "translation": "Horizon SDO 소유권 바우처를 나열하고 관리합니다."
     },
@@ -2251,16 +2315,12 @@
       "translation": "SDO 소유권 바우처 파일입니다."
     },
     {
-      "id": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered. HZN_SDO_SVC_URL must be set in the environment, /etc/default/horizon, or one of the hzn.json files.",
-      "translation": "SDO 소유권 바우처를 가져와서 해당 디바이스를 부팅하여 구성하고 등록합니다. HZN_SDO_SVC_URL을 환경, /etc/default/horizon, 또는 hzn.json 파일 중 하나에 설정해야 합니다."
+      "id": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+      "translation": "SDO 소유권 바우처를 가져와서 해당 디바이스를 부팅하여 구성하고 등록합니다."
     },
     {
       "id": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).",
       "translation": "SDO 소유권 바우처 파일입니다. 파일 유형 확장이어야 합니다. json, tar, tar.gz, tgz 또는 zip. tar/zip 형식 중 하나인 경우, 그 안의 모든 json 파일을 가져옵니다(기타 파일/디렉토리는 자동으로 무시됨)."
-    },
-    {
-      "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
-      "translation": "바우처를 가져올 Horizon 사용자 인증 정보입니다. 지정하지 않은 경우 HZN_EXCHANGE_USER_AUTH가 기본값으로 사용됩니다. 사용자 조직을 접두부로 추가하지 않으면 -o 값이 자동으로 접두부로 추가됩니다."
     },
     {
       "id": "Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.",
@@ -2273,6 +2333,38 @@
     {
       "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
       "translation": "이 바우처와 연관된 에지 디바이스에 사용할 배치 패턴 이름입니다. 패턴이 노드와 다른 조직에서 제공되면 'other_org/pattern' 형식을 사용하십시오. -e 및 --policy와 상호 배타적입니다."
+    },
+    {
+      "id": "Download the specified SDO ownership voucher from SDO owner services.",
+      "translation": "SDO 소유자 서비스에서 지정된 SDO 소유권 바우처를 다운로드하십시오. "
+    },
+    {
+      "id": "The SDO ownership voucher to download.",
+      "translation": "다운로드할 SDO 소유권 바우처입니다."
+    },
+    {
+      "id": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
+      "translation": "다운로드된 바우처의 데이터를 JSON 형식으로 작성하는 파일입니다. 이 플래그는 -f와 함께 사용해야 합니다. 생략된 경우 <deviceID>.json 형식의 기본 파일 이름을 사용하여 현재 디렉토리에 저장합니다."
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
+      "translation": "(더 이상 사용되지 않음) 이 명령은 더 이상 사용되지 않습니다. 'hzn sdo voucher'를 사용하여 Horizon SDO 소유권 바우처를 나열하고 관리하십시오. "
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
+      "translation": "(더 이상 사용되지 않음) 이 명령은 더 이상 사용되지 않습니다. 'hzn sdo voucher list'를 사용하여 가져온 SDO 소유권 바우처를 나열하십시오. "
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
+      "translation": "(더 이상 사용되지 않음) 이 명령은 더 이상 사용되지 않습니다. 'hzn sdo voucher inspect'를 사용하여 SDO 소유권 바우처 특성을 표시하십시오. "
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
+      "translation": "(더 이상 사용되지 않음) 이 명령은 더 이상 사용되지 않습니다. 'hzn sdo voucher import'를 사용하여 SDO 소유권 바우처를 가져오십시오. "
+    },
+    {
+      "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
+      "translation": "바우처를 가져올 Horizon 사용자 인증 정보입니다. 지정하지 않은 경우 HZN_EXCHANGE_USER_AUTH가 기본값으로 사용됩니다. 사용자 조직을 접두부로 추가하지 않으면 -o 값이 자동으로 접두부로 추가됩니다."
     },
     {
       "id": "The mms command is not supported on an edge cluster node.",
@@ -2559,6 +2651,10 @@
       "translation": "{KeyFile} 파일의 절대 경로를 가져오는 데 실패했습니다. {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "{KeyFile} 파일의 절대 경로를 검사하는 중 오류가 발생했습니다. {Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "HORIZON_URL 구문 분석 중 오류 발생: {Err}"
     },
@@ -2779,12 +2875,20 @@
       "translation": "개인 키 파일 형식 확인 중..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "제공된 개인 키가 올바르지 않습니다. 오류: {Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "제공된 개인 키 {KeyFile}이(가) 올바르지 않습니다. 오류: {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}. 서명 키를 작성하십시오."
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "개인 키를 생성할 수 없습니다. 오류: {Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. 공개 키를 생성할 수 없습니다. "
     },
     {
       "id": "running: {CmdStr}",
@@ -2845,6 +2949,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "환경 변수 HZN_HTTP_RETRY_INTERVAL {RetryIntervals}을(를) 정수로 변환하는 중에 오류가 발생했습니다. {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "{FileName} 파일이 이미 있습니다. 다른 파일 경로나 파일 이름을 지정하십시오. 기존 파일을 겹쳐쓰려면 '--overwrite' 플래그를 사용하십시오."
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "오브젝트 '{DefaultFileName}'의 데이터를 {FileName} 파일에 저장하지 못함. 오류: {Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
@@ -4343,8 +4455,8 @@
       "translation": "service {I__1}, serviceVersion number {J__1}의 deployment_overrides 필드를 마샬링하는 데 실패함: {Err}"
     },
     {
-      "id": "problem signing the deployment_overrides string with {KeyFilePath}: {Err}",
-      "translation": "{KeyFilePath}이(가) 포함된 deployment_overrides 문자열에 서명하는 중에 문제점 발생: {Err}"
+      "id": "problem signing the deployment_overrides string: {Err}",
+      "translation": "deployment_overrides 문자열에 서명하는 중 문제점 발생: {Err}"
     },
     {
       "id": "Updating {ExchId} in the Exchange...",
@@ -4355,8 +4467,8 @@
       "translation": "Exchange에서 {ExchId}을(를) 작성하는 중..."
     },
     {
-      "id": "Storing {BaseName} with the pattern in the Exchange...",
-      "translation": "Exchange에서 패턴과 함께 {BaseName}을(를) 저장하는 중..."
+      "id": "Storing {NewPubKeyName} with the pattern in the Exchange...",
+      "translation": "Exchange에서 패턴과 함께 {NewPubKeyName}을(를) 저장하는 중..."
     },
     {
       "id": "key '{Org____pattern}' not found in resources returned from exchange",
@@ -4419,6 +4531,10 @@
       "translation": "이 서비스의 clusterDeployment 속성이 비어 있어서 -f를 무시합니다."
     },
     {
+      "id": "Flag -K cannot be specified without -k flag.",
+      "translation": "플래그 -K를 -k 플래그 없이 지정할 수 없습니다. "
+    },
+    {
       "id": "Flags -I and -P are mutually exclusive.",
       "translation": "플래그 -I 및 -P는 상호 배타적입니다."
     },
@@ -4447,8 +4563,8 @@
       "translation": "{Org}/{ExchId} 서비스가 Exchange에 있습니다. 겹쳐쓰시겠습니까?"
     },
     {
-      "id": "Storing {BaseName} with the service in the Exchange...",
-      "translation": "Exchange에서 서비스와 함께 {BaseName}을(를) 저장하는 중..."
+      "id": "Storing {PubKeyNameToStore} with the service in the Exchange...",
+      "translation": "Exchange에서 서비스와 함께 {PubKeyNameToStore}을(를) 저장하는 중..."
     },
     {
       "id": "Error: registry-token value of '{RegTok}' is not in the required format: registry:user:token. Not storing that in the Horizon exchange.",
@@ -4707,8 +4823,8 @@
       "translation": "{KUBEDEPLOYMENTCONFIGTYPE} 배치 문자열 {Dep}을(를) 마샬링하는 데 실패했습니다. 오류 {Err}"
     },
     {
-      "id": "problem signing {KUBEDEPLOYMENTCONFIGTYPE} deployment string with {KeyFilePath}: {Err}",
-      "translation": "{KeyFilePath}이(가) 포함된 {KUBEDEPLOYMENTCONFIGTYPE} 배치 문자열에 서명하는 중에 문제점 발생: {Err}"
+      "id": "problem signing {KUBEDEPLOYMENTCONFIGTYPE} deployment string: {Err}",
+      "translation": "{KUBEDEPLOYMENTCONFIGTYPE} 배치 문자열에 서명하는 중 문제점 발생: {Err}"
     },
     {
       "id": "operatorYamlArchive must have a string type value, has {C}",
@@ -4735,8 +4851,8 @@
       "translation": "배치 문자열 {Dep}을(를) 마샬링하는 데 실패했습니다. 오류 {Err}"
     },
     {
-      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
-      "translation": "{KeyFilePath}이(가) 포함된 배치 문자열에 서명하는 중에 문제점 발생: {Err}"
+      "id": "problem signing deployment string: {Err}",
+      "translation": "배치 문자열에 서명하는 중 문제점 발생: {Err}"
     },
     {
       "id": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
@@ -5280,7 +5396,7 @@
     },
     {
       "id": "Command output:",
-      "translation": "명령 출력: "
+      "translation": "명령 출력:"
     },
     {
       "id": "Using the 'hzn deploycheck userinput -p' command to verify that node, service configuration and pattern are compatible.",
@@ -5303,12 +5419,80 @@
       "translation": "분석이 완료되었습니다."
     },
     {
-      "id": "reading the bytes from {Name}: {Err}",
-      "translation": "{Name}에서 바이트를 읽는 중: {Err}"
+      "id": "Importing key file name: {Name}",
+      "translation": "키 파일 이름을 가져오는 중: {Name}"
     },
     {
-      "id": "parsing the json from {Name}: {Err}",
-      "translation": "{Name}에서 JSON을 구문 분석하는 중: {Err}"
+      "id": "unsupported key file type extension: {Name}",
+      "translation": "지원되지 않는 키 파일 유형 확장자: {Name}"
+    },
+    {
+      "id": "Listing SDO keys.",
+      "translation": "SDO 키를 나열합니다. "
+    },
+    {
+      "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
+      "translation": "{ApiMsg}에서 온 json 역마샬링 HTTP 응답 '{StringrespBodyBytes}': {Err}"
+    },
+    {
+      "id": "SDO key name {KeyName} not found",
+      "translation": "SDO 키 이름 {KeyName}을(를) 찾을 수 없음"
+    },
+    {
+      "id": "failed to marshal 'hzn sdo keys list' output: {Err}",
+      "translation": "'hzn sdo keys list' 출력을 마샬링하는 데 실패함: {Err}"
+    },
+    {
+      "id": "Downloading SDO key \"{KeyName}\".",
+      "translation": "SDO 키 \"{KeyName}\"을(를) 다운로드 중입니다."
+    },
+    {
+      "id": "Removing SDO key \"{KeyName}\".",
+      "translation": "SDO 키 \"{KeyName}\"을(를) 제거 중입니다."
+    },
+    {
+      "id": "Creating SDO key template at \"{OutputFile}\".",
+      "translation": "\"{OutputFile}\"에서 SDO 키 템플리트를 작성하는 중입니다."
+    },
+    {
+      "id": "parsing the json: {Err}",
+      "translation": "json을 구문 분석하는 중: {Err}"
+    },
+    {
+      "id": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
+      "translation": "올바르지 않은 키 이름입니다. 키 \"{KeyName}\"이(가) 조직 \"{Org}\"에 없습니다."
+    },
+    {
+      "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "올바르지 않은 키 파일입니다. 키 \"{Key}\"이(가) 이미 조직 \"{Org}\"의 SDO 소유자 서비스에 있습니다."
+    },
+    {
+      "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
+      "translation": "올바르지 않은 키 파일입니다. 키가 이미 조직 \"{Org}\"의 SDO 소유자 서비스에 있습니다. "
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access keys in org \"{Org}\" with given credentials.",
+      "translation": "올바르지 않은 인증 정보입니다. \"{User}\" 사용자가 지정된 인증 정보를 사용하여 \"{Org}\" 조직의 키에 액세스할 수 없습니다. "
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
+      "translation": "올바르지 않은 인증 정보입니다. \"{User}\" 사용자가 지정된 인증 정보를 사용하여 \"{Org}\" 조직의 키 \"{KeyName}\"에 액세스할 수 없습니다. "
+    },
+    {
+      "id": "reading the bytes from {KeyFileName}: {Err}",
+      "translation": "{KeyFileName}에서 바이트를 읽는 중: {Err}"
+    },
+    {
+      "id": "parsing the json from {KeyFileName}: {Err}",
+      "translation": "{KeyFileName}에서 JSON을 구문 분석하는 중: {Err}"
+    },
+    {
+      "id": "given key {KeyFileName} has missing fields:\n{Err}",
+      "translation": "지정된 키 {KeyFileName}에 누락된 필드가 있음:\n{Err}"
+    },
+    {
+      "id": "JSON Body:{StringkeyBytes}",
+      "translation": "JSON 본문:{StringkeyBytes}"
     },
     {
       "id": "base64 decoding {T4}: {Err}",
@@ -5319,8 +5503,20 @@
       "translation": "가져온 SDO 바우처를 나열합니다."
     },
     {
-      "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg}에서 온 json 역마샬링 HTTP 응답 '{StringrespBodyBytes}': {Err}"
+      "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+      "translation": "올바르지 않은 바우처 이름입니다. 바우처 \"{Voucher}\"이(가) 조직 \"{Org}\"에 없습니다."
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+      "translation": "올바르지 않은 인증 정보입니다. \"{User}\" 사용자가 지정된 인증 정보를 사용하여 \"{Org}\" 조직의 바우처에 액세스할 수 없습니다. "
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+      "translation": "올바르지 않은 인증 정보입니다. \"{User}\" 사용자가 지정된 인증 정보를 사용하여 \"{Org}\" 조직의 바우처 \"{Voucher}\"에 액세스할 수 없습니다. "
+    },
+    {
+      "id": "failed to marshal 'hzn sdo voucher list' output: {Err}",
+      "translation": "'hzn sdo voucher list' 출력을 마샬링하는 데 실패함: {Err}"
     },
     {
       "id": "Importing voucher file name: {Name}",
@@ -5367,6 +5563,10 @@
       "translation": "노드 정책 사용: {PolicyStr}"
     },
     {
+      "id": "Invalid voucher file format: {StringrespBodyBytes}.",
+      "translation": "올바르지 않은 바우처 파일 형식: {StringrespBodyBytes}."
+    },
+    {
       "id": "Adding/updating node...",
       "translation": "노드 추가/업데이트 중..."
     },
@@ -5409,6 +5609,10 @@
     {
       "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
       "translation": "시크릿 \"{SecretName}\"이(가) 시크릿 관리자에 추가되었습니다."
+    },
+    {
+      "id": "Are you sure you want to remove secret {SecretName} from the secrets manager?",
+      "translation": "시크릿 관리자에서 {SecretName} 시크릿을 제거하시겠습니까? "
     },
     {
       "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
@@ -5561,10 +5765,6 @@
     {
       "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
       "translation": "'{ObjType}' 유형의 '{ObjId}' 오브젝트를 {Org} 조직에서 찾을 수 없음"
-    },
-    {
-      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "{FileName} 파일이 이미 있습니다. 다른 파일 경로나 파일 이름을 지정하십시오. 기존 파일을 겹쳐쓰려면 '--overwrite' 플래그를 사용하십시오."
     },
     {
       "id": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",

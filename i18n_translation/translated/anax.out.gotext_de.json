@@ -579,6 +579,10 @@
       "translation": "Abrufen des absoluten Pfads für Datei {KeyFile} fehlgeschlagen. {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "Fehler beim Prüfen des absoluten Pfads für Datei {KeyFile}. {Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "Fehler beim Parsing von HORIZON_URL: {Err}"
     },
@@ -799,12 +803,20 @@
       "translation": "Das Format der privaten Schlüsseldatei wird geprüft..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "Der angegebene private Schlüssel ist ungültig. Fehler: {Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "Der angegebene private Schlüssel {KeyFile} ist ungültig. Fehler: {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}. Erstellen Sie den Signierschlüssel."
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "Der private Schlüssel konnte nicht generiert werden. Fehler: {Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. Der öffentliche Schlüssel konnte nicht generiert werden."
     },
     {
       "id": "running: {CmdStr}",
@@ -865,6 +877,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "Fehler beim Konvertieren der Umgebungsvariablen HZN_HTTP_RETRY_INTERVAL {RetryIntervals} in eine ganze Zahl. {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "Die Datei {FileName} ist bereits vorhanden. Geben Sie einen anderen Dateipfad oder Dateinamen an. Verwenden Sie das Flag '-- overwrite', wenn Sie die vorhandene Datei überschreiben wollen. "
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Das Speichern von Daten für das Objekt '{DefaultFileName}' in der Datei {FileName} ist fehlgeschlagen. Fehler: {Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
