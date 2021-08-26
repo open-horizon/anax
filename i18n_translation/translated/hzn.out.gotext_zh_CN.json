@@ -120,7 +120,7 @@
     },
     {
       "id": "No secret(s) found under secret name \"{SecretName}\"",
-      "translation": "私钥名称“{SecretName}”中找不到私钥"
+      "translation": "私钥名称“{SecretName}”下找不到私钥"
     },
     {
       "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
@@ -387,8 +387,8 @@
       "translation": "{PROPSVCPRIVILEGED} 属性必须包含布尔值（true 或 false）。"
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon 代理程序的命令行界面。 大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅 '环境变量' 一节以覆盖该位置）。\n\n子命令描述：\n  agbot：列示和管理 Horizon 协议 bot 资源。\n  agreement：列示或管理此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。\n  architecture：显示此机器的体系结构（由 Horizon 和 golang 定义）。 \n  attribute：列示或管理当前在此 Horizon 边缘节点上注册的全局属性。\n  deploycheck：检查部署兼容性。\n  dev：用于创建服务的开发工具。\n  env：显示 Horizon 环境变量。\n  eventlog：列示当前注册或所有注册的事件日志。\n  exchange：列示和管理 Horizon Exchange 资源。\n  key：列示和管理用于签署和验证服务的密钥。 \n  metering：列示或管理活动协议或存档协议的测量（付款）信息。\n  mms：列示和管理 Horizon 模型管理服务资源。\n  node：列示和管理有关此 Horizon 边缘节点的常规信息。\n  policy：列示和管理此 Horizon 边缘节点的策略。 \n  reginput：为此模式创建输入文件模板，该模板填写后即可用于“hzn register”命令。 \n            这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。 \n  register：向管理中心注册此边缘节点。\n  service：列示或管理当前在此 Horizon 边缘节点上注册的服务。\n  status：显示节点的当前 Horizon 内部状态。\n  unregister：注销并重置此 Horizon 边缘节点，以使其可以再次注册。\n  userinput：列示或管理当前在此 Horizon 边缘节点上注册的服务用户输入。\n  util：实用程序命令。\n  version：显示 Horizon 版本。\n  voucher：列示并管理 Horizon SDO 所有权凭单。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n      这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供 'hzn exchange' 子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID： 'hzn exchange -o' 标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH： 'hzn exchange -u' 或 'hzn\n\t  register -u' 标志的缺省值，其格式为 '[org/]user:pw'。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供 'hzn mms' 子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}"
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "translation": "Horizon 代理程序的命令行界面。 大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅 '环境变量' 一节以覆盖该位置）。\n\n子命令描述：\n  agbot：列示和管理 Horizon 协议 bot 资源。\n  agreement：列示或管理此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。\n  architecture：显示此机器的体系结构（由 Horizon 和 golang 定义）。 \n  attribute：列示或管理当前在此 Horizon 边缘节点上注册的全局属性。\n  deploycheck：检查部署兼容性。\n  dev：用于创建服务的开发工具。\n  env：显示 Horizon 环境变量。\n  eventlog：列示当前注册或所有注册的事件日志。\n  exchange：列示和管理 Horizon Exchange 资源。\n  key：列示和管理用于签署和验证服务的密钥。 \n  metering：列示或管理活动协议或存档协议的测量（付款）信息。\n  mms：列示和管理 Horizon 模型管理服务资源。\n  node：列示和管理有关此 Horizon 边缘节点的常规信息。\n  policy：列示和管理此 Horizon 边缘节点的策略。 \n  reginput：为此模式创建输入文件模板，该模板填写后即可用于“hzn register”命令。 \n            这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。 \n  register：向管理中心注册此边缘节点。\n  service：列示或管理当前在此 Horizon 边缘节点上注册的服务。\n  status：显示节点的当前 Horizon 内部状态。\n  unregister：注销并重置此 Horizon 边缘节点，以使其可以再次注册。\n  userinput：列示或管理当前在此 Horizon 边缘节点上注册的服务用户输入。\n  util：实用程序命令。\n  version：显示 Horizon 版本。\n  sdo：列示并管理 Horizon SDO 所有权凭单和密钥。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n      这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供 'hzn exchange' 子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID： 'hzn exchange -o' 标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH： 'hzn exchange -u' 或 'hzn\n\t  register -u' 标志的缺省值，其格式为 '[org/]user:pw'。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供 'hzn mms' 子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_SDO_SVC_URL：覆盖“hzn sdo”子命令用来\n\t与 SDO 所有者服务通信的 URL。 （缺省情况下，hzn 将向\n\t\tHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -800,7 +800,7 @@
     },
     {
       "id": "Filepath of a file containing a secret that is required by the service or one of its dependent services. The filename must match a secret name in the service definition. The file is encoded in JSON as an object containing two keys both typed as a string; \"key\" is used to indicate the kind of secret, and \"value\" is the string form of the secret. This flag can be repeated.",
-      "translation": "文件的文件路径，该文件包含服务或其中一个从属服务所需的私钥。 文件名必须与服务定义中的私钥名称匹配。 该文件采用 JSON 编码为包含作为字符串键入的两个密钥的对象；“key”用于指示私钥的类型，“value”是私钥的字符串形式。 此标志可以重复。"
+      "translation": "文件的文件路径，该文件包含服务或其中一个相依服务所需的私钥。 文件名必须与服务定义中的私钥名称匹配。 该文件采用 JSON 编码为包含作为字符串键入的两个密钥的对象；“key”用于指示私钥的类型，“value”是私钥的字符串形式。 此标志可以重复。"
     },
     {
       "id": "Stop a service that is running in a mocked Horizon Agent environment. This command is not supported for services using the {KUBEDEPLOYMENTCONFIGTYPE} deployment configuration.",
@@ -1347,12 +1347,12 @@
       "translation": "在 Horizon Exchange 中创建/更新模式所必需的元数据所在 JSON 文件的路径。 请参阅 {Sampledir}/pattern.json。 指定 -f- 可从 stdin 读取。"
     },
     {
-      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "要用来对模式进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.private.key。"
+      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the pattern.",
+      "translation": "要用来对模式进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果未指定 HZN_PRIVATE_KEY_FILE，那么将使用 ~/.hzn/keys/service.private.key。如果未指定任何项，那么将生成随机密钥对并且将随模式一起存储公用密钥。"
     },
     {
-      "id": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "应该随模式一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。 此标志和 -k 标志均未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 未设置 HZN_PUBLIC_KEY_FILE 时，缺省值为 ~/.hzn/keys/service.public.pem。 如果指定 -k 但未指定此标志，那么不会随模式一起存储任何公用密钥文件。 Horizon 代理程序必须导入公用密钥才能验证签名。"
+      "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
+      "translation": "（不推荐）应该随模式一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。如果未指定此标志，那么将从专用密钥计算公用密钥。"
     },
     {
       "id": "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.",
@@ -1468,7 +1468,7 @@
     },
     {
       "id": "The node's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.",
-      "translation": "节点的组织。 如果省略，它将与 -o 或 HZN_ORG_ID 指定的组织相同。"
+      "translation": "节点的组织。 如果省略，它将与 -o 或 HZN_ORG_ID 所指定的组织相同。"
     },
     {
       "id": "Display the service policy from the Horizon Exchange.",
@@ -1495,12 +1495,12 @@
       "translation": "在 Horizon Exchange 中创建/更新服务所必需的元数据所在 JSON 文件的路径。 请参阅 {Sampledir}/service.json 和 {Sampledir_1}/service_cluster.json。 指定 -f- 可从 stdin 读取。"
     },
     {
-      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "要用来对服务进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果它们均未设置，那么缺省值为 ~/.hzn/keys/service.private.key。"
+      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the service.",
+      "translation": "要用来对服务进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果未指定 HZN_PRIVATE_KEY_FILE，那么将使用 ~/.hzn/keys/service.private.key。如果未指定任何项，那么将生成随机密钥对并且将随服务一起存储公用密钥。"
     },
     {
-      "id": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "应该随服务一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。 此标志和 -k 标志均未指定时，将使用环境变量 HZN_PUBLIC_KEY_FILE。 未设置 HZN_PUBLIC_KEY_FILE 时，缺省值为 ~/.hzn/keys/service.public.pem。 如果指定 -k 但未指定此标志，那么不会随服务一起存储任何公用密钥文件。 Horizon 代理程序必须导入公用密钥才能验证签名。"
+      "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
+      "translation": "（不推荐）应该随服务一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。如果未指定此标志，那么将从专用密钥计算公用密钥。"
     },
     {
       "id": "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.",
@@ -2216,7 +2216,7 @@
     },
     {
       "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
-      "translation": "读取私钥管理器中存储的私钥的详细信息。 这包括在私钥创建时提供的键和值对。"
+      "translation": "读取私钥管理器中存储的私钥的详细信息。 这包括在私钥创建时提供的密钥和值对。"
     },
     {
       "id": "The name of the secret to read in the secrets manager.",
@@ -2225,6 +2225,70 @@
     {
       "id": "Show the Horizon version.",
       "translation": "显示 Horizon 版本。"
+    },
+    {
+      "id": "List and manage resources in SDO owner services",
+      "translation": "列示和管理 SDO 所有者服务中的资源"
+    },
+    {
+      "id": "List and manage Horizon SDO ownership keys.",
+      "translation": "列示和管理 Horizon SDO 所有权密钥。"
+    },
+    {
+      "id": "List the SDO ownership keys stored in SDO owner services.",
+      "translation": "列示 SDO 所有者服务中存储的 SDO 所有权密钥。"
+    },
+    {
+      "id": "List the full details of this SDO ownership key.",
+      "translation": "列出此 SDO 所有权密钥的完整详细信息。"
+    },
+    {
+      "id": "Create a new key in SDO owner services.",
+      "translation": "在 SDO 所有者服务中创建新密钥。"
+    },
+    {
+      "id": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
+      "translation": "包含将在 SDO 所有者服务中创建的密钥的元数据的文件。必须为 JSON 文件类型扩展名。"
+    },
+    {
+      "id": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
+      "translation": "要写入返回的公用密钥的文件。如果省略，那么会将密钥打印到控制台。"
+    },
+    {
+      "id": "Overwrite the existing output public key file if it exists.",
+      "translation": "覆盖现有输出公用密钥文件（如果存在）。"
+    },
+    {
+      "id": "Download the specified key from SDO owner services.",
+      "translation": "从 SDO 所有者服务下载指定的密钥。"
+    },
+    {
+      "id": "The name of the key to be downloaded from SDO owner services.",
+      "translation": "要从 SDO 所有者服务下载的密钥的名称。"
+    },
+    {
+      "id": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
+      "translation": "要写入下载的密钥的数据的文件。如果省略，那么会将密钥打印到控制台。"
+    },
+    {
+      "id": "Overwrite the existing file if it exists.",
+      "translation": "覆盖现有文件（如果存在）。"
+    },
+    {
+      "id": "Remove a key from SDO owner services.",
+      "translation": "从 SDO 所有者服务中移除密钥。"
+    },
+    {
+      "id": "The name of the key to be removed from SDO owner services.",
+      "translation": "要从 SDO 所有者服务中移除的密钥的名称。"
+    },
+    {
+      "id": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
+      "translation": "创建新的 SDO 密钥元数据模板文件。必须在添加到 SDO 所有者服务之前填写所有字段。"
+    },
+    {
+      "id": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
+      "translation": "要写入 JSON 格式的 SDO 密钥模板的文件。如果省略，那么会将密钥元数据打印到控制台。"
     },
     {
       "id": "List and manage Horizon SDO ownership vouchers.",
@@ -2251,16 +2315,12 @@
       "translation": "SDO 所有权凭单文件。"
     },
     {
-      "id": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered. HZN_SDO_SVC_URL must be set in the environment, /etc/default/horizon, or one of the hzn.json files.",
-      "translation": "导入 SDO 所有权凭单，以便引导、配置和注册相应的设备。 必须在 /etc/default/horizon 环境或某个 hzn.json 文件中设置 HZN_SDO_SVC_URL。"
+      "id": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+      "translation": "导入 SDO 所有权凭单，以便引导、配置和注册相应的设备。"
     },
     {
       "id": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).",
       "translation": "SDO 所有权凭单文件。 文件类型扩展名必须为：json、tar、tar.gz、tgz 或 zip。 如果格式为 tar/zip，将导入其中所有的 json 文件（将以静默方式忽略其他文件/目录）。"
-    },
-    {
-      "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
-      "translation": "要导入凭单的 Horizon 用户凭证。 未指定时，将使用 HZN_EXCHANGE_USER_AUTH 作为缺省值。 如果未附加用户的组织作为前缀，那么将自动附加 -o 值作为前缀。"
     },
     {
       "id": "Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.",
@@ -2273,6 +2333,38 @@
     {
       "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
       "translation": "与此凭单相关联的边缘设备所使用的部署模式名称。 如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。 与 -e 和 --policy 互斥。"
+    },
+    {
+      "id": "Download the specified SDO ownership voucher from SDO owner services.",
+      "translation": "从 SDO 所有者服务下载指定的 SDO 所有权凭单。"
+    },
+    {
+      "id": "The SDO ownership voucher to download.",
+      "translation": "要下载的 SDO 所有权凭单。"
+    },
+    {
+      "id": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
+      "translation": "要写入 JSON 格式的下载的凭单数据的文件。此标志必须与 -f 配合使用。 如果省略，那么将使用 <deviceID>.json 格式的缺省文件名，并保存在当前目录中。"
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
+      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn sdo voucher”以列示并管理 Horizon SDO 所有权凭单。"
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
+      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn sdo voucher list”以列出导入的 SDO 所有权凭单。"
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
+      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn sdo voucher inspect”以显示 SDO 所有权凭单的属性。"
+    },
+    {
+      "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
+      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn sdo voucher import”以导入 SDO 所有权凭单。"
+    },
+    {
+      "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
+      "translation": "要导入凭单的 Horizon 用户凭证。 未指定时，将使用 HZN_EXCHANGE_USER_AUTH 作为缺省值。 如果未附加用户的组织作为前缀，那么将自动附加 -o 值作为前缀。"
     },
     {
       "id": "The mms command is not supported on an edge cluster node.",
@@ -2559,6 +2651,10 @@
       "translation": "获取 {KeyFile} 文件的绝对路径失败。 {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "检查文件 {KeyFile} 的绝对路径时出错。{Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "解析 HORIZON_URL 时出错：{Err}"
     },
@@ -2779,12 +2875,20 @@
       "translation": "正在检查专用密钥文件格式..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "提供的专用密钥无效；错误：{Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "提供的专用密钥 {KeyFile} 无效；错误：{Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}。 请创建签名密钥。"
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "无法生成专用密钥；错误：{Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}。无法生成公用密钥。"
     },
     {
       "id": "running: {CmdStr}",
@@ -2847,6 +2951,14 @@
       "translation": "将环境变量 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} 转换为整数时出错。 {Err1}"
     },
     {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "文件 {FileName} 已存在。 请指定其他文件路径或文件名。 要覆盖现有文件，请使用“--overwrite”标志。"
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "未能将对象“{DefaultFileName}”的数据保存到文件 {FileName}，错误：{Err}"
+    },
+    {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
       "translation": "{Image} 已解析为：域 = {Domain}，路径 = {Path}，标记 = {Tag}"
     },
@@ -2892,11 +3004,11 @@
     },
     {
       "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
-      "translation": "既未指定节点标识也未指定节点策略。 正在从本地节点获取节点策略。"
+      "translation": "既未指定节点标识，也未指定节点策略。 正在从本地节点获取节点策略。"
     },
     {
       "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
-      "translation": "既未指定节点标识也未指定节点用户输入文件。 正在从本地节点获取节点用户输入。"
+      "translation": "既未指定节点标识，也未指定节点用户输入文件。 正在从本地节点获取节点用户输入。"
     },
     {
       "id": "No node type has been provided: node type of '{NodeId}' node will be used",
@@ -2952,11 +3064,11 @@
     },
     {
       "id": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
-      "translation": "-t 指定的节点类型 {InputType} 与本地节点 {NodeType} 的类型不匹配。"
+      "translation": "-t 所指定的节点类型 {InputType} 与本地节点类型 {NodeType} 不匹配。"
     },
     {
       "id": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
-      "translation": "-O 指定的节点组织 {InputType} 与本地节点 {NodeOrg} 的组织不匹配。"
+      "translation": "-O 所指定的节点组织 {InputType} 与本地节点的组织 {NodeOrg} 不匹配。"
     },
     {
       "id": "failed to unmarshal deployment policy json input file {BusinessPolFile}: {Err}",
@@ -3364,7 +3476,7 @@
     },
     {
       "id": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
-      "translation": "在当前项目中找不到服务 {ServiceName}。 如果这是新的从属服务，请使用“hzn dev dependency fetch”命令更新依赖关系列表。"
+      "translation": "在当前项目中找不到服务 {ServiceName}。 如果这是新的相依服务，请使用“hzn dev dependency fetch”命令更新依赖关系列表。"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
@@ -4343,8 +4455,8 @@
       "translation": "对服务 {I__1}（服务版本号为 {J__1}）中的 deployment_overrides 字段进行序列化失败：{Err}"
     },
     {
-      "id": "problem signing the deployment_overrides string with {KeyFilePath}: {Err}",
-      "translation": "使用 {KeyFilePath} 对 deployment_overrides 字符串进行签名时遇到问题：{Err}"
+      "id": "problem signing the deployment_overrides string: {Err}",
+      "translation": "对 deployment_overrides 字符串进行签名时遇到问题：{Err}"
     },
     {
       "id": "Updating {ExchId} in the Exchange...",
@@ -4355,8 +4467,8 @@
       "translation": "正在 Exchange 中创建 {ExchId}..."
     },
     {
-      "id": "Storing {BaseName} with the pattern in the Exchange...",
-      "translation": "正在将 {BaseName} 随模式一起存储在 Exchange 中..."
+      "id": "Storing {NewPubKeyName} with the pattern in the Exchange...",
+      "translation": "正在将 {NewPubKeyName} 随模式一起存储在 Exchange 中..."
     },
     {
       "id": "key '{Org____pattern}' not found in resources returned from exchange",
@@ -4419,6 +4531,10 @@
       "translation": "忽略 -f，因为此服务的 clusterDeployment 属性为空。"
     },
     {
+      "id": "Flag -K cannot be specified without -k flag.",
+      "translation": "无法在无 -k 标志的情况下指定标志 -K。"
+    },
+    {
       "id": "Flags -I and -P are mutually exclusive.",
       "translation": "标志 -I 与 -P 互斥。"
     },
@@ -4447,8 +4563,8 @@
       "translation": "Exchange 中已存在服务 {Org}/{ExchId}，是否要将其覆盖？"
     },
     {
-      "id": "Storing {BaseName} with the service in the Exchange...",
-      "translation": "正在将 {BaseName} 随服务一起存储在 Exchange 中..."
+      "id": "Storing {PubKeyNameToStore} with the service in the Exchange...",
+      "translation": "正在将 {PubKeyNameToStore} 随服务一起存储在 Exchange 中..."
     },
     {
       "id": "Error: registry-token value of '{RegTok}' is not in the required format: registry:user:token. Not storing that in the Horizon exchange.",
@@ -4707,8 +4823,8 @@
       "translation": "未能对 {KUBEDEPLOYMENTCONFIGTYPE} 部署字符串 {Dep} 进行序列化，错误 {Err}"
     },
     {
-      "id": "problem signing {KUBEDEPLOYMENTCONFIGTYPE} deployment string with {KeyFilePath}: {Err}",
-      "translation": "使用 {KeyFilePath} 对 {KUBEDEPLOYMENTCONFIGTYPE} 部署字符串进行签名时遇到问题：{Err}"
+      "id": "problem signing {KUBEDEPLOYMENTCONFIGTYPE} deployment string: {Err}",
+      "translation": "对 {KUBEDEPLOYMENTCONFIGTYPE} 部署字符串进行签名时遇到问题：{Err}"
     },
     {
       "id": "operatorYamlArchive must have a string type value, has {C}",
@@ -4735,8 +4851,8 @@
       "translation": "对部署字符串 {Dep} 进行序列化失败，错误：{Err}"
     },
     {
-      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
-      "translation": "使用 {KeyFilePath} 对部署字符串进行签名时遇到问题：{Err}"
+      "id": "problem signing deployment string: {Err}",
+      "translation": "对部署字符串进行签名时遇到问题：{Err}"
     },
     {
       "id": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
@@ -5272,7 +5388,7 @@
     },
     {
       "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy are compatible.",
-      "translation": "正在使用“hzn deploycheck all -b”或“hzn deploycheck all -B”命令验证相应节点、服务配置以及部署策略是否兼容。"
+      "translation": "使用“hzn deploycheck all -b”或“hzn deploycheck all -B”命令验证节点、服务配置以及部署策略是否兼容。"
     },
     {
       "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern are compatible.",
@@ -5303,12 +5419,80 @@
       "translation": "分析完成。"
     },
     {
-      "id": "reading the bytes from {Name}: {Err}",
-      "translation": "正在读取 {Name} 中的字节数：{Err}"
+      "id": "Importing key file name: {Name}",
+      "translation": "正在导入密钥文件名：{Name}"
     },
     {
-      "id": "parsing the json from {Name}: {Err}",
-      "translation": "正在解析 {Name} 中的 json：{Err}"
+      "id": "unsupported key file type extension: {Name}",
+      "translation": "不受支持的密钥文件类型扩展名：{Name}"
+    },
+    {
+      "id": "Listing SDO keys.",
+      "translation": "正在列出 SDO 密钥。"
+    },
+    {
+      "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
+      "translation": "正在对 {ApiMsg} 中的 HTTP 响应“{StringrespBodyBytes}”进行 Json 反序列化：{Err}"
+    },
+    {
+      "id": "SDO key name {KeyName} not found",
+      "translation": "找不到 SDO 密钥名称 {KeyName}"
+    },
+    {
+      "id": "failed to marshal 'hzn sdo keys list' output: {Err}",
+      "translation": "对“hzn sdo keys list”输出进行序列化失败：{Err}"
+    },
+    {
+      "id": "Downloading SDO key \"{KeyName}\".",
+      "translation": "正在下载 SDO 密钥“{KeyName}”。"
+    },
+    {
+      "id": "Removing SDO key \"{KeyName}\".",
+      "translation": "正在移除 SDO 密钥“{KeyName}”。"
+    },
+    {
+      "id": "Creating SDO key template at \"{OutputFile}\".",
+      "translation": "正在“{OutputFile}”中创建 SDO 密钥模板。"
+    },
+    {
+      "id": "parsing the json: {Err}",
+      "translation": "正在解析 json：{Err}"
+    },
+    {
+      "id": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
+      "translation": "密钥名称无效。密钥“{KeyName}”在组织“{Org}”中不存在。"
+    },
+    {
+      "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "密钥文件无效。密钥“{Key}”已存在于组织“{Org}”的 SDO 所有者服务中。"
+    },
+    {
+      "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
+      "translation": "密钥文件无效。密钥已存在于组织“{Org}”的 SDO 所有者服务中。"
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access keys in org \"{Org}\" with given credentials.",
+      "translation": "凭证无效。 用户“{User}”无法使用给定的凭证访问组织“{Org}”中的密钥。"
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
+      "translation": "凭证无效。 用户“{User}”无法使用给定的凭证访问组织“{Org}”中的密钥“{KeyName}”。"
+    },
+    {
+      "id": "reading the bytes from {KeyFileName}: {Err}",
+      "translation": "正在读取 {KeyFileName} 中的字节数：{Err}"
+    },
+    {
+      "id": "parsing the json from {KeyFileName}: {Err}",
+      "translation": "正在解析 {KeyFileName} 中的 json：{Err}"
+    },
+    {
+      "id": "given key {KeyFileName} has missing fields:\n{Err}",
+      "translation": "给定密钥 {KeyFileName} 缺少字段：\n{Err}"
+    },
+    {
+      "id": "JSON Body:{StringkeyBytes}",
+      "translation": "JSON 主体：{StringkeyBytes}"
     },
     {
       "id": "base64 decoding {T4}: {Err}",
@@ -5319,8 +5503,20 @@
       "translation": "正在列出已导入的 SDO 凭单。"
     },
     {
-      "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
-      "translation": "正在对 {ApiMsg} 中的 HTTP 响应“{StringrespBodyBytes}”进行 Json 反序列化：{Err}"
+      "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+      "translation": "凭单名称无效。凭单“{Voucher}”在组织“{Org}”中不存在。"
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+      "translation": "凭证无效。 用户“{User}”无法使用给定的凭证访问组织“{Org}”中的凭单。"
+    },
+    {
+      "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+      "translation": "凭证无效。 用户“{User}”无法使用给定的凭证访问组织“{Org}”中的凭单“{Voucher}”。"
+    },
+    {
+      "id": "failed to marshal 'hzn sdo voucher list' output: {Err}",
+      "translation": "对“hzn sdo voucher list”输出进行序列化失败：{Err}"
     },
     {
       "id": "Importing voucher file name: {Name}",
@@ -5367,6 +5563,10 @@
       "translation": "正在使用节点策略：{PolicyStr}"
     },
     {
+      "id": "Invalid voucher file format: {StringrespBodyBytes}.",
+      "translation": "凭单文件格式无效：{StringrespBodyBytes}。"
+    },
+    {
       "id": "Adding/updating node...",
       "translation": "正在添加/更新节点..."
     },
@@ -5409,6 +5609,10 @@
     {
       "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
       "translation": "私钥“{SecretName}”已成功添加到私钥管理器中。"
+    },
+    {
+      "id": "Are you sure you want to remove secret {SecretName} from the secrets manager?",
+      "translation": "确定要从私钥管理器中移除私钥 {SecretName} 吗？"
     },
     {
       "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
@@ -5561,10 +5765,6 @@
     {
       "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
       "translation": "在组织 {Org} 中找不到类型为 '{ObjType}' 的对象 '{ObjId}'"
-    },
-    {
-      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "文件 {FileName} 已存在。 请指定其他文件路径或文件名。 要覆盖现有文件，请使用“--overwrite”标志。"
     },
     {
       "id": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
@@ -6028,7 +6228,7 @@
     },
     {
       "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
-      "translation": "正在取消注册此节点，正在取消所有协议，正在停止所有工作负载，正在重新启动 Horizon..."
+      "translation": "正在注销此节点，正在取消所有协议，正在停止所有工作负载，正在重新启动 Horizon..."
     },
     {
       "id": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
@@ -6044,11 +6244,11 @@
     },
     {
       "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
-      "translation": "已取消注册 Horizon 节点。 如果需要，您现在即可再次运行“hzn register...”。"
+      "translation": "已注销 Horizon 节点。 如果需要，您现在即可再次运行“hzn register...”。"
     },
     {
       "id": "WARNING: The node is unregistered, but an error occurred during unregistration.",
-      "translation": "警告：注销节点，但是注销期间发生错误。"
+      "translation": "警告：已注销此节点，但是注销期间发生错误。"
     },
     {
       "id": "The error was: {Err}",
@@ -6300,11 +6500,11 @@
     },
     {
       "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的给定节点中指定组织。"
+      "translation": "在给定节点标识 {NodeId} 中未指定组织。"
     },
     {
       "id": "Error getting node {NodeId} from the Exchange. {Err}",
-      "translation": "获取 Exchange 中的节点 {NodeId} 时发生错误。 {Err}"
+      "translation": "从 Exchange 获取节点 {NodeId} 时发生错误。 {Err}"
     },
     {
       "id": "No node found for this node id {NodeId}.",
@@ -6404,7 +6604,7 @@
     },
     {
       "id": "Neither node policy nor node id is specified.",
-      "translation": "既未指定节点策略也未指定节点标识。"
+      "translation": "既未指定节点策略，也未指定节点标识。"
     },
     {
       "id": "Node id is empty.",
@@ -6412,7 +6612,7 @@
     },
     {
       "id": "Organization is not specified in the node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的节点中指定组织。"
+      "translation": "在节点标识 {NodeId} 中未指定组织。"
     },
     {
       "id": "Error trying to query node policy for {NodeId}: {Err}",
@@ -6452,7 +6652,7 @@
     },
     {
       "id": "Organization is not specified in the deployment policy id: {BpId}.",
-      "translation": "部署策略标识 {BpId} 中未指定组织。"
+      "translation": "在部署策略标识 {BpId} 中未指定组织。"
     },
     {
       "id": "Unable to get deployment policy for {BpId}, {Err}",
@@ -6472,7 +6672,7 @@
     },
     {
       "id": "Organization is not specified in the service policy id: {SvcId}.",
-      "translation": "未在标识为 {SvcId} 的服务策略中指定组织。"
+      "translation": "在服务策略标识 {SvcId} 中未指定组织。"
     },
     {
       "id": "Error trying to query service policy for service id {SvcId}: {Err}",
@@ -6580,7 +6780,7 @@
     },
     {
       "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
-      "translation": "服务 {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 的私钥绑定中指定了错误的版本字符串 {ServiceVersionRange}，错误 {Err}"
+      "translation": "服务 {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 的私钥绑定中指定了错误的版本字符串 {ServiceVersionRange}，错误为 {Err}"
     },
     {
       "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
@@ -6616,7 +6816,7 @@
     },
     {
       "id": "Neither node user input nor node id is specified.",
-      "translation": "既未指定节点用户输入也未指定节点标识。"
+      "translation": "既未指定节点用户输入，也未指定节点标识。"
     },
     {
       "id": "User Input Incompatible",
@@ -6700,7 +6900,7 @@
     },
     {
       "id": "Neither pattern nor pattern id is specified.",
-      "translation": "既未指定模式也未指定模式标识。"
+      "translation": "既未指定模式，也未指定模式标识。"
     },
     {
       "id": "Pattern id is empty.",
@@ -6708,7 +6908,7 @@
     },
     {
       "id": "Organization is not specified in the pattern id: {PatId}.",
-      "translation": "未在标识为 {PatId} 的模式中指定组织。"
+      "translation": "在模式标识 {PatId} 中未指定组织。"
     },
     {
       "id": "Error getting pattern {PatId} from the Exchange, {Err}",
@@ -6748,7 +6948,7 @@
     },
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
-      "translation": "未使用用户输入中所指定的服务 {ServiceOrgid}/{ServiceUrl} 版本 {ServiceVersionRange} 体系结构 {ServiceArch} 的变量 {Name}。 请确保变量名称正确无误。"
+      "translation": "未使用用户输入中所指定的服务 {ServiceOrgid}/{ServiceUrl} V{ServiceVersionRange} 体系结构 {ServiceArch} 的变量 {Name}。 请确保名称正确无误。"
     },
     {
       "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
@@ -6940,23 +7140,23 @@
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "版本表达式：在 {Expr} 中不允许有空格。"
+      "translation": "Version_Expression：在 {Expr} 中不允许有空格。"
     },
     {
       "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "版本表达式：{Verstring} 不是有效的版本字符串。"
+      "translation": "Version_Expression：{Verstring} 不是有效的版本字符串。"
     },
     {
       "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令开头。"
+      "translation": "Version_Expression：{Verstring} 未以包括或排除伪指令开头。"
     },
     {
       "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令结尾。"
+      "translation": "Version_Expression：{Verstring} 未以包括或排除伪指令结尾。"
     },
     {
       "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "版本表达式：表达式 {Expr} 中的版本数不正确。"
+      "translation": "Version_Expression：表达式 {Expr} 中的版本号不正确。"
     },
     {
       "id": "Input version string {V1} or {V2} is not a valid single version string.",

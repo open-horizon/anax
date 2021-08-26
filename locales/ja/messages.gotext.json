@@ -2595,6 +2595,30 @@
       "fuzzy": true
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "message": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "ファイル {KeyFile} の絶対パスの検査中にエラーが発生しました。{Err}",
+      "placeholders": [
+        {
+          "id": "KeyFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "message": "Error parsing HORIZON_URL: {Err}",
       "translation": "HORIZON_URL の構文解析でエラーが発生しました: {Err}",
@@ -3531,7 +3555,7 @@
     {
       "id": "Malformed URL: {UrlPath}. {ErrUrl}",
       "message": "Malformed URL: {UrlPath}. {ErrUrl}",
-      "translation": "URL の形式に誤りがあります: {UrlPath}。{ErrUrl}",
+      "translation": "URL の形式に誤りがあります: {UrlPath}。 {ErrUrl}",
       "placeholders": [
         {
           "id": "UrlPath",
@@ -3803,16 +3827,24 @@
       "fuzzy": true
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "message": "provided private key is not valid; error: {Err}",
-      "translation": "指定された秘密鍵は無効です、エラー: {Err}",
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "message": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "指定された秘密鍵 {KeyFile} は無効です。エラー: {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "KeyFile",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -3830,6 +3862,37 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "message": "private key could not be generated; error: {Err}",
+      "translation": "秘密鍵を生成できませんでした。エラー: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "message": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}。公開鍵を生成できませんでした。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -4099,7 +4162,7 @@
     {
       "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
       "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "ファイル {FileName} は既に存在します。 別のファイル・パスまたはファイル名を指定してください。 既存のファイルを上書きするには、「--overwrite」フラグを使用します。",
       "placeholders": [
         {
           "id": "FileName",
@@ -4115,7 +4178,7 @@
     {
       "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
       "message": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
-      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "オブジェクト「{DefaultFileName}」のデータをファイル {FileName} に保存できませんでした。エラー: {Err}",
       "placeholders": [
         {
           "id": "DefaultFileName",
@@ -7411,7 +7474,7 @@
         "Error retrieving all service definitions from db. {Arg_1}"
       ],
       "message": "Error retrieving all service definitions from db. {Arg_1}",
-      "translation": "すべてのサービス定義をデータベースから取得しているときにエラーが発生しました。{Arg_1}",
+      "translation": "すべてのサービス定義をデータベースから取得しているときにエラーが発生しました。 {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",

@@ -1680,9 +1680,9 @@
       "fuzzy": true
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  voucher: List and manage Horizon SDO ownership vouchers.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "translation": "Die Befehlszeilenschnittstelle für Horizon Agent. Von den meisten Unterbefehlen wird die API des Horizon-Agenten an der Standardposition http://localhost verwendet (Informationen zum Überschreiben dieser Einstellung finden Sie im Abschnitt zu den Umgebungsvariablen). \n\nBeschreibung der Unterbefehle:\n  agbot: Listet die Ressourcen eines Horizon-Vereinbarungs-Bots auf und verwaltet sie. \n  agreement: Listet die aktiven bzw. archivierten Vereinbarungen auf, die von diesem Edge-Knoten mit einem Horizon-Vereinbarungs-Bot erstellt wurden, oder verwaltet sie. \n  architecture: Zeigt die Architektur dieser Maschine an (wie von Horizon und golang definiert). \n  attribute: Listet die globalen Attribute auf, die derzeit auf diesem Horizon-Edge-Knoten registriert sind, oder verwaltet sie. \n  deploycheck: Überprüft die Kompatibilität der Bereitstellung. \n  dev: Entwicklungstools für die Erstellung von Dienstleistungen. \n  env: Zeigt die Umgebungsvariablen für Horizon an. \n  eventlog: Listet die Ereignisprotokolle für die aktuelle Registrierung oder alle Registrierungen auf. \n  exchange: Listet die Ressourcen von Horizon Exchange auf und verwaltet sie. \n  key: Listet die Schlüssel zum Signieren und Überprüfen von Services auf und verwaltet sie. \n  metering: Listet die Informationen zur Nutzungsmessung (für die Zahlung) für die aktiven oder archivierten Vereinbarungen auf oder verwaltet diese. \n  mms: Listet die Ressourcen des Horizon Model Management Service auf und verwaltet sie. \n  node: Listet die allgemeinen Informationen zu diesem Horizon-Edge-Knoten auf und verwaltet sie. \n  policy: Listet die Richtlinie für diesen Horizon-Edge-Knoten auf und verwaltet sie. \n  reginput: Erstellt eine Eingabedateivorlage für dieses Muster, die für den Befehl 'hzn register' (sobald angegeben) verwendet werden kann. \n            Auf diese Art werden die vom Muster verwendeten Services untersucht und die Knoteneignereingabe ermittelt, die für sie erforderlich ist. \n  register: Registriert diesen Edge-Knoten beim Management-Hub. \n  service: Listet die Services auf, die derzeit auf diesem Horizon-Edge-Knoten registriert sind, oder verwaltet sie. \n  status: Zeigt den aktuellen internen Horizon-Status für den Knoten an. \n  unregister: Hebt die Registrierung dieses Horizon-Edge-Knotens auf und setzt ihn zurück, damit er wieder registriert werden kann. \n  userinput: Listet die Servicebenutzereingaben auf, die derzeit auf diesem Horizon-Edge-Knoten registriert sind, oder verwaltet sie. \n  util: Dienstprogrammbefehle. \n  version: Zeigt die Horizon-Version an. \n  sdo: Listet Horizon SDO-Ownership Vouchers (Eigentumsnachweise) und Schlüssel auf und verwaltet sie. \n\nUmgebungsvariablen:\n HORIZON_URL: Überschreiben Sie die URL für den Kontakt zwischen 'hzn' und der API des Horizon-Agenten. \n Dies kann die Verwendung eines fernen Horizon-Agenten über einen SSH-Tunnel erleichtern.\n HZN_EXCHANGE_URL: Überschreiben Sie die URL, die von Unterbefehlen des Typs 'hzn exchange' verwendet wird,\num mit Horizon Exchange zu kommunizieren, zum Beispiel unter Verwendung von\nhttps://exchange.bluehorizon.network/api/v1. (Standardmäßig wird der Horizon-Agent von 'hzn'\nzum Angeben der URL aufgefordert.) \n HZN_ORG_ID: Standardwert für das Flag 'hzn exchange -o'\nzum Angeben der Organisations-ID. \n HZN_EXCHANGE_USER_AUTH: Standardwert für das Flag 'hzn exchange -u' oder 'hzn \n\t register -u' im Format '[org/]user:pw'. Beachten Sie, dass für HZN_ORG_ID ein Wert festgelegt werden kann,\n\tfalls für die Organisation kein Wert angegeben wurde, wenn HZN_EXCHANGE_USER_AUTH festgelegt wird. \n HZN_FSS_CSSURL: Überschreiben Sie die URL, die von Unterbefehlen des Typs 'hzn mms' verwendet wird,\num mit dem Horizon Model Management Service zu kommunizieren, zum Beispiel\ndurch https://exchange.bluehorizon.network/css/. (Standardmäßig wird der Horizon-Agent von 'hzn'\nzum Angeben der URL aufgefordert.) \n HZN_SDO_SVC_URL: Überschreiben Sie die URL, die von Unterbefehlen des Typs 'hzn sdo' verwendet wird,\n\t um mit den SDO-Eignerservices zu kommunizieren. (Standardmäßig wird der Horizon-Agent von 'hzn'\n\t\tzum Angeben der URL aufgefordert.) \n\n Alle diese Umgebungsvariablen und die in der Hilfe für Befehle aufgeführten können\nin der Konfigurationsdatei des Benutzers (~/.hzn/hzn.json) im JSON-Format angegeben werden. \n Beispiel: \n {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -3180,15 +3180,15 @@
       "fuzzy": true
     },
     {
-      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "message": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "Der Pfad einer privaten Schlüsseldatei, die zum Signieren des Musters verwendet werden soll. Wenn kein Wert angegeben ist, wird die Umgebungsvariable HZN_PRIVATE_KEY_FILE verwendet. Wenn für beides kein Wert festgelegt wurde, wird ~/.hzn/keys/service.private.key als Standardwert verwendet.",
+      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the pattern.",
+      "message": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the pattern.",
+      "translation": "Der Pfad einer privaten Schlüsseldatei, die zum Signieren des Musters verwendet werden soll. Wenn kein Wert angegeben ist, wird die Umgebungsvariable HZN_PRIVATE_KEY_FILE verwendet. Ist HZN_PRIVATE_KEY_FILE nicht angegeben, wird ~/.hzn/keys/service.private.key verwendet. Wenn kein Wert angegeben ist, wird ein Zufallsschlüsselpaar generiert und der öffentliche Schlüssel wird mit dem Muster gespeichert.",
       "fuzzy": true
     },
     {
-      "id": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
-      "message": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "Der Pfad der öffentlichen Schlüsseldatei (der dem privaten Schlüssel entspricht), der zusammen mit dem Muster gespeichert werden muss, damit er vom Horizon-Agenten zum Überprüfen der Signatur verwendet werden kann. Wenn weder dieser Wert noch Flags des Typs -k angegeben sind, wird die Umgebungsvariable HZN_PUBLIC_KEY_FILE verwendet. Wenn für HZN_PUBLIC_KEY_FILE kein Wert festgelegt wurde, wird standardmäßig ~/.hzn/keys/service.public.pem verwendet. Wenn ein Wert für -k angegeben und für dieses Flag kein Wert angegeben ist, wird kein öffentlicher Schlüssel mit dem Muster gespeichert. Vom Horizon-Agenten muss der öffentliche Schlüssel importiert werden, um die Signatur zu überprüfen.",
+      "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
+      "message": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
+      "translation": "(VERALTET) Der Pfad der öffentlichen Schlüsseldatei (der dem privaten Schlüssel entspricht), der zusammen mit dem Muster gespeichert werden muss, damit er vom Horizon-Agenten zum Überprüfen der Signatur verwendet werden kann. Ist dieses Flag nicht angegeben, wird der öffentliche Schlüssel aus dem privaten Schlüssel berechnet. ",
       "fuzzy": true
     },
     {
@@ -3420,15 +3420,15 @@
       "fuzzy": true
     },
     {
-      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "message": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "Der Pfad einer privaten Schlüsseldatei, die zum Signieren des Service verwendet werden soll. Wenn kein Wert angegeben ist, wird die Umgebungsvariable HZN_PRIVATE_KEY_FILE verwendet. Wenn für beides kein Wert festgelegt wurde, wird ~/.hzn/keys/service.private.key als Standardwert verwendet.",
+      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the service.",
+      "message": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the service.",
+      "translation": "Der Pfad einer privaten Schlüsseldatei, die zum Signieren des Service verwendet werden soll. Wenn kein Wert angegeben ist, wird die Umgebungsvariable HZN_PRIVATE_KEY_FILE verwendet. Ist HZN_PRIVATE_KEY_FILE nicht angegeben, wird ~/.hzn/keys/service.private.key verwendet. Wenn kein Wert angegeben ist, wird ein Zufallsschlüsselpaar generiert und der öffentliche Schlüssel wird mit dem Service gespeichert.",
       "fuzzy": true
     },
     {
-      "id": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
-      "message": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "Der Pfad der öffentlichen Schlüsseldatei (der dem privaten Schlüssel entspricht), der zusammen mit dem Service gespeichert werden muss, damit er vom Horizon-Agenten zum Überprüfen der Signatur verwendet werden kann. Wenn weder dieser Wert noch Flags des Typs -k angegeben sind, wird die Umgebungsvariable HZN_PUBLIC_KEY_FILE verwendet. Wenn für HZN_PUBLIC_KEY_FILE kein Wert festgelegt wurde, wird standardmäßig ~/.hzn/keys/service.public.pem verwendet. Wenn ein Wert für -k angegeben und für dieses Flag kein Wert angegeben ist, wird kein öffentlicher Schlüssel mit dem Service gespeichert. Vom Horizon-Agenten muss der öffentliche Schlüssel importiert werden, um die Signatur zu überprüfen.",
+      "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
+      "message": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
+      "translation": "(VERALTET) Der Pfad der öffentlichen Schlüsseldatei (der dem privaten Schlüssel entspricht), der zusammen mit dem Service gespeichert werden muss, damit er vom Horizon-Agenten zum Überprüfen der Signatur verwendet werden kann. Ist dieses Flag nicht angegeben, wird der öffentliche Schlüssel aus dem privaten Schlüssel berechnet. ",
       "fuzzy": true
     },
     {
@@ -4548,103 +4548,103 @@
     {
       "id": "List and manage resources in SDO owner services",
       "message": "List and manage resources in SDO owner services",
-      "translation": "List and manage resources in SDO owner services",
+      "translation": "Listet die Ressourcen in den SDO-Eignerservices auf und verwaltet sie.",
       "fuzzy": true
     },
     {
       "id": "List and manage Horizon SDO ownership keys.",
       "message": "List and manage Horizon SDO ownership keys.",
-      "translation": "List and manage Horizon SDO ownership keys.",
+      "translation": "Listet Horizon SDO-Eignerschlüssel auf und verwaltet sie.",
       "fuzzy": true
     },
     {
       "id": "List the SDO ownership keys stored in SDO owner services.",
       "message": "List the SDO ownership keys stored in SDO owner services.",
-      "translation": "List the SDO ownership keys stored in SDO owner services.",
+      "translation": "Listet die in den SDO-Eignerservices gespeicherten SDO-Eignerschlüssel auf. ",
       "fuzzy": true
     },
     {
       "id": "List the full details of this SDO ownership key.",
       "message": "List the full details of this SDO ownership key.",
-      "translation": "List the full details of this SDO ownership key.",
+      "translation": "Listet die vollständigen Details dieses SDO-Eignerschlüssels auf.",
       "fuzzy": true
     },
     {
       "id": "Create a new key in SDO owner services.",
       "message": "Create a new key in SDO owner services.",
-      "translation": "Create a new key in SDO owner services.",
+      "translation": "Erstellt einen neuen Schlüssel in den SDO-Eignerservices.",
       "fuzzy": true
     },
     {
       "id": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
       "message": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
-      "translation": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
+      "translation": "Die Datei, die Metadaten für den in den SDO-Eignerservices zu erstellenden Schlüssel enthält. Die Datei muss den Typ und die Erweiterung JSON haben. ",
       "fuzzy": true
     },
     {
       "id": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
       "message": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
-      "translation": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
+      "translation": "Die Datei, in die der zurückgegebene öffentliche Schlüssel geschrieben wird. Wird keine Angabe gemacht, wird der Schlüssel in die Konsole ausgegeben. ",
       "fuzzy": true
     },
     {
       "id": "Overwrite the existing output public key file if it exists.",
       "message": "Overwrite the existing output public key file if it exists.",
-      "translation": "Overwrite the existing output public key file if it exists.",
+      "translation": "Ausgegebenen öffentlichen Schlüssel überschreiben, wenn er bereits vorhanden ist. ",
       "fuzzy": true
     },
     {
       "id": "Download the specified key from SDO owner services.",
       "message": "Download the specified key from SDO owner services.",
-      "translation": "Download the specified key from SDO owner services.",
+      "translation": "Angegebenen Schlüssel aus den SDO-Eignerservices herunterladen.",
       "fuzzy": true
     },
     {
       "id": "The name of the key to be downloaded from SDO owner services.",
       "message": "The name of the key to be downloaded from SDO owner services.",
-      "translation": "The name of the key to be downloaded from SDO owner services.",
+      "translation": "Der Name des aus den SDO-Eignerservices herunterzuladenden Schlüssels.",
       "fuzzy": true
     },
     {
       "id": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
       "message": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
-      "translation": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
+      "translation": "Die Datei, in die die Daten des heruntergeladenen Schlüssels geschrieben werden. Wird keine Angabe gemacht, wird der Schlüssel in die Konsole ausgegeben. ",
       "fuzzy": true
     },
     {
       "id": "Overwrite the existing file if it exists.",
       "message": "Overwrite the existing file if it exists.",
-      "translation": "Overwrite the existing file if it exists.",
+      "translation": "Datei überschreiben, wenn sie bereits vorhanden ist. ",
       "fuzzy": true
     },
     {
       "id": "Remove a key from SDO owner services.",
       "message": "Remove a key from SDO owner services.",
-      "translation": "Remove a key from SDO owner services.",
+      "translation": "Schlüssel aus den SDO-Eignerservices entfernen.",
       "fuzzy": true
     },
     {
       "id": "The name of the key to be removed from SDO owner services.",
       "message": "The name of the key to be removed from SDO owner services.",
-      "translation": "The name of the key to be removed from SDO owner services.",
+      "translation": "Der Name des aus den SDO-Eignerservices zu entfernenden Schlüssels.",
       "fuzzy": true
     },
     {
       "id": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
       "message": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
-      "translation": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
+      "translation": "Neue Vorlagendatei für Metadaten des SDO-Schlüssels erstellen. Alle Felder müssen ausgefüllt werden, bevor sie zu den SDO-Eignerservices hinzugefügt wird. ",
       "fuzzy": true
     },
     {
       "id": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
       "message": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
-      "translation": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
+      "translation": "Die Datei, in die die SDO-Schlüsselvorlage geschrieben wird, im JSON-Format. Wird keine Angabe gemacht, werden die Schlüsselmetadaten in die Konsole ausgegeben. ",
       "fuzzy": true
     },
     {
       "id": "List and manage Horizon SDO ownership vouchers.",
       "message": "List and manage Horizon SDO ownership vouchers.",
-      "translation": "Listet SDO-Ownership Vouchers (Eigentumsnachweise) auf und verwaltet sie.",
+      "translation": "Listet Horizon SDO-Ownership Vouchers (Eigentumsnachweise) auf und verwaltet sie.",
       "fuzzy": true
     },
     {
@@ -4656,7 +4656,7 @@
     {
       "id": "List the full details of this SDO ownership voucher.",
       "message": "List the full details of this SDO ownership voucher.",
-      "translation": "Listet die vollständigen Details dieses SDO-Ownership Vouchers (Eigentumsnachweise) auf.",
+      "translation": "Listet die vollständigen Details dieses SDO-Ownership Vouchers (Eigentumsnachweises) auf.",
       "fuzzy": true
     },
     {
@@ -4674,19 +4674,19 @@
     {
       "id": "The SDO ownership voucher file.",
       "message": "The SDO ownership voucher file.",
-      "translation": "Die Datei mit dem The SDO-Ownership Voucher.",
+      "translation": "Die Datei mit dem SDO-Ownership Voucher.",
       "fuzzy": true
     },
     {
       "id": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
       "message": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
-      "translation": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+      "translation": "Importiert den SDO-Ownership Voucher, damit die zugehörige Einheit gebootet, konfiguriert und registriert werden kann. ",
       "fuzzy": true
     },
     {
       "id": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).",
       "message": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).",
-      "translation": "Die Datei mit dem The SDO-Ownership Voucher.Die Datei muss eine der folgenden Dateityperweiterungen haben: json, tar, tar.gz, tgz, or zip. Wenn es sich um eines der tar/zip-Formate handelt, werden alle in der Datei enthaltenen JSON-Dateien importiert (andere Dateien oder Verzeichnisse werden ohne Benachrichtigung ignoriert).",
+      "translation": "Die Datei mit dem SDO-Ownership Voucher. Die Datei muss eine der folgenden Dateityperweiterungen haben: json, tar, tar.gz, tgz, or zip. Wenn es sich um eines der tar/zip-Formate handelt, werden alle in der Datei enthaltenen JSON-Dateien importiert (andere Dateien oder Verzeichnisse werden ohne Benachrichtigung ignoriert).",
       "fuzzy": true
     },
     {
@@ -4710,43 +4710,43 @@
     {
       "id": "Download the specified SDO ownership voucher from SDO owner services.",
       "message": "Download the specified SDO ownership voucher from SDO owner services.",
-      "translation": "Download the specified SDO ownership voucher from SDO owner services.",
+      "translation": "Angegebenen SDO-Ownership Voucher aus den SDO-Eignerservices herunterladen.",
       "fuzzy": true
     },
     {
       "id": "The SDO ownership voucher to download.",
       "message": "The SDO ownership voucher to download.",
-      "translation": "The SDO ownership voucher to download.",
+      "translation": "Der herunterzuladende SDO Ownership Voucher.",
       "fuzzy": true
     },
     {
       "id": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
       "message": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
-      "translation": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
+      "translation": "Die Datei, in die die Daten des heruntergeladenen Voucher geschrieben werden, im JSON-Format. Dieses Flag muss mit -f verwendet werden. Wird es nicht angegeben, wird der Standarddateiname im Format <Eineihten-ID>.json verwendet und die Datei wird im aktuellen Verzeichnis gespeichert. ",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
-      "translation": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
+      "translation": "(VERALTET) Dieser Befehl ist veraltet. Verwenden Sie 'hzn sdo voucher', um SDO-Ownership Vouchers (Eigentumsnachweise) aufzulisten und zu verwalten.",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
-      "translation": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
+      "translation": "(VERALTET) Dieser Befehl ist veraltet. Verwenden Sie 'hzn sdo voucher list', um die importierten SDO-Ownership Vouchers (Eigentumsnachweise) aufzulisten.",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
-      "translation": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
+      "translation": "(VERALTET) Dieser Befehl ist veraltet. Verwenden Sie 'hzn sdo voucher inspect', um die Eigenschaften des SDO-Ownership Vouchers anzuzeigen.",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
-      "translation": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
+      "translation": "(VERALTET) Dieser Befehl ist veraltet. Verwenden Sie 'hzn sdo voucher import', um den SDO-Ownership Voucher zu importieren.",
       "fuzzy": true
     },
     {
@@ -5921,6 +5921,30 @@
       "id": "Failed to get absolute path for file {KeyFile}. {Err}",
       "message": "Failed to get absolute path for file {KeyFile}. {Err}",
       "translation": "Abrufen des absoluten Pfads für Datei {KeyFile} fehlgeschlagen. {Err}",
+      "placeholders": [
+        {
+          "id": "KeyFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "message": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "Fehler beim Prüfen des absoluten Pfads für Datei {KeyFile}. {Err}",
       "placeholders": [
         {
           "id": "KeyFile",
@@ -7150,16 +7174,24 @@
       "fuzzy": true
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "message": "provided private key is not valid; error: {Err}",
-      "translation": "Der angegebene private Schlüssel ist ungültig. Fehler: {Err}",
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "message": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "Der angegebene private Schlüssel {KeyFile} ist ungültig. Fehler: {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "KeyFile",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -7177,6 +7209,37 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "message": "private key could not be generated; error: {Err}",
+      "translation": "Der private Schlüssel konnte nicht generiert werden. Fehler: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "message": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. Der öffentliche Schlüssel konnte nicht generiert werden.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -7462,7 +7525,7 @@
     {
       "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
       "message": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
-      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Das Speichern von Daten für das Objekt '{DefaultFileName}' in der Datei {FileName} ist fehlgeschlagen. Fehler: {Err}",
       "placeholders": [
         {
           "id": "DefaultFileName",
@@ -9354,32 +9417,24 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to marshal deps: {Err}",
-      "message": "Failed to marshal deps: {Err}",
-      "translation": "Marshalling der Abhängigkeiten ist fehlgeschlagen: {Err}",
+      "id": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
+      "message": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
+      "translation": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SvcPath",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to unmarshal deps: {Err}",
-      "message": "Failed to unmarshal deps: {Err}",
-      "translation": "Unmarshalling der Abhängigkeiten ist fehlgeschlagen: {Err}",
-      "placeholders": [
+          "expr": "svcPath"
+        },
         {
           "id": "Err",
-          "string": "%[1]v",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -9783,6 +9838,38 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "serviceName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        },
+        {
+          "id": "JoincontainerNames__",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "strings.Join(containerNames, \", \")"
         }
       ],
       "fuzzy": true
@@ -14195,24 +14282,16 @@
       "fuzzy": true
     },
     {
-      "id": "problem signing the deployment_overrides string with {KeyFilePath}: {Err}",
-      "message": "problem signing the deployment_overrides string with {KeyFilePath}: {Err}",
-      "translation": "Fehler beim Signieren der Zeichenfolge 'deployment_overrides' mit {KeyFilePath}: {Err}",
+      "id": "problem signing the deployment_overrides string: {Err}",
+      "message": "problem signing the deployment_overrides string: {Err}",
+      "translation": "Fehler beim Signieren der Zeichenfolge 'deployment_overrides': {Err}",
       "placeholders": [
         {
-          "id": "KeyFilePath",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "keyFilePath"
-        },
-        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[1]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 1,
           "expr": "err"
         }
       ],
@@ -14251,17 +14330,17 @@
       "fuzzy": true
     },
     {
-      "id": "Storing {BaseName} with the pattern in the Exchange...",
-      "message": "Storing {BaseName} with the pattern in the Exchange...",
-      "translation": "{BaseName} wird mit dem Muster im Exchange gespeichert...",
+      "id": "Storing {NewPubKeyName} with the pattern in the Exchange...",
+      "message": "Storing {NewPubKeyName} with the pattern in the Exchange...",
+      "translation": "{NewPubKeyName} wird mit dem Muster im Exchange gespeichert...",
       "placeholders": [
         {
-          "id": "BaseName",
+          "id": "NewPubKeyName",
           "string": "%[1]s",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "baseName"
+          "expr": "newPubKeyName"
         }
       ],
       "fuzzy": true
@@ -14511,6 +14590,12 @@
       "fuzzy": true
     },
     {
+      "id": "Flag -K cannot be specified without -k flag.",
+      "message": "Flag -K cannot be specified without -k flag.",
+      "translation": "Das Flag -K muss zusammen mit dem Flag -k angegeben werden.",
+      "fuzzy": true
+    },
+    {
       "id": "Flags -I and -P are mutually exclusive.",
       "message": "Flags -I and -P are mutually exclusive.",
       "translation": "Die Flags -I und -P schließen sich gegenseitig aus.",
@@ -14619,17 +14704,17 @@
       "fuzzy": true
     },
     {
-      "id": "Storing {BaseName} with the service in the Exchange...",
-      "message": "Storing {BaseName} with the service in the Exchange...",
-      "translation": "{BaseName} wird mit dem Service im Exchange gespeichert...",
+      "id": "Storing {PubKeyNameToStore} with the service in the Exchange...",
+      "message": "Storing {PubKeyNameToStore} with the service in the Exchange...",
+      "translation": "{PubKeyNameToStore} wird mit dem Service im Exchange gespeichert...",
       "placeholders": [
         {
-          "id": "BaseName",
+          "id": "PubKeyNameToStore",
           "string": "%[1]s",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "baseName"
+          "expr": "pubKeyNameToStore"
         }
       ],
       "fuzzy": true
@@ -15663,9 +15748,9 @@
       "fuzzy": true
     },
     {
-      "id": "problem signing {KUBEDEPLOYMENTCONFIGTYPE} deployment string with {KeyFilePath}: {Err}",
-      "message": "problem signing {KUBEDEPLOYMENTCONFIGTYPE} deployment string with {KeyFilePath}: {Err}",
-      "translation": "Fehler beim Signieren der {KUBEDEPLOYMENTCONFIGTYPE}-Bereistellungszeichenfolge mit {KeyFilePath}: {Err}",
+      "id": "problem signing {KUBEDEPLOYMENTCONFIGTYPE} deployment string: {Err}",
+      "message": "problem signing {KUBEDEPLOYMENTCONFIGTYPE} deployment string: {Err}",
+      "translation": "Fehler beim Signieren der {KUBEDEPLOYMENTCONFIGTYPE}-Bereistellungszeichenfolge: {Err}",
       "placeholders": [
         {
           "id": "KUBEDEPLOYMENTCONFIGTYPE",
@@ -15676,19 +15761,11 @@
           "expr": "KUBE_DEPLOYMENT_CONFIG_TYPE"
         },
         {
-          "id": "KeyFilePath",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "keyFilePath"
-        },
-        {
           "id": "Err",
-          "string": "%[3]v",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 3,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -15813,24 +15890,16 @@
       "fuzzy": true
     },
     {
-      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
-      "message": "problem signing deployment string with {KeyFilePath}: {Err}",
-      "translation": "Fehler beim Signieren der Bereistellungszeichenfolge mit {KeyFilePath}: {Err}",
+      "id": "problem signing deployment string: {Err}",
+      "message": "problem signing deployment string: {Err}",
+      "translation": "Fehler beim Signieren der Bereistellungszeichenfolge: {Err}",
       "placeholders": [
         {
-          "id": "KeyFilePath",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "keyFilePath"
-        },
-        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[1]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 1,
           "expr": "err"
         }
       ],
@@ -17923,7 +17992,7 @@
     {
       "id": "Importing key file name: {Name}",
       "message": "Importing key file name: {Name}",
-      "translation": "Importing key file name: {Name}",
+      "translation": "Import der Schlüsseldatei mit dem Namen: {Name}",
       "placeholders": [
         {
           "id": "Name",
@@ -17939,7 +18008,7 @@
     {
       "id": "unsupported key file type extension: {Name}",
       "message": "unsupported key file type extension: {Name}",
-      "translation": "unsupported key file type extension: {Name}",
+      "translation": "Nicht unterstützte Typerweiterung der Schlüsseldatei: {Name}",
       "placeholders": [
         {
           "id": "Name",
@@ -17955,7 +18024,7 @@
     {
       "id": "Listing SDO keys.",
       "message": "Listing SDO keys.",
-      "translation": "Listing SDO keys.",
+      "translation": "SDO-Schlüssel werden aufgelistet.",
       "fuzzy": true
     },
     {
@@ -17993,7 +18062,7 @@
     {
       "id": "SDO key name {KeyName} not found",
       "message": "SDO key name {KeyName} not found",
-      "translation": "SDO key name {KeyName} not found",
+      "translation": "Name des SDO-Schlüssels {KeyName} nicht gefunden",
       "placeholders": [
         {
           "id": "KeyName",
@@ -18009,7 +18078,7 @@
     {
       "id": "failed to marshal 'hzn sdo keys list' output: {Err}",
       "message": "failed to marshal 'hzn sdo keys list' output: {Err}",
-      "translation": "failed to marshal 'hzn sdo keys list' output: {Err}",
+      "translation": "Marshalling der Ausgabe von 'hzn sdo keys list' ist fehlgeschlagen: {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -18025,7 +18094,7 @@
     {
       "id": "Downloading SDO key \"{KeyName}\".",
       "message": "Downloading SDO key \"{KeyName}\".",
-      "translation": "Downloading SDO key \"{KeyName}\".",
+      "translation": "SDO-Schlüssel \"{KeyName}\" wird heruntergeladen.",
       "placeholders": [
         {
           "id": "KeyName",
@@ -18041,7 +18110,7 @@
     {
       "id": "Removing SDO key \"{KeyName}\".",
       "message": "Removing SDO key \"{KeyName}\".",
-      "translation": "Removing SDO key \"{KeyName}\".",
+      "translation": "SDO-Schlüssel \"{KeyName}\" wird entfernt.",
       "placeholders": [
         {
           "id": "KeyName",
@@ -18057,7 +18126,7 @@
     {
       "id": "Creating SDO key template at \"{OutputFile}\".",
       "message": "Creating SDO key template at \"{OutputFile}\".",
-      "translation": "Creating SDO key template at \"{OutputFile}\".",
+      "translation": "SDO-Schlüsselvorlage wird in \"{OutputFile}\" erstellt.",
       "placeholders": [
         {
           "id": "OutputFile",
@@ -18073,7 +18142,7 @@
     {
       "id": "parsing the json: {Err}",
       "message": "parsing the json: {Err}",
-      "translation": "parsing the json: {Err}",
+      "translation": "Parsen der JSON: {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -18089,7 +18158,7 @@
     {
       "id": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
       "message": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
-      "translation": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
+      "translation": "Ungültiger Schlüsselname. Der Schlüssel \"{KeyName}\" ist in der Organisation \"{Org}\" nicht vorhanden.",
       "placeholders": [
         {
           "id": "KeyName",
@@ -18113,7 +18182,7 @@
     {
       "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
       "message": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "translation": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Ungültige Schlüsseldatei. Der Schlüssel \"{Key}\" ist in den SDO-Eignerservices für die Organisation \"{Org}\" bereits vorhanden.",
       "placeholders": [
         {
           "id": "Key",
@@ -18137,7 +18206,7 @@
     {
       "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
       "message": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
-      "translation": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Ungültige Schlüsseldatei. Der Schlüssel ist in den SDO-Eignerservices für die Organisation \"{Org}\" bereits vorhanden.",
       "placeholders": [
         {
           "id": "Org",
@@ -18153,7 +18222,7 @@
     {
       "id": "Invalid credentials. User \"{User}\" cannot access keys in org \"{Org}\" with given credentials.",
       "message": "Invalid credentials. User \"{User}\" cannot access keys in org \"{Org}\" with given credentials.",
-      "translation": "Invalid credentials. User \"{User}\" cannot access keys in org \"{Org}\" with given credentials.",
+      "translation": "Ungültige Berechtigungsnachweise. Der Benutzer \"{User}\" kann mit den bereitgestellten Berechtigungsnachweisen nicht auf die Schlüssel in der Organisation \"{Org}\" zugreifen.",
       "placeholders": [
         {
           "id": "User",
@@ -18177,7 +18246,7 @@
     {
       "id": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
       "message": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
-      "translation": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
+      "translation": "Ungültige Berechtigungsnachweise. Der Benutzer \"{User}\" kann mit den bereitgestellten Berechtigungsnachweisen nicht auf den Schlüssel \"{KeyName}\" in der Organisation \"{Org}\" zugreifen.",
       "placeholders": [
         {
           "id": "User",
@@ -18209,7 +18278,7 @@
     {
       "id": "reading the bytes from {KeyFileName}: {Err}",
       "message": "reading the bytes from {KeyFileName}: {Err}",
-      "translation": "reading the bytes from {KeyFileName}: {Err}",
+      "translation": "Lesen der Byte aus {KeyFileName}: {Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -18233,7 +18302,7 @@
     {
       "id": "parsing the json from {KeyFileName}: {Err}",
       "message": "parsing the json from {KeyFileName}: {Err}",
-      "translation": "parsing the json from {KeyFileName}: {Err}",
+      "translation": "Parsen der JSON aus {KeyFileName}: {Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -18257,7 +18326,7 @@
     {
       "id": "given key {KeyFileName} has missing fields:\n{Err}",
       "message": "given key {KeyFileName} has missing fields:\n{Err}",
-      "translation": "given key {KeyFileName} has missing fields:\n{Err}",
+      "translation": "Im angegebenen Schlüssel {KeyFileName} fehlen Felder:\n{Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -18281,7 +18350,7 @@
     {
       "id": "JSON Body:{StringkeyBytes}",
       "message": "JSON Body:{StringkeyBytes}",
-      "translation": "JSON Body:{StringkeyBytes}",
+      "translation": "JSON-Hauptteil: {StringkeyBytes}",
       "placeholders": [
         {
           "id": "StringkeyBytes",
@@ -18327,7 +18396,7 @@
     {
       "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
       "message": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
-      "translation": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+      "translation": "Ungültiger Vouchername. Der Voucher \"{Voucher}\" ist in der Organisation \"{Org}\" nicht vorhanden.",
       "placeholders": [
         {
           "id": "Voucher",
@@ -18351,7 +18420,7 @@
     {
       "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
       "message": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
-      "translation": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+      "translation": "Ungültige Berechtigungsnachweise. Der Benutzer \"{User}\" kann mit den bereitgestellten Berechtigungsnachweisen nicht auf die Vouchers in der Organisation \"{Org}\" zugreifen.",
       "placeholders": [
         {
           "id": "User",
@@ -18375,7 +18444,7 @@
     {
       "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
       "message": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
-      "translation": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+      "translation": "Ungültige Berechtigungsnachweise. Der Benutzer \"{User}\" kann mit den bereitgestellten Berechtigungsnachweisen nicht auf den Voucher \"{Voucher}\" in der Organisation \"{Org}\" zugreifen.",
       "placeholders": [
         {
           "id": "User",
@@ -18407,7 +18476,7 @@
     {
       "id": "failed to marshal 'hzn sdo voucher list' output: {Err}",
       "message": "failed to marshal 'hzn sdo voucher list' output: {Err}",
-      "translation": "failed to marshal 'hzn sdo voucher list' output: {Err}",
+      "translation": "Marshalling der Ausgabe von 'hzn sdo voucher list' ist fehlgeschlagen: {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -18661,7 +18730,7 @@
     {
       "id": "Invalid voucher file format: {StringrespBodyBytes}.",
       "message": "Invalid voucher file format: {StringrespBodyBytes}.",
-      "translation": "Invalid voucher file format: {StringrespBodyBytes}.",
+      "translation": "Ungültiges Dateiformat des Vouchers: {StringrespBodyBytes}.",
       "placeholders": [
         {
           "id": "StringrespBodyBytes",
@@ -18829,7 +18898,7 @@
     {
       "id": "Are you sure you want to remove secret {SecretName} from the secrets manager?",
       "message": "Are you sure you want to remove secret {SecretName} from the secrets manager?",
-      "translation": "Are you sure you want to remove secret {SecretName} from the secrets manager?",
+      "translation": "Soll der geheime Schlüssel {SecretName} aus dem Manager für geheime Schlüssel entfernt werden?",
       "placeholders": [
         {
           "id": "SecretName",
@@ -18953,7 +19022,7 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "serviceInstance.SpecRef"
+          "expr": "serviceInstanceFound.SpecRef"
         },
         {
           "id": "InstanceId",
@@ -19023,9 +19092,9 @@
       "fuzzy": true
     },
     {
-      "id": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-      "message": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-      "translation": "Die Servicedefinition {ServiceName} besteht aus mehreren Containern. Geben Sie den Containernamen mit dem Flag -c an.",
+      "id": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
+      "message": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
+      "translation": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
       "placeholders": [
         {
           "id": "ServiceName",
@@ -19034,6 +19103,14 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "serviceName"
+        },
+        {
+          "id": "JoincNames__",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "strings.Join(cNames, \", \")"
         }
       ],
       "fuzzy": true

@@ -579,6 +579,10 @@
       "translation": "ファイル {KeyFile} の絶対パスの取得に失敗しました。 {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "ファイル {KeyFile} の絶対パスの検査中にエラーが発生しました。{Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "HORIZON_URL の構文解析でエラーが発生しました: {Err}"
     },
@@ -752,7 +756,7 @@
     },
     {
       "id": "Malformed URL: {UrlPath}. {ErrUrl}",
-      "translation": "URL の形式に誤りがあります: {UrlPath}。{ErrUrl}"
+      "translation": "URL の形式に誤りがあります: {UrlPath}。 {ErrUrl}"
     },
     {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
@@ -799,12 +803,20 @@
       "translation": "秘密鍵ファイル・フォーマットを確認中..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "指定された秘密鍵は無効です、エラー: {Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "指定された秘密鍵 {KeyFile} は無効です。エラー: {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}。 署名鍵を作成してください。"
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "秘密鍵を生成できませんでした。エラー: {Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}。公開鍵を生成できませんでした。"
     },
     {
       "id": "running: {CmdStr}",
@@ -865,6 +877,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "環境変数 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} を整数に変換中にエラーが発生しました。 {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "ファイル {FileName} は既に存在します。 別のファイル・パスまたはファイル名を指定してください。 既存のファイルを上書きするには、「--overwrite」フラグを使用します。"
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "オブジェクト「{DefaultFileName}」のデータをファイル {FileName} に保存できませんでした。エラー: {Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
@@ -1572,7 +1592,7 @@
     },
     {
       "id": "Error retrieving all service definitions from db. {Arg_1}",
-      "translation": "すべてのサービス定義をデータベースから取得しているときにエラーが発生しました。{Arg_1}"
+      "translation": "すべてのサービス定義をデータベースから取得しているときにエラーが発生しました。 {Arg_1}"
     },
     {
       "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",

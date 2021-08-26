@@ -2595,6 +2595,30 @@
       "fuzzy": true
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "message": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "檢查檔案 {KeyFile} 的絕對路徑時發生錯誤。{Err}",
+      "placeholders": [
+        {
+          "id": "KeyFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "message": "Error parsing HORIZON_URL: {Err}",
       "translation": "剖析 HORIZON_URL 時發生錯誤：{Err}",
@@ -3531,7 +3555,7 @@
     {
       "id": "Malformed URL: {UrlPath}. {ErrUrl}",
       "message": "Malformed URL: {UrlPath}. {ErrUrl}",
-      "translation": "形態異常的 URL：{UrlPath}。{ErrUrl}",
+      "translation": "形態異常的 URL：{UrlPath}。 {ErrUrl}",
       "placeholders": [
         {
           "id": "UrlPath",
@@ -3803,16 +3827,24 @@
       "fuzzy": true
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "message": "provided private key is not valid; error: {Err}",
-      "translation": "所提供的私密金鑰無效；錯誤：{Err}",
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "message": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "所提供的私密金鑰 {KeyFile} 無效；錯誤：{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "KeyFile",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -3830,6 +3862,37 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "message": "private key could not be generated; error: {Err}",
+      "translation": "無法產生私密金鑰；錯誤：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "message": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}。無法產生公開金鑰。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -4099,7 +4162,7 @@
     {
       "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
       "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "檔案 {FileName} 已存在。 請指定不同的檔案路徑或檔名。 若要改寫現有檔案，請使用 '--overwrite' 旗標。",
       "placeholders": [
         {
           "id": "FileName",
@@ -4115,7 +4178,7 @@
     {
       "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
       "message": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
-      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "無法將物件 '{DefaultFileName}' 的資料儲存至檔案 {FileName}，錯誤：{Err}",
       "placeholders": [
         {
           "id": "DefaultFileName",
