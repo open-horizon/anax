@@ -201,9 +201,9 @@ func sendSdoKeysApiRequest(org, userCreds, keyName, method string, body interfac
 	} else if httpCode == 400 && method == http.MethodPost {
 		key, ok := body.(Key)
 		if ok {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid key file. Key \"%s\" already exists in SDO owner services for org \"%s\".\n", key, org))
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid metadata file. Key \"%s\" already exists in SDO owner services for org \"%s\".\n", key.Name, org))
 		} else {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid key file. Key already exists in SDO owner services for org \"%s\".", org))
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid metadata file. Key already exists in SDO owner services for org \"%s\".", org))
 		}
 	} else if httpCode == 401 {
 		user, _ := cliutils.SplitIdToken(userCreds)
@@ -241,7 +241,17 @@ func import1Key(org, userCreds string, keyFileReader io.Reader, keyFileName stri
 
 	// Check for empty fields in key file
 	if err := checkEmptyKeyFields(key); err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("given key %s has missing fields:\n%s", keyFileName, err))
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("given metadata file %s has missing fields:\n%s", keyFileName, err))
+	}
+
+	// Check for unsupported key name in key file
+	if err := checkKeyName(key.Name); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("given metadata file %s has unsupported key name.\n%s", keyFileName, err))
+	}
+
+	// Check country code
+	if err := checkKeyCountry(key.Country); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("given metadata file %s has unsupported country name.\n%s", keyFileName, err))
 	}
 
 	// Remarshal key so that it is always in the right format
@@ -285,5 +295,27 @@ func checkEmptyKeyFields(key KeyFile) error {
 		errMsg += "Please fill these and try again.\n"
 		return errors.New(errMsg)
 	}
+	return nil
+}
+
+func checkKeyName(s string) error {
+	for _, r := range s {
+        if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
+            return errors.New("Key name can only contain lowercase characters, numbers, and hyphens")
+        }
+    }
+	return nil
+}
+
+func checkKeyCountry(s string) error {
+	err := "Country name must be a 2 Letter Country Code"
+	if len(s) != 2 {
+		return errors.New(err)
+	}
+	for _, r := range s {
+        if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') {
+            return errors.New(err)
+        }
+    }
 	return nil
 }

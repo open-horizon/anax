@@ -67,6 +67,30 @@ cat <<'EOF' > /tmp/sdo_key2.json
 }
 EOF
 
+cat <<'EOF' > /tmp/sdo_key_unsupported.json
+{
+  "key_name": "Test-sdo-key",
+  "common_name": "test-key",
+  "email_name": "user.email@domain.com",
+  "company_name": "TestCo",
+  "country_name": "XX",
+  "state_name": "XX",
+  "locale_name": "City"
+}
+EOF
+
+cat <<'EOF' > /tmp/sdo_key_unsupported2.json
+{
+  "key_name": "test-sdo-key",
+  "common_name": "test-key",
+  "email_name": "user.email@domain.com",
+  "company_name": "TestCo",
+  "country_name": "XXw",
+  "state_name": "XX",
+  "locale_name": "City"
+}
+EOF
+
 read -r -d '' inspectSampleKey <<'EOF'
 {
   "key_name": "",
@@ -654,6 +678,10 @@ fi
 
 # Test hzn sdo key create
 
+# Clean up SDO keys
+hzn sdo key rm test-sdo-key &> /dev/null
+hzn sdo key rm test-sdo-key2 &> /dev/null
+
 echo -e "${PREFIX} Testing 'hzn sdo key create' without HZN_EXCHANGE_USER_AUTH set"
 unset HZN_EXCHANGE_USER_AUTH
 cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
@@ -731,7 +759,7 @@ echo -e "${PREFIX} done."
 echo -e "${PREFIX} Testing 'hzn sdo key create <key-file>' with empty fields"
 cmdOutput=$(hzn sdo key create /tmp/sample_key.json 2>&1)
 rc=$?
-if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'given key'*'has missing fields:'*'field'*'is missing'* ]]; then
+if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'given metadata'*'has missing fields:'*'field'*'is missing'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
@@ -739,10 +767,30 @@ else
 fi
 rm /tmp/sample_key.json
 
+echo -e "${PREFIX} Testing 'hzn sdo key create <key-file>' with unsupported key name"
+cmdOutput=$(hzn sdo key create /tmp/sdo_key_unsupported.json 2>&1)
+rc=$?
+if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'given metadata'*'has unsupported key name'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+
+echo -e "${PREFIX} Testing 'hzn sdo key create <key-file>' with unsupported country name"
+cmdOutput=$(hzn sdo key create /tmp/sdo_key_unsupported2.json 2>&1)
+rc=$?
+if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'given metadata'*'has unsupported country name'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+
 echo -e "${PREFIX} Testing 'hzn sdo key create <key-file>' when <key-file> already exists in SDO owner services"
 cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
 rc=$?
-if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid key file.'*'Key'*'already exists in SDO owner services'* ]]; then
+if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid metadata file.'*'Key'*'already exists in SDO owner services'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
@@ -1168,5 +1216,7 @@ hzn sdo key rm test-sdo-key &> /dev/null
 echo -e "${PREFIX} done."
 rm /tmp/sdo_key.json
 rm /tmp/sdo_key2.json
+rm /tmp/sdo_key_unsupported.json
+rm /tmp/sdo_key_unsupported2.json
 
 echo -e "${PREFIX} Done"
