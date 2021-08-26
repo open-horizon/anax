@@ -374,10 +374,13 @@ func GetService(ec ExchangeContext, mURL string, mOrg string, mVersion string, m
 				continue
 			}
 		} else {
-			if len(resp.(*GetServicesResponse).Services) > 0 {
-				updateServiceDefCache(resp.(*GetServicesResponse).Services, cachedSvcDefs, mOrg, mURL, mArch)
+			services := resp.(*GetServicesResponse)
+			if len(services.Services) > 0 {
+				// Normalize the newer versionRange support back into the older version field, which the majority of the runtime uses.
+				services.SupportVersionRange()
+				updateServiceDefCache(services.Services, cachedSvcDefs, mOrg, mURL, mArch)
 			}
-			return processGetServiceResponse(mURL, mOrg, mVersion, mArch, searchVersion, resp.(*GetServicesResponse))
+			return processGetServiceResponse(mURL, mOrg, mVersion, mArch, searchVersion, services)
 		}
 	}
 }
@@ -389,7 +392,6 @@ func processGetServiceResponse(mURL string, mOrg string, mVersion string, mArch 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("found service %v.", resp.(*GetServicesResponse).ShortString())))
 
 	services := resp.(*GetServicesResponse)
-	services.SupportVersionRange()
 	msMetadata := services.Services
 
 	// If the caller wanted a specific version, check for 1 result.
