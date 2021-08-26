@@ -3391,12 +3391,8 @@
       "translation": "Pattern for $SERVICE_NAME"
     },
     {
-      "id": "Failed to marshal deps: {Err}",
-      "translation": "Failed to marshal deps: {Err}"
-    },
-    {
-      "id": "Failed to unmarshal deps: {Err}",
-      "translation": "Failed to unmarshal deps: {Err}"
+      "id": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
+      "translation": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}"
     },
     {
       "id": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
@@ -3477,6 +3473,10 @@
     {
       "id": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
       "translation": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command."
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
@@ -5659,8 +5659,8 @@
       "translation": "Deployment unmarshalling error: {Err}"
     },
     {
-      "id": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-      "translation": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag."
+      "id": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
+      "translation": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag"
     },
     {
       "id": "Service logs are unavailable: {Err}",
