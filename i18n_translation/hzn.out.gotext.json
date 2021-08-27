@@ -5463,8 +5463,8 @@
       "translation": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\"."
     },
     {
-      "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "translation": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\"."
+      "id": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\"."
     },
     {
       "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
