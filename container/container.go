@@ -2463,6 +2463,16 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 			glog.V(5).Infof("Service %v in agreement %v already removed", serviceName, agreementId)
 		}
 
+		// Remove the File Sync Service API authentication credential file.
+		if essToken, err := b.GetAuthenticationManager().RemoveCredential(agreementId, !b.isDevInstance); err != nil {
+			glog.Errorf("Failed to remove FSS Authentication credential file for %v, error %v", agreementId, err)
+		} else if !b.IsDevInstance() {
+			if _, err := persistence.DeleteMSSInstWithESSToken(b.db, essToken); err != nil {
+				// Remove MSInstSecretStatus by essToken
+				glog.Errorf("Failed to remove MicroserviceSecretStatus record for %v, error %v", agreementId, err)
+			}
+		}
+
 		return nil
 	}
 
@@ -2492,16 +2502,6 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 				if err != docker.ErrNoSuchVolume {
 					glog.Errorf("Failed to remove workloadStorageDir docker volume: %v. Error: %v", workloadRWStorageDir, err)
 				}
-			}
-		}
-
-		// Remove the File Sync Service API authentication credential file.
-		if essToken, err := b.GetAuthenticationManager().RemoveCredential(agreementId, !b.isDevInstance); err != nil {
-			glog.Errorf("Failed to remove FSS Authentication credential file for %v, error %v", agreementId, err)
-		} else if !b.IsDevInstance() {
-			if _, err := persistence.DeleteMSSInstWithESSToken(b.db, essToken); err != nil {
-				// Remove MSInstSecretStatus by essToken
-				glog.Errorf("Failed to remove MicroserviceSecretStatus record for %v, error %v", agreementId, err)
 			}
 		}
 
