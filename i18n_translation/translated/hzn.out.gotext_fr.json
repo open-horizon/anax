@@ -120,7 +120,7 @@
     },
     {
       "id": "No secret(s) found under secret name \"{SecretName}\"",
-      "translation": "Aucun secret trouvé sous le nom secret \"{SecretName}\""
+      "translation": "Aucun secret trouvé sous le nom de secret \"{SecretName}\""
     },
     {
       "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
@@ -564,7 +564,7 @@
     },
     {
       "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
-      "translation": "Organisation du noeud. La valeur par défaut, si elle est omise, correspond à l'organisation du noeud fourni par l'unité enregistrée -n ou en cours."
+      "translation": "Organisation du noeud. La valeur par défaut, si elle est omise, correspond à l'organisation du noeud fourni par le dispositif enregistré -n ou en cours."
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -636,7 +636,7 @@
     },
     {
       "id": "Check secret bindings.",
-      "translation": "Vérifiez les liaisons de secret."
+      "translation": "Vérifier les liaisons de secret."
     },
     {
       "id": "The Horizon exchange node ID. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -660,7 +660,7 @@
     },
     {
       "id": "Development tools for creation of services.",
-      "translation": "Outils de déploiement pour la création de services."
+      "translation": "Outils de développement pour la création de services."
     },
     {
       "id": "Directory containing Horizon project metadata. If omitted, a subdirectory called 'horizon' under current directory will be used.",
@@ -2032,23 +2032,23 @@
     },
     {
       "id": "Change the configuration state to 'suspend' for a service. Parent and child dependencies of the suspended service will be stopped until the service is resumed.",
-      "translation": "Modifier l'état de configuration sur 'suspend' (suspendre) pour un service. Les dépendances parent et enfant du service suspendu seront arrêtées jusqu'à la reprise du service."
+      "translation": "Faire passer l'état de configuration à 'suspend' (interrompre) pour un service. Les dépendances parent et enfant du service interrompu seront arrêtées jusqu'à la reprise du service."
     },
     {
       "id": "Suspend all registerd services.",
-      "translation": "Suspendre tous les services enregistrés."
+      "translation": "Interrompre tous les services enregistrés."
     },
     {
       "id": "The organization of the service that should be suspended.",
-      "translation": "Organisation du service devant être suspendu."
+      "translation": "Organisation du service devant être interrompu."
     },
     {
       "id": "The name of the service that should be suspended. If omitted, all the services for the organization will be suspended.",
-      "translation": "Nom du service devant être suspendu. S'il est omis, tous les services de l'organisation seront suspendus."
+      "translation": "Nom du service devant être interrompu. S'il est omis, tous les services de l'organisation seront interrompus. "
     },
     {
       "id": "The version of the service that should be suspended. If omitted, all the versions for this service will be suspended.",
-      "translation": "Version du service qui doit être suspendue. En cas d'omission, toutes les versions de ce service seront suspendues."
+      "translation": "Version du service à interrompre. En cas d'omission, toutes les versions de ce service seront interrompues. "
     },
     {
       "id": "Show the container logs for a service.",
@@ -2164,7 +2164,7 @@
     },
     {
       "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "translation": "Répertoriez et gérez les secrets dans le gestionnaire de secrets. REMARQUE : vous devez vous authentifier en tant qu'administrateur pour pouvoir répertorier les secrets disponibles pour l'ensemble de l'organisation."
+      "translation": "Répertorier et gérer les secrets dans le gestionnaire de secrets. REMARQUE : vous devez vous authentifier en tant qu'administrateur pour pouvoir répertorier les secrets disponibles pour l'ensemble de l'organisation."
     },
     {
       "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
@@ -2172,23 +2172,23 @@
     },
     {
       "id": "List and manage secrets in the secrets manager.",
-      "translation": "Répertoriez et gérez les secrets dans le gestionnaire de secrets."
+      "translation": "Répertorier et gérer les secrets dans le gestionnaire de secrets."
     },
     {
       "id": "Display the names of the secrets in the secrets manager.",
-      "translation": "Affichez les noms des secrets dans le gestionnaire de secrets."
+      "translation": "Afficher les noms des secrets dans le gestionnaire de secrets."
     },
     {
       "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
-      "translation": "Affichez uniquement ce secret. Renvoie une valeur booléenne indiquant l'existence du secret. Il s'agit du nom du secret utilisé dans le gestionnaire de secrets. Si le secret n'existe pas, le code d'exit 1 est renvoyé."
+      "translation": "Afficher uniquement ce secret. Renvoie une valeur booléenne indiquant l'existence du secret. Il s'agit du nom du secret utilisé dans le gestionnaire de secrets. Si le secret n'existe pas, le code d'exit 1 est renvoyé."
     },
     {
       "id": "Add a secret to the secrets manager.",
-      "translation": "Ajoutez un secret au gestionnaire de secrets."
+      "translation": "Ajouter un secret au gestionnaire de secrets."
     },
     {
       "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
-      "translation": "Nom du secret. Il doit être unique au sein de votre organisation. Ce nom est utilisé dans les patterns et les règles de déploiement pour lier ce secret à un nom de secret dans une définition de service."
+      "translation": "Nom du secret. Doit être unique au sein de votre organisation. Ce nom est utilisé dans les patterns et les règles de déploiement pour lier ce secret à un nom de secret dans une définition de service."
     },
     {
       "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
@@ -2208,7 +2208,7 @@
     },
     {
       "id": "Remove a secret in the secrets manager.",
-      "translation": "Supprimez un secret dans le gestionnaire de secrets."
+      "translation": "Retirer un secret du gestionnaire de secrets."
     },
     {
       "id": "The name of the secret to be removed from the secrets manager.",
@@ -2216,7 +2216,7 @@
     },
     {
       "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
-      "translation": "Lisez les détails d'un secret stocké dans le gestionnaire de secrets. Il s'agit de la paire clé-valeur fournie lors de la création de secret."
+      "translation": "Lire les détails d'un secret stocké dans le gestionnaire de secrets. Il s'agit de la paire clé-valeur fournie lors de la création de secret."
     },
     {
       "id": "The name of the secret to read in the secrets manager.",
@@ -2892,11 +2892,11 @@
     },
     {
       "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
-      "translation": "Aucun ID noeud ni aucune règle de noeud n'est spécifié. Obtention de la règle de noeud à partir du noeud local."
+      "translation": "Aucun ID noeud et aucune règle de noeud n'est spécifié. Obtention de la règle de noeud à partir du noeud local."
     },
     {
       "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
-      "translation": "Aucun ID noeud ni aucun fichier d'entrée utilisateur de noeud n'est spécifié. Obtention de l'entrée utilisateur de noeud à partir du noeud local."
+      "translation": "Aucun ID noeud et aucun fichier d'entrée utilisateur de noeud n'est spécifié. Obtention de l'entrée utilisateur de noeud à partir du noeud local."
     },
     {
       "id": "No node type has been provided: node type of '{NodeId}' node will be used",
@@ -2992,7 +2992,7 @@
     },
     {
       "id": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
-      "translation": "L'architecture, l'organisation ou le type du noeud n'est pas indiqué et l'ID de noeud n'est pas spécifié. Obtention des informations de noeud à partir du noeud local."
+      "translation": "L'architecture, l'organisation ou le type du noeud n'est pas indiqué et l'ID noeud n'est pas spécifié. Obtention des informations de noeud à partir du noeud local."
     },
     {
       "id": "failed to marshal 'hzn deploycheck secretbinding' output: {Err}",
@@ -3832,11 +3832,11 @@
     },
     {
       "id": "Failed to validate the secret binding. {Err}",
-      "translation": "Impossible de valider la liaison de secret. {Err}"
+      "translation": "Echec de validation de la liaison de secret. {Err}"
     },
     {
       "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
-      "translation": "Remarque : les liaisons de secret suivantes ne pas requises par aucun service pour cette règle de déploiement :"
+      "translation": "Remarque : les liaisons de secret suivantes ne sont requises par aucun service pour cette règle de déploiement :"
     },
     {
       "id": "Failed to verify the binding secret in the secret manager. {Err}",
@@ -4068,7 +4068,7 @@
     },
     {
       "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange?",
-      "translation": "Voulez-vous vraiment supprimer le noeud {NodeOrg}/{Node} de Horizon Exchange ?"
+      "translation": "Voulez-vous vraiment retirer le noeud {NodeOrg}/{Node} de Horizon Exchange ?"
     },
     {
       "id": "node '{NodeOrg}/{Node}' not found.",
@@ -4236,7 +4236,7 @@
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove org {TheOrg} from the Horizon Exchange and the MMS?",
-      "translation": "Avertissement : Toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc.) risquent d'être également supprimées. Voulez-vous vraiment supprimer l'organisation {TheOrg} de Horizon Exchange et de MMS ?"
+      "translation": "Avertissement : Toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc.) seront également supprimées. Voulez-vous vraiment retirer l'organisation {TheOrg} de Horizon Exchange et de MMS ?"
     },
     {
       "id": "Using agbot {Agbot}",
@@ -4248,11 +4248,11 @@
     },
     {
       "id": "Removing pattern {PatternId} from agbot {Agbot}",
-      "translation": "Suppression du modèle {PatternId} de l'agbot {Agbot}"
+      "translation": "Retrait du modèle {PatternId} de l'agbot {Agbot}"
     },
     {
       "id": "Removing policy {PolId} from agbot {Agbot}",
-      "translation": "Suppression de la règle {PolId} de l'agbot {Agbot}"
+      "translation": "Retrait de la règle {PolId} de l'agbot {Agbot}"
     },
     {
       "id": "Deleting org {TheOrg} from the Horizon Exchange...",
@@ -5272,7 +5272,7 @@
     },
     {
       "id": "Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy are compatible.",
-      "translation": "Utilisez la commande 'hzn deploycheck all -b' ou 'hzn deploycheck all -B' pour vérifier que le nœud, la configuration de service et la stratégie de déploiement sont compatibles."
+      "translation": "Utilisez la commande 'hzn deploycheck all -b' ou 'hzn deploycheck all -B' pour vérifier que le nœud, la configuration de service et la règle de déploiement sont compatibles."
     },
     {
       "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern are compatible.",
@@ -5356,7 +5356,7 @@
     },
     {
       "id": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
-      "translation": "Coupon importé. ID de noeud : {NodeId}, jeton : {NodeToken}"
+      "translation": "Coupon importé. ID noeud : {NodeId}, jeton : {NodeToken}"
     },
     {
       "id": "reading the policy file {PolicyFilePath}: {Err}",
@@ -5416,7 +5416,7 @@
     },
     {
       "id": "Bad request, secret name \"{SecretName}\" invalid.",
-      "translation": "Demande incorrecte, nom secret \"{SecretName}\" non valide."
+      "translation": "Demande incorrecte, nom de secret \"{SecretName}\" non valide."
     },
     {
       "id": "Permission denied, user \"{User}\" cannot access \"{SecretName}\".",
@@ -5424,7 +5424,7 @@
     },
     {
       "id": "Secret \"{SecretName}\" not found in the secrets manager, nothing to remove.",
-      "translation": "Secret \"{SecretName}\" introuvable dans le gestionnaire de secrets, aucun élément à supprimer."
+      "translation": "Secret \"{SecretName}\" introuvable dans le gestionnaire de secrets, aucun élément à retirer."
     },
     {
       "id": "Vault component not found in the management hub.",
@@ -5528,7 +5528,7 @@
     },
     {
       "id": "Error returned suspending the service: {RespBody}",
-      "translation": "Erreur renvoyée lors de la suspension du service : {RespBody}"
+      "translation": "Erreur renvoyée lors de l'interruption du service : {RespBody}"
     },
     {
       "id": "Error: {Err}",
@@ -5816,7 +5816,7 @@
     },
     {
       "id": "Data hash is generated. Start digital signing with the data hash...",
-      "translation": "Le hachage de données est généré. Démarrer la signature numérique avec le hachage de données..."
+      "translation": "Hachage de données généré. Démarrer la signature numérique avec le hachage de données..."
     },
     {
       "id": "Hash algorithm {HashAlgo} is not supported",
@@ -6104,11 +6104,11 @@
     },
     {
       "id": "Error during removing horizon db files from horizon container: {ErrBytes}",
-      "translation": "Erreur lors de la suppression des fichiers de base de données Horizon à partir du conteneur Horizon : {ErrBytes}"
+      "translation": "Erreur lors du retrait des fichiers de base de données Horizon du conteneur Horizon : {ErrBytes}"
     },
     {
       "id": "Error during removing policy files from horizon container: {ErrBytes}",
-      "translation": "Erreur lors de la suppression des fichiers de règles du conteneur Horizon : {ErrBytes}"
+      "translation": "Erreur lors du retrait des fichiers de règles du conteneur Horizon : {ErrBytes}"
     },
     {
       "id": "Error during restarting the anax container: {ErrBytes}",
@@ -6404,7 +6404,7 @@
     },
     {
       "id": "Neither node policy nor node id is specified.",
-      "translation": "Aucune règle de noeud ni aucun ID noeud n'est spécifié."
+      "translation": "Aucune règle de noeud et aucun ID noeud n'est spécifié."
     },
     {
       "id": "Node id is empty.",
@@ -6444,15 +6444,15 @@
     },
     {
       "id": "Neither deployment policy nor deployment policy id is specified.",
-      "translation": "Aucune règle de déploiement ni aucun ID de règle de déploiement n'est spécifié(e)."
+      "translation": "Aucune règle de déploiement ni aucun ID règle de déploiement n'est spécifié(e)."
     },
     {
       "id": "Deployment policy id is empty.",
-      "translation": "L'ID de règle de déploiement est vide."
+      "translation": "L'ID règle de déploiement est vide."
     },
     {
       "id": "Organization is not specified in the deployment policy id: {BpId}.",
-      "translation": "L'organisation n'est pas spécifiée dans l'ID de règle de déploiement : {BpId}."
+      "translation": "L'organisation n'est pas spécifiée dans l'ID règle de déploiement : {BpId}."
     },
     {
       "id": "Unable to get deployment policy for {BpId}, {Err}",
@@ -6616,7 +6616,7 @@
     },
     {
       "id": "Neither node user input nor node id is specified.",
-      "translation": "Aucune entrée utilisateur de noeud ni aucun ID noeud n'est spécifié."
+      "translation": "Aucune entrée utilisateur de noeud et aucun ID noeud n'est spécifié."
     },
     {
       "id": "User Input Incompatible",
@@ -6700,15 +6700,15 @@
     },
     {
       "id": "Neither pattern nor pattern id is specified.",
-      "translation": "Aucun pattern ni aucun ID de pattern n'est spécifié."
+      "translation": "Aucun pattern et aucun ID pattern n'est spécifié."
     },
     {
       "id": "Pattern id is empty.",
-      "translation": "L'ID de pattern est vide."
+      "translation": "L'ID pattern est vide."
     },
     {
       "id": "Organization is not specified in the pattern id: {PatId}.",
-      "translation": "L'organisation n'est pas spécifiée dans l'ID de pattern : {PatId}."
+      "translation": "L'organisation n'est pas spécifiée dans l'ID pattern : {PatId}."
     },
     {
       "id": "Error getting pattern {PatId} from the Exchange, {Err}",
@@ -6748,7 +6748,7 @@
     },
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
-      "translation": "La variable {Name} associée au service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} spécifiée dans l'entrée utilisateur n'est pas utilisée. Assurez-vous que le nom est correct."
+      "translation": "La variable {Name} associée au service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} archive {ServiceArch} spécifiée dans l'entrée utilisateur n'est pas utilisée. Assurez-vous que le nom est correct."
     },
     {
       "id": "Deployment config {Arg_1} contains unsupported capability for a workload",

@@ -535,7 +535,7 @@
     {
       "id": "Secret name must be provided",
       "message": "Secret name must be provided",
-      "translation": "È necessario fornire il nome segreto ",
+      "translation": "È necessario fornire il nome segreto",
       "fuzzy": true
     },
     {
@@ -691,7 +691,7 @@
     {
       "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
       "message": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
-      "translation": "Impossibile {Action} i segreti nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti. ",
+      "translation": "Impossibile {Action} i segreti nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti.",
       "placeholders": [
         {
           "id": "Action",
@@ -715,7 +715,7 @@
     {
       "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
       "message": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
-      "translation": "Impossibile {Action} il segreto \"{SecretName}\" nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti. ",
+      "translation": "Impossibile {Action} il segreto \"{SecretName}\" nell'organizzazione \"{Org}\", operazione non supportata dal provider dei segreti.",
       "placeholders": [
         {
           "id": "Action",
@@ -747,7 +747,7 @@
     {
       "id": "Secrets provider received a bad request, please check all the provided inputs.",
       "message": "Secrets provider received a bad request, please check all the provided inputs.",
-      "translation": "Il provider dei segreti ha ricevuto una richiesta errata, controllare tutti gli input forniti. ",
+      "translation": "Il provider dei segreti ha ricevuto una richiesta errata, controllare tutti gli input forniti.",
       "fuzzy": true
     },
     {
@@ -801,7 +801,7 @@
     {
       "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
       "message": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
-      "translation": "Si è verificato un errore sconosciuto. Codice di risposta {ResponseCode} ricevuto dal provider dei segreti. ",
+      "translation": "Si è verificato un errore sconosciuto. Codice di risposta {ResponseCode} ricevuto dal provider dei segreti.",
       "placeholders": [
         {
           "id": "ResponseCode",
@@ -817,13 +817,13 @@
     {
       "id": "Organization must be specified in the API path",
       "message": "Organization must be specified in the API path",
-      "translation": "È necessario specificare l'organizzazione nel percorso API ",
+      "translation": "È necessario specificare l'organizzazione nel percorso API",
       "fuzzy": true
     },
     {
       "id": "User must be specified in the API path",
       "message": "User must be specified in the API path",
-      "translation": "È necessario specificare l'utente nel percorso API ",
+      "translation": "È necessario specificare l'utente nel percorso API",
       "fuzzy": true
     },
     {
@@ -2595,6 +2595,30 @@
       "fuzzy": true
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "message": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "Errore di verifica del percorso assoluto del file {KeyFile}. {Err}",
+      "placeholders": [
+        {
+          "id": "KeyFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "message": "Error parsing HORIZON_URL: {Err}",
       "translation": "Errore durante l'analisi HORIZON_URL: {Err}",
@@ -3803,16 +3827,24 @@
       "fuzzy": true
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "message": "provided private key is not valid; error: {Err}",
-      "translation": "la chiave privata fornita non è valida; errore: {Err}",
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "message": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "la chiave privata {KeyFile} fornita non è valida; errore: {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "KeyFile",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -3830,6 +3862,37 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "message": "private key could not be generated; error: {Err}",
+      "translation": "impossibile generare la chiave privata; errore: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "message": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. Impossibile generare la chiave pubblica.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -4099,7 +4162,7 @@
     {
       "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
       "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "Il file {FileName} già esiste. Specificare un percorso file o un nome file diverso. Per sovrascrivere il file esistente, utilizzare l'indicatore '--overwrite'.",
       "placeholders": [
         {
           "id": "FileName",
@@ -4115,7 +4178,7 @@
     {
       "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
       "message": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
-      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Impossibile salvare i dati per l'oggetto '{DefaultFileName}' nel file {FileName}, errore: {Err}",
       "placeholders": [
         {
           "id": "DefaultFileName",

@@ -192,7 +192,7 @@
     },
     {
       "id": "No secret(s) found under secret name \"{SecretName}\"",
-      "translation": "私钥名称“{SecretName}”中找不到私钥"
+      "translation": "私钥名称“{SecretName}”下找不到私钥"
     },
     {
       "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
@@ -579,6 +579,10 @@
       "translation": "获取 {KeyFile} 文件的绝对路径失败。 {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "检查文件 {KeyFile} 的绝对路径时出错。{Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "解析 HORIZON_URL 时出错：{Err}"
     },
@@ -799,12 +803,20 @@
       "translation": "正在检查专用密钥文件格式..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "提供的专用密钥无效；错误：{Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "提供的专用密钥 {KeyFile} 无效；错误：{Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}。 请创建签名密钥。"
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "无法生成专用密钥；错误：{Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}。无法生成公用密钥。"
     },
     {
       "id": "running: {CmdStr}",
@@ -865,6 +877,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "将环境变量 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} 转换为整数时出错。 {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "文件 {FileName} 已存在。 请指定其他文件路径或文件名。 要覆盖现有文件，请使用“--overwrite”标志。"
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "未能将对象“{DefaultFileName}”的数据保存到文件 {FileName}，错误：{Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
@@ -984,11 +1004,11 @@
     },
     {
       "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的给定节点中指定组织。"
+      "translation": "在给定节点标识 {NodeId} 中未指定组织。"
     },
     {
       "id": "Error getting node {NodeId} from the Exchange. {Err}",
-      "translation": "获取 Exchange 中的节点 {NodeId} 时发生错误。 {Err}"
+      "translation": "从 Exchange 获取节点 {NodeId} 时发生错误。 {Err}"
     },
     {
       "id": "No node found for this node id {NodeId}.",
@@ -1088,7 +1108,7 @@
     },
     {
       "id": "Neither node policy nor node id is specified.",
-      "translation": "既未指定节点策略也未指定节点标识。"
+      "translation": "既未指定节点策略，也未指定节点标识。"
     },
     {
       "id": "Node id is empty.",
@@ -1096,7 +1116,7 @@
     },
     {
       "id": "Organization is not specified in the node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的节点中指定组织。"
+      "translation": "在节点标识 {NodeId} 中未指定组织。"
     },
     {
       "id": "Error trying to query node policy for {NodeId}: {Err}",
@@ -1136,7 +1156,7 @@
     },
     {
       "id": "Organization is not specified in the deployment policy id: {BpId}.",
-      "translation": "部署策略标识 {BpId} 中未指定组织。"
+      "translation": "在部署策略标识 {BpId} 中未指定组织。"
     },
     {
       "id": "Unable to get deployment policy for {BpId}, {Err}",
@@ -1156,7 +1176,7 @@
     },
     {
       "id": "Organization is not specified in the service policy id: {SvcId}.",
-      "translation": "未在标识为 {SvcId} 的服务策略中指定组织。"
+      "translation": "在服务策略标识 {SvcId} 中未指定组织。"
     },
     {
       "id": "Error trying to query service policy for service id {SvcId}: {Err}",
@@ -1264,7 +1284,7 @@
     },
     {
       "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
-      "translation": "服务 {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 的私钥绑定中指定了错误的版本字符串 {ServiceVersionRange}，错误 {Err}"
+      "translation": "服务 {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} 的私钥绑定中指定了错误的版本字符串 {ServiceVersionRange}，错误为 {Err}"
     },
     {
       "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
@@ -1300,7 +1320,7 @@
     },
     {
       "id": "Neither node user input nor node id is specified.",
-      "translation": "既未指定节点用户输入也未指定节点标识。"
+      "translation": "既未指定节点用户输入，也未指定节点标识。"
     },
     {
       "id": "User Input Incompatible",
@@ -1384,7 +1404,7 @@
     },
     {
       "id": "Neither pattern nor pattern id is specified.",
-      "translation": "既未指定模式也未指定模式标识。"
+      "translation": "既未指定模式，也未指定模式标识。"
     },
     {
       "id": "Pattern id is empty.",
@@ -1392,7 +1412,7 @@
     },
     {
       "id": "Organization is not specified in the pattern id: {PatId}.",
-      "translation": "未在标识为 {PatId} 的模式中指定组织。"
+      "translation": "在模式标识 {PatId} 中未指定组织。"
     },
     {
       "id": "Error getting pattern {PatId} from the Exchange, {Err}",
@@ -1436,7 +1456,7 @@
     },
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
-      "translation": "未使用用户输入中所指定的服务 {ServiceOrgid}/{ServiceUrl} 版本 {ServiceVersionRange} 体系结构 {ServiceArch} 的变量 {Name}。 请确保变量名称正确无误。"
+      "translation": "未使用用户输入中所指定的服务 {ServiceOrgid}/{ServiceUrl} V{ServiceVersionRange} 体系结构 {ServiceArch} 的变量 {Name}。 请确保名称正确无误。"
     },
     {
       "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
@@ -1968,23 +1988,23 @@
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "版本表达式：在 {Expr} 中不允许有空格。"
+      "translation": "Version_Expression：在 {Expr} 中不允许有空格。"
     },
     {
       "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "版本表达式：{Verstring} 不是有效的版本字符串。"
+      "translation": "Version_Expression：{Verstring} 不是有效的版本字符串。"
     },
     {
       "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令开头。"
+      "translation": "Version_Expression：{Verstring} 未以包括或排除伪指令开头。"
     },
     {
       "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令结尾。"
+      "translation": "Version_Expression：{Verstring} 未以包括或排除伪指令结尾。"
     },
     {
       "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "版本表达式：表达式 {Expr} 中的版本数不正确。"
+      "translation": "Version_Expression：表达式 {Expr} 中的版本号不正确。"
     },
     {
       "id": "Input version string {V1} or {V2} is not a valid single version string.",

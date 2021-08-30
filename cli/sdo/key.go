@@ -199,7 +199,7 @@ func sendSdoKeysApiRequest(org, userCreds, keyName, method string, body interfac
 	if httpCode == 404 && keyName != "" {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid key name. Key \"%s\" does not exist in org \"%s\".\n", keyName, org))
 	} else if httpCode == 400 && method == http.MethodPost {
-		key, ok := body.(Key)
+		key, ok := body.(KeyFile)
 		if ok {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid metadata file. Key \"%s\" already exists in SDO owner services for org \"%s\".\n", key.Name, org))
 		} else {

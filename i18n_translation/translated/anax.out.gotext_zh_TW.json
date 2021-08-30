@@ -579,6 +579,10 @@
       "translation": "無法取得檔案 {KeyFile} 的絕對路徑。 {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "檢查檔案 {KeyFile} 的絕對路徑時發生錯誤。{Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "剖析 HORIZON_URL 時發生錯誤：{Err}"
     },
@@ -752,7 +756,7 @@
     },
     {
       "id": "Malformed URL: {UrlPath}. {ErrUrl}",
-      "translation": "形態異常的 URL：{UrlPath}。{ErrUrl}"
+      "translation": "形態異常的 URL：{UrlPath}。 {ErrUrl}"
     },
     {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
@@ -799,12 +803,20 @@
       "translation": "正在檢查私密金鑰檔案格式..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "所提供的私密金鑰無效；錯誤：{Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "所提供的私密金鑰 {KeyFile} 無效；錯誤：{Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}。 請建立簽署金鑰。"
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "無法產生私密金鑰；錯誤：{Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}。無法產生公開金鑰。"
     },
     {
       "id": "running: {CmdStr}",
@@ -865,6 +877,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "將環境變數 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} 轉換為整數時發生錯誤。 {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "檔案 {FileName} 已存在。 請指定不同的檔案路徑或檔名。 若要改寫現有檔案，請使用 '--overwrite' 旗標。"
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "無法將物件 '{DefaultFileName}' 的資料儲存至檔案 {FileName}，錯誤：{Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",

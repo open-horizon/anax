@@ -88,6 +88,8 @@ func ConvertServiceToPersistent(es *exchange.ServiceDefinition, org string) (*pe
 	pms.Public = es.Public
 	pms.Deployment = es.Deployment
 	pms.DeploymentSignature = es.DeploymentSignature
+	pms.ClusterDeployment = es.ClusterDeployment
+	pms.ClusterDeploymentSignature = es.ClusterDeploymentSignature
 
 	reqServs := make([]exchangecommon.ServiceDependency, 0)
 	for _, r := range es.RequiredServices {
