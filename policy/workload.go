@@ -130,12 +130,25 @@ func (wl Workload) IsSame(compare Workload) bool {
 			wl.ClusterDeploymentSignature == compare.ClusterDeploymentSignature
 
 	} else {
-		return wl.WorkloadURL == compare.WorkloadURL &&
-			wl.Version == compare.Version &&
-			wl.Org == compare.Org &&
-			wl.Arch == compare.Arch &&
-			wl.DeploymentOverrides == compare.DeploymentOverrides &&
-			wl.DeploymentOverridesSignature == compare.DeploymentOverridesSignature
+		if wl.WorkloadURL != compare.WorkloadURL {
+			return false
+		}
+		if wl.Version != compare.Version {
+			return false
+		}
+		if wl.Org != compare.Org {
+			return false
+		}
+		if wl.Arch != "" && compare.Arch != "" && wl.Arch != compare.Arch {
+			return false
+		}
+		if wl.DeploymentOverrides != compare.DeploymentOverrides {
+			return false
+		}
+		if wl.DeploymentOverridesSignature != compare.DeploymentOverridesSignature {
+			return false
+		}
+		return true
 	}
 
 }

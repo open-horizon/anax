@@ -24,6 +24,23 @@ func (w BoundSecret) MakeCopy() (out BoundSecret) {
 	return
 }
 
+// Compare 2 bound secrets to ensure they are the same.
+func (w BoundSecret) IsSame(other BoundSecret) bool {
+	if len(w) != len(other) {
+		return false
+	}
+
+	for thisSecretName, thisBoundSecretName := range w {
+		if otherBoundSecretName, ok := other[thisSecretName]; !ok {
+			return false
+		} else if otherBoundSecretName != thisBoundSecretName {
+			return false
+		}
+	}
+
+	return true
+}
+
 // The secret binding that maps service secret names to secret manager secret names
 type SecretBinding struct {
 	ServiceOrgid        string        `json:"serviceOrgid"`
@@ -56,4 +73,68 @@ func (w SecretBinding) MakeCopy() (out SecretBinding) {
 	}
 
 	return
+}
+
+// Compare 2 secret bindings to ensure they are the same.
+func (w SecretBinding) IsSame(other SecretBinding) bool {
+	if w.ServiceOrgid != other.ServiceOrgid {
+		return false
+	}
+	if w.ServiceUrl != other.ServiceUrl {
+		return false
+	}
+	if w.ServiceVersionRange != other.ServiceVersionRange {
+		return false
+	}
+	if w.ServiceArch != "" && other.ServiceArch != "" && w.ServiceArch != other.ServiceArch {
+		return false
+	}
+	return SecretArrayIsSame(w.Secrets, other.Secrets)
+}
+
+
+// Compare 2 secret binding arrays to make sure they are the same.
+func SecretBindingIsSame(this []SecretBinding, other []SecretBinding) bool {
+	if len(this) != len(other) {
+		return false
+	}
+
+	if len(this) > 0 {
+		for _, thisSB := range this {
+			found := false
+			for _, otherSB := range other {
+				if thisSB.IsSame(otherSB) {
+					found = true
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+// Compare 2 arrays of bound secrets to make sure they are the same.
+func SecretArrayIsSame(this []BoundSecret, other []BoundSecret) bool {
+	if len(this) != len(other) {
+		return false
+	}
+
+	if len(this) > 0 {
+		for _, thisBS := range this {
+			found := false
+			for _, otherBS := range other {
+				if thisBS.IsSame(otherBS) {
+					found = true
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+	}
+
+	return true
 }
