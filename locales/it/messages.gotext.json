@@ -5870,7 +5870,7 @@
     {
       "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
       "message": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
-      "translation": "Specificata stringa di versione errata {ServiceVersionRange} nel bind del segreta del servizio {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+      "translation": "Stringa di versione errata {ServiceVersionRange} specificata nel bind del segreto del servizio {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, errore {Err}",
       "placeholders": [
         {
           "id": "ServiceVersionRange",

@@ -579,6 +579,10 @@
       "translation": "Falha ao obter o caminho absoluto para o arquivo {KeyFile}. {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "Erro ao verificar o caminho absoluto para o arquivo {KeyFile}. {Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "Erro ao analisar HORIZON_URL: {Err}"
     },
@@ -799,12 +803,20 @@
       "translation": "Verificando o formato do arquivo de chave privada..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "a chave privada fornecida não é válida; erro: {Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "A chave privada fornecida {KeyFile} não é válida; erro: {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}. Crie a chave de assinatura."
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "Não foi possível gerar a chave privada; erro: {Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. Não foi possível gerar a chave pública."
     },
     {
       "id": "running: {CmdStr}",
@@ -865,6 +877,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "Erro ao converter variável ambiental HZN_HTTP_RETRY_INTERVAL {RetryIntervals} para número inteiro. {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "O arquivo {FileName} já existe. Especifique um caminho de arquivo ou nome de arquivo diferente. Para substituir o arquivo existente, use a sinalização '--overwrite'."
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Falha ao salvar dados para o objeto '{DefaultFileName}' no arquivo   {FileName}, err: {Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",

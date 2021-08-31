@@ -192,7 +192,7 @@
     },
     {
       "id": "No secret(s) found under secret name \"{SecretName}\"",
-      "translation": "秘密名「{SecretName}」の下で秘密が見つかりません"
+      "translation": "秘密名「{SecretName}」の秘密が見つかりません"
     },
     {
       "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",

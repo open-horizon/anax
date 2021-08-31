@@ -388,7 +388,7 @@
     },
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Interfaccia di riga comandi per l'agent Horizon. La maggior parte dei sottocomandi utilizza l'API agent Horizon nell'ubicazione predefinita http://localhost (vedere la sezione Variabili di ambiente per sostituire tale valore).\n\nDescrizione sottocomandi:\n  agbot: Elenca e gestisce le risorse di agbot Horizon.\n  agreement: Elenca o gestisce gli accordi attivi o archiviati stabiliti da questo nodo edge con un agbot Horizon.\n  architecture: Mostra l'architettura di questa macchina (come definita da Horizon e golang). \n  attribute: Elenca o gestisce gli attributi globali attualmente registrati su questo nodo edge Horizon.\n  deploycheck: Controlla la compatibilità della distribuzione.\n  dev: Strumenti di sviluppo per la creazione di servizi.\n  env: Mostra le variabili di ambiente Horizon.\n  eventlog: Elenca i log degli eventi per la registrazione corrente o tutte le registrazioni.\n  exchange: Elenca e gestisce le risorse di Horizon Exchange.\n  key: Elenca e gestisce le chiavi per la firma e la verifica dei servizi. \n  metering: Elenca o gestisce le informazioni di misurazione (pagamento) per gli accordi attivi o archiviati.\n  mms: Elenca e gestisce le risorse del servizio di gestione modelli Horizon.\n  node: Elenca e gestisce le informazioni generali su questo nodo edge Horizon.\n  policy: Elenca e gestisce la politica per questo nodo edge Horizon. \n  reginput: Crea un template di file di input per questo modello che può essere utilizzato per il comando 'hzn register' (una volta compilato). \n            Questo esamina i servizi utilizzati dal modello specificato e determina l'input del proprietario del nodo richiesto. \n  register: Registra questo nodo edge con l'hub di gestione.\n  service: Elenca o gestisce i servizi attualmente registrati su questo nodo edge Horizon.\n  status: Visualizza lo stato interno Horizon corrente per il nodo.\n  unregister: Annulla la registrazione e reimposta questo nodo edge Horizon in modo che sia pronto per essere registrato di nuovo.\n  userinput: Elenca o gestisce gli input utente del servizio attualmente registrati su questo nodo edge Horizon.\n  util: Comandi di utilità.\n  version: Mostra la versione Horizon.\n  sdo: Elenca e gestisce i voucher e le chiavi di proprietà di Horizon SDO.\n\nVariabili di ambiente:\n  HORIZON_URL:  Sostituisce l'URL su cui hzn contatta l'API agent Horizon.\n      Può facilitare l'utilizzo di un agent Horizon remoto tramite tunnel ssh.\n  HZN_EXCHANGE_URL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn exchange'\n      per comunicare con Horizon Exchange, ad esempio\n      https://exchange.bluehorizon.network/api/v1. (Per impostazione predefinita hzn richiederà \n      l'URL all'agent Horizon.)\n  HZN_ORG_ID:  Il valore predefinito per l'indicatore 'hzn exchange -o',\n      per specificare l'ID organizzazione'.\n  HZN_EXCHANGE_USER_AUTH:  Il valore predefinito per l'indicatore 'hzn exchange -u' o \n\t  'hzn register -u', nel formato '[org/]user:pw'. Notare che HZN_ORG_ID può essere impostato\n\t  se viene omessa l'organizzazione quando si imposta HZN_EXCHANGE_USER_AUTH.\n  HZN_FSS_CSSURL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn mms' \n      per comunicare il servizio di gestione modelli Horizon, ad esempio\n      https://exchange.bluehorizon.network/css/. (Per impostazione predefinita hzn richiederà \n      l'URL all'agent Horizon.)\n  HZN_SDO_SVC_URL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn sdo'\n\t  per comunicare con i servizi del proprietario SDO. (Per impostazione predefinita hzn richiederà \n\t\t      l'URL all'agent Horizon.)\n\n  Tutte queste variabili di ambiente e quelle menzionate nella guida del comando possono essere\n  specificate nel file di configurazione dell'utente: ~/.hzn/hzn.json con il formato JSON.\n  Ad esempio: \n  {Com____}"
+      "translation": "Interfaccia di riga comandi per l'agent Horizon. La maggior parte dei sottocomandi utilizza l'API agent Horizon nell'ubicazione predefinita http://localhost (vedere la sezione Variabili di ambiente per sostituire tale valore).\n\nDescrizione sottocomandi:\n  agbot: Elenca e gestisce le risorse di agbot Horizon.\n  agreement: Elenca o gestisce gli accordi attivi o archiviati stabiliti da questo nodo edge con un agbot Horizon.\n  architecture: Mostra l'architettura di questa macchina (come definita da Horizon e golang). \n  attribute: Elenca o gestisce gli attributi globali attualmente registrati su questo nodo edge Horizon.\n  deploycheck: Controlla la compatibilità della distribuzione.\n  dev: Strumenti di sviluppo per la creazione di servizi.\n  env: Mostra le variabili di ambiente Horizon.\n  eventlog: Elenca i log degli eventi per la registrazione corrente o tutte le registrazioni.\n  exchange: Elenca e gestisce le risorse di Horizon Exchange.\n  key: Elenca e gestisce le chiavi per la firma e la verifica dei servizi. \n  metering: Elenca o gestisce le informazioni di misurazione (pagamento) per gli accordi attivi o archiviati.\n  mms: Elenca e gestisce le risorse del servizio di gestione modelli Horizon.\n  node: Elenca e gestisce le informazioni generali su questo nodo edge Horizon.\n  policy: Elenca e gestisce la politica per questo nodo edge Horizon. \n  reginput: Crea un template di file di input per questo modello che può essere utilizzato per il comando 'hzn register' (una volta compilato). \n            Esamina i servizi utilizzati dal modello specificato e determina l'input del proprietario del nodo richiesto. \n  register: Registra questo nodo edge con l'hub di gestione.\n  service: Elenca o gestisce i servizi attualmente registrati su questo nodo edge Horizon.\n  status: Visualizza lo stato interno Horizon corrente per il nodo.\n  unregister: Annulla la registrazione e reimposta questo nodo edge Horizon in modo che sia pronto per essere registrato di nuovo.\n  userinput: Elenca o gestisce gli input utente del servizio attualmente registrati su questo nodo edge Horizon.\n  util: Comandi di utilità.\n  version: Mostra la versione Horizon.\n  sdo: Elenca e gestisce i voucher e le chiavi di proprietà di Horizon SDO.\n\nVariabili di ambiente:\n  HORIZON_URL:  Sostituisce l'URL su cui hzn contatta l'API agent Horizon.\n      Può facilitare l'utilizzo di un agent Horizon remoto tramite tunnel ssh.\n  HZN_EXCHANGE_URL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn exchange'\n      per comunicare con Horizon Exchange, ad esempio\n      https://exchange.bluehorizon.network/api/v1. (Per impostazione predefinita hzn richiederà \n      l'URL all'agent Horizon.)\n  HZN_ORG_ID:  Il valore predefinito per l'indicatore 'hzn exchange -o',\n      per specificare l'ID organizzazione'.\n  HZN_EXCHANGE_USER_AUTH:  Il valore predefinito per l'indicatore 'hzn exchange -u' o \n\t  'hzn register -u', nel formato '[org/]user:pw'. Notare che HZN_ORG_ID può essere impostato\n\t  se viene omessa l'organizzazione quando si imposta HZN_EXCHANGE_USER_AUTH.\n  HZN_FSS_CSSURL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn mms' \n      per comunicare il servizio di gestione modelli Horizon, ad esempio\n      https://exchange.bluehorizon.network/css/. (Per impostazione predefinita hzn richiederà \n      l'URL all'agent Horizon.)\n  HZN_SDO_SVC_URL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn sdo'\n\t  per comunicare con i servizi del proprietario SDO. (Per impostazione predefinita hzn richiederà \n\t\t      l'URL all'agent Horizon.)\n\n  Tutte queste variabili di ambiente e quelle menzionate nella guida del comando possono essere\n  specificate nel file di configurazione dell'utente: ~/.hzn/hzn.json con il formato JSON.\n  Ad esempio: \n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -1348,7 +1348,7 @@
     },
     {
       "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the pattern.",
-      "translation": "Il percorso di un file di chiave privata da utilizzare per firmare il modello. Se non specificato, verrà utilizzata la variabile di ambiente HZN_PRIVATE_KEY_FILE. Se non si specifica HZN_PRIVATE_KEY_FILE, verrà utilizzato ~/.hzn/keys/service.private.key. Se non se ne specifica nessuna, verrà generata una coppia di chiavi casuali e la chiave pubblica verrà archiviata con il modello. "
+      "translation": "Il percorso di un file di chiave privata da utilizzare per firmare il modello. Se non specificato, verrà utilizzata la variabile di ambiente HZN_PRIVATE_KEY_FILE. Se non si specifica HZN_PRIVATE_KEY_FILE, verrà utilizzato ~/.hzn/keys/service.private.key. Se non se ne specifica nessuna, verrà generata una coppia di chiavi casuali e la chiave pubblica verrà archiviata con il modello."
     },
     {
       "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
@@ -1496,7 +1496,7 @@
     },
     {
       "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the service.",
-      "translation": "Il percorso di un file di chiave privata da utilizzare per firmare il servizio. Se non specificato, verrà utilizzata la variabile di ambiente HZN_PRIVATE_KEY_FILE. Se non si specifica HZN_PRIVATE_KEY_FILE, verrà utilizzato ~/.hzn/keys/service.private.key. Se non se ne specifica nessuna, verrà generata una coppia di chiavi casuali e la chiave pubblica verrà archiviata con il servizio. "
+      "translation": "Il percorso di un file di chiave privata da utilizzare per firmare il servizio. Se non specificato, verrà utilizzata la variabile di ambiente HZN_PRIVATE_KEY_FILE. Se non si specifica HZN_PRIVATE_KEY_FILE, verrà utilizzato ~/.hzn/keys/service.private.key. Se non se ne specifica nessuna, verrà generata una coppia di chiavi casuali e la chiave pubblica verrà archiviata con il servizio."
     },
     {
       "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
@@ -1924,7 +1924,7 @@
     },
     {
       "id": "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.",
-      "translation": "Crea un template di file di input per questo modello che può essere utilizzato per il comando 'hzn register' (una volta compilato). Questo esamina i servizi utilizzati dal modello specificato e determina l'input del proprietario del nodo richiesto."
+      "translation": "Crea un template di file di input per questo modello che può essere utilizzato per il comando 'hzn register' (una volta compilato). Esamina i servizi utilizzati dal modello specificato e determina l'input del proprietario del nodo richiesto."
     },
     {
       "id": "The Horizon exchange node ID and token (it must already exist).",
@@ -2032,7 +2032,7 @@
     },
     {
       "id": "Change the configuration state to 'suspend' for a service. Parent and child dependencies of the suspended service will be stopped until the service is resumed.",
-      "translation": "Modifica lo stato di configurazione in 'suspend' per un servizio. Le dipendenze principale e secondaria del servizio sospeso verranno arrestate fino a quando il servizio non viene ripreso."
+      "translation": "Modifica lo stato di configurazione in 'suspend' per un servizio. Le dipendenze principali e secondarie del servizio sospeso verranno arrestate fino a quando il servizio non viene ripreso."
     },
     {
       "id": "Suspend all registerd services.",
@@ -2048,7 +2048,7 @@
     },
     {
       "id": "The version of the service that should be suspended. If omitted, all the versions for this service will be suspended.",
-      "translation": "La ersione del servizio che deve essere sospesa. Se omesso, verranno sospese tutte le versioni per questo servizio."
+      "translation": "La versione del servizio che deve essere sospesa. Se omesso, verranno sospese tutte le versioni per questo servizio."
     },
     {
       "id": "Show the container logs for a service.",
@@ -2200,7 +2200,7 @@
     },
     {
       "id": "The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.",
-      "translation": "I dettagli dei segreti come stringa. I dettagli segreti sono il segreto stesso, non il nome del segreto. Ad esempio, una password, una chiave privata, ecc. sono esempi di dettagli dei segreti. Si esclude reciprocamente con --secretFile."
+      "translation": "I dettagli del segreto come stringa. I dettagli del segreto sono il segreto stesso, non il nome del segreto. Ad esempio, una password, una chiave privata, ecc. sono esempi di dettagli del segreto. Si esclude reciprocamente con --secretFile."
     },
     {
       "id": "Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.",
@@ -2228,7 +2228,7 @@
     },
     {
       "id": "List and manage resources in SDO owner services",
-      "translation": "Elenca e gestisce le risorse nei servizi del proprietario SDO "
+      "translation": "Elenca e gestisce le risorse nei servizi del proprietario SDO"
     },
     {
       "id": "List and manage Horizon SDO ownership keys.",
@@ -2236,7 +2236,7 @@
     },
     {
       "id": "List the SDO ownership keys stored in SDO owner services.",
-      "translation": "Elenca le chiavi di proprietà SDO archiviate nei servizi del proprietario SDO. "
+      "translation": "Elenca le chiavi di proprietà SDO archiviate nei servizi del proprietario SDO."
     },
     {
       "id": "List the full details of this SDO ownership key.",
@@ -2244,7 +2244,7 @@
     },
     {
       "id": "Create a new key in SDO owner services.",
-      "translation": "Crea una nuova chiave nei servizi del proprietario SDO. "
+      "translation": "Crea una nuova chiave nei servizi del proprietario SDO."
     },
     {
       "id": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
@@ -2252,43 +2252,43 @@
     },
     {
       "id": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
-      "translation": "Il file in cui viene scritta la chiave pubblica. Se omessa, la chiave verrà emessa sulla console. "
+      "translation": "Il file in cui viene scritta la chiave pubblica. Se omessa, la chiave verrà emessa sulla console."
     },
     {
       "id": "Overwrite the existing output public key file if it exists.",
-      "translation": "Sovrascrive il file della chiave pubblica di output esistente, se presente. "
+      "translation": "Sovrascrive il file della chiave pubblica di output esistente, se presente."
     },
     {
       "id": "Download the specified key from SDO owner services.",
-      "translation": "Scarica la chiave specificata dai servizi del proprietario SDO. "
+      "translation": "Scarica la chiave specificata dai servizi del proprietario SDO."
     },
     {
       "id": "The name of the key to be downloaded from SDO owner services.",
-      "translation": "Il nome della chiave da scaricare dai servizi del proprietario SDO. "
+      "translation": "Il nome della chiave da scaricare dai servizi del proprietario SDO."
     },
     {
       "id": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
-      "translation": "Il file in cui sono scritti i dati delle chiave scaricata. Se omessa, la chiave verrà emessa sulla console. "
+      "translation": "Il file in cui sono scritti i dati delle chiave scaricata. Se omessa, la chiave verrà emessa sulla console."
     },
     {
       "id": "Overwrite the existing file if it exists.",
-      "translation": "Sovrascrive i file esistenti, se presenti. "
+      "translation": "Sovrascrive i file esistenti, se presenti."
     },
     {
       "id": "Remove a key from SDO owner services.",
-      "translation": "Rimuove una chiave dai servizi del proprietario SDO. "
+      "translation": "Rimuove una chiave dai servizi del proprietario SDO."
     },
     {
       "id": "The name of the key to be removed from SDO owner services.",
-      "translation": "Il nome della chiave da rimuovere dai servizi del proprietario SDO. "
+      "translation": "Il nome della chiave da rimuovere dai servizi del proprietario SDO."
     },
     {
       "id": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
-      "translation": "Crea un nuovo file di modello dei metadati della chiave SDO. È necessario compilare tutti i campi prima di aggiungere ai servizi del proprietario SDO. "
+      "translation": "Crea un nuovo file di modello dei metadati della chiave SDO. È necessario compilare tutti i campi prima di aggiungere ai servizi del proprietario SDO."
     },
     {
       "id": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
-      "translation": "Il file in cui verrà scritto il modello di chiave SDO in formato JSON. Se omessa, i metadati della chiave verrà emessa sulla console. "
+      "translation": "Il file in cui verrà scritto il modello di chiave SDO in formato JSON. Se omessa, i metadati della chiave verrà emessa sulla console."
     },
     {
       "id": "List and manage Horizon SDO ownership vouchers.",
@@ -2336,7 +2336,7 @@
     },
     {
       "id": "Download the specified SDO ownership voucher from SDO owner services.",
-      "translation": "Scarica il voucher del proprietario SDO specificato dai servizi del proprietario SDO. "
+      "translation": "Scarica il voucher del proprietario SDO specificato dai servizi del proprietario SDO."
     },
     {
       "id": "The SDO ownership voucher to download.",
@@ -2348,19 +2348,19 @@
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
-      "translation": "(OBSOLETO) Questo comando è obsoleto. Utilizzare 'hzn sdo voucher' per elencare e gestire i voucher di proprietà di Horizon SDO. "
+      "translation": "(OBSOLETO) Questo comando è obsoleto. Utilizzare 'hzn sdo voucher' per elencare e gestire i voucher di proprietà di Horizon SDO."
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
-      "translation": "(OBSOLETO) Questo comando è obsoleto. Utilizzare 'hzn sdo voucher list' per elencare i voucher di proprietà SDO importati. "
+      "translation": "(OBSOLETO) Questo comando è obsoleto. Utilizzare 'hzn sdo voucher list' per elencare i voucher di proprietà SDO importati."
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
-      "translation": "(OBSOLETO) Questo comando è obsoleto. Utilizzare 'hzn sdo voucher inspect' per visualizzare le proprietà del voucher di proprietà SDO. "
+      "translation": "(OBSOLETO) Questo comando è obsoleto. Utilizzare 'hzn sdo voucher inspect' per visualizzare le proprietà del voucher di proprietà SDO."
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
-      "translation": "(OBSOLETO) Questo comando è obsoleto. Utilizzare 'hzn sdo voucher import' per importare il voucher di proprietà SDO "
+      "translation": "(OBSOLETO) Questo comando è obsoleto. Utilizzare 'hzn sdo voucher import' per importare il voucher di proprietà SDO"
     },
     {
       "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
@@ -3391,16 +3391,12 @@
       "translation": "Modello per $SERVICE_NAME"
     },
     {
-      "id": "Failed to marshal deps: {Err}",
-      "translation": "Impossibile eseguire il marshalling delle dipendenze: {Err}"
-    },
-    {
-      "id": "Failed to unmarshal deps: {Err}",
-      "translation": "Impossibile annullare il marshalling delle dipendenze: {Err}"
+      "id": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
+      "translation": "Avvertenza: impossibile convertire il nome file {SvcPath} al percorso assoluto. {Err}"
     },
     {
       "id": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
-      "translation": "Avvertenza: segreto {SecName} per il serviio {SvcName} non specificato conil comando {SERVICESTARTCOMMAND}."
+      "translation": "Avvertenza: segreto {SecName} per il servizio {SvcName} non specificato con il comando {SERVICESTARTCOMMAND}."
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
@@ -3477,6 +3473,10 @@
     {
       "id": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
       "translation": "impossibile trovare il servizio {ServiceName} nel progetto corrente. Se si tratta di un nuovo servizio dipendente, aggiornare l'elenco delle dipendenze con il comando 'hzn dev dependency fetch'."
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' È stato trovato più di un contenitore per la distribuzione: {JoincontainerNames__}. Specificare il nome del servizio mediante l'indicatore -c"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
@@ -4532,7 +4532,7 @@
     },
     {
       "id": "Flag -K cannot be specified without -k flag.",
-      "translation": "Impossibile specificare l'indicatore -K senza l'indicatore -k. "
+      "translation": "Impossibile specificare l'indicatore -K senza l'indicatore -k."
     },
     {
       "id": "Flags -I and -P are mutually exclusive.",
@@ -5324,7 +5324,7 @@
     },
     {
       "id": "Progress so far: service is created",
-      "translation": "Avanzamento: viene creato il servizio"
+      "translation": "Avanzamento: servizio creato"
     },
     {
       "id": "Progress so far: execution is started",
@@ -5428,7 +5428,7 @@
     },
     {
       "id": "Listing SDO keys.",
-      "translation": "Elenco delle chiavi SDO. "
+      "translation": "Elenco delle chiavi SDO."
     },
     {
       "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
@@ -5436,7 +5436,7 @@
     },
     {
       "id": "SDO key name {KeyName} not found",
-      "translation": "Nome della chiave SDO {KeyName} non trovato "
+      "translation": "Nome della chiave SDO {KeyName} non trovato"
     },
     {
       "id": "failed to marshal 'hzn sdo keys list' output: {Err}",
@@ -5463,8 +5463,8 @@
       "translation": "Nome chiave non valido. La chiave \"{KeyName}\" non esiste nell'org \"{Org}\"."
     },
     {
-      "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "translation": "File di chiave non valido. La chiave \"{Key}\" già esiste nei servizi del proprietario SDO per l'org \"{Org}\"."
+      "id": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "File di chiave non valido. La chiave \"{Name}\" già esiste nei servizi del proprietario SDO per l'org \"{Org}\"."
     },
     {
       "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
@@ -5472,11 +5472,11 @@
     },
     {
       "id": "Invalid credentials. User \"{User}\" cannot access keys in org \"{Org}\" with given credentials.",
-      "translation": "Credenziali non valide. L'utente \"{User}\" non può accedere alle chiavi nell'org \"{Org}\" senza le credenziali fornite. "
+      "translation": "Credenziali non valide. L'utente \"{User}\" non può accedere alle chiavi nell'org \"{Org}\" senza le credenziali fornite."
     },
     {
       "id": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
-      "translation": "Credenziali non valide. L'utente \"{User}\" non può accedere alla chiave \"{KeyName}\" nell'org \"{Org}\" con le credenziali fornite. "
+      "translation": "Credenziali non valide. L'utente \"{User}\" non può accedere alla chiave \"{KeyName}\" nell'org \"{Org}\" con le credenziali fornite."
     },
     {
       "id": "reading the bytes from {KeyFileName}: {Err}",
@@ -5508,11 +5508,11 @@
     },
     {
       "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
-      "translation": "Credenziali non valide. L'utente \"{User}\" non può accedere ai voucher nell'org \"{Org}\" con le credenziali fornite. "
+      "translation": "Credenziali non valide. L'utente \"{User}\" non può accedere ai voucher nell'org \"{Org}\" con le credenziali fornite."
     },
     {
       "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
-      "translation": "Credenziali non valide. L'utente \"{User}\" non può accedere al voucher \"{Voucher}\" nell'org \"{Org}\" con le credenziali fornite. "
+      "translation": "Credenziali non valide. L'utente \"{User}\" non può accedere al voucher \"{Voucher}\" nell'org \"{Org}\" con le credenziali fornite."
     },
     {
       "id": "failed to marshal 'hzn sdo voucher list' output: {Err}",
@@ -5608,11 +5608,11 @@
     },
     {
       "id": "Secret \"{SecretName}\" successfully added to the secrets manager.",
-      "translation": "Segreto \"{SecretName}\" correttamente aggiungo al gestore dei segreti."
+      "translation": "Segreto \"{SecretName}\" correttamente aggiunto al gestore dei segreti."
     },
     {
       "id": "Are you sure you want to remove secret {SecretName} from the secrets manager?",
-      "translation": "Si è sicuri di voler rimuovere il segreto {SecretName} dal gestore dei segreti? "
+      "translation": "Si è sicuri di voler rimuovere il segreto {SecretName} dal gestore dei segreti?"
     },
     {
       "id": "Secret \"{SecretName}\" successfully deleted from the secrets manager.",
@@ -5659,8 +5659,8 @@
       "translation": "Errore di annullamento del marshalling della distribuzione: {Err}"
     },
     {
-      "id": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-      "translation": "La definizione del servizio {ServiceName} è composta da più di un contenitore. Specificare il nome contenitore utilizzando l'indicatore -c."
+      "id": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
+      "translation": "La definizione del servizio {ServiceName} è composta da più di un contenitore: {JoincNames__}. Specificare il nome del servizio mediante l'indicatore -c"
     },
     {
       "id": "Service logs are unavailable: {Err}",
@@ -6012,11 +6012,11 @@
     },
     {
       "id": "Start hashing the file...",
-      "translation": "Avviare hashing del file..."
+      "translation": "Avvio hashing del file..."
     },
     {
       "id": "Data hash is generated. Start digital signing with the data hash...",
-      "translation": "Hash dei dati generato. Avviare firma digitale con i dati di hash..."
+      "translation": "Hash dei dati generato. Avvio firma digitale con i dati di hash..."
     },
     {
       "id": "Hash algorithm {HashAlgo} is not supported",
@@ -6780,7 +6780,7 @@
     },
     {
       "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
-      "translation": "Specificata stringa di versione errata {ServiceVersionRange} nel bind del segreta del servizio {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}"
+      "translation": "Stringa di versione errata {ServiceVersionRange} specificata nel bind del segreto del servizio {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, errore {Err}"
     },
     {
       "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",

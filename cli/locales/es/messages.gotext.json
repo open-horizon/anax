@@ -18180,17 +18180,17 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "message": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "translation": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
+      "id": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "message": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
       "placeholders": [
         {
-          "id": "Key",
+          "id": "Name",
           "string": "%[1]s",
-          "type": "github.com/open-horizon/anax/cli/sdo.Key",
-          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Orgid string \"json:\\\"orgid\\\"\"; Owner string \"json:\\\"owner\\\"\"; Filename string \"json:\\\"filename\\\"\"; IsExpired bool \"json:\\\"isExpired\\\"\"}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "key"
+          "expr": "key.Name"
         },
         {
           "id": "Org",

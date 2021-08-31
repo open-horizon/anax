@@ -9419,7 +9419,7 @@
     {
       "id": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
       "message": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
-      "translation": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
+      "translation": "Warnung: Der Dateiname {SvcPath} konnte nicht in den absoluten Pfad umgewandelt werden. {Err}",
       "placeholders": [
         {
           "id": "SvcPath",
@@ -9845,7 +9845,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
       "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
-      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Für die Bereitstellung wurden mehrere Container gefunden: {JoincontainerNames__}. Geben Sie den Servicenamen mit dem Flag -c an. ",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -18180,17 +18180,17 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "message": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "translation": "Ungültige Schlüsseldatei. Der Schlüssel \"{Key}\" ist in den SDO-Eignerservices für die Organisation \"{Org}\" bereits vorhanden.",
+      "id": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "message": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Ungültige Schlüsseldatei. Der Schlüssel \"{Name}\" ist in den SDO-Eignerservices für die Organisation \"{Org}\" bereits vorhanden.",
       "placeholders": [
         {
-          "id": "Key",
+          "id": "Name",
           "string": "%[1]s",
-          "type": "github.com/open-horizon/anax/cli/sdo.Key",
-          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Orgid string \"json:\\\"orgid\\\"\"; Owner string \"json:\\\"owner\\\"\"; Filename string \"json:\\\"filename\\\"\"; IsExpired bool \"json:\\\"isExpired\\\"\"}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "key"
+          "expr": "key.Name"
         },
         {
           "id": "Org",
@@ -19094,7 +19094,7 @@
     {
       "id": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
       "message": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
-      "translation": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
+      "translation": "Die Servicedefinition {ServiceName} besteht aus mehreren Containern: {JoincNames__}. Geben Sie den Servicenamen mit dem Flag -c an. ",
       "placeholders": [
         {
           "id": "ServiceName",
