@@ -3182,13 +3182,13 @@
     {
       "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the pattern.",
       "message": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the pattern.",
-      "translation": "要用来对模式进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果未指定 HZN_PRIVATE_KEY_FILE，那么将使用 ~/.hzn/keys/service.private.key。如果未指定任何项，那么将生成随机密钥对并且将随模式一起存储公用密钥。",
+      "translation": "要用来对模式进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果未指定 HZN_PRIVATE_KEY_FILE，那么将使用 ~/.hzn/keys/service.private.key。 如果未指定任何项，那么将生成随机密钥对并且将随模式一起存储公用密钥。",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
       "message": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
-      "translation": "（不推荐）应该随模式一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。如果未指定此标志，那么将从专用密钥计算公用密钥。",
+      "translation": "（不推荐）应该随模式一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。 如果未指定此标志，那么将从专用密钥计算公用密钥。",
       "fuzzy": true
     },
     {
@@ -3422,13 +3422,13 @@
     {
       "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the service.",
       "message": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If HZN_PRIVATE_KEY_FILE not specified, ~/.hzn/keys/service.private.key will be used. If none are specified, a random key pair will be generated and the public key will be stored with the service.",
-      "translation": "要用来对服务进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果未指定 HZN_PRIVATE_KEY_FILE，那么将使用 ~/.hzn/keys/service.private.key。如果未指定任何项，那么将生成随机密钥对并且将随服务一起存储公用密钥。",
+      "translation": "要用来对服务进行签名的专用密钥文件的路径。 未指定时，将使用环境变量 HZN_PRIVATE_KEY_FILE。 如果未指定 HZN_PRIVATE_KEY_FILE，那么将使用 ~/.hzn/keys/service.private.key。 如果未指定任何项，那么将生成随机密钥对并且将随服务一起存储公用密钥。",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
       "message": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
-      "translation": "（不推荐）应该随服务一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。如果未指定此标志，那么将从专用密钥计算公用密钥。",
+      "translation": "（不推荐）应该随服务一起存储的公用密钥文件（对应于专用密钥）的路径，供 Horizon 代理程序用于验证签名。 如果未指定此标志，那么将从专用密钥计算公用密钥。",
       "fuzzy": true
     },
     {
@@ -4578,13 +4578,13 @@
     {
       "id": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
       "message": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
-      "translation": "包含将在 SDO 所有者服务中创建的密钥的元数据的文件。必须为 JSON 文件类型扩展名。",
+      "translation": "包含将在 SDO 所有者服务中创建的密钥的元数据的文件。 必须为 JSON 文件类型扩展名。",
       "fuzzy": true
     },
     {
       "id": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
       "message": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
-      "translation": "要写入返回的公用密钥的文件。如果省略，那么会将密钥打印到控制台。",
+      "translation": "要写入返回的公用密钥的文件。 如果省略，那么会将密钥打印到控制台。",
       "fuzzy": true
     },
     {
@@ -4608,7 +4608,7 @@
     {
       "id": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
       "message": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
-      "translation": "要写入下载的密钥的数据的文件。如果省略，那么会将密钥打印到控制台。",
+      "translation": "要写入下载的密钥的数据的文件。 如果省略，那么会将密钥打印到控制台。",
       "fuzzy": true
     },
     {
@@ -4632,13 +4632,13 @@
     {
       "id": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
       "message": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
-      "translation": "创建新的 SDO 密钥元数据模板文件。必须在添加到 SDO 所有者服务之前填写所有字段。",
+      "translation": "创建新的 SDO 密钥元数据模板文件。 必须在添加到 SDO 所有者服务之前填写所有字段。",
       "fuzzy": true
     },
     {
       "id": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
       "message": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
-      "translation": "要写入 JSON 格式的 SDO 密钥模板的文件。如果省略，那么会将密钥元数据打印到控制台。",
+      "translation": "要写入 JSON 格式的 SDO 密钥模板的文件。 如果省略，那么会将密钥元数据打印到控制台。",
       "fuzzy": true
     },
     {
@@ -4722,7 +4722,7 @@
     {
       "id": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
       "message": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
-      "translation": "要写入 JSON 格式的下载的凭单数据的文件。此标志必须与 -f 配合使用。 如果省略，那么将使用 <deviceID>.json 格式的缺省文件名，并保存在当前目录中。",
+      "translation": "要写入 JSON 格式的下载的凭单数据的文件。 此标志必须与 -f 配合使用。 如果省略，那么将使用 <deviceID>.json 格式的缺省文件名，并保存在当前目录中。",
       "fuzzy": true
     },
     {
@@ -5944,7 +5944,7 @@
     {
       "id": "Error checking absolute path for file {KeyFile}. {Err}",
       "message": "Error checking absolute path for file {KeyFile}. {Err}",
-      "translation": "检查文件 {KeyFile} 的绝对路径时出错。{Err}",
+      "translation": "检查文件 {KeyFile} 的绝对路径时出错。 {Err}",
       "placeholders": [
         {
           "id": "KeyFile",
@@ -7232,7 +7232,7 @@
     {
       "id": "{Arg_1}. Public key could not be generated.",
       "message": "{Arg_1}. Public key could not be generated.",
-      "translation": "{Arg_1}。无法生成公用密钥。",
+      "translation": "{Arg_1}。 无法生成公用密钥。",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -9419,7 +9419,7 @@
     {
       "id": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
       "message": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
-      "translation": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
+      "translation": "警告：未能将文件名 {SvcPath} 转换为绝对路径。{Err}",
       "placeholders": [
         {
           "id": "SvcPath",
@@ -9845,7 +9845,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
       "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
-      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+      "translation": "“{SERVICECOMMAND} {SERVICELOGCOMMAND}”已找到多个容器用于部署：{JoincontainerNames__}。请使用 -c 标志指定服务名称",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -18158,7 +18158,7 @@
     {
       "id": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
       "message": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
-      "translation": "密钥名称无效。密钥“{KeyName}”在组织“{Org}”中不存在。",
+      "translation": "密钥名称无效。 密钥“{KeyName}”在组织“{Org}”中不存在。",
       "placeholders": [
         {
           "id": "KeyName",
@@ -18180,17 +18180,17 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "message": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "translation": "密钥文件无效。密钥“{Key}”已存在于组织“{Org}”的 SDO 所有者服务中。",
+      "id": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "message": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "密钥文件无效。 密钥“{Name}”已存在于组织“{Org}”的 SDO 所有者服务中。",
       "placeholders": [
         {
-          "id": "Key",
+          "id": "Name",
           "string": "%[1]s",
-          "type": "github.com/open-horizon/anax/cli/sdo.Key",
-          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Orgid string \"json:\\\"orgid\\\"\"; Owner string \"json:\\\"owner\\\"\"; Filename string \"json:\\\"filename\\\"\"; IsExpired bool \"json:\\\"isExpired\\\"\"}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "key"
+          "expr": "key.Name"
         },
         {
           "id": "Org",
@@ -18206,7 +18206,7 @@
     {
       "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
       "message": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
-      "translation": "密钥文件无效。密钥已存在于组织“{Org}”的 SDO 所有者服务中。",
+      "translation": "密钥文件无效。 密钥已存在于组织“{Org}”的 SDO 所有者服务中。",
       "placeholders": [
         {
           "id": "Org",
@@ -18396,7 +18396,7 @@
     {
       "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
       "message": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
-      "translation": "凭单名称无效。凭单“{Voucher}”在组织“{Org}”中不存在。",
+      "translation": "凭单名称无效。 凭单“{Voucher}”在组织“{Org}”中不存在。",
       "placeholders": [
         {
           "id": "Voucher",
@@ -19094,7 +19094,7 @@
     {
       "id": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
       "message": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
-      "translation": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
+      "translation": "服务定义 {ServiceName} 由多个容器组成：{JoincNames__}。请使用 -c 标志指定服务名称",
       "placeholders": [
         {
           "id": "ServiceName",

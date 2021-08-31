@@ -2597,7 +2597,7 @@
     {
       "id": "Error checking absolute path for file {KeyFile}. {Err}",
       "message": "Error checking absolute path for file {KeyFile}. {Err}",
-      "translation": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "Erro ao verificar o caminho absoluto para o arquivo {KeyFile}. {Err}",
       "placeholders": [
         {
           "id": "KeyFile",
@@ -3829,7 +3829,7 @@
     {
       "id": "provided private key {KeyFile} is not valid; error: {Err}",
       "message": "provided private key {KeyFile} is not valid; error: {Err}",
-      "translation": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "A chave privada fornecida {KeyFile} não é válida; erro: {Err}",
       "placeholders": [
         {
           "id": "KeyFile",
@@ -3869,7 +3869,7 @@
     {
       "id": "private key could not be generated; error: {Err}",
       "message": "private key could not be generated; error: {Err}",
-      "translation": "private key could not be generated; error: {Err}",
+      "translation": "Não foi possível gerar a chave privada; erro: {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -3885,7 +3885,7 @@
     {
       "id": "{Arg_1}. Public key could not be generated.",
       "message": "{Arg_1}. Public key could not be generated.",
-      "translation": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. Não foi possível gerar a chave pública.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -4162,7 +4162,7 @@
     {
       "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
       "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "O arquivo {FileName} já existe. Especifique um caminho de arquivo ou nome de arquivo diferente. Para substituir o arquivo existente, use a sinalização '--overwrite'.",
       "placeholders": [
         {
           "id": "FileName",
@@ -4178,7 +4178,7 @@
     {
       "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
       "message": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
-      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Falha ao salvar dados para o objeto '{DefaultFileName}' no arquivo   {FileName}, err: {Err}",
       "placeholders": [
         {
           "id": "DefaultFileName",

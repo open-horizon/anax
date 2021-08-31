@@ -785,7 +785,7 @@
     {
       "id": "No secret(s) found under secret name \"{SecretName}\"",
       "message": "No secret(s) found under secret name \"{SecretName}\"",
-      "translation": "Aucun secret trouvé sous le nom de secret \"{SecretName}\"",
+      "translation": "Aucun secret trouvé sous le nom secret \"{SecretName}\"",
       "placeholders": [
         {
           "id": "SecretName",
@@ -2597,7 +2597,7 @@
     {
       "id": "Error checking absolute path for file {KeyFile}. {Err}",
       "message": "Error checking absolute path for file {KeyFile}. {Err}",
-      "translation": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "Erreur lors de la vérification du chemin d'accès absolu du fichier {KeyFile}. {Err}",
       "placeholders": [
         {
           "id": "KeyFile",
@@ -3829,7 +3829,7 @@
     {
       "id": "provided private key {KeyFile} is not valid; error: {Err}",
       "message": "provided private key {KeyFile} is not valid; error: {Err}",
-      "translation": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "La clé privée fournie {KeyFile} n'est pas valide. Erreur : {Err}",
       "placeholders": [
         {
           "id": "KeyFile",
@@ -3869,7 +3869,7 @@
     {
       "id": "private key could not be generated; error: {Err}",
       "message": "private key could not be generated; error: {Err}",
-      "translation": "private key could not be generated; error: {Err}",
+      "translation": "La clé privée n'a pas pu être générée. Erreur : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -3885,7 +3885,7 @@
     {
       "id": "{Arg_1}. Public key could not be generated.",
       "message": "{Arg_1}. Public key could not be generated.",
-      "translation": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. La clé publique n'a pas pu être générée.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -4162,7 +4162,7 @@
     {
       "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
       "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "Le fichier {FileName} existe déjà. Veuillez indiquer un nom ou un chemin d'accès au fichier différent. Pour remplacer le fichier existant, utilisez l'indicateur '--overwrite'.",
       "placeholders": [
         {
           "id": "FileName",
@@ -4178,7 +4178,7 @@
     {
       "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
       "message": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
-      "translation": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Echec de l'enregistrement des données de l'objet '{DefaultFileName}' dans le fichier {FileName}. Erreur : {Err}",
       "placeholders": [
         {
           "id": "DefaultFileName",
@@ -5154,7 +5154,7 @@
     {
       "id": "Neither node policy nor node id is specified.",
       "message": "Neither node policy nor node id is specified.",
-      "translation": "Aucune règle de noeud et aucun ID noeud n'est spécifié.",
+      "translation": "Aucune règle de noeud ni aucun ID noeud n'est spécifié.",
       "fuzzy": true
     },
     {
@@ -5334,19 +5334,19 @@
     {
       "id": "Neither deployment policy nor deployment policy id is specified.",
       "message": "Neither deployment policy nor deployment policy id is specified.",
-      "translation": "Aucune règle de déploiement ni aucun ID règle de déploiement n'est spécifié(e).",
+      "translation": "Aucune règle de déploiement ni aucun ID de règle de déploiement n'est spécifié(e).",
       "fuzzy": true
     },
     {
       "id": "Deployment policy id is empty.",
       "message": "Deployment policy id is empty.",
-      "translation": "L'ID règle de déploiement est vide.",
+      "translation": "L'ID de règle de déploiement est vide.",
       "fuzzy": true
     },
     {
       "id": "Organization is not specified in the deployment policy id: {BpId}.",
       "message": "Organization is not specified in the deployment policy id: {BpId}.",
-      "translation": "L'organisation n'est pas spécifiée dans l'ID règle de déploiement : {BpId}.",
+      "translation": "L'organisation n'est pas spécifiée dans l'ID de règle de déploiement : {BpId}.",
       "placeholders": [
         {
           "id": "BpId",
@@ -6038,7 +6038,7 @@
     {
       "id": "Neither node user input nor node id is specified.",
       "message": "Neither node user input nor node id is specified.",
-      "translation": "Aucune entrée utilisateur de noeud et aucun ID noeud n'est spécifié.",
+      "translation": "Aucune entrée utilisateur de noeud ni aucun ID noeud n'est spécifié.",
       "fuzzy": true
     },
     {
@@ -6420,19 +6420,19 @@
     {
       "id": "Neither pattern nor pattern id is specified.",
       "message": "Neither pattern nor pattern id is specified.",
-      "translation": "Aucun pattern et aucun ID pattern n'est spécifié.",
+      "translation": "Aucun pattern ni aucun ID de pattern n'est spécifié.",
       "fuzzy": true
     },
     {
       "id": "Pattern id is empty.",
       "message": "Pattern id is empty.",
-      "translation": "L'ID pattern est vide.",
+      "translation": "L'ID de pattern est vide.",
       "fuzzy": true
     },
     {
       "id": "Organization is not specified in the pattern id: {PatId}.",
       "message": "Organization is not specified in the pattern id: {PatId}.",
-      "translation": "L'organisation n'est pas spécifiée dans l'ID pattern : {PatId}.",
+      "translation": "L'organisation n'est pas spécifiée dans l'ID de pattern : {PatId}.",
       "placeholders": [
         {
           "id": "PatId",
@@ -6670,7 +6670,7 @@
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
       "message": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
-      "translation": "La variable {Name} associée au service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} archive {ServiceArch} spécifiée dans l'entrée utilisateur n'est pas utilisée. Assurez-vous que le nom est correct.",
+      "translation": "La variable {Name} associée au service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} spécifiée dans l'entrée utilisateur n'est pas utilisée. Assurez-vous que le nom est correct.",
       "placeholders": [
         {
           "id": "Name",

@@ -3391,12 +3391,8 @@
       "translation": "Muster für $SERVICE_NAME"
     },
     {
-      "id": "Failed to marshal deps: {Err}",
-      "translation": "Marshalling der Abhängigkeiten ist fehlgeschlagen: {Err}"
-    },
-    {
-      "id": "Failed to unmarshal deps: {Err}",
-      "translation": "Unmarshalling der Abhängigkeiten ist fehlgeschlagen: {Err}"
+      "id": "Warning: Failed to convert file name {SvcPath} to absolute path. {Err}",
+      "translation": "Warnung: Der Dateiname {SvcPath} konnte nicht in den absoluten Pfad umgewandelt werden. {Err}"
     },
     {
       "id": "Warning: Secret {SecName} for service {SvcName} not specified with {SERVICESTARTCOMMAND} command.",
@@ -3477,6 +3473,10 @@
     {
       "id": "failed to find the service {ServiceName} in the current project. If this is a new dependent service, please update the dependency list with the 'hzn dev dependency fetch' command.",
       "translation": "Der Service {ServiceName} konnte im aktuellen Projekt nicht gefunden werden. Wenn dies ein neuer abhängiger Service ist, müssen Sie die Liste der Abhängigkeiten mit dem Befehl 'hzn dev dependency fetch' aktualisieren."
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Für die Bereitstellung wurden mehrere Container gefunden: {JoincontainerNames__}. Geben Sie den Servicenamen mit dem Flag -c an. "
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
@@ -5463,8 +5463,8 @@
       "translation": "Ungültiger Schlüsselname. Der Schlüssel \"{KeyName}\" ist in der Organisation \"{Org}\" nicht vorhanden."
     },
     {
-      "id": "Invalid key file. Key \"{Key}\" already exists in SDO owner services for org \"{Org}\".",
-      "translation": "Ungültige Schlüsseldatei. Der Schlüssel \"{Key}\" ist in den SDO-Eignerservices für die Organisation \"{Org}\" bereits vorhanden."
+      "id": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Ungültige Schlüsseldatei. Der Schlüssel \"{Name}\" ist in den SDO-Eignerservices für die Organisation \"{Org}\" bereits vorhanden."
     },
     {
       "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
@@ -5659,8 +5659,8 @@
       "translation": "Fehler beim Unmarshalling der Bereitstellung: {Err}"
     },
     {
-      "id": "Service definition {ServiceName} consists of more than one container. Please specify the container name using the -c flag.",
-      "translation": "Die Servicedefinition {ServiceName} besteht aus mehreren Containern. Geben Sie den Containernamen mit dem Flag -c an."
+      "id": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
+      "translation": "Die Servicedefinition {ServiceName} besteht aus mehreren Containern: {JoincNames__}. Geben Sie den Servicenamen mit dem Flag -c an. "
     },
     {
       "id": "Service logs are unavailable: {Err}",

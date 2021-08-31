@@ -192,7 +192,7 @@
     },
     {
       "id": "No secret(s) found under secret name \"{SecretName}\"",
-      "translation": "Aucun secret trouvé sous le nom de secret \"{SecretName}\""
+      "translation": "Aucun secret trouvé sous le nom secret \"{SecretName}\""
     },
     {
       "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
@@ -579,6 +579,10 @@
       "translation": "Echec d'obtention du chemin d'accès absolu pour le fichier {KeyFile}. {Err}"
     },
     {
+      "id": "Error checking absolute path for file {KeyFile}. {Err}",
+      "translation": "Erreur lors de la vérification du chemin d'accès absolu du fichier {KeyFile}. {Err}"
+    },
+    {
       "id": "Error parsing HORIZON_URL: {Err}",
       "translation": "Erreur lors de l'analyse syntaxique de HORIZON_URL : {Err}"
     },
@@ -799,12 +803,20 @@
       "translation": "Vérification du format de fichier de clé privée..."
     },
     {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "La clé privée fournie n'est pas valide. Erreur : {Err}"
+      "id": "provided private key {KeyFile} is not valid; error: {Err}",
+      "translation": "La clé privée fournie {KeyFile} n'est pas valide. Erreur : {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
       "translation": "{Err}. Veuillez créer la clé de signature."
+    },
+    {
+      "id": "private key could not be generated; error: {Err}",
+      "translation": "La clé privée n'a pas pu être générée. Erreur : {Err}"
+    },
+    {
+      "id": "{Arg_1}. Public key could not be generated.",
+      "translation": "{Arg_1}. La clé publique n'a pas pu être générée."
     },
     {
       "id": "running: {CmdStr}",
@@ -865,6 +877,14 @@
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
       "translation": "Erreur lors de la conversion de la variable d'environnement HZN_HTTP_RETRY_INTERVAL {RetryIntervals} en entier. {Err1}"
+    },
+    {
+      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+      "translation": "Le fichier {FileName} existe déjà. Veuillez indiquer un nom ou un chemin d'accès au fichier différent. Pour remplacer le fichier existant, utilisez l'indicateur '--overwrite'."
+    },
+    {
+      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+      "translation": "Echec de l'enregistrement des données de l'objet '{DefaultFileName}' dans le fichier {FileName}. Erreur : {Err}"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
@@ -1088,7 +1108,7 @@
     },
     {
       "id": "Neither node policy nor node id is specified.",
-      "translation": "Aucune règle de noeud et aucun ID noeud n'est spécifié."
+      "translation": "Aucune règle de noeud ni aucun ID noeud n'est spécifié."
     },
     {
       "id": "Node id is empty.",
@@ -1128,15 +1148,15 @@
     },
     {
       "id": "Neither deployment policy nor deployment policy id is specified.",
-      "translation": "Aucune règle de déploiement ni aucun ID règle de déploiement n'est spécifié(e)."
+      "translation": "Aucune règle de déploiement ni aucun ID de règle de déploiement n'est spécifié(e)."
     },
     {
       "id": "Deployment policy id is empty.",
-      "translation": "L'ID règle de déploiement est vide."
+      "translation": "L'ID de règle de déploiement est vide."
     },
     {
       "id": "Organization is not specified in the deployment policy id: {BpId}.",
-      "translation": "L'organisation n'est pas spécifiée dans l'ID règle de déploiement : {BpId}."
+      "translation": "L'organisation n'est pas spécifiée dans l'ID de règle de déploiement : {BpId}."
     },
     {
       "id": "Unable to get deployment policy for {BpId}, {Err}",
@@ -1300,7 +1320,7 @@
     },
     {
       "id": "Neither node user input nor node id is specified.",
-      "translation": "Aucune entrée utilisateur de noeud et aucun ID noeud n'est spécifié."
+      "translation": "Aucune entrée utilisateur de noeud ni aucun ID noeud n'est spécifié."
     },
     {
       "id": "User Input Incompatible",
@@ -1384,15 +1404,15 @@
     },
     {
       "id": "Neither pattern nor pattern id is specified.",
-      "translation": "Aucun pattern et aucun ID pattern n'est spécifié."
+      "translation": "Aucun pattern ni aucun ID de pattern n'est spécifié."
     },
     {
       "id": "Pattern id is empty.",
-      "translation": "L'ID pattern est vide."
+      "translation": "L'ID de pattern est vide."
     },
     {
       "id": "Organization is not specified in the pattern id: {PatId}.",
-      "translation": "L'organisation n'est pas spécifiée dans l'ID pattern : {PatId}."
+      "translation": "L'organisation n'est pas spécifiée dans l'ID de pattern : {PatId}."
     },
     {
       "id": "Error getting pattern {PatId} from the Exchange, {Err}",
@@ -1436,7 +1456,7 @@
     },
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
-      "translation": "La variable {Name} associée au service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} archive {ServiceArch} spécifiée dans l'entrée utilisateur n'est pas utilisée. Assurez-vous que le nom est correct."
+      "translation": "La variable {Name} associée au service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} spécifiée dans l'entrée utilisateur n'est pas utilisée. Assurez-vous que le nom est correct."
     },
     {
       "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
