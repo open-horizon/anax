@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchangecommon"
 	"sync"
 )
 
@@ -299,6 +300,9 @@ func (self *PolicyManager) hasPolicy(org string, matchPolicy *Policy) (bool, err
 			continue
 		} else if !UserInputArrayIsSame(pol.UserInput, matchPolicy.UserInput) {
 			errString = fmt.Sprintf("UserInput %v mismatch with %v", pol.UserInput, matchPolicy.UserInput)
+			continue
+		} else if !exchangecommon.SecretBindingIsSame(pol.SecretBinding, matchPolicy.SecretBinding) {
+			errString = fmt.Sprintf("SecretBinding %v mismatch with %v", pol.SecretBinding, matchPolicy.SecretBinding)
 			continue
 		} else {
 			errString = ""
