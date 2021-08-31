@@ -1303,7 +1303,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 	// Save service secrets with the microservice id and write them to the agent filesystem
 	if err := b.GetSecretsManager().ProcessServiceSecretsWithInstanceId(originalAgreementId, agreementId); err != nil {
-		glog.Errorf("Error writing service secrets for agreement %v to file: %v", agreementId, err)
+		return nil, fmt.Errorf("Error writing service secrets for agreement %v to file: %v", agreementId, err)
 	}
 
 	servicePairs, err := b.finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet, b.Config.GetFileSyncServiceAPIUnixDomainSocketPath())
