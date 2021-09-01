@@ -160,21 +160,26 @@ func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *
 	// (not in the def object) because an agreement-less service is defined by the node's pattern which can
 	// change on a lifecycle boundary that is different from the lifecycle of the service definition itself.
 	//
+	// For top level service, never initiate upgrade from the agent.
+	//
 	// Service's that are managed by an agreement do not have a record in the microservice instance table, so they
 	// will never be found by this function and will therefore never be upgraded (which is the behavior we want).
 
 	// Use a filter that only returns unarchived, non-terminating instances that match the input service definition.
-	if ms_insts, err := persistence.FindMicroserviceInstances(db, []persistence.MIFilter{persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Org, msdef.Version), persistence.UnarchivedMIFilter(), persistence.NotCleanedUpMIFilter()}); err != nil {
+	if ms_insts, err := persistence.GetAllMicroserviceInstancesWithDefId(db, msdef.Id, false, false); err != nil {
 		glog.Errorf("Error retrieving all the service instances from db for %v/%v version %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, err)
 		return false
 	} else if ms_insts != nil && len(ms_insts) > 0 {
 		for _, msi := range ms_insts {
 			// Agreement-less services are never upgraded.
-			if msi.AgreementLess {
+			if msi.IsAgreementLess() {
 				return false
-			} else if !msdef.ActiveUpgrade && msi.MicroserviceDefId == msdef.Id {
+			// never upgrade top level services, they are controlled by the agbot.
+			} else if msi.IsTopLevelService() {
+				return false
+			} else if !msdef.ActiveUpgrade && msi.GetServiceDefId() == msdef.Id && msi.GetCleanupStartTime() == 0 {
 				// If the service can only be upgraded when there are no agreements, check for agreements.
-				if ags := msi.AssociatedAgreements; ags != nil && len(ags) > 0 {
+				if ags := msi.GetAssociatedAgreements(); ags != nil && len(ags) > 0 {
 					return false
 				}
 			}
