@@ -60,6 +60,9 @@ const HZN_FSS_CERT_KEY_FILE = "key.pem"
 // The number of seconds between polls to the CSS for updates.
 const HZN_FSS_POLLING_RATE = 60
 
+// The buffer size of object queue to send notifications
+const HZN_FSS_OBJECT_QUEUE_BUFFER_SIZE = 2
+
 // The name of the folder where secrets from the agreement protocol will be stored within a workload container
 const HZN_SECRETS_MOUNT = "/open-horizon-secrets"
 
