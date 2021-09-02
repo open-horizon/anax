@@ -27,7 +27,7 @@ require (
 	github.com/mibk/dupl v1.0.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/open-horizon/edge-sync-service v1.6.5
+	github.com/open-horizon/edge-sync-service v1.6.7
 	github.com/open-horizon/edge-utilities v0.0.0-20190711093331-0908b45a7152
 	github.com/open-horizon/rsapss-tool v0.0.0-20190416131035-2fc75eb3b6ea
 	github.com/opencontainers/image-spec v1.0.2-0.20181011182654-b6e51fa50549 // indirect

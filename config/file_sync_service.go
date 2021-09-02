@@ -10,18 +10,19 @@ import (
 
 // Configuration for the File Sync Service, which is implemented by the embedded ESS.
 type FSSConfig struct {
-	APIListen          string // The address on which the ESS will listen. The default is in the code below. For a unix domain socket path, it must be the full path name including the file name.
-	APIPort            uint16 // The port on which the ESS will listen. For a unix domain socket, this will always be "0".
-	APIProtocol        string // Can be 'unix' or 'https'. Default is unix. The value of this field determines the Listen and Port values.
-	PersistencePath    string // The absolute location in the host filesystem where anax stores files retrieved by the file sync service.
-	AuthenticationPath string // The absolute location in the host filesystem where anax stores authentication credentials for services so that the service can authenticate to the FSS (ESS) API.
-	CSSURL             string // The URL used to access the CSS.
-	CSSSSLCert         string // The path to the client side SSL certificate for the CSS.
-	PollingRate        uint16 // The number of seconds between polls to the CSS for notification updates.
+	APIListen             string // The address on which the ESS will listen. The default is in the code below. For a unix domain socket path, it must be the full path name including the file name.
+	APIPort               uint16 // The port on which the ESS will listen. For a unix domain socket, this will always be "0".
+	APIProtocol           string // Can be 'unix' or 'https'. Default is unix. The value of this field determines the Listen and Port values.
+	PersistencePath       string // The absolute location in the host filesystem where anax stores files retrieved by the file sync service.
+	AuthenticationPath    string // The absolute location in the host filesystem where anax stores authentication credentials for services so that the service can authenticate to the FSS (ESS) API.
+	CSSURL                string // The URL used to access the CSS.
+	CSSSSLCert            string // The path to the client side SSL certificate for the CSS.
+	PollingRate           uint16 // The number of seconds between polls to the CSS for notification updates.
+	ObjectQueueBufferSize uint64 // The buffer size of object queue to send notification.
 }
 
 func (f *FSSConfig) String() string {
-	return fmt.Sprintf("APIListen: %v, APIPort: %v, APIProtocol: %v, PersistencePath: %v, AuthenticationPath: %v, CSSURL: %v, CSSSSLCert: %v, PollingRate: %v", f.APIListen, f.APIPort, f.APIProtocol, f.PersistencePath, f.AuthenticationPath, f.CSSURL, f.CSSSSLCert, f.PollingRate)
+	return fmt.Sprintf("APIListen: %v, APIPort: %v, APIProtocol: %v, PersistencePath: %v, AuthenticationPath: %v, CSSURL: %v, CSSSSLCert: %v, PollingRate: %v, ObjectQueueBufferSize: %v", f.APIListen, f.APIPort, f.APIProtocol, f.PersistencePath, f.AuthenticationPath, f.CSSURL, f.CSSSSLCert, f.PollingRate, f.ObjectQueueBufferSize)
 }
 
 func (c *HorizonConfig) FSSIsUnixProtocol() bool {
@@ -120,5 +121,13 @@ func (c *HorizonConfig) GetESSPollingRate() uint16 {
 		return HZN_FSS_POLLING_RATE
 	} else {
 		return c.Edge.FileSyncService.PollingRate
+	}
+}
+
+func (c *HorizonConfig) GetFSSObjectQueueSize() uint64 {
+	if c.Edge.FileSyncService.ObjectQueueBufferSize == 0 {
+		return HZN_FSS_OBJECT_QUEUE_BUFFER_SIZE
+	} else {
+		return c.Edge.FileSyncService.ObjectQueueBufferSize
 	}
 }
