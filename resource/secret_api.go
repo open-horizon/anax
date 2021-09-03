@@ -1,4 +1,6 @@
-// Package resource Agent Secrets API
+// Package resource Model Management System and Agent Secrets API
+//
+// The Model Management System (MMS) delivers AI models and other files needed by edge services to the edge nodes where those services are running. MMS has two components, and therefore two APIs: Cloud Sync Service (CSS) is the MMS component that runs on the management hub that users or devops processes use to load models/files into MMS. The Edge Sync Service (ESS) runs on each edge node and is the API that edge services interact with to get the models/files and find out about updates.
 //
 // The Agent Secrets APIs enables service containers to receive updated secrets
 //
