@@ -1,0 +1,13 @@
+/* 
+Sample node policy that illustrates how to enable privileged execution mode containers to be deployed onto a node.
+*/
+
+{
+  "properties": [
+    {
+      "name": "openhorizon.allowPrivileged",
+      "value": true
+    }
+  ],
+  "constraints": []
+}
