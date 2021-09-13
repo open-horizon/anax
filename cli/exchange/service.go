@@ -31,11 +31,6 @@ type ServiceDockAuthExch struct {
 	Token    string `json:"token"`
 }
 
-type ServicePolicyFile struct {
-	Properties  externalpolicy.PropertyList         `json:"properties"`
-	Constraints externalpolicy.ConstraintExpression `json:"constraints"`
-}
-
 // List the the service resources for the given org.
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceList(credOrg, userPw, service string, namesOnly bool, filePath string, exSvcOpYamlForce bool) {
