@@ -56,9 +56,11 @@ func KeyCreate(org, userCreds string, keyFile *os.File, outputFile string, overw
 
 	var fileExtension string
 	if outputFile != "" {
-		fmt.Printf("Key \"%s\" successfully added to the SDO owner services.\n", keyFile.Name())
+		msgPrinter.Printf("Key \"%s\" successfully added to the SDO owner services.", keyFile.Name())
+		msgPrinter.Println()
 		fileName := cliutils.DownloadToFile(outputFile, keyFile.Name(), returnBody, fileExtension, 0600, overwrite)
-		fmt.Printf("Key \"%s\" successfully downloaded to %s from the SDO owner services.\n", keyFile.Name(), fileName)
+		msgPrinter.Printf("Key \"%s\" successfully downloaded to %s from the SDO owner services.", keyFile.Name(), fileName)
+		msgPrinter.Println()
 	} else {
 		fmt.Printf("%s\n", string(returnBody))
 	}
@@ -129,7 +131,8 @@ func KeyDownload(org, userCreds, keyName, outputFile string, overwrite bool) {
 	// Download response body directly to file
 	if outputFile != "" {
 		fileName := cliutils.DownloadToFile(outputFile, keyName, respBodyBytes, fileExtension, 0600, overwrite)
-		fmt.Printf("Key \"%s\" successfully downloaded to %s from the SDO owner services.\n", keyName, fileName)
+		msgPrinter.Printf("Key \"%s\" successfully downloaded to %s from the SDO owner services.", keyName, fileName)
+		msgPrinter.Println()
 	} else {
 		// List keys on screen
 		fmt.Printf("%s\n", respBodyBytes)
@@ -145,7 +148,8 @@ func KeyRemove(org, userCreds, keyName string) {
 	var emptyBody []byte
 	sendSdoKeysApiRequest(org, userCreds, keyName, http.MethodDelete, emptyBody, []int{204})
 
-	fmt.Printf("Key \"%s\" successfully deleted from the SDO owner services.\n", keyName)
+	msgPrinter.Printf("Key \"%s\" successfully deleted from the SDO owner services.", keyName)
+	msgPrinter.Println()
 }
 
 // Download a sample key template. If file path specified, template will be written to given file, otherwise "sample-sdo-key.json"
@@ -164,7 +168,8 @@ func KeyNew(outputFile string, overwrite bool) {
 		fileExtension := ".json"
 		defaultFileName := "sample-sdo-key"
 		fileName := cliutils.DownloadToFile(outputFile, defaultFileName, body, fileExtension, 0600, overwrite)
-		fmt.Printf("Key template successfully written to %s.\n", fileName)
+		msgPrinter.Printf("Key template successfully written to %s.", fileName)
+		msgPrinter.Println()
 	} else {
 		fmt.Printf("%s\n", body)
 	}
