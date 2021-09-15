@@ -447,14 +447,14 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 	switch r.Method {
 	// swagger:operation GET /deploycheck/secretbindingcompatible secretbinding_compatible
 	//
-	// Check the secret binding compatibility. 
+	// Check the secret binding compatibility.
 	//
 	// This API does the secret binding compatibility check for the given deployment policy (or a pattern) and service definition. It checks if each secret defined in a serice has a binding associated in the given deployment policy (or pattern) and each bound secret exists in the secret manager. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
 	//
 	// ---
-	// consumes: 
-	//  - application/json 
-	// produces: 
+	// consumes:
+	//  - application/json
+	// produces:
 	//  - application/json
 	// parameters:
 	//  - name: checkAll
@@ -464,17 +464,17 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool     
+	//    type: bool
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
 	//    in: body
-	//    type: string   
+	//    type: string
 	//    required: false
 	//    description: "The exchange id of the node. Mutually exclusive with node_user_input."
 	//  - name: node_arch
 	//    in: body
-	//    type: string   
+	//    type: string
 	//    required: false
 	//    description: "The architecture of the node."
 	//  - name: node_org
@@ -484,7 +484,7 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 	//    description: "The organization of the node."
 	//  - name: business_policy_id
 	//    in: body
-	//    type: string   
+	//    type: string
 	//    required: false
 	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
 	//  - name: business_policy
@@ -495,7 +495,7 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 	//     "$ref": "#/definitions/BusinessPolicy"
 	//  - name: pattern_id
 	//    in: body
-	//    type: string   
+	//    type: string
 	//    required: false
 	//    description: "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
 	//  - name: pattern
@@ -586,14 +586,14 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	// swagger:operation GET /deploycheck/deploycompatible deploy_compatible
 	//
-	// Check deployment compatibility. 
-	// 
+	// Check deployment compatibility.
+	//
 	// This API does compatibility check for the given deployment policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
 	//
 	// ---
-	// consumes: 
-	//  - application/json 
-	// produces: 
+	// consumes:
+	//  - application/json
+	// produces:
 	//  - application/json
 	// parameters:
 	//  - name: checkAll
@@ -603,17 +603,17 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool     
+	//    type: bool
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
 	//    in: body
-	//    type: string   
+	//    type: string
 	//    required: false
 	//    description: "The exchange id of the node. Mutually exclusive with node_policy and node_user_input."
 	//  - name: node_arch
 	//    in: body
-	//    type: string   
+	//    type: string
 	//    required: false
 	//    description: "The architecture of the node."
 	//  - name: node_org
@@ -635,7 +635,7 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	//     "$ref": "#/definitions/UserInput"
 	//  - name: business_policy_id
 	//    in: body
-	//    type: string   
+	//    type: string
 	//    required: false
 	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
 	//  - name: business_policy
@@ -646,7 +646,7 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	//     "$ref": "#/definitions/BusinessPolicy"
 	//  - name: pattern_id
 	//    in: body
-	//    type: string   
+	//    type: string
 	//    required: false
 	//    description: "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
 	//  - name: pattern
@@ -954,13 +954,13 @@ type SecretRequestInfo struct {
 // swagger:operation GET /org/{org}/secrets/* secrets_setup
 //
 // Common setup required before using the vault to manage secrets.
-// 
-// Authenticates the node user with the exchange. Checks if the vault plugin being used is ready. 
+//
+// Authenticates the node user with the exchange. Checks if the vault plugin being used is ready.
 // Performs sanity checks on the secret user and secret name provided.
 //
 // ---
-// consumes: 
-//  - application/json 
+// consumes:
+//  - application/json
 // parameters:
 //  - name: org
 //    in: query
@@ -969,7 +969,7 @@ type SecretRequestInfo struct {
 //    description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
 //  - name: user
 //    in: query
-//    type: string 
+//    type: string
 //    required: false
 //    description: "The user owning the secret."
 //  - name: secret
@@ -1142,9 +1142,9 @@ func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	switch r.Method {
 	// swagger:operation LIST /org/{org}/secrets orgSecrets
-	// 
+	//
 	// List all secrets belonging to the org.
-	// 
+	//
 	// ---
 	// consumes:
 	//   - application/json

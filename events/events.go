@@ -1529,7 +1529,7 @@ func (m *NewBCContainerMessage) Org() string {
 }
 
 func (m NewBCContainerMessage) String() string {
-	return fmt.Sprintf("Event: %v, Type: %v, Instance: %v, Org: %v, Time: %v, ExchangeURL: %v, ExchangeId: %v, ExchangeToken: %v", m.event, m.typeName, m.instance, m.org, m.Time, m.exchangeURL, m.exchangeId, m.exchangeToken)
+	return fmt.Sprintf("Event: %v, Type: %v, Instance: %v, Org: %v, Time: %v, ExchangeURL: %v, ExchangeId: %v, ExchangeToken: ********", m.event, m.typeName, m.instance, m.org, m.Time, m.exchangeURL, m.exchangeId)
 }
 
 func (m NewBCContainerMessage) ShortString() string {

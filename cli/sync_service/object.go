@@ -63,7 +63,7 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 	// 3. must set --objectType if use --objectId
 	// 4. must set --destinationType if use --destinationId
 	// 5. expiration in RC3339 format or use "now"
-	// 6. if --deleted is not omitted, must set value to true or false 
+	// 6. if --deleted is not omitted, must set value to true or false
 	if destPolicy != "" {
 		if strings.ToLower(destPolicy) != "true" && strings.ToLower(destPolicy) != "false" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid --policy/-p value: %s, --policy/-p should be true or false", destPolicy))

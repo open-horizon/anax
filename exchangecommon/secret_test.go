@@ -12,7 +12,7 @@ func Test_SecretBindingCompare(t *testing.T) {
 		ServiceUrl:          "cpu",
 		ServiceArch:         "amd64",
 		ServiceVersionRange: "[2.0.1,INFINITY)",
-		Secrets:             []BoundSecret{BoundSecret{"sec1":"secmSec1"}, BoundSecret{"sec2":"secmSec2"}},
+		Secrets:             []BoundSecret{BoundSecret{"sec1": "secmSec1"}, BoundSecret{"sec2": "secmSec2"}},
 	}
 
 	sb2 := SecretBinding{
@@ -20,7 +20,7 @@ func Test_SecretBindingCompare(t *testing.T) {
 		ServiceUrl:          "cpu",
 		ServiceArch:         "amd64",
 		ServiceVersionRange: "",
-		Secrets:             []BoundSecret{BoundSecret{"sec2":"secmSec3"}, BoundSecret{"sec1":"secmSec4"}},
+		Secrets:             []BoundSecret{BoundSecret{"sec2": "secmSec3"}, BoundSecret{"sec1": "secmSec4"}},
 	}
 
 	sbArray1 := []SecretBinding{sb1, sb2}
@@ -78,7 +78,7 @@ func Test_SecretBindingCompare(t *testing.T) {
 		ServiceUrl:          "cpu",
 		ServiceArch:         "amd64",
 		ServiceVersionRange: "",
-		Secrets:             []BoundSecret{BoundSecret{"sec1":"secmSec1"}, BoundSecret{"sec2":"secmSec2"}},
+		Secrets:             []BoundSecret{BoundSecret{"sec1": "secmSec1"}, BoundSecret{"sec2": "secmSec2"}},
 	}
 	sbArray1 = []SecretBinding{sb1, sb2}
 	sbArray2 = []SecretBinding{sb1, sb3}

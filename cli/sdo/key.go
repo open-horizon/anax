@@ -305,10 +305,10 @@ func checkEmptyKeyFields(key KeyFile) error {
 
 func checkKeyName(s string) error {
 	for _, r := range s {
-        if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
-            return errors.New("Key name can only contain lowercase characters, numbers, and hyphens")
-        }
-    }
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
+			return errors.New("Key name can only contain lowercase characters, numbers, and hyphens")
+		}
+	}
 	return nil
 }
 
@@ -318,9 +318,9 @@ func checkKeyCountry(s string) error {
 		return errors.New(err)
 	}
 	for _, r := range s {
-        if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') {
-            return errors.New(err)
-        }
-    }
+		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') {
+			return errors.New(err)
+		}
+	}
 	return nil
 }

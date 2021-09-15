@@ -92,7 +92,6 @@ func (w SecretBinding) IsSame(other SecretBinding) bool {
 	return SecretArrayIsSame(w.Secrets, other.Secrets)
 }
 
-
 // Compare 2 secret binding arrays to make sure they are the same.
 func SecretBindingIsSame(this []SecretBinding, other []SecretBinding) bool {
 	if len(this) != len(other) {

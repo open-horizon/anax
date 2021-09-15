@@ -174,7 +174,7 @@ func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *
 			// Agreement-less services are never upgraded.
 			if msi.IsAgreementLess() {
 				return false
-			// never upgrade top level services, they are controlled by the agbot.
+				// never upgrade top level services, they are controlled by the agbot.
 			} else if msi.IsTopLevelService() {
 				return false
 			} else if !msdef.ActiveUpgrade && msi.GetServiceDefId() == msdef.Id && msi.GetCleanupStartTime() == 0 {
