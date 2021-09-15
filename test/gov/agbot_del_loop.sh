@@ -4,7 +4,7 @@
 
 for (( ; ; ))
 do
-   if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+   if [ ${REMOTE_HUB} -eq 0 ]; then
      AGID1=$(curl -sS ${AGBOT_API}/agreement | jq -r '.agreements.active[0].current_agreement_id')
      AGID2=$(curl -sS ${AGBOT_API}/agreement | jq -r '.agreements.active[1].current_agreement_id')
      AGID3=$(curl -sS ${AGBOT_API}/agreement | jq -r '.agreements.active[2].current_agreement_id')

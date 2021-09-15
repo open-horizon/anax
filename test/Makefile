@@ -32,7 +32,12 @@ BRANCH_NAME ?= ""
 ANAX_SOURCE ?= $(shell dirname $(CURDIR))
 DOCKER_DEV_OPTS :=  --rm --no-cache --build-arg ARCH=$(arch)
 E2EDEVTEST_TEMPFS := $(CURDIR)/docker/tempfs/e2edevtest
-CERT_LOC ?= 1
+CERT_LOC ?= 0
+
+HZN_TRANSPORT=https
+ifeq ($(CERT_LOC),0)
+	HZN_TRANSPORT=http
+endif	
 
 # anax
 DOCKER_ANAX_INAME := openhorizon/$(arch)_anax:testing
@@ -67,7 +72,7 @@ ifneq ($(old_agbot),)
 endif
 AGBOT_API ?= http://agbot:8080
 AGBOT2_API ?= http://agbot2:8080
-AGBOT_SAPI_URL ?= https://agbot:8083
+AGBOT_SAPI_URL ?= $(HZN_TRANSPORT)://agbot:8083
 AGBOT_NAME ?= agbot
 AGBOT_TOKEN ?= Abcdefghijklmno1
 
@@ -75,7 +80,7 @@ AGBOT_TOKEN ?= Abcdefghijklmno1
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
 DOCKER_EXCH_TAG := testing
-DOCKER_EXCH ?= http://exchange-api:8081/v1
+DOCKER_EXCH ?= $(HZN_TRANSPORT)://exchange-api:8080/v1
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
 EXCHANGE_SYSTEM_ADMIN_PW ?= ibmadminpw
@@ -109,7 +114,8 @@ DOCKER_REG_PW := testpassword
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
 DOCKER_CSS_TAG := e2edev
-CSS_URL ?= https://css-api:8080
+CSS_INTERNAL_PORT := 8080
+CSS_URL ?= $(HZN_TRANSPORT)://css-api:$(CSS_INTERNAL_PORT)
 
 #css DB
 DOCKER_CSSDB_CNAME := mongo
@@ -125,17 +131,17 @@ endif
 DOCKER_VAULT_CNAME := vault
 DOCKER_VAULT_INAME := openhorizon/$(arch)_vault
 DOCKER_VAULT_TAG := testing
+VAULT_PORT ?= 8200
 no_vault := $(shell echo -e $(TEST_VARS) | grep NOVAULT=1)
 ifeq ($(no_vault),)
-	VAULT_ADDR = http://vault:8200
+	VAULT_ADDR = $(HZN_TRANSPORT)://vault:$(VAULT_PORT)
 endif
-VAULT_CONFIG := $(CURDIR)/docker/fs/etc/vault/config.json
-VAULT_DEV_ROOT_TOKEN_ID := $(shell jq ".VAULT_DEV_ROOT_TOKEN_ID" $(VAULT_CONFIG))
-VAULT_DEV_LISTEN_ADDRESS := $(shell jq ".VAULT_DEV_LISTEN_ADDRESS" $(VAULT_CONFIG))
+VAULT_DEV_ROOT_TOKEN_ID ?= vault_dev_root_token_id
+VAULT_DEV_LISTEN_ADDRESS ?= 0.0.0.0:$(VAULT_PORT)
 
 #sdo
 DOCKER_SDO_CNAME := sdo-owner-services
-HZN_SDO_SVC_URL ?= https://sdo-owner-services:9008/api
+HZN_SDO_SVC_URL ?= $(HZN_TRANSPORT)://sdo-owner-services:9008/api
 
 ifndef verbose
 .SILENT:
@@ -144,7 +150,7 @@ endif
 all: default
 default: build
 stop: clean
-build: test-image vault-image
+build: test-image
 build-remote: test-image
 run: test
 distclean: realclean
@@ -200,8 +206,6 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "DOCKER_CPU_INAME=$(DOCKER_CPU_INAME)" \
 		-e "DOCKER_CPU_TAG=$(DOCKER_CPU_TAG)" \
 		-e "ARCH=$(arch)" \
-		-e "HZN_VAULT"="$(HZN_VAULT)" \
-		-e "HZN_VAULT_ADDR"="$(VAULT_ADDR)" \
 		-e "VAULT_TOKEN"="$(VAULT_DEV_ROOT_TOKEN_ID)" \
 		-e "VAULT_ADDR"="$(VAULT_ADDR)" \
 		-e "HZN_SDO_SVC_URL"="$(HZN_SDO_SVC_URL)" \
@@ -243,24 +247,6 @@ run-dockerreg: test-network
 		-t $(DOCKER_REG_INAME)@$(DOCKER_REG_TAG) \
 		-Bbn $(DOCKER_REG_USER) $(DOCKER_REG_PW) > $(E2EDEVTEST_TEMPFS)/auth/htpasswd
 	docker rm -v $(DOCKER_REG_PW_CNAME)
-
-run-vault: test-network
-	if [[ "$(NOVAULT)" != "1" ]]; then \
-		# Start the vault container \
-		echo "Handling $(DOCKER_VAULT_CNAME)"; \
-		docker/docker_run.bash "$(DOCKER_VAULT_CNAME)" \
-			docker run -d \
-			--name "$(DOCKER_VAULT_CNAME)" \
-			--network "$(DOCKER_TEST_NETWORK)" \
-			-p 127.0.0.1:8200:8200 \
-			-e VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) \
-			-e VAULT_DEV_ROOT_TOKEN_ID=$(VAULT_DEV_ROOT_TOKEN_ID) \
-			-e VAULT_LOG_LEVEL=$(shell jq ".VAULT_LOG_LEVEL" $(VAULT_CONFIG)) \
-			-v $(E2EDEVTEST_TEMPFS)/certs/:/openhorizon/certs/ \
-			-t $(DOCKER_VAULT_INAME):$(DOCKER_VAULT_TAG); \
-	else \
-		echo "Skipping vault container $(DOCKER_VAULT_CNAME)"; \
-	fi
 
 clean:
 	@echo -e "\nStarting cleanup"
@@ -320,10 +306,8 @@ e2edevtest-docker-prereqs:
 	mkdir -p $(E2EDEVTEST_TEMPFS)/usr/local/bin $(E2EDEVTEST_TEMPFS)/root/.colonus
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(E2EDEVTEST_TEMPFS)/usr/local/bin
 	cp -r $(CURDIR)/docker/fs/etc $(E2EDEVTEST_TEMPFS)
-	rm -r $(E2EDEVTEST_TEMPFS)/etc/vault
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(E2EDEVTEST_TEMPFS)/root
-	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
-	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) AGBOT_SAPI_URL=$(AGBOT_SAPI_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/horizon.pem $(E2EDEVTEST_TEMPFS)/root/.colonus/.
 	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/mtn-publicKey.pem $(E2EDEVTEST_TEMPFS)/root/.colonus/.
 
@@ -336,17 +320,7 @@ test-image:
 		docker build $(DOCKER_DEV_OPTS) -t $(DOCKER_TEST_INAME) -f docker/Dockerfile ./docker && docker tag $(DOCKER_TEST_INAME) $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG); \
 	fi
 
-vault-image:
-	if [[ "$(NOVAULT)" != "1" ]]; then \
-		echo "\nPulling vault image $(DOCKER_VAULT_INAME)"; \
-		docker pull $(DOCKER_VAULT_INAME):$(DOCKER_VAULT_TAG); \
-	else \
-		echo "Skipping vault image $(DOCKER_VAULT_INAME)"; \
-	fi
-
-test: clean $(ANAX_SOURCE)/anax run-dockerreg run-mgmthub run-vault run-test
-	@echo -e  "\nTesting and bootstrapping the vault"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) DOCKER_VAULT_CNAME=$(DOCKER_VAULT_CNAME); /root/init_vault.sh"
+test: clean $(ANAX_SOURCE)/anax run-dockerreg run-mgmthub run-test
 	@echo -e  "\nBootstrapping the exchange"
 	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); /root/init_exchange.sh"
 	@echo -e  "\nSetting up secrets in the vault"
@@ -429,20 +403,30 @@ get-css-image:
 	    fi \
 	fi
 
+get-vault-image:
+	if [[ "$(NOVAULT)" != "1" ]]; then \
+		echo "\nPulling vault image $(DOCKER_VAULT_INAME)"; \
+		docker pull $(DOCKER_VAULT_INAME):$(DOCKER_VAULT_TAG); \
+	else \
+		echo "Skipping vault image $(DOCKER_VAULT_INAME)"; \
+	fi
 
-run-mgmthub: get-agbot-image get-css-image get-anax-images
+run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	@echo "Starting all-in-one management hub"
 	export EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) EXCHANGE_DATABASE=$(EXCHDB_NAME); \
 	export EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
-	export AGBOT_ID=$(AGBOT_NAME) AGBOT_TOKEN=$(AGBOT_TOKEN) AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG) HZN_VAULT_URL=$(VAULT_ADDR); \
-	export CSS_IMAGE_TAG=$(DOCKER_CSS_TAG); \
+	export AGBOT_ID=$(AGBOT_NAME) AGBOT_TOKEN=$(AGBOT_TOKEN) AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG); \
+	export CSS_IMAGE_TAG=$(DOCKER_CSS_TAG) CSS_INTERNAL_PORT=$(CSS_INTERNAL_PORT); \
 	export MONGO_IMAGE_TAG=$(DOCKER_CSSDB_TAG); \
 	export POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) POSTGRES_USER=$(EXCHDB_USER); \
-	export HZN_TRANSPORT=https; \
+	export VAULT_IMAGE_TAG=$(DOCKER_VAULT_TAG) VAULT_PORT=$(VAULT_PORT) VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) VAULT_ROOT_TOKEN=$(VAULT_DEV_ROOT_TOKEN_ID); \
 	export ANAX_SOURCE=$(ANAX_SOURCE) ANAX_LOG_LEVEL=5; \
+	export HZN_TRANSPORT=$(HZN_TRANSPORT); \
 	$(TEST_VARS) $(ANAX_SOURCE)/test/gov/start_mgmt_hub.sh
-	cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/css.crt
-	cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/agbotapi.crt
+	if [ -f "/etc/horizon/keys/horizonMgmtHub.crt" ]; then \
+		cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/css.crt; \
+		cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/agbotapi.crt; \
+	fi
 
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-test run-dockerreg test-network test e2edevtest-docker-prereqs test-image copy-cert run-vault vault-image
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-test run-dockerreg test-network test e2edevtest-docker-prereqs test-image copy-cert
 #.SILENT: clean
