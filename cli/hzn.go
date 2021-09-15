@@ -574,6 +574,7 @@ Environment Variables:
 	mmsObjectListDestinationId := mmsObjectListCmd.Flag("destinationId", msgPrinter.Sprintf("List mms objects with given destination id. Must specify --destinationType to use this flag")).String()
 	mmsObjectListWithData := mmsObjectListCmd.Flag("data", msgPrinter.Sprintf("Specify true to show objects that have data. Specify false to show objects that have no data. If this flag is omitted, both kinds of objects are shown.")).String()
 	mmsObjectListExpirationTime := mmsObjectListCmd.Flag("expirationTime", msgPrinter.Sprintf("List mms objects that expired before the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. Specify now to show objects that are currently expired.")).Short('e').String()
+	mmsObjectListDeleted := mmsObjectListCmd.Flag("deleted", msgPrinter.Sprintf("Specify true to show objects that are marked deleted. Specify false to show objects that are not marked deleted. If this flag is omitted, both kinds of objects are shown. Object will be marked deleted if object is deleted in CSS but it doesn't receive notifications from all the destinations")).String()
 	mmsObjectListLong := mmsObjectListCmd.Flag("long", msgPrinter.Sprintf("Show detailed object metadata information")).Short('l').Bool()
 	mmsObjectListDetail := mmsObjectListCmd.Flag("detail", msgPrinter.Sprintf("Provides additional detail about the deployment of the object on edge nodes.")).Short('d').Bool()
 
@@ -1198,7 +1199,7 @@ Environment Variables:
 	case mmsStatusCmd.FullCommand():
 		sync_service.Status(*mmsOrg, *mmsUserPw)
 	case mmsObjectListCmd.FullCommand():
-		sync_service.ObjectList(*mmsOrg, *mmsUserPw, *mmsObjectListType, *mmsObjectListId, *mmsObjectListDestinationPolicy, *mmsObjectListDPService, *mmsObjectListDPProperty, *mmsObjectListDPUpdateTime, *mmsObjectListDestinationType, *mmsObjectListDestinationId, *mmsObjectListWithData, *mmsObjectListExpirationTime, *mmsObjectListLong, *mmsObjectListDetail)
+		sync_service.ObjectList(*mmsOrg, *mmsUserPw, *mmsObjectListType, *mmsObjectListId, *mmsObjectListDestinationPolicy, *mmsObjectListDPService, *mmsObjectListDPProperty, *mmsObjectListDPUpdateTime, *mmsObjectListDestinationType, *mmsObjectListDestinationId, *mmsObjectListWithData, *mmsObjectListExpirationTime, *mmsObjectListDeleted, *mmsObjectListLong, *mmsObjectListDetail)
 	case mmsObjectNewCmd.FullCommand():
 		sync_service.ObjectNew(*mmsOrg)
 	case mmsObjectPublishCmd.FullCommand():
