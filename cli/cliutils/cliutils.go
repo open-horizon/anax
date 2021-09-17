@@ -1341,17 +1341,7 @@ func InvokeRestApi(httpClient *http.Client, method string, urlPath string, crede
 
 		if requestBody != nil && bodyType == HTTP_REQ_BODYTYPE_FILE && bodyLen != 0 {
 			// Calculate and show progress of file uploading
-			totalSent := 0
-			requestBody = &progressReader{requestBody, func(r int) {
-				if r > 0 {
-					totalSent += r
-					msgPrinter.Printf("\rUploading: %.2f %s", float32(totalSent)/float32(bodyLen)*100, "%")
-				} else {
-					// Clear the progress info when the file has been fully uploaded
-					msgPrinter.Printf("\r")
-				}
-
-			}}
+			requestBody = DisplayProgress(requestBody, bodyLen, "Uploading")
 		}
 		// If we're retrying with an os.File body, then re-open it.
 		if retryCount > 1 && body != nil {
@@ -2167,6 +2157,23 @@ func (pr *progressReader) Read(p []byte) (n int, err error) {
 	n, err = pr.Reader.Read(p)
 	pr.Reporter(n)
 	return n, err
+}
+
+// Create progressReader for given io.Reader body. Prints progress appended to given message. Progress is determined by given size.
+func DisplayProgress(body io.Reader, size int, message string) *progressReader {
+	msgPrinter := i18n.GetMessagePrinter()
+	totalSent := 0
+	progReader := &progressReader{body, func(r int) {
+		if r > 0 {
+			totalSent += r
+			msgPrinter.Printf("\r" + message + ": %.2f %s", float32(totalSent)/float32(size)*100, "%")
+		} else {
+			// Clear the progress info when the file has been fully uploaded
+			msgPrinter.Printf("\r")
+		}
+
+	}}
+	return progReader
 }
 
 // Returns HZN_DEVICE_ID or HZN_NODE_ID env variables depending on which is defined
