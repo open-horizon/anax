@@ -600,8 +600,8 @@ function get_all_variables() {
                 local k3s_registry_endpoint=$($KUBECTL get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
                 default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
             else
-                # ocp - image registry should be enabled/exposed and created in $AGENT_NAMESPACE before running agent install script
-                local default_image_registry_on_edge_cluster=$($KUBECTL get is amd64_anax_k8s -n $AGENT_NAMESPACE -o json | jq -r .status.publicDockerImageRepository)
+                local ocp_registry_endpoint=$($KUBECTL get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
+                default_image_registry_on_edge_cluster="$ocp_registry_endpoint/$AGENT_NAMESPACE/amd64_anax_k8s"
             fi
 
             get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_image_registry_on_edge_cluster"
