@@ -374,6 +374,9 @@ function deleteAgentResources() {
     log_info "Deleting namespace..."
     $KUBECTL delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
 
+    log_info "Deleting cert file from /etc/default/cert ..."
+    rm /etc/default/cert/agent-install.crt
+
     log_debug "deleteAgentResources() end"
 }
 

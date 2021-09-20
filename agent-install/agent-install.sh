@@ -325,7 +325,7 @@ function get_cfg_file_default() {
 # Returns version number extracted from the anax/releases path, or empty string if can't find it
 # Note: this should be called after adjust_input_file_path()
 function get_anax_release_version() {
-    local input_file_path=$1:?}
+    local input_file_path=${1:?}
     if [[ $input_file_path == https://github.com/open-horizon/anax/releases/latest/download* ]]; then
         echo 'latest'
     elif [[ $input_file_path == https://github.com/open-horizon/anax/releases/download/* ]]; then
@@ -633,18 +633,39 @@ function get_all_variables() {
     else   # not specified, default it
         #future: we should let 'hzn register' default the node id, but i think there are other parts of this script that depend on it being set
         # Try to get it from a previous installation
-        node_id=$(grep HZN_NODE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
-        if [[ -n $node_id ]]; then
-            log_info "Using node id from HZN_NODE_ID in /etc/default/horizon: $node_id"
-        else
-            # if HZN_NODE_ID is not set, look for HZN_DEVICE_ID
-            node_id=$(grep HZN_DEVICE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
-            if [[ -n $node_id ]]; then 
-                log_info "Using node id from HZN_DEVICE_ID in /etc/default/horizon: $node_id"
-            else 
-                node_id=${HOSTNAME}   # default
-                log_info "use hostname as node id"
+        if is_device; then
+            node_id=$(grep HZN_NODE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
+            if [[ -n $node_id ]]; then
+                log_info "Using node id from HZN_NODE_ID in /etc/default/horizon: $node_id"
+            else
+                # if HZN_NODE_ID is not set, look for HZN_DEVICE_ID
+                node_id=$(grep HZN_DEVICE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
+                if [[ -n $node_id ]]; then 
+                    log_info "Using node id from HZN_DEVICE_ID in /etc/default/horizon: $node_id"
+                else 
+                    node_id=${HOSTNAME}   # default
+                    log_info "use hostname as node id"
+                fi
             fi
+        else    # cluster, read default from configmap
+            if $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
+                # configmap exist
+                node_id=$($KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} -o jsonpath={.data.horizon}  | grep -E '^HZN_NODE_ID=' | cut -d '=' -f2)
+                if [[ -n $node_id ]]; then
+                    log_info "Using node id from HZN_NODE_ID in configmap ${CONFIGMAP_NAME}: $node_id"
+                else
+                    node_id=$($KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} -o jsonpath={.data.horizon}  | grep -E '^HZN_DEVICE_ID=' | cut -d '=' -f2)
+                    if [[ -n $node_id ]]; then 
+                        log_info "Using node id from HZN_DEVICE_ID in configmap ${CONFIGMAP_NAME}: $node_id"
+                    fi
+                fi
+            fi
+
+            # if node_id is still not set, use ${HOSTNAME}
+            if [[ -z $node_id ]]; then
+                node_id=${HOSTNAME}   # default
+                log_info "node_id is not set, use host name as node id"
+            fi  
         fi
     fi
     # check if they gave us conflicting values
@@ -984,42 +1005,67 @@ function is_horizon_defaults_correct() {
     # Note: the '|| true' is so not finding the strings won't cause set -e to exit the script
     horizon_defaults_value=$(grep -E '^HZN_EXCHANGE_URL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $HZN_EXCHANGE_URL ]]; then return 1; fi
+    if [[ $horizon_defaults_value != $HZN_EXCHANGE_URL ]]; then
+        log_info "HZN_EXCHANGE_URL value changed, return"
+        return 1
+    fi
 
     horizon_defaults_value=$(grep -E '^HZN_FSS_CSSURL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $HZN_FSS_CSSURL ]]; then return 1; fi
+    if [[ $horizon_defaults_value != $HZN_FSS_CSSURL ]]; then 
+        log_info "HZN_FSS_CSSURL value changed, return"
+        return 1 
+    fi
 
     # even if HZN_AGBOT_URL is empty in this script, still verify the defaults file is the same
     horizon_defaults_value=$(grep -E '^HZN_AGBOT_URL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $HZN_AGBOT_URL ]]; then return 1; fi
+    if [[ $horizon_defaults_value != $HZN_AGBOT_URL ]]; then 
+        log_info "HZN_AGBOT_URL value changed, return"
+        return 1
+    fi
 
     # even if HZN_SDO_SVC_URL is empty in this script, still verify the defaults file is the same
     horizon_defaults_value=$(grep -E '^HZN_SDO_SVC_URL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $HZN_SDO_SVC_URL ]]; then return 1; fi
+    if [[ $horizon_defaults_value != $HZN_SDO_SVC_URL ]]; then 
+        log_info "HZN_SDO_SVC_URL value changed, return"
+        return 1
+    fi
 
     horizon_defaults_value=$(grep -E '^HZN_DEVICE_ID=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $NODE_ID ]]; then return 1; fi
+    if [[ $horizon_defaults_value != $NODE_ID ]]; then
+        log_info "HZN_DEVICE_ID value change, return"
+        return 1
+    fi
 
     horizon_defaults_value=$(grep -E '^HZN_NODE_ID=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $NODE_ID ]]; then return 1; fi
+    if [[ $horizon_defaults_value != $NODE_ID ]]; then 
+        log_info "HZN_NODE_ID value changed, return"
+        return 1
+    fi
 
     if [[ -n $cert_file ]]; then
         horizon_defaults_value=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' $defaults_file || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-        if [[ -n $horizon_defaults_value ]] && ! diff -q "$horizon_defaults_value" "$cert_file" >/dev/null; then return 1; fi   # diff is tolerant of the 2 file names being the same
+        if [[ -n $horizon_defaults_value ]] && ! diff -q "$horizon_defaults_value" "$cert_file" >/dev/null; then 
+            log_info "cert file changed, return"
+            return 1
+        fi   # diff is tolerant of the 2 file names being the same
     fi
 
     if [[ -n $anax_port ]]; then
         horizon_defaults_value=$(grep -E '^HZN_AGENT_PORT=' $defaults_file || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-        if [[ $horizon_defaults_value != $anax_port ]]; then return 1; fi
+        if [[ $horizon_defaults_value != $anax_port ]]; then 
+            log_info "HZN_AGENT_PORT changed, return"
+            return 1 
+        fi
     fi
 
+    log_verbose "set IS_HORIZON_DEFAULTS_CORRECT to true and return"
     IS_HORIZON_DEFAULTS_CORRECT='true'
     log_debug "is_horizon_defaults_correct() end"
     return 0
@@ -2200,7 +2246,7 @@ function generate_installation_files() {
     log_debug "generate_installation_files() end"
 }
 
-# Cluster only: to generate /tmp/agent-install-hzn-env file
+# Cluster only: to generate /tmp/agent-install-hzn-env file and copy cert file to /etc/default/cert
 function create_horizon_env() {
     log_debug "create_horizon_env() begin"
     if [[ -f $HZN_ENV_FILE ]]; then
@@ -2208,6 +2254,10 @@ function create_horizon_env() {
         rm $HZN_ENV_FILE
     fi
     local cert_name=$(basename ${AGENT_CERT_FILE})
+    local cluster_cert_path="/etc/default/cert"
+    log_verbose "copy cert file to $cluster_cert_path ..."
+    mkdir -p $cluster_cert_path && cp ${AGENT_CERT_FILE} $cluster_cert_path
+
     echo "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}" >>$HZN_ENV_FILE
     echo "HZN_FSS_CSSURL=${HZN_FSS_CSSURL}" >>$HZN_ENV_FILE
     if [[ -n $HZN_AGBOT_URL ]]; then
@@ -2218,7 +2268,7 @@ function create_horizon_env() {
     fi
     echo "HZN_DEVICE_ID=${NODE_ID}" >>$HZN_ENV_FILE
     echo "HZN_NODE_ID=${NODE_ID}" >> $HZN_ENV_FILE
-    echo "HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/$cert_name" >>$HZN_ENV_FILE
+    echo "HZN_MGMT_HUB_CERT_PATH=$cluster_cert_path/$cert_name" >>$HZN_ENV_FILE
     echo "HZN_AGENT_PORT=8510" >>$HZN_ENV_FILE
     log_debug "create_horizon_env() end"
 }
@@ -2410,7 +2460,7 @@ function update_configmap() {
     else
         if $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
             # configmap exists, delete it
-	    log_verbose "Find configmap ${CONFIGMAP_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old configmap..."
+	        log_verbose "Find configmap ${CONFIGMAP_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old configmap..."
             $KUBECTL delete configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
             chk $? 'deleting the old configmap for agent update on cluster'
             log_verbose "Old configmap ${CONFIGMAP_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
@@ -2617,7 +2667,7 @@ function update_cluster() {
 
     if is_agent_registered ; then
         if [[ "$IS_HORIZON_DEFAULTS_CORRECT" != "true" ]] || ! is_registration_correct ; then
-	    unregister
+	        unregister
         fi
     fi
 
