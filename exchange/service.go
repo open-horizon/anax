@@ -728,7 +728,7 @@ func GetServiceDockerAuths(ec ExchangeContext, url string, org string, version s
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting docker auths for service %v %v %v %v", url, org, version, arch)))
 
 	if version == "" || !semanticversion.IsVersionString(version) {
-		return nil, errors.New(rpclogString(fmt.Sprintf("GetServiceDockerAuths got wrong version string %v. The version string should be a non-empy single version string.", version)))
+		return nil, errors.New(rpclogString(fmt.Sprintf("GetServiceDockerAuths got wrong version string %v. The version string should be a non-empty single version string.", version)))
 	}
 
 	// get the service id
@@ -879,7 +879,7 @@ func GetServicePolicy(ec ExchangeContext, url string, org string, version string
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting service policy for service %v %v %v %v", url, org, version, arch)))
 
 	if version == "" || !semanticversion.IsVersionString(version) {
-		return nil, "", errors.New(rpclogString(fmt.Sprintf("GetServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
+		return nil, "", errors.New(rpclogString(fmt.Sprintf("GetServicePolicy got wrong version string %v. The version string should be a non-empty single version string.", version)))
 	}
 
 	// get the service id
@@ -948,7 +948,7 @@ func PutServicePolicy(ec ExchangeContext, url string, org string, version string
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("updating service policy for service %v %v %v %v", url, org, version, arch)))
 
 	if version == "" || !semanticversion.IsVersionString(version) {
-		return nil, errors.New(rpclogString(fmt.Sprintf("PutServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
+		return nil, errors.New(rpclogString(fmt.Sprintf("PutServicePolicy got wrong version string %v. The version string should be a non-empty single version string.", version)))
 	}
 
 	// get the service id
@@ -1000,7 +1000,7 @@ func DeleteServicePolicy(ec ExchangeContext, url string, org string, version str
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("deleting service policy for service %v %v %v %v", url, org, version, arch)))
 
 	if version == "" || !semanticversion.IsVersionString(version) {
-		return errors.New(rpclogString(fmt.Sprintf("DeleteServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
+		return errors.New(rpclogString(fmt.Sprintf("DeleteServicePolicy got wrong version string %v. The version string should be a non-empty single version string.", version)))
 	}
 
 	// get the service id

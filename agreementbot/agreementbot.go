@@ -1031,7 +1031,9 @@ func (w *AgreementBotWorker) syncOnInit() error {
 							glog.Errorf(AWlogString(fmt.Sprintf("encountered error getting agbot agreement %v from exchange, error %v", ag.CurrentAgreementId, err)))
 							continue
 						} else {
-							glog.V(5).Infof(AWlogString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
+							if glog.V(5) {
+								glog.Infof(AWlogString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
+							}
 
 							if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
 								glog.V(3).Infof(AWlogString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))

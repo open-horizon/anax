@@ -261,7 +261,9 @@ func (db *AgbotPostgresqlDB) FindAgreements(filters []persistence.AFilter, proto
 		// Find all the agreement objects, read them in and run them through the filters (after unmarshalling the blob into an
 		// in memory agreement object).
 		sql := strings.Replace(ALL_AGREEMENTS_QUERY, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(currentPartition), 1)
-		glog.V(5).Infof("Find agreements using SQL: %v for partition %v", sql, currentPartition)
+		if glog.V(5) {
+			glog.Infof("Find agreements using SQL: %v for partition %v", sql, currentPartition)
+		}
 		rows, err := db.db.Query(sql, protocol)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("error querying for agreements error: %v", err))
@@ -278,7 +280,9 @@ func (db *AgbotPostgresqlDB) FindAgreements(filters []persistence.AFilter, proto
 				return nil, errors.New(fmt.Sprintf("error demarshalling row: %v, error: %v", string(agBytes), err))
 			} else {
 				if !ag.Archived {
-					glog.V(5).Infof("Demarshalled agreement in partition %v from DB: %v", currentPartition, ag)
+					if glog.V(5) {
+						glog.Infof("Demarshalled agreement in partition %v from DB: %v", currentPartition, ag)
+					}
 				}
 				if agPassed := persistence.RunFilters(ag, filters); agPassed != nil {
 					ags = append(ags, *ag)
@@ -533,7 +537,9 @@ func (db *AgbotPostgresqlDB) deleteAgreement(tx *sql.Tx, agreementId string, pro
 		return err
 	}
 
-	glog.V(5).Infof("Agreement %v deleted from database.", agreementId)
+	if glog.V(5) {
+		glog.Infof("Agreement %v deleted from database.", agreementId)
+	}
 
 	// Remove the secondary partition table if necessary.
 	if checkTableDeletion {
