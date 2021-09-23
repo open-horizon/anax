@@ -445,8 +445,12 @@ func (vs *AgbotVaultSecrets) GetSecretDetails(user, token, org, secretUser, secr
 	if rerr != nil {
 		err = &secrets.InvalidResponse{ReadError: rerr, HttpMethod: http.MethodGet, SecretPath: url}
 		return
+	}
+	if safeLogEntry, oerr := obscureVaultResponse(respBytes, url); oerr != nil {
+		err = errors.New(fmt.Sprintf("unable to obscure secret details: %v", oerr))
+		return
 	} else {
-		glog.V(5).Infof(vaultPluginLogString(fmt.Sprintf("HTTP: %v, deleting secret response: %v", resp.StatusCode, string(respBytes))))
+		glog.V(5).Infof(vaultPluginLogString(fmt.Sprintf("HTTP: %v, reading secret details response: %v", resp.StatusCode, safeLogEntry)))
 	}
 
 	// check for error
@@ -625,4 +629,19 @@ func (vs *AgbotVaultSecrets) loginUser(user, token, org string) (string, string,
 // Log string prefix api
 var vaultPluginLogString = func(v interface{}) string {
 	return fmt.Sprintf("Vault Plugin: %v", v)
+}
+
+func obscureVaultResponse(response []byte, url string) (string, error) {
+	r := GetSecretResponse{}
+	if uerr := json.Unmarshal(response, &r); uerr != nil {
+		err := &secrets.InvalidResponse{ParseError: uerr, Response: response, HttpMethod: http.MethodGet, SecretPath: url}
+		return "", err
+	}
+	r.Data.Data.Value = "********"
+	if newResponse, uerr := json.Marshal(r); uerr != nil {
+		err := &secrets.InvalidResponse{ParseError: uerr, Response: response, HttpMethod: http.MethodGet, SecretPath: url}
+		return "", err
+	} else {
+		return string(newResponse), nil
+	}
 }
