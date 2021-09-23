@@ -37,7 +37,9 @@ func AssignObjectToNodes(ec exchange.ExchangeContext, objPolicies *exchange.Obje
 
 		// The caller might have already done the compatibility test.
 		if !knownCompatible {
-			glog.V(5).Infof(opLogstring(fmt.Sprintf("evaluating policy for object %v of type %v", objPol.ObjectID, objPol.ObjectType)))
+			if glog.V(5) {
+				glog.Infof(opLogstring(fmt.Sprintf("evaluating policy for object %v of type %v", objPol.ObjectID, objPol.ObjectType)))
+			}
 
 			// Evaluate the object policy against the edge node policy. If the object policy is compatible, then place the object
 			// on the node for the current agreement.
@@ -46,7 +48,9 @@ func AssignObjectToNodes(ec exchange.ExchangeContext, objPolicies *exchange.Obje
 			internalObjPol := policy.Policy_Factory(fmt.Sprintf("object policy for %v type %v", objPol.ObjectID, objPol.ObjectType))
 			internalObjPol.Properties = objPol.DestinationPolicy.Properties
 			internalObjPol.Constraints = objPol.DestinationPolicy.Constraints
-			glog.V(5).Infof(opLogstring(fmt.Sprintf("converted object policy to: %v", internalObjPol)))
+			if glog.V(5) {
+				glog.Infof(opLogstring(fmt.Sprintf("converted object policy to: %v", internalObjPol)))
+			}
 
 			// temporary fix - eliminate node constraints so that models can be deployed without repeating business policy
 			// properties plus service policy properties in the model policy properties.
@@ -63,7 +67,9 @@ func AssignObjectToNodes(ec exchange.ExchangeContext, objPolicies *exchange.Obje
 
 		// Policies are compatible so add this node to destination list for the object.
 		dest := "openhorizon.edgenode:" + exchange.GetId(nodeId)
-		glog.V(5).Infof(opLogstring(fmt.Sprintf("adding node %v to destination list for object %v:%v:%v", dest, objPol.OrgID, objPol.ObjectType, objPol.ObjectID)))
+		if glog.V(5) {
+			glog.Infof(opLogstring(fmt.Sprintf("adding node %v to destination list for object %v:%v:%v", dest, objPol.OrgID, objPol.ObjectType, objPol.ObjectID)))
+		}
 
 		objKey := getObjectKey(objPol.OrgID, objPol.ObjectType, objPol.ObjectID)
 		if _, ok := destsToAddMap[objKey]; !ok {
@@ -83,7 +89,9 @@ func AssignObjectToNodes(ec exchange.ExchangeContext, objPolicies *exchange.Obje
 // policy compatibility check.
 func UnassignObjectFromNodes(ec exchange.ExchangeContext, objPol *exchange.ObjectDestinationPolicy, nodeId string, destsToDeleteMap map[string]*exchange.ObjectDestinationsToDelete) error {
 
-	glog.V(5).Infof(opLogstring(fmt.Sprintf("removing node %v from destination list for object %v:%v:%v", nodeId, objPol.OrgID, objPol.ObjectType, objPol.ObjectID)))
+	if glog.V(5) {
+		glog.Infof(opLogstring(fmt.Sprintf("removing node %v from destination list for object %v:%v:%v", nodeId, objPol.OrgID, objPol.ObjectType, objPol.ObjectID)))
+	}
 
 	dest := "openhorizon.edgenode:" + exchange.GetId(nodeId)
 	objKey := getObjectKey(objPol.OrgID, objPol.ObjectType, objPol.ObjectID)
@@ -104,7 +112,10 @@ func AddDestinationsForObjects(ec exchange.ExchangeContext, destsToAddMap map[st
 	postDestHandler := exchange.GetHTTPAddOrRemoveObjectDestinationHandler(ec)
 	for key, destsToAdd := range destsToAddMap {
 		objOrg, objType, objID := extractObjectKey(key)
-		glog.V(3).Infof(opLogstring(fmt.Sprintf("adding %d destinations %v for object %v of type %v", len(*destsToAdd), *destsToAdd, objID, objType)))
+		glog.V(3).Infof(opLogstring(fmt.Sprintf("adding %d destinations for object %v of type %v", len(*destsToAdd), objID, objType)))
+		if glog.V(3) && len(*destsToAdd) < 50 {
+			glog.Infof(opLogstring(fmt.Sprintf("Added destinations: %v", *destsToAdd)))
+		}
 
 		postDestRequest := exchange.PostDestsRequest{
 			Action:       common.AddAction,
@@ -127,7 +138,10 @@ func DeleteDestinationsForObjects(ec exchange.ExchangeContext, destsToDeleteMap 
 	getObjectHandler := exchange.GetHTTPObjectQueryHandler(ec)
 	for key, destsToDelete := range destsToDeleteMap {
 		objOrg, objType, objID := extractObjectKey(key)
-		glog.V(3).Infof(opLogstring(fmt.Sprintf("deleting %d destinations %v for object %v of type %v", len(*destsToDelete), *destsToDelete, objID, objType)))
+		glog.V(3).Infof(opLogstring(fmt.Sprintf("deleting %d destinations for object %v of type %v", len(*destsToDelete), objID, objType)))
+		if glog.V(3) && len(*destsToDelete) < 50 {
+			glog.Infof(opLogstring(fmt.Sprintf("Deleted destinations: %v", *destsToDelete)))
+		}
 
 		postDestRequest := exchange.PostDestsRequest{
 			Action:       common.RemoveAction,
@@ -186,8 +200,10 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 		return
 	}
 
-	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy OldPolicy: %v", oldPolicy)))
-	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy NewPolicy: %v", newPolicy)))
+	if glog.V(5)  {
+		glog.Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy OldPolicy: %v", oldPolicy)))
+		glog.Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy NewPolicy: %v", newPolicy)))
+	}
 
 	// Construct a list of destinations where the object currently lives. These will be in the policy update (the new policy).
 	destNodes := make([]string, 0, 5)
@@ -195,7 +211,9 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 		destNodes = append(destNodes, dest.DestID)
 	}
 
-	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy current dest nodes: %v", destNodes)))
+	if glog.V(5) {
+		glog.Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy current dest nodes: %v", destNodes)))
+	}
 
 	inProgress := func() persistence.AFilter {
 		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }

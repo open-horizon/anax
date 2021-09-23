@@ -238,7 +238,9 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
 				glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev.ShortString())))
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("device details for %v: %v", deviceId, dev)))
+				if glog.V(5) {
+					glog.Infof(rpclogString(fmt.Sprintf("device details for %v: %v", deviceId, dev)))
+				}
 				UpdateCache(NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)), NODE_DEF_TYPE_CACHE, dev)
 				return &dev, nil
 			}
@@ -357,7 +359,9 @@ func GetNodeStatus(ec ExchangeContext, deviceId string) (*NodeStatus, error) {
 				continue
 			}
 		} else {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("returning node status %v for %v.", resp, deviceId)))
+			if glog.V(5) {
+				glog.Infof(rpclogString(fmt.Sprintf("returning node status %v for %v.", resp, deviceId)))
+			}
 			nodeStatus := resp.(*NodeStatus)
 			return nodeStatus, nil
 		}
@@ -617,7 +621,9 @@ func ConvertToString(a []string) string {
 
 func Heartbeat(httpClientFactory *config.HTTPClientFactory, url string, id string, token string) error {
 
-	glog.V(5).Infof(rpclogString(fmt.Sprintf("Heartbeating to exchange: %v", url)))
+	if glog.V(5) {
+		glog.Infof(rpclogString(fmt.Sprintf("Heartbeating to exchange: %v", url)))
+	}
 
 	var resp interface{}
 	resp = new(PostDeviceResponse)
@@ -642,7 +648,9 @@ func Heartbeat(httpClientFactory *config.HTTPClientFactory, url string, id strin
 				continue
 			}
 		} else {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("Sent heartbeat %v: %v", url, resp)))
+			if glog.V(5) {
+				glog.Infof(rpclogString(fmt.Sprintf("Sent heartbeat %v: %v", url, resp)))
+			}
 			break
 		}
 	}
@@ -890,7 +898,9 @@ func GetSurfaceErrors(ec ExchangeContext, deviceId string) (*ExchangeSurfaceErro
 				continue
 			}
 		} else {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("returning node surface errors %v for %v.", resp, deviceId)))
+			if glog.V(5) {
+				glog.Infof(rpclogString(fmt.Sprintf("returning node surface errors %v for %v.", resp, deviceId)))
+			}
 			surfaceErrors := resp.(*ExchangeSurfaceError)
 
 			return surfaceErrors, nil
@@ -979,13 +989,34 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 	}
 	urlObj.RawQuery = urlObj.Query().Encode()
 
-	if reflect.ValueOf(params).Kind() == reflect.Ptr {
-		paramValue := reflect.Indirect(reflect.ValueOf(params))
-		glog.V(3).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, paramValue)))
-		//fmt.Printf("Invoking exchange %v at %v with %v\n", method, urlPath, paramValue)
-	} else {
-		glog.V(3).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params)))
-		//fmt.Printf("Invoking exchange %v at %v with %v\n", method, urlPath, params)
+	if glog.V(5) { 
+		if reflect.ValueOf(params).Kind() == reflect.Ptr { 
+			paramValue := reflect.Indirect(reflect.ValueOf(params))
+
+			// These 2 param types can contain very large payloads so must be cautious about trying to generate a log message with the entire payload
+			payload_str := ""
+                        switch params.(type) {
+                            case *GetExchangeChangesRequest:
+				    gecr := params.(*GetExchangeChangesRequest)
+				    if len(gecr.Orgs) > 50 {
+					    payload_str = fmt.Sprintf("<exchange.GetExchangeChangesRequest for %d organizations>", len(gecr.Orgs))
+				    } else {
+					    payload_str = fmt.Sprintf("%v", paramValue)
+				    }
+			    case *PostDestsRequest:
+				    pdr := params.(*PostDestsRequest)
+				    if len(pdr.Destinations) > 50 {
+					    payload_str = fmt.Sprintf("<exchange.PostDestsRequest with %d destinations>", len(pdr.Destinations))
+				    } else {
+					    payload_str = fmt.Sprintf("%v", paramValue)
+				    }
+			    default:
+				    payload_str = fmt.Sprintf("%v", paramValue)
+			}
+			glog.Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, payload_str))) 
+		} else {
+			glog.Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params))) 
+		}
 	}
 
 	requestBody := bytes.NewBuffer(nil)
@@ -1038,7 +1069,9 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 
 			if (method == "GET" || method == "LIST") && httpResp.StatusCode != http.StatusOK {
 				if httpResp.StatusCode == http.StatusNotFound {
-					glog.V(5).Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, urlPath, string(outBytes))))
+					if glog.V(5) {
+						glog.Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, urlPath, string(outBytes))))
+					}
 					return nil, nil
 				} else {
 					return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, urlPath, httpResp.StatusCode, string(outBytes))), nil
@@ -1051,7 +1084,9 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 				return nil, nil
 			} else {
 				out := string(outBytes)
-				glog.V(6).Infof(rpclogString(fmt.Sprintf("Response to %v at %v is %v", method, urlPath, out)))
+				if glog.V(6) {
+					glog.Infof(rpclogString(fmt.Sprintf("Response to %v at %v is %v", method, urlPath, out)))
+				}
 
 				// no need to Unmarshal the string output
 				switch (*resp).(type) {
@@ -1064,7 +1099,9 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 					return errors.New(fmt.Sprintf("Unable to demarshal response %v from invocation of %v at %v, error: %v", out, method, urlPath, err)), nil
 				} else {
 					if httpResp.StatusCode == http.StatusNotFound {
-						glog.V(5).Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, urlPath, *resp)))
+						if glog.V(5) {
+							glog.Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, urlPath, *resp)))
+						}
 					}
 					switch (*resp).(type) {
 					case *PutDeviceResponse:
@@ -1267,7 +1304,7 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 
 	case SERVICE:
 		if oVersion == "" || !semanticversion.IsVersionString(oVersion) {
-			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
+			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empty single version string.", oVersion)))
 		}
 		ms_resp, ms_id, err := GetService(ec, oURL, oOrg, oVersion, oArch)
 		if err != nil {
@@ -1314,7 +1351,9 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 			}
 		} else {
 			if resp_KeyNames.(string) != "" {
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("found object signing keys %v.", resp_KeyNames)))
+				if glog.V(5) {
+					glog.Infof(rpclogString(fmt.Sprintf("found object signing keys %v.", resp_KeyNames)))
+				}
 				if err := json.Unmarshal([]byte(resp_KeyNames.(string)), &key_names); err != nil {
 					return nil, errors.New(fmt.Sprintf("Unable to demarshal pattern key list %v to string array, error: %v", resp_KeyNames, err))
 				}
@@ -1350,7 +1389,9 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 				}
 			} else {
 				if resp_KeyContent.(string) != "" {
-					glog.V(5).Infof(rpclogString(fmt.Sprintf("found signing key content for key %v: %v.", key, resp_KeyContent)))
+					if glog.V(5) {
+						glog.Infof(rpclogString(fmt.Sprintf("found signing key content for key %v: %v.", key, resp_KeyContent)))
+					}
 					ret[key] = resp_KeyContent.(string)
 				} else {
 					glog.Warningf(rpclogString(fmt.Sprintf("could not find key content for key %v", key)))

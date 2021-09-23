@@ -43,16 +43,25 @@ func (m *MMSObjectPolicyManager) String() string {
 }
 
 func (m *MMSObjectPolicyManager) ShowOrgMapUnlocked() string {
-	res := fmt.Sprintf("Org cache: ")
+	res := ""
+	if len(m.orgMap) > 25 {
+		res += fmt.Sprintf("Org cache (first 25 orgs): ")
+	} else {
+		res += fmt.Sprintf("Org cache: ")
+	}
+	org_count := 0
 	for org, orgMap := range m.orgMap {
-		res += fmt.Sprintf("Org: %v ", org)
-		for k, v := range orgMap {
-			res += fmt.Sprintf("Service: %v [", k)
-			for _, entry := range v {
-				res += fmt.Sprintf(" %v", entry.ShortString())
+		if org_count < 25 {
+			res += fmt.Sprintf("Org: %v ", org)
+			for k, v := range orgMap {
+				res += fmt.Sprintf("Service: %v [", k)
+				for _, entry := range v {
+					res += fmt.Sprintf(" %v", entry.ShortString())
+				}
+				res += "] "
 			}
-			res += "] "
 		}
+		org_count += 1
 	}
 
 	return res
@@ -71,7 +80,9 @@ func (m *MMSObjectPolicyManager) GetObjectPolicies(org string, serviceName strin
 	m.orgMapLock.Lock()
 	defer m.orgMapLock.Unlock()
 
-	glog.V(5).Infof(mmsLogString(fmt.Sprintf("retrieving objects for %v %v %v %v", org, serviceName, arch, version)))
+	if glog.V(5) {
+		glog.Infof(mmsLogString(fmt.Sprintf("retrieving objects for %v %v %v %v", org, serviceName, arch, version)))
+	}
 
 	objPolicies := new(exchange.ObjectDestinationPolicies)
 
@@ -98,7 +109,9 @@ func (m *MMSObjectPolicyManager) GetObjectPolicies(org string, serviceName strin
 			}
 		}
 	}
-	glog.V(5).Infof(mmsLogString(fmt.Sprintf("returning objects for %v %v %v %v, %v", org, serviceName, arch, version, objPolicies)))
+	if glog.V(5) {
+		glog.Infof(mmsLogString(fmt.Sprintf("returning objects for %v %v %v %v, %v", org, serviceName, arch, version, objPolicies)))
+	}
 	return objPolicies
 }
 
@@ -221,7 +234,9 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 	foundService := false
 	for _, objPol := range *updatedPolicies {
 
-		glog.V(5).Infof(mmsLogString(fmt.Sprintf("Updated policy received %v", objPol)))
+		if glog.V(5) { 
+			glog.Infof(mmsLogString(fmt.Sprintf("Updated policy received %v", objPol)))
+		}
 
 		// Find services in the cache that are not referenced by a given object id any more. This can happen if the service
 		// reference in the object policy is changed.
@@ -230,7 +245,9 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 			finalList := make([]MMSObjectPolicyEntry, 0)
 			for _, pe := range peList {
 				if pe.Policy.OrgID == objPol.OrgID && pe.Policy.ObjectID == objPol.ObjectID && pe.Policy.ObjectType == objPol.ObjectType {
-					glog.V(5).Infof(mmsLogString(fmt.Sprintf("Obj %v found in %v map", objPol.ObjectID, service)))
+					if glog.V(5) {
+						glog.Infof(mmsLogString(fmt.Sprintf("Obj %v found in %v map", objPol.ObjectID, service)))
+					}
 					for _, serviceID := range objPol.DestinationPolicy.Services {
 						if service == cutil.FormOrgSpecUrl(serviceID.ServiceName, serviceID.OrgID) {
 							foundService = true
