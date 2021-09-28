@@ -5,15 +5,15 @@ usage() {
     cat << EndOfMessage
 Usage: ${0##*/} [-c <component>] [-n <image name>] [-l <image labels>] [-d <docker maybe cache>] [-s <image stg>] [-a <arch>]
 
-Building the different component docker images on its supported architectures.
+This is a script for building the anax component docker images on its supported architectures.
 
  Flags:
-  -c    Component name,such as anax,agbot,anax-k8s,css-docker and ess-docker
+  -c    Component name, such as anax, agbot, anax-k8s, css-docker, or ess-docker
   -n    Docker image name
-  -l    Docker image lables
+  -l    Docker image labels
   -d    Docker build cache option
   -s    Dokcer image stg
-  -a    Architecture to build docker image
+  -a    Architecture to build docker image for
   -h    Usage
 EndOfMessage
     exit $exitCode
@@ -48,7 +48,7 @@ shift $(($OPTIND - 1))
 
 # Check the required vars if is defined
 if [ "A${COMP_NAME}" == "A" ];then
-        echo "Which image you want to build,such as anax, agbot or anax-k8s"
+        echo "Which image you want to build, e.g. anax, agbot, anax-k8s, etc."
 fi
 if [ "A${IMAGE_NAME}" == "A" ];then
         echo "Please define the image name."
@@ -76,7 +76,7 @@ if [[ ${arch} != "amd64" && ${COMP_NAME} == "css-docker" ]]; then
         exit
 fi
 if [[ ${arch} == "s390x" && ${COMP_NAME} == "anax-k8s" ]]; then
-        echo "Building the anax k8s image is only supported on amd64 ,ppc64el and arm64 architectures."
+        echo "Building the anax k8s image is only supported on amd64, ppc64el, and arm64 architectures."
         exit
 fi
 
