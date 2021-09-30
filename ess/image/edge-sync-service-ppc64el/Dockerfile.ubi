@@ -5,14 +5,13 @@ LABEL summary="Edge node Model Management System."
 LABEL description="Provides the edge node side of the Model Management System to be used by the CLI service test tools when also testing object models."
 
 # yum is not installed, use microdnf instead
-RUN microdnf update -y --nodocs && microdnf clean all
+RUN microdnf update -y --nodocs && microdnf clean all \
+	&& microdnf install -y --nodocs openssl ca-certificates \
+	&& microdnf clean all
+	&& mkdir -p /licenses
 
 # add license file
-RUN mkdir -p /licenses
 COPY LICENSE.txt /licenses
-
-RUN microdnf install -y --nodocs openssl ca-certificates \
-	&& microdnf clean all
 
 ADD edge-sync-service /edge-sync-service/
 
