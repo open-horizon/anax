@@ -7,7 +7,7 @@ LABEL description="Provides the edge node side of the Model Management System to
 # yum is not installed, use microdnf instead
 RUN microdnf update -y --nodocs && microdnf clean all \
 	&& microdnf install -y --nodocs openssl ca-certificates \
-	&& microdnf clean all
+	&& microdnf clean all \
 	&& mkdir -p /licenses
 
 # add license file
