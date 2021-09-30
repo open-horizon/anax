@@ -288,7 +288,7 @@ func GetExchangeChanges(ec ExchangeContext, changeId uint64, maxRecords int, org
 				glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v changes since ID %v with latest change ID %v in orgs %v", len(changes.Changes), changeId, changes.MostRecentChangeID, orgList)))
 			}
 			if glog.V(5) {
-				if len(changes.Changes) <  25 {
+				if len(changes.Changes) < 25 {
 					glog.Infof(rpclogString(fmt.Sprintf("Raw changes response: %v", changes)))
 				}
 			}
