@@ -586,7 +586,7 @@ RES=$($CMD)
 results "$RES" "200" "exists" "false"
 
 # skip if not local e2edev test
-if [ "${EXCH_APP_HOST}" == "http://exchange-api:8081/v1" ]; then
+if [ ${REMOTE_HUB} -eq 0 ]; then
   # Check agbot <-> vault health status using AGBOT_API
   echo -e "\n${PREFIX} Check agbot-vault health status"
   CMD="curl -sLX GET -w %{http_code} ${AGBOT_API}/health"
