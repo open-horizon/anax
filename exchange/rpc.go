@@ -989,33 +989,33 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 	}
 	urlObj.RawQuery = urlObj.Query().Encode()
 
-	if glog.V(5) { 
-		if reflect.ValueOf(params).Kind() == reflect.Ptr { 
+	if glog.V(5) {
+		if reflect.ValueOf(params).Kind() == reflect.Ptr {
 			paramValue := reflect.Indirect(reflect.ValueOf(params))
 
 			// These 2 param types can contain very large payloads so must be cautious about trying to generate a log message with the entire payload
 			payload_str := ""
-                        switch params.(type) {
-                            case *GetExchangeChangesRequest:
-				    gecr := params.(*GetExchangeChangesRequest)
-				    if len(gecr.Orgs) > 50 {
-					    payload_str = fmt.Sprintf("<exchange.GetExchangeChangesRequest for %d organizations>", len(gecr.Orgs))
-				    } else {
-					    payload_str = fmt.Sprintf("%v", paramValue)
-				    }
-			    case *PostDestsRequest:
-				    pdr := params.(*PostDestsRequest)
-				    if len(pdr.Destinations) > 50 {
-					    payload_str = fmt.Sprintf("<exchange.PostDestsRequest with %d destinations>", len(pdr.Destinations))
-				    } else {
-					    payload_str = fmt.Sprintf("%v", paramValue)
-				    }
-			    default:
-				    payload_str = fmt.Sprintf("%v", paramValue)
+			switch params.(type) {
+			case *GetExchangeChangesRequest:
+				gecr := params.(*GetExchangeChangesRequest)
+				if len(gecr.Orgs) > 50 {
+					payload_str = fmt.Sprintf("<exchange.GetExchangeChangesRequest for %d organizations>", len(gecr.Orgs))
+				} else {
+					payload_str = fmt.Sprintf("%v", paramValue)
+				}
+			case *PostDestsRequest:
+				pdr := params.(*PostDestsRequest)
+				if len(pdr.Destinations) > 50 {
+					payload_str = fmt.Sprintf("<exchange.PostDestsRequest with %d destinations>", len(pdr.Destinations))
+				} else {
+					payload_str = fmt.Sprintf("%v", paramValue)
+				}
+			default:
+				payload_str = fmt.Sprintf("%v", paramValue)
 			}
-			glog.Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, payload_str))) 
+			glog.Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, payload_str)))
 		} else {
-			glog.Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params))) 
+			glog.Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params)))
 		}
 	}
 
