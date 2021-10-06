@@ -119,3 +119,6 @@ const K8sCRInstallTimeoutS_DEFAULT = 180
 
 // Time between secret update checks
 const SecretsUpdateCheck_DEFAULT = 60
+
+// Batch destination size to send to CSS
+const AgbotCSSDestinationBatchSize_DEFAULT = 200

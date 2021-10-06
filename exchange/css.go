@@ -14,8 +14,6 @@ import (
 // so that we can use our types when demarhsalling them, which enables us to perform compatibility checks
 // using these policies.
 
-const DestinationsSizeLogLimit = 50
-
 type DestinationPolicy struct {
 	// Properties is the set of properties for a particular policy
 	Properties externalpolicy.PropertyList `json:"properties" bson:"properties"`
@@ -57,10 +55,12 @@ type ObjectDestinationPolicy struct {
 }
 
 func (d ObjectDestinationPolicy) String() string {
-	if len(d.Destinations) < DestinationsSizeLogLimit {
-		return fmt.Sprintf("Object Destination Policy: Org %v, Type %v, ID %v, %v, Destinations %v", d.OrgID, d.ObjectType, d.ObjectID, d.DestinationPolicy, d.Destinations)
+	length := len(d.Destinations)
+	return_str := fmt.Sprintf("Object Destination Policy: Org %v, Type %v, ID %v, %v, Destinations (length %d) ", d.OrgID, d.ObjectType, d.ObjectID, d.DestinationPolicy, length)
+	if length < 50 {
+		return return_str + fmt.Sprintf("%v", d.Destinations)
 	} else {
-		return fmt.Sprintf("Object Destination Policy: Org %v, Type %v, ID %v, %v, Destinations size %v", d.OrgID, d.ObjectType, d.ObjectID, d.DestinationPolicy, len(d.Destinations))
+		return return_str + fmt.Sprintf("%v ... %v", d.Destinations[:25], d.Destinations[length-25:length])
 	}
 }
 
@@ -189,10 +189,11 @@ func AddOrRemoveDestinations(ec ExchangeContext, org string, objType string, obj
 			}
 		} else {
 			if glog.V(5) {
-				if len(postDestsRequest.Destinations) > DestinationsSizeLogLimit {
-					glog.Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with length of destinations %v", postDestsRequest.Action, objID, objType, len(postDestsRequest.Destinations))))
+				if len(postDestsRequest.Destinations) < 50 {
+					glog.Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with {%v}", postDestsRequest.Action, objID, objType, postDestsRequest.Destinations)))
 				} else {
-					glog.Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with %v", postDestsRequest.Action, objID, objType, postDestsRequest.Destinations)))
+					length := len(postDestsRequest.Destinations)
+					glog.Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with %v ... %v", postDestsRequest.Action, objID, objType, postDestsRequest.Destinations[:25], postDestsRequest.Destinations[length-25:length])))
 				}
 			}
 			return nil
@@ -230,10 +231,14 @@ func GetObject(ec ExchangeContext, org string, objID string, objType string) (*c
 		} else {
 			objMeta := resp.(*common.MetaData)
 			if objMeta.ObjectID != "" {
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("found object %v %v for org %v: %v", objID, objType, org, objMeta)))
+				if glog.V(5) {
+					glog.Infof(rpclogString(fmt.Sprintf("found object %v %v for org %v: %v", objID, objType, org, objMeta)))
+				}
 				return objMeta, nil
 			} else {
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("object %v %v for org %v not found", objID, objType, org)))
+				if glog.V(5) {
+					glog.Infof(rpclogString(fmt.Sprintf("object %v %v for org %v not found", objID, objType, org)))
+				}
 				return nil, nil
 			}
 		}
@@ -271,10 +276,10 @@ func GetObjectDestinations(ec ExchangeContext, org string, objID string, objType
 			dests := resp.(*ObjectDestinationStatuses)
 			if len(*dests) != 0 {
 				if glog.V(5) {
-					if len(*(dests)) > DestinationsSizeLogLimit {
-						glog.Infof(rpclogString(fmt.Sprintf("found destinations for %v %v %v: length of %v", org, objID, objType, len(*(dests)))))
-					} else {
+					if len(*dests) < 50 {
 						glog.Infof(rpclogString(fmt.Sprintf("found destinations for %v %v %v: %v", org, objID, objType, dests)))
+					} else {
+						glog.Infof(rpclogString(fmt.Sprintf("found %d destinations for %v %v %v", len(*dests), org, objID, objType)))
 					}
 				}
 				return dests, nil
