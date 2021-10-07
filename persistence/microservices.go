@@ -814,10 +814,7 @@ func NewMicroserviceInstance(db *bolt.DB, ref_url string, org string, version st
 		return nil, errors.New("Microservice ref url id, org or version is empty, cannot persist")
 	}
 
-	instance_id, err := createInstanceId()
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error creating an instance id for the service instance %v/%v version %v", org, ref_url, version))
-	}
+	instance_id := createInstanceId()
 
 	if ms_instance, err := FindMicroserviceInstance(db, ref_url, org, version, instance_id); err != nil {
 		return nil, err
@@ -1307,12 +1304,8 @@ func (s *ServiceInstancePathElement) IsSame(other *ServiceInstancePathElement) b
 }
 
 // create an instance
-func createInstanceId() (string, error) {
-	if id, err := uuid.NewV4(); err != nil {
-		return "", errors.New(fmt.Sprintf("Unable to generate UUID, error: %v", err))
-	} else {
-		return id.String(), nil
-	}
+func createInstanceId() string {
+	return uuid.NewV4().String()
 }
 
 // save the given microservice instance into the db

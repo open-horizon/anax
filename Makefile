@@ -195,7 +195,7 @@ $(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(EXECUTABLE);
+		$(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(EXECUTABLE);
 	exch_min_ver=$(shell grep "MINIMUM_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
 	    echo "The required minimum exchange version is $$exch_min_ver";
 	exch_pref_ver=$(shell grep "PREFERRED_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \

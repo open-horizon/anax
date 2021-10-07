@@ -22,10 +22,7 @@ type BasicAgreementWorker struct {
 
 func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, alm *AgreementLockManager, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets) *BasicAgreementWorker {
 
-	id, err := uuid.NewV4()
-	if err != nil {
-		panic(fmt.Sprintf("Error generating worker UUID: %v", err))
-	}
+	id := uuid.NewV4()
 
 	p := &BasicAgreementWorker{
 		BaseAgreementWorker: &BaseAgreementWorker{

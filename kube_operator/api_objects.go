@@ -1,6 +1,7 @@
 package kube_operator
 
 import (
+	"context"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
@@ -138,7 +139,7 @@ type NamespaceCoreV1 struct {
 
 func (n NamespaceCoreV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to create namespace %v", n.NamespaceObject)))
-	_, err := c.Client.CoreV1().Namespaces().Create(n.NamespaceObject)
+	_, err := c.Client.CoreV1().Namespaces().Create(context.Background(), n.NamespaceObject, metav1.CreateOptions{})
 	if err != nil {
 		// If the namespace already exists this is not a problem
 		glog.Warningf(kwlog(fmt.Sprintf("Failed to create namespace %s. Continuing with installation.", n.Name())))
@@ -148,14 +149,14 @@ func (n NamespaceCoreV1) Install(c KubeClient, namespace string) error {
 
 func (n NamespaceCoreV1) Uninstall(c KubeClient, namespace string) {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting namespace %v", n.NamespaceObject)))
-	err := c.Client.CoreV1().Namespaces().Delete(n.Name(), &metav1.DeleteOptions{})
+	err := c.Client.CoreV1().Namespaces().Delete(context.Background(), n.Name(), metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete namespace %s. Error: %v", n.Name(), err)))
 	}
 }
 
 func (n NamespaceCoreV1) Status(c KubeClient, namespace string) (interface{}, error) {
-	nsStatus, err := c.Client.CoreV1().Namespaces().Get(n.Name(), metav1.GetOptions{})
+	nsStatus, err := c.Client.CoreV1().Namespaces().Get(context.Background(), n.Name(), metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error getting namespace status: %v", err)))
 	}
@@ -174,10 +175,10 @@ type RoleRbacV1 struct {
 
 func (r RoleRbacV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating role %v", r)))
-	_, err := c.Client.RbacV1().Roles(namespace).Create(r.RoleObject)
+	_, err := c.Client.RbacV1().Roles(namespace).Create(context.Background(), r.RoleObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		r.Uninstall(c, namespace)
-		_, err = c.Client.RbacV1().Roles(namespace).Create(r.RoleObject)
+		_, err = c.Client.RbacV1().Roles(namespace).Create(context.Background(), r.RoleObject, metav1.CreateOptions{})
 	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster role: %v", err)))
@@ -187,7 +188,7 @@ func (r RoleRbacV1) Install(c KubeClient, namespace string) error {
 
 func (r RoleRbacV1) Uninstall(c KubeClient, namespace string) {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting role %s", r.Name())))
-	err := c.Client.RbacV1().Roles(namespace).Delete(r.Name(), &metav1.DeleteOptions{})
+	err := c.Client.RbacV1().Roles(namespace).Delete(context.Background(), r.Name(), metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete role %s. Error: %v", r.Name(), err)))
 	}
@@ -209,10 +210,10 @@ type RolebindingRbacV1 struct {
 
 func (rb RolebindingRbacV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating rolebinding %v", rb)))
-	_, err := c.Client.RbacV1().RoleBindings(namespace).Create(rb.RolebindingObject)
+	_, err := c.Client.RbacV1().RoleBindings(namespace).Create(context.Background(), rb.RolebindingObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		rb.Uninstall(c, namespace)
-		_, err = c.Client.RbacV1().RoleBindings(namespace).Create(rb.RolebindingObject)
+		_, err = c.Client.RbacV1().RoleBindings(namespace).Create(context.Background(), rb.RolebindingObject, metav1.CreateOptions{})
 	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster rolebinding: %v", err)))
@@ -222,7 +223,7 @@ func (rb RolebindingRbacV1) Install(c KubeClient, namespace string) error {
 
 func (rb RolebindingRbacV1) Uninstall(c KubeClient, namespace string) {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting role binding %s", rb.RolebindingObject.ObjectMeta.Name)))
-	err := c.Client.RbacV1().RoleBindings(namespace).Delete(rb.RolebindingObject.ObjectMeta.Name, &metav1.DeleteOptions{})
+	err := c.Client.RbacV1().RoleBindings(namespace).Delete(context.Background(), rb.RolebindingObject.ObjectMeta.Name, metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete role binding %s. Error: %v", rb.RolebindingObject.ObjectMeta.Name, err)))
 	}
@@ -243,10 +244,10 @@ type ServiceAccountCoreV1 struct {
 
 func (sa ServiceAccountCoreV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating service account %v", sa)))
-	_, err := c.Client.CoreV1().ServiceAccounts(namespace).Create(sa.ServiceAccountObject)
+	_, err := c.Client.CoreV1().ServiceAccounts(namespace).Create(context.Background(), sa.ServiceAccountObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		sa.Uninstall(c, namespace)
-		_, err = c.Client.CoreV1().ServiceAccounts(namespace).Create(sa.ServiceAccountObject)
+		_, err = c.Client.CoreV1().ServiceAccounts(namespace).Create(context.Background(), sa.ServiceAccountObject, metav1.CreateOptions{})
 	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster service account: %v", err)))
@@ -256,7 +257,7 @@ func (sa ServiceAccountCoreV1) Install(c KubeClient, namespace string) error {
 
 func (sa ServiceAccountCoreV1) Uninstall(c KubeClient, namespace string) {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting service account %s", sa.ServiceAccountObject.ObjectMeta.Name)))
-	err := c.Client.CoreV1().ServiceAccounts(namespace).Delete(sa.ServiceAccountObject.ObjectMeta.Name, &metav1.DeleteOptions{})
+	err := c.Client.CoreV1().ServiceAccounts(namespace).Delete(context.Background(), sa.ServiceAccountObject.ObjectMeta.Name, metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete service account %s. Error: %v", sa.ServiceAccountObject.ObjectMeta.Name, err)))
 	}
@@ -297,11 +298,11 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 
 	// Let the operator know about the config map
 	dWithEnv := addConfigMapVarToDeploymentObject(*d.DeploymentObject, mapName)
-	_, err = c.Client.AppsV1().Deployments(namespace).Create(&dWithEnv)
+	_, err = c.Client.AppsV1().Deployments(namespace).Create(context.Background(), &dWithEnv, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		d.Uninstall(c, namespace)
 		mapName, err = c.CreateConfigMap(envAdds, d.AgreementId, namespace)
-		_, err = c.Client.AppsV1().Deployments(namespace).Create(&dWithEnv)
+		_, err = c.Client.AppsV1().Deployments(namespace).Create(context.Background(), &dWithEnv, metav1.CreateOptions{})
 	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the operator deployment: %v", err)))
@@ -311,7 +312,7 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 
 func (d DeploymentAppsV1) Uninstall(c KubeClient, namespace string) {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting deployment %s", d.DeploymentObject.ObjectMeta.Name)))
-	err := c.Client.AppsV1().Deployments(namespace).Delete(d.DeploymentObject.ObjectMeta.Name, &metav1.DeleteOptions{})
+	err := c.Client.AppsV1().Deployments(namespace).Delete(context.Background(), d.DeploymentObject.ObjectMeta.Name, metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete deployment %s. Error: %v", d.DeploymentObject.ObjectMeta.Name, err)))
 	}
@@ -319,7 +320,7 @@ func (d DeploymentAppsV1) Uninstall(c KubeClient, namespace string) {
 	configMapName := fmt.Sprintf("%s-%s", HZN_ENV_VARS, d.AgreementId)
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting config map %v", configMapName)))
 	// Delete the agreement config map
-	err = c.Client.CoreV1().ConfigMaps(namespace).Delete(configMapName, &metav1.DeleteOptions{})
+	err = c.Client.CoreV1().ConfigMaps(namespace).Delete(context.Background(), configMapName, metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete config map %s. Error: %v", configMapName, err)))
 	}
@@ -328,7 +329,7 @@ func (d DeploymentAppsV1) Uninstall(c KubeClient, namespace string) {
 // Status will be the status of the operator pod
 func (d DeploymentAppsV1) Status(c KubeClient, namespace string) (interface{}, error) {
 	opName := d.DeploymentObject.ObjectMeta.Name
-	podList, err := c.Client.CoreV1().Pods(ANAX_NAMESPACE).List(metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", "name", opName)})
+	podList, err := c.Client.CoreV1().Pods(ANAX_NAMESPACE).List(context.Background(), metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", "name", opName)})
 	if err != nil {
 		return nil, err
 	}
@@ -366,10 +367,10 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 	}
 	crds := apiClient.CustomResourceDefinitions()
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating custom resource definition %v", cr.CustomResourceDefinitionObject)))
-	_, err = crds.Create(cr.CustomResourceDefinitionObject)
+	_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		cr.Uninstall(c, namespace)
-		_, err = crds.Create(cr.CustomResourceDefinitionObject)
+		_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
 	}
 	if err != nil {
 		return err
@@ -398,7 +399,7 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 	timeout := cr.InstallTimeout
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, cr.CustomResourceObject)))
 	for {
-		_, err = crClient.Namespace(namespace).Create(cr.CustomResourceObject, metav1.CreateOptions{})
+		_, err = crClient.Namespace(namespace).Create(context.Background(), cr.CustomResourceObject, metav1.CreateOptions{})
 		if err != nil && timeout > 0 {
 			glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
 			time.Sleep(time.Second * 5)
@@ -443,7 +444,7 @@ func (cr CustomResourceV1Beta1) Uninstall(c KubeClient, namespace string) {
 	}
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName)))
 
-	err = crClient.Namespace(namespace).Delete(newCrName, &metav1.DeleteOptions{})
+	err = crClient.Namespace(namespace).Delete(context.Background(), newCrName, metav1.DeleteOptions{})
 	if err != nil {
 		glog.Warningf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
 	} else {
@@ -461,7 +462,7 @@ func (cr CustomResourceV1Beta1) Uninstall(c KubeClient, namespace string) {
 		return
 	}
 	crds := apiClient.CustomResourceDefinitions()
-	err = crds.Delete(cr.Name(), &metav1.DeleteOptions{})
+	err = crds.Delete(context.Background(), cr.Name(), metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
 	}
@@ -501,7 +502,7 @@ func (cr CustomResourceV1Beta1) Status(c KubeClient, namespace string) (interfac
 	if metadata, ok := cr.CustomResourceObject.Object["metadata"]; ok {
 		if metadataTyped, ok := metadata.(map[string]interface{}); ok {
 			if name, ok := metadataTyped["name"]; ok {
-				res, err := crClient.Namespace(namespace).Get(fmt.Sprintf("%v", name), metav1.GetOptions{})
+				res, err := crClient.Namespace(namespace).Get(context.Background(), fmt.Sprintf("%v", name), metav1.GetOptions{})
 				if err != nil {
 					return nil, err
 				}
@@ -565,10 +566,10 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 	}
 	crds := apiClient.CustomResourceDefinitions()
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating custom resource definition %v", cr.CustomResourceDefinitionObject)))
-	_, err = crds.Create(cr.CustomResourceDefinitionObject)
+	_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		cr.Uninstall(c, namespace)
-		_, err = crds.Create(cr.CustomResourceDefinitionObject)
+		_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
 	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to create custom resource definition %s: %v", cr.Name(), err)))
@@ -597,7 +598,7 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 	timeout := cr.InstallTimeout
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, cr.CustomResourceObject)))
 	for {
-		_, err = crClient.Namespace(namespace).Create(cr.CustomResourceObject, metav1.CreateOptions{})
+		_, err = crClient.Namespace(namespace).Create(context.Background(), cr.CustomResourceObject, metav1.CreateOptions{})
 		if err != nil && timeout > 0 {
 			glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
 			time.Sleep(time.Second * 5)
@@ -645,7 +646,7 @@ func (cr CustomResourceV1) Uninstall(c KubeClient, namespace string) {
 	}
 
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName)))
-	err = crClient.Namespace(namespace).Delete(newCrName, &metav1.DeleteOptions{})
+	err = crClient.Namespace(namespace).Delete(context.Background(), newCrName, metav1.DeleteOptions{})
 	if err != nil {
 		glog.Warningf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
 	} else {
@@ -661,7 +662,7 @@ func (cr CustomResourceV1) Uninstall(c KubeClient, namespace string) {
 		return
 	}
 	crds := apiClient.CustomResourceDefinitions()
-	err = crds.Delete(cr.Name(), &metav1.DeleteOptions{})
+	err = crds.Delete(context.Background(), cr.Name(), metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
 	}
@@ -701,7 +702,7 @@ func (cr CustomResourceV1) Status(c KubeClient, namespace string) (interface{}, 
 	if metadata, ok := cr.CustomResourceObject.Object["metadata"]; ok {
 		if metadataTyped, ok := metadata.(map[string]interface{}); ok {
 			if name, ok := metadataTyped["name"]; ok {
-				res, err := crClient.Namespace(namespace).Get(fmt.Sprintf("%v", name), metav1.GetOptions{})
+				res, err := crClient.Namespace(namespace).Get(context.Background(), fmt.Sprintf("%v", name), metav1.GetOptions{})
 				if err != nil {
 					return nil, err
 				}

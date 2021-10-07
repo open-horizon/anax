@@ -1,5 +1,5 @@
 // +build integration
-// +build go1.14
+// +build go1.16
 
 package api
 
