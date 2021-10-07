@@ -13,7 +13,7 @@ branches:
 
 language: go
 
-go: 1.14.x
+go: 1.16.x
 
 before_install:
 - sudo apt-get -y update
