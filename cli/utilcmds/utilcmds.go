@@ -38,11 +38,21 @@ func Verify(pubKeyFilePath, signature string) {
 }
 
 // convert the given json file to shell export commands and output it to stdout
-func ConvertConfig(cofigFile string) {
+func ConvertConfig(configFile string) {
+	if configFile == "" {
+		projectConfigFile, err := cliconfig.GetProjectConfigFile("")
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Failed to get project configuration file. Error: %v", err))
+		}
+		if projectConfigFile == "" {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Please use the -f flag to specify a configuration file."))
+		}
+		configFile = projectConfigFile
+	}
 	// get the env vars from the file
-	hzn_vars, metadata_vars, err := cliconfig.GetVarsFromFile(cofigFile)
+	hzn_vars, metadata_vars, err := cliconfig.GetVarsFromFile(configFile)
 	if err != nil && !os.IsNotExist(err) {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Failed to get the variables from configuration file %v. Error: %v", cofigFile, err))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("Failed to get the variables from configuration file %v. Error: %v", configFile, err))
 	}
 
 	// convert it to shell commands
