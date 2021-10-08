@@ -13,6 +13,8 @@ elif [[ "$uname" == "ppc64le" ]]; then
   echo "ppc64el"
 elif [[ "$uname" == "s390x" ]]; then
   echo "s390x"
+elif [[ "$uname" == "riscv64" ]]; then
+  echo "riscv64"
 else
   (>&2 echo "Unknown architecture $uname")
   exit 1
