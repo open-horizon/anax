@@ -14,8 +14,7 @@ import (
 // so that we can use our types when demarhsalling them, which enables us to perform compatibility checks
 // using these policies.
 
-
-const  DestinationsSizeLogLimit = 50
+const DestinationsSizeLogLimit = 50
 
 type DestinationPolicy struct {
 	// Properties is the set of properties for a particular policy
@@ -190,7 +189,7 @@ func AddOrRemoveDestinations(ec ExchangeContext, org string, objType string, obj
 			}
 		} else {
 			if glog.V(5) {
-				if len(postDestsRequest.Destinations) > DestinationsSizeLogLimit { 
+				if len(postDestsRequest.Destinations) > DestinationsSizeLogLimit {
 					glog.Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with length of destinations %v", postDestsRequest.Action, objID, objType, len(postDestsRequest.Destinations))))
 				} else {
 					glog.Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with %v", postDestsRequest.Action, objID, objType, postDestsRequest.Destinations)))
@@ -272,7 +271,7 @@ func GetObjectDestinations(ec ExchangeContext, org string, objID string, objType
 			dests := resp.(*ObjectDestinationStatuses)
 			if len(*dests) != 0 {
 				if glog.V(5) {
-					if len(*(dests)) > DestinationsSizeLogLimit { 
+					if len(*(dests)) > DestinationsSizeLogLimit {
 						glog.Infof(rpclogString(fmt.Sprintf("found destinations for %v %v %v: length of %v", org, objID, objType, len(*(dests)))))
 					} else {
 						glog.Infof(rpclogString(fmt.Sprintf("found destinations for %v %v %v: %v", org, objID, objType, dests)))

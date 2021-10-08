@@ -1230,6 +1230,7 @@ function debian_device_install_prereqs() {
     runCmdQuietly apt-get update -q
 
     log_info "Installing prerequisites, this could take a minute..."
+
     if [[ $AGENT_ONLY_CLI == 'true' ]]; then
         runCmdQuietly apt-get install -yqf curl jq
     else
@@ -1237,9 +1238,13 @@ function debian_device_install_prereqs() {
 
         if ! isCmdInstalled docker; then
             log_info "Docker is required, installing it..."
-            curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
-            add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
-            runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
+            if [ "${DISTRO}" == "raspbian" ]; then
+                curl -sSL get.docker.com | sh
+            else
+                curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
+                add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
+                runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
+            fi
         fi
     fi
     log_debug "debian_device_install_prereqs() end"

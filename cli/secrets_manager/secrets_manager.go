@@ -77,7 +77,7 @@ func SecretList(org, credToUse, secretName string) {
 	var resp []byte
 	listQuery := func() int {
 		return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
-			[]int{200, 400, 401, 403, 404, 503}, &resp)
+			[]int{200, 400, 401, 403, 404, 503, 504}, &resp)
 	}
 	retCode := queryWithRetry(listQuery, 3, 1)
 
@@ -94,18 +94,18 @@ func SecretList(org, credToUse, secretName string) {
 	}
 
 	// parse and print the response
-	if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 503 {
+	if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 503 || retCode == 504 {
 		respString, _ := strconv.Unquote(string(resp))
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, respString)
 	} else if isSecretDirectory {
 		// list org/user secrets
-		if retCode == 200 {
+		if retCode == 404 || strings.EqualFold("null", string(resp)) {
+			// no secrets found in the organization or user's directory
+			fmt.Println("[]")
+		} else if retCode == 200 {
 			// list secrets
 			var secrets []string
 			printResponse(resp, &secrets)
-		} else if retCode == 404 {
-			// no secrets found in the organization or user's directory
-			fmt.Println("[]")
 		}
 	} else {
 		// secret name provided, exists/does not exist

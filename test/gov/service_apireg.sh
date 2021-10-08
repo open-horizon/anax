@@ -19,6 +19,12 @@ else
   CERT_VAR=""
 fi
 
+# check if the hub is all-in-1 management hub or not
+if [[ ${EXCH_APP_HOST} == *"://exchange-api:"* ]]; then
+  export REMOTE_HUB=0
+else
+  export REMOTE_HUB=1
+fi
 
 echo -e "Registering services"
 echo -e "PATTERN setting is $PATTERN"
@@ -676,7 +682,7 @@ hzn exchange service list -o IBM
 
 # ======================= Patterns that use top level services ======================
 # sns pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+if [ ${REMOTE_HUB} -eq 0 ]; then
   export MHI=120
   export CAS=30
 else
@@ -705,7 +711,7 @@ RES=$(cat $KEY_TEST_DIR/pattern_netspeed.json | curl -sLX POST $CERT_VAR --heade
 results "$RES"
 
 # sgps test pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+if [ ${REMOTE_HUB} -eq 0 ]; then
   MHI=90
   CAS=60
 else
@@ -754,7 +760,7 @@ echo -e "Register gps service pattern $VERS:"
 results "$RES"
 
 # shelm test pattern
-# if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+# if [ ${REMOTE_HUB} -eq 0 ]; then
 #   MHI=90
 #   CAS=60
 # else
@@ -807,7 +813,7 @@ if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" !
 else
 
 # susehello test pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+if [ ${REMOTE_HUB} -eq 0 ]; then
   MHI=90
   CAS=60
 else
@@ -866,7 +872,7 @@ fi
 #
 # The verify_sloc.sh script verifies that this service is running correctly.
 #
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+if [ ${REMOTE_HUB} -eq 0 ]; then
   export MHI=240
   export CAS=60
 else
@@ -893,7 +899,7 @@ RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: applicatio
 results "$RES"
 
 # weather pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+if [ ${REMOTE_HUB} -eq 0 ]; then
   MHI=90
   CAS=60
 else
@@ -971,7 +977,7 @@ echo -e "Register weather service pattern $VERS:"
 results "$RES"
 
 # k8s pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+if [ ${REMOTE_HUB} -eq 0 ]; then
   MHI=90
   CAS=60
 else
@@ -1027,7 +1033,7 @@ export LOCVERS2="2.0.7"
 export GPSVERS="1.0.0"
 export UHSVERS="1.0.0"
 export K8SVERS="1.0.0"
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+if [ ${REMOTE_HUB} -eq 0 ]; then
   export MHI_240=240
   export MHI_180=180
   export MHI_120=120

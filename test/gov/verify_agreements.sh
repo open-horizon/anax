@@ -20,7 +20,7 @@ function verifyAgreements() {
     fi
   fi
 
-  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8081/v1" ]; then
+  if [ ${REMOTE_HUB} -eq 0 ]; then
     TIMEOUT_MUL=1
   else
     TIMEOUT_MUL=3

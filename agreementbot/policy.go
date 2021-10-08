@@ -200,7 +200,7 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 		return
 	}
 
-	if glog.V(5)  {
+	if glog.V(5) {
 		glog.Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy OldPolicy: %v", oldPolicy)))
 		glog.Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy NewPolicy: %v", newPolicy)))
 	}

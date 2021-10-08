@@ -234,7 +234,7 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 	foundService := false
 	for _, objPol := range *updatedPolicies {
 
-		if glog.V(5) { 
+		if glog.V(5) {
 			glog.Infof(mmsLogString(fmt.Sprintf("Updated policy received %v", objPol)))
 		}
 
