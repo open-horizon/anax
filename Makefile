@@ -142,6 +142,8 @@ else ifeq ($(arch),ppc64el)
 	COMPILE_ARGS +=  GOARCH=ppc64le
 else ifeq ($(arch),s390x)
 	COMPILE_ARGS +=  GOARCH=s390x
+else ifeq ($(arch),riscv64)
+	COMPILE_ARGS +=  GOARCH=riscv64
 endif
 
 opsys ?= $(shell uname -s)
@@ -164,6 +166,8 @@ else ifeq ($(arch_local),ppc64el)
 	COMPILE_ARGS_LOCAL +=  GOARCH=ppc64le
 else ifeq ($(arch_local),s390x)
 	COMPILE_ARGS_LOCAL +=  GOARCH=s390x
+else ifeq ($(arch_local),riscv64)
+	COMPILE_ARGS_LOCAL +=  GOARCH=riscv64
 endif
 
 opsys_local ?= $(shell uname -s)
