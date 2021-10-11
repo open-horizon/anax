@@ -669,7 +669,7 @@ Environment Variables:
 
 	utilCmd := app.Command("util", msgPrinter.Sprintf("Utility commands."))
 	utilConfigConvCmd := utilCmd.Command("configconv | cfg", msgPrinter.Sprintf("Convert the configuration file from JSON format to a shell script.")).Alias("cfg").Alias("configconv")
-	utilConfigConvFile := utilConfigConvCmd.Flag("config-file", msgPrinter.Sprintf("The path of a configuration file to be converted. ")).Short('f').Required().ExistingFile()
+	utilConfigConvFile := utilConfigConvCmd.Flag("config-file", msgPrinter.Sprintf("The path of a configuration file to be converted. This flag can be omitted if it is running from a project directory created by 'hzn dev' command. In this case, the project configuration file hzn.json will be used.")).Short('f').ExistingFile()
 	utilSignCmd := utilCmd.Command("sign", msgPrinter.Sprintf("Sign the text in stdin. The signature is sent to stdout."))
 	utilSignPrivKeyFile := utilSignCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the stdin. ")).Short('k').Required().ExistingFile()
 	utilVerifyCmd := utilCmd.Command("verify | vf", msgPrinter.Sprintf("Verify that the signature specified via -s is a valid signature for the text in stdin.")).Alias("vf").Alias("verify")
