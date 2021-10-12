@@ -2,6 +2,7 @@ package cutil
 
 import (
 	"bufio"
+	"context"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
@@ -815,7 +816,7 @@ func GetClusterCountInfo() (float64, float64, float64, string, string, error) {
 	totalMem := float64(0)
 	cpu := float64(0)
 	arch := ""
-	nodes, err := client.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodes, err := client.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return 0, 0, 0, "", "", nil
 	}

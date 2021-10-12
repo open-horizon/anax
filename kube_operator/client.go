@@ -3,6 +3,7 @@ package kube_operator
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
@@ -275,7 +276,7 @@ func (c KubeClient) CreateConfigMap(envVars map[string]string, agId string, name
 		delete(envVars, "")
 	}
 	hznEnvConfigMap := corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-%s", HZN_ENV_VARS, agId)}, Data: envVars}
-	res, err := c.Client.CoreV1().ConfigMaps(namespace).Create(&hznEnvConfigMap)
+	res, err := c.Client.CoreV1().ConfigMaps(namespace).Create(context.Background(), &hznEnvConfigMap, metav1.CreateOptions{})
 	if err != nil {
 		return "", fmt.Errorf("Error: failed to create config map for %s: %v", agId, err)
 	}

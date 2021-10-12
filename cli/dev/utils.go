@@ -637,10 +637,7 @@ func startDependent(dir string,
 	if sId == "" {
 
 		// Make a new instance id the same way the runtime makes them.
-		id, err := uuid.NewV4()
-		if err != nil {
-			return nil, errors.New(msgPrinter.Sprintf("unable to generate instance ID: %v", err))
-		}
+		id := uuid.NewV4()
 		sId = cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Org, serviceDef.Version, id.String())
 	}
 
