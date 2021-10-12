@@ -91,7 +91,7 @@ DOCKER_EXCHDB_INAME ?= postgres
 ifeq ($(arch),ppc64le)
 	DOCKER_EXCHDB_TAG ?= 13.2
 else
-	DOCKER_EXCHDB_TAG ?= 9
+	DOCKER_EXCHDB_TAG ?= 13
 endif
 EXCHDB_USER := admin
 EXCHDB_PORT := 5432
