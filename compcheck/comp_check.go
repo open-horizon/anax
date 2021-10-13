@@ -66,7 +66,7 @@ type CompCheck struct {
 	NodeArch       string                         `json:"node_arch,omitempty"`
 	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
 	NodeOrg        string                         `json:"node_org,omitempty"`  // can be omitted if node_id is specified
-	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
+	NodePolicy     *exchangecommon.NodePolicy     `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
 	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
 	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
@@ -92,7 +92,7 @@ type CompCheck_NoAbstract struct {
 	NodeArch       string                         `json:"node_arch,omitempty"`
 	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
 	NodeOrg        string                         `json:"node_org,omitempty"`  // can be omitted if node_id is specified
-	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
+	NodePolicy     *exchangecommon.NodePolicy     `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
 	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
 	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
@@ -163,7 +163,7 @@ type CompCheckResource struct {
 	NodeArch       string                                   `json:"node_arch,omitempty"`
 	NodeType       string                                   `json:"node_type,omitempty"`
 	NodeOrg        string                                   `json:"node_org,omitempty"`
-	NodePolicy     *externalpolicy.ExternalPolicy           `json:"node_policy,omitempty"`
+	NodePolicy     *exchangecommon.NodePolicy               `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput                       `json:"node_user_input,omitempty"`
 	BusinessPolId  string                                   `json:"business_policy_id,omitempty"`
 	BusinessPolicy *businesspolicy.BusinessPolicy           `json:"business_policy,omitempty"`

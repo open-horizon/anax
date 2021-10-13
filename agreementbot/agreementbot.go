@@ -1409,7 +1409,7 @@ func (w *AgreementBotWorker) getServicePolicy(svcId string) (*externalpolicy.Ext
 		return nil, nil
 	} else {
 		extPolicy := servicePolicy.GetExternalPolicy()
-		return &extPolicy, nil
+		return extPolicy, nil
 	}
 }
 

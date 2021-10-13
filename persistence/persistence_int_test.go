@@ -57,8 +57,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 		}
 	}
 
-	illZ := "mycomp/http://illuminated.z/v/2"
-	illK := "mycomp/http://illuminated.k/v/2"
+	illZ := "http://illuminated.z/v/2"
+	illK := "http://illuminated.k/v/2"
 
 	misc := &UserInputAttributes{
 		Meta: &AttributeMeta{
@@ -92,7 +92,7 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	pub(creds, illK)
 
-	services, err := FindApplicableAttributes(testDb, "http://illuminated.k/v/2", "mycomp")
+	services, err := FindApplicableAttributes(testDb, "http://illuminated.k/v/2", "myorg")
 	if err != nil {
 		panic(err)
 	}

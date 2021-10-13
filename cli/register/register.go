@@ -50,7 +50,7 @@ func ReadUserInputFile(filePath string) *common.UserInputFile {
 }
 
 // read and verify a node policy file
-func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *externalpolicy.ExternalPolicy) {
+func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *exchangecommon.NodePolicy) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -85,9 +85,15 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	}
 
 	// read and verify the node policy if it specified
-	var nodePol externalpolicy.ExternalPolicy
+	var nodePol exchangecommon.NodePolicy
 	if nodepolicyFlag != "" {
 		ReadAndVerifyPolicFile(nodepolicyFlag, &nodePol)
+
+		// let the user aware of the new node policy format.
+		if nodePol.IsDeploymentEmpty() {
+			msgPrinter.Printf("Note: No properties and constraints are specified under 'deployment' attribute in the node policy file %v. The top level properties and constraints will be used.", nodepolicyFlag)
+			msgPrinter.Println()
+		}
 	}
 
 	// get the arch from anax
@@ -294,7 +300,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	if nodepolicyFlag != "" {
 		msgPrinter.Printf("Updating the node policy...")
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId+"/policy", cliutils.OrgAndCreds(org, nodeIdTok), []int{201}, nodePol, nil)
+		exchNodePol := exchange.ExchangeNodePolicy{NodePolicy: nodePol, NodePolicyVersion: exchangecommon.NODEPOLICY_VERSION_VERSION_2}
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId+"/policy", cliutils.OrgAndCreds(org, nodeIdTok), []int{201}, exchNodePol, nil)
 	}
 
 	// Initialize the Horizon device (node)

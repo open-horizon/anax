@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/eventlog"
-	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
-	"github.com/open-horizon/anax/producer"
 )
 
 // Each microservice def in the database has a policy generated for it, that needs to be re-generated and published back to the exchange.
@@ -42,40 +41,91 @@ func (w *GovernanceWorker) handleUpdatePolicy(cmd *UpdatePolicyCommand) {
 
 }
 
-// When node policy gets updated or deleted, all the agreements wil need
-// to be canceled so that new negotiation can start
-func (w *GovernanceWorker) handleNodePolicyUpdated() {
-	glog.V(5).Infof(logString(fmt.Sprintf("handling node policy changes")))
+// Handles node policy updated or deleted. The node policy contains 2 parts:
+// deployment and management.
+// ucDeployment -- the node policy change code for deployment.
+// ucManagement -- the node policy change code for management.
+// They are defined in the externalpolicy.ExternalPolicy.go (EP_COMPARE_*)
+func (w *GovernanceWorker) handleNodePolicyUpdated(ucDeployment int, ucManagement int) {
+	glog.V(5).Infof(logString(fmt.Sprintf("handling node policy changes, change code: %v, %v", ucDeployment, ucManagement)))
 
-	// get all the unarchived agreements
-	agreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()})
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve all the  from the database, error %v", err)))
+	// handle management policy updated/deleted
+	if ucManagement != externalpolicy.EP_COMPARE_NOCHANGE {
+		glog.V(3).Infof(logString(fmt.Sprintf("handling management node policy updates. change code: %v", ucManagement)))
+		w.handleNodePolicyUpdateForManagement(ucManagement)
+	}
+
+	// handle deployment policy updated/deleted
+	if ucDeployment != externalpolicy.EP_COMPARE_NOCHANGE {
+		glog.V(3).Infof(logString(fmt.Sprintf("handling deployment node policy updates. change code: %v", ucDeployment)))
+		w.handleNodePolicyUpdateForDeployment(ucDeployment)
+	}
+}
+
+// Handles the node policy changes for deployment.
+// The updateCode is the OR of
+//   EP_COMPARE_PROPERTY_CHANGED,
+//   EP_COMPARE_CONSTRAINT_CHANGED,
+//   EP_ALLOWPRIVILEGED_CHANGED
+// defined in externalpolicy/ExternalPolicy.go
+func (w *GovernanceWorker) handleNodePolicyUpdateForDeployment(updateCode int) {
+
+	// node policy deleted
+	if updateCode&externalpolicy.EP_COMPARE_DELETED == externalpolicy.EP_COMPARE_DELETED {
+		// cancel all agreements for the policy case
+		if w.devicePattern == "" {
+			w.pm.DeletePolicyByName(exchange.GetOrg(w.GetExchangeId()), policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
+			w.cancelAllAgreements()
+		}
 		return
 	}
 
-	for _, ag := range agreements {
-		agreementId := ag.CurrentAgreementId
-		if ag.AgreementTerminatedTime != 0 && ag.AgreementForceTerminatedTime == 0 {
-			glog.V(3).Infof(logString(fmt.Sprintf("skip agreement %v, it is already terminating", agreementId)))
-		} else {
-			glog.V(3).Infof(logString(fmt.Sprintf("ending the agreement: %v", agreementId)))
-
-			reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED)
-
-			eventlog.LogAgreementEvent(
-				w.db,
-				persistence.SEVERITY_INFO,
-				persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
-				persistence.EC_CANCEL_AGREEMENT,
-				ag)
-
-			w.cancelAgreement(agreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
-
-			// send the event to the container in case it has started the workloads.
-			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, agreementId, ag.GetDeploymentConfig())
-			// clean up microservice instances if needed
-			w.handleMicroserviceInstForAgEnded(agreementId, false)
+	// now handle the policy updated case, update the policy in policy manager
+	// for the non-pattern case
+	if w.devicePattern == "" {
+		// get the node policy
+		nodePolicy, err := persistence.FindNodePolicy(w.db)
+		if err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to read node policy from the local database. %v", err)))
+			eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+				persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_NODE_POL_FROM_DB, err.Error()),
+				persistence.EC_DATABASE_ERROR)
+			return
 		}
+
+		// get the deployment policy from the node policy now that the node policy
+		// containts both deployment and management policies.
+		var deploy_pol *externalpolicy.ExternalPolicy
+		if nodePolicy != nil {
+			deploy_pol = nodePolicy.GetDeploymentPolicy()
+		} else {
+			deploy_pol = nil
+		}
+
+		// add the node policy to the policy manager
+		newPol, err := policy.GenPolicyFromExternalPolicy(deploy_pol, policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
+		if err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
+			return
+		}
+		w.pm.UpdatePolicy(exchange.GetOrg(w.GetExchangeId()), newPol)
 	}
+
+	// If node's allowPrivileged built-in property is changed, cancel all agreements
+	if updateCode&externalpolicy.EP_ALLOWPRIVILEGED_CHANGED == externalpolicy.EP_ALLOWPRIVILEGED_CHANGED {
+		w.cancelAllAgreements()
+	}
+
+	// Let governAgreements() function handle the policy re-evaluation and the rest
+	// for other cases
+}
+
+// Handles the node policy changes for node management.
+// The updateCode is the OR of
+//   EP_COMPARE_PROPERTY_CHANGED,
+//   EP_COMPARE_CONSTRAINT_CHANGED,
+//   EP_COMPARE_DELETED,
+//   EP_ALLOWPRIVILEGED_CHANGED
+// defined in externalpolicy/ExternalPolicy.go
+func (w *GovernanceWorker) handleNodePolicyUpdateForManagement(updateCode int) {
 }

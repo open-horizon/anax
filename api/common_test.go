@@ -6,7 +6,6 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
-	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"os"
@@ -229,18 +228,18 @@ func getVariableServiceDefResolver(mUrl, mOrg, mVersion, mArch string, ui *excha
 var ExchangeNodePolicyLastUpdated = ""
 
 func getDummyPutNodePolicyHandler() exchange.PutNodePolicyHandler {
-	return func(deviceId string, ep *exchange.ExchangePolicy) (*exchange.PutDeviceResponse, error) {
+	return func(deviceId string, ep *exchangecommon.NodePolicy) (*exchange.PutDeviceResponse, error) {
 		ExchangeNodePolicyLastUpdated += "blah"
 		return nil, nil
 	}
 }
 
-func getDummyNodePolicyHandler(ep *externalpolicy.ExternalPolicy) exchange.NodePolicyHandler {
-	return func(deviceId string) (*exchange.ExchangePolicy, error) {
+func getDummyNodePolicyHandler(ep *exchangecommon.NodePolicy) exchange.NodePolicyHandler {
+	return func(deviceId string) (*exchange.ExchangeNodePolicy, error) {
 		if ep != nil {
-			return &exchange.ExchangePolicy{ExternalPolicy: *ep, LastUpdated: ExchangeNodePolicyLastUpdated}, nil
+			return &exchange.ExchangeNodePolicy{NodePolicy: *ep, LastUpdated: ExchangeNodePolicyLastUpdated}, nil
 		} else {
-			return &exchange.ExchangePolicy{ExternalPolicy: externalpolicy.ExternalPolicy{}, LastUpdated: ExchangeNodePolicyLastUpdated}, nil
+			return &exchange.ExchangeNodePolicy{NodePolicy: exchangecommon.NodePolicy{}, LastUpdated: ExchangeNodePolicyLastUpdated}, nil
 		}
 	}
 }

@@ -6,22 +6,28 @@ import (
 	"github.com/open-horizon/anax/i18n"
 )
 
+const (
+	// for node policy update state
+	EP_COMPARE_NOCHANGE           = 0x0000 // no change
+	EP_COMPARE_PROPERTY_CHANGED   = 0x0001 // properties changed
+	EP_COMPARE_CONSTRAINT_CHANGED = 0x0002 // constraints changed
+	EP_COMPARE_DELETED            = 0x0004 // deleted
+	EP_ALLOWPRIVILEGED_CHANGED    = 0x0008 // built-in node property openhorizon.allowPrivileged changed
+)
+
 // BusinessPolicy the external policy
 // swagger:model
 type ExternalPolicy struct {
-	Label       string `json:"label,omitempty"`
-	Description string `json:"description,omitempty"`
-
 	// The properties this node wishes to expose about itself. These properties can be referred to by constraint expressions in other policies,
 	// (e.g. service policy, model policy, business policy).
-	Properties PropertyList `json:"properties,omitempty"`
+	Properties PropertyList `json:"properties"`
 
 	// A textual expression indicating requirements on the other party in order to make an agreement.
-	Constraints ConstraintExpression `json:"constraints,omitempty"`
+	Constraints ConstraintExpression `json:"constraints"`
 }
 
 func (e ExternalPolicy) String() string {
-	return fmt.Sprintf("ExternalPolicy: Properties: %v, Constraints: %v, Label: %v, Description: %v", e.Properties, e.Constraints, e.Label, e.Description)
+	return fmt.Sprintf("Properties: %v, Constraints: %v", e.Properties, e.Constraints)
 }
 
 // This function validates the properties and constrains. It also updates the node's and service's
@@ -104,25 +110,83 @@ func (e *ExternalPolicy) MergeWith(newPol *ExternalPolicy, replaceExsiting bool)
 }
 
 // return a pointer to a copy of ExternalPolicy
-func (e *ExternalPolicy) DeepCopy() *ExternalPolicy {
-	var copyProp PropertyList
-	if e.Properties == nil {
-		copyProp = nil
-	} else {
-		copyProp = make(PropertyList, len(e.Properties))
-		copy(copyProp, e.Properties)
-	}
+func (e ExternalPolicy) DeepCopy() *ExternalPolicy {
 
-	var copyCons ConstraintExpression
-	if e.Constraints == nil {
-		copyCons = nil
-	} else {
-		copyCons = make(ConstraintExpression, len(e.Constraints))
-		copy(copyCons, e.Constraints)
-	}
-
-	copyE := ExternalPolicy{Properties: copyProp, Constraints: copyCons, Label: e.Label, Description: e.Description}
+	copyE := ExternalPolicy{Properties: CopyProperties(e.Properties), Constraints: CopyConstraints(e.Constraints)}
 
 	return &copyE
+}
 
+// compare two external policies. The result is the OR of the EP_COMPARE_*
+// constants defined in this file. newPol should not be nil.
+func (ep ExternalPolicy) CompareWith(newPol *ExternalPolicy) int {
+	// just in case
+	if newPol == nil {
+		return EP_COMPARE_PROPERTY_CHANGED & EP_COMPARE_CONSTRAINT_CHANGED
+	}
+
+	rc := EP_COMPARE_NOCHANGE
+
+	// check properties
+	if len(ep.Properties) != len(newPol.Properties) {
+		rc = rc | EP_COMPARE_PROPERTY_CHANGED
+	} else if len(ep.Properties) != 0 && !ep.Properties.IsSame(newPol.Properties) {
+		rc = rc | EP_COMPARE_PROPERTY_CHANGED
+	}
+
+	// check built-in property openhorizon.allowPrivileged
+	if rc&EP_COMPARE_PROPERTY_CHANGED != 0 {
+
+		// default value for PROP_NODE_PRIVILEGED is false
+		privileged1 := false
+		privileged2 := false
+
+		if ep.Properties != nil {
+			if prop, err := ep.Properties.GetProperty(PROP_NODE_PRIVILEGED); err == nil {
+				if priv, ok := prop.Value.(bool); ok {
+					privileged1 = priv
+				}
+			}
+		}
+		if newPol.Properties != nil {
+			if prop, err := newPol.Properties.GetProperty(PROP_NODE_PRIVILEGED); err == nil {
+				if priv, ok := prop.Value.(bool); ok {
+					privileged2 = priv
+				}
+			}
+		}
+
+		if privileged1 != privileged2 {
+			rc = rc | EP_ALLOWPRIVILEGED_CHANGED
+		}
+	}
+
+	// check constraints
+	if len(ep.Constraints) != len(newPol.Constraints) {
+		rc = rc | EP_COMPARE_CONSTRAINT_CHANGED
+	} else if len(ep.Constraints) != 0 && !ep.Constraints.IsSame(newPol.Constraints) {
+		rc = rc | EP_COMPARE_CONSTRAINT_CHANGED
+	}
+
+	return rc
+}
+
+// returns a copy of the given PropertyList
+func CopyProperties(prop PropertyList) PropertyList {
+	if prop == nil {
+		return nil
+	}
+	copyProp := make(PropertyList, len(prop))
+	copy(copyProp, prop)
+	return copyProp
+}
+
+// returns a copy of the given ConstraintExpression
+func CopyConstraints(constraints ConstraintExpression) ConstraintExpression {
+	if constraints == nil {
+		return nil
+	}
+	copyConstraints := make([]string, len(constraints))
+	copy(copyConstraints, constraints)
+	return copyConstraints
 }

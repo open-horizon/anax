@@ -340,11 +340,13 @@ func NewLoadContainerMessage(id EventId, lc *ContainerLaunchContext) *LoadContai
 
 // This event indicates that something happened with a node policy.
 type NodePolicyMessage struct {
-	event Event
+	event         Event
+	uc_deployment int // node policy updated code for deployment
+	uc_management int // node policy updated code for management
 }
 
 func (e NodePolicyMessage) String() string {
-	return fmt.Sprintf("event: %v", e.event)
+	return fmt.Sprintf("event: %v, uc_deployment %v, uc_management: %v", e.event, e.uc_deployment, e.uc_management)
 }
 
 func (e NodePolicyMessage) ShortString() string {
@@ -355,12 +357,22 @@ func (e NodePolicyMessage) Event() Event {
 	return e.event
 }
 
-func NewNodePolicyMessage(id EventId) *NodePolicyMessage {
+func (e NodePolicyMessage) GetUpdatedCodeForDepl() int {
+	return e.uc_deployment
+}
+
+func (e NodePolicyMessage) GetUpdatedCodeForMgmt() int {
+	return e.uc_management
+}
+
+func NewNodePolicyMessage(id EventId, ucDeploy int, ucManage int) *NodePolicyMessage {
 
 	return &NodePolicyMessage{
 		event: Event{
 			Id: id,
 		},
+		uc_deployment: ucDeploy,
+		uc_management: ucManage,
 	}
 }
 

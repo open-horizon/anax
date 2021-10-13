@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangesync"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -31,7 +32,6 @@ const (
 	EL_AG_START_ADVERTISE_POL                    = "Start policy advertising with the Exchange for service %v/%v."
 	EL_AG_UNABLE_ADVERTISE_POL                   = "Unable to advertise policies with Exchange for service %v/%v, error: %v"
 	EL_AG_COMPLETE_ADVERTISE_POL                 = "Complete policy advertising with the Exchange for service %v/%v."
-	EL_AG_UNABLE_READ_NODE_POL_FROM_DB           = "unable to read node policy from the local database. %v"
 	EL_AG_UNABLE_READ_NODE_FROM_DB               = "Unable to read node object from the local database. %v"
 	EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH         = "Unable to sync the local node policy with the Exchange copy. Error: %v"
 	EL_AG_NODE_POL_SYNCED_WITH_EXCH              = "Node policy updated with the Exchange copy: %v"
@@ -59,7 +59,6 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_AG_START_ADVERTISE_POL)
 	msgPrinter.Sprintf(EL_AG_UNABLE_ADVERTISE_POL)
 	msgPrinter.Sprintf(EL_AG_COMPLETE_ADVERTISE_POL)
-	msgPrinter.Sprintf(EL_AG_UNABLE_READ_NODE_POL_FROM_DB)
 	msgPrinter.Sprintf(EL_AG_UNABLE_READ_NODE_FROM_DB)
 	msgPrinter.Sprintf(EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH)
 	msgPrinter.Sprintf(EL_AG_NODE_POL_SYNCED_WITH_EXCH)
@@ -486,15 +485,6 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			w.patchNodeKey()
 		}
 
-	case *NodePolicyChangedCommand:
-		cmd, _ := command.(*NodePolicyChangedCommand)
-		switch cmd.Msg.Event().Id {
-		case events.UPDATE_POLICY:
-			w.NodePolicyUpdated()
-		case events.DELETED_POLICY:
-			w.NodePolicyDeleted()
-		}
-
 	case *NodeChangeCommand:
 		w.checkNodeChanges()
 
@@ -552,8 +542,18 @@ func (w *AgreementWorker) syncOnInit() error {
 	if nodePolicy, err := persistence.FindNodePolicy(w.db); err != nil {
 		return errors.New(logString(fmt.Sprintf("unable to read node policy from the local database. %v", err)))
 	} else if nodePolicy != nil {
+
+		// get the deployment policy from the node policy now that the node policy
+		// containts both deployment and management policies.
+		var deploy_pol *externalpolicy.ExternalPolicy
+		if nodePolicy != nil {
+			deploy_pol = nodePolicy.GetDeploymentPolicy()
+		} else {
+			deploy_pol = nil
+		}
+
 		// add the node policy to the policy manager
-		newPolicy, err := policy.GenPolicyFromExternalPolicy(nodePolicy, policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
+		newPolicy, err := policy.GenPolicyFromExternalPolicy(deploy_pol, policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
 		if err != nil {
 			return errors.New(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
 		}

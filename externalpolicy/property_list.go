@@ -107,6 +107,10 @@ func (p PropertyList) ShortString() string {
 }
 
 func (p PropertyList) IsSame(compare PropertyList) bool {
+	if len(p) != len(compare) {
+		return false
+	}
+
 	for _, prop := range p {
 		found := false
 		for _, compareProp := range compare {

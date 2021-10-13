@@ -377,11 +377,11 @@ func createEnvVarMap(agreementId string,
 	byValueAttrs := makeByValueAttributes(attrs)
 
 	// Get the node policy info
-	nodePolicy := externalpolicy.ExternalPolicy{}
+	nodePolicy := exchangecommon.NodePolicy{}
 	cliutils.HorizonGet("node/policy", []int{200}, &nodePolicy, true)
 	// Fourth, convert all attributes to system env vars.
 	var cerr error
-	envvars, cerr = attrConverter(byValueAttrs, envvars, config.ENVVAR_PREFIX, cw.Config.Edge.DefaultServiceRegistrationRAM, &nodePolicy, false)
+	envvars, cerr = attrConverter(byValueAttrs, envvars, config.ENVVAR_PREFIX, cw.Config.Edge.DefaultServiceRegistrationRAM, nodePolicy.GetDeploymentPolicy(), false)
 	if cerr != nil {
 		return nil, errors.New(msgPrinter.Sprintf("global attribute conversion error: %v", cerr))
 	}

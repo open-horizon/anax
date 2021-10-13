@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/i18n"
@@ -146,25 +147,36 @@ func Test_processBusinessPolicy(t *testing.T) {
 
 func Test_processNodePolicy(t *testing.T) {
 	// test with id
-	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode", nil, nil); err != nil {
+	extPol := createExternalPolicy(map[string]string{"prop3": "val3"}, []string{"a==b"})
+	extPol_Deploy := createExternalPolicy(map[string]string{"prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"})
+	extPol_Manage := createExternalPolicy(map[string]string{"prop5": "some value5"}, []string{"c==d"})
+
+	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage), "myorg/mynode", nil, nil); err != nil {
 		t.Errorf("processNodePolicy should not have returned error but got: %v", err)
 	} else if pPolicy == nil {
 		t.Errorf("processNodePolicy should have converted the internal policy but did not")
 	} else if nPolicy == nil {
 		t.Errorf("processNodePolicy should have return a node policy but not.")
-	} else if len(nPolicy.Properties) != 2 {
-		t.Errorf("There should be 2 property in node policy but got: %v", len(nPolicy.Properties))
-	} else if len(nPolicy.Constraints) != 2 {
-		t.Errorf("There should be 2 contraints in node policy but got: %v", len(nPolicy.Constraints))
+	} else if len(nPolicy.Properties) != 1 {
+		t.Errorf("There should be 1 property in node policy but got: %v", len(nPolicy.Properties))
+	} else if len(nPolicy.Deployment.Properties) != 1 {
+		t.Errorf("There should be 1 deployment property in node policy but got: %v", len(nPolicy.Deployment.Properties))
+	} else if len(nPolicy.Management.Properties) != 1 {
+		t.Errorf("There should be 1 management property in node policy but got: %v", len(nPolicy.Management.Properties))
+	} else if len(nPolicy.Constraints) != 1 {
+		t.Errorf("There should be 1 contraints in node policy but got: %v", len(nPolicy.Constraints))
+	} else if len(nPolicy.Management.Constraints) != 1 {
+		t.Errorf("There should be 1 management contraints in node policy but got: %v", len(nPolicy.Management.Constraints))
 	} else if len(pPolicy.Properties) != 2 {
-		t.Errorf("There should be 2 property in internal policy but got: %v", len(pPolicy.Properties))
+		t.Errorf("There should be 2 properties in internal policy but got: %v", len(pPolicy.Properties))
 	} else if len(pPolicy.Constraints) != 2 {
 		t.Errorf("There should be 2 contraints in internal policy but got: %v", len(pPolicy.Constraints))
 	}
 
 	// test with pol
-	nodePolicy := createExternalPolicy(map[string]string{"prop3": "val3", "prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""})
-	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "", nodePolicy, nil); err != nil {
+	extNPol := createExternalPolicy(map[string]string{"prop3": "val3", "prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""})
+	nodePolicy := exchangecommon.NodePolicy{ExternalPolicy: *extNPol}
+	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage), "", &nodePolicy, nil); err != nil {
 		t.Errorf("processNodePolicy should not have returned error but got: %v", err)
 	} else if pPolicy == nil {
 		t.Errorf("processNodePolicy should have converted the internal policy but did not")
@@ -181,7 +193,7 @@ func Test_processNodePolicy(t *testing.T) {
 	}
 
 	// test no id, no pol.
-	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "", nil, nil); err == nil {
+	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage), "", nil, nil); err == nil {
 		t.Errorf("processNodePolicy should have returned error but not")
 	} else if !strings.Contains(err.Error(), "Neither node policy nor node id is specified.") {
 		t.Errorf("processNodePolicy returned wrong error message: %v", err)
@@ -192,7 +204,7 @@ func Test_processNodePolicy(t *testing.T) {
 	}
 
 	// test with id and pol
-	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode", nodePolicy, nil); err != nil {
+	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage), "myorg/mynode", &nodePolicy, nil); err != nil {
 		t.Errorf("processNodePolicy should not have returned error but got: %v", err)
 	} else if pPolicy == nil {
 		t.Errorf("processNodePolicy should have converted the internal policy but did not")
@@ -240,9 +252,13 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 	sId2 := cutil.FormExchangeIdForService(svcUrl, svcVersion2, svcArch)
 	sId2 = fmt.Sprintf("%v/%v", svcOrg, sId2)
 
+	extPol := createExternalPolicy(map[string]string{"prop3": "val3"}, []string{"a==b"})
+	extPol_Deploy := createExternalPolicy(map[string]string{"prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"})
+	extPol_Manage := createExternalPolicy(map[string]string{"prop5": "some value5"}, []string{"c==d"})
+
 	// if checkAll is true, it returns compaitble entry for each service versions defined in ap for the output reason map.
 	if compOutput, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -260,7 +276,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 
 	// if checkAll is flase, it only returns one compaitble entry for the output reason map.
 	if compOutput, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -284,7 +300,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		ServicePolicy:  nil,
 	}
 	if _, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -304,7 +320,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		ServicePolicy:  nil,
 	}
 	if compOutput, err := policyCompatible(getDeviceHandler("arm64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -353,7 +369,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 	sId5 := cutil.FormExchangeIdForService(svcUrl, "2.0.1", "arm64")
 	sId5 = fmt.Sprintf("%v/%v", svcOrg, sId5)
 	if compOutput, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler(service2, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(services), getServiceDefResolverHandler(),
@@ -388,14 +404,15 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion1}, businesspolicy.WorkloadChoice{Version: svcVersion2}},
 	}
 
-	nodePolicy := createExternalPolicy(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"})
+	extPol := createExternalPolicy(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"})
+	nodePolicy := exchangecommon.NodePolicy{ExternalPolicy: *extPol}
 	servicePolicy := createExternalPolicy(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""})
 	businessPolicy := createBusinessPolicy(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""})
 
 	input0 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
-		NodePolicy:     nodePolicy,
+		NodePolicy:     &nodePolicy,
 		BusinessPolId:  "",
 		BusinessPolicy: businessPolicy,
 		ServicePolicy:  servicePolicy,
@@ -409,7 +426,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 
 	// compatible
 	if compOutput, err := policyCompatible(getDeviceHandler(""),
-		getNodePolicyHandler(map[string]string{}, []string{}),
+		getNodePolicyHandler(externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}),
 		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{}, []string{}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -430,7 +447,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 	err_string := "Service does not have cluster deployment configuration for node type 'cluster'"
 	// compatible
 	if compOutput, err := policyCompatible(getDeviceHandler(""),
-		getNodePolicyHandler(map[string]string{}, []string{}),
+		getNodePolicyHandler(externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}),
 		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{}, []string{}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -452,14 +469,14 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 	input1 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
-		NodePolicy:     nodePolicy,
+		NodePolicy:     &nodePolicy,
 		BusinessPolId:  "",
 		BusinessPolicy: businessPolicy,
 		ServicePolicy:  servicePolicy,
 		Service:        []common.AbstractServiceFile{&serviceDef1, &serviceDef2},
 	}
 	if compOutput, err := policyCompatible(getDeviceHandler(""),
-		getNodePolicyHandler(map[string]string{}, []string{}),
+		getNodePolicyHandler(externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}),
 		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{}, []string{}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -482,7 +499,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 	input1_1 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
-		NodePolicy:     nodePolicy,
+		NodePolicy:     &nodePolicy,
 		BusinessPolId:  "",
 		BusinessPolicy: businessPolicy,
 		ServicePolicy:  servicePolicy,
@@ -490,7 +507,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		NodeType:       "device",
 	}
 	if compOutput, err := policyCompatible(getDeviceHandler(""),
-		getNodePolicyHandler(map[string]string{}, []string{}),
+		getNodePolicyHandler(externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}),
 		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{}, []string{}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -507,17 +524,19 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 	}
 
 	// in compatible
-	nodePolicy2 := createExternalPolicy(map[string]string{"prop3": "val3", "prop4": "some other value"}, []string{"prop1 == val1", "prop5 == val5"})
+	extPol2 := createExternalPolicy(map[string]string{"prop3": "val3", "prop4": "some other value"}, []string{"prop1 == val1", "prop5 == val5"})
+	nodePolicy2 := exchangecommon.NodePolicy{ExternalPolicy: *extPol2}
+
 	input2 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
-		NodePolicy:     nodePolicy2,
+		NodePolicy:     &nodePolicy2,
 		BusinessPolId:  "",
 		BusinessPolicy: businessPolicy,
 		ServicePolicy:  servicePolicy,
 	}
 	if compOutput, err := policyCompatible(getDeviceHandler(""),
-		getNodePolicyHandler(map[string]string{}, []string{}),
+		getNodePolicyHandler(externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}),
 		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{}, []string{}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -544,7 +563,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 	input3 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
-		NodePolicy:     nodePolicy,
+		NodePolicy:     &nodePolicy,
 		BusinessPolId:  "",
 		BusinessPolicy: businessPolicy2,
 		ServicePolicy:  nil,
@@ -565,7 +584,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 	sId6 := cutil.FormExchangeIdForService(svcUrl, svcVersion3, svcArch2)
 	sId6 = fmt.Sprintf("%v/%v", svcOrg, sId6)
 	if compOutput, err := policyCompatible(getDeviceHandler(""),
-		getNodePolicyHandler(map[string]string{}, []string{}),
+		getNodePolicyHandler(externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}),
 		getBusinessPolicyHandler(service2, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(services), getServiceDefResolverHandler(),
@@ -588,13 +607,13 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 	input4 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "amd64",
-		NodePolicy:     nodePolicy,
+		NodePolicy:     &nodePolicy,
 		BusinessPolId:  "",
 		BusinessPolicy: businessPolicy2,
 		ServicePolicy:  nil,
 	}
 	if compOutput, err := policyCompatible(getDeviceHandler(""),
-		getNodePolicyHandler(map[string]string{}, []string{}),
+		getNodePolicyHandler(externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}, externalpolicy.ExternalPolicy{}),
 		getBusinessPolicyHandler(service2, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(services), getServiceDefResolverHandler(),
@@ -636,6 +655,10 @@ func Test_policyCompatible_Error(t *testing.T) {
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion1}, businesspolicy.WorkloadChoice{Version: svcVersion2}},
 	}
 
+	extPol := createExternalPolicy(map[string]string{"prop3": "val3"}, []string{"a==b"})
+	extPol_Deploy := createExternalPolicy(map[string]string{"prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"})
+	extPol_Manage := createExternalPolicy(map[string]string{"prop5": "some value5"}, []string{"c==d"})
+
 	// error getting node policy from the exchange
 	if _, err := policyCompatible(getDeviceHandler("amd64"),
 		getNodePolicyHandler_Error(),
@@ -650,7 +673,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 
 	// error getting business policy from the exchange
 	if _, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler_Error(),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -662,7 +685,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 
 	// error getting service policy from the exchange
 	if _, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler_Error(),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -673,7 +696,8 @@ func Test_policyCompatible_Error(t *testing.T) {
 	}
 
 	// error getting services from the exchange
-	nodePolicy := createExternalPolicy(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"})
+	extPol2 := createExternalPolicy(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"})
+	nodePolicy := exchangecommon.NodePolicy{ExternalPolicy: *extPol2}
 	service2 := businesspolicy.ServiceRef{
 		Name:            svcUrl,
 		Org:             svcOrg,
@@ -683,13 +707,13 @@ func Test_policyCompatible_Error(t *testing.T) {
 	input2 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
-		NodePolicy:     nodePolicy,
+		NodePolicy:     &nodePolicy,
 		BusinessPolId:  "myorg/mybp",
 		BusinessPolicy: nil,
 		ServicePolicy:  nil,
 	}
 	if compOutput, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler(service2, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler_Error(), getServiceDefResolverHandler(),
@@ -708,8 +732,9 @@ func Test_policyCompatible_Error(t *testing.T) {
 		BusinessPolicy: nil,
 		ServicePolicy:  nil,
 	}
+	extPol_Deploy_Error := createExternalPolicy(map[string]string{"prop4": "some value"}, []string{"prop1 == val1", "prop5 !&&= val5"})
 	if _, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 !&&= val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy_Error, *extPol_Manage),
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 !&& \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -728,7 +753,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		ServicePolicy:  nil,
 	}
 	if _, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 !&& \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -747,7 +772,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		ServicePolicy:  nil,
 	}
 	if _, err := policyCompatible(getDeviceHandler("amd64"),
-		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
+		getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage),
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 &&%% \"some value\""}),
 		getSelectedServicesHandler(nil), getServiceDefResolverHandler(),
@@ -773,12 +798,16 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion}},
 	}
 
+	extPol := createExternalPolicy(map[string]string{"prop3": "val3"}, []string{"a==b"})
+	extPol_Deploy := createExternalPolicy(map[string]string{"prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"})
+	extPol_Manage := createExternalPolicy(map[string]string{"prop5": "some value5"}, []string{"c==d"})
+
 	_, intBPol, err := GetBusinessPolicy(getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), "myorg/mybp", true, msgPrinter)
 	if err != nil {
 		t.Errorf("GetBusinessPolicy should have returned nil error but got: %v", err)
 	}
 
-	_, intNPol, err := GetNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode", msgPrinter)
+	_, intNPol, err := GetNodePolicy(getNodePolicyHandler(*extPol, *extPol_Deploy, *extPol_Manage), "myorg/mynode", msgPrinter)
 	if err != nil {
 		t.Errorf("GetNodePolicy should have returned nil error but got: %v", err)
 	}
@@ -807,7 +836,8 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 		t.Errorf("The consumerPolicy should not have 2 constraints but got %v", len(consumerPolicy.Constraints))
 	}
 
-	_, intNPol1, err := GetNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some other value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode", msgPrinter)
+	extPol_Deploy_Other := createExternalPolicy(map[string]string{"prop4": "some other value"}, []string{"prop1 == val1", "prop5 == val5"})
+	_, intNPol1, err := GetNodePolicy(getNodePolicyHandler(*extPol, *extPol_Deploy_Other, *extPol_Manage), "myorg/mynode", msgPrinter)
 	if err != nil {
 		t.Errorf("GetNodePolicy should have returned nil error but got: %v", err)
 	}
@@ -1192,20 +1222,15 @@ func getDeviceHandler_Error() exchange.DeviceHandler {
 	}
 }
 
-func getNodePolicyHandler(p map[string]string, c []string) exchange.NodePolicyHandler {
-	return func(deviceId string) (*exchange.ExchangePolicy, error) {
-		propList := new(externalpolicy.PropertyList)
-		for k, v := range p {
-			propList.Add_Property(externalpolicy.Property_Factory(k, v), false)
-		}
-
-		nodePol := createExternalPolicy(p, c)
-		return &exchange.ExchangePolicy{*nodePol, "11-14-2019:03:45"}, nil
+func getNodePolicyHandler(extPol, extPol_Deploy, extPol_Manage externalpolicy.ExternalPolicy) exchange.NodePolicyHandler {
+	return func(deviceId string) (*exchange.ExchangeNodePolicy, error) {
+		nodePol := exchangecommon.NodePolicy{ExternalPolicy: extPol, Deployment: extPol_Deploy, Management: extPol_Manage}
+		return &exchange.ExchangeNodePolicy{NodePolicy: nodePol, LastUpdated: "11-14-2019:03:45"}, nil
 	}
 }
 
 func getNodePolicyHandler_Error() exchange.NodePolicyHandler {
-	return func(deviceId string) (*exchange.ExchangePolicy, error) {
+	return func(deviceId string) (*exchange.ExchangeNodePolicy, error) {
 		return nil, fmt.Errorf("error getting node policy for %v", deviceId)
 	}
 }
@@ -1228,17 +1253,18 @@ func getBusinessPolicyHandler_Error() exchange.BusinessPoliciesHandler {
 }
 
 func getServicePolicyHandler(p map[string]string, c []string) exchange.ServicePolicyHandler {
-	return func(sUrl string, sOrg string, sVersion string, sArch string) (*exchange.ExchangePolicy, string, error) {
-		servicePol := createExternalPolicy(p, c)
+	return func(sUrl string, sOrg string, sVersion string, sArch string) (*exchange.ExchangeServicePolicy, string, error) {
+		extPol := createExternalPolicy(p, c)
+		servicePol := exchangecommon.ServicePolicy{ExternalPolicy: *extPol, Label: "servicepol", Description: "my service policy"}
 
 		sId := cutil.FormExchangeIdForService(sUrl, sVersion, sArch)
 		sId = fmt.Sprintf("%v/%v", sOrg, sId)
-		return &exchange.ExchangePolicy{*servicePol, "11-14-2019:03:45"}, sId, nil
+		return &exchange.ExchangeServicePolicy{ServicePolicy: servicePol, LastUpdated: "11-14-2019:03:45"}, sId, nil
 	}
 }
 
 func getServicePolicyHandler_Error() exchange.ServicePolicyHandler {
-	return func(sUrl string, sOrg string, sVersion string, sArch string) (*exchange.ExchangePolicy, string, error) {
+	return func(sUrl string, sOrg string, sVersion string, sArch string) (*exchange.ExchangeServicePolicy, string, error) {
 		return nil, "", fmt.Errorf("error getting service for %v/%v", sOrg, sUrl)
 	}
 }

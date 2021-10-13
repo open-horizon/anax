@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/i18n"
@@ -517,14 +518,14 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", svcorg, service))
 	}
-	var policy exchange.ExchangePolicy
+	var policy exchange.ExchangeServicePolicy
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services"+cliutils.AddSlash(service)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
 
 	buf := new(bytes.Buffer)
 	enc := json.NewEncoder(buf)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", cliutils.JSON_INDENT)
-	err := enc.Encode(policy.GetExternalPolicy())
+	err := enc.Encode(policy.ServicePolicy)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service listpolicy' output: %v", err))
 	}
@@ -547,14 +548,14 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 
 	// Read in the policy metadata
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
-	var policyFile externalpolicy.ExternalPolicy
+	var policyFile exchangecommon.ServicePolicy
 	err := json.Unmarshal(newBytes, &policyFile)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", jsonFilePath, err))
 	}
 
 	//Check the policy file format
-	err = policyFile.ValidateAndNormalize()
+	err = policyFile.GetExternalPolicy().ValidateAndNormalize()
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect policy format in file %s: %v", jsonFilePath, err))
 	}

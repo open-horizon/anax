@@ -54,8 +54,8 @@ func (c *CacheEntry) Copy() interface{} {
 		resourceCopy = ServiceDockerAuth(c.Resource.([]ImageDockerAuth)).DeepCopy()
 	case Device:
 		resourceCopy = *(c.Resource.(Device)).DeepCopy()
-	case ExchangePolicy:
-		exchPol := c.Resource.(ExchangePolicy)
+	case ExchangeNodePolicy:
+		exchPol := c.Resource.(ExchangeNodePolicy)
 		resourceCopy = *(&exchPol).DeepCopy()
 	default:
 		resourceCopy = c.Resource
@@ -74,10 +74,10 @@ func GetNodeFromCache(nodeOrg string, nodeId string) *Device {
 }
 
 // GetNodePolicyFromCache returns the node policy from the exchange cache if it is present, or nil if it is not
-func GetNodePolicyFromCache(nodeOrg string, nodeId string) *ExchangePolicy {
+func GetNodePolicyFromCache(nodeOrg string, nodeId string) *ExchangeNodePolicy {
 	nodePol := GetResourceFromCache(NodeCacheMapKey(nodeOrg, nodeId), NODE_POL_TYPE_CACHE, 0)
 
-	if typedNodePol, ok := nodePol.(ExchangePolicy); ok {
+	if typedNodePol, ok := nodePol.(ExchangeNodePolicy); ok {
 		return &typedNodePol
 	}
 
@@ -105,10 +105,10 @@ func (s ServiceMap) DeepCopy() map[string]ServiceDefinition {
 }
 
 // GetServicePolicyFromCache returns the service policy from the exchange cache if it is present, or nil if it is not
-func GetServicePolicyFromCache(sId string) *ExchangePolicy {
+func GetServicePolicyFromCache(sId string) *ExchangeServicePolicy {
 	svcPol := GetResourceFromCache(sId, SVC_POL_TYPE_CACHE, 0)
 
-	if typedSvcPol, ok := svcPol.(ExchangePolicy); ok {
+	if typedSvcPol, ok := svcPol.(ExchangeServicePolicy); ok {
 		return &typedSvcPol
 	}
 	return nil

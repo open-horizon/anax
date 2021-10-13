@@ -15,7 +15,7 @@ func GetSingleExchangeNodeManagementPolicy(ec ExchangeContext, policyOrg string,
 	var resp interface{}
 	resp = new(exchangecommon.ExchangeNodeManagementPolicy)
 
-	targetURL := fmt.Sprintf("%vorgs/%v/%v/%v", ec.GetExchangeURL, policyOrg, NMPExchangeResource, policyName)
+	targetURL := fmt.Sprintf("%vorgs/%v/%v/%v", ec.GetExchangeURL(), policyOrg, NMPExchangeResource, policyName)
 
 	err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp)
 	if err != nil {
@@ -38,7 +38,7 @@ func GetAllExchangeNodeManagementPolicy(ec ExchangeContext, policyOrg string) (*
 	var resp interface{}
 	resp = new(ExchangeNodeManagementPolicyResponse)
 
-	targetURL := fmt.Sprintf("%vorgs/%v/%v", ec.GetExchangeURL, policyOrg, NMPExchangeResource)
+	targetURL := fmt.Sprintf("%vorgs/%v/%v", ec.GetExchangeURL(), policyOrg, NMPExchangeResource)
 
 	err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp)
 	if err != nil {

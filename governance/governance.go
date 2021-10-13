@@ -14,6 +14,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
@@ -383,6 +384,9 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewNodeErrorChangeCommand()
 		case events.CHANGE_SERVICE_TYPE:
 			w.Commands <- NewServiceChangeCommand()
+			// no need to check CHANGE_NODE_POLICY_TYPE because
+			// agreement.go handles it and send out a
+			// NodePolicyMessage(events.UPDATE_POLICY) event
 		}
 
 	default: //nothing
@@ -397,16 +401,16 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 // cancel the agreement and allow the agbots to re-make them if necessary.
 func (w *GovernanceWorker) governAgreements() {
 
-	glog.V(3).Infof(logString(fmt.Sprintf("governing pending agreements")))
+	glog.V(3).Infof(logString(fmt.Sprintf("governing agreements")))
 
 	// Create a new filter for unfinalized agreements
-	notYetFinalFilter := func() persistence.EAFilter {
+	notTerminatedFilter := func() persistence.EAFilter {
 		return func(a persistence.EstablishedAgreement) bool {
 			return a.AgreementCreationTime != 0 && a.AgreementTerminatedTime == 0
 		}
 	}
 
-	if establishedAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), notYetFinalFilter()}); err != nil {
+	if establishedAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), notTerminatedFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database. Error: %v", err)))
 	} else {
 
@@ -1360,7 +1364,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		cmd, _ := command.(*NodePolicyChangedCommand)
 		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
 
-		w.handleNodePolicyUpdated()
+		w.handleNodePolicyUpdated(cmd.Msg.GetUpdatedCodeForDepl(), cmd.Msg.GetUpdatedCodeForMgmt())
 
 	case *NodeUserInputChangedCommand:
 		cmd, _ := command.(*NodeUserInputChangedCommand)
@@ -1783,7 +1787,17 @@ func (w *GovernanceWorker) GetServicePreference(url string, org string, tcPolicy
 	} else {
 		isCluster = exchDevice.IsEdgeCluster()
 	}
-	envAdds, err = persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM, nodePol, isCluster)
+
+	// get the deployment policy from the node policy now that the node policy
+	// containts both deployment and management policies.
+	var deploy_pol *externalpolicy.ExternalPolicy
+	if nodePol != nil {
+		deploy_pol = nodePol.GetDeploymentPolicy()
+	} else {
+		deploy_pol = nil
+	}
+
+	envAdds, err = persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM, deploy_pol, isCluster)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to convert attrributes to env map for service %v/%v. Err: %v", org, url, err)
 	}
@@ -1992,4 +2006,43 @@ func (w *GovernanceWorker) agreementRequiresService(ag persistence.EstablishedAg
 	}
 
 	return false, nil
+}
+
+func (w *GovernanceWorker) cancelAllAgreements() {
+	glog.V(5).Infof(logString("Canceling all agreements..."))
+
+	// get all the unarchived agreements
+	agreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()})
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve all the  from the database, error %v", err)))
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_UNARCHIVED_AG_FROM_DB, err.Error()),
+			persistence.EC_DATABASE_ERROR)
+		return
+	}
+
+	for _, ag := range agreements {
+		agreementId := ag.CurrentAgreementId
+		if ag.AgreementTerminatedTime != 0 && ag.AgreementForceTerminatedTime == 0 {
+			glog.V(3).Infof(logString(fmt.Sprintf("skip agreement %v, it is already terminating", agreementId)))
+		} else {
+			glog.V(3).Infof(logString(fmt.Sprintf("ending the agreement: %v", agreementId)))
+
+			reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED)
+
+			eventlog.LogAgreementEvent(
+				w.db,
+				persistence.SEVERITY_INFO,
+				persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+				persistence.EC_CANCEL_AGREEMENT,
+				ag)
+
+			w.cancelAgreement(agreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
+
+			// send the event to the container in case it has started the workloads.
+			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, agreementId, ag.GetDeploymentConfig())
+			// clean up microservice instances if needed
+			w.handleMicroserviceInstForAgEnded(agreementId, false)
+		}
+	}
 }

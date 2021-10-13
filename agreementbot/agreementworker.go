@@ -583,10 +583,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 			svcDefResolverHandler := exchange.GetHTTPServiceDefResolverHandler(b)
 			patternHandler := exchange.GetHTTPExchangePatternHandler(b)
-			nodePolHandler := exchange.GetHTTPNodePolicyHandler(b)
 			cc := compcheck.CompCheck{NodeId: wi.Device.Id, PatternId: wi.ConsumerPolicy.PatternId, Service: []common.AbstractServiceFile{&topSvcDef}}
 			resourceCC := compcheck.CompCheckResource{DepServices: depServices, NodeArch: exchangeDev.Arch}
-			ccOutput, err := compcheck.EvaluatePatternPrivilegeCompatability(svcDefResolverHandler, patternHandler, nodePolHandler, &cc, &resourceCC, msgPrinter, false, false)
+			ccOutput, err := compcheck.EvaluatePatternPrivilegeCompatability(svcDefResolverHandler, patternHandler, nodePolicyHandler, &cc, &resourceCC, msgPrinter, false, false)
 			// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
 			// device requirements not being met. This will cause agreement cancellation to try the highest priority workload again
 			// even if retries have been disabled.

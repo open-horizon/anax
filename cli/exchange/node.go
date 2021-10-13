@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/i18n"
@@ -396,7 +397,7 @@ func NodeListPolicy(org string, credToUse string, node string) {
 	}
 
 	// list policy
-	var policy exchange.ExchangePolicy
+	var policy exchange.ExchangeNodePolicy
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
 
 	// display
@@ -418,7 +419,7 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 
 	// Read in the policy metadata
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
-	var policyFile externalpolicy.ExternalPolicy
+	var policyFile exchangecommon.NodePolicy
 	err := json.Unmarshal(newBytes, &policyFile)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", jsonFilePath, err))
@@ -430,6 +431,12 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect policy format in file %s: %v", jsonFilePath, err))
 	}
 
+	// let the user aware of the new node policy format.
+	if policyFile.IsDeploymentEmpty() {
+		msgPrinter.Printf("Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.")
+		msgPrinter.Println()
+	}
+
 	// check node exists first
 	var nodes ExchangeNodes
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
@@ -438,9 +445,10 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 	}
 
 	// add/replce node policy
+	exchNodePol := exchange.ExchangeNodePolicy{NodePolicy: policyFile, NodePolicyVersion: exchangecommon.NODEPOLICY_VERSION_VERSION_2}
 	msgPrinter.Printf("Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile, nil)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{201}, exchNodePol, nil)
 
 	msgPrinter.Printf("Node policy updated.")
 	msgPrinter.Println()
@@ -460,7 +468,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 	attribute := cliconfig.ReadJsonFileWithLocalConfig(jsonfile)
 
 	//Check if the node policy exists in the exchange
-	var newPolicy externalpolicy.ExternalPolicy
+	var newPolicy exchange.ExchangeNodePolicy
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &newPolicy)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node policy not found for node %s/%s", nodeOrg, node))
@@ -472,43 +480,69 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
 	}
 
+	attribName := ""
 	if _, ok := findAttrType["properties"]; ok {
+		attribName = "properties"
 		propertiesPatch := make(map[string]externalpolicy.PropertyList)
 		err := json.Unmarshal([]byte(attribute), &propertiesPatch)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s for %s: %v", attribute, attribName, err))
 		}
 		newProp := propertiesPatch["properties"]
 		err = newProp.Validate()
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid property list %s: %v", attribute, err))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid property list %s: %v", newProp, err))
 		}
 		newPolicy.Properties = newProp
-		msgPrinter.Printf("Updating Node %s policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
-		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy, nil)
-		msgPrinter.Printf("Node %s policy properties updated in the horizon exchange.", node)
-		msgPrinter.Println()
 	} else if _, ok = findAttrType["constraints"]; ok {
+		attribName = "constraints"
 		constraintPatch := make(map[string]externalpolicy.ConstraintExpression)
 		err := json.Unmarshal([]byte(attribute), &constraintPatch)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s for %ss: %v", attribute, attribName, err))
 		}
 		newConstr := constraintPatch["constraints"]
 		_, err = newConstr.Validate()
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid constraint expression %s: %v", attribute, err))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid constraint expression %s: %v", newConstr, err))
 		}
 		newPolicy.Constraints = newConstr
-		msgPrinter.Printf("Updating Node %s policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
-		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy, nil)
-		msgPrinter.Printf("Node %s policy constraints updated in the horizon exchange.", node)
-		msgPrinter.Println()
+	} else if _, ok = findAttrType["deployment"]; ok {
+		attribName = "deployment"
+		externpolPatch := make(map[string]externalpolicy.ExternalPolicy)
+		err := json.Unmarshal([]byte(attribute), &externpolPatch)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s for %s: %v", attribute, attribName, err))
+		}
+		externPol := externpolPatch["deployment"]
+		err = (&externPol).ValidateAndNormalize()
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid deployment attribute %s: %v", externPol, err))
+		}
+		newPolicy.Deployment = externPol
+	} else if _, ok = findAttrType["management"]; ok {
+		attribName = "management"
+		externpolPatch := make(map[string]externalpolicy.ExternalPolicy)
+		err := json.Unmarshal([]byte(attribute), &externpolPatch)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s for %s: %v", attribute, attribName, err))
+		}
+		externPol := externpolPatch["management"]
+		err = (&externPol).ValidateAndNormalize()
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid management attribute %s: %v", externPol, err))
+		}
+		newPolicy.Management = externPol
 	} else {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to find valid attribute to update in input %s. Attributes are constraints and properties.", attribute))
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to find valid attribute to update in input %s. Valid attribute names are properties, constraints, deployment and management.", attribute))
 	}
+
+	msgPrinter.Printf("Updating Node policy %v attribute for node %v in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", attribName, node)
+	msgPrinter.Println()
+	exchNodePol := exchange.ExchangeNodePolicy{NodePolicy: newPolicy.NodePolicy, NodePolicyVersion: exchangecommon.NODEPOLICY_VERSION_VERSION_2}
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, exchNodePol, nil)
+	msgPrinter.Printf("Node policy %v attribute updated for node %v in the horizon exchange.", attribName, node)
+	msgPrinter.Println()
 }
 
 func NodeRemovePolicy(org, credToUse, node string, force bool) {

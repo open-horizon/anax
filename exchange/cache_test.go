@@ -68,8 +68,9 @@ func TestGetServiceFromCache(t *testing.T) {
 }
 
 func TestGetServicePolicyFromCache(t *testing.T) {
-	svcPol := externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("prop1", 5)}, Constraints: externalpolicy.ConstraintExpression{"openhorizon.cpu > 2"}}
-	exchPol := ExchangePolicy{svcPol, "12:00:00"}
+	extPol := externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("prop1", 5)}, Constraints: externalpolicy.ConstraintExpression{"openhorizon.cpu > 2"}}
+	svcPol := exchangecommon.ServicePolicy{ExternalPolicy: extPol, Label: "service1", Description: "This is service1"}
+	exchPol := ExchangeServicePolicy{ServicePolicy: svcPol, LastUpdated: "12:00:00"}
 
 	UpdateCache("e2edev@somecomp.com/test-service_amd64_2.9.13", SVC_POL_TYPE_CACHE, exchPol)
 
@@ -93,11 +94,13 @@ func TestDeleteCacheResourceFromChange(t *testing.T) {
 	svcDefs2["0.0.0"] = ServiceDefinition{Owner: "charlie", URL: "another-service", Arch: "amd64", Version: "0.0.0", Deployment: "abcdefg12345"}
 	svcDefs2["0.0.1"] = ServiceDefinition{Owner: "lucy", URL: "another-service", Arch: "amd64", Version: "0.0.0", Deployment: "gfedcba54321"}
 
-	svcPol1 := ExchangePolicy{ExternalPolicy: externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("prop1", 5)}, Constraints: externalpolicy.ConstraintExpression{"openhorizon.cpu > 2"}}}
-	svcPol2 := ExchangePolicy{ExternalPolicy: externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("color", "green")}, Constraints: externalpolicy.ConstraintExpression{"serviceVersion in [0.0.0,1.3.6)"}}}
+	extPol1 := externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("prop1", 5)}, Constraints: externalpolicy.ConstraintExpression{"openhorizon.cpu > 2"}}
+	extPol2 := externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("color", "green")}, Constraints: externalpolicy.ConstraintExpression{"serviceVersion in [0.0.0,1.3.6)"}}
+	svcPol1 := ExchangeServicePolicy{ServicePolicy: exchangecommon.ServicePolicy{ExternalPolicy: extPol1, Label: "service1", Description: "This is service1"}, LastUpdated: "1234567"}
+	svcPol2 := ExchangeServicePolicy{ServicePolicy: exchangecommon.ServicePolicy{ExternalPolicy: extPol2, Label: "service2", Description: "This is service2"}, LastUpdated: "2234567"}
 
-	nodePol1 := ExchangePolicy{ExternalPolicy: externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("prop1", 5)}, Constraints: externalpolicy.ConstraintExpression{"openhorizon.cpu > 2"}}}
-	nodePol2 := ExchangePolicy{ExternalPolicy: externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("color", "green")}, Constraints: externalpolicy.ConstraintExpression{"serviceVersion in [0.0.0,1.3.6)"}}}
+	nodePol1 := ExchangeNodePolicy{NodePolicy: exchangecommon.NodePolicy{ExternalPolicy: extPol1, Label: "node1", Description: "This is node1"}, LastUpdated: "3234567"}
+	nodePol2 := ExchangeNodePolicy{NodePolicy: exchangecommon.NodePolicy{ExternalPolicy: extPol2, Label: "node2", Description: "This is node2"}, LastUpdated: "4234567"}
 
 	UpdateCache(NodeCacheMapKey("e2edev@somecomp.com", "test-node-1"), NODE_DEF_TYPE_CACHE, nodeDef1)
 	UpdateCache(NodeCacheMapKey("e2edev@somecomp.com", "test-node-2"), NODE_DEF_TYPE_CACHE, nodeDef2)
@@ -175,10 +178,11 @@ func TestCopy(t *testing.T) {
 		t.Errorf("Service keys copy failed to accurately copy something. \n%v\n%v", svcKey, keyCopy)
 	}
 
-	exchPol := ExchangePolicy{ExternalPolicy: externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("color", "blue"),
-		*externalpolicy.Property_Factory("shape", "oval")}, Constraints: externalpolicy.ConstraintExpression{"owner = Jim", "shift in \"day,night\"}"}}, LastUpdated: "16:14:32"}
+	extPol := externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("color", "blue"),
+		*externalpolicy.Property_Factory("shape", "oval")}, Constraints: externalpolicy.ConstraintExpression{"owner = Jim", "shift in \"day,night\"}"}}
+	exchPol := ExchangeNodePolicy{NodePolicy: exchangecommon.NodePolicy{ExternalPolicy: extPol, Label: "noe1", Description: "This is node1"}, LastUpdated: "16:14:32"}
 	cachedObj = CacheEntry{Resource: exchPol}
-	polCopy := cachedObj.Copy().(ExchangePolicy)
+	polCopy := cachedObj.Copy().(ExchangeNodePolicy)
 	if !reflect.DeepEqual(exchPol, polCopy) {
 		t.Errorf("Exchange Policy copy failed to accurately copy something \n%v\n%v", exchPol, polCopy)
 	}

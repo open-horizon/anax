@@ -370,6 +370,7 @@ EOF
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "User Input Incompatible"
 
+# old node policy format
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: node policy, node userinput, business policy. Result: version 2.0.6 policy not compatible, version 2.0.7 user input not compatible."
 read -d '' node_pol1 <<EOF
 {
@@ -388,6 +389,40 @@ read -d '' node_pol1 <<EOF
     "NONS == false || NOLOC == false || NOPWS == false || NOHELLO == false || NOGPS == false",
     "openhorizon.service.version != 2.0.6"
   ]
+}
+EOF
+read -d '' comp_input <<EOF
+{
+  "node_policy":      $node_pol1,
+  "node_user_input":  $node_ui_bad,
+  "business_policy":  $bp_location
+}
+EOF
+run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
+check_comp_results "false" "Policy Incompatible"
+check_comp_results "false" "User Input Incompatible"
+
+# new node policy format
+echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: node policy, node userinput, business policy. Result: version 2.0.6 policy not compatible, version 2.0.7 user input not compatible."
+read -d '' node_pol1 <<EOF
+{
+  "deployment": {
+    "properties": [
+      {
+        "name": "purpose",
+        "value": "network-testing"
+      },
+      {
+        "name": "group",
+        "value": "bluenode"
+      }
+    ],
+    "constraints": [
+      "iame2edev == true",
+      "NONS == false || NOLOC == false || NOPWS == false || NOHELLO == false || NOGPS == false",
+      "openhorizon.service.version != 2.0.6"
+    ]
+  }
 }
 EOF
 read -d '' comp_input <<EOF

@@ -15,7 +15,7 @@ import (
 	"github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/config"
 	anaxExchange "github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"io"
@@ -436,7 +436,7 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 		}
 		policyStr = string(policyBytes)
 	} else if example != "" {
-		policyStr = `{ "properties": [ { "name": "openhorizon.example", "value": "` + example + `" } ] }`
+		policyStr = `{ "deployment": { "properties": [ { "name": "openhorizon.example", "value": "` + example + `" } ] }}`
 		cliutils.Verbose(msgPrinter.Sprintf("Using node policy: %s", policyStr))
 	}
 	if policyStr != "" {
@@ -492,7 +492,7 @@ func NodeAddPolicyString(org, credToUse, node, policyStr string, quieter bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Parse the policy metadata
-	var policyFile externalpolicy.ExternalPolicy
+	var policyFile exchangecommon.NodePolicy
 	err := json.Unmarshal([]byte(policyStr), &policyFile)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json string '%s': %v", policyStr, err))
@@ -517,7 +517,8 @@ func NodeAddPolicyString(org, credToUse, node, policyStr string, quieter bool) {
 		msgPrinter.Printf("Adding/updating node policy...")
 		msgPrinter.Println()
 	}
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchangeUrl, "orgs/"+org+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile, nil)
+	exchNodePolicy := anaxExchange.ExchangeNodePolicy{NodePolicy: policyFile, NodePolicyVersion: exchangecommon.NODEPOLICY_VERSION_VERSION_2}
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchangeUrl, "orgs/"+org+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{201}, exchNodePolicy, nil)
 
 	//msgPrinter.Printf("Node policy updated.")
 	//msgPrinter.Println()

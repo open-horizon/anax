@@ -8,12 +8,20 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/compcheck"
-	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"os"
 )
 
-func readExternalPolicyFile(filePath string, inputFileStruct *externalpolicy.ExternalPolicy) {
+func readNodePolicyFile(filePath string, inputFileStruct *exchangecommon.NodePolicy) {
+	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
+	err := json.Unmarshal(newBytes, inputFileStruct)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to unmarshal json input file %s: %v", filePath, err))
+	}
+}
+
+func readServicePolicyFile(filePath string, inputFileStruct *exchangecommon.ServicePolicy) {
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
 	err := json.Unmarshal(newBytes, inputFileStruct)
 	if err != nil {
@@ -41,8 +49,8 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 		policyCheckInput.NodeId = nId
 	} else if nodePolFile != "" {
 		// read the node policy from file
-		var np externalpolicy.ExternalPolicy
-		readExternalPolicyFile(nodePolFile, &np)
+		var np exchangecommon.NodePolicy
+		readNodePolicyFile(nodePolFile, &np)
 		policyCheckInput.NodePolicy = &np
 	} else {
 		msgPrinter.Printf("Neither node id nor node policy is specified. Getting node policy from the local node.")
@@ -55,7 +63,7 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 		policyCheckInput.NodeId, policyCheckInput.NodeArch, policyCheckInput.NodeType, _ = getLocalNodeInfo(nodeArch, nodeType, "")
 
 		// get node policy from local node
-		var np externalpolicy.ExternalPolicy
+		var np exchangecommon.NodePolicy
 		cliutils.HorizonGet("node/policy", []int{200}, &np, false)
 		policyCheckInput.NodePolicy = &np
 	}
@@ -70,10 +78,10 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 
 	if servicePolFile != "" {
 		// read the service policy from file
-		var sp externalpolicy.ExternalPolicy
-		readExternalPolicyFile(servicePolFile, &sp)
+		var sp exchangecommon.ServicePolicy
+		readServicePolicyFile(servicePolFile, &sp)
 
-		policyCheckInput.ServicePolicy = &sp
+		policyCheckInput.ServicePolicy = sp.GetExternalPolicy()
 	}
 
 	// put the given service defs into the uiCheckInput

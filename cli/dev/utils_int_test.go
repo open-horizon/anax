@@ -45,7 +45,7 @@ func Test_nested_dependencies(t *testing.T) {
 		t.Errorf("unable to get service dependencies, %v", derr)
 	}
 
-	networks, perr := ProcessStartDependencies(horizonDir, deps, []common.GlobalSet{}, []policy.AbstractUserInput{}, cw, "12345")
+	networks, perr := ProcessStartDependencies(horizonDir, deps, []common.GlobalSet{}, []policy.AbstractUserInput{}, cw, "12345", map[string]string{})
 	if perr != nil {
 		t.Errorf("unable to process dependencies, %v", perr)
 	}

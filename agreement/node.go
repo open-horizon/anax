@@ -8,40 +8,13 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangesync"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"sort"
 	"strings"
 )
-
-// handles the node policy UPDATE_POLICY event
-func (w *AgreementWorker) NodePolicyUpdated() {
-	glog.V(5).Infof(logString("handling node policy updated."))
-	// get the node policy
-	nodePolicy, err := persistence.FindNodePolicy(w.db)
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("unable to read node policy from the local database. %v", err)))
-		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_POL_FROM_DB, err.Error()),
-			persistence.EC_DATABASE_ERROR)
-		return
-	}
-
-	// add the node policy to the policy manager
-	newPol, err := policy.GenPolicyFromExternalPolicy(nodePolicy, policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
-		return
-	}
-	w.pm.UpdatePolicy(exchange.GetOrg(w.GetExchangeId()), newPol)
-}
-
-// handles the node policy DELETE_POLICY event
-func (w *AgreementWorker) NodePolicyDeleted() {
-	glog.V(5).Infof(logString("handling node policy deleted."))
-	w.pm.DeletePolicyByName(exchange.GetOrg(w.GetExchangeId()), policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
-}
 
 // Check node changes on the exchange and save it on local node
 func (w *AgreementWorker) checkNodeChanges() {
@@ -269,7 +242,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() {
 	}
 
 	// exchange is the master
-	updated, newNodePolicy, err := exchangesync.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w.limitedRetryEC), exchange.GetHTTPPutNodePolicyHandler(w.limitedRetryEC))
+	uc_deployment, uc_management, newNodePolicy, err := exchangesync.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w.limitedRetryEC), exchange.GetHTTPPutNodePolicyHandler(w.limitedRetryEC))
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
 		if !w.hznOffline {
@@ -281,7 +254,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() {
 				w.devicePattern, "")
 			w.isOffline()
 		}
-	} else if updated {
+	} else if uc_deployment != externalpolicy.EP_COMPARE_NOCHANGE || uc_management != externalpolicy.EP_COMPARE_NOCHANGE {
 		w.hznOffline = false
 		glog.V(3).Infof(logString(fmt.Sprintf("Node policy updated with the exchange copy: %v", newNodePolicy)))
 		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
@@ -291,9 +264,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() {
 			exchange.GetId(w.GetExchangeId()),
 			w.devicePattern, "")
 
-		if pDevice.Pattern == "" {
-			w.Messages() <- events.NewNodePolicyMessage(events.UPDATE_POLICY)
-		}
+		w.Messages() <- events.NewNodePolicyMessage(events.UPDATE_POLICY, uc_deployment, uc_management)
 	} else {
 		w.hznOffline = false
 	}
