@@ -473,7 +473,6 @@ fss-package: ess-docker-image css-docker-image
 
 clean: mostlyclean 
 	@echo "Clean"
-	rm -f ./go.sum
 ifneq ($(TMPGOPATH),$(GOPATH))
 	rm -rf $(TMPGOPATH)
 endif
@@ -531,13 +530,17 @@ endif
 i18n-catalog: gopathlinks deps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
 	rm -Rf vendor; \
-	go mod vendor; \
 	mv -f go.mod go.mod.save; \
+	mv -f go.sum go.sum.save; \
+	go mod init github.com/open-horizon/anax; \
+	go mod tidy; \
+	go mod vendor; \
 	cd $(PKGPATH) && \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
 			tools/update-i18n-messages
 	rm -Rf vendor; \
 	mv -f go.mod.save go.mod; \
+	mv -f go.sum.save go.sum; \
 
 i18n-translation: i18n-catalog
 	@echo "Copying message files for translation"
