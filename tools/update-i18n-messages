@@ -4,17 +4,6 @@
 # anax code and update the message catalog.
 # Please make sure gotext is installed with: go get -u golang.org/x/text/cmd/gotext
 
-# this is a bug in gotext that it does not work when golang.org/x/text is under the vendor directory,
-# but it has to be in the GOPATH
-# we have to work around the problem by temporarily move it to the $GOPATH/src
-mkdir -p $GOPATH/src/golang.org/x
-if [ -d "vendor/golang.org/x/text" ]; then
-	if [ -d "$GOPATH/src/golang.org/x/text" ]; then
-		rm -Rf $GOPATH/src/golang.org/x/text
-	fi
-	mv vendor/golang.org/x/text $GOPATH/src/golang.org/x/
-fi
-
 # update anax message catalog
 echo "  Creating message catalog for anax"
 $GOPATH//bin/gotext -srclang=en update -out=i18n_messages/catalog.go -lang=en,zh_CN,zh_TW,fr,de,it,ja,pt_BR,es,ko 2>&1 | grep -Ev '(matches conflicting messages|Missing entry for)'
@@ -38,10 +27,3 @@ rm -f i18n_messages/catalog.go.bak
 
 # get back to the original direcotry.
 cd ..
-
-#restore text to vendor directory
-if [ -d "$GOPATH/src/golang.org/x/text" ]; then
-	if [ ! -d "vendor/golang.org/x/text" ]; then
-		mv $GOPATH/src/golang.org/x/text vendor/golang.org/x/
-	fi
-fi
