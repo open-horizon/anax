@@ -483,9 +483,6 @@ func (auth *HorizonAuthenticate) invokeExchangeWithRetry(url string, user string
 			}
 		}
 
-		if err == nil {
-			break
-		}
 		if exchange.IsTransportError(resp, err) {
 			// Log the transport error and retry
 			if trace.IsLogging(logger.TRACE) {
