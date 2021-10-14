@@ -101,6 +101,10 @@ const (
 	OBJECT_POLICY_DELETED   EventId = "OBJECT_POLICY_DELETED"
 	OBJECT_POLICIES_CHANGED EventId = "OBJECT_POLICIES_CHANGED"
 
+	// Node management policy
+	NMP_START_DOWNLOAD    EventId = "NMP_START_DOWNLOAD"
+	NMP_DOWNLOAD_COMPLETE EventId = "NMP_DOWNLOAD_COMPLETE"
+
 	// Exchange change related
 	CHANGE_MESSAGE_TYPE             EventId = "EXCHANGE_CHANGE_MESSAGE"
 	CHANGE_AGBOT_MESSAGE_TYPE       EventId = "EXCHANGE_CHANGE_AGBOT_MESSAGE"
@@ -118,6 +122,7 @@ const (
 	CHANGE_AGBOT_PATTERN            EventId = "EXCHANGE_CHANGE_AGBOT_PATTERN"
 	CHANGE_AGBOT_POLICY             EventId = "EXCHANGE_CHANGE_AGBOT_POLICY"
 	CHANGE_AGBOT_AGREEMENT_TYPE     EventId = "EXCHANGE_CHANGE_AGBOT_AGREEMENT"
+	CHANGE_NMP_TYPE                 EventId = "EXCHANGE_CHANGE_NODE_MANAGEMENT_POLICY"
 
 	// Secret related
 	UPDATED_SECRETS EventId = "SECRET_UPDATES"
@@ -2113,5 +2118,63 @@ func NewSecretUpdatesMessage(id EventId, sus *SecretUpdates) *SecretUpdatesMessa
 			Id: id,
 		},
 		Updates: *sus,
+	}
+}
+
+type NMPStartDownloadMessage struct {
+	event   Event
+	Message StartDownloadMessage
+}
+
+type StartDownloadMessage struct {
+	FilesList []string
+}
+
+func (n *NMPStartDownloadMessage) Event() Event {
+	return n.event
+}
+
+func (n *NMPStartDownloadMessage) String() string {
+	return fmt.Sprintf("event: %v, Message: %v", n.event, n.Message)
+}
+
+func (n *NMPStartDownloadMessage) ShortString() string {
+	return n.String()
+}
+
+func NewNMPStartDownloadMessage(id EventId, message StartDownloadMessage) *NMPStartDownloadMessage {
+	return &NMPStartDownloadMessage{
+		event: Event{
+			Id: id,
+		},
+		Message: message,
+	}
+}
+
+type NMPDownloadCompleteMessage struct {
+	event   Event
+	Success bool
+	NMPName string
+}
+
+func (n *NMPDownloadCompleteMessage) Event() Event {
+	return n.event
+}
+
+func (n *NMPDownloadCompleteMessage) String() string {
+	return fmt.Sprintf("event: %v, Success: %v", n.event, n.Success)
+}
+
+func (n *NMPDownloadCompleteMessage) ShortString() string {
+	return n.String()
+}
+
+func NewNMPDownloadCompleteMessage(id EventId, success bool, name string) *NMPDownloadCompleteMessage {
+	return &NMPDownloadCompleteMessage{
+		event: Event{
+			Id: id,
+		},
+		Success: success,
+		NMPName: name,
 	}
 }

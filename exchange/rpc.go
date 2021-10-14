@@ -1198,6 +1198,12 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 					case *VaultSecretExistsResponse:
 						return nil, nil
 
+					case *GetNMPResponse:
+						return nil, nil
+
+					case *ExchangeNodeManagementPolicyResponse:
+						return nil, nil
+
 					default:
 						return errors.New(fmt.Sprintf("Unknown type of response object %v (%T) passed to invocation of %v at %v with %v", *resp, *resp, method, urlPath, requestBody)), nil
 					}

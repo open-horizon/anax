@@ -23,6 +23,7 @@ import (
 	_ "github.com/open-horizon/anax/i18n_messages"
 	"github.com/open-horizon/anax/imagefetch"
 	"github.com/open-horizon/anax/kube_operator"
+	_"github.com/open-horizon/anax/nodemanagement"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"
@@ -189,6 +190,7 @@ func main() {
 		workers.Add(kube_operator.NewKubeWorker("Kube", cfg, db))
 		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
 		workers.Add(changes.NewChangesWorker("ExchangeChanges", cfg, db))
+		// workers.Add(nodemanagement.NewNodeManagementWorker("NodeManagement", cfg, db))
 	}
 
 	// Get into the event processing loop until anax shuts itself down.
