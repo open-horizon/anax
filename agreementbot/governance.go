@@ -149,7 +149,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 											continue
 										}
 
-										details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), ag.Org, secretUser, secretName)
+										details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), exchange.GetOrg(updatedSecretName), secretUser, secretName)
 										if err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
 											continue
@@ -174,7 +174,6 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 							if bindingUpdate {
 								updatedBindings = append(updatedBindings, sb)
 							}
-
 						}
 
 						glog.V(5).Infof(logString(fmt.Sprintf("sending secret updates %v to the agent for %s", updatedBindings, ag.CurrentAgreementId)))
