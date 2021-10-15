@@ -6,6 +6,7 @@ require (
 	github.com/adams-sarah/test2doc v0.0.0-20210514182215-2580a24111e5
 	github.com/alecthomas/participle v0.7.1
 	github.com/boltdb/bolt v1.3.1
+	github.com/containerd/containerd v1.5.7 // indirect
 	github.com/coreos/go-iptables v0.6.0
 	github.com/eclipse/paho.mqtt.golang v1.3.5 // indirect
 	github.com/fsouza/go-dockerclient v1.7.4
