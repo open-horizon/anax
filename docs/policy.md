@@ -1,11 +1,11 @@
 # Policy based deployment
 
-The policy based deployment support in OpenHorizon enables containerized workloads (aka services) to be deployed to edge nodes that are running the OpenHorizon agent and which are registered to an OpenHorizon Management Hub.
-The deployment engine (implemented inside the OpenHorizon Agbot) uses policy to autonomously determine where services should be deployed, undeployed or re-deployed.
+The policy based deployment support in Open Horizon enables containerized workloads (aka services) to be deployed to edge nodes that are running the Open Horizon agent and which are registered to an Open Horizon Management Hub.
+The deployment engine (implemented inside the Open Horizon Agbot) uses policy to autonomously determine where services should be deployed, undeployed or re-deployed.
 As nodes, models, services and deployment policies are added, updated or removed from the management hub, the deployment engine will automatically react to the change.
 An adminstrator never has to interact directly with the deployment engine, it just works quietly in the background ensuring that the edge computing environment it is managing has services deployed where they should be.
 
-To accomplish this there are four kinds of policy in OpenHorizon; node policy, deployment policy, service policy, and model policy.
+To accomplish this there are four kinds of policy in Open Horizon; node policy, deployment policy, service policy, and model policy.
 Each kind of policy is composed of properties and constraints which are described in more detail [here](./properties_and_constraints.md).
 
 ## Node policy
@@ -56,7 +56,7 @@ Like the other policy types, it contains a set of properties and constraints, bu
 For example, it explicitly identifies a service to be deployed, and it can optionally contain configuration variable values, service rollback versions, and node health configuration information.
 The Deployment policy approach for configuration values is powerful because this operation can be performed centrally, with no need to connect directly to the edge node.
 
-Administrators create deployment policies, and the OpenHorizon deployment engine uses that policy to locate all of the nodes that match the defined constraints and deploys the specified service to those nodes.
+Administrators create deployment policies, and the Open Horizon deployment engine uses that policy to locate all of the nodes that match the defined constraints and deploys the specified service to those nodes.
 Service rollback versions instruct the deployment engine which service versions should be deployed if a higher version of the service fails to deploy.
 The node health configuration indicates how the deployment engine should gauge the health (heartbeats and management hub communication) of a node before determining if the node is out of policy.
 
@@ -68,7 +68,7 @@ The JSON representation of deployment policy is more complex than node and servi
 ## Model policy
 
 Machine learning (ML)-based services require specific trained models to operate correctly.
-OpenHorizon provides the ability to deploy models independently from services.
+Open Horizon provides the ability to deploy models independently from services.
 In ML use cases, the model tends to be large and change more more often than the algorithmic code which uses the model to analyze data.
 Model policy enables the administrator to deploy specific models on the same, or a subset of, nodes where the services that use the mode have been placed.
 The purpose of model policy is to further narrow the set of nodes where a given service is deployed, which enables a subset of those nodes to receive a specific model object.
