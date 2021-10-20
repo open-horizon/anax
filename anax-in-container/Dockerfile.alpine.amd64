@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM docker.io/alpine:3.7
 
 LABEL vendor="IBM"
 LABEL summary="The agent in a general purpose container."
