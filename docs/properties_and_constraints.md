@@ -4,13 +4,13 @@ Services are deployed to edge nodes by either:
 * Assigning a pattern (which defines the services that should be deployed) to a node when the node registers with the Hub, OR
 * Assigning policy expressions to a node, which can be done at any point in the node's lifecycle. This is where policy properties and constraints become important.
 
-For an overview of OpenHorizon's policy based deployment system, see this [article](./policy.md).
+For an overview of Open Horizon's policy based deployment system, see this [article](./policy.md).
 
-Properties and constraints are the foundation of the policy expressions used to direct OpenHorizon's workload deployment engine.
-Remember, workloads in OpenHorizon are containerized services wrapped in an OpenHorizon [service definition](./service_def.md).
+Properties and constraints are the foundation of the policy expressions used to direct Open Horizon's workload deployment engine.
+Remember, workloads in Open Horizon are containerized services wrapped in an Open Horizon [service definition](./service_def.md).
 Careful thought should be given to the way in which the edge computing environment will be described by properties and constraints, taking into account various factors such kinds, purpose, and possibly the location of equipment where services will be deployed.
 
-OpenHorizon provides some `built-in` properties.
+Open Horizon provides some `built-in` properties.
 There is documentation for the [built-in properties](./built_in_policy.md).
 
 ## Properties
@@ -20,9 +20,9 @@ They are most commonly attached to nodes, enabling constraints in a deployment p
 
 Properties are simple name value pairs, e.g. color = red.
 In that example, the name of the property is "color" and the value is "red".
-Property names can be any valid string value, there are no requirements imposed by OpenHorizon.
-However, in order to avoid name collisions, OpenHorizon suggests that policy names are created based on a convention that enables the property names to be unique, such as using your domain name or other organizational mechanism, e.g. mydomain.mycomponent.propertyName.
-Notice that the OpenHorizon [built-in property](./built_in_policy.md) names are all prefixed with `openhorizon`, to disambiguate them user defined properties.
+Property names can be any valid string value, there are no requirements imposed by Open Horizon.
+However, in order to avoid name collisions, Open Horizon suggests that policy names are created based on a convention that enables the property names to be unique, such as using your domain name or other organizational mechanism, e.g. mydomain.mycomponent.propertyName.
+Notice that the Open Horizon [built-in property](./built_in_policy.md) names are all prefixed with `openhorizon`, to disambiguate them user defined properties.
 
 Properties are typed; `string`, `int`, `boolean`, `float`, `version` and `list of strings`, but the type can be omitted from a property definition if the type can be determined by inspecting the specified property value.
 When specifying a property value, do so with the property type in mind.
@@ -44,28 +44,28 @@ The JSON representation of a property is:
 The following is an example using each of the property types:
 ```
 {
-	"name": "stringProperty",       /* type is omitted to demonstrate that OpenHorizon will interpret this property as a string type */
+	"name": "stringProperty",       /* type is omitted to demonstrate that Open Horizon will interpret this property as a string type */
 	"value": "string-value"
 },
 {
-	"name": "intProperty",          /* type is omitted to demonstrate that OpenHorizon will interpret this property as an int type */
+	"name": "intProperty",          /* type is omitted to demonstrate that Open Horizon will interpret this property as an int type */
 	"value": 10
 },
 {
-	"name": "booleanProperty",      /* type is omitted to demonstrate that OpenHorizon will interpret this property as a string type */
+	"name": "booleanProperty",      /* type is omitted to demonstrate that Open Horizon will interpret this property as a string type */
 	"value": true
 },
 {
-	"name": "floatProperty",        /* type is omitted to demonstrate that OpenHorizon will interpret this property as a string type */
+	"name": "floatProperty",        /* type is omitted to demonstrate that Open Horizon will interpret this property as a string type */
 	"value": 3.4
 },
 {
-	"name": "versionProperty",      /* type is specified to demonstrate that OpenHorizon would otherwise interpret this property as a string */
+	"name": "versionProperty",      /* type is specified to demonstrate that Open Horizon would otherwise interpret this property as a string */
 	"type": "version",
 	"value": "1.2.7"
 },
 {
-	"name": "losProperty",          /* type is specified to demonstrate that OpenHorizon would otherwise interpret this property as a string */
+	"name": "losProperty",          /* type is specified to demonstrate that Open Horizon would otherwise interpret this property as a string */
 	"type": "list of strings",
 	"value": "value1,value2"
 }
@@ -73,7 +73,7 @@ The following is an example using each of the property types:
 
 ## Constraints
 
-Constraints are the other half of the policy expression language in OpenHorizon.
+Constraints are the other half of the policy expression language in Open Horizon.
 Think of constraints as selection predicates used to select nodes based on the properties defined and set on those nodes.
 Constraints are most commonly found in deployment policies but can be specified on node, service and model policy.
 
