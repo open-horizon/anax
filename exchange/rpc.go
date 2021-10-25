@@ -395,6 +395,11 @@ type PostDeviceResponse struct {
 	Msg  string `json:"msg"`
 }
 
+type PutPostDeleteStandardResponse struct {
+	Code string `json:"code"`
+	Msg  string `json:"msg"`
+}
+
 type WorkloadAgreement struct {
 	Org     string `json:"orgid,omitempty"` // the org of the pattern
 	Pattern string `json:"pattern"`         // pattern - without the org prefix on it
@@ -1195,6 +1200,31 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 					}
 				}
 			}
+		}
+	}
+}
+
+func InvokeExchangeRetryOnTransportError(httpClientFactory *config.HTTPClientFactory, method string, urlPath string, user string, pw string, params interface{}, resp *interface{}) error {
+	retryCount := httpClientFactory.RetryCount
+	retryInterval := httpClientFactory.GetRetryInterval()
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), method, urlPath, user, pw, params, resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			if httpClientFactory.RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return fmt.Errorf("Exceeded %v retries for error: %v", httpClientFactory.RetryCount, tpErr)
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
+		} else {
+			return nil
 		}
 	}
 }

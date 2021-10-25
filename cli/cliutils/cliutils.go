@@ -2166,7 +2166,7 @@ func DisplayProgress(body io.Reader, size int, message string) *progressReader {
 	progReader := &progressReader{body, func(r int) {
 		if r > 0 {
 			totalSent += r
-			msgPrinter.Printf("\r" + message + ": %.2f %s", float32(totalSent)/float32(size)*100, "%")
+			msgPrinter.Printf("\r"+message+": %.2f %s", float32(totalSent)/float32(size)*100, "%")
 		} else {
 			// Clear the progress info when the file has been fully uploaded
 			msgPrinter.Printf("\r")

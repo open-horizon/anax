@@ -73,7 +73,7 @@ func (e *ExchangeBusinessPolicy) GetCreated() string {
 
 type GetBusinessPolicyResponse struct {
 	BusinessPolicy map[string]ExchangeBusinessPolicy `json:"businessPolicy,omitempty"` // map of all defined business policies
-	LastIndex      int                               `json:"lastIndex.omitempty"`
+	LastIndex      int                               `json:"lastIndex,omitempty"`
 }
 
 // Structs and types for working with business policy based exchange searches
