@@ -42,6 +42,7 @@ const rightInc = "]"
 const INF = "INFINITY"
 const versionSeperator = ","
 const numberSeperator = "."
+const preReleaseSeperator = "-"
 
 type Version_Expression struct {
 	full_expression string
@@ -192,19 +193,10 @@ func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 		return false, nil
 	}
 
-	// Compare the start version to see if the input is in this object's range
-	exprNums := strings.Split(normalizedExpr, numberSeperator)
-	startNums := strings.Split(self.start, numberSeperator)
-	for idx, startVal := range startNums {
-		startInt, _ := strconv.Atoi(startVal)
-		exprInt, _ := strconv.Atoi(exprNums[idx])
-		if startInt == exprInt {
-			continue
-		} else if startInt < exprInt {
-			break
-		} else {
-			return false, nil
-		}
+	if c, err := CompareVersions(self.start, normalizedExpr); err != nil {
+		return false, err
+	} else if c > 1 {
+		return false, nil
 	}
 
 	// Compare the end version to see if the input is in this object's range. An end range of
@@ -213,22 +205,13 @@ func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 		return true, nil
 	}
 
-	endNums := strings.Split(self.end, numberSeperator)
-	for idx, endVal := range endNums {
-		endInt, _ := strconv.Atoi(endVal)
-		exprInt, _ := strconv.Atoi(exprNums[idx])
-		if endInt == exprInt {
-			continue
-		} else if endInt > exprInt {
-			return true, nil
-		} else {
-			return false, nil
-		}
+	if c, err := CompareVersions(self.end, normalizedExpr); err != nil {
+		return false, err
+	} else if c < 1 {
+		return false, nil
 	}
 
-	// Should never get here
-	errorString := fmt.Sprintf("Version_Expression: Unable to compare versions %v %v.", expr, self)
-	return false, errors.New(errorString)
+	return true, nil
 }
 
 // make this version equals to the intersection of self and the given version
@@ -358,7 +341,10 @@ func IsVersionString(expr string) bool {
 		return true
 	}
 
-	nums := strings.Split(expr, numberSeperator)
+	splitExpr := strings.Split(expr, preReleaseSeperator)
+	prerelease := strings.Join(splitExpr[1:], preReleaseSeperator)
+	nums := strings.Split(splitExpr[0], numberSeperator)
+
 	if len(nums) == 0 || len(nums) > 3 {
 		return false
 	} else {
@@ -371,10 +357,14 @@ func IsVersionString(expr string) bool {
 					return false
 				}
 			}
-
 		}
-		return true
 	}
+	for _, val := range prerelease {
+		if !strings.Contains("0123456789abcdefghijklmnopqrstuvwxyz-", strings.ToLower(string(val))) {
+			return false
+		}
+	}
+	return true
 }
 
 // Return true if the input version string is a full version expression
@@ -412,10 +402,14 @@ func normalize(expr string) string {
 	if expr == INF {
 		return expr
 	}
-	result := expr
+	preRelease := strings.Join(strings.Split(expr, preReleaseSeperator)[1:], preReleaseSeperator)
+	result := strings.Split(expr, preReleaseSeperator)[0]
 	nums := strings.Split(expr, numberSeperator)
 	if len(nums) < 3 {
 		result += strings.Repeat(".0", 3-len(nums))
+	}
+	if preRelease != "" {
+		result += "-" + preRelease
 	}
 	return result
 }
@@ -448,15 +442,20 @@ func CompareVersions(v1 string, v2 string) (int, error) {
 	v1n := normalize(v1)
 	v2n := normalize(v2)
 
+	splitExpr1 := strings.Split(v1n, preReleaseSeperator)
+	splitExpr2 := strings.Split(v2n, preReleaseSeperator)
+
+	pr1 := strings.Join(splitExpr1[1:], preReleaseSeperator)
+	pr2 := strings.Join(splitExpr2[1:], preReleaseSeperator)
+
 	// convert each field into integer and then compare
-	v1s := strings.Split(v1n, numberSeperator)
-	v2s := strings.Split(v2n, numberSeperator)
+	v1s := strings.Split(splitExpr1[0], numberSeperator)
+	v2s := strings.Split(splitExpr2[0], numberSeperator)
 
 	for i := 0; i < 3; i++ {
 		if v1s[i] == v2s[i] {
 			continue
 		}
-
 		n1, _ := strconv.Atoi(v1s[i])
 		n2, _ := strconv.Atoi(v2s[i])
 
@@ -467,5 +466,5 @@ func CompareVersions(v1 string, v2 string) (int, error) {
 		}
 	}
 
-	return 0, nil
+	return strings.Compare(pr1, pr2), nil
 }
