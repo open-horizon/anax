@@ -140,7 +140,11 @@ func TestRanges1(t *testing.T) {
 		t.Errorf("Input is in range. Error: %v \n", err)
 	} else if inrange, err := c.Is_within_range("1.1.1"); err != nil || !inrange {
 		t.Errorf("Input is in range. Error: %v \n", err)
+	} else if inrange, err := c.Is_within_range("1.1.01"); err != nil || !inrange {
+		t.Errorf("Input is in range. Error: %v \n", err)
 	} else if inrange, err := c.Is_within_range("2.1"); err != nil || inrange {
+		t.Errorf("Input is NOT in range. Error: %v \n", err)
+	} else if inrange, err := c.Is_within_range("2.01"); err != nil || inrange {
 		t.Errorf("Input is NOT in range. Error: %v \n", err)
 	} else if inrange, err := c.Is_within_range(""); err == nil || inrange {
 		t.Errorf("Input is invalid, but did not return an error\n")
@@ -320,14 +324,14 @@ func TestVersionExpressionFailure(t *testing.T) {
 
 // This test tests if the version string is a valide string.
 func TestIsVersionString(t *testing.T) {
-	v_good := []string{"1.0", "1.2", "1.234.567", "3.0.0", "234"}
+	v_good := []string{"1.0", "1.2", "1.234.567", "3.0.0", "234", "1.2.03"}
 	for _, v := range v_good {
 		if !IsVersionString(v) {
 			t.Errorf("Version string %v is valid, however the IsVersionString function returned false.\n", v)
 		}
 	}
 
-	v_bad := []string{"1.0.0.1", "1.2.3a", "[1.2, 1.3]", "1.2.3-abc", "1.2.03"}
+	v_bad := []string{"1.0.0.1", "1.2.3a", "[1.2, 1.3]", "1.2.3-abc"}
 	for _, v := range v_bad {
 		if IsVersionString(v) {
 			t.Errorf("Version string %v is invalid, however the IsVersionString function returned true.\n", v)

@@ -352,7 +352,7 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 		if checkAllArches {
 			// include all the arches
 			if svcMeta, err := getSelectedServices(serviceName, serviceOrg, serviceVersion, ""); err != nil {
-				return ret, fmt.Errorf(msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all archetctures. %v", serviceOrg, serviceName, serviceVersion, err))
+				return ret, fmt.Errorf(msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all architectures. %v", serviceOrg, serviceName, serviceVersion, err))
 			} else {
 				for _, svc := range svcMeta {
 					arches = append(arches, svc.Arch)
