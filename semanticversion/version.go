@@ -351,12 +351,7 @@ func IsVersionString(expr string) bool {
 		for _, val := range nums {
 			if val == "" {
 				return false
-			} else if len(val) > 1 { // not allow the leadng 0s.
-				if s := strings.TrimLeft(val, "0"); s != val {
-					return false
-				}
 			}
-
 			for _, val2 := range val {
 				if !strings.Contains("0123456789", string(val2)) {
 					return false

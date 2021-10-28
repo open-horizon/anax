@@ -144,7 +144,11 @@ func TestRanges1(t *testing.T) {
 		t.Errorf("Input is in range. Error: %v \n", err)
 	} else if inrange, err := c.Is_within_range("1.1.1"); err != nil || !inrange {
 		t.Errorf("Input is in range. Error: %v \n", err)
+	} else if inrange, err := c.Is_within_range("1.1.01"); err != nil || !inrange {
+		t.Errorf("Input is in range. Error: %v \n", err)
 	} else if inrange, err := c.Is_within_range("2.1"); err != nil || inrange {
+		t.Errorf("Input is NOT in range. Error: %v \n", err)
+	} else if inrange, err := c.Is_within_range("2.01"); err != nil || inrange {
 		t.Errorf("Input is NOT in range. Error: %v \n", err)
 	} else if inrange, err := c.Is_within_range(""); err == nil || inrange {
 		t.Errorf("Input is invalid, but did not return an error\n")
