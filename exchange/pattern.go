@@ -187,7 +187,7 @@ type AgreementProtocol struct {
 
 type GetPatternResponse struct {
 	Patterns  map[string]Pattern `json:"patterns,omitempty"` // map of all defined patterns
-	LastIndex int                `json:"lastIndex.omitempty"`
+	LastIndex int                `json:"lastIndex,omitempty"`
 }
 
 // Get all the pattern metadata for a specific organization, and pattern if specified.

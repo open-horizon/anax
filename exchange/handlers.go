@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/edge-sync-service/common"
 )
@@ -470,5 +471,69 @@ type VaultSecretExistsHandler func(agbotURL string, org string, userName string,
 func GetHTTPVaultSecretExistsHandler(ec ExchangeContext) VaultSecretExistsHandler {
 	return func(agbotURL string, org string, userName string, secretName string) (bool, error) {
 		return VaultSecretExists(ec, agbotURL, org, userName, secretName)
+	}
+}
+
+// A handler for getting a node management policy .
+type NodeManagementPolicyHandler func(policyOrg string, policyName string) (*exchangecommon.ExchangeNodeManagementPolicy, error)
+
+func GetNodeManagementPolicyHandler(ec ExchangeContext) NodeManagementPolicyHandler {
+	return func(policyOrg string, policyName string) (*exchangecommon.ExchangeNodeManagementPolicy, error) {
+		return GetSingleExchangeNodeManagementPolicy(ec, policyOrg, policyName)
+	}
+}
+
+// A handler for getting all node management policies in an org.
+type AllNodeManagementPoliciesHandler func(policyOrg string) (*map[string]exchangecommon.ExchangeNodeManagementPolicy, error)
+
+func GetAllExchangeNodeManagementPoliciesHandler(ec ExchangeContext) AllNodeManagementPoliciesHandler {
+	return func(policyOrg string) (*map[string]exchangecommon.ExchangeNodeManagementPolicy, error) {
+		return GetAllExchangeNodeManagementPolicy(ec, policyOrg)
+	}
+
+}
+
+// A handler for getting a single node management policy status.
+type NodeManagementPolicyStatusHandler func(orgId string, nodeId string, policyName string) (*exchangecommon.NodeManagementPolicyStatus, error)
+
+func GetNodeManagementPolicyStatusHandler(ec ExchangeContext) NodeManagementPolicyStatusHandler {
+	return func(orgId string, nodeId string, policyName string) (*exchangecommon.NodeManagementPolicyStatus, error) {
+		return GetNodeManagementPolicyStatus(ec, orgId, nodeId, policyName)
+	}
+}
+
+// A handler for creating or updating a node management policy status.
+type PutNodeManagementPolicyStatusHandler func(orgId string, nodeId string, policyName string, nmpStatus *exchangecommon.NodeManagementPolicyStatus) (*PutPostDeleteStandardResponse, error)
+
+func GetPutNodeManagementPolicyStatusHandler(ec ExchangeContext) PutNodeManagementPolicyStatusHandler {
+	return func(orgId string, nodeId string, policyName string, nmpStatus *exchangecommon.NodeManagementPolicyStatus) (*PutPostDeleteStandardResponse, error) {
+		return PutNodeManagementPolicyStatus(ec, orgId, nodeId, policyName, nmpStatus)
+	}
+}
+
+// A handler for deleting a single node management policy status.
+type DeleteNodeManagementPolicyStatusHandler func(orgId string, nodeId string, policyName string) error
+
+func GetDeleteNodeManagementPolicyStatusHandler(ec ExchangeContext) DeleteNodeManagementPolicyStatusHandler {
+	return func(orgId string, nodeId string, policyName string) error {
+		return DeleteNodeManagementPolicyStatus(ec, orgId, nodeId, policyName)
+	}
+}
+
+// A handler for getting all node management policy statuses.
+type AllNodeManagementPolicyStatusHandler func(orgId string, nodeId string) (*NodeManagementAllStatuses, error)
+
+func GetAllNodeManagementPolicyStatusHandler(ec ExchangeContext) AllNodeManagementPolicyStatusHandler {
+	return func(orgId string, nodeId string) (*NodeManagementAllStatuses, error) {
+		return GetNodeManagementAllStatuses(ec, orgId, nodeId)
+	}
+}
+
+// A handler for deleting all node management policy statuses.
+type DeleteAllNodeManagementPolicyStatusHandler func(orgId string, nodeId string) error
+
+func GetDeleteAllNodeManagementPolicyStatusHandler(ec ExchangeContext) DeleteAllNodeManagementPolicyStatusHandler {
+	return func(orgId string, nodeId string) error {
+		return DeleteNodeManagementAllStatuses(ec, orgId, nodeId)
 	}
 }
