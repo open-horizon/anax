@@ -126,6 +126,7 @@ type AGConfig struct {
 	PolicySearchOrder             bool             // When true, search policies from most recently changed to least recently changed.
 	Vault                         VaultConfig      // The hashicorp vault config to connect to and fetch secrets from.
 	SecretsUpdateCheck            int              // The number of seconds between checks for updated secrets.
+	CSSDestinationBatchSize       int              // The max number of destination updates to send to CSS in a single update.
 }
 
 // Contains the hashicorp vault configuration used within AGConfig.
@@ -370,16 +371,17 @@ func Read(file string) (*HorizonConfig, error) {
 				K8sCRInstallTimeoutS:           K8sCRInstallTimeoutS_DEFAULT,
 			},
 			AgreementBot: AGConfig{
-				MessageKeyCheck:     AgbotMessageKeyCheck_DEFAULT,
-				AgreementBatchSize:  AgbotAgreementBatchSize_DEFAULT,
-				AgreementQueueSize:  AgbotAgreementQueueSize_DEFAULT,
-				MessageQueueScale:   AgbotMessageQueueScale_DEFAULT,
-				QueueHistorySize:    AgbotQueueHistorySize_DEFAULT,
-				FullRescanS:         AgbotFullRescan_DEFAULT,
-				MaxExchangeChanges:  AgbotMaxChanges_DEFAULT,
-				RetryLookBackWindow: AgbotRetryLookBackWindow_DEFAULT,
-				PolicySearchOrder:   AgbotPolicySearchOrder_DEFAULT,
-				SecretsUpdateCheck:  SecretsUpdateCheck_DEFAULT,
+				MessageKeyCheck:         AgbotMessageKeyCheck_DEFAULT,
+				AgreementBatchSize:      AgbotAgreementBatchSize_DEFAULT,
+				AgreementQueueSize:      AgbotAgreementQueueSize_DEFAULT,
+				MessageQueueScale:       AgbotMessageQueueScale_DEFAULT,
+				QueueHistorySize:        AgbotQueueHistorySize_DEFAULT,
+				FullRescanS:             AgbotFullRescan_DEFAULT,
+				MaxExchangeChanges:      AgbotMaxChanges_DEFAULT,
+				RetryLookBackWindow:     AgbotRetryLookBackWindow_DEFAULT,
+				PolicySearchOrder:       AgbotPolicySearchOrder_DEFAULT,
+				SecretsUpdateCheck:      SecretsUpdateCheck_DEFAULT,
+				CSSDestinationBatchSize: AgbotCSSDestinationBatchSize_DEFAULT,
 			},
 		}
 
@@ -554,6 +556,7 @@ func (agc *AGConfig) String() string {
 		", CheckUpdatedPolicyS: %v"+
 		", CSSURL: %v"+
 		", CSSSSLCert: %v"+
+		", CSSDestinationBatchSize: %v"+
 		", AgreementBatchSize: %v"+
 		", AgreementQueueSize: %v"+
 		", MessageQueueScale: %v"+
@@ -569,7 +572,7 @@ func (agc *AGConfig) String() string {
 		agc.IgnoreContractWithAttribs, agc.ExchangeURL, agc.ExchangeHeartbeat, agc.ExchangeId,
 		mask, agc.DVPrefix, agc.ActiveDeviceTimeoutS, agc.ExchangeMessageTTL, agc.MessageKeyPath, mask, agc.APIListen,
 		agc.SecureAPIListenHost, agc.SecureAPIListenPort, agc.SecureAPIServerCert, agc.SecureAPIServerKey,
-		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.AgreementBatchSize,
+		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.CSSDestinationBatchSize, agc.AgreementBatchSize,
 		agc.AgreementQueueSize, agc.MessageQueueScale, agc.QueueHistorySize, agc.FullRescanS, agc.MaxExchangeChanges,
 		agc.RetryLookBackWindow, agc.PolicySearchOrder, agc.Vault)
 }
