@@ -195,7 +195,7 @@ func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 
 	if c, err := CompareVersions(self.start, normalizedExpr); err != nil {
 		return false, err
-	} else if c > 1 {
+	} else if c > 0 {
 		return false, nil
 	}
 
@@ -207,7 +207,7 @@ func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 
 	if c, err := CompareVersions(self.end, normalizedExpr); err != nil {
 		return false, err
-	} else if c < 1 {
+	} else if c < 0 {
 		return false, nil
 	}
 
@@ -330,7 +330,7 @@ func multipleVersions(expr string) bool {
 }
 
 // Return true if the input version string is a valid version according to the version string schema above.
-// A number with leading 0's, for example 1.02.1, is not a valid version string.
+// A number with leading 0's, for example 1.02.1, is a valid version string.
 func IsVersionString(expr string) bool {
 
 	if len(expr) == 0 {
