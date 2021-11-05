@@ -4,29 +4,51 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/boltdb/bolt"
-	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/exchangecommon"
 )
 
 // Constants used throughout the code.
 const NODE_POLICY = "nodepolicy"                                   // The bucket name in the bolt DB.
 const EXCHANGE_NP_LAST_UPDATED = "exchange_nodepolicy_lastupdated" // The buucket for the exchange last updated string
 
+// The node policy object in the local db
+type PersistenceNodePolicy struct {
+	exchangecommon.NodePolicy
+	NodePolicyVersion string `json:"node_policy_version,omitempty"` // the version of the node policy
+}
+
+func (e PersistenceNodePolicy) String() string {
+	return fmt.Sprintf("%v, "+
+		"NodePolicyVersion: %v",
+		e.NodePolicy, e.NodePolicyVersion)
+}
+
 // Retrieve the node policy object from the database. The bolt APIs assume there is more than 1 object in a bucket,
 // so this function has to be prepared for that case, even though there should only ever be 1.
-func FindNodePolicy(db *bolt.DB) (*externalpolicy.ExternalPolicy, error) {
+func FindNodePolicy(db *bolt.DB) (*exchangecommon.NodePolicy, error) {
 
-	policy := make([]externalpolicy.ExternalPolicy, 0)
+	policy := make([]exchangecommon.NodePolicy, 0)
 
 	readErr := db.View(func(tx *bolt.Tx) error {
 		if b := tx.Bucket([]byte(NODE_POLICY)); b != nil {
 			return b.ForEach(func(k, v []byte) error {
-				var pol externalpolicy.ExternalPolicy
+				var pol PersistenceNodePolicy
 
 				if err := json.Unmarshal(v, &pol); err != nil {
 					return fmt.Errorf("Unable to deserialize node policy record: %v", v)
 				}
 
-				policy = append(policy, pol)
+				if pol.NodePolicyVersion == "" {
+					// convert the version1 node policy to version2 format
+					pol_converted := exchangecommon.ConvertNodePolicy_v1Tov2(pol.NodePolicy.ExternalPolicy)
+					policy = append(policy, *pol_converted)
+				} else if pol.NodePolicyVersion == exchangecommon.NODEPOLICY_VERSION_VERSION_2 {
+					// this is version 2, keep
+					policy = append(policy, pol.NodePolicy)
+				} else {
+					return fmt.Errorf("Unsupported node policy version: %v", pol.NodePolicyVersion)
+				}
+
 				return nil
 			})
 		}
@@ -48,7 +70,7 @@ func FindNodePolicy(db *bolt.DB) (*externalpolicy.ExternalPolicy, error) {
 }
 
 // There is only 1 object in the bucket so we can use the bucket name as the object key.
-func SaveNodePolicy(db *bolt.DB, nodePolicy *externalpolicy.ExternalPolicy) error {
+func SaveNodePolicy(db *bolt.DB, nodePolicy *exchangecommon.NodePolicy) error {
 
 	writeErr := db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(NODE_POLICY))
@@ -56,8 +78,9 @@ func SaveNodePolicy(db *bolt.DB, nodePolicy *externalpolicy.ExternalPolicy) erro
 			return err
 		}
 
-		if serial, err := json.Marshal(nodePolicy); err != nil {
-			return fmt.Errorf("Failed to serialize node policy: %v. Error: %v", nodePolicy, err)
+		persNostPol := PersistenceNodePolicy{NodePolicy: *nodePolicy, NodePolicyVersion: exchangecommon.NODEPOLICY_VERSION_VERSION_2}
+		if serial, err := json.Marshal(&persNostPol); err != nil {
+			return fmt.Errorf("Failed to serialize node policy: %v. Error: %v", persNostPol, err)
 		} else {
 			return b.Put([]byte(NODE_POLICY), serial)
 		}

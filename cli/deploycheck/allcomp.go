@@ -12,7 +12,7 @@ import (
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -57,8 +57,8 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 	if bp != nil || pattern != nil || patternId != "" {
 		if nodePolFile != "" {
 			// read the node policy from file
-			var np externalpolicy.ExternalPolicy
-			readExternalPolicyFile(nodePolFile, &np)
+			var np exchangecommon.NodePolicy
+			readNodePolicyFile(nodePolFile, &np)
 			compCheckInput.NodePolicy = &np
 		} else if !useNodeId {
 			bUseLocalNodeForPolicy = true
@@ -79,7 +79,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 		msgPrinter.Println()
 
 		// get node policy from local node
-		var np externalpolicy.ExternalPolicy
+		var np exchangecommon.NodePolicy
 		cliutils.HorizonGet("node/policy", []int{200}, &np, false)
 		compCheckInput.NodePolicy = &np
 	}
@@ -104,9 +104,9 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 
 	// read the service policy from file for the policy case
 	if servicePolFile != "" {
-		var sp externalpolicy.ExternalPolicy
-		readExternalPolicyFile(servicePolFile, &sp)
-		compCheckInput.ServicePolicy = &sp
+		var sp exchangecommon.ServicePolicy
+		readServicePolicyFile(servicePolFile, &sp)
+		compCheckInput.ServicePolicy = sp.GetExternalPolicy()
 	}
 
 	// put the given service defs into the compCheckInput

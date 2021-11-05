@@ -92,7 +92,8 @@ fi
 
 read -d '' newhznpolicy <<EOF
 {
-  "properties": [
+  "deployment": {
+    "properties": [
       {
         "name":"purpose","value":"network-testing"
       },
@@ -100,10 +101,11 @@ read -d '' newhznpolicy <<EOF
         "name":"group","value":"bluenode"
       }
     ],
-  "constraints": [
+    "constraints": [
       "iame2edev == true",
       "$constraint2"
-  ]
+    ]
+  }
 }
 EOF
 

@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"io/ioutil"
@@ -17,7 +18,9 @@ import (
 var nodePolicyUpdateLock sync.Mutex //The lock that protects the nodePolicyLastUpdated value
 
 // Check the node policy changes on the exchange and update the local copy with the changes.
-func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice, getExchangeNodePolicy exchange.NodePolicyHandler, putExchangeNodePolicy exchange.PutNodePolicyHandler) (bool, *externalpolicy.ExternalPolicy, error) {
+// It returns the comparision result code that is defined in externalpolicy/ExternalPolicy.go
+// (EP_COMPARE_*) for deployment and management. It also returns the latest node policy.
+func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice, getExchangeNodePolicy exchange.NodePolicyHandler, putExchangeNodePolicy exchange.PutNodePolicyHandler) (int, int, *exchangecommon.NodePolicy, error) {
 
 	glog.V(4).Infof("Checking the node policy changes.")
 
@@ -27,62 +30,67 @@ func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice
 	// get the node policy from the exchange
 	exchangeNodePolicy, err := GetProcessedExchangeNodePolicy(pDevice, getExchangeNodePolicy, putExchangeNodePolicy, db)
 	if err != nil {
-		return false, nil, err
+		return 0, 0, nil, err
 	}
 
 	// get the locally saved exchange node policy last updated string
 	nodePolicyLastUpdated, err := persistence.GetNodePolicyLastUpdated_Exch(db)
 	if err != nil {
-		return false, nil, fmt.Errorf("Unable to retrieve the locally saved exchange node policy last updated string. Error: %v", err)
+		return 0, 0, nil, fmt.Errorf("Unable to retrieve the locally saved exchange node policy last updated string. Error: %v", err)
 	}
+
+	// get the local node policy
+	localNodePolicy, err := persistence.FindNodePolicy(db)
+	if err != nil {
+		return 0, 0, nil, fmt.Errorf("Unable to read local node policy object. %v", err)
+	}
+
+	rc_deploy := externalpolicy.EP_COMPARE_NOCHANGE
+	rc_management := externalpolicy.EP_COMPARE_NOCHANGE
 
 	// if there is a change, update the local copy
 	if exchangeNodePolicy != nil {
-		newNodePolicy := exchangeNodePolicy.GetExternalPolicy()
+		newNodePolicy := exchangeNodePolicy.NodePolicy
 		if exchangeNodePolicy.GetLastUpdated() != nodePolicyLastUpdated {
+
+			if localNodePolicy == nil {
+				localNodePolicy = &exchangecommon.NodePolicy{}
+			}
+			rc_deploy, rc_management = localNodePolicy.CompareWith(&newNodePolicy)
 
 			// update the local node policy
 			if err := persistence.SaveNodePolicy(db, &newNodePolicy); err != nil {
-				return false, nil, fmt.Errorf("unable to save node policy %v to local database. %v", newNodePolicy, err)
+				return 0, 0, nil, fmt.Errorf("unable to save node policy %v to local database. %v", newNodePolicy, err)
 			} else if err := persistence.SaveNodePolicyLastUpdated_Exch(db, exchangeNodePolicy.GetLastUpdated()); err != nil {
-				return false, nil, fmt.Errorf("unable to save the exchange node policy last update string %v to local database. %v", nodePolicyLastUpdated, err)
+				return 0, 0, nil, fmt.Errorf("unable to save the exchange node policy last update string %v to local database. %v", nodePolicyLastUpdated, err)
 			} else {
 				glog.V(3).Infof("Updated the local node policy with the exchange copy: %v", newNodePolicy)
-				return true, &newNodePolicy, nil
 			}
-		} else {
-			return false, &newNodePolicy, nil
 		}
+		return rc_deploy, rc_management, &newNodePolicy, nil
 	} else {
-		// get the local node policy
-		localNodePolicy, err := persistence.FindNodePolicy(db)
-		if err != nil {
-			return false, nil, fmt.Errorf("Unable to read local node policy object. %v", err)
-		}
-
-		updated := false
 		// delete the local node policy
 		if localNodePolicy != nil {
 			if err := persistence.DeleteNodePolicy(db); err != nil {
-				return false, nil, fmt.Errorf("Node policy could not be deleted, error %v", err)
+				return 0, 0, nil, fmt.Errorf("Node policy could not be deleted, error %v", err)
 			}
-			updated = true
+			rc_deploy = externalpolicy.EP_COMPARE_DELETED
+			rc_management = externalpolicy.EP_COMPARE_DELETED
 		}
 
 		if nodePolicyLastUpdated != "" {
 			if err := persistence.DeleteNodePolicyLastUpdated_Exch(db); err != nil {
-				return updated, nil, fmt.Errorf("Exchange node policy last update string could not be deleted from the local database, error %v", err)
+				return 0, 0, nil, fmt.Errorf("Exchange node policy last update string could not be deleted from the local database, error %v", err)
 			}
 		}
-		return updated, nil, nil
+		return rc_deploy, rc_management, nil, nil
 	}
-
 }
 
 // This function retrieves the node's policy from the exchange, adds the node built-in properties if needed. Then it saves the new
 // node policy to the exchange again and then returns the new node policy. If the exchange node policy already has the built-in properties,
 // it just returns the one from the exchange.
-func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExchangeNodePolicy exchange.NodePolicyHandler, putExchangeNodePolicy exchange.PutNodePolicyHandler, db *bolt.DB) (*exchange.ExchangePolicy, error) {
+func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExchangeNodePolicy exchange.NodePolicyHandler, putExchangeNodePolicy exchange.PutNodePolicyHandler, db *bolt.DB) (*exchange.ExchangeNodePolicy, error) {
 	// get the node policy from the exchange
 	exchangeNodePolicy, err := getExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id))
 	if err != nil {
@@ -102,13 +110,22 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
 
+	// get the top level policies from the node policy.
+	// the the top level policies contains the node built-in properties.
+	var top_pol *externalpolicy.ExternalPolicy
+	if existingPol != nil {
+		top_pol = &existingPol.ExternalPolicy
+	} else {
+		top_pol = nil
+	}
+
 	// update the exchange node policy with the built-in policies if it does not contain the built-in's.
 	builtinPolicyReadOnly := &externalpolicy.ExternalPolicy{}
 	builtinPolicyReadWrite := &externalpolicy.ExternalPolicy{}
-	if (exchangeNodePolicy != nil && exchangeNodePolicy.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) || (existingPol != nil && existingPol.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) {
-		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, true, existingPol, pDevice.IsEdgeCluster())
+	if (exchangeNodePolicy != nil && exchangeNodePolicy.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) || (top_pol != nil && top_pol.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) {
+		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, true, top_pol, pDevice.IsEdgeCluster())
 	} else {
-		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol, pDevice.IsEdgeCluster())
+		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, false, top_pol, pDevice.IsEdgeCluster())
 	}
 
 	builtinPolicy := &externalpolicy.ExternalPolicy{}
@@ -116,7 +133,6 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 	builtinPolicy.MergeWith(builtinPolicyReadWrite, false)
 	var mergedPol *externalpolicy.ExternalPolicy
 	if exchangeNodePolicy == nil {
-		builtinPolicy.MergeWith(builtinPolicyReadWrite, false)
 		mergedPol = builtinPolicy
 	} else {
 		// check if it contains node's built-in properties and they are the same
@@ -142,7 +158,7 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 		}
 
 		if needsBuiltIns {
-			polTemp := exchangeNodePolicy.GetExternalPolicy()
+			polTemp := exchangeNodePolicy.ExternalPolicy
 			mergedPol = &polTemp
 			mergedPol.MergeWith(builtinPolicyReadOnly, true)
 			mergedPol.MergeWith(builtinPolicyReadWrite, false)
@@ -151,7 +167,14 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 
 	// save the merged policy to the exchange
 	if mergedPol != nil {
-		_, err := putExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *mergedPol})
+		tmpExchangeNodePol := exchangecommon.NodePolicy{ExternalPolicy: *mergedPol}
+		if exchangeNodePolicy != nil {
+			tmpExchangeNodePol.Label = exchangeNodePolicy.Label
+			tmpExchangeNodePol.Description = exchangeNodePolicy.Description
+			tmpExchangeNodePol.Deployment = exchangeNodePolicy.Deployment
+			tmpExchangeNodePol.Management = exchangeNodePolicy.Management
+		}
+		_, err := putExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &tmpExchangeNodePol)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to save node policy in exchange. %v", err)
 		}
@@ -170,16 +193,26 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 // Sets the default node policy on local db and the exchange
 func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	getExchangeNodePolicy exchange.NodePolicyHandler,
-	putExchangeNodePolicy exchange.PutNodePolicyHandler) (*externalpolicy.ExternalPolicy, error) {
+	putExchangeNodePolicy exchange.PutNodePolicyHandler) (*exchangecommon.NodePolicy, error) {
 
 	glog.V(3).Infof("Setting up the default node policy.")
 
-	nodePolicy := new(externalpolicy.ExternalPolicy)
+	nodePolicy := new(exchangecommon.NodePolicy)
 	existingPol, err := persistence.FindNodePolicy(db)
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
-	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol, pDevice.IsEdgeCluster())
+
+	// get the top level policies from the node policy.
+	// the the top level policies contains the node built-in properties.
+	var top_pol *externalpolicy.ExternalPolicy
+	if existingPol != nil {
+		top_pol = &existingPol.ExternalPolicy
+	} else {
+		top_pol = nil
+	}
+
+	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, top_pol, pDevice.IsEdgeCluster())
 	builtinNodePol.MergeWith(builtinNodePolReadWrite, true)
 
 	// get the default node policy file name from the config and set it up in local and exchange
@@ -191,14 +224,14 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 		}
 		glog.Infof("No default node policy file in the anax configuration file. Use node's default built-in properties.")
 		if builtinNodePol != nil {
-			nodePolicy = builtinNodePol
+			nodePolicy.ExternalPolicy = *builtinNodePol
 		}
 	} else {
 		// check file exists
 		if _, err := os.Stat(policyFile); os.IsNotExist(err) {
 			glog.Errorf("Default node policy file does not exist: %v.", policyFile)
 			if builtinNodePol != nil {
-				nodePolicy = builtinNodePol
+				nodePolicy.ExternalPolicy = *builtinNodePol
 			}
 		} else {
 			// read the file
@@ -215,7 +248,7 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 
 			// add the built-in properties if they are not in the default policy file
 			if builtinNodePol != nil {
-				nodePolicy.MergeWith(builtinNodePol, true)
+				(&nodePolicy.ExternalPolicy).MergeWith(builtinNodePol, true)
 			}
 		}
 	}
@@ -226,13 +259,13 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 	}
 
 	// upload the node policy on the exchange
-	_, err = putExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *nodePolicy})
+	_, err = putExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), nodePolicy)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to save node policy in exchange. %v", err)
 	}
 
 	// sync the local policy with the one from exchange
-	_, _, err = SyncNodePolicyWithExchange(db, pDevice, getExchangeNodePolicy, putExchangeNodePolicy)
+	_, _, _, err = SyncNodePolicyWithExchange(db, pDevice, getExchangeNodePolicy, putExchangeNodePolicy)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to sync the local node policy with the exchange copy. %v", err)
 	}
@@ -246,7 +279,7 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 // Otherwise, update the local node policy with the one from the exchange.
 func NodePolicyInitalSetup(db *bolt.DB, config *config.HorizonConfig,
 	getExchangeNodePolicy exchange.NodePolicyHandler,
-	putExchangeNodePolicy exchange.PutNodePolicyHandler) (*externalpolicy.ExternalPolicy, error) {
+	putExchangeNodePolicy exchange.PutNodePolicyHandler) (*exchangecommon.NodePolicy, error) {
 
 	glog.V(3).Infof("Node policy initial setup.")
 
@@ -265,7 +298,7 @@ func NodePolicyInitalSetup(db *bolt.DB, config *config.HorizonConfig,
 	}
 
 	// get the exchage node policy
-	var exchangeNodePolicy *exchange.ExchangePolicy
+	var exchangeNodePolicy *exchange.ExchangeNodePolicy
 	exchangeNodePolicy = nil
 	if pDevice != nil {
 		exchangeNodePolicy, err = getExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id))
@@ -278,7 +311,7 @@ func NodePolicyInitalSetup(db *bolt.DB, config *config.HorizonConfig,
 		return SetDefaultNodePolicy(config, pDevice, db, getExchangeNodePolicy, putExchangeNodePolicy)
 	} else {
 		// exchange is the master
-		if _, nodePolicy, err := SyncNodePolicyWithExchange(db, pDevice, getExchangeNodePolicy, putExchangeNodePolicy); err != nil {
+		if _, _, nodePolicy, err := SyncNodePolicyWithExchange(db, pDevice, getExchangeNodePolicy, putExchangeNodePolicy); err != nil {
 			return nodePolicy, fmt.Errorf("Failed to sync the local node policy with the exchange copy. %v", err)
 		} else {
 			return nodePolicy, nil
@@ -288,7 +321,7 @@ func NodePolicyInitalSetup(db *bolt.DB, config *config.HorizonConfig,
 
 // check if the node policy has been changed from last sync.
 // It returns the latest node policy on the exchange.
-func ExchangeNodePolicyChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB, getExchangeNodePolicy exchange.NodePolicyHandler) (bool, *externalpolicy.ExternalPolicy, error) {
+func ExchangeNodePolicyChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB, getExchangeNodePolicy exchange.NodePolicyHandler) (bool, *exchangecommon.NodePolicy, error) {
 
 	// get the node policy from the exchange
 	exchangeNodePolicy, err := getExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id))
@@ -304,7 +337,7 @@ func ExchangeNodePolicyChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 
 	// if there is a change, update the local copy
 	if exchangeNodePolicy != nil {
-		nodePolicy := exchangeNodePolicy.GetExternalPolicy()
+		nodePolicy := exchangeNodePolicy.NodePolicy
 		if exchangeNodePolicy.GetLastUpdated() != nodePolicyLastUpdated {
 			return true, &nodePolicy, nil
 		} else {
@@ -352,14 +385,16 @@ func DeleteNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	return nil
 }
 
-// Update (create new or replace old) node policy on local db and the exchange
-func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePolicy *externalpolicy.ExternalPolicy,
+// Update (create new or replace old) node policy on local db and the exchange.
+// It returns the comparision result code that is defined in externalpolicy/ExternalPolicy.go
+// (EP_COMPARE_*) for deployment and management. It also returns the latest node policy.
+func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePolicy *exchangecommon.NodePolicy,
 	nodeGetPolicyHandler exchange.NodePolicyHandler,
-	nodePutPolicyHandler exchange.PutNodePolicyHandler) error {
+	nodePutPolicyHandler exchange.PutNodePolicyHandler) (int, int, error) {
 
 	// verify the policy
 	if err := nodePolicy.ValidateAndNormalize(); err != nil {
-		return fmt.Errorf("Node policy does not validate. %v", err)
+		return 0, 0, fmt.Errorf("Node policy does not validate. %v", err)
 	}
 
 	// add node's built-in properties
@@ -367,67 +402,91 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
-	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol, pDevice.IsEdgeCluster())
+	// get the top level policies from the node policy.
+	// the the top level policies contains the node built-in properties.
+	var top_pol *externalpolicy.ExternalPolicy
+	if existingPol != nil {
+		top_pol = &existingPol.ExternalPolicy
+	} else {
+		top_pol = nil
+	}
+
+	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, top_pol, pDevice.IsEdgeCluster())
 
 	if builtinNodePol != nil {
-		nodePolicy.MergeWith(builtinNodePol, true)
+		(&nodePolicy.ExternalPolicy).MergeWith(builtinNodePol, true)
 	}
 	if builtinNodePolReadWrite != nil {
-		nodePolicy.MergeWith(builtinNodePolReadWrite, false)
+		(&nodePolicy.ExternalPolicy).MergeWith(builtinNodePolReadWrite, false)
 	}
 
 	// verify the policy again
 	if err := nodePolicy.ValidateAndNormalize(); err != nil {
-		return fmt.Errorf("Node policy with built-in properties does not validate. %v", err)
+		return 0, 0, fmt.Errorf("Node policy with built-in properties does not validate. %v", err)
 	}
 
 	// save it into the exchange and sync the local db with it.
-	if _, err := nodePutPolicyHandler(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *nodePolicy}); err != nil {
-		return fmt.Errorf("Unable to save node policy in exchange, error %v", err)
-	} else if _, _, err := SyncNodePolicyWithExchange(db, pDevice, nodeGetPolicyHandler, nodePutPolicyHandler); err != nil {
-		return fmt.Errorf("Unable to sync the local db with the exchange node policy. %v", err)
+	if _, err := nodePutPolicyHandler(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), nodePolicy); err != nil {
+		return 0, 0, fmt.Errorf("Unable to save node policy in exchange, error %v", err)
 	}
 
-	return nil
+	rc_deploy, rc_management, _, err := SyncNodePolicyWithExchange(db, pDevice, nodeGetPolicyHandler, nodePutPolicyHandler)
+	if err != nil {
+		return 0, 0, fmt.Errorf("Unable to sync the local db with the exchange node policy. %v", err)
+	}
+
+	return rc_deploy, rc_management, nil
 }
 
-func PatchNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, patchObject interface{},
+// It returns the comparision result code that is defined in externalpolicy/ExternalPolicy.go
+// (EP_COMPARE_*) for deployment and management. It also returns the latest node policy.
+func PatchNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB,
+	attributeName string, patchObject interface{},
 	nodeGetPolicyHandler exchange.NodePolicyHandler,
-	nodePutPolicyHandler exchange.PutNodePolicyHandler) (*externalpolicy.ExternalPolicy, error) {
+	nodePutPolicyHandler exchange.PutNodePolicyHandler) (int, int, *exchangecommon.NodePolicy, error) {
 
 	if changed, _, err := ExchangeNodePolicyChanged(pDevice, db, nodeGetPolicyHandler); err != nil {
-		return nil, fmt.Errorf("Failed to check the exchange for the node policy: %v.", err)
+		return 0, 0, nil, fmt.Errorf("Failed to check the exchange for the node policy: %v.", err)
 	} else if changed {
-		_, _, err = SyncNodePolicyWithExchange(db, pDevice, nodeGetPolicyHandler, nodePutPolicyHandler)
+		_, _, _, err = SyncNodePolicyWithExchange(db, pDevice, nodeGetPolicyHandler, nodePutPolicyHandler)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to sync the local node policy with the exchange copy. %v", err)
+			return 0, 0, nil, fmt.Errorf("Failed to sync the local node policy with the exchange copy. %v", err)
 		}
 	}
 
 	// get the local node policy
 	localNodePolicy, err := persistence.FindNodePolicy(db)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to read local node policy object. %v", err)
+		return 0, 0, nil, fmt.Errorf("Unable to read local node policy object. %v", err)
 	}
 
 	if propertyPatch, ok := patchObject.(externalpolicy.PropertyList); ok {
+		// LINGTODO: test this case
 		localNodePolicy.Properties.MergeWith(&propertyPatch, true)
 	} else if conastraintPatch, ok := patchObject.(externalpolicy.ConstraintExpression); ok {
 		localNodePolicy.Constraints = conastraintPatch
+	} else if externpolPatch, ok := patchObject.(externalpolicy.ExternalPolicy); ok {
+		if attributeName == "deployment" {
+			localNodePolicy.Deployment = externpolPatch
+		} else if attributeName == "management" {
+			localNodePolicy.Management = externpolPatch
+		}
 	} else {
-		return nil, fmt.Errorf("Unable to determine type of patch. %T %v", patchObject, patchObject)
+		return 0, 0, nil, fmt.Errorf("Unable to determine type of patch. %T %v", patchObject, patchObject)
 	}
 
 	if err := localNodePolicy.ValidateAndNormalize(); err != nil {
-		return nil, err
+		return 0, 0, nil, err
 	}
 
 	// save it into the exchange and sync the local db with it.
-	if _, err := nodePutPolicyHandler(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *localNodePolicy}); err != nil {
-		return nil, fmt.Errorf("Unable to save node policy in exchange, error %v", err)
-	} else if _, _, err := SyncNodePolicyWithExchange(db, pDevice, nodeGetPolicyHandler, nodePutPolicyHandler); err != nil {
-		return nil, fmt.Errorf("Unable to sync the local db with the exchange node policy. %v", err)
+	if _, err := nodePutPolicyHandler(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), localNodePolicy); err != nil {
+		return 0, 0, nil, fmt.Errorf("Unable to save node policy in exchange, error %v", err)
+	}
+	rc_deploy, rc_management, _, err := SyncNodePolicyWithExchange(db, pDevice, nodeGetPolicyHandler, nodePutPolicyHandler)
+	if err != nil {
+		return 0, 0, nil, fmt.Errorf("Unable to sync the local db with the exchange node policy. %v", err)
 	}
 
-	return localNodePolicy, nil
+	return rc_deploy, rc_management, localNodePolicy, nil
 }

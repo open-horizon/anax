@@ -1159,7 +1159,10 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 					case *NodeHealthStatus:
 						return nil, nil
 
-					case *ExchangePolicy:
+					case *ExchangeNodePolicy:
+						return nil, nil
+
+					case *ExchangeServicePolicy:
 						return nil, nil
 
 					case *GetBusinessPolicyResponse:

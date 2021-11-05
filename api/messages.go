@@ -12,7 +12,7 @@ const (
 	EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE       = "Error parsing input for node update. Input body couldn't be deserialized to node object: %v, error: %v"
 	EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY       = "Error parsing input for node policy. Input body could not be deserialized as a policy object: %v, error: %v"
 	EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH = "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: %v, error: %v"
-	EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR   = "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: %v, error: %v"
+	EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR   = "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: %v"
 	EL_API_ERR_PARSING_INPUT_FOR_NODE_UI           = "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: %v, error: %v"
 
 	EL_API_ERR_IN_NODE_REG            = "Error in node configuration/registration for node %v. %v"

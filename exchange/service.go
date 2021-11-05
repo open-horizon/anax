@@ -874,7 +874,7 @@ func PostDeviceServicesConfigState(httpClientFactory *config.HTTPClientFactory, 
 
 // This function gets the service policy for a service.
 // It returns nil if there is no service policy for this service
-func GetServicePolicy(ec ExchangeContext, url string, org string, version string, arch string) (*ExchangePolicy, string, error) {
+func GetServicePolicy(ec ExchangeContext, url string, org string, version string, arch string) (*ExchangeServicePolicy, string, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting service policy for service %v %v %v %v", url, org, version, arch)))
 
@@ -897,12 +897,12 @@ func GetServicePolicy(ec ExchangeContext, url string, org string, version string
 
 // Retrieve the service policy object from the exchange. The service_id is prefixed with the org name.
 // It returns nil if there is no service policy for this service
-func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePolicy, error) {
+func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangeServicePolicy, error) {
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting service policy for %v.", service_id)))
 
 	// Get the service policy object. There should only be 1.
 	var resp interface{}
-	resp = new(ExchangePolicy)
+	resp = new(ExchangeServicePolicy)
 
 	if cachedPol := GetServicePolicyFromCache(service_id); cachedPol != nil {
 		if cachedPol.LastUpdated == "" {
@@ -933,7 +933,7 @@ func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePol
 			}
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service policy for %v.", service_id)))
-			servicePolicy := resp.(*ExchangePolicy)
+			servicePolicy := resp.(*ExchangeServicePolicy)
 			if servicePolicy != nil {
 				UpdateCache(service_id, SVC_POL_TYPE_CACHE, *servicePolicy)
 			}
@@ -943,7 +943,7 @@ func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePol
 }
 
 // This function updates the service policy for a service.
-func PutServicePolicy(ec ExchangeContext, url string, org string, version string, arch string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+func PutServicePolicy(ec ExchangeContext, url string, org string, version string, arch string, ep *ExchangeServicePolicy) (*PutDeviceResponse, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("updating service policy for service %v %v %v %v", url, org, version, arch)))
 
@@ -963,7 +963,7 @@ func PutServicePolicy(ec ExchangeContext, url string, org string, version string
 }
 
 // Write an updated service policy to the exchange.
-func PutServicePolicyWithId(ec ExchangeContext, service_id string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+func PutServicePolicyWithId(ec ExchangeContext, service_id string, ep *ExchangeServicePolicy) (*PutDeviceResponse, error) {
 	// create PUT body
 	var resp interface{}
 	resp = new(PutDeviceResponse)

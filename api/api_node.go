@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
@@ -278,7 +279,7 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
-		var nodePolicy externalpolicy.ExternalPolicy
+		var nodePolicy exchangecommon.NodePolicy
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodePolicy); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
@@ -314,26 +315,64 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		//Read in the HTTP message body and pass the policy update to be updated in the local db and the exchange
 		//Patch object can be either a constraint expression or a property list
 		//This reads in the message body and throws an error if it cannot be unmarshaled or if it is neither a constraint expression nor a property list
-		var constraintExp map[string]externalpolicy.ConstraintExpression
-		var propertyList map[string]externalpolicy.PropertyList
 		body, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(body, &constraintExp)
-		if _, ok := constraintExp["constraints"]; !ok || err != nil {
-			err := json.Unmarshal(body, &propertyList)
-			if err != nil {
-				LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH, string(body), err.Error()),
-					persistence.EC_API_USER_INPUT_ERROR, nil)
-				errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
-				return
+
+		findAttrType := make(map[string]interface{})
+		if err := json.Unmarshal([]byte(body), &findAttrType); err != nil {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH, string(body), err.Error()),
+				persistence.EC_API_USER_INPUT_ERROR, nil)
+			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body %v could not be deserialized, error: %v", string(body), err), "body"))
+			return
+		}
+
+		var attribName string
+		var parseError error
+		var patchObject interface{}
+		if _, ok := findAttrType["properties"]; ok {
+			attribName = "properties"
+			propertiesPatch := make(map[string]externalpolicy.PropertyList)
+			parseError = json.Unmarshal([]byte(body), &propertiesPatch)
+			if parseError == nil {
+				patchObject = propertiesPatch["properties"]
 			}
-			if _, ok := propertyList["properties"]; !ok {
-				LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR, string(body), err.Error()),
-					persistence.EC_API_USER_INPUT_ERROR, nil)
-				errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
-				return
+		} else if _, ok = findAttrType["constraints"]; ok {
+			attribName = "constraints"
+			constraintPatch := make(map[string]externalpolicy.ConstraintExpression)
+			parseError = json.Unmarshal([]byte(body), &constraintPatch)
+			if parseError == nil {
+				patchObject = constraintPatch["constraints"]
 			}
+		} else if _, ok = findAttrType["deployment"]; ok {
+			attribName = "deployment"
+			externpolPatch := make(map[string]externalpolicy.ExternalPolicy)
+			parseError = json.Unmarshal([]byte(body), &externpolPatch)
+			if parseError == nil {
+				patchObject = externpolPatch["deployment"]
+			}
+		} else if _, ok = findAttrType["management"]; ok {
+			attribName = "management"
+			externpolPatch := make(map[string]externalpolicy.ExternalPolicy)
+			parseError = json.Unmarshal([]byte(body), &externpolPatch)
+			if parseError == nil {
+				patchObject = externpolPatch["management"]
+			}
+		}
+
+		if parseError != nil {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH, string(body), parseError.Error()),
+				persistence.EC_API_USER_INPUT_ERROR, nil)
+			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), parseError), "body"))
+			return
+		}
+
+		if attribName == "" {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+				persistence.NewMessageMeta(EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR, string(body)),
+				persistence.EC_API_USER_INPUT_ERROR, nil)
+			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute. %v", string(body)), "body"))
+			return
 		}
 
 		patch_node_policy_error_handler := func(device interface{}, err error) bool {
@@ -343,17 +382,8 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
 		nodePatchPolicyHandler := exchange.GetHTTPPutNodePolicyHandler(a)
 
-		var patchObject interface{}
-		if _, ok := constraintExp["constraints"]; ok {
-			//var patchObject externalpolicy.ConstraintExpression
-			patchObject = constraintExp["constraints"]
-		} else {
-			//var patchObject externalpolicy.PropertyList
-			patchObject = propertyList["properties"]
-		}
-
 		//Validate the patch and update the policy
-		errHandled, cfg, msgs := PatchNodePolicy(patchObject, patch_node_policy_error_handler, nodeGetPolicyHandler, nodePatchPolicyHandler, a.db)
+		errHandled, cfg, msgs := PatchNodePolicy(attribName, patchObject, patch_node_policy_error_handler, nodeGetPolicyHandler, nodePatchPolicyHandler, a.db)
 
 		if errHandled {
 			return

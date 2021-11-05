@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -309,7 +310,17 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			if err != nil {
 				glog.V(2).Infof("Failed to retrieve node from local db: %v", err)
 			}
-			if r, err := ph.DecideOnProposal(proposal, producerPol, w.ec.GetExchangeId(), exchange.GetOrg(w.ec.GetExchangeId()), exchDevice, runningBCs, messageTarget, w.sendMessage); err != nil {
+
+			// get the deployment policy from the node policy now that the node policy
+			// containts both deployment and management policies.
+			var deploy_pol *externalpolicy.ExternalPolicy
+			if producerPol != nil {
+				deploy_pol = producerPol.GetDeploymentPolicy()
+			} else {
+				deploy_pol = nil
+			}
+
+			if r, err := ph.DecideOnProposal(proposal, deploy_pol, w.ec.GetExchangeId(), exchange.GetOrg(w.ec.GetExchangeId()), exchDevice, runningBCs, messageTarget, w.sendMessage); err != nil {
 				glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("respond to proposal with error: %v", err)))
 				err_log_event = fmt.Sprintf("Respond to proposal with error: %v", err)
 			} else {

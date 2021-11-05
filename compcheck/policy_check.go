@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
@@ -19,7 +20,7 @@ type PolicyCheck struct {
 	NodeId         string                                `json:"node_id,omitempty"`
 	NodeArch       string                                `json:"node_arch,omitempty"`
 	NodeType       string                                `json:"node_type,omitempty"` // can be omitted if node_id is specified
-	NodePolicy     *externalpolicy.ExternalPolicy        `json:"node_policy,omitempty"`
+	NodePolicy     *exchangecommon.NodePolicy            `json:"node_policy,omitempty"`
 	BusinessPolId  string                                `json:"business_policy_id,omitempty"`
 	BusinessPolicy *businesspolicy.BusinessPolicy        `json:"business_policy,omitempty"`
 	ServicePolicy  *externalpolicy.ExternalPolicy        `json:"service_policy,omitempty"`
@@ -427,8 +428,8 @@ func addNodeArchToPolicy(nodePolicy *policy.Policy, nodeArch string, msgPrinter 
 // If inputNP is given, validate it and generate internal policy from it.
 // If not, user node id to get the node policy from the exchange and generate internal policy from it.
 func processNodePolicy(nodePolicyHandler exchange.NodePolicyHandler,
-	nodeId string, inputNP *externalpolicy.ExternalPolicy,
-	msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, *policy.Policy, error) {
+	nodeId string, inputNP *exchangecommon.NodePolicy,
+	msgPrinter *message.Printer) (*exchangecommon.NodePolicy, *policy.Policy, error) {
 
 	// get default message printer if nil
 	if msgPrinter == nil {
@@ -444,7 +445,7 @@ func processNodePolicy(nodePolicyHandler exchange.NodePolicyHandler,
 				nodeId = "TempNodePolicyId"
 			}
 
-			if nPolicy, err := policy.GenPolicyFromExternalPolicy(inputNP, policy.MakeExternalPolicyHeaderName(nodeId)); err != nil {
+			if nPolicy, err := policy.GenPolicyFromExternalPolicy(inputNP.GetDeploymentPolicy(), policy.MakeExternalPolicyHeaderName(nodeId)); err != nil {
 				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert node policy to internal policy format for node %v: %v", nodeId, err)), COMPCHECK_CONVERSION_ERROR)
 			} else {
 				return inputNP, nPolicy, nil
@@ -465,7 +466,7 @@ func processNodePolicy(nodePolicyHandler exchange.NodePolicyHandler,
 
 // Get node policy from the exchange and convert it to internal policy.
 // It returns (nil, nil) If there is no node policy found.
-func GetNodePolicy(nodePolicyHandler exchange.NodePolicyHandler, nodeId string, msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, *policy.Policy, error) {
+func GetNodePolicy(nodePolicyHandler exchange.NodePolicyHandler, nodeId string, msgPrinter *message.Printer) (*exchangecommon.NodePolicy, *policy.Policy, error) {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
@@ -482,27 +483,27 @@ func GetNodePolicy(nodePolicyHandler exchange.NodePolicyHandler, nodeId string, 
 	}
 
 	// get node policy
-	nodePolicy, err := nodePolicyHandler(nodeId)
+	exchNodePolicy, err := nodePolicyHandler(nodeId)
 	if err != nil {
 		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error trying to query node policy for %v: %v", nodeId, err)), COMPCHECK_EXCHANGE_ERROR)
 	}
 
-	if nodePolicy == nil {
+	if exchNodePolicy == nil {
 		return nil, nil, nil
 	}
 
+	nodePolicy := exchNodePolicy.NodePolicy
 	// validate the policy
-	extPolicy := nodePolicy.GetExternalPolicy()
-	if err := extPolicy.ValidateAndNormalize(); err != nil {
+	if err := nodePolicy.ValidateAndNormalize(); err != nil {
 		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to validate the node policy for node %v. %v", nodeId, err)), COMPCHECK_VALIDATION_ERROR)
 	}
 
 	// convert the policy to internal policy format
-	pPolicy, err := policy.GenPolicyFromExternalPolicy(&extPolicy, policy.MakeExternalPolicyHeaderName(nodeId))
+	pPolicy, err := policy.GenPolicyFromExternalPolicy(nodePolicy.GetDeploymentPolicy(), policy.MakeExternalPolicyHeaderName(nodeId))
 	if err != nil {
 		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert node policy to internal policy for node %v: %v", nodeId, err)), COMPCHECK_CONVERSION_ERROR)
 	}
-	return &extPolicy, pPolicy, nil
+	return &nodePolicy, pPolicy, nil
 }
 
 // If the inputBP is given, then validate it and convert it to internal policy.
@@ -626,7 +627,7 @@ func GetServicePolicyWithId(serviceIdPolicyHandler exchange.ServicePolicyWithIdH
 		if err := extPolicy.ValidateAndNormalize(); err != nil {
 			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error validating the service policy %v. %v", svcId, err)), COMPCHECK_VALIDATION_ERROR)
 		}
-		return &extPolicy, nil
+		return extPolicy, nil
 	}
 }
 
@@ -655,7 +656,7 @@ func GetServicePolicy(servicePolicyHandler exchange.ServicePolicyHandler, svcUrl
 		if err := extPolicy.ValidateAndNormalize(); err != nil {
 			return nil, sId, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to validate the service policy for %v/%v %v %v. %v", svcOrg, svcUrl, svcVersion, svcArch, err)), COMPCHECK_VALIDATION_ERROR)
 		}
-		return &extPolicy, sId, nil
+		return extPolicy, sId, nil
 	}
 }
 

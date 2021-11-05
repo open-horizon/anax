@@ -472,7 +472,17 @@ func CreateService(service *Service,
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
-	externalPol, _ := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol, pDevice.IsEdgeCluster())
+
+	// get the top level policies from the node policy.
+	// the the top level policies contains the node built-in properties.
+	var top_pol *externalpolicy.ExternalPolicy
+	if existingPol != nil {
+		top_pol = &existingPol.ExternalPolicy
+	} else {
+		top_pol = nil
+	}
+
+	externalPol, _ := externalpolicy.CreateNodeBuiltInPolicy(false, false, top_pol, pDevice.IsEdgeCluster())
 	if externalPol != nil {
 		for _, ele := range externalPol.Properties {
 			if ele.Name == externalpolicy.PROP_NODE_CPU {

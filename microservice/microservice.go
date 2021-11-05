@@ -336,7 +336,17 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 	} else {
 		isCluster = exchDevice.IsEdgeCluster()
 	}
-	externalPol, externalReadWritePol := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol, isCluster)
+
+	// get the top level policies from the node policy.
+	// the the top level policies contains the node built-in properties.
+	var top_pol *externalpolicy.ExternalPolicy
+	if existingPol != nil {
+		top_pol = &existingPol.ExternalPolicy
+	} else {
+		top_pol = nil
+	}
+
+	externalPol, externalReadWritePol := externalpolicy.CreateNodeBuiltInPolicy(false, false, top_pol, isCluster)
 	externalPol.MergeWith(externalReadWritePol, false)
 	if externalPol != nil {
 		for _, ele := range externalPol.Properties {

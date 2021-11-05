@@ -175,3 +175,31 @@ func CreateServiceBuiltInPolicy(svcName, svcOrg, svcVersion, svcArch string) *Ex
 
 	return &builtInPol
 }
+
+// check if the given property name is a node built-in property name
+func IsNodeBuiltinPropertyName(propName string) bool {
+	if propName == PROP_NODE_CPU ||
+		propName == PROP_NODE_MEMORY ||
+		propName == PROP_NODE_ARCH ||
+		propName == PROP_NODE_HARDWAREID ||
+		propName == PROP_NODE_PRIVILEGED ||
+		propName == PROP_NODE_K8S_VERSION {
+		return true
+	} else {
+		return false
+	}
+}
+
+// check if the given property name is a service built-in property name
+func IsServiceBuiltinPropertyName(propName string) bool {
+	if propName == PROP_SVC_URL ||
+		propName == PROP_SVC_NAME ||
+		propName == PROP_SVC_ORG ||
+		propName == PROP_SVC_VERSION ||
+		propName == PROP_SVC_ARCH ||
+		propName == PROP_SVC_PRIVILEGED {
+		return true
+	} else {
+		return false
+	}
+}

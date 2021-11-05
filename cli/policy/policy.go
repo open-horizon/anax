@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 
 func List() {
 	// Get the node policy info
-	nodePolicy := externalpolicy.ExternalPolicy{}
+	nodePolicy := exchangecommon.NodePolicy{}
 	cliutils.HorizonGet("node/policy", []int{200}, &nodePolicy, false)
 
 	// Output the combined info
@@ -27,8 +28,14 @@ func List() {
 func Update(fileName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 
-	ep := new(externalpolicy.ExternalPolicy)
+	ep := new(exchangecommon.NodePolicy)
 	readInputFile(fileName, ep)
+
+	// let the user aware of the new node policy format.
+	if ep.IsDeploymentEmpty() {
+		msgPrinter.Printf("Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.")
+		msgPrinter.Println()
+	}
 
 	readOnlyBuiltIns := externalpolicy.ListReadOnlyProperties()
 	includedBuiltIns := ""
@@ -64,7 +71,7 @@ func Patch(patch string) {
 	msgPrinter.Println()
 }
 
-func readInputFile(filePath string, inputFileStruct *externalpolicy.ExternalPolicy) {
+func readInputFile(filePath string, inputFileStruct *exchangecommon.NodePolicy) {
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
 	err := json.Unmarshal(newBytes, inputFileStruct)
 	if err != nil {
@@ -91,16 +98,46 @@ func New() {
 
 	var policy_template = []string{
 		`{`,
-		`  "properties": [   /* ` + msgPrinter.Sprintf("A list of policy properties that describe the object.") + ` */`,
+		`  "properties": [      /* ` + msgPrinter.Sprintf("A list of policy properties that describe the object.") + ` */`,
+		`                       /* ` + msgPrinter.Sprintf("It applies to both deployment and node management.") + `*/`,
+		`                       /* ` + msgPrinter.Sprintf("It usually containts the built-in node properties.") + `*/`,
 		`    {`,
 		`       "name": "",`,
 		`       "value": null`,
-		`      }`,
+		`    }`,
 		`  ],`,
-		`  "constraints": [  /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>,") + ` */`,
-		`                    /* ` + msgPrinter.Sprintf("separated by boolean operators AND (&&) or OR (||).") + `*/`,
+		`  "constraints": [     /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>,") + ` */`,
+		`                       /* ` + msgPrinter.Sprintf("separated by boolean operators AND (&&) or OR (||).") + `*/`,
+		`                       /* ` + msgPrinter.Sprintf("It applies to both deployment and node management.") + `*/`,
+		`                       /* ` + msgPrinter.Sprintf("It should be empty unless deployment and managment have the same constraint expressions.") + `*/`,
 		`       "" `,
-		`  ] `,
+		`  ], `,
+		`  "deployment": {      /* ` + msgPrinter.Sprintf("Policies that are used for deployment only.") + ` */`,
+		`      "properties": [  /* ` + msgPrinter.Sprintf("A list of policy properties for deployment.") + ` */`,
+		`                       /* ` + msgPrinter.Sprintf("It overwrites the properties with the same name on the top level.") + `*/`,
+		`        {`,
+		`           "name": "",`,
+		`           "value": null`,
+		`        }`,
+		`      ],`,
+		`      "constraints": [ /* ` + msgPrinter.Sprintf("A list of constraints for deployment.") + ` */`,
+		`                       /* ` + msgPrinter.Sprintf("It overwrites all the constraints on the top level if not empty.") + `*/`,
+		`         "" `,
+		`      ] `,
+		`  },`,
+		`  "management": {      /* ` + msgPrinter.Sprintf("Policies that are used for node management only.") + ` */`,
+		`      "properties": [  /* ` + msgPrinter.Sprintf("A list of policy properties for node management.") + ` */`,
+		`                       /* ` + msgPrinter.Sprintf("It overwrites the properties with the same name on the top level.") + `*/`,
+		`        {`,
+		`           "name": "",`,
+		`           "value": null`,
+		`        }`,
+		`      ],`,
+		`      "constraints": [ /* ` + msgPrinter.Sprintf("A list of constraints for node management.") + ` */`,
+		`                       /* ` + msgPrinter.Sprintf("It overwrites all the constraints on the top level if not empty.") + `*/`,
+		`         "" `,
+		`      ] `,
+		`  }`,
 		`}`,
 	}
 

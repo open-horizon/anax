@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/persistence"
@@ -18,8 +19,7 @@ import (
 	"time"
 )
 
-var ExchangeNodePolicyLastUpdated = ""
-var ExchangeNodePolicy *externalpolicy.ExternalPolicy
+var ExchangeNodePolicy *exchange.ExchangeNodePolicy
 
 const NUM_BUILT_INS = 5
 
@@ -41,15 +41,15 @@ func Test_UpdateNodePolicy(t *testing.T) {
 	propList := new(externalpolicy.PropertyList)
 	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
-	extNodePolicy := &externalpolicy.ExternalPolicy{
+	extPol := externalpolicy.ExternalPolicy{
 		Properties:  *propList,
 		Constraints: []string{`prop3 == "some value"`},
 	}
+	nodePolicy := &exchangecommon.NodePolicy{ExternalPolicy: extPol}
 
-	ExchangeNodePolicyLastUpdated = ""
 	ExchangeNodePolicy = nil
 
-	err = UpdateNodePolicy(pDevice, db, extNodePolicy, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
+	_, _, err = UpdateNodePolicy(pDevice, db, nodePolicy, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
 
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -81,15 +81,15 @@ func Test_DeleteNodePolicy(t *testing.T) {
 	propList := new(externalpolicy.PropertyList)
 	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
-	extNodePolicy := &externalpolicy.ExternalPolicy{
+	extPol := externalpolicy.ExternalPolicy{
 		Properties:  *propList,
 		Constraints: []string{`prop3 == "some value"`},
 	}
+	nodePolicy := &exchangecommon.NodePolicy{ExternalPolicy: extPol}
 
-	ExchangeNodePolicyLastUpdated = ""
 	ExchangeNodePolicy = nil
 
-	err = UpdateNodePolicy(pDevice, db, extNodePolicy, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
+	_, _, err = UpdateNodePolicy(pDevice, db, nodePolicy, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
 
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -129,15 +129,15 @@ func Test_ExchangeNodePolicyChanged(t *testing.T) {
 	propList := new(externalpolicy.PropertyList)
 	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
-	extNodePolicy := &externalpolicy.ExternalPolicy{
+	extPol := externalpolicy.ExternalPolicy{
 		Properties:  *propList,
 		Constraints: []string{`prop3 == "some value"`},
 	}
+	nodePolicy := &exchangecommon.NodePolicy{ExternalPolicy: extPol}
 
-	ExchangeNodePolicyLastUpdated = ""
 	ExchangeNodePolicy = nil
 
-	err = UpdateNodePolicy(pDevice, db, extNodePolicy, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
+	rc_d, rc_m, err := UpdateNodePolicy(pDevice, db, nodePolicy, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
 
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -147,6 +147,12 @@ func Test_ExchangeNodePolicyChanged(t *testing.T) {
 		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", 1+NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != propName {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)
+	} else if rc_d != externalpolicy.EP_COMPARE_PROPERTY_CHANGED|externalpolicy.EP_COMPARE_CONSTRAINT_CHANGED ||
+		rc_m != externalpolicy.EP_COMPARE_PROPERTY_CHANGED|externalpolicy.EP_COMPARE_CONSTRAINT_CHANGED {
+		t.Errorf("UpdateNodePolicy should have returned (%v, %v), but got (%v, %v).",
+			externalpolicy.EP_COMPARE_PROPERTY_CHANGED|externalpolicy.EP_COMPARE_CONSTRAINT_CHANGED,
+			externalpolicy.EP_COMPARE_PROPERTY_CHANGED|externalpolicy.EP_COMPARE_CONSTRAINT_CHANGED,
+			rc_d, rc_m)
 	}
 
 	changed, _, err := ExchangeNodePolicyChanged(pDevice, db, getDummyNodePolicyHandler())
@@ -157,7 +163,7 @@ func Test_ExchangeNodePolicyChanged(t *testing.T) {
 	}
 
 	// update the exchange only
-	getDummyPutNodePolicyHandler()(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *extNodePolicy})
+	getDummyPutNodePolicyHandler()(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), nodePolicy)
 	changed1, _, err := ExchangeNodePolicyChanged(pDevice, db, getDummyNodePolicyHandler())
 	if err != nil {
 		t.Errorf("Unexpected error calling ExchangeNodePolicyChanged: %v", err)
@@ -181,7 +187,6 @@ func Test_SetDefaultNodePolicy(t *testing.T) {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
 
-	ExchangeNodePolicyLastUpdated = ""
 	ExchangeNodePolicy = nil
 
 	// bad file name
@@ -224,7 +229,6 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
-	ExchangeNodePolicyLastUpdated = ""
 	ExchangeNodePolicy = nil
 
 	var config config.HorizonConfig
@@ -259,11 +263,12 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 	propList := new(externalpolicy.PropertyList)
 	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
-	extNodePolicy := &externalpolicy.ExternalPolicy{
+	extPol := externalpolicy.ExternalPolicy{
 		Properties:  *propList,
 		Constraints: []string{`prop3 == "some value"`},
 	}
-	getDummyPutNodePolicyHandler()(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *extNodePolicy})
+	nodePolicy := &exchangecommon.NodePolicy{ExternalPolicy: extPol}
+	getDummyPutNodePolicyHandler()(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), nodePolicy)
 
 	// delete the local node policy
 	err = persistence.DeleteNodePolicy(db)
@@ -277,6 +282,8 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	} else if fnp, err := persistence.FindNodePolicy(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
+	} else if fnp == nil {
+		t.Errorf("FindNodePolicy returned nil but should not.")
 	} else if len(fnp.Properties) != 1+NUM_BUILT_INS && len(fnp.Properties) != NUM_BUILT_INS {
 		// openhorizon.hardwareId will be present only if the device serial number can be read
 		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", 1+NUM_BUILT_INS, *fnp)
@@ -286,22 +293,25 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 }
 
 func getDummyPutNodePolicyHandler() exchange.PutNodePolicyHandler {
-	return func(deviceId string, ep *exchange.ExchangePolicy) (*exchange.PutDeviceResponse, error) {
+	return func(deviceId string, ep *exchangecommon.NodePolicy) (*exchange.PutDeviceResponse, error) {
 		if ep == nil {
 			ExchangeNodePolicy = nil
 		} else {
-			v := ep.GetExternalPolicy()
-			ExchangeNodePolicy = &v
+			if ExchangeNodePolicy == nil {
+				ExchangeNodePolicy = &exchange.ExchangeNodePolicy{NodePolicy: *ep}
+			} else {
+				ExchangeNodePolicy.NodePolicy = *ep
+			}
+			ExchangeNodePolicy.LastUpdated += "blah"
 		}
-		ExchangeNodePolicyLastUpdated += "blah"
 		return nil, nil
 	}
 }
 
 func getDummyNodePolicyHandler() exchange.NodePolicyHandler {
-	return func(deviceId string) (*exchange.ExchangePolicy, error) {
+	return func(deviceId string) (*exchange.ExchangeNodePolicy, error) {
 		if ExchangeNodePolicy != nil {
-			return &exchange.ExchangePolicy{*ExchangeNodePolicy, ExchangeNodePolicyLastUpdated}, nil
+			return ExchangeNodePolicy, nil
 		} else {
 			return nil, nil
 		}

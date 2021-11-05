@@ -21,6 +21,7 @@ const (
 	EL_GOV_ERR_RETRIEVE_SINSTS_FROM_DB        = "Error retrieving all service instances from database, error: %v"
 	EL_GOV_ERR_RETRIEVE_SINST_FROM_DB         = "Error getting service instance %v from db. %v"
 	EL_GOV_ERR_RETRIEVE_MATCH_AGS_FROM_DB     = "Error retrieving matching agreements from database for workloads %v. Error: %v"
+	EL_GOV_ERR_RETRIEVE_NODE_POL_FROM_DB      = "Error retrieving node policy from database, error %v"
 	EL_GOV_ERR_SAVE_NODE_CONFIGSTATE_TO_DB    = "Error perisisting node config state in database to %v. Error: %v"
 	EL_GOV_ERR_RETRIEVE_DEVICE_FROM_DB        = "Error retrieving device from database. Error: %v"
 	EL_GOV_DEL_NODE_EXCH_PATTERN_FROM_DB      = "Error deleting node exchange pattern from the local database. %v"
@@ -132,6 +133,7 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_SINSTS_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_SINST_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_MATCH_AGS_FROM_DB)
+	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_NODE_POL_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_SAVE_NODE_CONFIGSTATE_TO_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_DEVICE_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_DEL_NODE_EXCH_PATTERN_FROM_DB)

@@ -235,19 +235,19 @@ func GetHTTPServiceDockerAuthsWithIdHandler(ec ExchangeContext) ServiceDockerAut
 }
 
 // A handler for getting the node policy from the exchange.
-type NodePolicyHandler func(deviceId string) (*ExchangePolicy, error)
+type NodePolicyHandler func(deviceId string) (*ExchangeNodePolicy, error)
 
 func GetHTTPNodePolicyHandler(ec ExchangeContext) NodePolicyHandler {
-	return func(deviceId string) (*ExchangePolicy, error) {
+	return func(deviceId string) (*ExchangeNodePolicy, error) {
 		return GetNodePolicy(ec, deviceId)
 	}
 }
 
 // A handler for updating the node policy to the exchange.
-type PutNodePolicyHandler func(deviceId string, ep *ExchangePolicy) (*PutDeviceResponse, error)
+type PutNodePolicyHandler func(deviceId string, ep *exchangecommon.NodePolicy) (*PutDeviceResponse, error)
 
 func GetHTTPPutNodePolicyHandler(ec ExchangeContext) PutNodePolicyHandler {
-	return func(deviceId string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+	return func(deviceId string, ep *exchangecommon.NodePolicy) (*PutDeviceResponse, error) {
 		return PutNodePolicy(ec, deviceId, ep)
 	}
 }
@@ -298,35 +298,35 @@ func GetHTTPNodeStatusHandler(ec ExchangeContext) NodeStatusHandler {
 }
 
 // Two handlers for getting the service policy from the exchange.
-type ServicePolicyWithIdHandler func(service_id string) (*ExchangePolicy, error)
+type ServicePolicyWithIdHandler func(service_id string) (*ExchangeServicePolicy, error)
 
 func GetHTTPServicePolicyWithIdHandler(ec ExchangeContext) ServicePolicyWithIdHandler {
-	return func(service_id string) (*ExchangePolicy, error) {
+	return func(service_id string) (*ExchangeServicePolicy, error) {
 		return GetServicePolicyWithId(ec, service_id)
 	}
 }
 
-type ServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, string, error)
+type ServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangeServicePolicy, string, error)
 
 func GetHTTPServicePolicyHandler(ec ExchangeContext) ServicePolicyHandler {
-	return func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, string, error) {
+	return func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangeServicePolicy, string, error) {
 		return GetServicePolicy(ec, sUrl, sOrg, sVersion, sArch)
 	}
 }
 
 // Two handlers for updating the service policy to the exchange.
-type PutServicePolicyWithIdHandler func(service_id string, ep *ExchangePolicy) (*PutDeviceResponse, error)
+type PutServicePolicyWithIdHandler func(service_id string, ep *ExchangeServicePolicy) (*PutDeviceResponse, error)
 
 func GetHTTPPutServicePolicyWithIdHandler(ec ExchangeContext) PutServicePolicyWithIdHandler {
-	return func(service_id string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+	return func(service_id string, ep *ExchangeServicePolicy) (*PutDeviceResponse, error) {
 		return PutServicePolicyWithId(ec, service_id, ep)
 	}
 }
 
-type PutServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string, ep *ExchangePolicy) (*PutDeviceResponse, error)
+type PutServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string, ep *ExchangeServicePolicy) (*PutDeviceResponse, error)
 
 func GetHTTPPutServicePolicyHandler(ec ExchangeContext) PutServicePolicyHandler {
-	return func(sUrl string, sOrg string, sVersion string, sArch string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+	return func(sUrl string, sOrg string, sVersion string, sArch string, ep *ExchangeServicePolicy) (*PutDeviceResponse, error) {
 		return PutServicePolicy(ec, sUrl, sOrg, sVersion, sArch, ep)
 	}
 }

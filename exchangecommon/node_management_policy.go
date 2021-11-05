@@ -20,7 +20,7 @@ type ExchangeNodeManagementPolicy struct {
 }
 
 func (e ExchangeNodeManagementPolicy) String() string {
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Constraints: %v, Properties: %v, Constraints: %v, Patterns: %v, Enabled: %v, AgentAutoUpgradePolicy: %v, LastUpdated: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Properties: %v, Constraints: %v, Patterns: %v, Enabled: %v, AgentAutoUpgradePolicy: %v, LastUpdated: %v",
 		e.Owner, e.Label, e.Description,
 		e.Properties, e.Constraints, e.Patterns,
 		e.Enabled, e.AgentAutoUpgradePolicy, e.LastUpdated)

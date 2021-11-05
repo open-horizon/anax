@@ -13,20 +13,24 @@ unset HZN_ORG_ID
 # preparing the userinput file and the policy file
 cat <<EOF > /tmp/node_policy.json
 {
-  "properties": [
-    {
-      "name": "purpose",
-      "value": "network-testing"
-    },
-    {
-      "name": "group",
-      "value": "bluenode"
-    }
-  ],
-  "constraints": [
-    "iame2edev == true",
-    "NONS==false || NOGPS == true || NOLOC == true || NOPWS == true || NOHELLO == true || NOK8S == true"
-  ]
+    properties": [
+      {
+        "name": "purpose",
+        "value": "network-testing"
+      }
+    ],
+    "deployment": {
+      properties": [
+      {
+        "name": "group",
+        "value": "bluenode"
+      }
+    ],
+    "constraints": [
+     "iame2edev == true",
+     "NONS==false || NOGPS == true || NOLOC == true || NOPWS == true || NOHELLO == true || NOK8S == true"
+    ]
+  }
 }
 EOF
 
@@ -168,7 +172,6 @@ function verify_agreements {
     exit 1
   fi
 }
-
 
 ## first unregister the node
 echo -e "${PREFIX} Testing 'hzn unregister -fr'"
