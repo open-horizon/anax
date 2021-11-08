@@ -427,6 +427,14 @@ if [ "$NOSDO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   fi
 fi
 
+if [ "$NOAGENTAUTO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
+  ./hzn_nmp.sh
+  if [ $? -ne 0 ]; then
+    echo "Agent Auto Upgrade test using hzn command failure."
+    exit 1
+  fi
+fi
+
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
   if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
     ./verify_surfaced_error.sh

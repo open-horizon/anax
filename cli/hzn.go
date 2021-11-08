@@ -325,22 +325,38 @@ Environment Variables:
 	exBusinessCmd := exchangeCmd.Command("deployment | dep", msgPrinter.Sprintf("List and manage deployment policies in the Horizon Exchange.")).Alias("business").Alias("dep").Alias("deployment")
 	exBusinessAddPolicyCmd := exBusinessCmd.Command("addpolicy | addp", msgPrinter.Sprintf("Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.")).Alias("addp").Alias("addpolicy")
 	exBusinessAddPolicyIdTok := exBusinessAddPolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
-	exBusinessAddPolicyPolicy := exBusinessAddPolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the policy to add or overwrite.")).Required().String()
+	exBusinessAddPolicyPolicy := exBusinessAddPolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the deployment policy to add or overwrite.")).Required().String()
 	exBusinessAddPolicyJsonFile := exBusinessAddPolicyCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
 	exBusinessAddPolNoConstraint := exBusinessAddPolicyCmd.Flag("no-constraints", msgPrinter.Sprintf("Allow this deployment policy to be published even though it does not have any constraints.")).Bool()
 	exBusinessListPolicyCmd := exBusinessCmd.Command("listpolicy | ls", msgPrinter.Sprintf("Display the deployment policies from the Horizon Exchange.")).Alias("ls").Alias("listpolicy")
 	exBusinessListPolicyIdTok := exBusinessListPolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessListPolicyLong := exBusinessListPolicyCmd.Flag("long", msgPrinter.Sprintf("Display detailed output about the deployment policies.")).Short('l').Bool()
-	exBusinessListPolicyPolicy := exBusinessListPolicyCmd.Arg("policy", msgPrinter.Sprintf("List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.")).String()
+	exBusinessListPolicyPolicy := exBusinessListPolicyCmd.Arg("policy", msgPrinter.Sprintf("List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.")).String()
 	exBusinessNewPolicyCmd := exBusinessCmd.Command("new", msgPrinter.Sprintf("Display an empty deployment policy template that can be filled in."))
 	exBusinessRemovePolicyCmd := exBusinessCmd.Command("removepolicy | rmp", msgPrinter.Sprintf("Remove the deployment policy in the Horizon Exchange.")).Alias("rmp").Alias("removepolicy")
 	exBusinessRemovePolicyIdTok := exBusinessRemovePolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessRemovePolicyForce := exBusinessRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	exBusinessRemovePolicyPolicy := exBusinessRemovePolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the deployment policy to be removed.")).Required().String()
-	exBusinessUpdatePolicyCmd := exBusinessCmd.Command("updatepolicy | upp", msgPrinter.Sprintf("Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.")).Alias("upp").Alias("updatepolicy")
+	exBusinessUpdatePolicyCmd := exBusinessCmd.Command("updatepolicy | upp", msgPrinter.Sprintf("Update one attribute of an existing deployment policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.")).Alias("upp").Alias("updatepolicy")
 	exBusinessUpdatePolicyIdTok := exBusinessUpdatePolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessUpdatePolicyPolicy := exBusinessUpdatePolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the policy to be updated in the Horizon Exchange.")).Required().String()
 	exBusinessUpdatePolicyJsonFile := exBusinessUpdatePolicyCmd.Flag("json-file", msgPrinter.Sprintf("The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
+
+	exNMPCmd := exchangeCmd.Command("nmp", msgPrinter.Sprintf("List and manage node management policies in the Horizon Exchange."))
+  	exNMPListCmd := exNMPCmd.Command("list | ls", msgPrinter.Sprintf("Display the node management policies from the Horizon Exchange.")).Alias("ls").Alias("list")
+	exNMPListName := exNMPListCmd.Arg("nmp-name", msgPrinter.Sprintf("List just this one node management policy. Use <org>/<nmp-name> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.")).String()
+	exNMPListIdTok := exNMPListCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNMPListLong := exNMPListCmd.Flag("long", msgPrinter.Sprintf("Display detailed output about the node management policies.")).Short('l').Bool()
+	exNMPAddCmd := exNMPCmd.Command("add", msgPrinter.Sprintf("Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template."))
+	exNMPAddIdTok := exNMPAddCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNMPAddName := exNMPAddCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to add or overwrite.")).Required().String()
+	exNMPAddJsonFile := exNMPAddCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
+	exNMPAddNoConstraint := exNMPAddCmd.Flag("no-constraints", msgPrinter.Sprintf("Allow this node management policy to be published even though it does not have any constraints.")).Bool()
+	exNMPNewCmd := exNMPCmd.Command("new", msgPrinter.Sprintf("Display an empty node management policy template that can be filled in."))
+	exNMPRemoveCmd := exNMPCmd.Command("remove | rm", msgPrinter.Sprintf("Remove the node management policy in the Horizon Exchange.")).Alias("rm").Alias("remove")
+	exNMPRemoveName := exNMPRemoveCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to be removed.")).Required().String()
+	exNMPRemoveIdTok := exNMPRemoveCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNMPRemoveForce := exNMPRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 
 	exNodeCmd := exchangeCmd.Command("node", msgPrinter.Sprintf("List and manage nodes in the Horizon Exchange"))
 	exNodeAddPolicyCmd := exNodeCmd.Command("addpolicy | addp", msgPrinter.Sprintf("Add or replace the node policy in the Horizon Exchange.")).Alias("addp").Alias("addpolicy")
@@ -669,7 +685,7 @@ Environment Variables:
 
 	utilCmd := app.Command("util", msgPrinter.Sprintf("Utility commands."))
 	utilConfigConvCmd := utilCmd.Command("configconv | cfg", msgPrinter.Sprintf("Convert the configuration file from JSON format to a shell script.")).Alias("cfg").Alias("configconv")
-	utilConfigConvFile := utilConfigConvCmd.Flag("config-file", msgPrinter.Sprintf("The path of a configuration file to be converted. This flag can be omitted if it is running from a project directory created by 'hzn dev' command. In this case, the project configuration file hzn.json will be used.")).Short('f').ExistingFile()
+	utilConfigConvFile := utilConfigConvCmd.Flag("config-file", msgPrinter.Sprintf("The path of a configuration file to be converted. ")).Short('f').Required().ExistingFile()
 	utilSignCmd := utilCmd.Command("sign", msgPrinter.Sprintf("Sign the text in stdin. The signature is sent to stdout."))
 	utilSignPrivKeyFile := utilSignCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the stdin. ")).Short('k').Required().ExistingFile()
 	utilVerifyCmd := utilCmd.Command("verify | vf", msgPrinter.Sprintf("Verify that the signature specified via -s is a valid signature for the text in stdin.")).Alias("vf").Alias("verify")
@@ -782,13 +798,24 @@ Environment Variables:
 	if strings.HasPrefix(fullCmd, "exchange ") {
 		exOrg = cliutils.WithDefaultEnvVar(exOrg, "HZN_ORG_ID")
 
-		// Allow undefined org for 'exchange org' commands
-		if *exOrg == "" && !strings.HasPrefix(fullCmd, "exchange | ex org") {
+		// Allow undefined org for 'exchange org' commands and 'new' commands
+		if *exOrg == "" && !(strings.HasPrefix(fullCmd, "exchange | ex org") || 
+							strings.HasPrefix(fullCmd, "exchange | ex deployment | dep new") ||
+							strings.HasPrefix(fullCmd, "exchange | ex service | serv newpolicy | newp") ||
+							strings.HasPrefix(fullCmd, "exchange | ex nmp new")) {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		}
 
 		// some hzn exchange commands can take either -u user:pw or -n nodeid:token as credentials.
 		switch subCmd := strings.TrimPrefix(fullCmd, "exchange | ex "); subCmd {
+		case "nmp add":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPAddIdTok)
+		case "nmp list | ls":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPListIdTok)
+		case "nmp new":
+			// does not require exchange credentials
+		case "nmp remove | rm":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPRemoveIdTok)
 		case "node list | ls":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListNodeIdTok)
 		case "node update | up":
@@ -833,6 +860,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceAddPolicyIdTok)
 		case "service | serv removepolicy | rmp":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceRemovePolicyIdTok)
+		case "service | serv newpolicy | newp":
+			// does not require exchange credentials
 		case "deployment | dep listpolicy | ls":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessListPolicyIdTok)
 		case "deployment | dep updatepolicy | upp":
@@ -841,6 +870,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessAddPolicyIdTok)
 		case "deployment | dep removepolicy | rmp":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessRemovePolicyIdTok)
+		case "deployment | dep new":
+			// does not require exchange credentials
 		case "version":
 			credToUse = cliutils.GetExchangeAuthVersion(*exUserPw)
 		default:
@@ -994,6 +1025,16 @@ Environment Variables:
 		exchange.UserSetAdmin(*exOrg, *exUserPw, *exUserSetAdminUser, *exUserSetAdminBool)
 	case exUserDelCmd.FullCommand():
 		exchange.UserRemove(*exOrg, *exUserPw, *exDelUser, *exUserDelForce)
+
+	case exNMPListCmd.FullCommand():
+		exchange.NMPList(*exOrg, credToUse, *exNMPListName, !*exNMPListLong)
+	case exNMPAddCmd.FullCommand():
+		exchange.NMPAdd(*exOrg, credToUse, *exNMPAddName, *exNMPAddJsonFile, *exNMPAddNoConstraint)
+	case exNMPNewCmd.FullCommand():
+		exchange.NMPNew()
+	case exNMPRemoveCmd.FullCommand():
+		exchange.NMPRemove(*exOrg, credToUse, *exNMPRemoveName, *exNMPRemoveForce)
+
 	case exNodeListCmd.FullCommand():
 		exchange.NodeList(*exOrg, credToUse, *exNode, !*exNodeLong)
 	case exNodeUpdateCmd.FullCommand():

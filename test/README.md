@@ -75,7 +75,7 @@ make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=
 
 To bring up just the environment with minimal tests:
 ```sh
-make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOPATTERNCHANGE=1 NOCOMPCHECK=1 NONS=1 NOPWS=1 NOLOC=1 NOHELLO=1 NOGPS=1 NOHZNDEV=1 NOKUBE=1"
+make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOPATTERNCHANGE=1 NOSDO=1 NOAGENTAUTO=1 NOCOMPCHECK=1 NONS=1 NOPWS=1 NOLOC=1 NOHELLO=1 NOGPS=1 NOHZNDEV=1 NOKUBE=1"
 ```
 
 Here is a full description of all the variables you can use to setup the test the way you want it:
@@ -93,6 +93,7 @@ Here is a full description of all the variables you can use to setup the test th
 - NOPATTERNCHANGE=1 - turns off the node pattern change test.
 - NOCOMPCHECK=1 - turns off the policy compatibility test.
 - NOSDO=1 - turns off the SDO test.
+- NOAGENTAUTO=1 - turns off the Agent Auto Upgrade tests.
 - NONS=1 - dont register the netspeed service.
 - NOGPS=1 - dont register the gpstest service.
 - NOLOC=1 - dont register the location service.
