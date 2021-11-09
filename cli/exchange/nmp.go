@@ -13,7 +13,7 @@ import (
 
 func NMPList(org, credToUse, nmpName string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	
+
 	var nmpOrg string
 	nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
 
@@ -51,7 +51,7 @@ func NMPNew() {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	var nmp_template = []string {
+	var nmp_template = []string{
 		`{`,
 		`  "label": "",                               /* ` + msgPrinter.Sprintf("A short description of the policy.") + ` */`,
 		`  "description": "",                         /* ` + msgPrinter.Sprintf("(Optional) A much longer description of the policy.") + ` */`,

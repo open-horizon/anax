@@ -369,7 +369,7 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 
 		if attribName == "" {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR, string(body)),
+				persistence.NewMessageMeta(EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR2, string(body)),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute. %v", string(body)), "body"))
 			return

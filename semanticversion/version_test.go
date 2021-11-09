@@ -367,6 +367,7 @@ func TestVersionExpressionFailure(t *testing.T) {
 		t.Errorf("Input is NOT a version expression\n")
 	}
 }
+
 // This test tests if the version string is a valide string.
 func TestIsVersionString(t *testing.T) {
 	v_good := []string{"1.0", "1.2", "1.234.567", "3.0.0", "234", "1.2.03", "1.02.3", "1.2.3-abc", "1.0-abc", "1-a", "1.2.0-testing", "1-a", "1.0.0-1-a"}

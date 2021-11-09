@@ -28,7 +28,7 @@ func GetSingleExchangeNodeManagementPolicy(ec ExchangeContext, policyOrg string,
 
 type ExchangeNodeManagementPolicyResponse struct {
 	Policies  map[string]exchangecommon.ExchangeNodeManagementPolicy `json:"managementPolicy"`
-	LastIndex int `json:"lastIndex,omitempty"`
+	LastIndex int                                                    `json:"lastIndex,omitempty"`
 }
 
 // Get all node management policies in the given org
