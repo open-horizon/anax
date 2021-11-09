@@ -343,7 +343,7 @@ Environment Variables:
 	exBusinessUpdatePolicyJsonFile := exBusinessUpdatePolicyCmd.Flag("json-file", msgPrinter.Sprintf("The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
 
 	exNMPCmd := exchangeCmd.Command("nmp", msgPrinter.Sprintf("List and manage node management policies in the Horizon Exchange."))
-  	exNMPListCmd := exNMPCmd.Command("list | ls", msgPrinter.Sprintf("Display the node management policies from the Horizon Exchange.")).Alias("ls").Alias("list")
+	exNMPListCmd := exNMPCmd.Command("list | ls", msgPrinter.Sprintf("Display the node management policies from the Horizon Exchange.")).Alias("ls").Alias("list")
 	exNMPListName := exNMPListCmd.Arg("nmp-name", msgPrinter.Sprintf("List just this one node management policy. Use <org>/<nmp-name> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.")).String()
 	exNMPListIdTok := exNMPListCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNMPListLong := exNMPListCmd.Flag("long", msgPrinter.Sprintf("Display detailed output about the node management policies.")).Short('l').Bool()
@@ -799,10 +799,10 @@ Environment Variables:
 		exOrg = cliutils.WithDefaultEnvVar(exOrg, "HZN_ORG_ID")
 
 		// Allow undefined org for 'exchange org' commands and 'new' commands
-		if *exOrg == "" && !(strings.HasPrefix(fullCmd, "exchange | ex org") || 
-							strings.HasPrefix(fullCmd, "exchange | ex deployment | dep new") ||
-							strings.HasPrefix(fullCmd, "exchange | ex service | serv newpolicy | newp") ||
-							strings.HasPrefix(fullCmd, "exchange | ex nmp new")) {
+		if *exOrg == "" && !(strings.HasPrefix(fullCmd, "exchange | ex org") ||
+			strings.HasPrefix(fullCmd, "exchange | ex deployment | dep new") ||
+			strings.HasPrefix(fullCmd, "exchange | ex service | serv newpolicy | newp") ||
+			strings.HasPrefix(fullCmd, "exchange | ex nmp new")) {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		}
 

@@ -88,7 +88,7 @@ func (e ExchangeNodeManagementPolicy) String() string {
 type ExchangeAgentUpgradePolicy struct {
 	MinVersionString      string `json:"atLeastVersion"`
 	PolicyUpgradeTime     string `json:"start"`
-	UpgradeWindowDuration int `json:"duration"`
+	UpgradeWindowDuration int    `json:"duration"`
 }
 
 func (e ExchangeAgentUpgradePolicy) String() string {
