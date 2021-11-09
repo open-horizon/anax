@@ -358,7 +358,7 @@ fi
 echo -e "${PREFIX} Testing '$CMD_PREFIX'"
 cmdOutput=$($CMD_PREFIX test-nmp-2 -f /tmp/nmp_example_2.json 2>&1)
 rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == "Node management policy:"*"test-nmp-2"*"in the Horizon Exchange" ]]; then
+if [[ $rc -eq 0 && "$cmdOutput" == *"Node management policy:"*"test-nmp-2"*"in the Horizon Exchange"* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX': exit code: $rc, output: $cmdOutput."
@@ -369,7 +369,7 @@ fi
 echo -e "${PREFIX} Testing '$CMD_PREFIX' when given nmp already exists in the Exchange"
 cmdOutput=$($CMD_PREFIX test-nmp-2 -f /tmp/nmp_example_2.json 2>&1)
 rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == "Node management policy:"*"test-nmp-2"*"in the Horizon Exchange" ]]; then
+if [[ $rc -eq 0 && "$cmdOutput" == *"Node management policy:"*"test-nmp-2"*"in the Horizon Exchange"* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' when given nmp already exists in the Exchange: exit code: $rc, output: $cmdOutput."
@@ -380,7 +380,7 @@ fi
 echo -e "${PREFIX} Testing '$CMD_PREFIX' without constraints defined and --no-constraints flag set"
 cmdOutput=$($CMD_PREFIX test-nmp-3 -f /tmp/nmp_example_3.json --no-constraints 2>&1)
 rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == "Node management policy:"*"test-nmp-3"*"in the Horizon Exchange" ]]; then
+if [[ $rc -eq 0 && "$cmdOutput" == *"Node management policy:"*"test-nmp-3"*"in the Horizon Exchange"* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' without constraints defined and --no-constraints flag set: exit code: $rc, output: $cmdOutput."
@@ -391,7 +391,7 @@ fi
 echo -e "${PREFIX} Testing '$CMD_PREFIX' without constraints defined and without --no-constraints flag"
 cmdOutput=$($CMD_PREFIX test-nmp-3 -f /tmp/nmp_example_3.json 2>&1)
 rc=$?
-if [[ $rc -eq 1 && "$cmdOutput" == "Error: The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable." ]]; then
+if [[ $rc -eq 1 && "$cmdOutput" == *"Error: The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable."* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' without constraints defined and without --no-constraints flag: exit code: $rc, output: $cmdOutput."
@@ -498,7 +498,7 @@ export HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL_SAVE
 echo -e "${PREFIX} Testing '$CMD_PREFIX' -f"
 cmdOutput=$($CMD_PREFIX test-nmp-2 -f 2>&1)
 rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == "Removing node management policy"*"and re-evaluating all agreements"*"Node management policy"*"/test-nmp-2 removed"* ]]; then
+if [[ $rc -eq 0 && "$cmdOutput" == *"Removing node management policy"*"and re-evaluating all agreements"*"Node management policy"*"/test-nmp-2 removed"* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX': exit code: $rc, output: $cmdOutput."
@@ -509,7 +509,7 @@ fi
 echo -e "${PREFIX} Removing remaining NMP's"
 cmdOutput=$($CMD_PREFIX test-nmp-3 -f 2>&1)
 rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == "Removing node management policy"*"and re-evaluating all agreements"*"Node management policy"*"/test-nmp-3 removed"* ]]; then
+if [[ $rc -eq 0 && "$cmdOutput" == *"Removing node management policy"*"and re-evaluating all agreements"*"Node management policy"*"/test-nmp-3 removed"* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX': exit code: $rc, output: $cmdOutput."
@@ -536,7 +536,7 @@ echo -e "${PREFIX} done."
 echo -e "${PREFIX} Testing '$CMD_PREFIX' without -f set and answering 'no'"
 cmdOutput=$(echo "n" | $CMD_PREFIX test-nmp-1 2>&1)
 rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == "Are you sure you want to remove node management policy test-nmp-1 for org"*"from the Horizon Exchange? [y/N]: Exiting."* ]]; then
+if [[ $rc -eq 0 && "$cmdOutput" == *"Are you sure you want to remove node management policy test-nmp-1 for org"*"from the Horizon Exchange? [y/N]: Exiting."* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' without -f set and answering 'no': exit code: $rc, output: $cmdOutput."
@@ -695,7 +695,7 @@ echo -e "${PREFIX} done."
 echo -e "${PREFIX} Testing '$CMD_PREFIX' when 2 nmp's exist in the Exchange"
 cmdOutput=$($CMD_PREFIX 2>&1)
 rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == *"["*"$HZN_ORG_ID/test-nmp-1"*"$HZN_ORG_ID/test-nmp-2"*"]"* ]]; then
+if [[ $rc -eq 0 && ("$cmdOutput" == *"["*"$HZN_ORG_ID/test-nmp-1"*"$HZN_ORG_ID/test-nmp-2"*"]"* || "$cmdOutput" == *"["*"$HZN_ORG_ID/test-nmp-2"*"$HZN_ORG_ID/test-nmp-1"*"]"*) ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' when 2 nmp's exist in the Exchange: exit code: $rc, output: $cmdOutput."
@@ -706,7 +706,7 @@ fi
 echo -e "${PREFIX} Testing '$CMD_PREFIX' --long when 2 nmp's exist in the Exchange"
 cmdOutput=$($CMD_PREFIX -l | tr -d '[:space:]' 2>&1)
 rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == *"$(echo $inspectDoubleExchangeNMP1 | tr -d '[:space:]')"*"$(echo $inspectDoubleExchangeNMP2 | tr -d '[:space:]')"* ]]; then
+if [[ $rc -eq 0 && ("$cmdOutput" == *"$(echo $inspectDoubleExchangeNMP1 | tr -d '[:space:]')"*"$(echo $inspectDoubleExchangeNMP2 | tr -d '[:space:]')"* || "$cmdOutput" == *"$(echo $inspectDoubleExchangeNMP2 | tr -d '[:space:]')"*"$(echo $inspectDoubleExchangeNMP1 | tr -d '[:space:]')"*) ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' when 2 nmp's exist in the Exchange: exit code: $rc, output: $cmdOutput."
