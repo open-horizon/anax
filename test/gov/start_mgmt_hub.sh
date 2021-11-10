@@ -17,6 +17,7 @@ PREFIX="All-in-one management hub deployment:"
 #  POSTGRES_USER
 #  TEST_VARS
 #  ANAX_SOURCE
+#  HUB_CONFIG
 
 # exchange confiuration
 # INFO or DEBUG
@@ -63,8 +64,16 @@ if [ $? -ne 0 ]; then
 fi
 chmod +x /tmp/deploy-mgmt-hub.sh
 
-# run the management hub deployment script
-sudo -sE /tmp/deploy-mgmt-hub.sh -A -E
+#check if config file is set
+if [ -z "${HUB_CONFIG}" ]; then
+  echo "hub config is null"
+  sudo -sE /tmp/deploy-mgmt-hub.sh -A -E
+else
+  echo "hub config is not null"
+  sudo -sE /tmp/deploy-mgmt-hub.sh -A -E -c ${HUB_CONFIG}
+fi
+# # run the management hub deployment script
+# sudo -sE /tmp/deploy-mgmt-hub.sh -A -E
 if [ $? -ne 0 ]; then
   echo -e "${PREFIX} Failed deploy."
   exit 1
