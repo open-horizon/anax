@@ -477,8 +477,22 @@ func (w *BaseAgreementWorker) findCompatibleServices(agreement *persistence.Agre
 // in the object's policy.
 func findCompatibleService(agreementServiceID string, objPol *exchange.ObjectDestinationPolicy, workerId string, archSynonyms config.ArchSynonyms) (bool, error) {
 
+	// Array to contain the decomposed pieces from the agreementServiceID
+	agServiceIdPieces := make([]string, 3)
+
 	// Break the service id into the individual tuple pieces, service name (which includes org), arch and version.
-	agServiceIdPieces := strings.SplitN(agreementServiceID, "_", 3)
+	// The id will be in the format of name_version_arch (ie. hello-world_1.0.0_am64)
+	// We can't just split the agreementServiceID with "_" since the name can contain "_" characters too.
+	// Instead, look at the last index and grab the arch first, then the version, and then the name
+	serviceId := agreementServiceID
+	for i := 2; i > 0; i-- {
+		idx := strings.LastIndex(serviceId, "_")
+		agServiceIdPieces[i] = serviceId[idx+1:]
+		// Strip off the last _ found
+		serviceId = serviceId[0:idx]
+	}
+	// What remains is the service name
+	agServiceIdPieces[0] = serviceId
 
 	// Separate the service name and org.
 	agServiceNamePieces := strings.SplitN(agServiceIdPieces[0], "/", 2)
