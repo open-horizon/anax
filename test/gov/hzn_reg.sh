@@ -13,14 +13,14 @@ unset HZN_ORG_ID
 # preparing the userinput file and the policy file
 cat <<EOF > /tmp/node_policy.json
 {
-    properties": [
+    "properties": [
       {
         "name": "purpose",
         "value": "network-testing"
       }
     ],
     "deployment": {
-      properties": [
+      "properties": [
       {
         "name": "group",
         "value": "bluenode"
