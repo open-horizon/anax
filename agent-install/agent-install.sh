@@ -89,6 +89,7 @@ Options/Flags:
     -f    Install older version of the horizon agent and CLI packages. (This flag is equivalent to AGENT_OVERWRITE)
     -b    Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
     -C    Install only the horizon-cli package, not the full agent (This flag is equivalent to AGENT_ONLY_CLI)
+    -A    Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
     -h    This usage
 
 Additional Variables (in environment or config file):
@@ -130,7 +131,7 @@ function now() {
 # Note: could not put this in a function, because getopts would only process the function args
 AGENT_VERBOSITY=3   # default until we get it from all of the possible places
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts begin"; fi
-while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:C" opt; do
+while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CA" opt; do
     case $opt in
     c)  ARG_AGENT_CERT_FILE="$OPTARG"
         ;;
@@ -176,6 +177,8 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:C" opt; do
         ;;
     C)  ARG_AGENT_ONLY_CLI=true
         ;;
+    A)  ARG_AGENT_AUTO_UPGRADE=true
+        ;;
     h)  usage 0
         ;;
     \?) echo "Invalid option: -$OPTARG"
@@ -194,12 +197,14 @@ function log_fatal() {
     : ${1:?} ${2:?}
     local exitCode=$1
     local msg="$2"
-    echo $(now) "ERROR: $msg" >&2   # we always show fatal error msgs
+    # output to both stdout and stderr
+    echo $(now) "ERROR: $msg" | tee /dev/stderr   # we always show fatal error msgs
     exit $exitCode
 }
 
 function log_error() {
-    log $VERB_ERROR "ERROR: $1" >&2
+    # output to both stdout and stderr
+    log $VERB_ERROR "ERROR: $1" | tee /dev/stderr 
 }
 
 function log_warning() {
@@ -483,6 +488,8 @@ function read_config_file() {
 function get_all_variables() {
     log_debug "get_all_variables() begin"
 
+    get_variable AGENT_AUTO_UPGRADE 'false'
+
     # First unpack the zip file (if specified), because the config file could be in there
     get_variable AGENT_INSTALL_ZIP
     if [[ -n $AGENT_INSTALL_ZIP ]]; then
@@ -525,7 +532,11 @@ function get_all_variables() {
         AGENT_CERT_FILE=$AGENT_CERT_FILE_DEFAULT
         rm -f $AGENT_CERT_FILE   # they told us to download it, so don't use the file already there
     fi
-    get_variable HZN_FSS_CSSURL '' 'true'
+    if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+        get_variable HZN_FSS_CSSURL '' 'true'
+    else
+        get_variable HZN_FSS_CSSURL ''
+    fi
     get_variable HZN_EXCHANGE_USER_AUTH
     get_variable HZN_EXCHANGE_NODE_AUTH
     if using_remote_input_files 'cfg'; then
@@ -684,8 +695,12 @@ function get_all_variables() {
 # Check the validity of the input variable values that we can
 function check_variables() {
     log_debug "check_variables() begin"
-    if [[ -z $HZN_EXCHANGE_USER_AUTH ]] && [[ -z ${HZN_EXCHANGE_NODE_AUTH#*:} ]]; then
-        log_fatal 1 "If the node token is not specified in HZN_EXCHANGE_NODE_AUTH, then HZN_EXCHANGE_USER_AUTH must be specified"
+
+    # do not check the exchange credentials because the agent auto upgrade process does not use it.
+    if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+        if [[ -z $HZN_EXCHANGE_USER_AUTH ]] && [[ -z ${HZN_EXCHANGE_NODE_AUTH#*:} ]]; then
+            log_fatal 1 "If the node token is not specified in HZN_EXCHANGE_NODE_AUTH, then HZN_EXCHANGE_USER_AUTH must be specified"
+        fi
     fi
 
     if [[ -n $HZN_MGMT_HUB_CERT_PATH && -n $AGENT_CERT_FILE && $HZN_MGMT_HUB_CERT_PATH != $AGENT_CERT_FILE ]]; then
@@ -848,13 +863,24 @@ function ensureWeAreRoot() {
     # or could check: [[ $(id -u) -ne 0 ]]
 }
 
-# compare versions. Return 0 (true) if the 1st version is greater than the 2nd version
-function version_gt() {
+# compare versions. 
+# Return 0 if the 1st version is equal to the 2nd version
+#        1 if the 1st version is greater than the 2nd version
+#        2 if the 1st version is less than the 2nd version
+function compare_version() {
     local version1=$1
     local version2=$2
-    if [[ $version1 == $version2 ]]; then return 1; fi
-    # need the test above, because the test below returns >= because it sorts in ascending order
-    test "$(printf '%s\n' "$1" "$2" | sort -V | tail -n 1)" == "$version1"
+
+    if [[ $version1 == $version2 ]]; then
+        return 0
+    fi
+
+    local gtval=$(printf '%s\n' "$version1" "$version2" | sort -V | tail -n 1)
+    if [ "$gtval" == "$version1" ]; then
+        return 1
+    else
+        return 2
+    fi
 }
 
 # Return 0 (true) if we are getting this input file from a remote location
@@ -969,6 +995,16 @@ function store_cert_file_permanently() {
     echo "$abs_certificate"
 }
 
+# check if the given urls are same. The last / will be trimmed off
+# for comparision
+function urlEquals() {
+    url1=${1%/}
+    url2=${2%/}
+    if [[ $url1 != $url2 ]]; then
+        return 1
+    fi
+}
+
 # For both device and cluster: Returns true (0) if /etc/default/horizon already has these values
 function is_horizon_defaults_correct() {
     log_debug "is_horizon_defaults_correct() begin"
@@ -1005,14 +1041,14 @@ function is_horizon_defaults_correct() {
     # Note: the '|| true' is so not finding the strings won't cause set -e to exit the script
     horizon_defaults_value=$(grep -E '^HZN_EXCHANGE_URL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $HZN_EXCHANGE_URL ]]; then
+    if ! urlEquals $horizon_defaults_value $HZN_EXCHANGE_URL; then
         log_info "HZN_EXCHANGE_URL value changed, return"
         return 1
     fi
 
     horizon_defaults_value=$(grep -E '^HZN_FSS_CSSURL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $HZN_FSS_CSSURL ]]; then 
+    if ! urlEquals $horizon_defaults_value $HZN_FSS_CSSURL; then
         log_info "HZN_FSS_CSSURL value changed, return"
         return 1 
     fi
@@ -1020,7 +1056,7 @@ function is_horizon_defaults_correct() {
     # even if HZN_AGBOT_URL is empty in this script, still verify the defaults file is the same
     horizon_defaults_value=$(grep -E '^HZN_AGBOT_URL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $HZN_AGBOT_URL ]]; then 
+    if ! urlEquals $horizon_defaults_value $HZN_AGBOT_URL; then
         log_info "HZN_AGBOT_URL value changed, return"
         return 1
     fi
@@ -1028,7 +1064,7 @@ function is_horizon_defaults_correct() {
     # even if HZN_SDO_SVC_URL is empty in this script, still verify the defaults file is the same
     horizon_defaults_value=$(grep -E '^HZN_SDO_SVC_URL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $HZN_SDO_SVC_URL ]]; then 
+    if ! urlEquals $horizon_defaults_value $HZN_SDO_SVC_URL; then
         log_info "HZN_SDO_SVC_URL value changed, return"
         return 1
     fi
@@ -1174,10 +1210,14 @@ function install_macos() {
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         confirmCmds socat docker jq
 
-        check_existing_exch_node_is_correct_type "device"
+        if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+            check_existing_exch_node_is_correct_type "device"
+        fi
 
         if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
-            unregister
+            if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+                unregister
+            fi
         fi
     fi
 
@@ -1250,8 +1290,10 @@ function debian_device_install_prereqs() {
     log_debug "debian_device_install_prereqs() end"
 }
 
-# Returns 0 (true) if the deb pkg to be installed is newer than the corresponding pkg already installed
-function is_newer_deb_pkg() {
+# Returns 0 if the deb pkg to be installed is equal to the corresponding pkg already installed
+#         1 if the deb pkg to be installed is newer than the corresponding pkg already installed
+#         2 if the deb pkg to be installed is older than the corresponding pkg already installed
+function compare_deb_pkg() {
     local latest_deb_file=${1:?}   # make the decision based on the deb pkg they passed in
 
     # latest_deb_file is something like /dir/horizon_2.28.0-338_amd64.deb
@@ -1268,13 +1310,14 @@ function is_newer_deb_pkg() {
     # Get version of installed horizon deb pkg
     if [[ $(dpkg-query -s $pkg_name 2>/dev/null | grep -E '^Status:' | awk '{print $4}') != 'installed' ]]; then
         log_verbose "The $pkg_name deb pkg is not installed (at least not completely)"
-        return 0   # anything is newer than not installed
+        return 1   # anything is newer than not installed
     fi
     local installed_deb_version=$(dpkg-query -s $pkg_name | grep -E '^Version:' | awk '{print $2}')
 
     log_info "Installed $pkg_name deb package version: $installed_deb_version, Provided $pkg_name deb file version: $deb_file_version"
-    if version_gt $deb_file_version $installed_deb_version; then return 0
-    else return 1; fi
+    local rc=0
+    compare_version $deb_file_version $installed_deb_version || rc=$?
+    return $rc
 }
 
 # Install the deb pkgs on a device
@@ -1321,14 +1364,16 @@ function install_debian_device_horizon_pkgs() {
             new_pkg=$latest_horizon_file
         fi
 
-        if is_newer_deb_pkg $new_pkg; then
+        local rc=0
+        compare_deb_pkg $new_pkg || rc=$?
+        if [ $rc -eq 1 ]; then
             log_info "Installing $latest_files ..."
             runCmdQuietly apt-get install -yqf $latest_files
             if [[ $AGENT_ONLY_CLI != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
             fi
-        elif [[ "$AGENT_OVERWRITE" == true ]]; then
+        elif [ $rc -eq 2 ] && [[ "$AGENT_OVERWRITE" == true ]]; then
             log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
             runCmdQuietly apt-get install -yqf --allow-downgrades $latest_files
             if [[ $AGENT_ONLY_CLI != 'true' ]]; then
@@ -1359,10 +1404,15 @@ function install_debian() {
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         check_and_set_anax_port   # sets ANAX_PORT
-        check_existing_exch_node_is_correct_type "device"
+
+        if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+            check_existing_exch_node_is_correct_type "device"
+        fi
 
         if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
-            unregister
+            if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+                unregister
+            fi
         fi
     fi
 
@@ -1371,6 +1421,7 @@ function install_debian() {
     create_or_update_horizon_defaults "$ANAX_PORT"
 
     get_pkgs
+
     # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
     install_debian_device_horizon_pkgs
 
@@ -1420,8 +1471,10 @@ function redhat_device_install_prereqs() {
     log_debug "redhat_device_install_prereqs() end"
 }
 
-# Returns 0 (true) if the rpm pkg to be installed is newer than the corresponding pkg already installed
-function is_newer_rpm_pkg() {
+# Returns 0 if the rpm pkg to be installed is equal to the corresponding pkg already installed
+#         1 if the rpm pkg to be installed is newer than the corresponding pkg already installed
+#         2 if the rpm pkg to be installed is older than the corresponding pkg already installed
+function compare_rpm_pkg() {
     local latest_rpm_file=${1:?}   # make the decision based on the rpm pkg they passed in
 
     # latest_rpm_file is something like /dir/horizon-2.28.0-338.x86_64.rpm
@@ -1438,15 +1491,16 @@ function is_newer_rpm_pkg() {
     # Get version of installed horizon rpm pkg
     if ! rpm -q $pkg_name >/dev/null 2>&1; then
         log_verbose "The $pkg_name rpm pkg is not installed"
-        return 0   # anything is newer than not installed
+        return 1   # anything is newer than not installed
     fi
     local installed_rpm_version=$(rpm -q $pkg_name 2>/dev/null)  # will return like: horizon-2.28.0-338.x86_64
     installed_rpm_version=${installed_rpm_version#${pkg_name}-}   # remove the pkg name
     installed_rpm_version=${installed_rpm_version%.*}   # remove the arch, so left with only the version
 
     log_info "Installed $pkg_name rpm package version: $installed_rpm_version, Provided $pkg_name rpm file version: $rpm_file_version"
-    if version_gt $rpm_file_version $installed_rpm_version; then return 0
-    else return 1; fi
+    local rc=0
+    compare_version $rpm_file_version $installed_rpm_version || rc=$?
+    return $rc
 }
 
 # Install the rpm pkgs on a redhat variant device
@@ -1482,14 +1536,16 @@ function install_redhat_device_horizon_pkgs() {
             new_pkg=$latest_horizon_file
         fi
     
-        if is_newer_rpm_pkg $new_pkg; then
+        local rc=0
+        compare_rpm_pkg $new_pkg || rc=$?
+        if [ $rc -eq 1 ]; then
             log_info "Installing $latest_files ..."
             dnf install -yq $latest_files
             if [[ $AGENT_ONLY_CLI != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
             fi
-        elif [[ "$AGENT_OVERWRITE" == true ]]; then
+        elif [ $rc -eq 2 ] && [[ "$AGENT_OVERWRITE" == true ]]; then
             log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
             # Note: dnf automatically detects the specified pkg files are a lower version and downgrades them. If we need to switch to yum, we'll have to use yum downgrade ...
             dnf install -yq $latest_files
@@ -1514,10 +1570,14 @@ function install_redhat() {
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         check_and_set_anax_port   # sets ANAX_PORT
-        check_existing_exch_node_is_correct_type "device"
+        if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+            check_existing_exch_node_is_correct_type "device"
+        fi
 
         if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
-            unregister
+            if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+                unregister
+            fi
         fi
     fi
 
@@ -1567,18 +1627,18 @@ function install_mac_horizon-cli() {
         local installed_version=$(hzn version | grep "^Horizon CLI")
         installed_version=${installed_version##* }   # remove all of the space-separated words, except the last one
         log_info "Installed horizon-cli pkg version: $installed_version, Provided horizon pkg file version: $pkg_file_version"
-        if [[ ! $installed_version =~ $SEMVER_REGEX ]] || version_gt "$pkg_file_version" "$installed_version"; then
+        local rc=0
+        compare_version "$pkg_file_version" "$installed_version" || rc=$?
+        if [[ ! $installed_version =~ $SEMVER_REGEX ]] || [ $rc -eq 1 ]; then
             log_verbose "Either can not get the installed hzn version, or the given pkg file version is newer"
             log_info "Installing $PACKAGES/$pkg_file_name ..."
             sudo installer -pkg $PACKAGES/$pkg_file_name -target /
-        else
+        elif [ $rc -eq 2 ] && [[ "$AGENT_OVERWRITE" == true ]]; then
             log_verbose "The given pkg file version is older than or equal to the installed hzn"
-            if [[ "$AGENT_OVERWRITE" == true ]]; then
-                log_info "Installing older horizon-cli package ${pkg_file_version} because AGENT_OVERWRITE is set to true ..."
-                sudo installer -pkg ${PACKAGES}/$pkg_file_name -target /
-            else
-                log_info "The installed horizon-cli package is already up to date ($installed_version)"
-            fi
+            log_info "Installing older horizon-cli package ${pkg_file_version} because AGENT_OVERWRITE is set to true ..."
+            sudo installer -pkg ${PACKAGES}/$pkg_file_name -target /
+        else
+            log_info "The installed horizon-cli package is already up to date ($installed_version)"
         fi
     else
         # hzn not installed
@@ -2064,6 +2124,7 @@ function find_node_ip_address() {
 # If node exist in management hub, verify it is correct type (device or cluster)
 function check_existing_exch_node_is_correct_type() {
     log_debug "check_existing_exch_node_is_correct_type() begin"
+
     local expected_type=$1
 
     log_info "Verifying that node $NODE_ID in the exchange is type $expected_type (if it exists)..."
