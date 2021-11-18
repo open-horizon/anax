@@ -656,6 +656,62 @@ func NodeListStatus(org string, credToUse string, node string) {
 
 }
 
+func NodeManagementList(org, credToUse, nodeName string, all bool) {
+	msgPrinter := i18n.GetMessagePrinter()
+
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	var nodeOrg string
+	nodeOrg, nodeName = cliutils.TrimOrg(org, nodeName)
+
+	// Make sure node is registered with exchange
+	var nodes ExchangeNodes
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(nodeName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s' not found in org %s", nodeName, nodeOrg))
+	}
+	node := nodes.Nodes[nodeOrg + "/" + nodeName]
+	if node.PublicKey == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("node '%s' is not registered with the exchange in org %s", nodeName, nodeOrg))
+	}
+
+	// Get the node's management policy
+	var nodePol exchange.ExchangeNodePolicy
+	httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(nodeName)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodePol)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node policy for %s not found in org %s", nodeName, nodeOrg))
+	}
+	nodePol_nm := nodePol.GetManagementPolicy()
+
+	// Get a list of applicable NMP's
+	var output string
+	var nmpList exchange.ExchangeNodeManagementPolicyResponse
+	httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/managementpolicies", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpList)
+	if httpCode == 404 {
+		output = "[]"
+	} else {
+		compatibleNMPs := []string{}
+		for nmpName, nmp := range nmpList.Policies {
+			if nmp.Enabled || all {
+				if err := nodePol_nm.Constraints.IsSatisfiedBy(nmp.Properties); err != nil {
+					continue
+				} else if err := nmp.Constraints.IsSatisfiedBy(nodePol_nm.Properties); err != nil {
+					continue
+				} else {
+					if nmp.Enabled {
+						compatibleNMPs = append(compatibleNMPs, nmpName + ": enabled")
+					} else {
+						compatibleNMPs = append(compatibleNMPs, nmpName + ": disabled")
+					}
+				}
+			}
+		}
+		output = cliutils.MarshalIndent(compatibleNMPs, "exchange node listnmps")
+	}
+
+	fmt.Printf(output)
+	msgPrinter.Println()
+}
+
 // Verify the node user input for the pattern case. Make sure that the given
 // user input are compatible with the pattern.
 func verifyNodeUserInput(org string, credToUse string, node exchange.Device, nId string, ui []policy.UserInput) {
