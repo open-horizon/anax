@@ -104,6 +104,7 @@ const (
 	// Node management policy
 	NMP_START_DOWNLOAD    EventId = "NMP_START_DOWNLOAD"
 	NMP_DOWNLOAD_COMPLETE EventId = "NMP_DOWNLOAD_COMPLETE"
+	NM_STATUS_CHANGED 	  EventId = "NM_STATUS_CHANGED"
 
 	// Exchange change related
 	CHANGE_MESSAGE_TYPE             EventId = "EXCHANGE_CHANGE_MESSAGE"
@@ -2176,5 +2177,31 @@ func NewNMPDownloadCompleteMessage(id EventId, success bool, name string) *NMPDo
 		},
 		Success: success,
 		NMPName: name,
+	}
+}
+
+type NMStatusChangedMessage struct {
+	event   Event
+	Status  string
+}
+
+func (n *NMStatusChangedMessage) Event() Event {
+	return n.event
+}
+
+func (n *NMStatusChangedMessage) String() string {
+	return fmt.Sprintf("event: %v, Status: %v", n.event, n.Status)
+}
+
+func (n *NMStatusChangedMessage) ShortString() string {
+	return n.String()
+}
+
+func NewNMStatusChangedMessage(id EventId, status string) *NMStatusChangedMessage {
+	return &NMStatusChangedMessage{
+		event: Event{
+			Id: id,
+		},
+		Status: status,
 	}
 }

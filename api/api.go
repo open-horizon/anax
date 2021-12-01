@@ -3,9 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"sync"
-
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
@@ -15,6 +12,8 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
+	"net/http"
+	"sync"
 )
 
 type API struct {
@@ -103,6 +102,10 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	router.HandleFunc("/eventlog/all", a.eventlog).Methods("GET", "OPTIONS")
 	//get the active surface errors for this node
 	router.HandleFunc("/eventlog/surface", a.surface).Methods("GET", "OPTIONS")
+
+	router.HandleFunc("/management/nextjob", a.nextUpgradeJob).Methods("GET", "OPTIONS")
+	router.HandleFunc("/management/status", a.managementStatus).Methods("GET", "OPTIONS")
+	router.HandleFunc("/management/status/{nmpname}", a.managementStatus).Methods("GET", "PUT", "OPTIONS")
 
 	// For importing workload public signing keys (RSA-PSS key pair public key)
 	router.HandleFunc("/{p:(?:publickey|trust)}", a.publickey).Methods("GET", "OPTIONS")
