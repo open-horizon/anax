@@ -16,7 +16,7 @@ type ExchangeNodeManagementPolicy struct {
 	Properties             externalpolicy.PropertyList         `json:"properties"`
 	Patterns               []string                            `json:"patterns"`
 	Enabled                bool                                `json:"enabled"`
-	AgentAutoUpgradePolicy ExchangeAgentUpgradePolicy          `json:"agentUpgradePolicy,omitempty"`
+	AgentAutoUpgradePolicy *ExchangeAgentUpgradePolicy         `json:"agentUpgradePolicy,omitempty"`
 	LastUpdated            string                              `json:"lastUpdated,omitempty"`
 	Created                string                              `json:"created,omitempty"`
 }
@@ -78,10 +78,10 @@ func (e *ExchangeNodeManagementPolicy) HasNoConstraints() bool {
 }
 
 func (e ExchangeNodeManagementPolicy) String() string {
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Properties: %v, Constraints: %v, Patterns: %v, Enabled: %v, AgentAutoUpgradePolicy: %v, LastUpdated: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Properties: %v, Constraints: %v, Patterns: %v, Enabled: %v, AgentAutoUpgradePolicy: %v, LastUpdated: %v, Created: %v",
 		e.Owner, e.Label, e.Description,
 		e.Properties, e.Constraints, e.Patterns,
-		e.Enabled, e.AgentAutoUpgradePolicy, e.LastUpdated)
+		e.Enabled, e.AgentAutoUpgradePolicy, e.LastUpdated, e.Created)
 }
 
 // The agent upgrade policy as stored in the exchange

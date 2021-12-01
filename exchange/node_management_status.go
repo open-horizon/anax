@@ -3,6 +3,7 @@ package exchange
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchangecommon"
 )
 
@@ -30,6 +31,12 @@ func PutNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId stri
 
 	var resp interface{}
 	resp = new(PutPostDeleteStandardResponse)
+
+	org, name := cutil.SplitOrgSpecUrl(policyName)
+	if name == "" {
+		name = org
+	}
+	policyName = name
 
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/managementStatus/%v", ec.GetExchangeURL(), orgId, nodeId, policyName)
 

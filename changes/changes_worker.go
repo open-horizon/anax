@@ -288,6 +288,8 @@ func (w *ChangesWorker) findAndProcessChanges() {
 			}
 		} else if change.IsService() {
 			resourceTypes[events.CHANGE_SERVICE_TYPE] = true
+		} else if change.IsNMP() {
+			resourceTypes[events.CHANGE_NMP_TYPE] = true
 		} else {
 			glog.V(5).Infof(chglog(fmt.Sprintf("Unhandled change: %v %v/%v", change.Resource, change.OrgID, change.ID)))
 		}

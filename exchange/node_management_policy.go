@@ -8,12 +8,18 @@ import (
 
 const NMPExchangeResource = "managementpolicies"
 
+type GetNMPResponse struct {
+	exchangecommon.ExchangeNodeManagementPolicy
+	LastUpdated string `json:"lastUpdated"`
+	Created     string `json:"created"`
+}
+
 // Get the single node management policy from the exchange
 func GetSingleExchangeNodeManagementPolicy(ec ExchangeContext, policyOrg string, policyName string) (*exchangecommon.ExchangeNodeManagementPolicy, error) {
 	glog.V(3).Infof("Getting node management policy : %v/%v", policyOrg, policyName)
 
 	var resp interface{}
-	resp = new(exchangecommon.ExchangeNodeManagementPolicy)
+	resp = new(GetNMPResponse)
 
 	targetURL := fmt.Sprintf("%vorgs/%v/%v/%v", ec.GetExchangeURL(), policyOrg, NMPExchangeResource, policyName)
 
@@ -22,12 +28,12 @@ func GetSingleExchangeNodeManagementPolicy(ec ExchangeContext, policyOrg string,
 		return nil, err
 	}
 
-	nmp := resp.(*exchangecommon.ExchangeNodeManagementPolicy)
-	return nmp, nil
+	nmp := resp.(GetNMPResponse).ExchangeNodeManagementPolicy
+	return &nmp, nil
 }
 
 type ExchangeNodeManagementPolicyResponse struct {
-	Policies  map[string]exchangecommon.ExchangeNodeManagementPolicy `json:"managementPolicy"`
+	Policies  map[string]exchangecommon.ExchangeNodeManagementPolicy `json:"managementPolicy,omitempty"`
 	LastIndex int                                                    `json:"lastIndex,omitempty"`
 }
 

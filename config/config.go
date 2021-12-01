@@ -70,6 +70,7 @@ type Config struct {
 	MaxAgreementPrelaunchTimeM       int64     // The maximum numbers of minutes to wait for workload to start in an agreement
 	K8sCRInstallTimeoutS             int64     // The number of seconds to wait for the custom resouce to install successfully before it is considered a failure
 	SecretsManagerFilePath           string    // The filepath for the secrets manager to store secrets in the agent filesystem
+	NodeMgmtWorkDirectory            string    // The filepath for the node management policy updates to use
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -290,6 +291,13 @@ func (a *AGConfig) GetExchangeMessageTTL(maxHeartbeatInterval int) int {
 		hbInterval = ExchangeMessagePollMaxInterval_DEFAULT
 	}
 	return int(float64(hbInterval) * scaleFactor)
+}
+
+func (c *Config) GetNodeMgmtDirectory() string {
+	if c.NodeMgmtWorkDirectory == "" {
+		return fmt.Sprintf("%v/nmp", getDefaultBase())
+	}
+	return c.NodeMgmtWorkDirectory
 }
 
 func getDefaultBase() string {

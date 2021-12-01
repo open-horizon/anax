@@ -52,6 +52,7 @@ const RESOURCE_AGBOT_POLICY = "policy"                   // A policy change occu
 const RESOURCE_AGBOT_SERVICE_POLICY = "servicepolicies"  // A service policy changed
 const RESOURCE_AGBOT_AGREEMENTS = "agbotagreements"      // A change was made to one of the agreements on the agbot
 const RESOURCE_ORG = "org"                               // A change was made to the org
+const RESOURCE_NMP = "mgmtpolicy"                        // A change was made to a node management policy
 
 // constants for operation values
 const CHANGE_OPERATION_CREATED = "created"
@@ -136,6 +137,10 @@ func (e ExchangeChange) IsOrg() bool {
 
 func (e ExchangeChange) IsService() bool {
 	return e.Resource == RESOURCE_SERVICE
+}
+
+func (e ExchangeChange) IsNMP() bool {
+	return e.Resource == RESOURCE_NMP
 }
 
 func (e ExchangeChange) IsAgbotServedPolicy(agbot string) bool {
