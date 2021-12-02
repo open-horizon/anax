@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"time"
 )
@@ -2128,7 +2129,8 @@ type NMPStartDownloadMessage struct {
 }
 
 type StartDownloadMessage struct {
-	FilesList []string
+	NMPName   string
+	NMPStatus *exchangecommon.NodeManagementPolicyStatus
 }
 
 func (n *NMPStartDownloadMessage) Event() Event {

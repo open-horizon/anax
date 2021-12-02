@@ -1,8 +1,11 @@
 package externalpolicy
 
 import (
+	"fmt"
+	"github.com/go-ini/ini"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
+	"os"
 	"runtime"
 )
 
@@ -17,6 +20,16 @@ const (
 	PROP_NODE_HARDWAREID  = "openhorizon.hardwareId"        // The device serial number if it can be found. A generated Id otherwise.
 	PROP_NODE_PRIVILEGED  = "openhorizon.allowPrivileged"   // Property set to determine if privileged services may be run on this device. Can be set by user, default is false.
 	PROP_NODE_K8S_VERSION = "openhorizon.kubernetesVersion" // Server version of the cluster the agent is running in
+	PROP_NODE_OS          = "openhorizon.operatingSystem"   // The operating system the agent is installed on. For containerized agents, this is the host os
+	PROP_NODE_CONTAINERIZED = "openhorizon.containerized"   // Boolean field indicating whether the agent is running in a container
+
+	// for install type
+	OS_CLUSTER = "cluster"
+	OS_CONTAINER = "anax-in-container"
+	OS_MAC     = "mac"
+	OS_UBUNTU  = "ubuntu"
+	OS_DEBIAN  = "debian"
+	OS_RHEL    = "rhel"
 
 	// for service policy
 	PROP_SVC_URL        = "openhorizon.service.url"     // The unique name of the service.
@@ -31,6 +44,10 @@ const MAX_MEMEORY = 1048576 // the unit is MB. This is 1000G
 
 func ListReadOnlyProperties() []string {
 	return []string{PROP_NODE_CPU, PROP_NODE_ARCH, PROP_NODE_MEMORY, PROP_NODE_HARDWAREID, PROP_NODE_K8S_VERSION}
+}
+
+func ListSupportedOperatingSystems() []string {
+	return []string{OS_UBUNTU, OS_DEBIAN, OS_RHEL, OS_MAC}
 }
 
 // CreateNodeBuiltInPolicy returns 2 externalpolicies.
@@ -135,6 +152,15 @@ func createDeviceNodeBuiltInPolicy(availableMem bool, omitGenHwId bool, existing
 	if hwId != "" {
 		nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_HARDWAREID, hwId), false)
 	}
+
+	edgeOS, containerized, err := ProfileEdgeOS()
+	if err != nil {
+		glog.V(2).Infof("Failed to find install type for built-in properties: %v", err)
+		nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_OS, ""), false)
+	} else {
+		nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_OS, edgeOS), false)
+	}
+	nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_CONTAINERIZED, containerized), false)
 	nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_CPU, float64(cpu)), false)
 	nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_ARCH, runtime.GOARCH), false)
 
@@ -202,4 +228,33 @@ func IsServiceBuiltinPropertyName(propName string) bool {
 	} else {
 		return false
 	}
+}
+
+// This function will find what os the agent is running on or if it is running in a container
+// options are: Mac, Ubuntu, Debian, RHEL, anax-in-container
+func ProfileEdgeOS() (string, bool, error) {
+	// check if we are in a docker container. if so check the release file set up by horizon-container to find out the host os
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		 if sysInfo, err := ini.Load("/etc/host-os-release"); err != nil {
+		 	// the host os is unknown
+		 	return "", true, nil
+		 } else {
+			os := sysInfo.Section("").Key("ID").String()
+			if cutil.SliceContains(ListSupportedOperatingSystems(), os) {
+				return os, true, nil
+			}
+		}
+	}
+
+	// running natively on some kind of linux. check the relase file to find out what kind
+	if sysInfo, err := ini.Load("/etc/os-release"); err != nil {
+		return "", false, fmt.Errorf("Failed to find installation type: %v", err)
+	} else {
+		os := sysInfo.Section("").Key("ID").String()
+		if cutil.SliceContains(ListSupportedOperatingSystems(), os) {
+			return os, false, nil
+		}
+	}
+
+	return "", false, fmt.Errorf("Failed to find installation type. Did not match any supported profile.")
 }
