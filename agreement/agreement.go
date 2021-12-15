@@ -404,12 +404,6 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 		exchangeMsg := new(exchange.DeviceMessage)
 		if err := json.Unmarshal(cmd.Msg.ExchangeMessage(), &exchangeMsg); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to demarshal exchange device message %v, error %v", cmd.Msg.ExchangeMessage(), err)))
-		} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
-			w.AddDeferredCommand(cmd)
-			return true
-		} else if !there {
-			glog.V(3).Infof(logString(fmt.Sprintf("ignoring message %v, already deleted from the exchange.", exchangeMsg.MsgId)))
 			return true
 		}
 
@@ -428,6 +422,13 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 		} else if p, err := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "").ValidateProposal(protocolMsg); err != nil {
 			glog.V(5).Infof(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
 			deleteMessage = false
+		} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
+			w.AddDeferredCommand(cmd)
+			return true
+		} else if !there {
+			glog.V(3).Infof(logString(fmt.Sprintf("ignoring message %v, already deleted from the exchange.", exchangeMsg.MsgId)))
+			return true
 		} else if pDevice, err := persistence.FindExchangeDevice(w.db); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to get device from the local database. %v", err)))
 		} else if pDevice != nil && pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
