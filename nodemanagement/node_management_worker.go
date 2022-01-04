@@ -162,10 +162,12 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 	}
 	for name, policy := range *allNMPs {
 		if match, _ := VerifyCompatible(&nodePol.Management, nodePattern, &policy); match {
+			deleted := false
 			if !policy.Enabled {
 				if _, err = persistence.DeleteNMPStatus(n.db, name); err != nil {
 					return fmt.Errorf("Failed to delete status for deactivated node policy %v from database. Error was %v", name, err)
 				}
+				deleted = true
 			}
 			if err = persistence.SaveOrUpdateNodeManagementPolicy(n.db, name, policy); err != nil {
 				return err
@@ -173,7 +175,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 			existingStatus, err := persistence.FindNMPStatus(n.db, name)
 			if err != nil {
 				return fmt.Errorf("Error getting status for policy %v from the database: %v", name, err)
-			} else if existingStatus == nil {
+			} else if existingStatus == nil && !deleted {
 				newStatus := exchangecommon.StatusFromNewPolicy(policy, baseWorkingFile)
 				org, nodeId := cutil.SplitOrgSpecUrl(n.GetExchangeId())
 				if err = persistence.SaveOrUpdateNMPStatus(n.db, name, newStatus); err != nil {

@@ -64,6 +64,31 @@ func FindNMPStatus(db *bolt.DB, nmpKey string) (*exchangecommon.NodeManagementPo
 	return nmStatusRecord, nil
 }
 
+func FindAllNMPStatus(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
+	statuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
+
+	readErr := db.View(func(tx *bolt.Tx) error {
+		if b := tx.Bucket([]byte(NODE_MANAGEMENT_STATUS)); b != nil {
+			b.ForEach(func(k, v []byte) error {
+				var s exchangecommon.NodeManagementPolicyStatus
+
+				if err := json.Unmarshal(v, &s); err != nil {
+					return fmt.Errorf("Unable to demarshal node management status record: %v", err)
+				} else {
+					statuses[string(k)] = &s
+				}
+				return nil
+			})
+		}
+		return nil
+	})
+
+	if readErr != nil {
+		return nil, readErr
+	}
+	return statuses, nil
+}
+
 type NMStatusFilter func(exchangecommon.NodeManagementPolicyStatus) bool
 
 func StatusNMSFilter(status string) NMStatusFilter {
