@@ -32,7 +32,6 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/version"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"k8s.io/client-go/rest"
 	"os"
 	"runtime"
 	"strings"
@@ -780,13 +779,6 @@ Environment Variables:
 	fullCmd := kingpin.MustParse(app.Parse(os.Args[1:]))
 	//cliutils.Verbose("Full command: %s", fullCmd)
 
-	// mms command is not supported for on a cluster node
-	if strings.HasPrefix(fullCmd, "mms ") {
-		if _, err := rest.InClusterConfig(); err == nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("The mms command is not supported on an edge cluster node."))
-		}
-	}
-
 	// setup the environment variables from the project config file
 	project_dir := ""
 	if strings.HasPrefix(fullCmd, "dev ") {
@@ -934,8 +926,11 @@ Environment Variables:
 
 	// For the mms command family, make sure that org and exchange credentials are specified in some way.
 	if strings.HasPrefix(fullCmd, "mms") {
-		mmsOrg = cliutils.RequiredWithDefaultEnvVar(mmsOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
-		mmsUserPw = cliutils.RequiredWithDefaultEnvVar(mmsUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+		if !(strings.HasPrefix(fullCmd, "mms object | obj new")) {
+			mmsOrg = cliutils.RequiredWithDefaultEnvVar(mmsOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+			mmsUserPw = cliutils.RequiredWithDefaultEnvVar(mmsUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+
+		}
 
 		if *mmsObjectListId == "" {
 			mmsObjectListId = mmsObjectListObjId
