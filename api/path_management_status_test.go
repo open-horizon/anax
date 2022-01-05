@@ -21,6 +21,17 @@ func Test_FindManagementStatusForOutput(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
+	var myError error
+	errorHandler := GetPassThroughErrorHandler(&myError)
+
+	// Create dummy exchange device in local DB
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate")
+	if err != nil {
+		t.Errorf("Unable to read node object, error %v", err)
+	} else if pDevice == nil {
+		t.Errorf("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.")
+	}
+
 	// Save a few example statuses in local db
 	testnmp := create_test_status(exchangecommon.STATUS_NEW, dir)
 	persistence.SaveOrUpdateNMPStatus(db, "org/testnmp", *testnmp)
@@ -30,7 +41,7 @@ func Test_FindManagementStatusForOutput(t *testing.T) {
 	persistence.SaveOrUpdateNMPStatus(db, "org/testnmp3", *testnmp3)
 
 	// Test #1 - Look for a specific NMP Status
-	if statuses, err := FindManagementStatusForOutput("testnmp", "org", db); err != nil {
+	if errHandled, statuses := FindManagementStatusForOutput("testnmp", "org", errorHandler, db); errHandled {
 		t.Errorf("failed to find node management status in db, error %v", err)
 	} else if statuses != nil && len(statuses) != 1 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 1, len(statuses))
@@ -39,7 +50,7 @@ func Test_FindManagementStatusForOutput(t *testing.T) {
 	}
 
 	// Test #2 - Get all NMP Statuses
-	if statuses, err := FindManagementStatusForOutput("", "org", db); err != nil {
+	if errHandled, statuses := FindManagementStatusForOutput("", "", errorHandler, db); errHandled {
 		t.Errorf("failed to find node management status in db, error %v", err)
 	} else if statuses != nil && len(statuses) != 3 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 3, len(statuses))
@@ -92,7 +103,7 @@ func Test_UpdateManagementStatus(t *testing.T) {
 	var newNMPStatus *exchangecommon.NodeManagementPolicyStatus
 
 	// Test #1 - Update a specific NMP Status to STATUS_DOWNLOADED
-	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, "testnmp", pDevice, db); errHandled {
+	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, "testnmp", db); errHandled {
 		t.Errorf("failed to update node management status in db, error %v", mainError)
 	} else if out != "Updated status for NMP org/testnmp." {
 		t.Errorf("incorrect return response, expected: %v, actual: %v", "Updated status for NMP org/testnmp.", out)
@@ -108,7 +119,7 @@ func Test_UpdateManagementStatus(t *testing.T) {
 	nmStatus.Status = exchangecommon.STATUS_INITIATED
 	oldNMPStatus, _ := persistence.FindNMPStatus(db, "org/testnmp2")
 	oldStartTime := oldNMPStatus.AgentUpgrade.ActualStartTime
-	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, "testnmp2", pDevice, db); errHandled {
+	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, "testnmp2", db); errHandled {
 		t.Errorf("failed to update node management status in db, error %v", mainError)
 	} else if out != "Updated status for NMP org/testnmp2." {
 		t.Errorf("incorrect return response, expected: %v, actual: %v", "Updated status for NMP org/testnmp2.", out)
@@ -126,7 +137,7 @@ func Test_UpdateManagementStatus(t *testing.T) {
 	nmStatus.Status = exchangecommon.STATUS_SUCCESSFUL
 	oldNMPStatus, _ = persistence.FindNMPStatus(db, "org/testnmp2")
 	oldCompletionTime := oldNMPStatus.AgentUpgrade.CompletionTime
-	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, "testnmp2", pDevice, db); errHandled {
+	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, "testnmp2", db); errHandled {
 		t.Errorf("failed to update node management status in db, error %v", mainError)
 	} else if out != "Updated status for NMP org/testnmp2." {
 		t.Errorf("incorrect return response, expected: %v, actual: %v", "Updated status for NMP org/testnmp2.", out)

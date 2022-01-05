@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/events"
@@ -11,50 +10,71 @@ import (
 	"time"
 )
 
-func FindManagementStatusForOutput(nmpName, org string, db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
+func FindManagementStatusForOutput(nmpName, orgName string, errorHandler ErrorHandler, db *bolt.DB) (bool, map[string]*exchangecommon.NodeManagementPolicyStatus) {
 	var err error
 	managementStatuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
 
+	var fullName string
+	if orgName == "" {
+		// Find exchange device in DB
+		pDevice, err := persistence.FindExchangeDevice(db)
+		if err != nil {
+			return errorHandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), nil
+		} else if pDevice == nil {
+			return errorHandler(NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "management")), nil
+		}
+		fullName = string(pDevice.Org) + "/" + string(nmpName)
+	} else {
+		fullName = string(orgName) + "/" + string(nmpName)
+	}
+
 	// Look for given NMP status
 	if nmpName != "" {
-		fullName := org + "/" + nmpName
 		var managementStatus *exchangecommon.NodeManagementPolicyStatus
 		if managementStatus, err = persistence.FindNMPStatus(db, fullName); err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to read management status object, error %v", err))
+			return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), nil
 		} else if managementStatus != nil {
 			managementStatuses[fullName] = managementStatus
+		} else {
+			return errorHandler(NewNotFoundError(fmt.Sprintf("The nmp %v cannot be found", nmpName), "management")), nil
 		}
 		
 	// Return all stored NMP statuses
 	} else {
 		if managementStatuses, err = persistence.FindAllNMPStatus(db); err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to read management status object, error %v", err))
+			return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), nil
 		}
 	}
 
-	return managementStatuses, nil
+	return false, managementStatuses
 }
 
-func UpdateManagementStatus(nmStatus managementStatusInput, errorhandler ErrorHandler, statusHandler exchange.PutNodeManagementPolicyStatusHandler, nmpName string, pDevice *persistence.ExchangeDevice, db *bolt.DB) (bool, string, []*events.NMStatusChangedMessage) {
+func UpdateManagementStatus(nmStatus managementStatusInput, errorHandler ErrorHandler, statusHandler exchange.PutNodeManagementPolicyStatusHandler, nmpName string, db *bolt.DB) (bool, string, []*events.NMStatusChangedMessage) {
 	if nmStatus.Type == "agentUpgrade" {
 		// Slice to store events
 		msgs := make([]*events.NMStatusChangedMessage, 0, 10)
+
+		// Find exchange device in DB
+		pDevice, err := persistence.FindExchangeDevice(db)
+		if err != nil {
+			return errorHandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), "", nil
+		} else if pDevice == nil {
+			return errorHandler(NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "management")), "", nil
+		}
 	
-		var err error
 		var managementStatus *exchangecommon.NodeManagementPolicyStatus
-		exists := false
 		fullName := string(pDevice.Org) + "/" + string(nmpName)
 
 		// Check to see if status is already being stored
 		if managementStatus, err = persistence.FindNMPStatus(db, fullName); err != nil {
-			return errorhandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), "", nil
-		} else if managementStatus != nil {
-			exists = true
+			return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), "", nil
+		} else if managementStatus == nil {
+			return errorHandler(NewNotFoundError(fmt.Sprintf("The nmp %v cannot be found", nmpName), "management")), "", nil
 		}
 
-		// Create new status if one does not exist
-		if managementStatus == nil {
-			managementStatus = &exchangecommon.NodeManagementPolicyStatus{}
+		// Initialize agent upgrade status if it does not exist
+		if managementStatus.AgentUpgrade == nil {
+			managementStatus.AgentUpgrade = new(exchangecommon.AgentUpgradePolicyStatus)
 		}
 
 		// Set the actual start time and completion time depending on new status
@@ -73,7 +93,7 @@ func UpdateManagementStatus(nmStatus managementStatusInput, errorhandler ErrorHa
 		
 		// Update the NMP status in the local db
 		if err := persistence.SaveOrUpdateNMPStatus(db, fullName, *managementStatus); err != nil {
-			return errorhandler(NewSystemError(fmt.Sprintf("Unable to update node management status object, error %v", err))), "", nil
+			return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object, error %v", err))), "", nil
 		} 
 
 		// Update the status of the NMP in the exchange
@@ -82,14 +102,11 @@ func UpdateManagementStatus(nmStatus managementStatusInput, errorhandler ErrorHa
 		// }
 
 		// Return message
-		if exists {
-			return false, fmt.Sprintf("Updated status for NMP %v.", fullName), msgs
-		}
-		return false, fmt.Sprintf("Added status for NMP %v.", fullName), msgs
+		return false, fmt.Sprintf("Updated status for NMP %v.", fullName), msgs
 
 	} else if nmStatus.Type != "" {
-		return errorhandler(NewBadRequestError(fmt.Sprintf("Input's \"type\" field currently only supports \"agentUpgrade\"."))), "", nil
+		return errorHandler(NewBadRequestError(fmt.Sprintf("Input's \"type\" field currently only supports \"agentUpgrade\"."))), "", nil
 	}
 
-	return errorhandler(NewBadRequestError(fmt.Sprintf("Input does not include \"type\" field."))), "", nil
+	return errorHandler(NewBadRequestError(fmt.Sprintf("Input does not include \"type\" field."))), "", nil
 }

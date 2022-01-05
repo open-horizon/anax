@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/exchangecommon"
@@ -9,7 +8,7 @@ import (
 	"time"
 )
 
-func FindManagementNextJobForOutput(jobType, ready string, db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
+func FindManagementNextJobForOutput(jobType, ready string, errorHandler ErrorHandler, db *bolt.DB) (bool, map[string]*exchangecommon.NodeManagementPolicyStatus) {
 	var err error
 	managementStatuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
 	returnStatus := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
@@ -21,51 +20,51 @@ func FindManagementNextJobForOutput(jobType, ready string, db *bolt.DB) (map[str
 		if ready == "true" {
 			filters := []persistence.NMStatusFilter{persistence.StatusNMSFilter(exchangecommon.STATUS_DOWNLOADED)}
 			if managementStatuses, err = persistence.FindNMPStatusWithFilters(db, filters); err != nil {
-				return nil, errors.New(fmt.Sprintf("unable to read management status object, error %v", err))
+				return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), nil
 			} 
 		// Only get statuses that are NOT "downloaded" (not ready)
 		} else if ready == "false" {
 			filters := []persistence.NMStatusFilter {persistence.StatusNMSFilter(exchangecommon.STATUS_NEW)}
 			if managementStatuses, err = persistence.FindNMPStatusWithFilters(db, filters); err != nil {
-				return nil, errors.New(fmt.Sprintf("unable to read management status object, error %v", err))
+				return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), nil
 			} 
 		// Get all statuses
 		} else if ready == "" {
-			if managementStatuses, err = FindManagementStatusForOutput("", "", db); err != nil {
-				return nil, err
+			var errHandled bool
+			if errHandled, managementStatuses = FindManagementStatusForOutput("", "", errorHandler, db); errHandled {
+				return false, nil
 			}
 		} else {
-			return nil, errors.New(fmt.Sprintf("invalid value for \"ready\" argument."))
+			return errorHandler(NewSystemError(fmt.Sprintf("invalid value for \"ready\" argument."))), nil
 		}
 
 		// Loop through found statuses
-		if len(managementStatuses) > 0 {
+		if managementStatuses != nil && len(managementStatuses) > 0 {
 			var nextTime time.Time
 			var nmpNameToReturn string
 
-			// Look at first NMP status and set it to return
-			for nmpName, nmpStatus := range managementStatuses {
-				if nextTime, err = time.Parse(time.RFC3339, nmpStatus.AgentUpgrade.ScheduledTime); err != nil {
-					return nil, errors.New(fmt.Sprintf("unable to read management status scheduled time, error %v", err))
-				}
-				nmpNameToReturn = nmpName
-				break
-			}
-
 			// Loop through all NMP statuses and set next job to return
 			for nmpName, nmpStatus := range managementStatuses {
+				if nmpStatus.AgentUpgrade.ScheduledTime == "" {
+					continue
+				}
 				if scheduledTime, err := time.Parse(time.RFC3339, nmpStatus.AgentUpgrade.ScheduledTime); err != nil {
-					return nil, errors.New(fmt.Sprintf("unable to read management status scheduled time, error %v", err))
+					return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status scheduled time, error %v", err))), nil
+				} else if nmpNameToReturn == "" {
+					nextTime = scheduledTime
+					nmpNameToReturn = nmpName
 				} else if scheduledTime.Before(nextTime) {
 					nextTime = scheduledTime
 					nmpNameToReturn = nmpName
 				}
 			}
-			returnStatus[nmpNameToReturn] = managementStatuses[nmpNameToReturn]
+			if nmpNameToReturn != "" {
+				returnStatus[nmpNameToReturn] = managementStatuses[nmpNameToReturn]
+			}
 		}
 	} else {
-		return nil, errors.New(fmt.Sprintf("jobType currently only supports \"agentUpgrade\"."))
+		return errorHandler(NewSystemError(fmt.Sprintf("jobType currently only supports \"agentUpgrade\"."))), nil
 	}
 
-	return returnStatus, nil
+	return false, returnStatus
 }

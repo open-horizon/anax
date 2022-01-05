@@ -103,9 +103,10 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	//get the active surface errors for this node
 	router.HandleFunc("/eventlog/surface", a.surface).Methods("GET", "OPTIONS")
 
-	router.HandleFunc("/management/nextjob", a.nextUpgradeJob).Methods("GET", "OPTIONS")
-	router.HandleFunc("/management/status", a.managementStatus).Methods("GET", "OPTIONS")
-	router.HandleFunc("/management/status/{nmpname}", a.managementStatus).Methods("GET", "PUT", "OPTIONS")
+	router.HandleFunc("/nodemanagement/nextjob", a.nextUpgradeJob).Methods("GET", "OPTIONS")
+	router.HandleFunc("/nodemanagement/status", a.managementStatus).Methods("GET", "OPTIONS")
+	router.HandleFunc("/nodemanagement/status/{org}/{nmpname}", a.managementStatus).Methods("GET", "PUT", "OPTIONS")
+	router.HandleFunc("/nodemanagement/status/{nmpname}", a.managementStatus).Methods("GET", "PUT", "OPTIONS")
 
 	// For importing workload public signing keys (RSA-PSS key pair public key)
 	router.HandleFunc("/{p:(?:publickey|trust)}", a.publickey).Methods("GET", "OPTIONS")
