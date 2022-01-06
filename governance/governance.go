@@ -842,13 +842,6 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		if err := json.Unmarshal(cmd.Msg.ExchangeMessage(), &exchangeMsg); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to demarshal exchange device message %v, error %v", cmd.Msg.ExchangeMessage(), err)))
 			return true
-		} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
-			w.AddDeferredCommand(cmd)
-			return true
-		} else if !there {
-			glog.V(3).Infof(logString(fmt.Sprintf("ignoring message %v, already deleted from the exchange.", exchangeMsg.MsgId)))
-			return true
 		}
 
 		glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange", exchangeMsg.MsgId)))
@@ -866,8 +859,20 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			deleteMessage = false
 			protocolHandler := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "")
 
-			// ReplyAck messages could indicate that the agbot has decided not to pursue the agreement any longer.
-			if replyAck, err := protocolHandler.ValidateReplyAck(protocolMsg); err == nil {
+			// See if it is a proposal first. If it is, ignore it... If not, check if message still exists and then check for the message types this modules cares about
+			if _, err := protocolHandler.ValidateProposal(protocolMsg); err == nil {
+				// Gets in here if it is a proposal
+				glog.V(5).Infof(logString(fmt.Sprintf("Governance handler ignoring proposal message")))
+			} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
+				w.AddDeferredCommand(cmd)
+				return true
+			} else if !there {
+				glog.V(3).Infof(logString(fmt.Sprintf("ignoring message %v, already deleted from the exchange.", exchangeMsg.MsgId)))
+				return true
+
+				// ReplyAck messages could indicate that the agbot has decided not to pursue the agreement any longer.
+			} else if replyAck, err := protocolHandler.ValidateReplyAck(protocolMsg); err == nil {
 				err_log_msg := ""
 				ags := []persistence.EstablishedAgreement{}
 				var err error
