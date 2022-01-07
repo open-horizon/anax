@@ -21,8 +21,19 @@ func Test_FindManagementNextJobForOutput(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
+	var myError error
+	errorHandler := GetPassThroughErrorHandler(&myError)
+
+	// Create dummy exchange device in local DB
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate")
+	if err != nil {
+		t.Errorf("Unable to read node object, error %v", err)
+	} else if pDevice == nil {
+		t.Errorf("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.")
+	}
+
 	// test #1 - No NMP Statuses in local db
-	if statuses, err := FindManagementNextJobForOutput("agentUpgrade", "true", db); err != nil {
+	if errHandled, statuses := FindManagementNextJobForOutput("agentUpgrade", "true", errorHandler, db); errHandled {
 		t.Errorf("failed to find node management status in db, error %v", err)
 	} else if statuses != nil && len(statuses) != 0 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 0, len(statuses))
@@ -32,14 +43,14 @@ func Test_FindManagementNextJobForOutput(t *testing.T) {
 	persistence.SaveOrUpdateNMPStatus(db, "org/testnmp", *testnmp)
 
 	// test #2 - Only "waiting" statuses in local db, search for "downloaded"
-	if statuses, err := FindManagementNextJobForOutput("agentUpgrade", "true", db); err != nil {
+	if errHandled, statuses := FindManagementNextJobForOutput("agentUpgrade", "true", errorHandler, db); errHandled {
 		t.Errorf("failed to find node management status in db, error %v", err)
 	} else if statuses != nil && len(statuses) != 0 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 0, len(statuses))
 	}
 
 	// test #3 - Only "waiting" statuses in local db, search for not "downloaded"
-	if statuses, err := FindManagementNextJobForOutput("agentUpgrade", "false", db); err != nil {
+	if errHandled, statuses := FindManagementNextJobForOutput("agentUpgrade", "false", errorHandler, db); errHandled {
 		t.Errorf("failed to find node management status in db, error %v", err)
 	} else if statuses != nil && len(statuses) != 1 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 1, len(statuses))
@@ -51,7 +62,7 @@ func Test_FindManagementNextJobForOutput(t *testing.T) {
 	persistence.SaveOrUpdateNMPStatus(db, "org/testnmp2", *testnmp2)
 
 	// test #4 - Add "downloaded" status to local db, search for "downloaded"
-	if statuses, err := FindManagementNextJobForOutput("agentUpgrade", "true", db); err != nil {
+	if errHandled, statuses := FindManagementNextJobForOutput("agentUpgrade", "true", errorHandler, db); errHandled {
 		t.Errorf("failed to find node management status in db, error %v", err)
 	} else if statuses != nil && len(statuses) != 1 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 1, len(statuses))
@@ -60,7 +71,7 @@ func Test_FindManagementNextJobForOutput(t *testing.T) {
 	}
 
 	// test #5 - Search for all statuses
-	if statuses, err := FindManagementNextJobForOutput("agentUpgrade", "", db); err != nil {
+	if errHandled, statuses := FindManagementNextJobForOutput("agentUpgrade", "", errorHandler, db); errHandled {
 		t.Errorf("failed to find node management status in db, error %v", err)
 	} else if statuses != nil && len(statuses) != 1 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 1, len(statuses))
@@ -69,7 +80,7 @@ func Test_FindManagementNextJobForOutput(t *testing.T) {
 	}
 
 	// test #5 - Search for not "downloaded" statuses
-	if statuses, err := FindManagementNextJobForOutput("agentUpgrade", "false", db); err != nil {
+	if errHandled, statuses := FindManagementNextJobForOutput("agentUpgrade", "false", errorHandler, db); errHandled {
 		t.Errorf("failed to find node management status in db, error %v", err)
 	} else if statuses != nil && len(statuses) != 1 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 1, len(statuses))
@@ -78,7 +89,7 @@ func Test_FindManagementNextJobForOutput(t *testing.T) {
 	}
 
 	// test #6 - Search for any status type
-	if statuses, err := FindManagementNextJobForOutput("", "", db); err != nil {
+	if errHandled, statuses := FindManagementNextJobForOutput("", "", errorHandler, db); errHandled {
 		t.Errorf("failed to find node management status in db, error %v", err)
 	} else if statuses != nil && len(statuses) != 1 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 1, len(statuses))
@@ -87,7 +98,7 @@ func Test_FindManagementNextJobForOutput(t *testing.T) {
 	}
 
 	// test #7 - Search for incorrect status type
-	if statuses, err := FindManagementNextJobForOutput("wrongType", "", db); err == nil {
+	if errHandled, statuses := FindManagementNextJobForOutput("wrongType", "", errorHandler, db); !errHandled {
 		t.Errorf("did not receive expected error.")
 	} else if statuses != nil && len(statuses) != 0 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 0, len(statuses))

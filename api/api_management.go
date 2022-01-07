@@ -31,17 +31,11 @@ func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 		
 		pathVars := mux.Vars(r)
 		nmpName := pathVars["nmpname"]
-
-		// Find horizon device in DB for org info
-		var pDevice *HorizonDevice
-		var err error
-		if pDevice, err = FindHorizonDeviceForOutput(a.db); err != nil {
-			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
-		}
+		orgName := pathVars["org"]
 
 		// Get the NMP status(es)
-		if out, err := FindManagementStatusForOutput(nmpName, *pDevice.Org, a.db); err != nil {
-			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		if errHandled, out := FindManagementStatusForOutput(nmpName, orgName, errorHandler, a.db); errHandled {
+			return
 		} else {
 			writeResponse(w, out, http.StatusOK)
 		}
@@ -75,21 +69,11 @@ func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Find exchange device in DB
-		pDevice, err := persistence.FindExchangeDevice(a.db)
-		if err != nil {
-			errorHandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err)))
-			return
-		} else if pDevice == nil {
-			errorHandler(NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "management status"))
-			return
-		}
-
 		// Create handler for putting updated NMP status in the exchange
 		statusHandler := exchange.GetPutNodeManagementPolicyStatusHandler(a)
 
 		// Update the NMP Status
-		errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, nmpName, pDevice, a.db)
+		errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, nmpName, a.db)
 		if errHandled {
 			return
 		}
@@ -127,8 +111,8 @@ func (a *API) nextUpgradeJob(w http.ResponseWriter, r *http.Request) {
 		ready := r.URL.Query().Get("ready")
 
 		// Get the next NMP Job Status
-		if out, err := FindManagementNextJobForOutput(jobType, ready, a.db); err != nil {
-			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		if errHandled, out := FindManagementNextJobForOutput(jobType, ready, errorHandler, a.db); errHandled {
+			return
 		} else {
 			writeResponse(w, out, http.StatusOK)
 		}
