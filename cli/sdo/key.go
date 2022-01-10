@@ -190,7 +190,7 @@ func sendSdoKeysApiRequest(org, userCreds, keyName, method string, body interfac
 	apiMsg := method + " " + sdoURL
 	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	resp := cliutils.InvokeRestApi(httpClient, method, sdoURL, creds, body, "SDO Owner Service", apiMsg)
+	resp := cliutils.InvokeRestApi(httpClient, method, sdoURL, creds, body, "SDO Owner Service", apiMsg, make(map[string]string), true)
 	if resp.Body != nil {
 		defer resp.Body.Close()
 	}

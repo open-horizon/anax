@@ -1,6 +1,7 @@
 package sync_service
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -15,12 +16,14 @@ import (
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"hash"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"regexp"
@@ -30,6 +33,8 @@ import (
 )
 
 const BatchSize = 50
+
+const MMSUploadOwnerHeaderName = "MMS-Upload-Owner"
 
 type MMSObjectInfo struct {
 	ObjectID     string                      `json:"objectID,omitempty"`
@@ -291,7 +296,7 @@ func ObjectNew(org string) {
 
 // Upload an object to the MMS. The user can provide a copy of the object's metadata in a file, or they can simply provide
 // object id and type.
-func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string, skipDigitalSig bool, dsHashAlgo string, dsHash string, privKeyFilePath string) {
+func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string, chunkUpload bool, chunkSize int, skipDigitalSig bool, dsHashAlgo string, dsHash string, privKeyFilePath string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -373,12 +378,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 	// The object's data might be quite large, so upload it in a second call that will stream the file contents
 	// to the MSS (CSS).
 	if objFile != "" {
-		file, err := os.Open(objFile)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to open object file %v: %v", objFile, err))
-		}
-		defer file.Close()
-
+		urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "data")
 		// Establish the HTTP request override because the upload could take some time.
 		setHTTPOverride := false
 		if os.Getenv(config.HTTPRequestTimeoutOverride) == "" {
@@ -386,9 +386,19 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 			os.Setenv(config.HTTPRequestTimeoutOverride, "0")
 		}
 
-		// Stream the file to the MMS (CSS).
-		urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "data")
-		cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file, nil)
+		file, err := os.Open(objFile)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to open object file %v: %v", objFile, err))
+		}
+		defer file.Close()
+
+		if chunkUpload {
+			cliutils.Verbose(msgPrinter.Sprintf("Upload object in chunk, chunk size is: %d", chunkSize))
+			mmsUrl := cliutils.GetMMSUrl() + "/" + urlPath
+			uploadDataByChunk(mmsUrl, cliutils.OrgAndCreds(org, userPw), chunkSize, file)
+		} else {
+			cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file, nil)
+		}
 
 		// Restore HTTP request override if necessary.
 		if setHTTPOverride {
@@ -552,4 +562,118 @@ func GetCryptoHashType(hashAlgo string) (crypto.Hash, error) {
 	} else {
 		return 0, errors.New(msgPrinter.Sprintf("Hash algorithm %s is not supported", hashAlgo))
 	}
+}
+
+func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to get file info of object file %v: %v", fileInfo.Name(), err))
+	}
+
+	// send chunkdata with header
+	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
+	// need to re-use the httpClient for chunk uploading
+
+	apiMsg := http.MethodPut + " " + mmsUrl
+	cliutils.Verbose(apiMsg)
+
+	closeRequest := false
+	startOffset := int64(0)
+	totalSent := int64(0)
+	headers := make(map[string]string, 2)
+
+	var endOffset int64
+	var dataLength int64
+	var mmsOwnerID string
+	var ownerIDInResponse string
+	for int64(startOffset) < fileInfo.Size() {
+		dataLength = int64(chunkSize)
+		endOffset = startOffset + int64(chunkSize) - 1
+		if startOffset+int64(chunkSize) > fileInfo.Size() {
+			dataLength = fileInfo.Size() - startOffset
+			endOffset = fileInfo.Size() - 1
+			closeRequest = true
+		}
+		chunkData := make([]byte, dataLength)
+		n, err := file.ReadAt(chunkData, startOffset)
+
+		headers["Content-Range"] = fmt.Sprintf("bytes %d-%d/%d", startOffset, endOffset, fileInfo.Size())
+		headers["Content-Length"] = strconv.FormatInt(dataLength, 10)
+		headers[MMSUploadOwnerHeaderName] = mmsOwnerID
+
+		if err != nil && err != io.EOF {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("error to read object file %v from offset %d: %v", fileInfo.Name(), startOffset, err))
+		}
+		if n != int(dataLength) {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("read unexpected length of data (read data length: %d, expected data length: %d) from object file %v from offset %d: %v", n, dataLength, fileInfo.Name(), startOffset, err))
+		}
+
+		msgPrinter.Printf("\rUploading: %.2f %s", float32(totalSent+dataLength)/float32(fileInfo.Size())*100, "%")
+		if closeRequest {
+			// Clear the progress info when the file has been fully uploaded
+			msgPrinter.Printf("\r")
+		}
+
+		urlObj, errUrl := url.Parse(mmsUrl)
+		if errUrl != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Malformed URL: %v. %v", mmsUrl, errUrl))
+		}
+		urlObj.RawQuery = urlObj.Query().Encode()
+
+		if err := cliutils.TrustIcpCert(httpClient); err != nil {
+			cliutils.Fatal(cliutils.FILE_IO_ERROR, err.Error())
+		}
+
+		req, err := http.NewRequest(http.MethodPut, urlObj.String(), bytes.NewBuffer(chunkData))
+
+		if err != nil {
+			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
+		}
+
+		if closeRequest {
+			req.Close = true
+		}
+
+		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(creds))))
+		req.Header.Add("Content-Type", "application/octet-stream")
+		cliutils.AddHeaders(req, headers)
+		resp, err := httpClient.Do(req)
+
+		if resp != nil && resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
+		if exchange.IsTransportError(resp, err) {
+			continue
+		} else if err != nil {
+			cliutils.Verbose(msgPrinter.Sprintf("Received non-transport error: %s", err.Error()))
+		}
+
+		if resp.StatusCode != http.StatusPartialContent && resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusTemporaryRedirect {
+			if resp.StatusCode == http.StatusInternalServerError && resp.Body != nil {
+				if b, err := io.ReadAll(resp.Body); err == nil {
+					responseMessage := string(b)
+					if strings.Contains(responseMessage, "leader changed") {
+						// restart from first offset
+						mmsOwnerID = ""
+						startOffset = 0
+						totalSent = 0
+						continue
+					}
+				}
+			}
+			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s", resp.StatusCode, apiMsg))
+		} else if resp.StatusCode != http.StatusTemporaryRedirect {
+			if mmsOwnerID == "" {
+				ownerIDInResponse = resp.Header.Get(MMSUploadOwnerHeaderName)
+				mmsOwnerID = ownerIDInResponse
+			}
+			totalSent += dataLength
+			startOffset += dataLength
+		}
+	}
+
 }

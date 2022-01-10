@@ -178,7 +178,7 @@ func getVouchers(org, userCreds, apiMsg string, voucher string) ([]byte, string)
 	apiMsg = method + " " + sdoURL
 	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	resp := cliutils.InvokeRestApi(httpClient, method, sdoURL, creds, requestBodyBytes, "SDO Owner Service", apiMsg)
+	resp := cliutils.InvokeRestApi(httpClient, method, sdoURL, creds, requestBodyBytes, "SDO Owner Service", apiMsg, make(map[string]string), true)
 	if resp.Body != nil {
 		defer resp.Body.Close()
 	}
@@ -451,7 +451,7 @@ func SdoPostVoucher(url, creds, org string, requestBodyBytes []byte, respBody *I
 	apiMsg := method + " " + url
 	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
 	// Note: need to pass the request body in as a string, not []byte, so that it sets header: Content-Type, application/json
-	resp := cliutils.InvokeRestApi(httpClient, method, url, creds, string(requestBodyBytes), "SDO Owner Service", apiMsg)
+	resp := cliutils.InvokeRestApi(httpClient, method, url, creds, string(requestBodyBytes), "SDO Owner Service", apiMsg, make(map[string]string), true)
 	if resp.Body != nil {
 		defer resp.Body.Close()
 	}
