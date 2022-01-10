@@ -144,6 +144,17 @@ read -d '' resmeta <<EOF
 EOF
 echo "$resmeta" > /tmp/meta-large.json
 
+read -d '' resmeta <<EOF
+{
+  "objectID": "test-large1-with-chunk-upload",
+  "objectType": "test",
+  "destinationType": "test",
+  "version": "1.0.0",
+  "description": "chunk uploade a large file"
+}
+EOF
+echo "$resmeta" > /tmp/meta-large-chunked.json
+
 #Setup files to use in uploads
 dd if=/dev/zero of=/tmp/data.txt count=128 bs=1048576
 dd if=/dev/zero of=/tmp/data-small.txt count=32 bs=1048576
@@ -178,10 +189,36 @@ else
   echo "Completed"
 fi
 
+# Test large object publish
+echo "Testing chunk upload large object (512MB)"
+hzn mms object publish -m /tmp/meta-large-chunked.json -f /tmp/data-large.txt --chunkUpload >/dev/null
+RC=$?
+if [ $RC -ne 0 ]
+then
+  echo -e "Got unexpected error chunk uploading 512MB model object: $RC"
+  exit 1
+else
+  echo "Completed"
+fi
+
+# chunk uploaded object has values in "publicKey" and "signature" fields, and has correct object size
+echo "Testing chunk uploaded object has values in publicKey and signature fields, and has correct object size"
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test-large1-with-chunk-upload -l | awk '{if(NR>1)print}')
+EXPECTED_OBJECT_SIZE=536870912
+if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" == "" ]; then
+  echo -e "publicKey or signature should be set by default"
+  exit 1
+elif [ $(echo ${OBJS_CMD} | jq -r '.[0].objectSize') != "${EXPECTED_OBJECT_SIZE}" ]; then
+  echo -e "object size is not equal to expected object size: ${EXPECTED_OBJECT_SIZE}"
+  exit 1
+else
+  echo "Completed"
+fi
+
 # object has values in "publicKey" and "signature" fields
 echo "Testing object has values in publicKey and signature fields"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test-medium1 -l | awk '{if(NR>1)print}')
-if [ $(echo ${OBJS_CMD} | jq -r '.[0].publicKey') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].signature') == "" ]; then
+if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" == "" ]; then
   echo -e "publicKey or signature should be set by default"
   exit 1
 else
@@ -460,8 +497,8 @@ fi
 
 echo "Start testing hzn mms object list for user "
 
-# When apply no flag, should get all 6 results
-TARGET_NUM_OBJS=8
+# When apply no flag, should get all 9 results
+TARGET_NUM_OBJS=9
 OBJS_CMD=$(hzn mms object list | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
@@ -481,7 +518,7 @@ do
 done
 
 # -l
-TARGET_NUM_OBJS=8
+TARGET_NUM_OBJS=9
 OBJS_CMD=$(hzn mms object list -l | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
@@ -499,7 +536,7 @@ do
 done
 
 # -d
-TARGET_NUM_OBJS=8
+TARGET_NUM_OBJS=9
 OBJS_CMD=$(hzn mms object list -d | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
@@ -738,7 +775,7 @@ if [ $(echo $OBJS_CMD | jq -r '.[0].objectID') != ${RESULT_OBJ_ID} ]; then
 fi
 
 # --data=true
-TARGET_NUM_OBJS=7
+TARGET_NUM_OBJS=8
 OBJS_CMD=$(hzn mms object list --data=true | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 RESULT_OBJ_ID="test3"
@@ -1013,7 +1050,7 @@ PUBLIC_OBJ_ID="public.tgz"
 USER_ORG="e2edev@somecomp.com"
 USER_REG_USERNAME="anax1"
 USER_REG_USERPWD="anax1pw"
-TARGET_NUM_OBJS=8
+TARGET_NUM_OBJS=9
 testUserHaveAccessToALLObjects $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $TARGET_NUM_OBJS $OBJECT_TYPE $OBJECT_ID "test" "test_user_access"
 verifyUserAccessForPublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
 

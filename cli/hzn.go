@@ -584,6 +584,8 @@ Environment Variables:
 	mmsObjectPublishPat := mmsObjectPublishCmd.Flag("pattern", msgPrinter.Sprintf("If you want the object to be deployed on nodes using a given pattern, specify it using this flag. This flag is optional and can only be used with --type and --id. It is mutually exclusive with -m")).Short('p').String()
 	mmsObjectPublishDef := mmsObjectPublishCmd.Flag("def", msgPrinter.Sprintf("The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.")).Short('m').String()
 	mmsObjectPublishObj := mmsObjectPublishCmd.Flag("object", msgPrinter.Sprintf("The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.")).Short('f').String()
+	mmsObjectPublishChunkUpload := mmsObjectPublishCmd.Flag("chunkUpload", msgPrinter.Sprintf("The publish command will publish data by chunk.")).Bool()
+	mmsObjectPublishChunkUploadDataSize := mmsObjectPublishCmd.Flag("chunkSize", msgPrinter.Sprintf("The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --chunkUpload is not specified.")).Default("104857600").Int()
 	mmsObjectPublishSkipIntegrityCheck := mmsObjectPublishCmd.Flag("noIntegrity", msgPrinter.Sprintf("The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash")).Bool()
 	mmsObjectPublishDSHashAlgo := mmsObjectPublishCmd.Flag("hashAlgo", msgPrinter.Sprintf("The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag")).Short('a').String()
 	mmsObjectPublishDSHash := mmsObjectPublishCmd.Flag("hash", msgPrinter.Sprintf("The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.")).String()
@@ -1202,7 +1204,7 @@ Environment Variables:
 	case mmsObjectNewCmd.FullCommand():
 		sync_service.ObjectNew(*mmsOrg)
 	case mmsObjectPublishCmd.FullCommand():
-		sync_service.ObjectPublish(*mmsOrg, *mmsUserPw, *mmsObjectPublishType, *mmsObjectPublishId, *mmsObjectPublishPat, *mmsObjectPublishDef, *mmsObjectPublishObj, *mmsObjectPublishSkipIntegrityCheck, *mmsObjectPublishDSHashAlgo, *mmsObjectPublishDSHash, *mmsObjectPublishPrivKeyFile)
+		sync_service.ObjectPublish(*mmsOrg, *mmsUserPw, *mmsObjectPublishType, *mmsObjectPublishId, *mmsObjectPublishPat, *mmsObjectPublishDef, *mmsObjectPublishObj, *mmsObjectPublishChunkUpload, *mmsObjectPublishChunkUploadDataSize, *mmsObjectPublishSkipIntegrityCheck, *mmsObjectPublishDSHashAlgo, *mmsObjectPublishDSHash, *mmsObjectPublishPrivKeyFile)
 	case mmsObjectDeleteCmd.FullCommand():
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	case mmsObjectDownloadCmd.FullCommand():

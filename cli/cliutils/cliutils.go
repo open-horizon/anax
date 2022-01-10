@@ -67,9 +67,10 @@ const (
 	DEFAULT_PUBLIC_KEY_FILE  = ".hzn/keys/service.public.pem"
 
 	// http request body types
-	HTTP_REQ_BODYTYPE_DEFAULT = 0
-	HTTP_REQ_BODYTYPE_BYTES   = 1
-	HTTP_REQ_BODYTYPE_FILE    = 2
+	HTTP_REQ_BODYTYPE_DEFAULT      = 0
+	HTTP_REQ_BODYTYPE_BYTES        = 1
+	HTTP_REQ_BODYTYPE_FILE         = 2
+	HTTP_REQ_BODYTYPE_BYTES_READER = 3
 
 	// set on heartbeating api endpoints since cli calls are not coming from an agent
 	NOHEARTBEAT_PARAM = "noheartbeat=true"
@@ -932,7 +933,7 @@ func AgbotList(urlSuffix, credentials string, goodHttpCodes []int, structure int
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	resp := InvokeRestApi(httpClient, "LIST", url, credentials, nil, "Agbot", apiMsg)
+	resp := InvokeRestApi(httpClient, "LIST", url, credentials, nil, "Agbot", apiMsg, make(map[string]string), true)
 	if resp.Body != nil {
 		defer resp.Body.Close()
 	}
@@ -1306,6 +1307,8 @@ func createRequestBody(body interface{}, apiMsg string) (io.Reader, int, int) {
 		jsonBytes = []byte(b)
 	case *os.File:
 		bodyType = HTTP_REQ_BODYTYPE_FILE
+	case *bytes.Reader:
+		bodyType = HTTP_REQ_BODYTYPE_BYTES_READER
 	default:
 		var err error
 		jsonBytes, err = json.Marshal(body)
@@ -1324,6 +1327,10 @@ func createRequestBody(body interface{}, apiMsg string) (io.Reader, int, int) {
 		} else {
 			bodyLen = int(fileInfo.Size())
 		}
+	} else if bodyType == HTTP_REQ_BODYTYPE_BYTES_READER {
+		breader := body.(*bytes.Reader)
+		requestBody = breader
+		bodyLen = int(breader.Size())
 	} else {
 		requestBody = bytes.NewBuffer(jsonBytes)
 		bodyLen = len(jsonBytes)
@@ -1333,7 +1340,7 @@ func createRequestBody(body interface{}, apiMsg string) (io.Reader, int, int) {
 }
 
 // invoke rest api call with retry
-func InvokeRestApi(httpClient *http.Client, method string, urlPath string, credentials string, body interface{}, service string, apiMsg string) *http.Response {
+func InvokeRestApi(httpClient *http.Client, method string, urlPath string, credentials string, body interface{}, service string, apiMsg string, headers map[string]string, closeRequest bool) *http.Response {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -1361,7 +1368,6 @@ func InvokeRestApi(httpClient *http.Client, method string, urlPath string, crede
 
 		// requestBody is nil if body is nil.
 		requestBody, bodyLen, bodyType := createRequestBody(body, apiMsg)
-
 		if requestBody != nil && bodyType == HTTP_REQ_BODYTYPE_FILE && bodyLen != 0 {
 			// Calculate and show progress of file uploading
 			totalSent := 0
@@ -1395,7 +1401,14 @@ func InvokeRestApi(httpClient *http.Client, method string, urlPath string, crede
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
 		}
 
-		req.Close = true
+		if closeRequest {
+			req.Close = true
+		}
+
+		if len(headers) != 0 {
+			AddHeaders(req, headers)
+		}
+
 		req.Header.Add("Accept", "application/json")
 
 		// for PUT/PATCH/POST
@@ -1404,7 +1417,7 @@ func InvokeRestApi(httpClient *http.Client, method string, urlPath string, crede
 				req.Header.Add("Content-Length", strconv.Itoa(bodyLen))
 			} else if bodyType == HTTP_REQ_BODYTYPE_FILE {
 				req.Header.Add("Content-Type", "application/octet-stream")
-			} else {
+			} else if bodyType != HTTP_REQ_BODYTYPE_BYTES_READER {
 				req.Header.Add("Content-Type", "application/json")
 			}
 		}
@@ -1458,7 +1471,7 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg)
+	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg, make(map[string]string), true)
 	if resp.Body != nil {
 		defer resp.Body.Close()
 	}
@@ -1529,7 +1542,7 @@ func ExchangeGetResponse(service string, urlBase string, urlSuffix string, crede
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg)
+	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg, make(map[string]string), true)
 	return resp
 }
 
@@ -1549,7 +1562,7 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	}
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
-	resp := InvokeRestApi(httpClient, method, url, credentials, body, service, apiMsg)
+	resp := InvokeRestApi(httpClient, method, url, credentials, body, service, apiMsg, make(map[string]string), true)
 	if resp.Body != nil {
 		defer resp.Body.Close()
 	}
@@ -1611,7 +1624,7 @@ func ExchangeDelete(service string, urlBase string, urlSuffix string, credential
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	resp := InvokeRestApi(httpClient, http.MethodDelete, url, credentials, nil, service, apiMsg)
+	resp := InvokeRestApi(httpClient, http.MethodDelete, url, credentials, nil, service, apiMsg, make(map[string]string), true)
 	if resp.Body != nil {
 		defer resp.Body.Close()
 	}
@@ -2201,4 +2214,15 @@ func GetDeviceId() string {
 		deviceId = deviceIdEnv
 	}
 	return deviceId
+}
+
+func AddHeaders(req *http.Request, headers map[string]string) {
+	if len(headers) == 0 {
+		return
+	}
+
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
+
 }
