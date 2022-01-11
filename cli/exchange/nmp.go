@@ -5,13 +5,20 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"net/http"
 )
 
-func NMPList(org, credToUse, nmpName string, namesOnly bool) {
+func NMPList(org, credToUse, nmpName string, namesOnly, listNodes bool) {
+	// if user specifies --nodes flag, return list of applicable nodes for given nmp instead of the nmp itself.
+	if listNodes {
+		NMPListNodes(org, credToUse, nmpName)
+		return
+	}
+
 	cliutils.SetWhetherUsingApiKey(credToUse)
 
 	var nmpOrg string
@@ -81,7 +88,7 @@ func NMPNew() {
 	}
 }
 
-func NMPAdd(org, credToUse, nmpName, jsonFilePath string, noConstraints bool) {
+func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstraints bool) {
 	// check for ExchangeUrl early on
 	var exchUrl = cliutils.GetExchangeUrl()
 
@@ -126,8 +133,16 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, noConstraints bool) {
 		} else if httpCode == 404 {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot create node management policy %v/%v: %v", nmpOrg, nmpName, resp.Msg))
 		}
-	} else {
+	} else if !cliutils.IsDryRun() {
 		msgPrinter.Printf("Node management policy: %v/%v added in the Horizon Exchange", nmpOrg, nmpName)
+		msgPrinter.Println()
+	}
+	if appliesTo {
+		nodes := determineCompatibleNodes(org, credToUse, nmpName, nmpFile)
+		if nodes != nil && len(nodes) > 0 {
+			output := cliutils.MarshalIndent(nodes, "exchange nmp add")
+			fmt.Printf(output)
+		}
 		msgPrinter.Println()
 	}
 }
@@ -154,4 +169,92 @@ func NMPRemove(org, credToUse, nmpName string, force bool) {
 		msgPrinter.Printf("Node management policy %v/%v removed", nmpOrg, nmpName)
 		msgPrinter.Println()
 	}
+}
+
+func NMPListNodes(org, credToUse, nmpName string) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+
+	var nmpOrg string
+	nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
+
+	if nmpName == "*" {
+		nmpName = ""
+	}
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// store list of compatible nodes in map indexed by NMP's in the exchange
+	compatibleNodeMap := make(map[string][]string)
+
+	var nmpList exchange.ExchangeNodeManagementPolicyResponse
+	var output string
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/managementpolicies"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpList)
+	if httpCode == 404 && nmpName != "" {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("NMP %s not found in org %s", nmpName, nmpOrg))
+	} else if httpCode == 404 {
+		output = "{}"
+	} else {
+		for nmp, nmpPolicy := range nmpList.Policies {
+			nodes := determineCompatibleNodes(org, credToUse, nmpName, nmpPolicy)
+			compatibleNodeMap[nmp] = nodes
+		}
+		output = cliutils.MarshalIndent(compatibleNodeMap, "management nmp list --nodes")
+	}
+	fmt.Printf(output)
+	msgPrinter.Println()
+}
+
+func NMPStatus(org, credToUse, nmpName string) {
+	// cliutils.SetWhetherUsingApiKey(credToUse)
+
+	// var nmpOrg string
+	// nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
+
+	// if nmpName == "*" {
+	// 	nmpName = ""
+	// }
+
+	// get message printer
+	// msgPrinter := i18n.GetMessagePrinter()
+
+	// var nmpList exchange.ExchangeNodeManagementPolicyResponse
+	// httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/managementpolicies"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpList)
+}
+
+func determineCompatibleNodes(org, credToUse, nmpName string, nmpPolicy exchangecommon.ExchangeNodeManagementPolicy) []string {
+	var nmpOrg string
+	nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
+	
+	// get node(s) name(s) from the Exchange
+	var resp ExchangeNodes
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+
+	compatibleNodes := []string{}
+	for nodeNameEx, node := range resp.Nodes {
+		// Only check registered nodes
+		if node.PublicKey == "" {
+			continue
+		}
+		if node.Pattern != "" {
+			if cutil.SliceContains(nmpPolicy.Patterns, node.Pattern) {
+				compatibleNodes = append(compatibleNodes, nodeNameEx)
+			}
+		} else {
+			// list policy
+			var nodePolicy exchange.ExchangeNodePolicy
+			_, nodeName := cliutils.TrimOrg(org, nodeNameEx)
+			cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes"+cliutils.AddSlash(nodeName)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodePolicy)
+			nodeManagementPolicy := nodePolicy.GetManagementPolicy()
+
+			if err := nmpPolicy.Constraints.IsSatisfiedBy(nodeManagementPolicy.Properties); err != nil {
+				continue
+			} else if err = nodeManagementPolicy.Constraints.IsSatisfiedBy(nmpPolicy.Properties); err != nil {
+				continue
+			} else {
+				compatibleNodes = append(compatibleNodes, nodeNameEx)
+			}
+		}
+	}
+	return compatibleNodes
 }

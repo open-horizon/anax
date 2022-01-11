@@ -343,11 +343,13 @@ Environment Variables:
 
 	exNMPCmd := exchangeCmd.Command("nmp", msgPrinter.Sprintf("List and manage node management policies in the Horizon Exchange."))
 	exNMPListCmd := exNMPCmd.Command("list | ls", msgPrinter.Sprintf("Display the node management policies from the Horizon Exchange.")).Alias("ls").Alias("list")
-	exNMPListName := exNMPListCmd.Arg("nmp-name", msgPrinter.Sprintf("List just this one node management policy. Use <org>/<nmp-name> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.")).String()
+	exNMPListName := exNMPListCmd.Arg("nmp-name", msgPrinter.Sprintf("List just this one node management policy.")).String()
 	exNMPListIdTok := exNMPListCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNMPListLong := exNMPListCmd.Flag("long", msgPrinter.Sprintf("Display detailed output about the node management policies.")).Short('l').Bool()
+	exNMPListNodes := exNMPListCmd.Flag("nodes", msgPrinter.Sprintf("List all the nodes that apply for the given node management policy.")).Bool()
 	exNMPAddCmd := exNMPCmd.Command("add", msgPrinter.Sprintf("Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template."))
 	exNMPAddIdTok := exNMPAddCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNMPAddAppliesTo := exNMPAddCmd.Flag("appliesTo", msgPrinter.Sprintf("List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.")).Bool()
 	exNMPAddName := exNMPAddCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to add or overwrite.")).Required().String()
 	exNMPAddJsonFile := exNMPAddCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
 	exNMPAddNoConstraint := exNMPAddCmd.Flag("no-constraints", msgPrinter.Sprintf("Allow this node management policy to be published even though it does not have any constraints.")).Bool()
@@ -356,6 +358,9 @@ Environment Variables:
 	exNMPRemoveName := exNMPRemoveCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to be removed.")).Required().String()
 	exNMPRemoveIdTok := exNMPRemoveCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNMPRemoveForce := exNMPRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
+	// exNMPStatusCmd := exNMPCmd.Command("status", msgPrinter.Sprintf("List the status of a given node management policy."))
+	// exNMPStatusListName := exNMPStatusCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to check.")).Required().String()
+	// exNMPStatusListIdTok := exNMPStatusCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 
 	exNodeCmd := exchangeCmd.Command("node", msgPrinter.Sprintf("List and manage nodes in the Horizon Exchange"))
 	exNodeAddPolicyCmd := exNodeCmd.Command("addpolicy | addp", msgPrinter.Sprintf("Add or replace the node policy in the Horizon Exchange.")).Alias("addp").Alias("addpolicy")
@@ -384,6 +389,11 @@ Environment Variables:
 	exNodeListPolicyCmd := exNodeCmd.Command("listpolicy | lsp", msgPrinter.Sprintf("Display the node policy from the Horizon Exchange.")).Alias("lsp").Alias("listpolicy")
 	exNodeListPolicyIdTok := exNodeListPolicyCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeListPolicyNode := exNodeListPolicyCmd.Arg("node", msgPrinter.Sprintf("List policy for this node.")).Required().String()
+	exNodeManagementCmd := exNodeCmd.Command("management | mgmt", msgPrinter.Sprintf("")).Alias("mgmt").Alias("management")
+	exNodeManagementListCmd := exNodeManagementCmd.Command("list | ls", msgPrinter.Sprintf("List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.")).Alias("ls").Alias("list")
+	exNodeManagementListName := exNodeManagementListCmd.Arg("node", msgPrinter.Sprintf("List node management policies for this node")).Required().String()
+	exNodeManagementListNodeIdTok := exNodeManagementListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNodManagementListNMPsAll := exNodeManagementListCmd.Flag("all", msgPrinter.Sprintf("Include disabled NMP's.")).Short('a').Bool()
 	exNodeStatusList := exNodeCmd.Command("liststatus | lst", msgPrinter.Sprintf("List the run-time status of the node.")).Alias("lst").Alias("liststatus")
 	exNodeStatusIdTok := exNodeStatusList.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeStatusListNode := exNodeStatusList.Arg("node", msgPrinter.Sprintf("List status for this node")).Required().String()
@@ -808,6 +818,8 @@ Environment Variables:
 			// does not require exchange credentials
 		case "nmp remove | rm":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPRemoveIdTok)
+		// case "nmp status":
+		// 	credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPStatusListIdTok)
 		case "node list | ls":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListNodeIdTok)
 		case "node update | up":
@@ -830,6 +842,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeErrorsListIdTok)
 		case "node liststatus | lst":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeStatusIdTok)
+		case "node management | mgmt list | ls":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeManagementListNodeIdTok)
 		case "service | serv list | ls":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
 		case "service | serv verify | vf":
@@ -1022,13 +1036,15 @@ Environment Variables:
 		exchange.UserRemove(*exOrg, *exUserPw, *exDelUser, *exUserDelForce)
 
 	case exNMPListCmd.FullCommand():
-		exchange.NMPList(*exOrg, credToUse, *exNMPListName, !*exNMPListLong)
+		exchange.NMPList(*exOrg, credToUse, *exNMPListName, !*exNMPListLong, *exNMPListNodes)
 	case exNMPAddCmd.FullCommand():
-		exchange.NMPAdd(*exOrg, credToUse, *exNMPAddName, *exNMPAddJsonFile, *exNMPAddNoConstraint)
+		exchange.NMPAdd(*exOrg, credToUse, *exNMPAddName, *exNMPAddJsonFile, *exNMPAddAppliesTo, *exNMPAddNoConstraint)
 	case exNMPNewCmd.FullCommand():
 		exchange.NMPNew()
 	case exNMPRemoveCmd.FullCommand():
 		exchange.NMPRemove(*exOrg, credToUse, *exNMPRemoveName, *exNMPRemoveForce)
+	// case exNMPStatusCmd.FullCommand():
+	// 	exchange.NMPStatus(*exOrg, credToUse, *exNMPStatusListName)
 
 	case exNodeListCmd.FullCommand():
 		exchange.NodeList(*exOrg, credToUse, *exNode, !*exNodeLong)
@@ -1054,6 +1070,8 @@ Environment Variables:
 		exchange.NodeListErrors(*exOrg, credToUse, *exNodeErrorsListNode, *exNodeErrorsListLong)
 	case exNodeStatusList.FullCommand():
 		exchange.NodeListStatus(*exOrg, credToUse, *exNodeStatusListNode)
+	case exNodeManagementListCmd.FullCommand():
+		exchange.NodeManagementList(*exOrg, credToUse, *exNodeManagementListName, *exNodManagementListNMPsAll)
 
 	case agbotCacheServedOrgList.FullCommand():
 		agreementbot.GetServedOrgs()

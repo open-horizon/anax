@@ -422,6 +422,17 @@ else
 	exit 1
 fi
 
+echo -e "${PREFIX} Testing '$CMD_PREFIX' with --appliesTo flag set"
+cmdOutput=$($CMD_PREFIX -f /tmp/nmp_example_2.json test-nmp-4 --dry-run --appliesTo 2>&1)
+rc=$?
+if [[ $rc -eq 0 && "$cmdOutput" == *"rror: required argument"*"not provided"* ]]; then
+	echo -e "${PREFIX} completed."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' with --appliesTo flag set: exit code: $rc, output: $cmdOutput."
+	cleanup
+	exit 1
+fi
+
 # -----------------------
 # ------ NMP REMOVE -----
 # -----------------------

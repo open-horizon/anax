@@ -43,7 +43,7 @@ func AgbotList(org string, userPw string, agbot string, namesOnly bool) {
 		if httpCode == 404 && agbot != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("agbot '%s' not found in org %s", agbot, agbotOrg))
 		}
-		output := cliutils.MarshalIndent(agbots.Agbots, "exchange agbots list")
+		output := cliutils.MarshalIndent(agbots.Agbots, "exchange agbot list")
 		fmt.Println(output)
 	}
 }
