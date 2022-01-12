@@ -67,8 +67,23 @@ func (e *ExchangeNodeManagementPolicy) HasNoConstraints() bool {
 		return true
 	}
 
-	// even if the constraints array has non-zero length, the items in it could be emptry strings
+	// even if the constraints array has non-zero length, the items in it could be empty strings
 	for _, c := range e.Constraints {
+		if strings.TrimSpace(c) != "" {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (e *ExchangeNodeManagementPolicy) HasNoPatterns() bool {
+	if e.Patterns == nil || len(e.Patterns) == 0 {
+		return true
+	}
+
+	// even if the pattern array has non-zero length, the items in it could be empty strings
+	for _, c := range e.Patterns {
 		if strings.TrimSpace(c) != "" {
 			return false
 		}
