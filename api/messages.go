@@ -75,6 +75,9 @@ const (
 	EL_API_ERR_CHANGE_SVC_CONFIGSTATE      = "Error changing service configstate %v, error %v"
 	EL_API_START_CHANGE_SVC_CONFIGSTATE    = "Start changing service configuration state to %v for %v for the node."
 	EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE = "Complete changing service configuration state to %v for %v for the node."
+
+	// from path_management_status.go
+	EL_API_NMP_STATUS_CHANGE = "Node management status for %v/%v changed to %v"
 )
 
 // This is does nothing useful at run time.
