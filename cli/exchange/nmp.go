@@ -114,7 +114,7 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 	}
 
 	// if the --no-constraints flag is not specified and the given nmp has no constraints, alert the user.
-	if (!noConstraints) && nmpFile.HasNoConstraints() {
+	if !noConstraints && nmpFile.HasNoConstraints() && nmpFile.HasNoPatterns() {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable."))
 	}
 
