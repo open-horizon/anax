@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
@@ -15,9 +16,10 @@ func FindManagementStatusForOutput(nmpName, orgName string, errorHandler ErrorHa
 	managementStatuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
 
 	var fullName string
+	var pDevice *persistence.ExchangeDevice
 	if orgName == "" {
 		// Find exchange device in DB
-		pDevice, err := persistence.FindExchangeDevice(db)
+		pDevice, err = persistence.FindExchangeDevice(db)
 		if err != nil {
 			return errorHandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), nil
 		} else if pDevice == nil {
@@ -61,7 +63,7 @@ func UpdateManagementStatus(nmStatus managementStatusInput, errorHandler ErrorHa
 		} else if pDevice == nil {
 			return errorHandler(NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "management")), "", nil
 		}
-	
+
 		var managementStatus *exchangecommon.NodeManagementPolicyStatus
 		fullName := string(pDevice.Org) + "/" + string(nmpName)
 
@@ -98,8 +100,10 @@ func UpdateManagementStatus(nmStatus managementStatusInput, errorHandler ErrorHa
 
 		// Update the status of the NMP in the exchange
 		// if _, err := statusHandler(pDevice.Org, pDevice.Id, nmpName, managementStatus); err != nil {
-		// 	return errorhandler(NewSystemError(fmt.Sprintf("Unable to update node management status object in the exchange, error %v", err))), "", nil
+		// 	return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object in the exchange, error %v", err))), "", nil
 		// }
+
+		eventlog.LogNodeEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NMP_STATUS_CHANGE, pDevice.Org, nmpName, (*managementStatus).String()), persistence.EC_NMP_STATUS_UPDATE_COMPLETE, pDevice.Id, pDevice.Org, pDevice.Pattern, pDevice.Config.State)
 
 		// Return message
 		return false, fmt.Sprintf("Updated status for NMP %v.", fullName), msgs

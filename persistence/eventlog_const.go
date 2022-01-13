@@ -43,6 +43,9 @@ const (
 	EC_NODE_UPDATE_COMPLETE = "node_update_complete"
 	EC_ERROR_NODE_UPDATE    = "error_node_update"
 
+	// node management
+	EC_NMP_STATUS_UPDATE_COMPLETE = "node_management_status_update_complete"
+
 	// node pattern
 	EC_NODE_PATTERN_CHANGED            = "node_pattern_changed"
 	EC_NODE_PATTERN_CHANGED_AGAIN      = "node_pattern_changed_again"
