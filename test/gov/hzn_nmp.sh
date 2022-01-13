@@ -422,17 +422,6 @@ else
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing '$CMD_PREFIX' with --appliesTo flag set"
-cmdOutput=$($CMD_PREFIX -f /tmp/nmp_example_2.json test-nmp-4 --dry-run --appliesTo 2>&1)
-rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == *"rror: required argument"*"not provided"* ]]; then
-	echo -e "${PREFIX} completed."
-else
-	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' with --appliesTo flag set: exit code: $rc, output: $cmdOutput."
-	cleanup
-	exit 1
-fi
-
 # -----------------------
 # ------ NMP REMOVE -----
 # -----------------------
@@ -689,10 +678,13 @@ else
 	exit 1
 fi
 
+NMP_OUTPUT1="$HZN_ORG_ID/test-nmp-1"*"{"*"\"owner\":"*"\"label\":"*"\"description\":"*"\"constraints\":"*"\"properties\":"*"\"patterns\":"*"\"enabled\":"*"\"agentUpgradePolicy\":"*"\"atLeastVersion\":"*"\"start\":"*"\"duration\":"*"\"lastUpdated\":"*"\"created\":"*"}"
+NMP_OUTPUT2="$HZN_ORG_ID/test-nmp-2"*"{"*"\"owner\":"*"\"label\":"*"\"description\":"*"\"constraints\":"*"\"properties\":"*"\"patterns\":"*"\"enabled\":"*"\"agentUpgradePolicy\":"*"\"atLeastVersion\":"*"\"start\":"*"\"duration\":"*"\"lastUpdated\":"*"\"created\":"*"}"
+
 echo -e "${PREFIX} Testing '$CMD_PREFIX' --long when 1 nmp exists in the Exchange"
-cmdOutput=$($CMD_PREFIX -l | tr -d '[:space:]' 2>&1)
+cmdOutput=$($CMD_PREFIX -l 2>&1)
 rc=$?
-if [[ $rc -eq 0 && "$cmdOutput" == *"$(echo $inspectSingleExchangeNMP | tr -d '[:space:]')"* ]]; then
+if [[ $rc -eq 0 && "$cmdOutput" == *"{"*$NMP_OUTPUT1*"}"* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' --long when 1 nmp exists in the Exchange: exit code: $rc, output: $cmdOutput."
@@ -719,27 +711,27 @@ else
 	exit 1
 fi
 
-#echo -e "${PREFIX} Testing '$CMD_PREFIX' --long when 2 nmp's exist in the Exchange"
-#cmdOutput=$($CMD_PREFIX -l | tr -d '[:space:]' 2>&1)
-#rc=$?
-#if [[ $rc -eq 0 && $(echo $cmdOutput | jq length) == 2 ]]; then
-#	echo -e "${PREFIX} completed."
-#else
-#	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' when 2 nmp's exist in the Exchange: exit code: $rc, output: $cmdOutput."
-#	cleanup
-#	exit 1
-#fi
+echo -e "${PREFIX} Testing '$CMD_PREFIX' --long when 2 nmp's exist in the Exchange"
+cmdOutput=$($CMD_PREFIX -l | tr -d '[:space:]' 2>&1)
+rc=$?
+if [[ $rc -eq 0 && ("$cmdOutput" == *"{"*$NMP_OUTPUT1*","*$NMP_OUTPUT2*"}"* || "$cmdOutput" == *"{"*$NMP_OUTPUT2*","*$NMP_OUTPUT1*"}"*) ]]; then
+	echo -e "${PREFIX} completed."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' when 2 nmp's exist in the Exchange: exit code: $rc, output: $cmdOutput."
+	cleanup
+	exit 1
+fi
 
-#echo -e "${PREFIX} Testing '$CMD_PREFIX' [<nmp-name>] --long when 2 nmp's exist in the Exchange"
-#cmdOutput=$($CMD_PREFIX test-nmp-1 -l | tr -d '[:space:]' 2>&1)
-#rc=$?
-#if [[ $rc -eq 0 && "$cmdOutput" == *"$(echo $inspectDoubleExchangeNMP1 | tr -d '[:space:]')"* ]]; then
-#	echo -e "${PREFIX} completed."
-#else
-#	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' when 2 nmp's exist in the Exchange: exit code: $rc, output: $cmdOutput."
-#	cleanup
-#	exit 1
-#fi
+echo -e "${PREFIX} Testing '$CMD_PREFIX' [<nmp-name>] --long when 2 nmp's exist in the Exchange"
+cmdOutput=$($CMD_PREFIX test-nmp-1 -l 2>&1)
+rc=$?
+if [[ $rc -eq 0 && "$cmdOutput" == *"{"*$NMP_OUTPUT1*"}"* ]]; then
+	echo -e "${PREFIX} completed."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' when 2 nmp's exist in the Exchange: exit code: $rc, output: $cmdOutput."
+	cleanup
+	exit 1
+fi
 
 echo -e "${PREFIX} Testing '$CMD_PREFIX' with incorrect nmp-name"
 cmdOutput=$($CMD_PREFIX fake-nmp 2>&1)
