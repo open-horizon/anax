@@ -144,6 +144,8 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 	case *NodeShutdownCommand:
 		n.TerminateSubworkers()
 		n.HandleUnregister()
+	case *NMPChangeCommand:
+		n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory())
 	default:
 		return false
 	}
@@ -171,6 +173,9 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 			else
 				create status
 				update exchange status
+		for each status
+			if not in the exchange nmps
+				delete status
 	*/
 	glog.Infof(nmwlog("Starting to process all nmps in the exchange and locally."))
 	nodeOrg := exchange.GetOrg(n.GetExchangeId())
@@ -218,6 +223,19 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 			}
 		}
 	}
+	if allStatuses, err := persistence.FindAllNMPStatus(n.db); err != nil {
+		return err
+	} else {
+		for statusName, _ := range allStatuses {
+			if _, ok := (*allNMPs)[statusName]; !ok {
+				// The nmp this status is for is no longer in the exchange. Delete it
+				glog.Infof(nmwlog(fmt.Sprintf("Removing status %v from the local database as if no longer exists in the exchange.", statusName)))
+				if _, err := persistence.DeleteNMPStatus(n.db, statusName); err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }
 
@@ -249,6 +267,12 @@ func (n *NodeManagementWorker) NewEvent(incoming events.Message) {
 		case events.NMP_DOWNLOAD_COMPLETE:
 			cmd := NewNMPDownloadCompleteCommand(msg)
 			n.Commands <- cmd
+		}
+	case *events.ExchangeChangeMessage:
+		msg, _ := incoming.(*events.ExchangeChangeMessage)
+		switch msg.Event().Id {
+		case events.CHANGE_NMP_TYPE:
+			n.Commands <- NewNMPChangeCommand(msg)
 		}
 	}
 }

@@ -165,7 +165,7 @@ func NMPRemove(org, credToUse, nmpName string, force bool) {
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node management policy %s not found in org %s", nmpName, nmpOrg))
 	} else if httpCode == 204 {
-		msgPrinter.Printf("Removing node management policy %v/%v and re-evaluating all agreements. Existing agreements might be cancelled and re-negotiated", nmpOrg, nmpName)
+		msgPrinter.Printf("Removing node management policy %v/%v from the exchange.", nmpOrg, nmpName)
 		msgPrinter.Println()
 		msgPrinter.Printf("Node management policy %v/%v removed", nmpOrg, nmpName)
 		msgPrinter.Println()
