@@ -76,8 +76,8 @@ func Test_UpdateManagementStatus(t *testing.T) {
 
 	// Create dummy management status
 	nmStatus := managementStatusInput{
-		Type: "agentUpgrade",
-		Status: exchangecommon.STATUS_DOWNLOADED,
+		Type:         "agentUpgrade",
+		Status:       exchangecommon.STATUS_DOWNLOADED,
 		ErrorMessage: "",
 	}
 

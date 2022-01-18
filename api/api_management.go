@@ -15,9 +15,9 @@ import (
 )
 
 type managementStatusInput struct {
-	Type  		 string `json:"type,omitempty"`
-	Status 		 string `json:"status,omitempty"`
-	ErrorMessage string `json:"errorMessage,omitempty"` 
+	Type         string `json:"type,omitempty"`
+	Status       string `json:"status,omitempty"`
+	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
 func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +28,7 @@ func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
-		
+
 		pathVars := mux.Vars(r)
 		nmpName := pathVars["nmpname"]
 		orgName := pathVars["org"]

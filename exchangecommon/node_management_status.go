@@ -46,13 +46,13 @@ func (n NodeManagementPolicyStatus) SetActualStartTime(timeStr string) {
 }
 
 type AgentUpgradePolicyStatus struct {
-	ScheduledTime     string `json:"scheduledTime"`
-	scheduledUnixTime time.Time
-	ActualStartTime   string `json:"startTime,omitempty"`
-	CompletionTime    string `json:"endTime,omitempty"`
-	UpgradedVersion   string `json:"upgradedVersion"`
-	Status            string `json:"status"`
-	ErrorMessage      string `json:"errorMessage,omitempty"`
+	ScheduledTime        string `json:"scheduledTime"`
+	scheduledUnixTime    time.Time
+	ActualStartTime      string `json:"startTime,omitempty"`
+	CompletionTime       string `json:"endTime,omitempty"`
+	UpgradedVersion      string `json:"upgradedVersion"`
+	Status               string `json:"status"`
+	ErrorMessage         string `json:"errorMessage,omitempty"`
 	BaseWorkingDirectory string `json:"workingDirectory"`
 }
 
@@ -63,7 +63,7 @@ const (
 	STATUS_DOWNLOAD_FAILED = "failed download"
 	STATUS_SUCCESSFUL      = "successful"
 	STATUS_FAILED_JOB      = "failed"
-	STATUS_INITIATED	   = "initiated"
+	STATUS_INITIATED       = "initiated"
 )
 
 func (a AgentUpgradePolicyStatus) String() string {

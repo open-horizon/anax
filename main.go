@@ -23,7 +23,7 @@ import (
 	_ "github.com/open-horizon/anax/i18n_messages"
 	"github.com/open-horizon/anax/imagefetch"
 	"github.com/open-horizon/anax/kube_operator"
-	_"github.com/open-horizon/anax/nodemanagement"
+	_ "github.com/open-horizon/anax/nodemanagement"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"

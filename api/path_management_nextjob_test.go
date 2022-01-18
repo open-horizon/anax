@@ -134,81 +134,81 @@ func equal_statuses(a, b *exchangecommon.NodeManagementPolicyStatus) bool {
 }
 
 func create_test_status(status, dir string) *exchangecommon.NodeManagementPolicyStatus {
-	switch(status) {
+	switch status {
 	case exchangecommon.STATUS_DOWNLOADED:
-		return &exchangecommon.NodeManagementPolicyStatus {
-			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus {
-				ScheduledTime: time.Now().Format(time.RFC3339),
-				ActualStartTime: "",
-				CompletionTime: "",
-				Status: exchangecommon.STATUS_DOWNLOADED,
-				ErrorMessage: "",
+		return &exchangecommon.NodeManagementPolicyStatus{
+			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
+				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ActualStartTime:      "",
+				CompletionTime:       "",
+				Status:               exchangecommon.STATUS_DOWNLOADED,
+				ErrorMessage:         "",
 				BaseWorkingDirectory: dir,
 			},
 		}
 	case exchangecommon.STATUS_NEW:
-		return &exchangecommon.NodeManagementPolicyStatus {
-			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus {
-				ScheduledTime: time.Now().Format(time.RFC3339),
-				ActualStartTime: "",
-				CompletionTime: "",
-				Status: exchangecommon.STATUS_NEW,
-				ErrorMessage: "",
+		return &exchangecommon.NodeManagementPolicyStatus{
+			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
+				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ActualStartTime:      "",
+				CompletionTime:       "",
+				Status:               exchangecommon.STATUS_NEW,
+				ErrorMessage:         "",
 				BaseWorkingDirectory: dir,
 			},
 		}
 	case exchangecommon.STATUS_INITIATED:
-		return &exchangecommon.NodeManagementPolicyStatus {
-			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus {
-				ScheduledTime: time.Now().Format(time.RFC3339),
-				ActualStartTime: time.Now().Format(time.RFC3339),
-				CompletionTime: "",
-				Status: exchangecommon.STATUS_INITIATED,
-				ErrorMessage: "",
+		return &exchangecommon.NodeManagementPolicyStatus{
+			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
+				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ActualStartTime:      time.Now().Format(time.RFC3339),
+				CompletionTime:       "",
+				Status:               exchangecommon.STATUS_INITIATED,
+				ErrorMessage:         "",
 				BaseWorkingDirectory: dir,
 			},
 		}
 	case exchangecommon.STATUS_SUCCESSFUL:
-		return &exchangecommon.NodeManagementPolicyStatus {
-			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus {
-				ScheduledTime: time.Now().Format(time.RFC3339),
-				ActualStartTime: time.Now().Format(time.RFC3339),
-				CompletionTime: time.Now().Format(time.RFC3339),
-				Status: exchangecommon.STATUS_SUCCESSFUL,
-				ErrorMessage: "",
+		return &exchangecommon.NodeManagementPolicyStatus{
+			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
+				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ActualStartTime:      time.Now().Format(time.RFC3339),
+				CompletionTime:       time.Now().Format(time.RFC3339),
+				Status:               exchangecommon.STATUS_SUCCESSFUL,
+				ErrorMessage:         "",
 				BaseWorkingDirectory: dir,
 			},
 		}
 	case exchangecommon.STATUS_DOWNLOAD_FAILED:
-		return &exchangecommon.NodeManagementPolicyStatus {
-			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus {
-				ScheduledTime: time.Now().Format(time.RFC3339),
-				ActualStartTime: time.Now().Format(time.RFC3339),
-				CompletionTime: "",
-				Status: exchangecommon.STATUS_DOWNLOAD_FAILED,
-				ErrorMessage: "Download failed.",
+		return &exchangecommon.NodeManagementPolicyStatus{
+			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
+				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ActualStartTime:      time.Now().Format(time.RFC3339),
+				CompletionTime:       "",
+				Status:               exchangecommon.STATUS_DOWNLOAD_FAILED,
+				ErrorMessage:         "Download failed.",
 				BaseWorkingDirectory: dir,
 			},
 		}
 	case exchangecommon.STATUS_FAILED_JOB:
-		return &exchangecommon.NodeManagementPolicyStatus {
-			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus {
-				ScheduledTime: time.Now().Format(time.RFC3339),
-				ActualStartTime: time.Now().Format(time.RFC3339),
-				CompletionTime: "",
-				Status: exchangecommon.STATUS_FAILED_JOB,
-				ErrorMessage: "Failed job.",
+		return &exchangecommon.NodeManagementPolicyStatus{
+			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
+				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ActualStartTime:      time.Now().Format(time.RFC3339),
+				CompletionTime:       "",
+				Status:               exchangecommon.STATUS_FAILED_JOB,
+				ErrorMessage:         "Failed job.",
 				BaseWorkingDirectory: dir,
 			},
 		}
 	case exchangecommon.STATUS_UNKNOWN:
-		return &exchangecommon.NodeManagementPolicyStatus {
-			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus {
-				ScheduledTime: time.Now().Format(time.RFC3339),
-				ActualStartTime: "",
-				CompletionTime: "",
-				Status: exchangecommon.STATUS_UNKNOWN,
-				ErrorMessage: "Unknown.",
+		return &exchangecommon.NodeManagementPolicyStatus{
+			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
+				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ActualStartTime:      "",
+				CompletionTime:       "",
+				Status:               exchangecommon.STATUS_UNKNOWN,
+				ErrorMessage:         "Unknown.",
 				BaseWorkingDirectory: dir,
 			},
 		}

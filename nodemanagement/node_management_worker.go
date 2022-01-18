@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
@@ -96,10 +97,21 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 		glog.Errorf("Failed to get nmp status %v from the database: %v", cmd.Msg.NMPName, err)
 		return
 	}
+	pattern := ""
+	configState := ""
+	exchDev, err := persistence.FindExchangeDevice(n.db)
+	if err != nil {
+		glog.Errorf("Error getting device from database: %v", err)
+	} else if exchDev != nil {
+		pattern = exchDev.Pattern
+		configState = exchDev.Config.State
+	}
 	if cmd.Msg.Success {
 		status.SetStatus(exchangecommon.STATUS_DOWNLOADED)
+		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOADED), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 	} else {
 		status.SetStatus(exchangecommon.STATUS_DOWNLOAD_FAILED)
+		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOAD_FAILED), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 	}
 	err = persistence.SaveOrUpdateNMPStatus(n.db, cmd.Msg.NMPName, *status)
 	if err != nil {
@@ -155,11 +167,12 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 		return fmt.Errorf("Error getting node's policy to check management policy compatibility: %v", err)
 	}
 	nodePattern := ""
-	if exchDev, err := persistence.FindExchangeDevice(n.db); err != nil {
+	exchDev, err := persistence.FindExchangeDevice(n.db)
+	if err != nil {
 		return fmt.Errorf("Error getting device from database: %v", err)
-	} else {
-		nodePattern = exchDev.Pattern
 	}
+	nodePattern = exchDev.Pattern
+
 	for name, policy := range *allNMPs {
 		if match, _ := VerifyCompatible(&nodePol.Management, nodePattern, &policy); match {
 			deleted := false
@@ -176,6 +189,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 			if err != nil {
 				return fmt.Errorf("Error getting status for policy %v from the database: %v", name, err)
 			} else if existingStatus == nil && !deleted {
+				eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CREATED, name), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), nodePattern, exchDev.Config.State)
 				newStatus := exchangecommon.StatusFromNewPolicy(policy, baseWorkingFile)
 				org, nodeId := cutil.SplitOrgSpecUrl(n.GetExchangeId())
 				if err = persistence.SaveOrUpdateNMPStatus(n.db, name, newStatus); err != nil {
@@ -296,12 +310,23 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, fileName 
 			dbStatus.SetCompletionTime(time.Unix(int64(contents.CompletionTime), 0).Format(time.RFC3339))
 			dbStatus.SetStatus(contents.Status)
 			dbStatus.SetErrorMessage(contents.Message)
+			pattern := ""
+			configState := ""
+			exchDev, err := persistence.FindExchangeDevice(n.db)
+			if err != nil {
+				glog.Errorf("Error getting device from database: %v", err)
+			} else if exchDev != nil {
+				pattern = exchDev.Pattern
+				configState = exchDev.Config.State
+			}
 			if dbStatus.Status() == "" {
+				eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, exchangecommon.STATUS_UNKNOWN), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 				dbStatus.SetStatus(exchangecommon.STATUS_UNKNOWN)
 			}
 			if err = n.UpdateStatus(policyName, dbStatus); err != nil {
 				return err
 			}
+			eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, dbStatus), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 			// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
 			err = os.RemoveAll(workingFolderPath)
 			if err != nil {
