@@ -21,14 +21,14 @@ func FindManagementNextJobForOutput(jobType, ready string, errorHandler ErrorHan
 			filters := []persistence.NMStatusFilter{persistence.StatusNMSFilter(exchangecommon.STATUS_DOWNLOADED)}
 			if managementStatuses, err = persistence.FindNMPStatusWithFilters(db, filters); err != nil {
 				return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), nil
-			} 
-		// Only get statuses that are NOT "downloaded" (not ready)
+			}
+			// Only get statuses that are NOT "downloaded" (not ready)
 		} else if ready == "false" {
-			filters := []persistence.NMStatusFilter {persistence.StatusNMSFilter(exchangecommon.STATUS_NEW)}
+			filters := []persistence.NMStatusFilter{persistence.StatusNMSFilter(exchangecommon.STATUS_NEW)}
 			if managementStatuses, err = persistence.FindNMPStatusWithFilters(db, filters); err != nil {
 				return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), nil
-			} 
-		// Get all statuses
+			}
+			// Get all statuses
 		} else if ready == "" {
 			var errHandled bool
 			if errHandled, managementStatuses = FindManagementStatusForOutput("", "", errorHandler, db); errHandled {

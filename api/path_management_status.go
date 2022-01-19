@@ -40,8 +40,8 @@ func FindManagementStatusForOutput(nmpName, orgName string, errorHandler ErrorHa
 		} else {
 			return errorHandler(NewNotFoundError(fmt.Sprintf("The nmp %v cannot be found", nmpName), "management")), nil
 		}
-		
-	// Return all stored NMP statuses
+
+		// Return all stored NMP statuses
 	} else {
 		if managementStatuses, err = persistence.FindAllNMPStatus(db); err != nil {
 			return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), nil
@@ -92,11 +92,11 @@ func UpdateManagementStatus(nmStatus managementStatusInput, errorHandler ErrorHa
 			managementStatus.AgentUpgrade.Status = nmStatus.Status
 			msgs = append(msgs, events.NewNMStatusChangedMessage(events.NM_STATUS_CHANGED, nmStatus.Status))
 		}
-		
+
 		// Update the NMP status in the local db
 		if err := persistence.SaveOrUpdateNMPStatus(db, fullName, *managementStatus); err != nil {
 			return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object, error %v", err))), "", nil
-		} 
+		}
 
 		// Update the status of the NMP in the exchange
 		// if _, err := statusHandler(pDevice.Org, pDevice.Id, nmpName, managementStatus); err != nil {

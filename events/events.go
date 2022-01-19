@@ -104,7 +104,7 @@ const (
 	// Node management policy
 	NMP_START_DOWNLOAD    EventId = "NMP_START_DOWNLOAD"
 	NMP_DOWNLOAD_COMPLETE EventId = "NMP_DOWNLOAD_COMPLETE"
-	NM_STATUS_CHANGED 	  EventId = "NM_STATUS_CHANGED"
+	NM_STATUS_CHANGED     EventId = "NM_STATUS_CHANGED"
 
 	// Exchange change related
 	CHANGE_MESSAGE_TYPE             EventId = "EXCHANGE_CHANGE_MESSAGE"
@@ -2181,8 +2181,8 @@ func NewNMPDownloadCompleteMessage(id EventId, success bool, name string) *NMPDo
 }
 
 type NMStatusChangedMessage struct {
-	event   Event
-	Status  string
+	event  Event
+	Status string
 }
 
 func (n *NMStatusChangedMessage) Event() Event {

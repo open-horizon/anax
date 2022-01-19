@@ -669,7 +669,7 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s' not found in org %s", nodeName, nodeOrg))
 	}
-	node := nodes.Nodes[nodeOrg + "/" + nodeName]
+	node := nodes.Nodes[nodeOrg+"/"+nodeName]
 	if node.PublicKey == "" {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("node '%s' is not registered with the exchange in org %s", nodeName, nodeOrg))
 	}
@@ -698,9 +698,9 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 					continue
 				} else {
 					if nmp.Enabled {
-						compatibleNMPs = append(compatibleNMPs, nmpName + ": enabled")
+						compatibleNMPs = append(compatibleNMPs, nmpName+": enabled")
 					} else {
-						compatibleNMPs = append(compatibleNMPs, nmpName + ": disabled")
+						compatibleNMPs = append(compatibleNMPs, nmpName+": disabled")
 					}
 				}
 			}

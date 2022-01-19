@@ -225,7 +225,7 @@ func NMPStatus(org, credToUse, nmpName string) {
 func determineCompatibleNodes(org, credToUse, nmpName string, nmpPolicy exchangecommon.ExchangeNodeManagementPolicy) []string {
 	var nmpOrg string
 	nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
-	
+
 	// get node(s) name(s) from the Exchange
 	var resp ExchangeNodes
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
