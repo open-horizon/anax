@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -19,10 +20,12 @@ type FSSConfig struct {
 	CSSSSLCert            string // The path to the client side SSL certificate for the CSS.
 	PollingRate           uint16 // The number of seconds between polls to the CSS for notification updates.
 	ObjectQueueBufferSize uint64 // The buffer size of object queue to send notification.
+	MaxDataChunkSize      int    // The data chunksize during internal data transfer between CSS and agent.
+	IsDataChunkEnabled    string // Indicate if chunk data transfer is enabled.
 }
 
 func (f *FSSConfig) String() string {
-	return fmt.Sprintf("APIListen: %v, APIPort: %v, APIProtocol: %v, PersistencePath: %v, AuthenticationPath: %v, CSSURL: %v, CSSSSLCert: %v, PollingRate: %v, ObjectQueueBufferSize: %v", f.APIListen, f.APIPort, f.APIProtocol, f.PersistencePath, f.AuthenticationPath, f.CSSURL, f.CSSSSLCert, f.PollingRate, f.ObjectQueueBufferSize)
+	return fmt.Sprintf("APIListen: %v, APIPort: %v, APIProtocol: %v, PersistencePath: %v, AuthenticationPath: %v, CSSURL: %v, CSSSSLCert: %v, PollingRate: %v, ObjectQueueBufferSize: %v, IsDataChunkEnabled : %v, MaxDataChunkSize: %v", f.APIListen, f.APIPort, f.APIProtocol, f.PersistencePath, f.AuthenticationPath, f.CSSURL, f.CSSSSLCert, f.PollingRate, f.ObjectQueueBufferSize, f.IsDataChunkEnabled, f.MaxDataChunkSize)
 }
 
 func (c *HorizonConfig) FSSIsUnixProtocol() bool {
@@ -129,5 +132,25 @@ func (c *HorizonConfig) GetFSSObjectQueueSize() uint64 {
 		return HZN_FSS_OBJECT_QUEUE_BUFFER_SIZE
 	} else {
 		return c.Edge.FileSyncService.ObjectQueueBufferSize
+	}
+}
+
+func (c *HorizonConfig) GetFileSyncServiceMaxDataChunkSize() int {
+	if c.Edge.FileSyncService.MaxDataChunkSize == 0 {
+		return HZN_FSS_MAX_CHUNK_SIZE
+	} else {
+		return c.Edge.FileSyncService.MaxDataChunkSize
+	}
+}
+
+// Default to disable data chunk in agent
+func (c *HorizonConfig) IsDataChunkEnabled() bool {
+	if c.Edge.FileSyncService.IsDataChunkEnabled == "" {
+		// default is false
+		return false
+	} else if enabled, err := strconv.ParseBool(c.Edge.FileSyncService.IsDataChunkEnabled); err != nil {
+		return false
+	} else {
+		return enabled
 	}
 }
