@@ -45,6 +45,10 @@ func (n NodeManagementPolicyStatus) SetActualStartTime(timeStr string) {
 	}
 }
 
+func (n NodeManagementPolicyStatus) IsAgentUpgradePolicy() bool {
+	return n.AgentUpgrade != nil
+}
+
 type AgentUpgradePolicyStatus struct {
 	ScheduledTime        string `json:"scheduledTime"`
 	scheduledUnixTime    time.Time
@@ -60,10 +64,13 @@ const (
 	STATUS_NEW             = "waiting"
 	STATUS_UNKNOWN         = "unknown"
 	STATUS_DOWNLOADED      = "downloaded"
-	STATUS_DOWNLOAD_FAILED = "failed download"
+	STATUS_DOWNLOAD_FAILED = "download failed"
 	STATUS_SUCCESSFUL      = "successful"
 	STATUS_FAILED_JOB      = "failed"
 	STATUS_INITIATED       = "initiated"
+	STATUS_ROLLBACK_STARTED = "rollback started"
+	STATUS_ROLLBACK_FAILED  =  "rollback failed"
+	STATUS_ROLLBACK_SUCCESSFUL = "rollback successful"
 )
 
 func (a AgentUpgradePolicyStatus) String() string {

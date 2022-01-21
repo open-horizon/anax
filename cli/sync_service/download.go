@@ -1,13 +1,10 @@
 package sync_service
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/base64"
-	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
 	"io"
@@ -111,7 +108,7 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 			//dataReader := bytes.NewReader(data)
 			msgPrinter.Printf("Verifying data with digital signature....")
 			msgPrinter.Println()
-			if verified, err = VerifyDataSig(data, objectMeta.PublicKey, objectMeta.Signature, objectMeta.HashAlgorithm, fileName); !verified {
+			if verified, err = cutil.VerifyDataSig(data, objectMeta.PublicKey, objectMeta.Signature, objectMeta.HashAlgorithm, fileName); !verified {
 				cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to verify data: %s", err.Error()))
 			}
 			msgPrinter.Printf("Verifying digital signature is done.")
@@ -125,7 +122,7 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 		// 1) use --noIntegrity flag,
 		// or
 		// 2) object metadata doesn't have HashAlgorithm, or publicKey or signature field
-		if err := writeDateStreamToFile(data, fileName); err != nil {
+		if err := cutil.WriteDateStreamToFile(data, fileName); err != nil {
 			cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to save data for object '%s' of type '%s' to file %s, err: %v", objId, objType, fileName, err))
 		}
 	}
@@ -133,71 +130,4 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 	msgPrinter.Printf("Data of object %v saved to file %v", objId, fileName)
 	msgPrinter.Println()
 
-}
-
-func VerifyDataSig(dataReader io.Reader, publicKey string, signature string, hashAlgo string, fileName string) (bool, error) {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
-
-	if hashAlgo == "" {
-		return false, errors.New(msgPrinter.Sprintf("Failed to verify digital signature because the hashAlgorithm is empty"))
-	} else if publicKey == "" {
-		return false, errors.New(msgPrinter.Sprintf("Failed to verify digital signature because the publicKey string is empty"))
-	} else if signature == "" {
-		return false, errors.New(msgPrinter.Sprintf("Failed to verify digital signature because the signature string is empty"))
-	}
-
-	if publicKeyBytes, err := base64.StdEncoding.DecodeString(publicKey); err != nil {
-		return false, err
-	} else if signatureBytes, err := base64.StdEncoding.DecodeString(signature); err != nil {
-		return false, err
-	} else {
-		if dataHash, err := GetHash(hashAlgo); err != nil {
-			return false, err
-		} else if pubKey, err := x509.ParsePKIXPublicKey(publicKeyBytes); err != nil {
-			return false, err
-		} else {
-			dr2 := io.TeeReader(dataReader, dataHash)
-
-			// write dr2 to a tmp file
-			tmpFileName := fmt.Sprintf("%s.tmp", fileName)
-			if err := writeDateStreamToFile(dr2, tmpFileName); err != nil {
-				return false, err
-			}
-
-			// verify datahash
-			dataHashSum := dataHash.Sum(nil)
-			pubKeyToUse := pubKey.(*rsa.PublicKey)
-			if cryptoHashType, err := GetCryptoHashType(hashAlgo); err != nil {
-				return false, err
-			} else if err = rsa.VerifyPSS(pubKeyToUse, cryptoHashType, dataHashSum, signatureBytes, nil); err != nil {
-				return false, err
-			}
-
-			// rename the .tmp file
-			if err := os.Rename(tmpFileName, fileName); err != nil {
-				return false, err
-			}
-
-			return true, nil
-		}
-	}
-}
-
-func writeDateStreamToFile(dataReader io.Reader, fileName string) error {
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return err
-	}
-
-	if _, err := io.Copy(file, dataReader); err != nil && err != io.EOF {
-		return err
-	}
-
-	return nil
 }

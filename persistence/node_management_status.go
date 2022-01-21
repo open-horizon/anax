@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/boltdb/bolt"
+	"github.com/golang/glog"
 	"github.com/open-horizon/anax/exchangecommon"
 )
 
 const NODE_MANAGEMENT_STATUS = "nodemanagementstatus"
 
 func SaveOrUpdateNMPStatus(db *bolt.DB, nmpKey string, status exchangecommon.NodeManagementPolicyStatus) error {
+	glog.V(5).Infof(fmt.Sprintf("Saving nmp status %v", status))
 	writeErr := db.Update(func(tx *bolt.Tx) error {
 		if bucket, err := tx.CreateBucketIfNotExists([]byte(NODE_MANAGEMENT_STATUS)); err != nil {
 			return err
@@ -131,4 +133,8 @@ func FindNMPStatusWithFilters(db *bolt.DB, filters []NMStatusFilter) (map[string
 
 func FindWaitingNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
 	return FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(exchangecommon.STATUS_NEW)})
+}
+
+func FindInitiatedNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
+	return FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(exchangecommon.STATUS_INITIATED)})
 }

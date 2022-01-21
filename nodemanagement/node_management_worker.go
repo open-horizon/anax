@@ -14,9 +14,9 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
-	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -44,16 +44,33 @@ func NewNodeManagementWorker(name string, config *config.HorizonConfig, db *bolt
 func (w *NodeManagementWorker) Initialize() bool {
 	w.DispatchSubworker(NMP_MONITOR, w.checkNMPTimeToRun, 60, false)
 
+	if dev, _ := persistence.FindExchangeDevice(w.db); dev != nil && dev.Config.State == persistence.CONFIGSTATE_CONFIGURED {
+		// Node is registered. Check nmp's in exchange, statuses in db
+		workingDir := w.Config.Edge.GetNodeMgmtDirectory()
+		if err := w.ProcessAllNMPS(workingDir); err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
+			// uncomment the return once nmp status is in the exchange-api
+			// return true
+		}
+		// Check if a nmp process completed
+		if err := w.CheckNMPStatus(workingDir, STATUS_FILE_NAME); err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf("Failed to collect status. error: %v", err)))
+			return true 
+		}
+	}
+
 	return true
 }
 
 func (w *NodeManagementWorker) checkNMPTimeToRun() int {
+	glog.Infof(nmwlog("Starting run of node management policy monitoring subworker."))
 	if waitingNMPs, err := persistence.FindWaitingNMPStatuses(w.db); err != nil {
-		glog.Errorf("Failed to get nmp statuses from the database. Error was %v", err)
+		glog.Errorf(nmwlog(fmt.Sprintf("Failed to get nmp statuses from the database. Error was %v", err)))
 	} else {
-		for _, nmpStatus := range waitingNMPs {
+		for nmpName, nmpStatus := range waitingNMPs {
 			if nmpStatus.TimeToStart() {
-				w.Messages() <- events.NewNMPStartDownloadMessage(events.NMP_START_DOWNLOAD, events.StartDownloadMessage{})
+				glog.Infof(nmwlog(fmt.Sprintf("Time to start nmp %v", nmpName)))
+				w.Messages() <- events.NewNMPStartDownloadMessage(events.NMP_START_DOWNLOAD, events.StartDownloadMessage{NMPStatus: nmpStatus, NMPName: nmpName})
 			}
 		}
 	}
@@ -81,12 +98,9 @@ func (n *NodeManagementWorker) HandleRegistration() {
 	glog.Infof(nmwlog("Initializing"))
 	workingDir := n.Config.Edge.GetNodeMgmtDirectory()
 	if err := n.ProcessAllNMPS(workingDir); err != nil {
-		glog.Errorf("Error processing all exchange policies: %v", err)
-		//return
-	}
-	if err := n.CheckNMPStatus(workingDir, STATUS_FILE_NAME); err != nil {
-		glog.Errorf("Failed to collect status. error: %v", err)
-		return
+		glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
+		// uncomment the return once nmp status is in the exchange-api
+		// return
 	}
 	return
 }
@@ -94,14 +108,14 @@ func (n *NodeManagementWorker) HandleRegistration() {
 func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand) {
 	status, err := persistence.FindNMPStatus(n.db, cmd.Msg.NMPName)
 	if err != nil {
-		glog.Errorf("Failed to get nmp status %v from the database: %v", cmd.Msg.NMPName, err)
+		glog.Errorf(nmwlog(fmt.Sprintf("Failed to get nmp status %v from the database: %v", cmd.Msg.NMPName, err)))
 		return
 	}
 	pattern := ""
 	configState := ""
 	exchDev, err := persistence.FindExchangeDevice(n.db)
 	if err != nil {
-		glog.Errorf("Error getting device from database: %v", err)
+		glog.Errorf(nmwlog(fmt.Sprintf("Error getting device from database: %v", err)))
 	} else if exchDev != nil {
 		pattern = exchDev.Pattern
 		configState = exchDev.Config.State
@@ -115,7 +129,7 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 	}
 	err = persistence.SaveOrUpdateNMPStatus(n.db, cmd.Msg.NMPName, *status)
 	if err != nil {
-		glog.Errorf("Failed to update nmp status %v in the database: %v", cmd.Msg.NMPName, err)
+		glog.Errorf(nmwlog(fmt.Sprintf("Failed to update nmp status %v in the database: %v", cmd.Msg.NMPName, err)))
 	}
 }
 
@@ -157,6 +171,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 				create status
 				update exchange status
 	*/
+	glog.Infof(nmwlog("Starting to process all nmps in the exchange and locally."))
 	nodeOrg := exchange.GetOrg(n.GetExchangeId())
 	allNMPs, err := exchange.GetAllExchangeNodeManagementPolicy(n, nodeOrg)
 	if err != nil {
@@ -176,6 +191,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 	for name, policy := range *allNMPs {
 		if match, _ := VerifyCompatible(&nodePol.Management, nodePattern, &policy); match {
 			deleted := false
+			glog.Infof(nmwlog(fmt.Sprintf("Found matching node management policy %v in the exchange.", name)))
 			if !policy.Enabled {
 				if _, err = persistence.DeleteNMPStatus(n.db, name); err != nil {
 					return fmt.Errorf("Failed to delete status for deactivated node policy %v from database. Error was %v", name, err)
@@ -190,6 +206,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 				return fmt.Errorf("Error getting status for policy %v from the database: %v", name, err)
 			} else if existingStatus == nil && !deleted {
 				eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CREATED, name), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), nodePattern, exchDev.Config.State)
+				glog.Infof(nmwlog(fmt.Sprintf("Saving node management policy status %v in the db.", name)))
 				newStatus := exchangecommon.StatusFromNewPolicy(policy, baseWorkingFile)
 				org, nodeId := cutil.SplitOrgSpecUrl(n.GetExchangeId())
 				if err = persistence.SaveOrUpdateNMPStatus(n.db, name, newStatus); err != nil {
@@ -237,7 +254,10 @@ func (n *NodeManagementWorker) NewEvent(incoming events.Message) {
 
 func VerifyCompatible(nodePol *externalpolicy.ExternalPolicy, nodePattern string, nmPol *exchangecommon.ExchangeNodeManagementPolicy) (bool, error) {
 	if nodePattern != "" {
-		return cutil.SliceContains(nmPol.Patterns, nodePattern), nil
+		if cutil.SliceContains(nmPol.Patterns, nodePattern) {
+			return true, nil
+		}
+		return cutil.SliceContains(nmPol.Patterns, strings.SplitN(nodePattern, "/", 2)[1]), nil
 	}
 	if err := nodePol.Constraints.IsSatisfiedBy(nmPol.Properties); err != nil {
 		return false, err
@@ -257,18 +277,12 @@ func (n *NodeManagementWorker) CheckNMPStatus(baseWorkingFile string, statusFile
 			if sucessfull
 				remove folder
 	*/
-	files, err := ioutil.ReadDir(baseWorkingFile)
-	if err != nil {
-		return fmt.Errorf("Error reading the management worker files: %v", err)
-	}
-	for _, file := range files {
-		if file.IsDir() {
-			if fileInfo, err := os.Stat(path.Join(baseWorkingFile, file.Name(), statusFileName)); err == nil && fileInfo != nil {
-				if err = n.CollectStatus(path.Join(baseWorkingFile, file.Name()), statusFileName, file.Name()); err != nil {
-					return err
-				}
-			} else if err != nil {
-				return err
+	if statuses, err := persistence.FindInitiatedNMPStatuses(n.db); err != nil {
+		return fmt.Errorf("Failed to find nmp statuses in the local db: %v", err)
+	} else {
+		for name, status := range statuses {
+			if err = n.CollectStatus(baseWorkingFile, name, status); err != nil {
+				glog.Infof(nmwlog(fmt.Sprintf("No status file found for nmp %v: %v", name, err)))
 			}
 		}
 	}
@@ -285,8 +299,8 @@ type StatusFile struct {
 // Read and  persist the status out of the  file
 // Update status in the exchange
 // If everything is successful, delete the job working dir
-func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, fileName string, policyName string) error {
-	filePath := path.Join(workingFolderPath, fileName)
+func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyName string, dbStatus *exchangecommon.NodeManagementPolicyStatus) error {
+	filePath := path.Join(workingFolderPath, policyName, STATUS_FILE_NAME)
 	// Read in the status file
 	if _, err := os.Stat(filePath); err != nil {
 		return fmt.Errorf("Failed to open status file %v for management job %v. Error was: %v", filePath, policyName, err)
@@ -300,12 +314,6 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, fileName 
 			return fmt.Errorf("Failed to decode status file %v for management job %v. Error was %v.", filePath, policyName, err)
 		}
 
-		if dbStatus, err := persistence.FindNMPStatus(n.db, policyName); err != nil {
-			return fmt.Errorf("Failed to retrieve node management status %v from the database: %v", policyName, err)
-		} else {
-			if dbStatus == nil {
-				dbStatus = &exchangecommon.NodeManagementPolicyStatus{}
-			}
 			dbStatus.SetActualStartTime(time.Unix(int64(contents.StartTime), 0).Format(time.RFC3339))
 			dbStatus.SetCompletionTime(time.Unix(int64(contents.CompletionTime), 0).Format(time.RFC3339))
 			dbStatus.SetStatus(contents.Status)
@@ -314,7 +322,7 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, fileName 
 			configState := ""
 			exchDev, err := persistence.FindExchangeDevice(n.db)
 			if err != nil {
-				glog.Errorf("Error getting device from database: %v", err)
+				glog.Errorf(nmwlog(fmt.Sprintf("Error getting device from database: %v", err)))
 			} else if exchDev != nil {
 				pattern = exchDev.Pattern
 				configState = exchDev.Config.State
@@ -327,12 +335,12 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, fileName 
 				return err
 			}
 			eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, dbStatus), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
+
 			// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
 			err = os.RemoveAll(workingFolderPath)
 			if err != nil {
 				return fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", policyName, err)
 			}
-		}
 	}
 	return nil
 }

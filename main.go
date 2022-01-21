@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/changes"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
+	_ "github.com/open-horizon/anax/download"
 	"github.com/open-horizon/anax/exchange"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/governance"
@@ -191,6 +192,7 @@ func main() {
 		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
 		workers.Add(changes.NewChangesWorker("ExchangeChanges", cfg, db))
 		// workers.Add(nodemanagement.NewNodeManagementWorker("NodeManagement", cfg, db))
+		// workers.Add(download.NewDownloadWorker("Download", cfg, db))
 	}
 
 	// Get into the event processing loop until anax shuts itself down.

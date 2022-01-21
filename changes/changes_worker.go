@@ -315,6 +315,7 @@ func (w *ChangesWorker) createSupportedResourceTypes(initialValue bool) map[even
 	resourceTypes[events.CHANGE_NODE_ERROR_TYPE] = initialValue
 	resourceTypes[events.CHANGE_SERVICE_CONFIGSTATE_TYPE] = initialValue
 	resourceTypes[events.CHANGE_SERVICE_TYPE] = initialValue
+	resourceTypes[events.CHANGE_NMP_TYPE] = initialValue
 	return resourceTypes
 }
 

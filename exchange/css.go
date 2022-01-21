@@ -3,8 +3,12 @@ package exchange
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/edge-sync-service/common"
+	docker "github.com/fsouza/go-dockerclient"
+	"net/http"
+	"os"
 	"path"
 	"strconv"
 	"time"
@@ -243,6 +247,50 @@ func GetObject(ec ExchangeContext, org string, objID string, objType string) (*c
 			}
 		}
 	}
+}
+
+// Get the object data
+func GetObjectData(ec ExchangeContext, org string, objType string, objId string, filePath string, fileName string, objectMeta *common.MetaData, dockerClient *docker.Client) error {
+	url := path.Join("/api/v1/objects", org, objType, objId, "data")
+	url = ec.GetCSSURL() + url
+
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return fmt.Errorf("Failed to create request for css object: %v", err)
+	}
+
+	request.SetBasicAuth(ec.GetExchangeId(), ec.GetExchangeToken())
+
+	response, err := ec.GetHTTPFactory().NewHTTPClient(nil).Do(request)
+	if err != nil {
+		return fmt.Errorf("Failed to get object data : %v\n", err)
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode >= 400 && response.StatusCode < 600 {
+		return fmt.Errorf("Failed to get the data for the object: %v\n", response.Body)
+	}
+
+	if filePath == "docker" {
+		loadImgOpts := docker.LoadImageOptions{InputStream: response.Body}
+		if err = dockerClient.LoadImage(loadImgOpts); err != nil {
+			return fmt.Errorf("Failed to load image %v into docker.", objId)
+		}
+		return nil
+	}
+
+	err = os.MkdirAll(filePath, 0755)
+	if err != nil {
+		return fmt.Errorf("Failed to create folder %v for agent upgrade files: %s\n", filePath, err)
+	}
+
+	err = cutil.WriteDateStreamToFile(response.Body, path.Join(filePath, fileName))
+	if err != nil {
+		return fmt.Errorf("Failed to read the body of a get containing the data for the object: %s\n", err)
+	}
+
+	return nil
 }
 
 // Get the object's list of destinations.
