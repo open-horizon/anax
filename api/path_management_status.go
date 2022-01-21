@@ -91,6 +91,11 @@ func UpdateManagementStatus(nmStatus managementStatusInput, errorHandler ErrorHa
 		if nmStatus.Status != "" && managementStatus.AgentUpgrade.Status != nmStatus.Status {
 			managementStatus.AgentUpgrade.Status = nmStatus.Status
 			msgs = append(msgs, events.NewNMStatusChangedMessage(events.NM_STATUS_CHANGED, nmStatus.Status))
+			newNMPStatus := managementStatus.AgentUpgrade.Status
+			if managementStatus.AgentUpgrade.ErrorMessage != "" {
+				newNMPStatus += fmt.Sprintf(", ErrorMessage: %v", managementStatus.AgentUpgrade.ErrorMessage)
+			}
+			eventlog.LogNodeEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NMP_STATUS_CHANGE, pDevice.Org, nmpName, newNMPStatus), persistence.EC_NMP_STATUS_UPDATE_COMPLETE, pDevice.Id, pDevice.Org, pDevice.Pattern, pDevice.Config.State)
 		}
 
 		// Update the NMP status in the local db
@@ -102,8 +107,6 @@ func UpdateManagementStatus(nmStatus managementStatusInput, errorHandler ErrorHa
 		// if _, err := statusHandler(pDevice.Org, pDevice.Id, nmpName, managementStatus); err != nil {
 		// 	return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object in the exchange, error %v", err))), "", nil
 		// }
-
-		eventlog.LogNodeEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NMP_STATUS_CHANGE, pDevice.Org, nmpName, (*managementStatus).String()), persistence.EC_NMP_STATUS_UPDATE_COMPLETE, pDevice.Id, pDevice.Org, pDevice.Pattern, pDevice.Config.State)
 
 		// Return message
 		return false, fmt.Sprintf("Updated status for NMP %v.", fullName), msgs
