@@ -62,3 +62,12 @@ func DeleteNodeManagementPolicy(db *bolt.DB, policyKey string) (*exchangecommon.
 		return nil
 	})
 }
+
+func DeleteAllNodeManagementPolicies(db *bolt.DB) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		if b := tx.Bucket([]byte(NODE_MANAGEMENT_POLICY)); b != nil {
+			return tx.DeleteBucket([]byte(NODE_MANAGEMENT_POLICY))
+		}
+		return nil
+	})
+}

@@ -176,6 +176,8 @@ func (w *DownloadWorker) formAgentUpgradePackageNames() (string, string, error) 
 	pol, err := persistence.FindNodePolicy(w.db)
 	if err != nil {
 		return "", "", fmt.Errorf("Failed to retrieve node policy from local db: %v", err)
+	} else if pol == nil {
+		return "", "", fmt.Errorf("No node policy found in the local db.")
 	}
 
 	installTypeProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_OS)
