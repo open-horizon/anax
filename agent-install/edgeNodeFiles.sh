@@ -251,7 +251,7 @@ EOF
         hzn mms -o IBM object publish -m "${filename}-meta.json" -f $filename --chunkUpload
     else
         echo "hzn version ($hznVersion) < $versionHasChunkFeature, uploading $filename"
-    	hzn mms -o IBM object publish -m "${filename}-meta.json" -f $filename --chunkUpload
+    	hzn mms -o IBM object publish -m "${filename}-meta.json" -f $filename
     fi
 
     local rc=$?
