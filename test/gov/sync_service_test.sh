@@ -146,14 +146,14 @@ echo "$resmeta" > /tmp/meta-large.json
 
 read -d '' resmeta <<EOF
 {
-  "objectID": "test-large1-with-chunk-upload",
+  "objectID": "test-with-streaming-upload",
   "objectType": "test",
   "destinationType": "test",
   "version": "1.0.0",
-  "description": "chunk uploade a large file"
+  "description": "streaming upload a large file"
 }
 EOF
-echo "$resmeta" > /tmp/meta-large-chunked.json
+echo "$resmeta" > /tmp/meta-stream-upload.json
 
 #Setup files to use in uploads
 dd if=/dev/zero of=/tmp/data.txt count=128 bs=1048576
@@ -190,20 +190,20 @@ else
 fi
 
 # Test large object publish
-echo "Testing chunk upload large object (512MB)"
-hzn mms object publish -m /tmp/meta-large-chunked.json -f /tmp/data-large.txt --chunkUpload >/dev/null
+echo "Testing streaming upload object (512MB)"
+hzn mms object publish -m /tmp/meta-stream-upload.json -f /tmp/data-large.txt --disableChunkUpload >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
-  echo -e "Got unexpected error chunk uploading 512MB model object: $RC"
+  echo -e "Got unexpected error while streaming upload 512MB model object: $RC"
   exit 1
 else
   echo "Completed"
 fi
 
-# chunk uploaded object has values in "publicKey" and "signature" fields, and has correct object size
-echo "Testing chunk uploaded object has values in publicKey and signature fields, and has correct object size"
-OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test-large1-with-chunk-upload -l | awk '{if(NR>1)print}')
+# object has values in "publicKey" and "signature" fields, and has correct object size
+echo "Testing uploaded object has values in publicKey and signature fields, and has correct object size"
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test-large1 -l | awk '{if(NR>1)print}')
 EXPECTED_OBJECT_SIZE=536870912
 if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" == "" ]; then
   echo -e "publicKey or signature should be set by default"
