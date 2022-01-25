@@ -242,30 +242,11 @@ function putOneFileInCss() {
 }
 EOF
     echo "Publishing $filename in CSS as a public object in the IBM org..."
-    local hznVersion=$(getHznVersion)   #2.30.0-708
-    local leftVersionNum=$(echo ${hznVersion%-*})   #2.30.0
-    local versionHasChunkFeature=2.30.0
-
-    if version_gt_or_equal $leftVersionNum $versionHasChunkFeature; then
-        echo "hzn version ($hznVersion) >= $versionHasChunkFeature, uploading $filename in chunk"
-        hzn mms -o IBM object publish -m "${filename}-meta.json" -f $filename --chunkUpload
-    else
-        echo "hzn version ($hznVersion) < $versionHasChunkFeature, uploading $filename"
-    	hzn mms -o IBM object publish -m "${filename}-meta.json" -f $filename --chunkUpload
-    fi
+    hzn mms -o IBM object publish -m "${filename}-meta.json" -f $filename
 
     local rc=$?
     rm -f "${filename}-meta.json"   # clean up metadata file
     chk $rc "publishing $filename in CSS as a public object. Ensure HZN_EXCHANGE_USER_AUTH is set to credentials that can publish to the IBM org."
-}
-
-# compare versions. Return 0 (true) if the 1st version is greater than or equal to the 2nd version
-function version_gt_or_equal() {
-    local version1=$1
-    local version2=$2
-
-    # need the test above, because the test below returns >= because it sorts in ascending order
-    test "$(printf '%s\n' "$1" "$2" | sort -V | tail -n 1)" == "$version1"
 }
 
 # With the information from the previous functions, create agent-install.cfg

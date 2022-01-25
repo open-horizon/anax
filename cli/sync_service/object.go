@@ -34,6 +34,8 @@ import (
 
 const BatchSize = 50
 
+const MaxTry = 150
+
 const MMSUploadOwnerHeaderName = "MMS-Upload-Owner"
 
 type MMSObjectInfo struct {
@@ -287,7 +289,7 @@ func ObjectNew(org string) {
 
 // Upload an object to the MMS. The user can provide a copy of the object's metadata in a file, or they can simply provide
 // object id and type.
-func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string, chunkUpload bool, chunkSize int, skipDigitalSig bool, dsHashAlgo string, dsHash string, privKeyFilePath string) {
+func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string, noChunkUpload bool, chunkSize int, skipDigitalSig bool, dsHashAlgo string, dsHash string, privKeyFilePath string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -383,12 +385,12 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		}
 		defer file.Close()
 
-		if chunkUpload {
-			cliutils.Verbose(msgPrinter.Sprintf("Upload object in chunk, chunk size is: %d", chunkSize))
-			mmsUrl := cliutils.GetMMSUrl() + "/" + urlPath
-			uploadDataByChunk(mmsUrl, cliutils.OrgAndCreds(org, userPw), chunkSize, file)
-		} else {
+		if noChunkUpload {
 			cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file, nil)
+		} else {
+			cliutils.Verbose(msgPrinter.Sprintf("Upload object in chunk, chunk size is: %d", chunkSize))
+                        mmsUrl := cliutils.GetMMSUrl() + "/" + urlPath
+                        uploadDataByChunk(mmsUrl, cliutils.OrgAndCreds(org, userPw), chunkSize, file)
 		}
 
 		// Restore HTTP request override if necessary.
@@ -399,11 +401,33 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		cliutils.Verbose(msgPrinter.Sprintf("Object %v uploaded to org %v in the Model Management Service", objFile, org))
 	}
 
-	// Grab the object status and display it.
-	urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "status")
 	var resp []byte
-	cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
-	cliutils.Verbose(msgPrinter.Sprintf("Object status: %v", string(resp)))
+	if objFile == "" || skipDigitalSig {
+		// Grab the object status and display it.
+		urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "status")
+		cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
+		cliutils.Verbose(msgPrinter.Sprintf("Object status: %v", string(resp)))
+	} else {
+		count := 0
+		for {
+			if count == MaxTry {
+				cliutils.Verbose(msgPrinter.Sprintf("Object status is still %v after %v try", string(resp), count))
+				break
+			}
+			// Grab the object status and display it.
+			urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "status")
+			cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
+				cliutils.Verbose(msgPrinter.Sprintf("Object status: %v", string(resp)))
+
+			if string(resp) == common.ReadyToSend || string(resp) == common.VerificationFailed {
+				break
+			}
+
+			time.Sleep(5 * time.Second)
+			count++
+		}
+
+	}
 
 	msgPrinter.Printf("Object %v added to org %v in the Model Management Service", objectMeta.ObjectID, org)
 	msgPrinter.Println()
@@ -648,6 +672,7 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 				if b, err := io.ReadAll(resp.Body); err == nil {
 					responseMessage := string(b)
 					if strings.Contains(responseMessage, "leader changed") {
+						fmt.Println("Leader change detected")
 						// restart from first offset
 						mmsOwnerID = ""
 						startOffset = 0
