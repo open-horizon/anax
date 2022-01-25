@@ -143,13 +143,13 @@ func (c *HorizonConfig) GetFileSyncServiceMaxDataChunkSize() int {
 	}
 }
 
-// Default to disable data chunk in agent
+// Default to enable data chunk in agent
 func (c *HorizonConfig) IsDataChunkEnabled() bool {
 	if c.Edge.FileSyncService.IsDataChunkEnabled == "" {
-		// default is false
-		return false
+		// default is true
+		return true
 	} else if enabled, err := strconv.ParseBool(c.Edge.FileSyncService.IsDataChunkEnabled); err != nil {
-		return false
+		return true
 	} else {
 		return enabled
 	}
