@@ -84,7 +84,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *device.Token, a.Config.Edge.ExchangeURL, a.Config.GetCSSURL(), a.Config.Collaborators.HTTPClientFactory)
 
 		// sync the node policy and userinput with the exchange
-		if err := exchangesync.NodeInitalSetup(a.db, exchange.GetHTTPDeviceHandler(a)); err != nil {
+		if err := exchangesync.NodeInitalSetup(a.db, exchange.GetHTTPDeviceHandler(a), exchange.GetHTTPPatchDeviceHandler(a)); err != nil {
 			create_device_error_handler(fmt.Errorf("Failed to initially set up local copy of the exchange node. %v", err))
 		}
 		if _, err := exchangesync.NodePolicyInitalSetup(a.db, a.Config, exchange.GetHTTPNodePolicyHandler(a), exchange.GetHTTPPutNodePolicyHandler(a)); err != nil {

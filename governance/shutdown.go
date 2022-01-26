@@ -236,7 +236,7 @@ func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.Exchang
 	glog.V(3).Infof(logString(fmt.Sprintf("node shutdown process for pattern change complete.")))
 }
 
-// Clear out the registered microservices/services and the configured pattern for the node.
+// Clear out the registered microservices/services, the configured pattern and the softwareVersions for the node.
 // It also clears the userinput if keepUI is false.
 func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 
@@ -270,6 +270,17 @@ func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 		return errors.New(fmt.Sprintf("error clearing node pattern entry in exchange. %v", err))
 	} else {
 		glog.V(3).Infof(logString(fmt.Sprintf("cleared node pattern entry in exchange.")))
+	}
+
+	// clear software versions in exchange
+	glog.V(3).Infof(logString(fmt.Sprintf("clearing node softwareVersions entry in exchange.")))
+	pdrVersions := exchange.PatchDeviceRequest{}
+	versions := make(map[string]string, 0)
+	pdrVersions.SoftwareVersions = versions
+	if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdrVersions); err != nil {
+		return errors.New(fmt.Sprintf("error clearing node softwareVersions entry in exchange. %v", err))
+	} else {
+		glog.V(3).Infof(logString(fmt.Sprintf("cleared node softwareVersions entry in exchange.")))
 	}
 
 	// clear the userInput if needed

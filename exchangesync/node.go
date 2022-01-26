@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/version"
 	"sync"
 )
 
@@ -53,7 +54,7 @@ func SyncNodeWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice, getD
 }
 
 // Used one time when the local node is first registered
-func NodeInitalSetup(db *bolt.DB, getDevice exchange.DeviceHandler) error {
+func NodeInitalSetup(db *bolt.DB, getDevice exchange.DeviceHandler, patchDevice exchange.PatchDeviceHandler) error {
 
 	// get the node
 	pDevice, err := persistence.FindExchangeDevice(db)
@@ -64,7 +65,17 @@ func NodeInitalSetup(db *bolt.DB, getDevice exchange.DeviceHandler) error {
 	}
 
 	// get exchange node user input
-	_, err = SyncNodeWithExchange(db, pDevice, getDevice)
+	if _, err = SyncNodeWithExchange(db, pDevice, getDevice); err == nil {
+		
+		// set agent version in exchange
+		if exchNode.SoftwareVersions["horizon"] != version.HORIZON_VERSION {
+			versions := exchNode.SoftwareVersions
+			versions["horizon"] = version.HORIZON_VERSION
+			if err = patchDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, &exchange.PatchDeviceRequest{SoftwareVersions: versions}); err != nil {
+				return fmt.Errorf("Unable to update the Exchange with correct node version. %v", err)
+			}
+		}
+	}
 
 	return err
 }
