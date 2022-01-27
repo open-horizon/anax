@@ -25,6 +25,10 @@ ROLLBACK_DIR_NAME="backup"
 STATUS_FILE_NAME="status.json"
 AGENT_WAIT_MAX_SECONDS=30
 
+UPGRADE_TYPE_SW="software"
+UPGRADE_TYPE_CERT="cert"
+UPGRADE_TYPE_CFG="config"
+
 #====================== functions ======================
 # variable that holds the return message for a function
 FUNC_RET_MSG=""
@@ -122,6 +126,10 @@ function set_nodemanagement_status() {
         log_debug "Set node management status for nmp $nmp to \"$status\"."
     fi
 
+    # save the status to the status file
+    write_status_file "$status_file_name" "$status" "$err_msg"
+
+    # call agent API to save the status
     read -d '' nm_status <<EOF
  {
     "type": "agentUpgrade",
@@ -129,13 +137,9 @@ function set_nodemanagement_status() {
     "errorMessage": "$err_msg"
  }
 EOF
-
     local output=$(echo "$nm_status" | curl -sS -X PUT -w %{http_code} -H "Content-Type: application/json" --data @- "${HORIZON_URL}/nodemanagement/status/$nmp")
     if [ "${output: -3}" != "201" ]; then
         log_error "Failed to set node management status for nmp $nmp to \"$status\". $output"
-
-        # anax is not alive, save the status to the status file so that anax can pick it up later.
-        write_status_file "$status_file_name" "$status" "$err_msg"
         return 2
     fi
 
@@ -154,12 +158,16 @@ function unpack_packages() {
         return 2
     fi
 
+    current_dir=$(pwd)
     cd $pdir
-    for pkg_file in *.tar.gz; do
-        tar -zxf $pkg_file
-        log_info "Unpacked file $pkg_file."
-    done
-    cd -
+    count=$(ls -1 *.tar.gz 2>/dev/null | wc -l)
+    if [ $count != 0 ]; then
+        for pkg_file in *.tar.gz; do
+            tar -zxf $pkg_file
+            log_info "Unpacked file $pkg_file."
+        done
+    fi
+    cd $current_dir
 }
 
 # Copy a list of files to the backup_dir preserving the directory structure.
@@ -240,7 +248,7 @@ function backup_agent_and_cli_linux() {
     elif is_redhat_variant; then
         output_h=$(rpm -ql horizon)
     else
-        FUNC_RET_MSG="Unsupported Linux disctro."
+        FUNC_RET_MSG="Unsupported Linux distro."
         return 5
     fi
 
@@ -254,7 +262,7 @@ function backup_agent_and_cli_linux() {
         if [ -f "/etc/default/horizon" ]; then
             cert_file_name=$(grep HZN_MGMT_HUB_CERT_PATH /etc/default/horizon | sed 's/HZN_MGMT_HUB_CERT_PATH=//g')
             if [ -z "$cert_file_name" ]; then
-                cert_file_name="/etc/horizon/agent-install.crt"
+                cert_file_name="/etc/horizon/$AGENT_CERT_FILE_DEFAULT"
             fi
             copy_pkg_files "$backup_dir/horizon" "$cert_file_name"
         fi
@@ -308,7 +316,7 @@ function backup_agent_and_cli_macos() {
     if [ -f "/etc/default/horizon" ]; then
         cert_file_name=$(grep HZN_MGMT_HUB_CERT_PATH /etc/default/horizon | sed 's/HZN_MGMT_HUB_CERT_PATH=//g')
         if [ -z "$cert_file_name" ]; then
-            cert_file_name="/etc/horizon/agent-install.crt"
+            cert_file_name="/etc/horizon/$AGENT_CERT_FILE_DEFAULT"
         fi
         copy_pkg_files "$backup_dir/horizon" "$cert_file_name"
     fi
@@ -458,7 +466,7 @@ function wait_for() {
     done
     echo ''
     log_info "Done: $stateWaitingFor"
-    log_debug "wait_for() begin"
+    log_debug "wait_for() end"
     return 0
 }
 
@@ -468,7 +476,36 @@ function wait_until_agent_ready() {
     if ! wait_for '[[ -n "$(hzn node list 2>/dev/null | jq -r .configuration.preferred_exchange_version 2>/dev/null)" ]]' 'Horizon agent ready' $AGENT_WAIT_MAX_SECONDS; then
         log_error "Horizon agent did not start successfully"
     fi
-    log_debug "wait_until_agent_ready() begin"
+    log_debug "wait_until_agent_ready() end"
+}
+
+# get the file types (software, cert, config) under the working directory 
+function get_upgrade_types() {
+    local work_dir=$1
+    local types=""
+    count=$(ls -1 ${work_dir}/*.tar.gz 2>/dev/null | wc -l)
+    if [ $count != 0 ]; then
+        types=$UPGRADE_TYPE_SW
+    fi
+
+    if [ -f ${work_dir}/$AGENT_CERT_FILE_DEFAULT ]; then
+        if [ -z $types ]; then
+            types="$UPGRADE_TYPE_CERT"
+        else
+            types="$types,$UPGRADE_TYPE_CERT"
+        fi
+    fi
+
+    if [ -f ${work_dir}/$AGENT_CFG_FILE_DEFAULT ]; then
+        if [ -z $types ]; then
+            types="$UPGRADE_TYPE_CFG"
+        else
+            types="$types,$UPGRADE_TYPE_CFG"
+        fi
+    fi
+
+    FUNC_RET_MSG=$types
+    return 0
 }
 
 #====================== Main  ======================
@@ -522,7 +559,7 @@ fi
 nmp_id=$(jq -r '.|keys[0]' 2>/dev/null <<< $nextjob || true)
 nm_status=$(jq -r ".\"$nmp_id\".agentUpgrade.status" 2>/dev/null <<< $nextjob || true)
 if [ "$nm_status" != "downloaded" ]; then
-    log_info "Cannot continue because the current node management stautus is '$nm_status' instead of 'downloaded'."  
+    log_info "Cannot continue because the current node management status is '$nm_status' instead of 'downloaded'."  
     exit 0
 fi
 
@@ -543,8 +580,25 @@ pkg_dir=$pkg_dir/$nmp_id
 
 log_info "Package directory: $pkg_dir"
 
-mkdir -p pkg_dir
+mkdir -p $pkg_dir
 status_file="$pkg_dir/$STATUS_FILE_NAME"
+
+# go to the package directory and find the types of the upgrade needed.
+get_upgrade_types $pkg_dir
+if [ -z $FUNC_RET_MSG ]; then
+    log_info "No agent upgrade files under $pkg_dir. Skip"
+    exit 0
+else
+    upgrade_types=$FUNC_RET_MSG
+    log_info "Upgrade types are: $upgrade_types"
+fi
+
+# copy the local agent_install.sh file to the pkg_dir if it does not exist under pkg_dir.
+# agent_install.sh and this script are on the same directory installed by horizon-cli
+if [ ! -f $pkg_dir/agent-install.sh ]; then
+    log_debug "$pkg_dir/agent-install.sh does not exit. Copy $script_dir/agent-install.sh over."
+    cp $script_dir/agent-install.sh $pkg_dir/agent-install.sh
+fi
 
 # unpack the package files under the package dir
 unpack_packages $pkg_dir
@@ -563,23 +617,20 @@ fi
 # update the management status to 'initiated'
 set_nodemanagement_status "$nmp_id" "$status_file" "initiated" "" 
 
-# the agent-install.sh can be found under the package directory.
-# if not found, use the one that ships with the current horizon-cli package.
-agent_install_sname="${pkg_dir}/agent-install.sh"
-if [ ! -f $agent_install_sname ]; then
-    agent_install_sname="${script_dir}/agent-install.sh"
+# get allowDowngrade attribute from the node management status
+allow_downgrade=$(jq -r ".\"$nmp_id\".agentUpgrade.allowDowngrade" 2>/dev/null <<< $nextjob || true)
+allow_downgrade="true"  #TODO remove
+if [ "allow_downgrade" == "true" ]; then
+    overwrite_flag="-f"
+else
+    overwrite_flag=""
 fi
 
 # run agent-intall.sh. catch the stdout and stderr in different variables 
 unset Std_msg Err_msg RC
 cd $pkg_dir
-#eval "$(${script_dir}/agent-install.sh -A -i ${pkg_dir} -d ${node_id} -O ${node_org_id} \
-#        -c ${pkg_dir}/${AGENT_CERT_FILE_DEFAULT} -k ${pkg_dir}/${AGENT_CFG_FILE_DEFAULT} -s -b -f \
-#        2> >(Err_msg=$(cat); typeset -p Err_msg) \
-#        > >(Std_msg=$(cat); typeset -p Std_msg); \
-#        RC=$?; typeset -p RC)"
-eval "$(${agent_install_sname} -A -d ${node_id} -O ${node_org_id} \
-        -s -b -f \
+eval "$(${pkg_dir}/agent-install.sh -d ${node_id} -O ${node_org_id} \
+        -s -b ${overwrite_flag} -G ${upgrade_types} --auto-upgrade \
         2> >(Err_msg=$(cat); typeset -p Err_msg) \
         > >(Std_msg=$(cat); typeset -p Std_msg); \
         RC=$?; typeset -p RC)"
