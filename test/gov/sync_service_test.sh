@@ -604,7 +604,7 @@ then
   WRONG_DEST_TYPE=wrongDestType
   WRONG_DEST_ID=wrongDestId
 
-  TARGET_NUM_OBJS=5
+  TARGET_NUM_OBJS=6
   OBJS_CMD=$(hzn mms object list --destinationType=${DEST_TYPE} | awk '{if(NR>1)print}')
   NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
   if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
