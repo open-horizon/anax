@@ -296,7 +296,7 @@ func ObjectNew(org string) {
 
 // Upload an object to the MMS. The user can provide a copy of the object's metadata in a file, or they can simply provide
 // object id and type.
-func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string, chunkUpload bool, chunkSize int, skipDigitalSig bool, dsHashAlgo string, dsHash string, privKeyFilePath string) {
+func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string, noChunkUpload bool, chunkSize int, skipDigitalSig bool, dsHashAlgo string, dsHash string, privKeyFilePath string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -392,12 +392,12 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		}
 		defer file.Close()
 
-		if chunkUpload {
-			cliutils.Verbose(msgPrinter.Sprintf("Upload object in chunk, chunk size is: %d", chunkSize))
-			mmsUrl := cliutils.GetMMSUrl() + "/" + urlPath
-			uploadDataByChunk(mmsUrl, cliutils.OrgAndCreds(org, userPw), chunkSize, file)
-		} else {
+		if noChunkUpload {
 			cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file, nil)
+		} else {
+			cliutils.Verbose(msgPrinter.Sprintf("Upload object in chunk, chunk size is: %d", chunkSize))
+                        mmsUrl := cliutils.GetMMSUrl() + "/" + urlPath
+                        uploadDataByChunk(mmsUrl, cliutils.OrgAndCreds(org, userPw), chunkSize, file)
 		}
 
 		// Restore HTTP request override if necessary.
