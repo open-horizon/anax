@@ -154,7 +154,7 @@ type Device struct {
 }
 
 func (d Device) String() string {
-	return fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput, d.HeartbeatIntv)
+	return fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern: %v, SoftwareVersions: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.Pattern, d.SoftwareVersions, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput, d.HeartbeatIntv)
 }
 
 func (d Device) ShortString() string {
@@ -463,6 +463,7 @@ type PatchDeviceRequest struct {
 	Pattern            *string             `json:"pattern,omitempty"`
 	Arch               *string             `json:"arch,omitempty"`
 	RegisteredServices *[]Microservice     `json:"registeredServices,omitempty"`
+	SoftwareVersions   SoftwareVersion     `json:"softwareVersions"`
 }
 
 func (p PatchDeviceRequest) String() string {
@@ -474,7 +475,7 @@ func (p PatchDeviceRequest) String() string {
 	if p.Arch != nil {
 		arch = *p.Arch
 	}
-	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v", p.UserInput, p.RegisteredServices, pattern, arch)
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, SoftwareVersions: %v", p.UserInput, p.RegisteredServices, pattern, arch, p.SoftwareVersions)
 }
 
 func (p PatchDeviceRequest) ShortString() string {
@@ -503,7 +504,7 @@ func (p PatchDeviceRequest) ShortString() string {
 		arch = *p.Arch
 	}
 
-	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v", userInput, registeredServices, pattern, arch)
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, SoftwareVersions: %v", userInput, registeredServices, pattern, arch, p.SoftwareVersions)
 }
 
 type PostMessage struct {

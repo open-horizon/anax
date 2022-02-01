@@ -326,7 +326,7 @@ func (w *AgreementWorker) syncNode() error {
 	glog.V(3).Infof(logString("beginning sync up node."))
 
 	// get the exchange node and save it locally
-	if err := exchangesync.NodeInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w)); err != nil {
+	if err := exchangesync.NodeInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPatchDeviceHandler(w)); err != nil {
 		return errors.New(logString(fmt.Sprintf("Failed to initially set up local copy of the exchange node. %v. If the exchange url is changed, please run 'hzn unregister -D' command to clean up the local node before starting horizon service.", err)))
 	}
 
