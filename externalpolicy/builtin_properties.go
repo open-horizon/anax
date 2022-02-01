@@ -14,22 +14,22 @@ import (
 // The user defined policies (business policy, node policy) need to add constraints on these properties if needed.
 const (
 	// for node policy
-	PROP_NODE_CPU         = "openhorizon.cpu"               // The number of CPUs
-	PROP_NODE_MEMORY      = "openhorizon.memory"            // The amount of memory in MBs
-	PROP_NODE_ARCH        = "openhorizon.arch"              // The hardware architecture of the node (e.g. amd64, armv6, etc)
-	PROP_NODE_HARDWAREID  = "openhorizon.hardwareId"        // The device serial number if it can be found. A generated Id otherwise.
-	PROP_NODE_PRIVILEGED  = "openhorizon.allowPrivileged"   // Property set to determine if privileged services may be run on this device. Can be set by user, default is false.
-	PROP_NODE_K8S_VERSION = "openhorizon.kubernetesVersion" // Server version of the cluster the agent is running in
-	PROP_NODE_OS          = "openhorizon.operatingSystem"   // The operating system the agent is installed on. For containerized agents, this is the host os
-	PROP_NODE_CONTAINERIZED = "openhorizon.containerized"   // Boolean field indicating whether the agent is running in a container
+	PROP_NODE_CPU           = "openhorizon.cpu"               // The number of CPUs
+	PROP_NODE_MEMORY        = "openhorizon.memory"            // The amount of memory in MBs
+	PROP_NODE_ARCH          = "openhorizon.arch"              // The hardware architecture of the node (e.g. amd64, armv6, etc)
+	PROP_NODE_HARDWAREID    = "openhorizon.hardwareId"        // The device serial number if it can be found. A generated Id otherwise.
+	PROP_NODE_PRIVILEGED    = "openhorizon.allowPrivileged"   // Property set to determine if privileged services may be run on this device. Can be set by user, default is false.
+	PROP_NODE_K8S_VERSION   = "openhorizon.kubernetesVersion" // Server version of the cluster the agent is running in
+	PROP_NODE_OS            = "openhorizon.operatingSystem"   // The operating system the agent is installed on. For containerized agents, this is the host os
+	PROP_NODE_CONTAINERIZED = "openhorizon.containerized"     // Boolean field indicating whether the agent is running in a container
 
 	// for install type
-	OS_CLUSTER = "cluster"
+	OS_CLUSTER   = "cluster"
 	OS_CONTAINER = "anax-in-container"
-	OS_MAC     = "mac"
-	OS_UBUNTU  = "ubuntu"
-	OS_DEBIAN  = "debian"
-	OS_RHEL    = "rhel"
+	OS_MAC       = "mac"
+	OS_UBUNTU    = "ubuntu"
+	OS_DEBIAN    = "debian"
+	OS_RHEL      = "rhel"
 
 	// for service policy
 	PROP_SVC_URL        = "openhorizon.service.url"     // The unique name of the service.
@@ -235,10 +235,10 @@ func IsServiceBuiltinPropertyName(propName string) bool {
 func ProfileEdgeOS() (string, bool, error) {
 	// check if we are in a docker container. if so check the release file set up by horizon-container to find out the host os
 	if _, err := os.Stat("/.dockerenv"); err == nil {
-		 if sysInfo, err := ini.Load("/etc/host-os-release"); err != nil {
-		 	// the host os is unknown
-		 	return "", true, nil
-		 } else {
+		if sysInfo, err := ini.Load("/etc/host-os-release"); err != nil {
+			// the host os is unknown
+			return "", true, nil
+		} else {
 			os := sysInfo.Section("").Key("ID").String()
 			if cutil.SliceContains(ListSupportedOperatingSystems(), os) {
 				return os, true, nil

@@ -64,7 +64,7 @@ const HZN_FSS_POLLING_RATE = 60
 const HZN_FSS_OBJECT_QUEUE_BUFFER_SIZE = 2
 
 // The chunk size of data transferring between CSS and agent
-const HZN_FSS_MAX_CHUNK_SIZE = 5242880 
+const HZN_FSS_MAX_CHUNK_SIZE = 5242880
 
 // The name of the folder where secrets from the agreement protocol will be stored within a workload container
 const HZN_SECRETS_MOUNT = "/open-horizon-secrets"

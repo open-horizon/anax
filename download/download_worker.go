@@ -3,6 +3,7 @@ package download
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
+	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
@@ -10,7 +11,6 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
-	docker "github.com/fsouza/go-dockerclient"
 	"path"
 )
 
@@ -21,17 +21,17 @@ const (
 	RHELPACKAGETYPE = "rpm"
 	MACPACKAGETYPE  = "pkg"
 
-	HZN_CLUSTER_FILE = "horizon-agent-edge-cluster-files.tar.gz"
+	HZN_CLUSTER_FILE   = "horizon-agent-edge-cluster-files.tar.gz"
 	HZN_CONTAINER_FILE = "horizon-agent-container-%v.tar.gz"
-	HZN_EDGE_FILE = "horizon-agent-%v-%v-%v.tar.gz"
-	HZN_CONFIG_FILE = "agent-install.cfg"
-	HZN_CERT_FILE = "agent-install.crt"
+	HZN_EDGE_FILE      = "horizon-agent-%v-%v-%v.tar.gz"
+	HZN_CONFIG_FILE    = "agent-install.cfg"
+	HZN_CERT_FILE      = "agent-install.crt"
 )
 
 type DownloadWorker struct {
 	worker.BaseWorker
-	db *bolt.DB
-	client   *docker.Client
+	db     *bolt.DB
+	client *docker.Client
 }
 
 func NewDownloadWorker(name string, config *config.HorizonConfig, db *bolt.DB) *DownloadWorker {
@@ -50,7 +50,7 @@ func NewDownloadWorker(name string, config *config.HorizonConfig, db *bolt.DB) *
 	worker := &DownloadWorker{
 		BaseWorker: worker.NewBaseWorker(name, config, ec),
 		db:         db,
-		client: dockerClient,
+		client:     dockerClient,
 	}
 
 	glog.Info(dwlog(fmt.Sprintf("Starting Download Worker %v", worker.EC)))

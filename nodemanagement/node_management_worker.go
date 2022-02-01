@@ -55,7 +55,7 @@ func (w *NodeManagementWorker) Initialize() bool {
 		// Check if a nmp process completed
 		if err := w.CheckNMPStatus(workingDir, STATUS_FILE_NAME); err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Failed to collect status. error: %v", err)))
-			return true 
+			return true
 		}
 	}
 
@@ -314,33 +314,33 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 			return fmt.Errorf("Failed to decode status file %v for management job %v. Error was %v.", filePath, policyName, err)
 		}
 
-			dbStatus.SetActualStartTime(time.Unix(int64(contents.StartTime), 0).Format(time.RFC3339))
-			dbStatus.SetCompletionTime(time.Unix(int64(contents.CompletionTime), 0).Format(time.RFC3339))
-			dbStatus.SetStatus(contents.Status)
-			dbStatus.SetErrorMessage(contents.Message)
-			pattern := ""
-			configState := ""
-			exchDev, err := persistence.FindExchangeDevice(n.db)
-			if err != nil {
-				glog.Errorf(nmwlog(fmt.Sprintf("Error getting device from database: %v", err)))
-			} else if exchDev != nil {
-				pattern = exchDev.Pattern
-				configState = exchDev.Config.State
-			}
-			if dbStatus.Status() == "" {
-				eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, exchangecommon.STATUS_UNKNOWN), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
-				dbStatus.SetStatus(exchangecommon.STATUS_UNKNOWN)
-			}
-			if err = n.UpdateStatus(policyName, dbStatus); err != nil {
-				return err
-			}
-			eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, dbStatus), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
+		dbStatus.SetActualStartTime(time.Unix(int64(contents.StartTime), 0).Format(time.RFC3339))
+		dbStatus.SetCompletionTime(time.Unix(int64(contents.CompletionTime), 0).Format(time.RFC3339))
+		dbStatus.SetStatus(contents.Status)
+		dbStatus.SetErrorMessage(contents.Message)
+		pattern := ""
+		configState := ""
+		exchDev, err := persistence.FindExchangeDevice(n.db)
+		if err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf("Error getting device from database: %v", err)))
+		} else if exchDev != nil {
+			pattern = exchDev.Pattern
+			configState = exchDev.Config.State
+		}
+		if dbStatus.Status() == "" {
+			eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, exchangecommon.STATUS_UNKNOWN), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
+			dbStatus.SetStatus(exchangecommon.STATUS_UNKNOWN)
+		}
+		if err = n.UpdateStatus(policyName, dbStatus); err != nil {
+			return err
+		}
+		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, dbStatus), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 
-			// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
-			err = os.RemoveAll(workingFolderPath)
-			if err != nil {
-				return fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", policyName, err)
-			}
+		// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
+		err = os.RemoveAll(workingFolderPath)
+		if err != nil {
+			return fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", policyName, err)
+		}
 	}
 	return nil
 }

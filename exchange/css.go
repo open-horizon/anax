@@ -2,11 +2,11 @@ package exchange
 
 import (
 	"fmt"
+	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/edge-sync-service/common"
-	docker "github.com/fsouza/go-dockerclient"
 	"net/http"
 	"os"
 	"path"
