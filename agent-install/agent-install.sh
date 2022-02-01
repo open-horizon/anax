@@ -67,30 +67,31 @@ Required Input Variables (via flag, environment, or config file):
     HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_ORG_ID, either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH
 
 Options/Flags:
-    -c    Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
-    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. All other variables for this script can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
-    -i    Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
-    -z    The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (This flag is equivalent to AGENT_INSTALL_ZIP)
-    -j    File location for the public key for an APT repository specified with '-i' (This flag is equivalent to PKG_APT_KEY)
-    -t    Branch to use in the APT repo specified with -i. Default is 'updates' (This flag is equivalent to APT_REPO_BRANCH)
-    -O    The exchange organization id (This flag is equivalent to HZN_ORG_ID)
-    -u    Exchange user authorization credentials (This flag is equivalent to HZN_EXCHANGE_USER_AUTH)
-    -a    Exchange node authorization credentials (This flag is equivalent to HZN_EXCHANGE_NODE_AUTH)
-    -d    The id to register this node with (This flag is equivalent to HZN_NODE_ID, NODE_ID or HZN_DEVICE_ID. NODE_ID is deprecated)
-    -p    Pattern name to register this edge node with. Default: registers node with policy. (This flag is equivalent to HZN_EXCHANGE_PATTERN)
-    -n    Path to a node policy file (This flag is equivalent to HZN_NODE_POLICY)
-    -w    Wait for this edge service to start executing on this node before this script exits. If using a pattern, this value can be '*'. (This flag is equivalent to AGENT_WAIT_FOR_SERVICE)
-    -T    Timeout value (in seconds) for how long to wait for the service to start (This flag is equivalent to AGENT_REGISTRATION_TIMEOUT)
-    -o    Specify an org id for the service specified with '-w'. Defaults to the value of HZN_ORG_ID. (This flag is equivalent to AGENT_WAIT_FOR_SERVICE_ORG)
-    -s    Skip registration, only install the agent (This flag is equivalent to AGENT_SKIP_REGISTRATION)
-    -D    Node type of agent being installed: device, cluster. Default: device. (This flag is equivalent to AGENT_DEPLOY_TYPE)
-    -U    Internal url for edge cluster registry. If not specified, this script will auto-detect the value if it is a small, single-node cluster (e.g. k3s or microk8s). For OCP use: image-registry.openshift-image-registry.svc:5000. (This flag is equivalent to INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY)
-    -l    Logging verbosity level. Display messages at this level and lower: 1: error, 2: warning, 3: info (default), 4: verbose, 5: debug. Default is 3, info. (This flag is equivalent to AGENT_VERBOSITY)
-    -f    Install older version of the horizon agent and CLI packages. (This flag is equivalent to AGENT_OVERWRITE)
-    -b    Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
-    -C    Install only the horizon-cli package, not the full agent (This flag is equivalent to AGENT_ONLY_CLI)
-    -A    Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
-    -h    This usage
+    -c                  Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
+    -k                  Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. All other variables for this script can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
+    -i                  Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
+    -z                  The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (This flag is equivalent to AGENT_INSTALL_ZIP)
+    -j                  File location for the public key for an APT repository specified with '-i' (This flag is equivalent to PKG_APT_KEY)
+    -t                  Branch to use in the APT repo specified with -i. Default is 'updates' (This flag is equivalent to APT_REPO_BRANCH)
+    -O                  The exchange organization id (This flag is equivalent to HZN_ORG_ID)
+    -u                  Exchange user authorization credentials (This flag is equivalent to HZN_EXCHANGE_USER_AUTH)
+    -a                  Exchange node authorization credentials (This flag is equivalent to HZN_EXCHANGE_NODE_AUTH)
+    -d                  The id to register this node with (This flag is equivalent to HZN_NODE_ID, NODE_ID or HZN_DEVICE_ID. NODE_ID is deprecated)
+    -p                  Pattern name to register this edge node with. Default: registers node with policy. (This flag is equivalent to HZN_EXCHANGE_PATTERN)
+    -n                  Path to a node policy file (This flag is equivalent to HZN_NODE_POLICY)
+    -w                  Wait for this edge service to start executing on this node before this script exits. If using a pattern, this value can be '*'. (This flag is equivalent to AGENT_WAIT_FOR_SERVICE)
+    -T                  Timeout value (in seconds) for how long to wait for the service to start (This flag is equivalent to AGENT_REGISTRATION_TIMEOUT)
+    -o                  Specify an org id for the service specified with '-w'. Defaults to the value of HZN_ORG_ID. (This flag is equivalent to AGENT_WAIT_FOR_SERVICE_ORG)
+    -s                  Skip registration, only install the agent (This flag is equivalent to AGENT_SKIP_REGISTRATION)
+    -D                  Node type of agent being installed: device, cluster. Default: device. (This flag is equivalent to AGENT_DEPLOY_TYPE)
+    -U                  Internal url for edge cluster registry. If not specified, this script will auto-detect the value if it is a small, single-node cluster (e.g. k3s or microk8s). For OCP use: image-registry.openshift-image-registry.svc:5000. (This flag is equivalent to INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY)
+    -l                  Logging verbosity level. Display messages at this level and lower: 1: error, 2: warning, 3: info (default), 4: verbose, 5: debug. Default is 3, info. (This flag is equivalent to AGENT_VERBOSITY)
+    -f                  Install older version of the horizon agent and CLI packages. (This flag is equivalent to AGENT_OVERWRITE)
+    -b                  Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
+    -C                  Install only the horizon-cli package, not the full agent (This flag is equivalent to AGENT_ONLY_CLI)
+    -A                  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
+        --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to ANAX_IN_CONTAINER)
+    -h                  This usage
 
 Additional Variables (in environment or config file):
     HZN_AGBOT_URL: The URL that is used for the 'hzn agbot ...' commands.
@@ -131,8 +132,18 @@ function now() {
 # Note: could not put this in a function, because getopts would only process the function args
 AGENT_VERBOSITY=3   # default until we get it from all of the possible places
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts begin"; fi
-while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CA" opt; do
+while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CA-:" opt; do
     case $opt in
+    -)
+        case "${OPTARG}" in
+            container)
+                ARG_ANAX_IN_CONTAINER=true
+                ;;
+            *)  echo "Invalid option: --$OPTARG"
+                usage 1
+                ;;
+        esac
+        ;;
     c)  ARG_AGENT_CERT_FILE="$OPTARG"
         ;;
     k)  ARG_AGENT_CFG_FILE="$OPTARG"
@@ -557,6 +568,7 @@ function get_all_variables() {
     get_variable AGENT_WAIT_FOR_SERVICE
     get_variable AGENT_WAIT_FOR_SERVICE_ORG
     get_variable AGENT_REGISTRATION_TIMEOUT
+    get_variable ANAX_IN_CONTAINER 'false'
     get_variable AGENT_OVERWRITE 'false'
     get_variable AGENT_SKIP_PROMPT 'false'
     get_variable AGENT_ONLY_CLI 'false'
@@ -812,6 +824,11 @@ function is_device() {
 
 function is_cluster() {
     if [[ $AGENT_DEPLOY_TYPE == 'cluster' ]]; then return 0
+    else return 1; fi
+}
+
+function is_anax_in_container() {
+    if [[ $ANAX_IN_CONTAINER == 'true' ]]; then return 0
     else return 1; fi
 }
 
@@ -1255,6 +1272,9 @@ function check_and_set_anax_port() {
 
     log_verbose "Checking if the agent port ${anax_port} is free..."
     local netStat=$(netstat -nlp | grep $anax_port || true)
+    if is_anax_in_container; then
+        netStat=$(docker ps --filter "publish=$anax_port")
+    fi
     if [[ $netStat == *$anax_port* && ! $netStat == *anax* ]]; then
         log_fatal 2 "Another process is listening on Horizon agent port $anax_port. Free the port in order to install Horizon"
     fi
@@ -1333,7 +1353,7 @@ function install_debian_device_horizon_pkgs() {
         fi
         log_verbose "Adding $PKG_APT_REPO to /etc/apt/sources.list and installing horizon ..."
         add-apt-repository "deb [arch=$(dpkg --print-architecture)] $PKG_APT_REPO $(lsb_release -cs)-$APT_REPO_BRANCH main"
-        if [[ $AGENT_ONLY_CLI == 'true' ]]; then
+        if [[ $AGENT_ONLY_CLI == 'true' || $ANAX_IN_CONTAINER == 'true' ]]; then
             runCmdQuietly apt-get install -yqf horizon-cli
         else
             runCmdQuietly apt-get install -yqf horizon
@@ -1354,7 +1374,7 @@ function install_debian_device_horizon_pkgs() {
         fi
         latest_files=$latest_horizon_cli_file
         new_pkg=$latest_horizon_cli_file
-        if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        if [[ $AGENT_ONLY_CLI != 'true' && $ANAX_IN_CONTAINER != 'true' ]]; then
             latest_horizon_file=$(ls -1 $PACKAGES/horizon_*_${ARCH}.deb | sort -V | tail -n 1)
             if [[ -z $latest_horizon_file ]]; then
                 log_warning "No horizon deb package found in $PACKAGES"
@@ -1369,14 +1389,14 @@ function install_debian_device_horizon_pkgs() {
         if [ $rc -eq 1 ]; then
             log_info "Installing $latest_files ..."
             runCmdQuietly apt-get install -yqf $latest_files
-            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+            if [[ $AGENT_ONLY_CLI != 'true' && $ANAX_IN_CONTAINER != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
             fi
         elif [ $rc -eq 2 ] && [[ "$AGENT_OVERWRITE" == true ]]; then
             log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
             runCmdQuietly apt-get install -yqf --allow-downgrades $latest_files
-            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+            if [[ $AGENT_ONLY_CLI != 'true' && $ANAX_IN_CONTAINER != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
             fi
@@ -1403,30 +1423,46 @@ function install_debian() {
     debian_device_install_prereqs
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
-        check_and_set_anax_port   # sets ANAX_PORT
+        if is_anax_in_container; then
+            confirmCmds docker jq
+            if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
+                if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+                    unregister
+                fi
+            fi
+        else
+            check_and_set_anax_port   # sets ANAX_PORT
 
-        if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-            check_existing_exch_node_is_correct_type "device"
-        fi
-
-        if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
             if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-                unregister
+                check_existing_exch_node_is_correct_type "device"
+            fi
+
+            if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+                if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+                    unregister
+                fi
             fi
         fi
     fi
 
     get_certificate
 
-    create_or_update_horizon_defaults "$ANAX_PORT"
+    if is_anax_in_container; then
+        create_or_update_horizon_defaults
+    else
+        create_or_update_horizon_defaults "$ANAX_PORT"
+    fi
 
     get_pkgs
 
     # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
     install_debian_device_horizon_pkgs
+    set_horizon_url
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
-        if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
+        if is_anax_in_container; then
+            start_device_agent_container   # even if it already running, it restarts it
+        elif [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
             restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
         fi
 
@@ -1526,7 +1562,7 @@ function install_redhat_device_horizon_pkgs() {
         fi
         latest_files=$latest_horizon_cli_file
         new_pkg=$latest_horizon_cli_file
-        if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        if [[ $AGENT_ONLY_CLI != 'true' && $ANAX_IN_CONTAINER != 'true' ]]; then
             latest_horizon_file=$(ls -1 $PACKAGES/horizon-*.${ARCH}.rpm | grep -v "$PACKAGES/horizon-cli" | sort -V | tail -n 1)
             if [[ -z $latest_horizon_file ]]; then
                 log_warning "No horizon rpm package found in $PACKAGES"
@@ -1541,7 +1577,7 @@ function install_redhat_device_horizon_pkgs() {
         if [ $rc -eq 1 ]; then
             log_info "Installing $latest_files ..."
             dnf install -yq $latest_files
-            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+            if [[ $AGENT_ONLY_CLI != 'true' && $ANAX_IN_CONTAINER != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
             fi
@@ -1549,7 +1585,7 @@ function install_redhat_device_horizon_pkgs() {
             log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
             # Note: dnf automatically detects the specified pkg files are a lower version and downgrades them. If we need to switch to yum, we'll have to use yum downgrade ...
             dnf install -yq $latest_files
-            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+            if [[ $AGENT_ONLY_CLI != 'true' && $ANAX_IN_CONTAINER != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
             fi
@@ -1569,28 +1605,44 @@ function install_redhat() {
     redhat_device_install_prereqs
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
-        check_and_set_anax_port   # sets ANAX_PORT
-        if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-            check_existing_exch_node_is_correct_type "device"
-        fi
-
-        if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+        if is_anax_in_container; then
+            confirmCmds docker jq
+            if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
+                if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+                    unregister
+                fi
+            fi
+        else
+            check_and_set_anax_port   # sets ANAX_PORT
             if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-                unregister
+                check_existing_exch_node_is_correct_type "device"
+            fi
+
+            if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+                if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+                    unregister
+                fi
             fi
         fi
     fi
 
     get_certificate
 
-    create_or_update_horizon_defaults "$ANAX_PORT"
+    if is_anax_in_container; then
+        create_or_update_horizon_defaults
+    else
+        create_or_update_horizon_defaults "$ANAX_PORT"
+    fi
 
     get_pkgs
     # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
     install_redhat_device_horizon_pkgs
+    set_horizon_url
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
-        if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
+        if is_anax_in_container; then
+            start_device_agent_container   # even if it already running, it restarts it
+        elif [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
             restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
         fi
 
@@ -1680,9 +1732,23 @@ function wait_for() {
     return 0
 }
 
+# Set the HORIZON_URL variable in /etc/horizon/hzn.json to use port 8081 when running in container
+# and unset HORIZON_URL when running on native linux (this does not apply to macOS installations)
+function set_horizon_url() {
+    if is_anax_in_container; then
+        sed -i 's/\"HORIZON_URL\":.*/\"HORIZON_URL\": \"http:\/\/localhost:8081\"/g' /etc/horizon/hzn.json
+    elif is_linux; then
+        sed -i 's/\"HORIZON_URL\":.*/\"HORIZON_URL\": \""/g' /etc/horizon/hzn.json
+    fi
+}
+
 # Wait until the agent is responding
 function wait_until_agent_ready() {
     log_debug "wait_until_agent_ready() begin"
+
+    # Make sure correct HORIZON_URL is set before running hzn commands
+    set_horizon_url
+
     if ! wait_for '[[ -n "$(hzn node list 2>/dev/null | jq -r .configuration.preferred_exchange_version 2>/dev/null)" ]]' 'Horizon agent ready' $AGENT_WAIT_MAX_SECONDS; then
         log_fatal 3 "Horizon agent did not start successfully"
     fi
@@ -1713,8 +1779,7 @@ function load_docker_image() {
     echo "$image_full_path"
 }
 
-# Get the latest agent-in-container started on mac
-#future: support agent-in-container on linux too
+# Get the latest agent-in-container started on mac or linux
 function start_device_agent_container() {
     log_debug "start_device_agent_container() begin"
 
@@ -1800,6 +1865,9 @@ function is_agent_registered() {
     # Verify we have hzn available to us
     if ! agent_exec 'hzn -h >/dev/null 2>&1'; then return 1; fi
 
+    # Make sure correct HORIZON_URL is set before running hzn commands
+    set_horizon_url
+
     local hzn_node_list=$(agent_exec 'hzn node list' 2>/dev/null || true)   # if hzn not installed, hzn_node_list will be empty
     local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
     if [[ $only_configured == 'true' && $node_state == 'configured' ]]; then return 0
@@ -1811,6 +1879,10 @@ function is_agent_registered() {
 # Note: the caller of this function is taking into account is_horizon_defaults_correct()
 function is_registration_correct() {
     log_debug "is_registration_correct() begin"
+
+    # Make sure correct HORIZON_URL is set before running hzn commands
+    set_horizon_url
+
     if [[ $AGENT_SKIP_REGISTRATION == 'true' ]]; then return 0; fi   # the user doesn't care, so they are correct
     local hzn_node_list=$(agent_exec 'hzn node list' 2>/dev/null || true)   # if hzn not installed, hzn_node_list will be empty
     local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
@@ -1826,6 +1898,10 @@ function is_registration_correct() {
 # Unregister the node, handling problems as necessary
 function unregister() {
     log_debug "unregister() begin"
+
+    # Make sure correct HORIZON_URL is set before running hzn commands
+    set_horizon_url
+
     local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
     local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
     local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
@@ -1839,19 +1915,22 @@ function unregister() {
     local rmExchNodeFlag
     if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then rmExchNodeFlag='-r'; fi   # remove exchange node in case anything needs to be different, but can't recreate the exchange resource w/o HZN_EXCHANGE_USER_AUTH
 
+    local rmAnaxInContainer
+    if is_anax_in_container; then rmAnaxInContainer='-C'; fi # perform the deep clean on a container agent if performing anax-in-container install
+
     if [[ "$node_state" == "configured" ]]; then
         log_info "Unregistering the agent because the current registration settings are not what you want..."
         agent_exec "hzn unregister -f $rmExchNodeFlag"
         local rc=$?
         if [[ $rc -ne 0 ]]; then
             log_info "Unregister failed with exit code $rc. Now trying to unregister with deep clean..."
-            agent_exec "hzn unregister -fD $rmExchNodeFlag"   # registration is stuck, do a deep clean
+            agent_exec "hzn unregister -fD $rmExchNodeFlag $rmAnaxInContainer"   # registration is stuck, do a deep clean
             chk $? 'unregistering with deep clean'
         fi
     else
         # configuring, unconfiguring, or some unanticipated state
         log_info "The agent state is $node_state, unregistering it with deep clean..."
-        agent_exec "hzn unregister -fD $rmExchNodeFlag"   # registration is stuck, do a deep clean
+        agent_exec "hzn unregister -fD $rmExchNodeFlag $rmAnaxInContainer"   # registration is stuck, do a deep clean
         chk $? 'unregistering with deep clean'
     fi
 
@@ -1866,6 +1945,9 @@ function registration() {
     local policy=$3
 
     if [[ $skip_reg == 'true' ]]; then return; fi
+
+    # Make sure correct HORIZON_URL is set before running hzn commands
+    set_horizon_url
 
     local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
     local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
@@ -1976,9 +2058,14 @@ function get_os() {
 function detect_distro() {
     log_debug "detect_distro() begin"
 
-    if ! is_linux; then return; fi
+    if ! is_linux && ! is_macos; then return; fi
 
-    if isCmdInstalled lsb_release; then
+    if is_macos; then
+        DISTRO=$(sw_vers | grep ProductName | awk '{ print$2 }')
+        DISTRO_VERSION_NUM=$(sw_vers | grep ProductVersion | awk '{ print$2 }')
+        CODENAME=$(awk '/SOFTWARE LICENSE AGREEMENT FOR macOS/' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | awk -F 'macOS ' '{print $NF}' | awk '{print substr($0, 0, length($0)-1)}')
+
+    elif isCmdInstalled lsb_release; then
         DISTRO=$(lsb_release -si | tr '[:upper:]' '[:lower:]')
         DISTRO_VERSION_NUM=$(lsb_release -sr)
         CODENAME=$(lsb_release -sc)
@@ -1988,7 +2075,12 @@ function detect_distro() {
         . /etc/os-release
         DISTRO=$ID
         DISTRO_VERSION_NUM=$VERSION_ID
-        CODENAME=$VERSION_CODENAME   # is empty for RHEL
+        if is_redhat_variant; then
+            CODENAME=$VERSION
+            CODENAME=$(echo $CODENAME | awk '{ print $2 }' | tr -d '()')
+        else
+            CODENAME=$VERSION_CODENAME
+        fi
     elif [[ -f /etc/lsb-release ]]; then
         . /etc/lsb-release
         DISTRO=$DISTRIB_ID
@@ -2017,7 +2109,7 @@ function is_redhat_variant() {
 
 # Returns the extension used for pkgs in this distro
 function get_pkg_type() {
-    if is_macos; then echo 'pkg'  # Test macos first since DISTRO is not set for macos and results in an error if debian or redhat is checked first 
+    if is_macos; then echo 'pkg'
     elif is_debian_variant; then echo 'deb'
     elif is_redhat_variant; then echo 'rpm'
     fi
@@ -2731,7 +2823,7 @@ function update_cluster() {
     is_horizon_defaults_correct "$ANAX_PORT"
     set -e
 
-    if is_agent_registered ; then
+    if is_agent_registered; then
         if [[ "$IS_HORIZON_DEFAULTS_CORRECT" != "true" ]] || ! is_registration_correct ; then
 	        unregister
         fi

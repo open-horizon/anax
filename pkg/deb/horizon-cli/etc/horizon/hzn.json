@@ -1,6 +1,7 @@
 {
     "HZN_EXCHANGE_URL": "",
     "HZN_FSS_CSSURL": "",
-    "HZN_AGBOT_URL": ""
+    "HZN_AGBOT_URL": "",
+    "HORIZON_URL": ""
 }
 

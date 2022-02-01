@@ -28,9 +28,13 @@ type ApiAttributes struct {
 }
 
 // DoIt unregisters this Horizon edge node and resets it so it can be registered again
-func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout int) {
+func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout int, container bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	if !deepClean && container {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot use -C flag if not performing a deep clean. Must specify -D flag to use -C flag."))
+	}
 
 	if !forceUnregister {
 		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to unregister this Horizon node?"))
@@ -54,7 +58,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 
 		// still allow deep clean, just in case the node is in a strange state and the user really want to clean it up.
 		if deepClean {
-			if err := DeepClean(); err != nil {
+			if err := DeepClean(container); err != nil {
 				fmt.Println(err.Error())
 			}
 		}
@@ -75,7 +79,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 					msgPrinter.Println()
 				}
 
-				if err := DeepClean(); err != nil {
+				if err := DeepClean(container); err != nil {
 					fmt.Println(err.Error())
 				} else {
 					unregErr = nil
@@ -180,7 +184,7 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 }
 
 // remove local db, policy files and all the service containers
-func DeepClean() error {
+func DeepClean(agentInContainer bool) error {
 
 	// detect the node type
 	nodeType := persistence.DEVICE_TYPE_DEVICE
@@ -206,7 +210,7 @@ func DeepClean() error {
 		cliutils.RunCmd(nil, "pkill", "-f", "/usr/horizon/bin/anax")
 
 	} else {
-		if runtime.GOOS == "darwin" {
+		if runtime.GOOS == "darwin" || agentInContainer {
 			containerIdx, err := cliutils.GetHorizonContainerIndex()
 			containerName := fmt.Sprintf("horizon%d", containerIdx)
 			if err != nil {
@@ -231,8 +235,13 @@ func DeepClean() error {
 				if errBytes != nil && len(errBytes) > 0 {
 					return fmt.Errorf(msgPrinter.Sprintf("Error during removing policy files from horizon container: %s", errBytes))
 				}
-				outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
+				if runtime.GOOS == "darwin" {
+					outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
 					fmt.Sprintf("/usr/local/bin/horizon-container update %d", containerIdx))
+				} else {
+					outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
+					fmt.Sprintf("/usr/bin/horizon-container update %d", containerIdx))
+				}
 				if errBytes != nil && len(errBytes) > 0 {
 					return fmt.Errorf(msgPrinter.Sprintf("Error during restarting the anax container: %s", errBytes))
 				}
