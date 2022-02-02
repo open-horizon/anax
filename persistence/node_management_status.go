@@ -138,3 +138,12 @@ func FindWaitingNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagem
 func FindInitiatedNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
 	return FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(exchangecommon.STATUS_INITIATED)})
 }
+
+func DeleteAllNMPStatuses(db *bolt.DB) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		if b := tx.Bucket([]byte(NODE_MANAGEMENT_STATUS)); b != nil {
+			return tx.DeleteBucket([]byte(NODE_MANAGEMENT_STATUS))
+		}
+		return nil
+	})
+}

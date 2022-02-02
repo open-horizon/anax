@@ -72,6 +72,11 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		w.continueWithError(logString(err.Error()))
 	}
 
+	// Delete the node's management policy statuses from the exchange
+	if err := exchange.DeleteNodeManagementAllStatuses(w, exchange.GetOrg(w.GetExchangeId()), exchange.GetId(w.GetExchangeId())); err != nil {
+		w.continueWithError(logString(err.Error()))
+	}
+
 	// Tell the exchange changes worker to stop retrieving and recording changes. We dont need it any longer now that the agreements
 	// are all gone.
 	w.Messages() <- events.NewExchangeChangesShutdownMessage(events.MESSAGE_STOP)

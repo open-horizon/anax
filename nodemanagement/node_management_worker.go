@@ -143,6 +143,7 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 		n.DownloadComplete(cmd)
 	case *NodeShutdownCommand:
 		n.TerminateSubworkers()
+		n.HandleUnregister()
 	default:
 		return false
 	}
@@ -359,4 +360,14 @@ func (n *NodeManagementWorker) UpdateStatus(policyName string, status *exchangec
 
 func nmwlog(message string) string {
 	return fmt.Sprintf("Node management worker: %v", message)
+}
+
+// This will remove nmps and statuses from the local db and the exchange
+func (n *NodeManagementWorker) HandleUnregister() {
+	if err := persistence.DeleteAllNodeManagementPolicies(n.db); err != nil {
+		glog.Errorf(nmwlog(fmt.Sprintf("Error removing node management policies from the local db: %v", err)))
+	}
+	if err := persistence.DeleteAllNMPStatuses(n.db); err != nil {
+		glog.Errorf(nmwlog(fmt.Sprintf("Error removing node management policy statuses from the local db: %v", err)))
+	}
 }

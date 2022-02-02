@@ -93,7 +93,7 @@ func GetNodeManagementAllStatuses(ec ExchangeContext, orgId string, nodeId strin
 
 // Delete all the node management policy statuses in the exchange for a given node
 func DeleteNodeManagementAllStatuses(ec ExchangeContext, orgId string, nodeId string) error {
-	glog.V(3).Infof("Getting all node management policy statuses for node: %v/%v.", orgId, nodeId)
+	glog.V(3).Infof("Deleting all node management policy statuses for node: %v/%v.", orgId, nodeId)
 
 	var resp interface{}
 	resp = new(PutPostDeleteStandardResponse)
