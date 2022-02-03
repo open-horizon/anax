@@ -13,17 +13,24 @@ AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
 AGENT_K8S_IMAGE='amd64_anax_k8s'
 AGENT_IMAGE_TAG=$(getHznVersion)
 DEFAULT_PULL_REGISTRY='docker.io/openhorizon'
+MANIFEST_NAME='edgeNodeFiles_manifest'
+
+# Global variables
 ALREADY_LOGGED_INTO_REGISTRY='false'
+AGENT_FILES_EXPIRATION=''   # in days
+SOFTWARE_PACKAGE_VERSION='0'
+
+
 
 # Environment variables and their defaults
-PACKAGE_NAME=${PACKAGE_NAME:-horizon-edge-packages-4.2.0}
+PACKAGE_NAME=${PACKAGE_NAME:-horizon-edge-packages-4.4.0}
 AGENT_NAMESPACE=${AGENT_NAMESPACE:-openhorizon-agent}
 # EDGE_CLUSTER_STORAGE_CLASS   # this can also be specified, that default is the empty string
 
 function scriptUsage() {
     cat << EOF
 
-Usage: ./edgeNodeFiles.sh <edge-node-type> [-o <hzn-org-id>] [-c] [-f <directory>] [-t] [-p <package_name>] [-s <edge-cluster-storage-class>] [-i <agent-image-tag>] [-m <agent-namespace>] [-r <registry/repo-path>] [-g <tag>] [-b]
+Usage: ./edgeNodeFiles.sh <edge-node-type> [-o <hzn-org-id>] [-c] [-f <directory>] [-t] [-p <package_name>] [-s <edge-cluster-storage-class>] [-i <agent-image-tag>] [-m <agent-namespace>] [-r <registry/repo-path>] [-g <tag>] [-b] [-x <days>]
 
 Parameters:
   Required:
@@ -35,14 +42,15 @@ Parameters:
     -f <directory>     The directory to put the gathered files in. Default is current directory.
     -t          Create agentInstallFiles-<edge-node-type>.tar.gz file containing gathered files. If this flag is not set, the gathered files will be placed in the current directory.
     -p <package_name>   The base name of the horizon content tar file (can include a path). Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<OS>/<pkg-type>/<arch>
-    -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agnet-install.sh. Only applies to node types of <arch>-Cluster.
+    -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agent-install.sh. Only applies to node types of <arch>-Cluster.
     -m <agent-namespace>   The edge cluster namespace that the agent will be installed into. Default is $AGENT_NAMESPACE. Only applies to node types of <arch>-Cluster.
     -r <registry/repo-path>     The agent images (both device and cluster) will be pulled from the specified authenticated docker registry. If this flag is set, you must also export the username and password for the registry in REGISTRY_USERNAME and REGISTRY_PASSWORD. Default is $DEFAULT_PULL_REGISTRY.
     -g <tag>    Overwrite the default agent image tag. Default is $AGENT_IMAGE_TAG.
     -b          Get the agent images from the horizon content tar file.
+    -x <days>   Sets the expiration field of the versioned files pushed to CSS. Should not be used unless artifacts are being produced and pushed by a CI/CD pipeline. Default is expiration not set.
 
 Required Environment Variables:
-    CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number> 
+    CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number>
 
 Optional Environment Variables:
     PACKAGE_NAME: The base name of the horizon content tar file (can include a path). Default: $PACKAGE_NAME
@@ -105,7 +113,7 @@ while (( "$#" )); do
             AGENT_NAMESPACE=$2
             shift 2
             ;;
-        -r) # registry to pull agent images from 
+        -r) # registry to pull agent images from
             PULL_REGISTRY=$2
             shift 2
             ;;
@@ -117,6 +125,9 @@ while (( "$#" )); do
             ;;
         -h) scriptUsage 0
             shift
+            ;;
+        -x) AGENT_FILES_EXPIRATION=$2
+            shift 2
             ;;
         -*) #invalid flag
             echo "ERROR: Unknow flag $1"
@@ -177,6 +188,32 @@ function checkPrereqsAndInput () {
     echo ""
 }
 
+# Method to store the software package version if it is not set yet
+function setSoftwarePackageVersion() { 
+
+       if [[ ! $1 == '' ]] && [[ "${SOFTWARE_PACKAGE_VERSION}" == "0" ]]; then
+	       SOFTWARE_PACKAGE_VERSION=$1
+       fi
+}
+
+# Utility method to add an element to an array
+function addElementToArray() { 
+       var="$1"
+       shift 1
+       eval "$var+=($(printf "'%s' " "$@"))"
+}
+
+# Add fields common to all upgrade stanzas for an upgrade manifest
+function manifestInitUpgradeFields() {
+
+        local __resultvar=$1
+        VERSION=$2
+
+        local myinitresult=''
+        myinitresult=$(jq --null-input --arg  version $VERSION '{version: $version}' | jq '. + {files: []}')
+        eval $__resultvar="'$myinitresult'"
+}
+
 # Remove files from previous run, so we know there won't be (for example) multiple versions of the horizon pkgs in the dir
 function cleanUpPreviousFiles() {
     echo "Removing any generated files from previous run..."
@@ -214,14 +251,14 @@ function getAgentK8sImageTarFile() {
         local version=$(tar -zxOf "$AGENT_K8S_IMAGE_TAR_FILE" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
         version=${version##*:}   # strip the path and image name from the front
         echo "Version/tag of $AGENT_K8S_IMAGE_TAR_FILE is: $version"
-        putOneFileInCss "$AGENT_K8S_IMAGE_TAR_FILE" $version
+        putOneFileInCss "$AGENT_K8S_IMAGE_TAR_FILE" agent_files false $version
     fi
     echo
 }
 
 # Put 1 file into CSS in the IBM org as a public object.
 function putOneFileInCss() {
-    local filename=${1:?} version=$2
+    local filename=${1:?} objectType=$2 addExpiration=$3 version=$4
     local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
 
     # First get exchange root creds, if necessary
@@ -231,31 +268,186 @@ function putOneFileInCss() {
         chk $? 'getting exchange root creds'
     fi
 
-    # Note: when https://github.com/open-horizon/anax/issues/2077 is fixed, we can send the metadata into hzn via stdin
-    cat << EOF > ${filename}-meta.json
-{
-  "objectID": "$filename",
-  "objectType": "agent_files",
-  "destinationOrgID": "IBM",
-  "version": "$version",
-  "public": true
-}
-EOF
-    echo "Publishing $filename in CSS as a public object in the IBM org..."
-    hzn mms -o IBM object publish -m "${filename}-meta.json" -f $filename
+    echo "Publishing $filename as type $objectType in CSS as a public object in the IBM org..."
+
+    # Build meta-data
+    local META_DATA=$(jq --null-input --arg org IBM --arg ID $filename --arg TYPE $objectType '{objectID: $ID, objectType: $TYPE, destinationOrgID: $org}' | jq --argjson SET_TRUE true '. + {public: $SET_TRUE}') 
+
+    if [ ! -z ${version} ]; then 
+	    META_DATA=$( echo "${META_DATA}" | jq --arg VERSION ${version} '. + {version: $VERSION}' ) 
+    fi 
+
+    if [[ $addExpiration == true ]]; then 
+	    # Only add if caller passed it a value representing the days before deleting
+	    if [ ! -z $AGENT_FILES_EXPIRATION ]; then 
+
+		    local EXP_TIME="0"
+		    if [[ $OSTYPE == darwin* ]]; then 
+			    local EXPIRATION_TIME=$( date -ju -v +"${AGENT_FILES_EXPIRATION}"d +%Y-%m-%dT%H:%M:%S.00Z )
+			    if [[ ${#EXPIRATION_TIME} -gt 0  ]]; then 
+				    EXP_TIME="${EXPIRATION_TIME}"
+			    fi
+		    else   # linux (deb or rpm) 
+			    local EXPIRATION_TIME=$( date -u -d "+${AGENT_FILES_EXPIRATION} days" +"%Y-%m-%dT%H:%M:%S.00Z" ) 
+			    if [[ ${#EXPIRATION_TIME} -gt 0  ]]; then 
+				    EXP_TIME="${EXPIRATION_TIME}"
+			    fi
+		    fi
+
+		    if [[ ! "${EXP_TIME}" == "0" ]]; then 
+			    META_DATA=$( echo "${META_DATA}" | jq --arg EXPIRATION ${EXPIRATION_TIME} '. + {expiration: $EXPIRATION}' ) 
+		    fi
+	    fi 
+    fi
+
+    echo "${META_DATA}" | hzn mms -o IBM object publish -f $filename   -m-
 
     local rc=$?
-    rm -f "${filename}-meta.json"   # clean up metadata file
     chk $rc "publishing $filename in CSS as a public object. Ensure HZN_EXCHANGE_USER_AUTH is set to credentials that can publish to the IBM org."
 }
 
+# Utility file to see if the objectType and objectID already exist in CSS
+function test_IsFileInCss() {
+	local org=$1 objectType=$2 objectID=$3 
+
+	local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
+	local USER_AUTH=${HZN_EXCHANGE_USER_AUTH}
+
+        # First get exchange root creds, if necessary
+        if [[ -z ${USER_AUTH} ]]; then 
+		USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)" 
+		chk $? 'getting exchange root creds'
+        fi
+	
+	hzn mms object list -u ${USER_AUTH} -o ${org} -t ${objectType}  -i ${objectID} >/dev/null 2>&1 
+	rc=$?  
+	if [ $rc -eq 0 ]; then 
+		true
+		return
+	else
+		false
+		return
+	fi
+}
+
+# Add specific stanzas to manifest
+manifestAppendUpgradeStanza() {
+ 
+        local __resultvar=$1
+
+        manifestJson=$2
+        upgradeType=$3
+        upgradeJson=$4
+
+        local NEW_MANIFEST=''
+
+        # The jq code is duplicated since wasn't able to find a way to add the types as a variable
+        if [ "${upgradeType}" == "configurationUpgrade" ]; then
+                NEW_MANIFEST=$(echo "${manifestJson}" | jq --argjson JSON "${upgradeJson}" '. + {configurationUpgrade: $JSON}')
+        elif [ "${upgradeType}" == "softwareUpgrade" ]; then
+                NEW_MANIFEST=$(echo "${manifestJson}" | jq --argjson JSON "${upgradeJson}" '. + {softwareUpgrade: $JSON}')
+        elif [ "${upgradeType}" == "certificateUpgrade" ]; then
+                NEW_MANIFEST=$(echo "${manifestJson}" | jq --argjson JSON "${upgradeJson}" '. + {certificateUpgrade: $JSON}')
+        fi
+
+        eval $__resultvar="'$NEW_MANIFEST'"
+}
+
+# Add files for the upgrade manifest
+function manifestAddUpgradeFile() {
+
+        local __resultvar=$1
+
+        JSON=$2
+        file=$3
+
+        local addFileResult=''
+        addFileResult=$(echo "${JSON}"  | jq --arg FILE $file '.files |= [ $FILE ] + .')
+        eval $__resultvar="'$addFileResult'"
+}
+
+# Add files for the upgrade manifest
+function manifestBuildUpgrade()  {
+
+        local __resultvar=$1
+        shift
+
+        local myresult=''
+
+        JSON=$1
+        shift 
+	
+        local filesToUpgrade=("${@}")
+
+        local tmpJson="${JSON}"
+        for file in "${filesToUpgrade[@]}"; do
+                manifestAddUpgradeFile myresult "${tmpJson}"  ${file}
+                tmpJson="${myresult}"
+        done
+
+        eval $__resultvar="'${myresult}'"
+}
+
+# Function to add type stanza to upgrade manifest
+function manifestAddTypeStanza() {
+
+    local __resultvar=$1
+    shift 
+
+    upgradeManifest=$1
+    shift
+
+    type=$1
+    shift
+
+    version=$1
+    shift
+
+    upgradeFiles=("${@}")
+
+    local myhorizonresult=$upgradeManifest
+
+    local updatedJson="${upgradeManifest}"
+
+    local upgradeJson=''
+    manifestInitUpgradeFields upgradeJson  $version
+
+    manifestBuildUpgrade upgradeJson "${upgradeJson}" "${upgradeFiles[@]}"
+
+    manifestAppendUpgradeStanza myhorizonresult "${upgradeManifest}" $type "${upgradeJson}"
+
+    echo ""
+    eval $__resultvar="'$myhorizonresult'"
+}
+
+
 # With the information from the previous functions, create agent-install.cfg
 function createAgentInstallConfig () {
+
+    local upgradeFiles=$1
+
     echo "Creating agent-install.cfg file..."
     HUB_CERT_PATH="agent-install.crt"
 
-    if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ppc64le-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then   # if they chose ALL, the cluster agent-install.cfg is a superset
-        cat << EndOfContent > agent-install.cfg
+    local doUploadConfig='true'
+    local doUploadConfig_versioned='true' 
+
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+            # Only upload cert if it doesn't exist in CSS.. ie. fresh install
+            if test_IsFileInCss "IBM"  "agent_files" "agent-install.cfg"; then 
+	        doUploadConfig='false' 
+            fi
+
+            if test_IsFileInCss "IBM"  "agent_config_files-1.0.0" "agent-install.cfg"; then
+	          doUploadConfig_versioned='false'
+            fi
+    fi
+
+    if [[ $PUT_FILES_IN_CSS != 'true' || ${doUploadConfig} == 'true' || ${doUploadConfig_versioned} == 'true' ]]; then 
+	    
+	    if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ppc64le-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then   # if they chose ALL, the cluster agent-install.cfg is a superset 
+
+		    cat << EndOfContent > agent-install.cfg 
 HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
 HZN_AGBOT_URL=$CLUSTER_URL/edge-agbot/
@@ -263,52 +455,88 @@ HZN_SDO_SVC_URL=$CLUSTER_URL/edge-sdo-ocs/api
 AGENT_NAMESPACE=$AGENT_NAMESPACE
 EndOfContent
 
-        # Only include these if they are not empty
-        if [[ -n $EDGE_CLUSTER_STORAGE_CLASS ]]; then
-            echo "EDGE_CLUSTER_STORAGE_CLASS=$EDGE_CLUSTER_STORAGE_CLASS" >> agent-install.cfg
-        fi
-        if [[ -n $ORG_ID ]]; then
-            echo "HZN_ORG_ID=$ORG_ID" >> agent-install.cfg
-        fi
+        	      	# Only include these if they are not empty 
+			if [[ -n $EDGE_CLUSTER_STORAGE_CLASS ]]; then 
+				echo "EDGE_CLUSTER_STORAGE_CLASS=$EDGE_CLUSTER_STORAGE_CLASS" >> agent-install.cfg 
+			fi 
+			if [[ -n $ORG_ID ]]; then 
+				echo "HZN_ORG_ID=$ORG_ID" >> agent-install.cfg 
+			fi 
+		
+		else   # device 
 
-    else   # device
-        cat << EndOfContent > agent-install.cfg
+			cat << EndOfContent > agent-install.cfg
 HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
 HZN_AGBOT_URL=$CLUSTER_URL/edge-agbot/
 HZN_SDO_SVC_URL=$CLUSTER_URL/edge-sdo-ocs/api
 EndOfContent
 
-        if [[ -n $ORG_ID ]]; then
-            echo "HZN_ORG_ID=$ORG_ID" >> agent-install.cfg
-        fi
-    fi
-    chk $? 'creating agent-install.cfg file'
+        		if [[ -n $ORG_ID ]]; then
+            			echo "HZN_ORG_ID=$ORG_ID" >> agent-install.cfg
+        		fi
+    		fi
+    		chk $? 'creating agent-install.cfg file'
 
-    echo "agent-install.cfg file created with content: "
-    cat agent-install.cfg
+    		echo "agent-install.cfg file created with content: "
+    		cat agent-install.cfg
+
+    fi
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        putOneFileInCss agent-install.cfg
+    	if [[ ${doUploadConfig} == 'true'  ]]; then 
+		putOneFileInCss agent-install.cfg agent_files false
+	fi
+
+    	if [[ ${doUploadConfig_versioned} == 'true'  ]]; then 
+		putOneFileInCss agent-install.cfg  "agent_config_files-1.0.0" false "1.0.0"
+		addElementToArray $upgradeFiles  "agent-install.cfg"
+	fi
     fi
+
     echo ""
 }
 
 # Get the management hub self-signed certificate
 function getClusterCert () {
+
+    local upgradeFiles=$1
+
     echo "Getting the management hub self-signed certificate agent-install.crt..."
     oc get secret management-ingress-ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
     chk $? 'getting the management hub self-signed certificate'
 
+    local doUploadCert='true'
+    local doUploadCert_versioned='true' 
+    # Only upload cert if it doesn't exist in CSS.. ie. fresh install
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        putOneFileInCss agent-install.crt
+            if test_IsFileInCss "IBM"  "agent_files" "agent-install.crt"; then 
+	           doUploadCert='false' 
+            fi
+
+            if  test_IsFileInCss "IBM"  "agent_cert_files-1.0.0" "agent-install.crt"; then
+	           doUploadCert_versioned='false'
+            fi
+    fi
+
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+    	if [[ ${doUploadCert} == 'true' ]]; then 
+		putOneFileInCss agent-install.crt agent_files false
+	fi
+
+    	if [[ ${doUploadCert_versioned} == 'true' ]]; then 
+		putOneFileInCss agent-install.crt  "agent_cert_files-1.0.0" false  "1.0.0"
+		addElementToArray $upgradeFiles  "agent-install.crt"
+	fi
     fi
     echo ""
 }
 
 # Create 1 horizon pkg tar file, put it into CSS, and then remove the tar file
 function putHorizonPkgsInCss() {
-    local opsys=$1 pkgtype=$2 arch=$3
+
+    horizonSoftwareFiles=$1
+    local opsys=$2 pkgtype=$3 arch=$4
 
     # Determine the pkgs to put in CSS, and the tar file name
     # Note: at this point there are potentionally other horizonn pkgs too, so we have to be specific about the files that should be included in this tar file
@@ -331,14 +559,29 @@ function putHorizonPkgsInCss() {
         pkgVersion=$(ls horizon-cli-*.$pkgtype)
         pkgVersion=${pkgVersion#horizon-cli-}
         pkgVersion=${pkgVersion%%.$pkgtype}
-fi
+    fi
 
     # Create the pkg tar file
     tar -zcf "$tarFile" $pkgWildcard   # it is important to NOT quote $pkgWildcard so the wildcard gets expanded
     chk $? "creating $tarFile"
 
+    # Could be some conditions on when to upload files
+    local doUploadPkgs='true'
+    local doUploadPkgs_versioned='true'
+
     # Put the tar file in CSS in the IBM org as a public object
-    putOneFileInCss $tarFile $pkgVersion
+    if [[ ${doUploadPkgs} == 'true' ]]; then 
+	    putOneFileInCss $tarFile "agent_files" false $pkgVersion
+    fi
+    if [[ ${doUploadPkgs_versioned} == 'true' ]]; then 
+	    putOneFileInCss $tarFile "agent_software_files-${pkgVersion}" true $pkgVersion
+
+	    # Add the tarFile name array for the manifest
+            addElementToArray $horizonSoftwareFiles $tarFile 
+
+	    # Will set the software package version if not set yet
+	    setSoftwarePackageVersion ${pkgVersion}
+    fi
 
     # Remove the tar file (it was only needed to put into CSS)
     rm -f "$tarFile"
@@ -347,14 +590,16 @@ fi
 
 # Get 1 type of horizon packages
 function getHorizonPackageFiles() {
-    local opsys=$1 pkgtype=$2 arch=$3
+
+    local softwareFiles=$1 opsys=$2 pkgtype=$3 arch=$4
     local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
     echo "Extracting $pkgBaseName/$opsys/$pkgtype/$arch/* from $PACKAGE_NAME.tar.gz ..."
     tar --strip-components 4 -zxf $PACKAGE_NAME.tar.gz $pkgBaseName/$opsys/$pkgtype/$arch
     chk $? "extracting $pkgBaseName/$opsys/$pkgtype/$arch/* from $PACKAGE_NAME.tar.gz"
 
+
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        putHorizonPkgsInCss $opsys $pkgtype $arch
+        putHorizonPkgsInCss $softwareFiles $opsys $pkgtype $arch
     fi
 
     if [[ $opsys == 'macos' ]]; then   #future: do this for all amd64/x86_64
@@ -383,31 +628,36 @@ function getHorizonPackageFiles() {
             local version=$(tar -zxOf "$AGENT_IMAGE_TAR_FILE" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
             version=${version##*:}   # strip the path and image name from the front
             echo "Version/tag of $AGENT_IMAGE_TAR_FILE is: $version"
-            putOneFileInCss "$AGENT_IMAGE_TAR_FILE" $version
+            putOneFileInCss "$AGENT_IMAGE_TAR_FILE" agent_files false $version
+
+            addElementToArray $softwareFiles "$AGENT_IMAGE_TAR_FILE"
         fi
     fi
 }
 
 # Get all of the the horizon packages that they specified
 function gatherHorizonPackageFiles() {
+
+    local agentSoftwareFiles=$1
+
     local opsys pkgtype arch
     if [[ $EDGE_NODE_TYPE == 'ARM32-Deb' || $EDGE_NODE_TYPE == 'ALL' ]]; then
-        getHorizonPackageFiles 'linux' 'deb' 'armhf'
+        getHorizonPackageFiles $agentSoftwareFiles 'linux' 'deb' 'armhf'
     fi
     if [[ $EDGE_NODE_TYPE == 'ARM64-Deb' || $EDGE_NODE_TYPE == 'ALL' ]]; then
-        getHorizonPackageFiles 'linux' 'deb' 'arm64'
+        getHorizonPackageFiles $agentSoftwareFiles 'linux' 'deb' 'arm64'
     fi
     if [[ $EDGE_NODE_TYPE == 'AMD64-Deb' || $EDGE_NODE_TYPE == 'ALL' ]]; then
-        getHorizonPackageFiles 'linux' 'deb' 'amd64'
+        getHorizonPackageFiles $agentSoftwareFiles 'linux' 'deb' 'amd64'
     fi
     if [[ $EDGE_NODE_TYPE == 'x86_64-RPM' || $EDGE_NODE_TYPE == 'ALL' ]]; then
-        getHorizonPackageFiles 'linux' 'rpm' 'x86_64'
+        getHorizonPackageFiles $agentSoftwareFiles 'linux' 'rpm' 'x86_64'
     fi
     if [[ $EDGE_NODE_TYPE == 'x86_64-macOS' || $EDGE_NODE_TYPE == 'ALL' ]]; then
-        getHorizonPackageFiles 'macos' 'pkg' 'x86_64'
+        getHorizonPackageFiles $agentSoftwareFiles 'macos' 'pkg' 'x86_64'
     fi
     if [[ $EDGE_NODE_TYPE == 'ppc64le-RPM' || $EDGE_NODE_TYPE == 'ALL' ]]; then
-        getHorizonPackageFiles 'linux' 'rpm' 'ppc64le'
+        getHorizonPackageFiles $agentSoftwareFiles 'linux' 'rpm' 'ppc64le'
     fi
     # there are no packages to extract for edge-cluster, because that uses the agent docker image
 
@@ -416,6 +666,7 @@ function gatherHorizonPackageFiles() {
 
 # Get agent-install.sh from where it was installed by horizon-cli
 function getAgentInstallScript () {
+    local softwareFiles=$1
     local installDir   # where the file has been installed by horizon-cli
     if [[ $OSTYPE == darwin* ]]; then
         installDir='/usr/local/bin'
@@ -431,7 +682,9 @@ function getAgentInstallScript () {
     chk $? "Getting $installFile"
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        putOneFileInCss agent-install.sh $(getHznVersion)
+        putOneFileInCss agent-install.sh agent_files false $(getHznVersion)
+        putOneFileInCss agent-install.sh agent_software_files-$(getHznVersion) true $(getHznVersion)
+        addElementToArray $softwareFiles agent-install.sh
     fi
 }
 
@@ -472,6 +725,8 @@ function getClusterDeployTemplates () {
 
 # Get agent-uninstall.sh, deployment-template.yml, and persistentClaim-template.yml and create tar file
 function getEdgeClusterFiles() {
+
+    local upgradeFiles=$1
     getAgentUninstallScript
     getClusterDeployTemplates
 
@@ -479,7 +734,9 @@ function getEdgeClusterFiles() {
         echo "Creating tar file of edge cluster files..."
         tar -zcf $EDGE_CLUSTER_TAR_FILE_NAME agent-uninstall.sh deployment-template.yml persistentClaim-template.yml
         chk $? 'Creating tar file of edge cluster files'
-        putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME $(getHznVersion)
+        putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME "agent_files" false  $(getHznVersion)
+        putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME "agent_software_files-$(getHznVersion)" true $(getHznVersion)
+        addElementToArray $upgradeFiles $EDGE_CLUSTER_TAR_FILE_NAME
         rm $EDGE_CLUSTER_TAR_FILE_NAME
         chk $? "removing $EDGE_CLUSTER_TAR_FILE_NAME"
     fi
@@ -506,8 +763,15 @@ function createTarFile () {
     echo ""
 }
 
+
 # When they specify EDGE_NODE_TYPE=ALL we have to do the superset of all of the steps
 all_main() {
+
+    local __resultvar=$1
+    upgradeManifest=$2
+
+    local mymainresult=$upgradeManifest
+
     checkPrereqsAndInput
 
     if [[ -n $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
@@ -516,15 +780,33 @@ all_main() {
 
     getAgentK8sImageTarFile
 
-    createAgentInstallConfig
+    local upgradeConfigFiles=()    
+    createAgentInstallConfig upgradeConfigFiles
 
-    getClusterCert
+    configFileLength=${#upgradeConfigFiles[@]}
+    if [[ $configFileLength -gt 0 ]]; then 
+	    manifestAddTypeStanza mymainresult "${mymainresult}" "configurationUpgrade" "1.0.0" "${upgradeConfigFiles[@]}"
+    fi
 
-    gatherHorizonPackageFiles
+    local upgradeCertFiles=()    
+    getClusterCert upgradeCertFiles
+    certFileLength=${#upgradeCertFiles[@]}
+    if [[ $certFileLength -gt 0 ]]; then 
+	    manifestAddTypeStanza mymainresult "${mymainresult}" "certificateUpgrade" "1.0.0" "${upgradeCertFiles[@]}"
+    fi
 
-    getEdgeClusterFiles
+    local upgradeSoftwareFiles=()    # define this here since we need to capture device and cluster filenames and agent-install.sh
 
-    getAgentInstallScript
+    gatherHorizonPackageFiles upgradeSoftwareFiles
+
+    getEdgeClusterFiles upgradeSoftwareFiles
+
+    getAgentInstallScript upgradeSoftwareFiles
+    softwareFileLength=${#upgradeSoftwareFiles[@]}
+    if [[ $softwareFileLength -gt 0 ]]; then 
+	    manifestAddTypeStanza mymainresult "${mymainresult}" "softwareUpgrade" "${SOFTWARE_PACKAGE_VERSION}" "${upgradeSoftwareFiles[@]}"
+    fi
+
     echo
 
     # Note: if they specified they wanted files in CSS, we did that as the files were created
@@ -534,9 +816,16 @@ all_main() {
     fi
 
     if [[ -n $DIR ]]; then popd; fi
+
+    eval $__resultvar="'$mymainresult'"
 }
 
 cluster_main() {
+
+    local __resultvar=$1
+    upgradeManifest=$2
+
+    local myclustermainresult=$upgradeManifest
     checkPrereqsAndInput
 
     if [[ -n $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
@@ -545,13 +834,31 @@ cluster_main() {
 
     getAgentK8sImageTarFile
 
-    createAgentInstallConfig
+    local upgradeConfigFiles=()    
+    createAgentInstallConfig upgradeConfigFiles
 
-    getClusterCert
+    configFileLength=${#upgradeConfigFiles[@]}
+    if [[ $configFileLength -gt 0 ]]; then 
+	    manifestAddTypeStanza myclustermainresult "${myclustermainresult}" "configurationUpgrade" "1.0.0" "${upgradeConfigFiles[@]}"
+    fi
 
-    getEdgeClusterFiles
+    local upgradeCertFiles=()    
+    getClusterCert upgradeCertFiles
+    certFileLength=${#upgradeCertFiles[@]}
+    if [[ $certFileLength -gt 0 ]]; then 
+	    manifestAddTypeStanza myclustermainresult "${myclustermainresult}" "certificateUpgrade" "1.0.0" "${upgradeCertFiles[@]}"
+    fi
 
-    getAgentInstallScript
+    local upgradeSoftwareFiles=()    # define this here since we need to capture device and cluster filenames and agent-install.sh
+
+    getEdgeClusterFiles upgradeSoftwareFiles
+
+    getAgentInstallScript upgradeSoftwareFiles
+    softwareFileLength=${#upgradeSoftwareFiles[@]}
+    if [[ $softwareFileLength -gt 0 ]]; then 
+	    manifestAddTypeStanza myclustermainresult "${myclustermainresult}" "softwareUpgrade" "${SOFTWARE_PACKAGE_VERSION}" "${upgradeSoftwareFiles[@]}"
+    fi
+
     echo
 
     # Note: if they specified they wanted files in CSS, we did that as the files were created
@@ -561,22 +868,46 @@ cluster_main() {
     fi
 
     if [[ -n $DIR ]]; then popd; fi
+    eval $__resultvar="'$myclustermainresult'"
 }
 
 device_main() {
+
+    local __resultvar=$1
+    upgradeManifest=$2
+
+    local mydevicemainresult=$upgradeManifest
+
     checkPrereqsAndInput
 
     if [[ -n $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 
     cleanUpPreviousFiles
 
-    createAgentInstallConfig
+    local upgradeConfigFiles=()    
+    createAgentInstallConfig upgradeConfigFiles
 
-    getClusterCert
+    configFileLength=${#upgradeConfigFiles[@]}
+    if [[ $configFileLength -gt 0 ]]; then 
+	    manifestAddTypeStanza mydevicemainresult "${mydevicemainresult}" "configurationUpgrade" "1.0.0" "${upgradeConfigFiles[@]}"
+    fi
 
-    gatherHorizonPackageFiles
+    local upgradeCertFiles=()    
+    getClusterCert upgradeCertFiles
+    certFileLength=${#upgradeCertFiles[@]}
+    if [[ $certFileLength -gt 0 ]]; then 
+	    manifestAddTypeStanza mydevicemainresult "${mydevicemainresult}" "certificateUpgrade" "1.0.0" "${upgradeCertFiles[@]}"
+    fi
 
-    getAgentInstallScript
+    local upgradeSoftwareFiles=()    # define this here since we need to capture device and cluster filenames and agent-install.sh
+    gatherHorizonPackageFiles upgradeSoftwareFiles
+
+    getAgentInstallScript upgradeSoftwareFiles
+
+    softwareFileLength=${#upgradeSoftwareFiles[@]}
+    if [[ $softwareFileLength -gt 0 ]]; then 
+	    manifestAddTypeStanza mydevicemainresult "${mydevicemainresult}" "softwareUpgrade" "${SOFTWARE_PACKAGE_VERSION}" "${upgradeSoftwareFiles[@]}"
+    fi
     echo
 
     # Note: if they specified they wanted files in CSS, we did that as the files were created
@@ -586,19 +917,48 @@ device_main() {
     fi
 
     if [[ -n $DIR ]]; then popd; fi
+    eval $__resultvar="'$mydevicemainresult'"
+}
+
+# Publish a manifest for files pushed by this execution
+function publishUpgradeManifest() {
+
+    local upgradeManifest=$1 
+    local version=$2
+
+    local fileName=${MANIFEST_NAME}_$version
+    echo "Generating upgrade manifest"
+
+    echo "${upgradeManifest}" >  ${fileName}
+    putOneFileInCss ${fileName} "agent-upgrade-manifests" true $version
+
+    rm -f  ${fileName}
+    chk $? "removing ${fileName}"
+
 }
 
 main() {
+
+    # Manifest for upgrade policy
+    upgradeManifest="{}"
+
     if [[ $EDGE_NODE_TYPE == 'ALL' ]]; then
-        all_main
+	    all_main upgradeManifest "${upgradeManifest}"
     elif [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ppc64le-Cluster' ]]; then
-        cluster_main
+	    cluster_main upgradeManifest "${upgradeManifest}"
     else
-        device_main
+	    device_main upgradeManifest "${upgradeManifest}"
     fi
+
+    # Publish manifest if artifacts were pushed to CSS which populated the upgradeManifest variable
+    if [[ ! "${upgradeManifest}" == "{}" ]]; then
+	    publishUpgradeManifest "${upgradeManifest}" "${SOFTWARE_PACKAGE_VERSION}"
+    fi
+
     echo "edgeNodeFiles.sh completed successfully."
 }
 
 main
+
 
 
