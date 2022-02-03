@@ -39,6 +39,7 @@ AGENT_CFG_FILE_DEFAULT='agent-install.cfg'
 CSS_OBJ_PATH_DEFAULT='/api/v1/objects/IBM/agent_files'
 SEMVER_REGEX='^[0-9]+\.[0-9]+(\.[0-9]+)+'   # matches a version like 1.2.3 (must be at least 3 fields). Also allows a bld num on the end like: 1.2.3-RC1
 DEFAULT_AGENT_IMAGE_TAR_FILE='amd64_anax.tar.gz'
+INSTALLED_AGENT_CFG_FILE="/etc/default/horizon"
 
 # edge cluster agent deployment
 SERVICE_ACCOUNT_NAME="agent-service-account"
@@ -54,6 +55,10 @@ DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY="image-registry.openshift-ima
 DEFAULT_AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
 EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
 
+# agent upgrade types. To update the certificate only, just do "-G cert" or set AGENT_UPGRADE_TYPES="cert"
+UPGRADE_TYPE_SW="software"
+UPGRADE_TYPE_CERT="cert"
+UPGRADE_TYPE_CFG="config"
 
 # Script usage info
 function usage() {
@@ -89,7 +94,8 @@ Options/Flags:
     -f                  Install older version of the horizon agent and CLI packages. (This flag is equivalent to AGENT_OVERWRITE)
     -b                  Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
     -C                  Install only the horizon-cli package, not the full agent (This flag is equivalent to AGENT_ONLY_CLI)
-    -A                  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
+    -G                  A comma separated list of upgrade types. Supported types are 'software', 'cert' and 'config'. The default is 'software,cert,config'. It is used to perform partial agent upgrade. (This flag is equivalent to AGENT_UPGRADE_TYPES)
+        --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to ANAX_IN_CONTAINER)
     -h                  This usage
 
@@ -132,12 +138,15 @@ function now() {
 # Note: could not put this in a function, because getopts would only process the function args
 AGENT_VERBOSITY=3   # default until we get it from all of the possible places
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts begin"; fi
-while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CA-:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:-:" opt; do
     case $opt in
     -)
         case "${OPTARG}" in
             container)
                 ARG_ANAX_IN_CONTAINER=true
+                ;;
+            auto-upgrade)
+                ARG_AGENT_AUTO_UPGRADE=true
                 ;;
             *)  echo "Invalid option: --$OPTARG"
                 usage 1
@@ -188,7 +197,7 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CA-:" opt; do
         ;;
     C)  ARG_AGENT_ONLY_CLI=true
         ;;
-    A)  ARG_AGENT_AUTO_UPGRADE=true
+    G)  ARG_AGENT_UPGRADE_TYPES="$OPTARG"
         ;;
     h)  usage 0
         ;;
@@ -208,14 +217,22 @@ function log_fatal() {
     : ${1:?} ${2:?}
     local exitCode=$1
     local msg="$2"
-    # output to both stdout and stderr
-    echo $(now) "ERROR: $msg" | tee /dev/stderr   # we always show fatal error msgs
+    if [[ $AGENT_AUTO_UPGRADE == 'true' ]]; then
+        # output to both stdout and stderr
+        echo $(now) "ERROR: $msg" | tee /dev/stderr   # we always show fatal error msgs
+    else
+        echo $(now) "ERROR: $msg" # we always show fatal error msgs
+    fi
     exit $exitCode
 }
 
 function log_error() {
-    # output to both stdout and stderr
-    log $VERB_ERROR "ERROR: $1" | tee /dev/stderr 
+    if [[ $AGENT_AUTO_UPGRADE == 'true' ]]; then
+        # output to both stdout and stderr
+        log $VERB_ERROR "ERROR: $1" | tee /dev/stderr
+    else
+         log $VERB_ERROR "ERROR: $1"
+    fi       
 }
 
 function log_warning() {
@@ -494,12 +511,91 @@ function read_config_file() {
     log_debug "read_config_file() end"
 }
 
+# make sure that the given input file types has correct values.
+# Side-effect: AGENT_CFG_FILE and/or AGENT_CERT_FILE changes to horizon default
+# if -G or AGENT_UPGRADE_TYPES are specified and 'config' or 'cert'
+# is not included.
+function varify_upgrade_types() {
+    log_debug "varify_upgrade_types() begin" 
+
+    # validate the input values
+    for t in ${AGENT_UPGRADE_TYPES//,/ }
+    do
+        if [ "$t" != "$UPGRADE_TYPE_SW" ] && [ "$t" != "$UPGRADE_TYPE_CERT" ] && [ "$t" != "$UPGRADE_TYPE_CFG" ]; then
+            log_fatal 1 "Invalid value in AGENT_UPGRADE_TYPES or -G flag: $AGENT_UPGRADE_TYPES"
+        fi   
+    done
+
+    # use installed config file and certification file if they are not specified
+    if ! has_upgrade_type_cfg; then
+        if [ -f $INSTALLED_AGENT_CFG_FILE ]; then
+            # remove the HZN_MGMT_HUB_CERT_PATH line so that the provided cert file can be used (if any)
+            AGENT_CFG_FILE="/tmp/$AGENT_CERT_FILE_DEFAULT"
+            sed '/HZN_MGMT_HUB_CERT_PATH/d' $INSTALLED_AGENT_CFG_FILE > $AGENT_CFG_FILE
+            log_info "AGENT_CFG_FILE is set to $AGENT_CFG_FILE"
+        else
+            log_fatal 1 "$INSTALLED_AGENT_CFG_FILE file does not exist when'$UPGRADE_TYPE_CFG' is not specified in AGENT_UPGRADE_TYPES or -G flag. Please make sure the agent is installed."
+        fi
+    fi
+    if ! has_upgrade_type_cert; then
+        if [ -f $INSTALLED_AGENT_CFG_FILE ]; then
+            local horizon_default_cert_file=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' $INSTALLED_AGENT_CFG_FILE || true)
+            horizon_default_cert_file=$(trim_variable "${horizon_default_cert_file#*=}")
+            AGENT_CERT_FILE=$horizon_default_cert_file
+            log_info "AGENT_CERT_FILE is set to $horizon_default_cert_file"
+        else
+            log_fatal 1 "$INSTALLED_AGENT_CFG_FILE file does not exist when'$UPGRADE_TYPE_CERT' is not specified in AGENT_UPGRADE_TYPES or -G flag. Please make sure the agent is installed."
+        fi
+    fi
+
+    # TODO-LING if software update is not specified 
+    # if ! has_upgrade_type_sw; then
+    # fi
+    log_debug "varify_upgrade_types() end" 
+}
+
+# check if the upgrade type contains "software"
+function has_upgrade_type_sw() {
+    for t in ${AGENT_UPGRADE_TYPES//,/ }
+    do
+        if [ "$t" == "$UPGRADE_TYPE_SW" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# check if the upgrade type contains "cert"
+function has_upgrade_type_cert() {
+    for t in ${AGENT_UPGRADE_TYPES//,/ }
+    do
+        if [ "$t" == "$UPGRADE_TYPE_CERT" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# check if the upgrade type contains "configuration"
+function has_upgrade_type_cfg() {
+    for t in ${AGENT_UPGRADE_TYPES//,/ }
+    do
+        if [ "$t" == "$UPGRADE_TYPE_CFG" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+
 # Get all of the input values from cmd line args, env vars, config file, or defaults.
 # Side-effect: sets all of the variables as global constants
 function get_all_variables() {
     log_debug "get_all_variables() begin"
 
     get_variable AGENT_AUTO_UPGRADE 'false'
+    get_variable AGENT_UPGRADE_TYPES "$UPGRADE_TYPE_SW,$UPGRADE_TYPE_CERT,$UPGRADE_TYPE_CFG" 'false' 
+    varify_upgrade_types
 
     # First unpack the zip file (if specified), because the config file could be in there
     get_variable AGENT_INSTALL_ZIP
@@ -657,14 +753,14 @@ function get_all_variables() {
         #future: we should let 'hzn register' default the node id, but i think there are other parts of this script that depend on it being set
         # Try to get it from a previous installation
         if is_device; then
-            node_id=$(grep HZN_NODE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
+            node_id=$(grep HZN_NODE_ID $INSTALLED_AGENT_CFG_FILE 2>/dev/null | cut -d'=' -f2)
             if [[ -n $node_id ]]; then
-                log_info "Using node id from HZN_NODE_ID in /etc/default/horizon: $node_id"
+                log_info "Using node id from HZN_NODE_ID in $INSTALLED_AGENT_CFG_FILE: $node_id"
             else
                 # if HZN_NODE_ID is not set, look for HZN_DEVICE_ID
-                node_id=$(grep HZN_DEVICE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
+                node_id=$(grep HZN_DEVICE_ID $INSTALLED_AGENT_CFG_FILE 2>/dev/null | cut -d'=' -f2)
                 if [[ -n $node_id ]]; then 
-                    log_info "Using node id from HZN_DEVICE_ID in /etc/default/horizon: $node_id"
+                    log_info "Using node id from HZN_DEVICE_ID in $INSTALLED_AGENT_CFG_FILE: $node_id"
                 else 
                     node_id=${HOSTNAME}   # default
                     log_info "use hostname as node id"
@@ -925,6 +1021,7 @@ function using_remote_input_files() {
 # Side-effect: sets PACKAGES
 function get_pkgs() {
     log_debug "get_pkgs() begin"
+
     local input_file_path=$INPUT_FILE_PATH
     if [[ -n $PKG_APT_REPO ]]; then return; fi   # using an APT repo, so we don't deal with local pkgs
 
@@ -1030,7 +1127,7 @@ function is_horizon_defaults_correct() {
     local cert_file defaults_file
 
     if is_device; then
-        defaults_file='/etc/default/horizon'
+        defaults_file=$INSTALLED_AGENT_CFG_FILE
         #if [[ ${AGENT_CERT_FILE:0:1} == '/' && -f $AGENT_CERT_FILE ]]; then
         if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
             cert_file=$AGENT_CERT_FILE   # is_horizon_defaults_correct is called before store_cert_file_permanently, so use the cert file the user specified
@@ -1155,46 +1252,48 @@ function create_or_update_horizon_defaults() {
     local abs_certificate   # can't call store_cert_file_permanently yet because that could cause is_horizon_defaults_correct
     log_verbose "Permanent location of certificate file: $abs_certificate"
 
-    if [[ ! -f /etc/default/horizon ]]; then
-        log_info "Creating /etc/default/horizon ..."
+    local defaults_file=$INSTALLED_AGENT_CFG_FILE
+
+    if [[ ! -f $defaults_file ]]; then
+        log_info "Creating $defaults_file ..."
         sudo mkdir -p /etc/default
-        sudo bash -c "echo -e 'HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}\nHZN_FSS_CSSURL=${HZN_FSS_CSSURL}\nHZN_DEVICE_ID=${NODE_ID}\nHZN_NODE_ID=${NODE_ID}' > /etc/default/horizon"
+        sudo bash -c "echo -e 'HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}\nHZN_FSS_CSSURL=${HZN_FSS_CSSURL}\nHZN_DEVICE_ID=${NODE_ID}\nHZN_NODE_ID=${NODE_ID}' >$defaults_file"
         if [[ -n $HZN_AGBOT_URL ]]; then
-            sudo sh -c "echo 'HZN_AGBOT_URL=$HZN_AGBOT_URL' >> /etc/default/horizon"
+            sudo sh -c "echo 'HZN_AGBOT_URL=$HZN_AGBOT_URL' >> $defaults_file"
         fi
         if [[ -n $HZN_SDO_SVC_URL ]]; then
-            sudo sh -c "echo 'HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL' >> /etc/default/horizon"
+            sudo sh -c "echo 'HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL' >> $defaults_file"
         fi
         abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")   # can return empty string
         if [[ -n $abs_certificate ]]; then
-            sudo sh -c "echo 'HZN_MGMT_HUB_CERT_PATH=$abs_certificate' >> /etc/default/horizon"
+            sudo sh -c "echo 'HZN_MGMT_HUB_CERT_PATH=$abs_certificate' >> $defaults_file"
         fi
         if [[ -n $anax_port ]]; then
-            sudo sh -c "echo 'HZN_AGENT_PORT=$anax_port' >> /etc/default/horizon"
+            sudo sh -c "echo 'HZN_AGENT_PORT=$anax_port' >> $defaults_file"
         fi
         HORIZON_DEFAULTS_CHANGED='true'
     elif is_horizon_defaults_correct "$anax_port"; then
-        log_info "/etc/default/horizon already has the correct values. Not modifying it."
+        log_info "$defaults_file already has the correct values. Not modifying it."
         HORIZON_DEFAULTS_CHANGED='false'
     else
         # File already exists, but isn't correct. Update it (do not overwrite it in case they have other variables in there they want preserved)
-        log_info "Updating /etc/default/horizon ..."
-        add_to_or_update_horizon_defaults 'HZN_EXCHANGE_URL' "$HZN_EXCHANGE_URL" /etc/default/horizon
-        add_to_or_update_horizon_defaults 'HZN_FSS_CSSURL' "$HZN_FSS_CSSURL" /etc/default/horizon
+        log_info "Updating $defaults_file ..."
+        add_to_or_update_horizon_defaults 'HZN_EXCHANGE_URL' "$HZN_EXCHANGE_URL" $defaults_file
+        add_to_or_update_horizon_defaults 'HZN_FSS_CSSURL' "$HZN_FSS_CSSURL" $defaults_file
         if [[ -n $HZN_AGBOT_URL ]]; then
-            add_to_or_update_horizon_defaults 'HZN_AGBOT_URL' "$HZN_AGBOT_URL" /etc/default/horizon
+            add_to_or_update_horizon_defaults 'HZN_AGBOT_URL' "$HZN_AGBOT_URL" $defaults_file
         fi
         if [[ -n $HZN_SDO_SVC_URL ]]; then
-            add_to_or_update_horizon_defaults 'HZN_SDO_SVC_URL' "$HZN_SDO_SVC_URL" /etc/default/horizon
+            add_to_or_update_horizon_defaults 'HZN_SDO_SVC_URL' "$HZN_SDO_SVC_URL" $defaults_file
         fi
-        add_to_or_update_horizon_defaults 'HZN_DEVICE_ID' "$NODE_ID" /etc/default/horizon
-        add_to_or_update_horizon_defaults 'HZN_NODE_ID' "$NODE_ID" /etc/default/horizon
+        add_to_or_update_horizon_defaults 'HZN_DEVICE_ID' "$NODE_ID" $defaults_file
+        add_to_or_update_horizon_defaults 'HZN_NODE_ID' "$NODE_ID" $defaults_file
         abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")   # can return empty string
         if [[ -n $abs_certificate ]]; then
-            add_to_or_update_horizon_defaults 'HZN_MGMT_HUB_CERT_PATH' "$abs_certificate" /etc/default/horizon
+            add_to_or_update_horizon_defaults 'HZN_MGMT_HUB_CERT_PATH' "$abs_certificate" $defaults_file
         fi
         if [[ -n $anax_port ]]; then
-            add_to_or_update_horizon_defaults 'HZN_AGENT_PORT' "$anax_port" /etc/default/horizon
+            add_to_or_update_horizon_defaults 'HZN_AGENT_PORT' "$anax_port" $defaults_file
         fi
         HORIZON_DEFAULTS_CHANGED='true'
     fi
@@ -1219,13 +1318,15 @@ function mac_trust_certs() {
 function install_macos() {
     log_debug "install_macos() begin"
 
-    if ! isCmdInstalled jq && isCmdInstalled brew; then
+    if has_upgrade_type_sw; then
+        if ! isCmdInstalled jq && isCmdInstalled brew; then
             echo "Jq is required, installing it using brew, this could take a minute..."
             runCmdQuietly brew install jq
-    fi
+        fi
 
-    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
-        confirmCmds socat docker jq
+        if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+            confirmCmds socat docker jq
+    fi
 
         if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
             check_existing_exch_node_is_correct_type "device"
@@ -1238,14 +1339,18 @@ function install_macos() {
         fi
     fi
 
-    get_certificate
+    if has_upgrade_type_cert; then
+        get_certificate
+    fi
 
     create_or_update_horizon_defaults
 
-    get_pkgs
+    if has_upgrade_type_sw; then
+        get_pkgs
 
-    mac_trust_certs "${PACKAGES}/${MAC_PACKAGE_CERT}" "$AGENT_CERT_FILE"
-    install_mac_horizon-cli
+        mac_trust_certs "${PACKAGES}/${MAC_PACKAGE_CERT}" "$AGENT_CERT_FILE"
+        install_mac_horizon-cli
+    fi
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         start_device_agent_container   # even if it already running, it restarts it
@@ -1261,11 +1366,11 @@ function install_macos() {
 function check_and_set_anax_port() {
     log_debug "check_and_set_anax_port() begin"
     local anax_port=$ANAX_DEFAULT_PORT
-    if [[ -f /etc/default/horizon ]]; then
-        log_verbose "Trying to get agent port from previous /etc/default/horizon file..."
-        local prevPort=$(grep HZN_AGENT_PORT /etc/default/horizon | cut -d'=' -f2)
+    if [[ -f $INSTALLED_AGENT_CFG_FILE ]]; then
+        log_verbose "Trying to get agent port from previous $INSTALLED_AGENT_CFG_FILE file..."
+        local prevPort=$(grep HZN_AGENT_PORT $INSTALLED_AGENT_CFG_FILE | cut -d'=' -f2)
         if [[ -n $prevPort ]]; then
-            log_verbose "Found agent port in previous /etc/default/horizon: $prevPort"
+            log_verbose "Found agent port in previous $INSTALLED_AGENT_CFG_FILE: $prevPort"
             anax_port=$prevPort
         fi
     fi
@@ -1286,6 +1391,7 @@ function check_and_set_anax_port() {
 # Ensure the software prereqs for a debian variant device are installed
 function debian_device_install_prereqs() {
     log_debug "debian_device_install_prereqs() begin"
+
     log_info "Updating apt package index..."
     runCmdQuietly apt-get update -q
 
@@ -1344,6 +1450,7 @@ function compare_deb_pkg() {
 # Side-effect: sets AGENT_WAS_RESTARTED to 'true' or 'false'
 function install_debian_device_horizon_pkgs() {
     log_debug "install_debian_device_horizon_pkgs() begin"
+
     AGENT_WAS_RESTARTED='false'   # only set to true when we are sure
     if [[ -n "$PKG_APT_REPO" ]]; then
         log_info "Installing horizon via the APT repository $PKG_APT_REPO ..."
@@ -1410,7 +1517,7 @@ function install_debian_device_horizon_pkgs() {
 # Restart the device agent and wait for it to be ready
 function restart_device_agent() {
     log_debug "restart_device_agent() begin"
-    log_info "Restarting the horizon agent service because /etc/default/horizon was modified..."
+    log_info "Restarting the horizon agent service because $INSTALLED_AGENT_CFG_FILE was modified..."
     systemctl restart horizon.service   # (restart will succeed even if the service was already stopped)
     wait_until_agent_ready
     log_debug "restart_device_agent() end"
@@ -1420,7 +1527,9 @@ function restart_device_agent() {
 function install_debian() {
     log_debug "install_debian() begin"
 
-    debian_device_install_prereqs
+    if has_upgrade_type_sw; then
+        debian_device_install_prereqs
+    fi
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         if is_anax_in_container; then
@@ -1445,7 +1554,9 @@ function install_debian() {
         fi
     fi
 
-    get_certificate
+    if has_upgrade_type_cert; then
+        get_certificate
+    fi
 
     if is_anax_in_container; then
         create_or_update_horizon_defaults
@@ -1453,16 +1564,18 @@ function install_debian() {
         create_or_update_horizon_defaults "$ANAX_PORT"
     fi
 
-    get_pkgs
+    if has_upgrade_type_sw; then
+        get_pkgs
 
-    # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
-    install_debian_device_horizon_pkgs
-    set_horizon_url
+        # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
+        install_debian_device_horizon_pkgs
+        set_horizon_url
+    fi
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         if is_anax_in_container; then
             start_device_agent_container   # even if it already running, it restarts it
-        elif [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
+        elif [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED != 'true' ]]; then
             restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
         fi
 
@@ -1600,9 +1713,11 @@ function install_redhat_device_horizon_pkgs() {
 function install_redhat() {
     log_debug "install_redhat() begin"
 
-    log_info "Installing prerequisites, this could take a minute..."
-    install_dnf
-    redhat_device_install_prereqs
+    if has_upgrade_type_sw; then
+        log_info "Installing prerequisites, this could take a minute..."
+        install_dnf
+        redhat_device_install_prereqs
+    fi
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         if is_anax_in_container; then
@@ -1626,7 +1741,9 @@ function install_redhat() {
         fi
     fi
 
-    get_certificate
+    if has_upgrade_type_cert; then
+        get_certificate
+    fi
 
     if is_anax_in_container; then
         create_or_update_horizon_defaults
@@ -1634,15 +1751,17 @@ function install_redhat() {
         create_or_update_horizon_defaults "$ANAX_PORT"
     fi
 
-    get_pkgs
-    # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
-    install_redhat_device_horizon_pkgs
-    set_horizon_url
+    if has_upgrade_type_sw; then
+        get_pkgs
+        # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
+        install_redhat_device_horizon_pkgs
+        set_horizon_url
+    fi
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         if is_anax_in_container; then
             start_device_agent_container   # even if it already running, it restarts it
-        elif [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
+        elif [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED != 'true' ]]; then
             restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
         fi
 
