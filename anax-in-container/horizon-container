@@ -61,13 +61,9 @@ canonicalPath() {
 }
 
 # Bash cant do AND of cmd and checking a string (afaik), so bury it in this function
-isMacAndDefaultIndex() {
-	if isMacos; then
-		if [[ "$INDEX_NUM" == "1" ]]; then
-			return 0
-		else
-			return 1
-		fi
+isDefaultIndex() {
+	if [[ "$INDEX_NUM" == "1" ]]; then
+		return 0
 	else
 		return 1
 	fi
@@ -122,6 +118,56 @@ checkRequirements() {
 		echo "You must have the hzn command installed to use Horizon in a container."
 		exit 2
 	fi
+}
+
+# Creates and copies a file similar to os-release on Linux systems to the docker container
+# for anax-in-container installs. This allows the container to know which horizon-cli package
+# to download during automatic upgrades.
+copyHostOSInfo() {
+	# determine host os, distribution and version
+	local os='linux'
+	local distro=''
+	local distroVersionNum=''
+	if isMacos; then
+		os='macos'
+        distro=$(sw_vers | grep ProductName | awk '{ print$2 }')
+        distroVersionNum=$(sw_vers | grep ProductVersion | awk '{ print$2 }')
+    elif [[ -f /etc/os-release ]]; then
+        . /etc/os-release
+		distro=$ID
+        distroVersionNum=$VERSION_ID
+    elif [[ -f /etc/lsb-release ]]; then
+        . /etc/lsb-release
+        distro=$DISTRIB_ID
+        distroVersionNum=$DISTRIB_RELEASE
+    else
+        echo "Cannot detect OS version"
+		exit 2
+    fi
+
+	# determine host architecture and convert to hzn-friendly form
+	local image_arch=$(uname -m)
+    if [[ $image_arch == 'x86_64' ]]; then
+        image_arch='amd64'
+    elif [[ $image_arch == 'aarch64' ]]; then
+        image_arch='arm64'
+    fi
+
+	# write os, distro, distro version and architecture to file
+    echo "OS=$os" > host-os-release
+    echo "DISTRO=$distro" >> host-os-release
+    echo "DISTRO_VERSION_NUM=$distroVersionNum" >> host-os-release
+    echo "ARCH=$image_arch" >> host-os-release
+
+	# copy file to docker container
+    docker cp host-os-release $DOCKER_NAME:/etc/host-os-release
+	if [[ $? -ne 0 ]]; then
+		echo "Could not copy host os info into agent docker container"
+		exit 2
+	fi
+
+	# cleanup
+    rm host-os-release
 }
 
 # Pull the latest horizon docker image, get some prereqs established, and start the image
@@ -217,10 +263,10 @@ start() {
 	# $HC_DOCKER_IMAGE and $HC_DOCKER_TAG are intentionally undocumented env vars that allow us to test the staging version of the docker image
 
 	# get the architecture from hzn
-        arch=$(LANG=en_US hzn architecture)
-        if [ $? -ne 0 ]; then
-                arch="amd64"
-        fi
+	arch=$(LANG=en_US hzn architecture)
+	if [ $? -ne 0 ]; then
+			arch="amd64"
+	fi
 
 	dockerImage='openhorizon/'$arch'_anax'
 	dockerTag='latest'
@@ -291,13 +337,17 @@ start() {
 	if [[ "$2" == "updating" ]]; then
 		echo "Horizon agent updated/restarted successfully."
 	else
-		if isMacAndDefaultIndex; then
+		if isDefaultIndex; then
 			# hzn on mac sets HORIZON_URL correctly by default for index 1, so the user does not need to do it
 			echo "Horizon agent started successfully. Now use 'hzn node list', 'hzn register ...', and 'hzn agreement list'"
 		else
 			echo "Horizon agent started successfully. Now export HORIZON_URL=http://localhost:$HORIZON_AGENT_PORT, then use 'hzn node list', 'hzn register ...', and 'hzn agreement list'"
 		fi
 	fi
+
+	# now copy over the host OS info to the container so that automatic upgrades can be enabled
+	copyHostOSInfo
+
 }		# end start()
 
 

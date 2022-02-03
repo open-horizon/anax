@@ -683,6 +683,7 @@ Environment Variables:
 	removeNodeUnregister := unregisterCmd.Flag("remove", msgPrinter.Sprintf("Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).")).Short('r').Bool()
 	deepCleanUnregister := unregisterCmd.Flag("deep-clean", msgPrinter.Sprintf("Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.")).Short('D').Bool()
 	timeoutUnregister := unregisterCmd.Flag("timeout", msgPrinter.Sprintf("The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.")).Short('t').Default("0").Int()
+	containerUnregister := unregisterCmd.Flag("container", msgPrinter.Sprintf("Perform a deep clean on a node running in a container. This flag  must be used with -D and only if the agent was installed as anax-in-container.")).Short('C').Bool()
 
 	userinputCmd := app.Command("userinput | u", msgPrinter.Sprintf("List or manage the service user inputs that are currently registered on this Horizon edge node.")).Alias("u").Alias("userinput")
 	userinputAddCmd := userinputCmd.Command("add", msgPrinter.Sprintf("Add a new user input object or overwrite the current user input object for this Horizon edge node."))
@@ -1213,7 +1214,7 @@ Environment Variables:
 	case serviceConfigStateActiveCmd.FullCommand():
 		service.Resume(*resumeAllServices, *resumeServiceOrg, *resumeServiceName, *resumeServiceVersion)
 	case unregisterCmd.FullCommand():
-		unregister.DoIt(*forceUnregister, *removeNodeUnregister, *deepCleanUnregister, *timeoutUnregister)
+		unregister.DoIt(*forceUnregister, *removeNodeUnregister, *deepCleanUnregister, *timeoutUnregister, *containerUnregister)
 	case statusCmd.FullCommand():
 		status.DisplayStatus(*statusLong, false)
 	case eventlogListCmd.FullCommand():
