@@ -227,6 +227,7 @@ start() {
 		mkdir -p ${fssHostSharePath}/fss-domain-socket
 		mkdir -p ${fssHostSharePath}/ess-auth
 		mkdir -p ${fssHostSharePath}/secrets
+		mkdir -p ${fssHostSharePath}/nmp
 	else
 		: # updating will keep files inside $fssHostSharePath
 	fi
