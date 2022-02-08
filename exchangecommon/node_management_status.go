@@ -52,45 +52,57 @@ func (n NodeManagementPolicyStatus) IsAgentUpgradePolicy() bool {
 type AgentUpgradePolicyStatus struct {
 	ScheduledTime        string `json:"scheduledTime"`
 	scheduledUnixTime    time.Time
-	ActualStartTime      string `json:"startTime,omitempty"`
-	CompletionTime       string `json:"endTime,omitempty"`
-	UpgradedVersion      string `json:"upgradedVersion"`
-	Status               string `json:"status"`
-	ErrorMessage         string `json:"errorMessage,omitempty"`
-	BaseWorkingDirectory string `json:"workingDirectory"`
+	ActualStartTime      string               `json:"startTime,omitempty"`
+	CompletionTime       string               `json:"endTime,omitempty"`
+	UpgradedVersions     AgentUpgradeVersions `json:"upgradedVersion"`
+	Status               string               `json:"status"`
+	ErrorMessage         string               `json:"errorMessage,omitempty"`
+	BaseWorkingDirectory string               `json:"workingDirectory"`
+	AllowDowngrade       bool                 `json:"allowDowngrade"`
+}
+
+func (a AgentUpgradePolicyStatus) String() string {
+	return fmt.Sprintf("ScheduledTime: %v, ActualStartTime: %v, CompletionTime: %v, UpgradedVersions: %v, Status: %v, ErrorMessage: %v, BaseWorkingDirectory: %v, AllowDowngrade: %v",
+		a.ScheduledTime, a.ActualStartTime, a.CompletionTime, a.UpgradedVersions, a.Status, a.ErrorMessage, a.BaseWorkingDirectory, a.AllowDowngrade)
+}
+
+type AgentUpgradeVersions struct {
+	SoftwareVersion string `json:"softwareVersion"`
+	CertVersion     string `json:"certVersion"`
+	ConfigVersion   string `json:"configVersion"`
+}
+
+func (a AgentUpgradeVersions) String() string {
+	return fmt.Sprintf("SoftwareVersion: %v, CertVersion: %v, ConfigVersion: %v", a.SoftwareVersion, a.CertVersion, a.ConfigVersion)
 }
 
 const (
-	STATUS_NEW             = "waiting"
-	STATUS_UNKNOWN         = "unknown"
-	STATUS_DOWNLOADED      = "downloaded"
-	STATUS_DOWNLOAD_FAILED = "download failed"
-	STATUS_SUCCESSFUL      = "successful"
-	STATUS_FAILED_JOB      = "failed"
-	STATUS_INITIATED       = "initiated"
-	STATUS_ROLLBACK_STARTED = "rollback started"
-	STATUS_ROLLBACK_FAILED  =  "rollback failed"
+	STATUS_NEW                 = "waiting"
+	STATUS_UNKNOWN             = "unknown"
+	STATUS_DOWNLOADED          = "downloaded"
+	STATUS_DOWNLOAD_FAILED     = "download failed"
+	STATUS_SUCCESSFUL          = "successful"
+	STATUS_FAILED_JOB          = "failed"
+	STATUS_INITIATED           = "initiated"
+	STATUS_ROLLBACK_STARTED    = "rollback started"
+	STATUS_ROLLBACK_FAILED     = "rollback failed"
 	STATUS_ROLLBACK_SUCCESSFUL = "rollback successful"
 )
-
-func (a AgentUpgradePolicyStatus) String() string {
-	return fmt.Sprintf("ScheduledTime: %v, ActualStartTime: %v, CompletionTime: %v, UpgradedVersion: %v, Status: %v, ErrorMessage: %v, BaseWorkingDirectory: %v",
-		a.ScheduledTime, a.ActualStartTime, a.CompletionTime, a.UpgradedVersion, a.Status, a.ErrorMessage, a.BaseWorkingDirectory)
-}
 
 func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string) NodeManagementPolicyStatus {
 	newStatus := NodeManagementPolicyStatus{
 		AgentUpgrade: &AgentUpgradePolicyStatus{Status: STATUS_NEW},
 	}
 	if policy.AgentAutoUpgradePolicy != nil {
-		startTime, _ := time.Parse(time.RFC3339, policy.AgentAutoUpgradePolicy.PolicyUpgradeTime)
+		startTime, _ := time.Parse(time.RFC3339, policy.PolicyUpgradeTime)
 		realStartTime := startTime.Unix()
-		if policy.AgentAutoUpgradePolicy.UpgradeWindowDuration > 0 {
-			realStartTime = realStartTime + int64(rand.Intn(policy.AgentAutoUpgradePolicy.UpgradeWindowDuration))
+		if policy.UpgradeWindowDuration > 0 {
+			realStartTime = realStartTime + int64(rand.Intn(policy.UpgradeWindowDuration))
 		}
 		newStatus.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).Format(time.RFC3339)
 		newStatus.AgentUpgrade.scheduledUnixTime = time.Unix(realStartTime, 0)
 		newStatus.AgentUpgrade.BaseWorkingDirectory = workingDir
+		newStatus.AgentUpgrade.AllowDowngrade = policy.AgentAutoUpgradePolicy.AllowDowngrade
 	}
 	return newStatus
 }
