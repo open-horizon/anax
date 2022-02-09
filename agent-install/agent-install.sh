@@ -679,24 +679,24 @@ function get_all_variables() {
     
     if is_cluster; then
         # check kubectl is available
-	if [ "${KUBECTL}" != "" ]; then   # If user set KUBECTL env variable, check that it exists
-		if command -v $KUBECTL > /dev/null 2>&1; then
-			: # nothing more to do
-		else
-			log_fatal 2 "$KUBECTL is not available. Please install $KUBECTL and ensure that it is found on your \$PATH"
-		fi
-	else 
-		# Nothing specified. Attempt to detect what should be used.
-		if command -v k3s > /dev/null 2>&1; then    # k3s needs to be checked before kubectl since k3s creates a symbolic link to kubectl
-			KUBECTL="k3s kubectl" 
-		elif command -v microk8s.kubectl >/dev/null 2>&1; then 
-			KUBECTL=microk8s.kubectl 
-		elif command -v kubectl >/dev/null 2>&1; then 
-			KUBECTL=kubectl 
-		else 
-			log_fatal 2 "kubectl is not available. Please install kubectl and ensure that it is found on your \$PATH" 
-		fi
-	fi
+        if [ "${KUBECTL}" != "" ]; then   # If user set KUBECTL env variable, check that it exists
+            if command -v $KUBECTL > /dev/null 2>&1; then
+                : # nothing more to do
+            else
+                log_fatal 2 "$KUBECTL is not available. Please install $KUBECTL and ensure that it is found on your \$PATH"
+            fi
+        else 
+            # Nothing specified. Attempt to detect what should be used.
+            if command -v k3s > /dev/null 2>&1; then    # k3s needs to be checked before kubectl since k3s creates a symbolic link to kubectl
+                KUBECTL="k3s kubectl" 
+            elif command -v microk8s.kubectl >/dev/null 2>&1; then 
+                KUBECTL=microk8s.kubectl 
+            elif command -v kubectl >/dev/null 2>&1; then 
+                KUBECTL=kubectl 
+            else 
+                log_fatal 2 "kubectl is not available. Please install kubectl and ensure that it is found on your \$PATH" 
+            fi
+        fi
     fi
 
     if is_device; then
@@ -1326,7 +1326,7 @@ function install_macos() {
 
         if [[ $AGENT_ONLY_CLI != 'true' ]]; then
             confirmCmds socat docker jq
-    fi
+        fi
 
         if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
             check_existing_exch_node_is_correct_type "device"
@@ -1534,22 +1534,17 @@ function install_debian() {
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         if is_anax_in_container; then
             confirmCmds docker jq
-            if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
-                if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-                    unregister
-                fi
-            fi
         else
             check_and_set_anax_port   # sets ANAX_PORT
+        fi
+        
+        if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+            check_existing_exch_node_is_correct_type "device"
+        fi
 
+        if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
             if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-                check_existing_exch_node_is_correct_type "device"
-            fi
-
-            if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
-                if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-                    unregister
-                fi
+                unregister
             fi
         fi
     fi
@@ -1722,21 +1717,17 @@ function install_redhat() {
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         if is_anax_in_container; then
             confirmCmds docker jq
-            if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
-                if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-                    unregister
-                fi
-            fi
         else
             check_and_set_anax_port   # sets ANAX_PORT
-            if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-                check_existing_exch_node_is_correct_type "device"
-            fi
+        fi
 
-            if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
-                if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-                    unregister
-                fi
+        if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+            check_existing_exch_node_is_correct_type "device"
+        fi
+
+        if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+            if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
+                unregister
             fi
         fi
     fi
