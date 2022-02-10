@@ -588,6 +588,12 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to get file info of object file %v: %v", fileInfo.Name(), err))
 	}
 
+	// get retry count and retry interval from env
+	maxRetries, retryInterval, err := cliutils.GetHttpRetryParameters(5, 2)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+	}
+
 	// send chunkdata with header
 	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
 	// need to re-use the httpClient for chunk uploading
@@ -598,12 +604,13 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 	closeRequest := false
 	startOffset := int64(0)
 	totalSent := int64(0)
-	headers := make(map[string]string, 2)
+	headers := make(map[string]string)
 
 	var endOffset int64
 	var dataLength int64
 	var mmsOwnerID string
 	var ownerIDInResponse string
+	retryCount := 0
 	for int64(startOffset) < fileInfo.Size() {
 		dataLength = int64(chunkSize)
 		endOffset = startOffset + int64(chunkSize) - 1
@@ -632,39 +639,32 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 			msgPrinter.Printf("\r")
 		}
 
-		urlObj, errUrl := url.Parse(mmsUrl)
-		if errUrl != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Malformed URL: %v. %v", mmsUrl, errUrl))
-		}
-		urlObj.RawQuery = urlObj.Query().Encode()
-
-		if err := cliutils.TrustIcpCert(httpClient); err != nil {
-			cliutils.Fatal(cliutils.FILE_IO_ERROR, err.Error())
-		}
-
-		req, err := http.NewRequest(http.MethodPut, urlObj.String(), bytes.NewBuffer(chunkData))
-
-		if err != nil {
-			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
-		}
-
-		if closeRequest {
-			req.Close = true
-		}
-
-		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(creds))))
-		req.Header.Add("Content-Type", "application/octet-stream")
-		cliutils.AddHeaders(req, headers)
-		resp, err := httpClient.Do(req)
+		makeHeaderMap(headers, startOffset, endOffset, fileInfo.Size(), dataLength, mmsOwnerID, creds)
+		resp, err := makeChunkUploadRequest(httpClient, mmsUrl, headers, chunkData, closeRequest)
 
 		if resp != nil && resp.Body != nil {
 			defer resp.Body.Close()
 		}
 
 		if exchange.IsTransportError(resp, err) {
-			continue
+			http_status := ""
+			if resp != nil {
+				http_status = resp.Status
+				if resp.Body != nil {
+					resp.Body.Close()
+				}
+			}
+			if retryCount <= maxRetries {
+				retryCount++
+				cliutils.Verbose(msgPrinter.Sprintf("Encountered HTTP error: %v calling MMS REST API %v. HTTP status: %v. Will retry.", err, apiMsg, http_status))
+				// retry for network tranport errors
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else {
+				cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("Encountered HTTP error: %v calling MMS REST API %v. HTTP status: %v.", err, apiMsg, http_status))
+			}
 		} else if err != nil {
-			cliutils.Verbose(msgPrinter.Sprintf("Received non-transport error: %s", err.Error()))
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Error during calling MMS REST API %v: %s", apiMsg, err.Error()))
 		}
 
 		if resp.StatusCode != http.StatusPartialContent && resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusTemporaryRedirect {
@@ -692,4 +692,36 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 		}
 	}
 
+}
+
+func makeChunkUploadRequest(httpClient *http.Client, mmsUrl string, headers map[string]string, chunkData []byte, closeRequest bool) (*http.Response, error) {
+	urlObj, errUrl := url.Parse(mmsUrl)
+	if errUrl != nil {
+		return nil, errUrl
+	}
+	urlObj.RawQuery = urlObj.Query().Encode()
+
+	if err := cliutils.TrustIcpCert(httpClient); err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, urlObj.String(), bytes.NewBuffer(chunkData))
+	if err != nil {
+		return nil, err
+	}
+
+	cliutils.AddHeaders(req, headers)
+	if closeRequest {
+		req.Close = true
+	}
+
+	return httpClient.Do(req)
+}
+
+func makeHeaderMap(headers map[string]string, startOffset int64, endOffset int64, fileSize int64, dataLength int64, mmsOwnerID string, creds string) {
+	headers["Content-Range"] = fmt.Sprintf("bytes %d-%d/%d", startOffset, endOffset, fileSize)
+	headers["Content-Length"] = strconv.FormatInt(dataLength, 10)
+	headers[MMSUploadOwnerHeaderName] = mmsOwnerID
+	headers["Authorization"] = fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(creds)))
+	headers["Content-Type"] = "application/octet-stream"
 }
