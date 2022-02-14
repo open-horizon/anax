@@ -616,6 +616,7 @@ Environment Variables:
 	mmsObjectPublishDSHashAlgo := mmsObjectPublishCmd.Flag("hashAlgo", msgPrinter.Sprintf("The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag")).Short('a').String()
 	mmsObjectPublishDSHash := mmsObjectPublishCmd.Flag("hash", msgPrinter.Sprintf("The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.")).String()
 	mmsObjectPublishPrivKeyFile := mmsObjectPublishCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.")).Short('k').ExistingFile()
+	mmsObjectTypesCmd := mmsObjectCmd.Command("types", msgPrinter.Sprintf("Display a list of object types stored in the Horizon Model Management Service."))
 	mmsStatusCmd := mmsCmd.Command("status", msgPrinter.Sprintf("Display the status of the Horizon Model Management Service."))
 
 	nodeCmd := app.Command("node", msgPrinter.Sprintf("List and manage general information about this Horizon edge node."))
@@ -1265,6 +1266,8 @@ Environment Variables:
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	case mmsObjectDownloadCmd.FullCommand():
 		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile, *mmsObjectDownloadOverwrite, *mmsObjectDownloadSkipIntegrityCheck)
+	case mmsObjectTypesCmd.FullCommand():
+		sync_service.ObjectTypes(*mmsOrg, *mmsUserPw)
 
 	// DEPRECATED (voucherInspectCmd, voucherImportCmd, voucherListCmd are deprecated commands)
 	case voucherInspectCmd.FullCommand():
