@@ -8,6 +8,7 @@ DEPLOYMENT_NAME="agent"
 SERVICE_ACCOUNT_NAME="agent-service-account"
 CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
 SECRET_NAME="openhorizon-agent-secrets"
+IMAGE_REGISTRY_SECRET_NAME="openhorizon-agent-secrets-docker-cert"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
 AGENT_NAMESPACE="openhorizon-agent"
@@ -358,6 +359,7 @@ function deleteAgentResources() {
 
     log_info "Deleting secret..."
     $KUBECTL delete secret $SECRET_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete secret $IMAGE_REGISTRY_SECRET_NAME -n $AGENT_NAMESPACE
 
     log_info "Deleting persistent volume..."
     $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
