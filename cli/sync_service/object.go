@@ -398,8 +398,8 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 			cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file, nil)
 		} else {
 			cliutils.Verbose(msgPrinter.Sprintf("Upload object in chunk, chunk size is: %d", chunkSize))
-                        mmsUrl := cliutils.GetMMSUrl() + "/" + urlPath
-                        uploadDataByChunk(mmsUrl, cliutils.OrgAndCreds(org, userPw), chunkSize, file)
+			mmsUrl := cliutils.GetMMSUrl() + "/" + urlPath
+			uploadDataByChunk(mmsUrl, cliutils.OrgAndCreds(org, userPw), chunkSize, file)
 		}
 
 		// Restore HTTP request override if necessary.
@@ -426,7 +426,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 			// Grab the object status and display it.
 			urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "status")
 			cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
-				cliutils.Verbose(msgPrinter.Sprintf("Object status: %v", string(resp)))
+			cliutils.Verbose(msgPrinter.Sprintf("Object status: %v", string(resp)))
 
 			if string(resp) == common.ReadyToSend || string(resp) == common.VerificationFailed {
 				break
