@@ -46,6 +46,7 @@ SERVICE_ACCOUNT_NAME="agent-service-account"
 CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
 DEPLOYMENT_NAME="agent"
 SECRET_NAME="openhorizon-agent-secrets"
+IMAGE_REGISTRY_SECRET_NAME="openhorizon-agent-secrets-docker-cert"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
 GET_RESOURCE_MAX_TRY=5
@@ -1197,6 +1198,13 @@ function is_horizon_defaults_correct() {
         return 1
     fi
 
+    horizon_defaults_value=$(grep -E '^AGENT_CLUSTER_IMAGE_REGISTRY_HOST=' $defaults_file || true)
+    horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
+    if ! urlEquals $horizon_defaults_value $HZN_EXCHANGE_URL; then
+        log_info "AGENT_CLUSTER_IMAGE_REGISTRY_HOST value changed, return"
+        return 1
+    fi
+
     if [[ -n $cert_file ]]; then
         horizon_defaults_value=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' $defaults_file || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
@@ -1848,7 +1856,7 @@ function wait_for() {
 function set_horizon_url() {
     if is_anax_in_container; then
         sed -i 's/\"HORIZON_URL\":.*/\"HORIZON_URL\": \"http:\/\/localhost:8081\"/g' /etc/horizon/hzn.json
-    elif is_linux; then
+    elif is_linux && ! is_cluster; then
         sed -i 's/\"HORIZON_URL\":.*/\"HORIZON_URL\": \""/g' /etc/horizon/hzn.json
     fi
 }
@@ -2539,13 +2547,14 @@ function create_horizon_env() {
     echo "HZN_NODE_ID=${NODE_ID}" >> $HZN_ENV_FILE
     echo "HZN_MGMT_HUB_CERT_PATH=$cluster_cert_path/$cert_name" >>$HZN_ENV_FILE
     echo "HZN_AGENT_PORT=8510" >>$HZN_ENV_FILE
+    echo "AGENT_CLUSTER_IMAGE_REGISTRY_HOST=${EDGE_CLUSTER_REGISTRY_HOST}" >>$HZN_ENV_FILE
     log_debug "create_horizon_env() end"
 }
 
 # Cluster only: to create deployment.yml based on template
 function prepare_k8s_deployment_file() {
     log_debug "prepare_k8s_deployment_file() begin"
-
+    SMALL_KUBE='false'
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
 
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
@@ -2561,6 +2570,7 @@ function prepare_k8s_deployment_file() {
             if $KUBECTL cluster-info | grep -q -E 'Kubernetes .* is running at .*//(127|172|10|192.168)\.'; then
                 # using small kube
                 image_full_path_on_edge_cluster_registry_internal_url="$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+                SMALL_KUBE='true'
             else
                 # using ocp
                 image_full_path_on_edge_cluster_registry_internal_url=$DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY/$EDGE_CLUSTER_REGISTRY_PROJECT_NAME/$EDGE_CLUSTER_AGENT_IMAGE_AND_TAG
@@ -2587,6 +2597,16 @@ function prepare_k8s_pvc_file() {
     chk $? 'creating persistentClaim.yml'
 
     log_debug "prepare_k8s_pvc_file() end"
+}
+
+# Cluster only: to create image registry cert volume for ocp
+function prepare_k8s_image_registry_volume() {
+    log_debug "prepare_k8s_image_registry_volume() begin"
+
+    sed -e "s#__ImageRegistryHost__#${EDGE_CLUSTER_REGISTRY_HOST}#g" deployment-vol-patch-template.yml >deployment-vol-patch.yml
+    chk $? 'creating deployment-vol-patch.yml'
+
+    log_debug "prepare_k8s_image_registry_volume() end"
 }
 
 # Cluster only: to create cluster resources
@@ -2873,6 +2893,66 @@ function get_pod_id() {
     log_debug "get_pod_id() end"
 }
 
+function setup_cluster_image_registry_cert() {
+    log_debug "setup_cluster_image_registry_cert() begin"
+
+    local isUpdate=$1
+    if [[ "$isUpdate" == "true" ]]; then
+        log_verbose "updating cluster image registry cert in $IMAGE_REGISTRY_SECRET_NAME"
+        update_secret_for_image_reigstry_cert
+    else
+        log_verbose "creating cluster image registry cert in $IMAGE_REGISTRY_SECRET_NAME"
+        create_secret_for_image_reigstry_cert
+    fi
+
+    prepare_k8s_image_registry_volume
+
+    patch_deployment_with_image_registry_volume
+
+    log_debug "setup_cluster_image_registry_cert() end"
+}
+
+function create_secret_for_image_reigstry_cert() {
+    log_debug "create_secret_for_image_reigstry_cert() begin"
+
+    log_verbose "checking if secret ${IMAGE_REGISTRY_SECRET_NAME} exist..."
+
+    if ! $KUBECTL get secret ${IMAGE_REGISTRY_SECRET_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+        local image_registry_cert_file="/etc/docker/certs.d/$EDGE_CLUSTER_REGISTRY_HOST/ca.crt"
+        log_verbose "creating secret for image registry cert file at ${image_registry_cert_file} ..."
+        $KUBECTL create secret generic ${IMAGE_REGISTRY_SECRET_NAME} --from-file=${image_registry_cert_file} -n ${AGENT_NAMESPACE}
+        chk $? "creating secret ${IMAGE_REGISTRY_SECRET_NAME} from cert file ${image_registry_cert_file}"
+        log_info "secret ${IMAGE_REGISTRY_SECRET_NAME} created"
+    else
+        log_info "secret ${IMAGE_REGISTRY_SECRET_NAME} exists, skip creating secret"
+    fi
+
+    log_debug "create_secret_for_image_reigstry_cert() end"
+}
+
+function update_secret_for_image_reigstry_cert() {
+    log_debug "update_secret_for_image_reigstry_cert() begin"
+
+    if $KUBECTL get secret ${IMAGE_REGISTRY_SECRET_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
+        # secret exists, delete it
+        log_verbose "Find secret ${IMAGE_REGISTRY_SECRET_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old secret..."
+        $KUBECTL delete secret ${IMAGE_REGISTRY_SECRET_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
+        chk $? "deleting secret for agent update on cluster"
+        log_verbose "Old secret ${IMAGE_REGISTRY_SECRET_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
+    fi
+
+    create_secret_for_image_reigstry_cert
+
+    log_debug "update_secret_for_image_reigstry_cert() end"
+}
+
+function patch_deployment_with_image_registry_volume() {
+    log_debug "patch_deployment_with_image_registry_volume() begin"
+    $KUBECTL patch deployment agent --patch-file=deployment-vol-patch.yml
+
+    log_debug "patch_deployment_with_image_registry_volume() end"
+}
+
 # Cluster only: to install/update agent in cluster
 function install_update_cluster() {
     log_debug "install_update_cluster() begin"
@@ -2919,6 +2999,14 @@ function install_cluster() {
     # get pod information
     create_deployment
     check_deployment_status
+
+    if [[ "$SMALL_KUBE" != "true" ]]; then
+        # setup image registry cert. This will patch the running deployment
+        local isUpdate='false'
+        setup_cluster_image_registry_cert $isUpdate
+    fi
+
+    check_deployment_status
     get_pod_id
 
     # register
@@ -2951,6 +3039,13 @@ function update_cluster() {
     #lily: shouldn't we handle the case where GET_RESOURCE_MAX_TRY reached 0 but the resources still weren't ready?
 
     update_deployment
+    check_deployment_status
+    if [[ "$SMALL_KUBE" != "true" ]]; then
+        # setup image registry cert. This will patch the running deployment
+        local isUpdate='true'
+        setup_cluster_image_registry_cert $isUpdate
+    fi
+    
     check_deployment_status
     get_pod_id
 

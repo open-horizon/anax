@@ -1,0 +1,12 @@
+spec:
+  template:
+    spec:
+      volumes:
+      - name: agent-docker-cert-volume
+        secret:
+          secretName: openhorizon-agent-secrets-docker-cert
+      containers:
+      - name: anax
+        volumeMounts:
+        - mountPath: /etc/docker/certs.d/__ImageRegistryHost__
+          name: agent-docker-cert-volume
