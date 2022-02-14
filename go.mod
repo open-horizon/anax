@@ -16,7 +16,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.3
-	github.com/open-horizon/edge-sync-service v1.8.3
+	github.com/open-horizon/edge-sync-service v1.8.4
 	github.com/open-horizon/edge-utilities v0.0.0-20190711093331-0908b45a7152
 	github.com/open-horizon/rsapss-tool v0.0.0-20190416131035-2fc75eb3b6ea
 	github.com/satori/go.uuid v1.2.0
