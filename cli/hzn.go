@@ -18,6 +18,7 @@ import (
 	"github.com/open-horizon/anax/cli/metering"
 	_ "github.com/open-horizon/anax/cli/native_deployment"
 	"github.com/open-horizon/anax/cli/node"
+	"github.com/open-horizon/anax/cli/node_management"
 	"github.com/open-horizon/anax/cli/policy"
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/sdo"
@@ -621,6 +622,18 @@ Environment Variables:
 	nodeCmd := app.Command("node", msgPrinter.Sprintf("List and manage general information about this Horizon edge node."))
 	nodeListCmd := nodeCmd.Command("list | ls", msgPrinter.Sprintf("Display general information about this Horizon edge node.")).Alias("list").Alias("ls")
 
+	nodeManagementCmd := app.Command("nodemanagement | nm", msgPrinter.Sprintf("")).Alias("nm").Alias("nodemanagement")
+	nmOrg := nodeManagementCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
+	nmUserPw := nodeManagementCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
+
+	nmAgentFilesCmd := nodeManagementCmd.Command("agentfiles | af", msgPrinter.Sprintf("List agent files and types stored in the management hub.")).Alias("af").Alias("agentfiles")
+	nmAgentFilesListCmd := nmAgentFilesCmd.Command("list | ls", msgPrinter.Sprintf("Display a list of agent files stored in the management hub.")).Alias("ls").Alias("list")
+	nmAgentFilesListType := nmAgentFilesListCmd.Flag("type", msgPrinter.Sprintf("Filter the list of agent upgrade files by the specified type. Valid values include 'agent-software-files', 'agent-cert-files' and 'agent-config-files'.")).Short('t').String()
+	nmAgentFilesListVersion := nmAgentFilesListCmd.Flag("version", msgPrinter.Sprintf("Filter the list of agent upgrade files by the specified version range or version string. Version can be a version range, a single version string or 'latest'.")).Short('V').String()
+	nmAgentFilesVersionsCmd := nmAgentFilesCmd.Command("versions | ver", msgPrinter.Sprintf("Display a list of agent file types with their corresponding versions.")).Alias("ver").Alias("versions")
+	nmAgentFilesVersionsType := nmAgentFilesVersionsCmd.Flag("type", msgPrinter.Sprintf("The type of agent files to list versions for. Valid values include 'agent-software-files', 'agent-cert-files' and 'agent-config-files'.")).Short('t').String()
+	nmAgentFilesVersionsVersionOnly := nmAgentFilesVersionsCmd.Flag("version-only", msgPrinter.Sprintf("Show only a list of versions for a given file type. Must also specify a file type with the --type flag.")).Short('V').Bool()
+
 	policyCmd := app.Command("policy | pol", msgPrinter.Sprintf("List and manage policy for this Horizon edge node.")).Alias("pol").Alias("policy")
 	policyListCmd := policyCmd.Command("list | ls", msgPrinter.Sprintf("Display this edge node's policy.")).Alias("ls").Alias("list")
 	policyNewCmd := policyCmd.Command("new", msgPrinter.Sprintf("Display an empty policy template that can be filled in."))
@@ -957,6 +970,15 @@ Environment Variables:
 		}
 	}
 
+	// For the nodemanagement command family, make sure that org and exchange credentials are specified in some way.
+	if strings.HasPrefix(fullCmd, "nodemanagement | nm") {
+		if !(strings.HasPrefix(fullCmd, "nodemanagement | nm manifest | man new")) {
+			nmOrg = cliutils.RequiredWithDefaultEnvVar(nmOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+			nmUserPw = cliutils.RequiredWithDefaultEnvVar(nmUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+
+		}
+	}
+
 	// For the sdo command family, make sure that org and exchange credentials are specified in some way.
 	if strings.HasPrefix(fullCmd, "sdo voucher") && !strings.HasPrefix(fullCmd, "sdo voucher inspect") {
 		sdoOrg = cliutils.RequiredWithDefaultEnvVar(sdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
@@ -1265,6 +1287,11 @@ Environment Variables:
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	case mmsObjectDownloadCmd.FullCommand():
 		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile, *mmsObjectDownloadOverwrite, *mmsObjectDownloadSkipIntegrityCheck)
+
+	case nmAgentFilesListCmd.FullCommand():
+		node_management.AgentFilesList(*nmOrg, *nmUserPw, *nmAgentFilesListType, *nmAgentFilesListVersion)
+	case nmAgentFilesVersionsCmd.FullCommand():
+		node_management.AgentFilesVersions(*nmOrg, *nmUserPw, *nmAgentFilesVersionsType, *nmAgentFilesVersionsVersionOnly)
 
 	// DEPRECATED (voucherInspectCmd, voucherImportCmd, voucherListCmd are deprecated commands)
 	case voucherInspectCmd.FullCommand():
