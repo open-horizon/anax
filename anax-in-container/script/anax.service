@@ -98,6 +98,9 @@ defaultEnv() {
 		checkrc $? "change SecretsManagerFilePath"
 	fi
 
+	# always add this directory. Agent will create it.
+	anaxJson=$(jq ".Edge.NodeMgmtWorkDirectory = \"${base_host_dir}/nmp\" " <<< $anaxJson)
+	checkrc $? "change NodeMgmtWorkDirectory"
 
 	# Write the new json back to the file
 	echo "$anaxJson" > $anaxJsonFile

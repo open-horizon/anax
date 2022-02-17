@@ -5,7 +5,7 @@
 # It is run by root.
 
 # Arguments:
-# 1 -- agent port
+# 1 -- container number
 
 # Global constants
 
@@ -18,6 +18,8 @@ VERB_DEBUG=5
 
 VERBOSITY=5
 
+AGENT_PORT_DEFAULT=8510
+AGENT_CONTAINER_PORT_BASE=8080
 AGENT_CERT_FILE_DEFAULT='agent-install.crt'
 AGENT_CFG_FILE_DEFAULT='agent-install.cfg'
 DEFAULT_VAR_BASE="/var/horizon/nmpdefault"
@@ -78,7 +80,7 @@ function is_debian_variant() {
 
 # rhel centos fedora
 function is_redhat_variant() {
-    return $(which dnf > /dev/null 2>&1)
+    return $(which rpm > /dev/null 2>&1)
 }
 
 # Create a status.json file to save the status.
@@ -118,7 +120,7 @@ function set_nodemanagement_status() {
     local err_msg=$4
 
     #remove old status
-    rm -Rf $status_file_name
+    rm -f $status_file_name
 
     if [[ -n "$err_msg" ]]; then
         log_debug "Set node management status for nmp $nmp to \"$status\". Error: \"$err_msg\"."
@@ -127,7 +129,9 @@ function set_nodemanagement_status() {
     fi
 
     # save the status to the status file
-    write_status_file "$status_file_name" "$status" "$err_msg"
+    if [ -n "$status_file_name" ]; then
+        write_status_file "$status_file_name" "$status" "$err_msg"
+    fi
 
     # call agent API to save the status
     read -d '' nm_status <<EOF
@@ -160,9 +164,9 @@ function unpack_packages() {
 
     current_dir=$(pwd)
     cd $pdir
-    count=$(ls -1 *.tar.gz 2>/dev/null | wc -l)
+    count=$(ls -1 horizon*.tar.gz 2>/dev/null | wc -l)
     if [ $count != 0 ]; then
-        for pkg_file in *.tar.gz; do
+        for pkg_file in horizon*.tar.gz; do
             tar -zxf $pkg_file
             log_info "Unpacked file $pkg_file."
         done
@@ -222,14 +226,15 @@ function backup_agent_and_cli() {
     mkdir -p $backup_dir
 
     FUNC_RET_MSG=""
-    OS='unknown'
     if [[ $OSTYPE == linux* ]]; then
-        backup_agent_and_cli_linux $backup_dir
-        return $?
+        if [ -z "$CONTAINER_NUMBER" ]; then
+            backup_agent_and_cli_native $backup_dir
+        else
+            backup_agent_and_cli_container $backup_dir
+        fi
     elif [[ $OSTYPE == darwin* ]]; then
-        backup_agent_and_cli_macos $backup_dir
-        return $?
-    else
+        backup_agent_and_cli_container $backup_dir
+     else
         FUNC_RET_MSG="Unsupported os type: $OSTYPE."
         return 5
     fi
@@ -237,7 +242,7 @@ function backup_agent_and_cli() {
 
 # Save the agent config and binaries for rollback on Linux where the agent
 # is running on the host.
-function backup_agent_and_cli_linux() {
+function backup_agent_and_cli_native() {
     log_info "Backing up horizon agent/cli binaries and configuration on Linux."
     local backup_dir=$1
 
@@ -268,50 +273,83 @@ function backup_agent_and_cli_linux() {
         fi
     fi
 
-
-    # get a list of files that horion-cli package installs
-    # and make a copy of each in the backup_dir
-    if is_debian_variant; then 
-        output_hcli=$(dpkg-query -L horizon-cli)
-    else
-        output_hcli=$(rpm -ql horizon-cli)
-    fi
-    if [ $? -eq 0 ]; then
-        copy_pkg_files "$backup_dir/horizon-cli" "$output_hcli"
+    # backup horizon-cli
+    backup_horizon-cli $backup_dir
+    if [ $? -ne 0 ]; then
+        FUNC_RET_MSG="Failed to backup horizon-cli. $FUNC_RET_MSG"
+        return $?
     fi
 
     log_debug "End backing up horizon agent/cli binaries and configuration on Linux."
 }
 
+
+# get a list of files that horion-cli package installs
+# and make a copy of each in the backup_dir
+function backup_horizon-cli() {
+   local backup_dir=$1
+
+    FUNC_RET_MSG=""
+    if [[ $OSTYPE == linux* ]]; then
+        if is_debian_variant; then
+            output_hcli=$(dpkg-query -L horizon-cli 2>&1)
+        elif is_redhat_variant; then
+            output_hcli=$(rpm -ql horizon-cli 2>&1)
+        else
+            FUNC_RET_MSG="Unsupported Linux distro."
+            return 5
+        fi
+
+        if [ $? -eq 0 ]; then
+            copy_pkg_files "$backup_dir/horizon-cli" "$output_hcli"
+        else
+            FUNC_RET_MSG="Faild to query horizon-cli package. $output_hcli"
+            return 5
+        fi
+    elif [[ $OSTYPE == darwin* ]]; then
+        hcli_pkg_name=$(pkgutil --pkgs |grep horizon-cli)
+        if [ $? -eq 0 ]; then
+            # get install dir
+            volume=$(pkgutil --pkg-info $hcli_pkg_name | grep "^volume:" | sed 's/volume: //g')
+            location=$(pkgutil --pkg-info $hcli_pkg_name | grep "^location:" | sed 's/location: //g')
+            install_loc="${volume%/}/${location}"
+            install_loc="${install_loc%/}"
+
+            # get files
+            hcli_pkg_files=$(pkgutil --files $hcli_pkg_name)
+
+            # get the full pathes for all the files in the package
+            hcli_pkg_files_full=""
+            for f in $hcli_pkg_files; do
+                hcli_pkg_files_full+=" ${install_loc}/${f}"
+            done
+
+            # copy files
+            copy_pkg_files "$backup_dir/horizon-cli" "$hcli_pkg_files_full"
+        else
+            FUNC_RET_MSG="Faild to query horizon-cli package."
+            return 5
+        fi
+    else
+        FUNC_RET_MSG="Unsupported os type: $OSTYPE"
+        return 5
+    fi
+}
+
 # Back up files for horizon-cli, amd64_anax image and agent cofiguration
-# files on MacOS
-function backup_agent_and_cli_macos() {
-    log_info "Backing up horizon agent/cli binaries and configuration on MacOS."
+# files on Linux.
+function backup_agent_and_cli_container() {
+    log_info "Backing up horizon container agent, cli binaries and configuration on Linux."
     local backup_dir=$1
 
-    # handle horizon-cli
-    hcli_pkg_name=$(pkgutil --pkgs |grep horizon-cli)
-    if [ $? -eq 0 ]; then
-        # get install dir
-        volume=$(pkgutil --pkg-info $hcli_pkg_name | grep "^volume:" | sed 's/volume: //g')
-        location=$(pkgutil --pkg-info $hcli_pkg_name | grep "^location:" | sed 's/location: //g')
-        install_loc="${volume%/}/${location}"
-        install_loc="${install_loc%/}"
-
-        # get files
-        hcli_pkg_files=$(pkgutil --files $hcli_pkg_name)
-
-        # get the full pathes for all the files in the package
-        hcli_pkg_files_full=""
-        for f in $hcli_pkg_files; do
-            hcli_pkg_files_full+=" ${install_loc}/${f}"
-        done
-        
-        # copy files
-        copy_pkg_files "$backup_dir/horizon-cli" "$hcli_pkg_files_full"
+    # save horizon-cli files
+    backup_horizon-cli $backup_dir
+    if [ $? -ne 0 ]; then
+        FUNC_RET_MSG="Failed to backup horizon-cli. $FUNC_RET_MSG"
+        return $?
     fi
 
-    # get image and cert file and agent config file   
+    # save cert file and agent config file
     copy_pkg_files "$backup_dir/horizon" "/etc/default/horizon"
     if [ -f "/etc/default/horizon" ]; then
         cert_file_name=$(grep HZN_MGMT_HUB_CERT_PATH /etc/default/horizon | sed 's/HZN_MGMT_HUB_CERT_PATH=//g')
@@ -321,7 +359,8 @@ function backup_agent_and_cli_macos() {
         copy_pkg_files "$backup_dir/horizon" "$cert_file_name"
     fi
 
-    let horizon_num=${agentPort}-8080
+    # save image name, local db and anax.json file
+    horizon_num=$CONTAINER_NUMBER
     container_info=$(docker inspect horizon${horizon_num})
     if [ $? -eq 0 ]; then
         mkdir -p $backup_dir/container
@@ -332,7 +371,7 @@ function backup_agent_and_cli_macos() {
         docker cp horizon${horizon_num}:/etc/horizon/anax.json $backup_dir/container/etc/horizon/anax.json
     fi
 
-    log_debug "End backing up horizon agent/cli binaries and configuration on MacOS."
+    log_debug "End backing up horizon container agent, cli binaries and configuration on Linux."
 }
 
 function rollback_agent_and_cli() {
@@ -341,18 +380,20 @@ function rollback_agent_and_cli() {
     FUNC_RET_MSG=""
     OS='unknown'
     if [[ $OSTYPE == linux* ]]; then
-        rollback_agent_and_cli_linux $backup_dir
-        return $?
+        if [ -z "$CONTAINER_NUMBER" ]; then
+            rollback_agent_and_cli_native $backup_dir
+        else
+            rollback_agent_and_cli_container $backup_dir
+        fi
     elif [[ $OSTYPE == darwin* ]]; then
-        rollback_agent_and_cli_macos $backup_dir
-        return $?
+        rollback_agent_and_cli_container $backup_dir
     else
         FUNC_RET_MSG="Unsupported os type: $OSTYPE."
         return 5
     fi
 }
 
-function rollback_agent_and_cli_linux() {
+function rollback_agent_and_cli_native() {
     log_info "Rolling back horizon agent/cli binaries and configuration on Linux."
 
     local backup_dir=$1
@@ -391,58 +432,55 @@ function rollback_agent_and_cli_linux() {
     log_debug "End rolling back horizon agent/cli binaries and configuration on Linux."
 }
 
-function rollback_agent_and_cli_macos() {
-    log_info "Rolling back horizon agent/cli binaries and configuration on MacOS."
+function rollback_agent_and_cli_container() {
+    log_info "Rolling back container agent, cli binaries and configuration."
 
     local backup_dir=$1
     FUNC_RET_MSG=""
 
     # restore files
-    restore_pkg_files $backup_dir/horiozn
+    restore_pkg_files $backup_dir/horizon
     rc=$?
     if [ $rc -ne 0 ]; then
         FUNC_RET_MSG="Failed restore files for horizon package. $FUNC_RET_MSG"
         return $rc
     fi
-    restore_pkg_files $backup_dir/horiozn-cli
+    log_debug "Rollback: horizon configuration files restored."
+
+    restore_pkg_files $backup_dir/horizon-cli
     rc=$?
     if [ $rc -ne 0 ]; then
         FUNC_RET_MSG="Failed to restore files for horizon-cli package. $FUNC_RET_MSG"
         return $rc
     fi
+    log_debug "Rollback: horizon-cli restored."
 
     # restore files inside the agent container
-    let horizon_num=${agentPort}-8080
+    horizon_num=$CONTAINER_NUMBER
     container_name=horizon${horizon_num}
 
-    # kill current container
-    docker rm -f $container_name
-
-    # start a new container
+    # get old image
     if [ ! -f "$backup_dir/container/container_info.json" ]; then
         FUNC_RET_MSG="Failed to find the original docker image for the agent container."
         return 2
     fi
-    image=$(echo $backup_dir/container/container_info.json |jq '.[].Config.Image' 2>&1)
+    image=$(cat $backup_dir/container/container_info.json |jq '.[].Config.Image' 2>&1)
     rc=$?
     if [ $rc -ne 0 ]; then
         FUNC_RET_MSG="Failed to get the original agent image name."
         return $rc
     fi
-
     # remove the quotes from the image name 
     image="${image%\"}"
     image="${image#\"}"
 
     # start the container
-    HC_DOCKER_IMAGE=${image%:*} HC_DOCKER_TAG=${image##*:} horizon-container start $horizon_num
-
     docker cp $backup_dir/container/var/horizon/anax.db horizon${horizon_num}:/var/horizon/anax.db
     docker cp $backup_dir/container/etc/horizon/anax.json horizon${horizon_num}:/etc/horizon/anax.json
-
     HC_DOCKER_IMAGE=${image%:*} HC_DOCKER_TAG=${image##*:} horizon-container update $horizon_num
+    log_debug "Rollback: horizon container restored."
 
-    log_debug "End rolling back horizon agent/cli binaries and configuration on MacOS."
+    log_debug "End rolling back container agent, cli binaries and configuration."
 }
 
 # Wait until the given cmd is true
@@ -515,9 +553,10 @@ script_dir=$(cd "$(dirname "$0")" &> /dev/null && pwd)
 
 # get agent port. 
 # for anax in container, the agent port is given by the first cmd paremeter
-agentPort="8510"
+let agentPort=$AGENT_PORT_DEFAULT
 if [ -n "$1" ]; then
-	agentPort=$1
+    CONTAINER_NUMBER=$1
+	agentPort=$(expr $AGENT_CONTAINER_PORT_BASE + $CONTAINER_NUMBER)
 fi
 export HORIZON_URL="http://localhost:${agentPort}"
 
@@ -542,10 +581,10 @@ log_debug "Call Agent to get next agent upgrade task:\n ${nextjob}"
 output=$(curl -s -w %{http_code} ${HORIZON_URL}/nodemanagement/nextjob?"type=agentUpgrade&ready=true")
 rc="${output: -3}" 
 if [ "$rc" != "200" ]; then
-    log_error "Failed to get next upgrade job from the agent. http code: ${rc}."
+    log_error "Failed to get next upgrade job from the agent. http code: $rc. $output."
     exit 2
 fi
-nextjob="${output::-3}"
+nextjob="${output:0:$((${#output}-3))}"
 log_debug "Agent's next agent upgrade task:\n ${nextjob}"
 
 # exit if there are no tasks
@@ -574,14 +613,16 @@ pkg_dir=$(jq -r ".\"$nmp_id\".agentUpgrade.workingDirectory" 2>/dev/null <<< $ne
 if [ -z "$pkg_dir" ]; then
     pkg_dir="$DEFAULT_VAR_BASE"
 fi
-#remove last lash and add nmp id to the path
+#remove last lash and add nmp id
 pkg_dir=${pkg_dir%/}
 pkg_dir=$pkg_dir/$nmp_id
 
+mkdir -p $pkg_dir
 log_info "Package directory: $pkg_dir"
 
-mkdir -p $pkg_dir
+# clean the status file
 status_file="$pkg_dir/$STATUS_FILE_NAME"
+rm -f $status_file
 
 # go to the package directory and find the types of the upgrade needed.
 get_upgrade_types $pkg_dir
@@ -605,13 +646,18 @@ unpack_packages $pkg_dir
 if [ $? -ne 0 ]; then
    log_error "Failed unpacking the packages. $FUNC_RET_MSG"
    set_nodemanagement_status "$nmp_id" "$status_file" "failed" "Failed unpacking the packages. $FUNC_RET_MSG"
+   exit 1
 fi
 
 # save current config and binaries for later in case there is a need for rollback
+backup_ok=true
 backup_agent_and_cli "$pkg_dir/$ROLLBACK_DIR_NAME"
 if [ $? -ne 0 ]; then
    log_error "Failed backing up the horizon agent and cli. $FUNC_RET_MSG"
    set_nodemanagement_status "$nmp_id" "$status_file" "failed" "Failed backing up the horizon agent and cli. $FUNC_RET_MSG"
+
+   # continue without backup
+   backup_ok=false
 fi
 
 # update the management status to 'initiated'
@@ -620,21 +666,31 @@ set_nodemanagement_status "$nmp_id" "$status_file" "initiated" ""
 # get allowDowngrade attribute from the node management status
 allow_downgrade=$(jq -r ".\"$nmp_id\".agentUpgrade.allowDowngrade" 2>/dev/null <<< $nextjob || true)
 allow_downgrade="true"  #TODO remove
-if [ "allow_downgrade" == "true" ]; then
+if [ "$allow_downgrade" == "true" ]; then
     overwrite_flag="-f"
 else
     overwrite_flag=""
 fi
 
+# --container flag for anax in container, -N flag for container number
+container_flag=""
+container_num_flag=""
+if [ -n "$CONTAINER_NUMBER" ]; then
+    container_flag="--container"
+    container_num_flag="-N $CONTAINER_NUMBER"
+fi
+
 # run agent-intall.sh. catch the stdout and stderr in different variables 
 unset Std_msg Err_msg RC
 cd $pkg_dir
-eval "$(${pkg_dir}/agent-install.sh -d ${node_id} -O ${node_org_id} \
-        -s -b ${overwrite_flag} -G ${upgrade_types} --auto-upgrade \
+cmd="${pkg_dir}/agent-install.sh -d ${node_id} -O ${node_org_id} -s -b ${overwrite_flag} -G ${upgrade_types} --auto-upgrade ${container_flag} ${container_num_flag}"
+log_info "$cmd"
+eval "$(${cmd} \
         2> >(Err_msg=$(cat); typeset -p Err_msg) \
         > >(Std_msg=$(cat); typeset -p Std_msg); \
         RC=$?; typeset -p RC)"
 rc=$RC
+#rc=5 #TODO remove
 # display the agenty-install.sh output
 echo "$Std_msg"
 #check the return code
@@ -650,11 +706,16 @@ if [ $rc -ne 0 ]; then
     set_nodemanagement_status "$nmp_id" "$status_file" "failed" "$errmsg"
 
     if [ $rc -ge 3 ]; then
+        if ! $backup_ok; then
+            set_nodemanagement_status "$nmp_id" "$status_file" "rollback failed" "No backups available"
+            exit 3
+        fi
+
         # rolling back
         set_nodemanagement_status "$nmp_id" "$status_file" "rollback started" ""
         rollback_agent_and_cli "$pkg_dir/$ROLLBACK_DIR_NAME"
         if [ $? -ne 0 ]; then
-            log_error "Failed to roll back. $FUNC_RET_MSG"
+            log_error "Rollback failed. $FUNC_RET_MSG"
             set_nodemanagement_status "$nmp_id" "$status_file" "rollback failed" "Filed rolling back. $FUNC_RET_MSG"
             exit 3
         else
@@ -668,7 +729,6 @@ if [ $rc -ne 0 ]; then
             set_nodemanagement_status "$nmp_id" "$status_file" "rollback successful" ""
         fi
     else
-        # update the management status with error message
 	    exit 2
     fi
 else

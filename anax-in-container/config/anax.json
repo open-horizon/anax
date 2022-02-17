@@ -19,6 +19,7 @@
     "TrustDockerAuthFromOrg": true,
     "ServiceUpgradeCheckIntervalS": 300,
     "MultipleAnaxInstances": true,
+    "NodeMgmtWorkDirectory": "",
     "FileSyncService": {
       "CSSURL": ""
     }
