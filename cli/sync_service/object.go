@@ -398,8 +398,8 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 			cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file, nil)
 		} else {
 			cliutils.Verbose(msgPrinter.Sprintf("Upload object in chunk, chunk size is: %d", chunkSize))
-                        mmsUrl := cliutils.GetMMSUrl() + "/" + urlPath
-                        uploadDataByChunk(mmsUrl, cliutils.OrgAndCreds(org, userPw), chunkSize, file)
+			mmsUrl := cliutils.GetMMSUrl() + "/" + urlPath
+			uploadDataByChunk(mmsUrl, cliutils.OrgAndCreds(org, userPw), chunkSize, file)
 		}
 
 		// Restore HTTP request override if necessary.
@@ -426,7 +426,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 			// Grab the object status and display it.
 			urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "status")
 			cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
-				cliutils.Verbose(msgPrinter.Sprintf("Object status: %v", string(resp)))
+			cliutils.Verbose(msgPrinter.Sprintf("Object status: %v", string(resp)))
 
 			if string(resp) == common.ReadyToSend || string(resp) == common.VerificationFailed {
 				break
@@ -467,6 +467,32 @@ func ObjectDelete(org string, userPw string, objType string, objId string) {
 	msgPrinter.Printf("Object %v deleted from org %v in the Model Management Service", objId, org)
 	msgPrinter.Println()
 
+}
+
+func ObjectTypes(org, userPw string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if userPw == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify exchange credentials to access the model management service"))
+	}
+
+	// Set the API key env var if that's what we're using.
+	cliutils.SetWhetherUsingApiKey(userPw)
+
+	// Call the MMS service over HTTP to get the object types.
+	var types []string
+	urlPath := fmt.Sprintf("api/v1/objects/%v?list_object_type=true", org)
+	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &types)
+	if httpCode == 404 {
+		fmt.Println("[]")
+	} else {
+		jsonBytes, err := json.MarshalIndent(types, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn mms object types' output: %v", err))
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	}
 }
 
 func dpServiceIsValid(dpService string) bool {
