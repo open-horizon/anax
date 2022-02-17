@@ -99,7 +99,7 @@ Options/Flags:
     -G                  A comma separated list of upgrade types. Supported types are 'software', 'cert' and 'config'. The default is 'software,cert,config'. It is used to perform partial agent upgrade. (This flag is equivalent to AGENT_UPGRADE_TYPES)
         --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to AGENT_IN_CONTAINER)
-    -N  --container-num The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
+    -N                  The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
     -h                  This usage
 
 Additional Variables (in environment or config file):
@@ -1433,6 +1433,8 @@ function install_macos() {
         get_certificate
     fi
 
+    check_exch_url_and_cert
+
     create_or_update_horizon_defaults
 
     if [[ has_upgrade_type_cert && $MGMT_HUB_CERT_CHANGED == 'true' ]]; then
@@ -1514,7 +1516,8 @@ function debian_device_install_prereqs() {
 #         1 if the deb pkg to be installed is newer than the corresponding pkg already installed
 #         2 if the deb pkg to be installed is older than the corresponding pkg already installed
 function compare_deb_pkg() {
-    local latest_deb_file=${1:?}   # make the decision based on the deb pkg they passed in
+    local __local_modified=$1
+    local latest_deb_file=${2:?}   # make the decision based on the deb pkg they passed in
 
     # latest_deb_file is something like /dir/horizon_2.28.0-338_amd64.deb
     local deb_file_version=${latest_deb_file##*/}   # remove the beginning path
@@ -1527,24 +1530,30 @@ function compare_deb_pkg() {
         pkg_name='horizon'
     fi
 
+    # Get version of installed horizon deb pkg
+    if [[ $(dpkg-query -s $pkg_name 2>/dev/null | grep -E '^Status:' | awk '{print $4}') != 'installed' ]]; then
+        log_verbose "The $pkg_name deb pkg is not installed (at least not completely)"
+        return 1   # anything is newer than not installed
+    fi
+    local installed_deb_version=$(dpkg-query -s $pkg_name | grep -E '^Version:' | awk '{print $2}')
+
     # Get version from binary first if possible
-    local installed_deb_version=""
+    local local_version=""
     get_local_horizon_version local_agent_ver local_cli_ver
     if [[ $pkg_name == 'horizon' && -n $local_agent_ver ]]; then
-        installed_deb_version=$local_agent_ver
+        local_version=$local_agent_ver
     elif [[ $pkg_name == 'horizon-cli' && -n $local_cli_ver ]]; then
-        installed_deb_version=$local_cli_ver
+        local_version=$local_cli_ver
     fi
     log_info "Local agent version is: $local_agent_ver; local cli version is: $local_cli_ver."
 
-    if [[ -z $installed_deb_version ]]; then
-        # Get version of installed horizon deb pkg
-        if [[ $(dpkg-query -s $pkg_name 2>/dev/null | grep -E '^Status:' | awk '{print $4}') != 'installed' ]]; then
-            log_verbose "The $pkg_name deb pkg is not installed (at least not completely)"
-            return 1   # anything is newer than not installed
-        fi
-        installed_deb_version=$(dpkg-query -s $pkg_name | grep -E '^Version:' | awk '{print $2}')
+    # if the local binary has been manually changed by user or by the agent auto upgrade rollback process
+    # and the binary version does not agree with the version in the repository 
+    local local_ver_modified='false'
+    if [[ -n "$local_version" && $local_version != $installed_deb_version ]]; then
+        local_ver_modified='true'
     fi
+    eval $__local_modified="'$local_ver_modified'"
 
     log_info "Installed $pkg_name deb package version: $installed_deb_version, Provided $pkg_name deb file version: $deb_file_version"
     local rc=0
@@ -1598,7 +1607,8 @@ function install_debian_device_horizon_pkgs() {
         fi
 
         local rc=0
-        compare_deb_pkg $new_pkg || rc=$?
+        local local_modified=''
+        compare_deb_pkg local_modified $new_pkg || rc=$?
         if [ $rc -eq 1 ]; then
             log_info "Installing $latest_files ..."
             runCmdQuietly apt-get install -yqf $latest_files
@@ -1609,6 +1619,16 @@ function install_debian_device_horizon_pkgs() {
         elif [ $rc -eq 2 ] && [[ "$AGENT_OVERWRITE" == true ]]; then
             log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
             runCmdQuietly apt-get install -yqf --allow-downgrades $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' && $AGENT_IN_CONTAINER != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
+        elif [[ $local_modified == 'true' ]]; then
+            # though the new package and the installed package versions are the same, the local
+            # binary has been changed either by user or by the rollback process from agent auto upgrade.
+            # The package will be reinstalled
+            log_info "Reinstalling $latest_files ..."
+            runCmdQuietly apt-get install -yqf --reinstall $latest_files
             if [[ $AGENT_ONLY_CLI != 'true' && $AGENT_IN_CONTAINER != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
@@ -1655,6 +1675,8 @@ function install_debian() {
         get_certificate
     fi
 
+    check_exch_url_and_cert
+
     create_or_update_horizon_defaults "$ANAX_PORT"
 
     if has_upgrade_type_sw; then
@@ -1700,6 +1722,8 @@ function install_debian_container() {
     if has_upgrade_type_cert; then
         get_certificate
     fi
+
+    check_exch_url_and_cert
 
     create_or_update_horizon_defaults
 
@@ -1758,7 +1782,8 @@ function redhat_device_install_prereqs() {
 #         1 if the rpm pkg to be installed is newer than the corresponding pkg already installed
 #         2 if the rpm pkg to be installed is older than the corresponding pkg already installed
 function compare_rpm_pkg() {
-    local latest_rpm_file=${1:?}   # make the decision based on the rpm pkg they passed in
+    local __local_modified=$1
+    local latest_rpm_file=${2:?}   # make the decision based on the rpm pkg they passed in
 
     # latest_rpm_file is something like /dir/horizon-2.28.0-338.x86_64.rpm
     local rpm_file_version=${latest_rpm_file##*/}   # remove the beginning path
@@ -1771,26 +1796,32 @@ function compare_rpm_pkg() {
         pkg_name='horizon'
     fi
 
+    # Get version of installed horizon rpm pkg
+    if ! rpm -q $pkg_name >/dev/null 2>&1; then
+        log_verbose "The $pkg_name rpm pkg is not installed"
+        return 1   # anything is newer than not installed
+    fi
+    local installed_rpm_version=$(rpm -q $pkg_name 2>/dev/null)  # will return like: horizon-2.28.0-338.x86_64
+    installed_rpm_version=${installed_rpm_version#${pkg_name}-}   # remove the pkg name
+    installed_rpm_version=${installed_rpm_version%.*}   # remove the arch, so left with only the version
+ 
     # Get version from binary first if possible
-    local installed_rpm_version=""
+    local local_version=""
     get_local_horizon_version local_agent_ver local_cli_ver
     if [[ $pkg_name == 'horizon' && -n $local_agent_ver ]]; then
-        installed_rpm_version=$local_agent_ver
+        local_version=$local_agent_ver
     elif [[ $pkg_name == 'horizon-cli' && -n $local_cli_ver ]]; then
-        installed_rpm_version=$local_cli_ver
+        local_version=$local_cli_ver
     fi
     log_info "Local agent version is: $local_agent_ver; local cli version is: $local_cli_ver."
 
-    if [[ -z $installed_rpm_version ]]; then
-        # Get version of installed horizon rpm pkg
-        if ! rpm -q $pkg_name >/dev/null 2>&1; then
-            log_verbose "The $pkg_name rpm pkg is not installed"
-            return 1   # anything is newer than not installed
-        fi
-        installed_rpm_version=$(rpm -q $pkg_name 2>/dev/null)  # will return like: horizon-2.28.0-338.x86_64
-        installed_rpm_version=${installed_rpm_version#${pkg_name}-}   # remove the pkg name
-        installed_rpm_version=${installed_rpm_version%.*}   # remove the arch, so left with only the version
+    # if the local binary has been manually changed by user or by the agent auto upgrade rollback process
+    # and the binary version does not agree with the version in the repository 
+    local local_ver_modified='false'
+    if [[ -n "$local_version" && $local_version != $installed_rpm_version ]]; then
+        local_ver_modified='true'
     fi
+    eval $__local_modified="'$local_ver_modified'"
 
     log_info "Installed $pkg_name rpm package version: $installed_rpm_version, Provided $pkg_name rpm file version: $rpm_file_version"
     local rc=0
@@ -1832,7 +1863,8 @@ function install_redhat_device_horizon_pkgs() {
         fi
     
         local rc=0
-        compare_rpm_pkg $new_pkg || rc=$?
+        local local_modified=''
+        compare_rpm_pkg local_modified $new_pkg || rc=$?
         if [ $rc -eq 1 ]; then
             log_info "Installing $latest_files ..."
             dnf install -yq $latest_files
@@ -1844,6 +1876,16 @@ function install_redhat_device_horizon_pkgs() {
             log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
             # Note: dnf automatically detects the specified pkg files are a lower version and downgrades them. If we need to switch to yum, we'll have to use yum downgrade ...
             dnf install -yq $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' && $AGENT_IN_CONTAINER != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
+        elif [[ $local_modified == 'true' ]]; then
+            # though the new package and the installed package versions are the same, the local
+            # binary has been changed either by user or by the rollback process from agent auto upgrade.
+            # The package will be reinstalled
+            log_info "Reinstalling $latest_files ..."
+            dnf reinstall -yq $latest_files
             if [[ $AGENT_ONLY_CLI != 'true' && $AGENT_IN_CONTAINER != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
@@ -1881,6 +1923,8 @@ function install_redhat() {
     if has_upgrade_type_cert; then
         get_certificate
     fi
+
+    check_exch_url_and_cert
 
     create_or_update_horizon_defaults "$ANAX_PORT"
 
@@ -1928,6 +1972,8 @@ function install_redhat_container() {
     if has_upgrade_type_cert; then
         get_certificate
     fi
+
+    check_exch_url_and_cert
 
     create_or_update_horizon_defaults
 
@@ -2544,6 +2590,28 @@ function check_existing_exch_node_is_correct_type() {
     fi
 
     log_debug "check_existing_exch_node_is_correct_type() end"
+}
+
+# make sure the new exchange url and cert are good.
+# this function is called after the config file is updated.
+function check_exch_url_and_cert() {
+    log_debug "check_exch_url_and_cert() begin"
+
+    log_info "Verifying the exchange url and the certificate file..."
+
+    local cert_flag=""
+    if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
+        cert_flag="--cacert $AGENT_CERT_FILE"
+    fi
+
+    local output=$(curl -w %{http_code} -fsS $cert_flag $HZN_EXCHANGE_URL/admin/version 2>/dev/null) || true
+
+    local httpCode="${output: -3}"
+    if [ $httpCode -ne 200 ]; then
+        log_fatal 2 "Failed to verify the exchange url or certificate file."
+    fi
+
+    log_debug "check_exch_url_and_cert() end"
 }
 
 # Cluster only: to extract agent image tar.gz and load to docker
