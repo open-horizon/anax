@@ -971,6 +971,11 @@ function is_cluster() {
     else return 1; fi
 }
 
+function is_small_kube() {
+    if $KUBECTL cluster-info | grep -q -E 'Kubernetes .* is running at .*//(127|172|10|192.168)\.'; then return 0
+    else return 1; fi
+}
+
 function is_anax_in_container() {
     if [[ $AGENT_IN_CONTAINER == 'true' ]]; then return 0
     else return 1; fi
@@ -1257,11 +1262,13 @@ function is_horizon_defaults_correct() {
         return 1
     fi
 
-    horizon_defaults_value=$(grep -E '^AGENT_CLUSTER_IMAGE_REGISTRY_HOST=' $defaults_file || true)
-    horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if ! urlEquals $horizon_defaults_value $HZN_EXCHANGE_URL; then
-        log_info "AGENT_CLUSTER_IMAGE_REGISTRY_HOST value changed, return"
-        return 1
+    if is_cluster; then
+        horizon_defaults_value=$(grep -E '^AGENT_CLUSTER_IMAGE_REGISTRY_HOST=' $defaults_file || true)
+        horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
+        if [[ -n $horizon_defaults_value ]] && ! urlEquals $horizon_defaults_value $EDGE_CLUSTER_REGISTRY_HOST; then
+            log_info "AGENT_CLUSTER_IMAGE_REGISTRY_HOST value changed, return"
+            return 1
+        fi
     fi
 
     if [[ -n $cert_file ]]; then
@@ -2807,7 +2814,6 @@ function create_horizon_env() {
 # Cluster only: to create deployment.yml based on template
 function prepare_k8s_deployment_file() {
     log_debug "prepare_k8s_deployment_file() begin"
-    SMALL_KUBE='false'
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
 
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
@@ -2820,10 +2826,9 @@ function prepare_k8s_deployment_file() {
         local image_full_path_on_edge_cluster_registry_internal_url
         if [[ "$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY" == "" ]]; then
             # check if using local cluster or remote ocp
-            if $KUBECTL cluster-info | grep -q -E 'Kubernetes .* is running at .*//(127|172|10|192.168)\.'; then
+            if is_small_kube; then
                 # using small kube
                 image_full_path_on_edge_cluster_registry_internal_url="$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
-                SMALL_KUBE='true'
             else
                 # using ocp
                 image_full_path_on_edge_cluster_registry_internal_url=$DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY/$EDGE_CLUSTER_REGISTRY_PROJECT_NAME/$EDGE_CLUSTER_AGENT_IMAGE_AND_TAG
@@ -3146,6 +3151,7 @@ function get_pod_id() {
     log_debug "get_pod_id() end"
 }
 
+# Cluster only: to setup agent deployment to use secret contains image registry cert
 function setup_cluster_image_registry_cert() {
     log_debug "setup_cluster_image_registry_cert() begin"
 
@@ -3165,6 +3171,7 @@ function setup_cluster_image_registry_cert() {
     log_debug "setup_cluster_image_registry_cert() end"
 }
 
+# Cluster only: to create image registry cert in secret
 function create_secret_for_image_reigstry_cert() {
     log_debug "create_secret_for_image_reigstry_cert() begin"
 
@@ -3183,6 +3190,7 @@ function create_secret_for_image_reigstry_cert() {
     log_debug "create_secret_for_image_reigstry_cert() end"
 }
 
+# Cluster only: to update image registry cert in secret
 function update_secret_for_image_reigstry_cert() {
     log_debug "update_secret_for_image_reigstry_cert() begin"
 
@@ -3199,6 +3207,7 @@ function update_secret_for_image_reigstry_cert() {
     log_debug "update_secret_for_image_reigstry_cert() end"
 }
 
+# Cluster only: to patch the agent deploiyment to use the secret contains image registry
 function patch_deployment_with_image_registry_volume() {
     log_debug "patch_deployment_with_image_registry_volume() begin"
     $KUBECTL patch deployment agent --patch-file=deployment-vol-patch.yml
@@ -3253,7 +3262,7 @@ function install_cluster() {
     create_deployment
     check_deployment_status
 
-    if [[ "$SMALL_KUBE" != "true" ]]; then
+    if ! is_small_kube; then
         # setup image registry cert. This will patch the running deployment
         local isUpdate='false'
         setup_cluster_image_registry_cert $isUpdate
@@ -3293,7 +3302,7 @@ function update_cluster() {
 
     update_deployment
     check_deployment_status
-    if [[ "$SMALL_KUBE" != "true" ]]; then
+    if ! is_small_kube; then
         # setup image registry cert. This will patch the running deployment
         local isUpdate='true'
         setup_cluster_image_registry_cert $isUpdate
