@@ -66,7 +66,7 @@ func NodeInitalSetup(db *bolt.DB, getDevice exchange.DeviceHandler, patchDevice 
 
 	// get exchange node user input
 	if _, err = SyncNodeWithExchange(db, pDevice, getDevice); err == nil {
-		
+
 		// set agent version in exchange
 		if exchNode.SoftwareVersions["horizon"] != version.HORIZON_VERSION {
 			versions := exchNode.SoftwareVersions
