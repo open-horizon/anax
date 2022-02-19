@@ -103,7 +103,7 @@ func (e *ExchangeNodeManagementPolicy) HasNoPatterns() bool {
 
 // The agent upgrade policy as stored in the exchange
 type ExchangeAgentUpgradePolicy struct {
-	Manifest       string `json:"manifest`
+	Manifest       string `json:"manifest"`
 	AllowDowngrade bool   `json:"allowDowngrade"`
 }
 
