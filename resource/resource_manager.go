@@ -112,6 +112,8 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 		common.Configuration.HTTPCSSCACertificate = r.config.GetCSSSSLCert()
 		common.Configuration.LogTraceDestination = "glog"
 		common.Configuration.ObjectQueueBufferSize = r.config.GetFSSObjectQueueSize()
+		common.Configuration.HTTPESSClientTimeout = r.config.GetHTTPESSClientTimeout()
+		common.Configuration.HTTPESSObjClientTimeout = r.config.GetHTTPESSObjClientTimeout()
 	}
 
 	if glog.V(5) {

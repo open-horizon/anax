@@ -11,21 +11,23 @@ import (
 
 // Configuration for the File Sync Service, which is implemented by the embedded ESS.
 type FSSConfig struct {
-	APIListen             string // The address on which the ESS will listen. The default is in the code below. For a unix domain socket path, it must be the full path name including the file name.
-	APIPort               uint16 // The port on which the ESS will listen. For a unix domain socket, this will always be "0".
-	APIProtocol           string // Can be 'unix' or 'https'. Default is unix. The value of this field determines the Listen and Port values.
-	PersistencePath       string // The absolute location in the host filesystem where anax stores files retrieved by the file sync service.
-	AuthenticationPath    string // The absolute location in the host filesystem where anax stores authentication credentials for services so that the service can authenticate to the FSS (ESS) API.
-	CSSURL                string // The URL used to access the CSS.
-	CSSSSLCert            string // The path to the client side SSL certificate for the CSS.
-	PollingRate           uint16 // The number of seconds between polls to the CSS for notification updates.
-	ObjectQueueBufferSize uint64 // The buffer size of object queue to send notification.
-	MaxDataChunkSize      int    // The data chunksize during internal data transfer between CSS and agent.
-	IsDataChunkEnabled    string // Indicate if chunk data transfer is enabled.
+	APIListen               string // The address on which the ESS will listen. The default is in the code below. For a unix domain socket path, it must be the full path name including the file name.
+	APIPort                 uint16 // The port on which the ESS will listen. For a unix domain socket, this will always be "0".
+	APIProtocol             string // Can be 'unix' or 'https'. Default is unix. The value of this field determines the Listen and Port values.
+	PersistencePath         string // The absolute location in the host filesystem where anax stores files retrieved by the file sync service.
+	AuthenticationPath      string // The absolute location in the host filesystem where anax stores authentication credentials for services so that the service can authenticate to the FSS (ESS) API.
+	CSSURL                  string // The URL used to access the CSS.
+	CSSSSLCert              string // The path to the client side SSL certificate for the CSS.
+	PollingRate             uint16 // The number of seconds between polls to the CSS for notification updates.
+	ObjectQueueBufferSize   uint64 // The buffer size of object queue to send notification.
+	HTTPESSClientTimeout    int    // The HTTP client timeout in seconds for ESS
+	HTTPESSObjClientTimeout int    // The http client timeout for downloading models (or objects) in seconds for ESS
+	MaxDataChunkSize        int    // The data chunksize during internal data transfer between CSS and agent.
+	IsDataChunkEnabled      string // Indicate if chunk data transfer is enabled.
 }
 
 func (f *FSSConfig) String() string {
-	return fmt.Sprintf("APIListen: %v, APIPort: %v, APIProtocol: %v, PersistencePath: %v, AuthenticationPath: %v, CSSURL: %v, CSSSSLCert: %v, PollingRate: %v, ObjectQueueBufferSize: %v, IsDataChunkEnabled : %v, MaxDataChunkSize: %v", f.APIListen, f.APIPort, f.APIProtocol, f.PersistencePath, f.AuthenticationPath, f.CSSURL, f.CSSSSLCert, f.PollingRate, f.ObjectQueueBufferSize, f.IsDataChunkEnabled, f.MaxDataChunkSize)
+	return fmt.Sprintf("APIListen: %v, APIPort: %v, APIProtocol: %v, PersistencePath: %v, AuthenticationPath: %v, CSSURL: %v, CSSSSLCert: %v, PollingRate: %v, ObjectQueueBufferSize: %v, HTTPESSClientTimeout: %v, HTTPESSObjClientTimeout: %v, IsDataChunkEnabled : %v, MaxDataChunkSize: %v", f.APIListen, f.APIPort, f.APIProtocol, f.PersistencePath, f.AuthenticationPath, f.CSSURL, f.CSSSSLCert, f.PollingRate, f.ObjectQueueBufferSize, f.HTTPESSClientTimeout, f.HTTPESSObjClientTimeout, f.IsDataChunkEnabled, f.MaxDataChunkSize)
 }
 
 func (c *HorizonConfig) FSSIsUnixProtocol() bool {
@@ -132,6 +134,32 @@ func (c *HorizonConfig) GetFSSObjectQueueSize() uint64 {
 		return HZN_FSS_OBJECT_QUEUE_BUFFER_SIZE
 	} else {
 		return c.Edge.FileSyncService.ObjectQueueBufferSize
+	}
+}
+
+func (c *HorizonConfig) GetHTTPESSClientTimeout() int {
+	if c.Edge.FileSyncService.HTTPESSClientTimeout == 0 {
+		timeout := os.Getenv(ESSHTTPClientTimeoutEnvvarName)
+		if t, err := strconv.Atoi(timeout); err == nil {
+			return t
+		} else {
+			return HZN_FSS_HTTP_ESS_CLIENT_TIMEOUT
+		}
+	} else {
+		return c.Edge.FileSyncService.HTTPESSClientTimeout
+	}
+}
+
+func (c *HorizonConfig) GetHTTPESSObjClientTimeout() int {
+	if c.Edge.FileSyncService.HTTPESSObjClientTimeout == 0 {
+		timeout := os.Getenv(ESSHTTPObjClientTimeoutEnvvarName)
+		if t, err := strconv.Atoi(timeout); err == nil {
+			return t
+		} else {
+			return HZN_FSS_HTTP_ESS_OBJ_CLIENT_TIMEOUT
+		}
+	} else {
+		return c.Edge.FileSyncService.HTTPESSObjClientTimeout
 	}
 }
 
