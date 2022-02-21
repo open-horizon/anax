@@ -16,6 +16,8 @@ const ExchangeMessageNoDynamicPollEnvvarName = "HZN_NO_DYNAMIC_POLL"
 const OldMgmtHubCertPath = "HZN_ICP_CA_CERT_PATH"
 const ManagementHubCertPath = "HZN_MGMT_HUB_CERT_PATH"
 const AnaxAPIPort = "HZN_AGENT_PORT"
+const ESSHTTPClientTimeoutEnvvarName = "HZN_FSS_HTTP_ESS_CLIENT_TIMEOUT"
+const ESSHTTPObjClientTimeoutEnvvarName = "HZN_FSS_HTTP_ESS_OBJ_CLIENT_TIMEOUT"
 
 type HorizonConfig struct {
 	Edge          Config
