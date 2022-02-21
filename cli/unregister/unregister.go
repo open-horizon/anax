@@ -231,8 +231,13 @@ func DeepClean() error {
 				if errBytes != nil && len(errBytes) > 0 {
 					return fmt.Errorf(msgPrinter.Sprintf("Error during removing policy files from horizon container: %s", errBytes))
 				}
-				outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
-					fmt.Sprintf("/usr/local/bin/horizon-container update %d", containerIdx))
+				if runtime.GOOS == "darwin" {
+					outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
+						fmt.Sprintf("/usr/local/bin/horizon-container update %d", containerIdx))
+				} else {
+					outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
+						fmt.Sprintf("/usr/bin/horizon-container update %d", containerIdx))
+				}
 				if errBytes != nil && len(errBytes) > 0 {
 					return fmt.Errorf(msgPrinter.Sprintf("Error during restarting the anax container: %s", errBytes))
 				}

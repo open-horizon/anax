@@ -63,6 +63,12 @@ const HZN_FSS_POLLING_RATE = 60
 // The buffer size of object queue to send notifications
 const HZN_FSS_OBJECT_QUEUE_BUFFER_SIZE = 2
 
+// The HTTP client timeout in seconds for ESS
+const HZN_FSS_HTTP_ESS_CLIENT_TIMEOUT = 120
+
+// The http client timeout for downloading models (or objects) in seconds for ESS
+const HZN_FSS_HTTP_ESS_OBJ_CLIENT_TIMEOUT = 600
+
 // The chunk size of data transferring between CSS and agent
 const HZN_FSS_MAX_CHUNK_SIZE = 5242880 
 

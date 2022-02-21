@@ -64,7 +64,17 @@ func NodeInitalSetup(db *bolt.DB, getDevice exchange.DeviceHandler) error {
 	}
 
 	// get exchange node user input
-	_, err = SyncNodeWithExchange(db, pDevice, getDevice)
+	if _, err = SyncNodeWithExchange(db, pDevice, getDevice); err == nil {
+
+		// set agent version in exchange
+		if exchNode.SoftwareVersions["horizon"] != version.HORIZON_VERSION {
+			versions := exchNode.SoftwareVersions
+			versions["horizon"] = version.HORIZON_VERSION
+			if err = patchDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, &exchange.PatchDeviceRequest{SoftwareVersions: versions}); err != nil {
+				return fmt.Errorf("Unable to update the Exchange with correct node version. %v", err)
+			}
+		}
+	}
 
 	return err
 }
