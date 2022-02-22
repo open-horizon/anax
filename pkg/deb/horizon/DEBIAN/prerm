@@ -21,6 +21,9 @@ if [ "$1" == "remove" ] || [ "$1" == "purge" ]; then
   fi
 fi
 
+# remove the agent auto-upgrade cron job
+rm -f /etc/cron.d/horizon_agent_upgrade
+
 # this has to occur after we've already done the pre-stop info gathering
 systemctl --quiet is-active horizon.service
 if [ "$?" == 0 ]; then

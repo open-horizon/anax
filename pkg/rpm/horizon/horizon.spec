@@ -73,10 +73,17 @@ systemctl start horizon.service
 #fi
 mkdir -p /var/horizon/ /var/run/horizon/
 
+# add cron job for agent auto-upgrade
+echo "*/5 * * * * root /usr/horizon/bin/agent-auto-upgrade.sh 2>&1|/usr/bin/logger -t AgentAutoUpgrade" > /etc/cron.d/horizon_agent_upgrade
+
 %preun
 # This runs before the pkg is removed. But the way rpm updates work is the newer rpm is installed 1st (with reference counting on the files),
 # and then the old rpm is removed (and any files whose reference count is 1), so we have to be able to tell the difference.
 # The $1 arg is set to the number of rpms that will be left when this rpm is removed, so 0 means this is a complete removal, not an update.
+
+# remove the agent auto-upgrade cron job
+rm -f /etc/cron.d/horizon_agent_upgrade
+
 if [ "$1" = "0" ]; then
   # Complete removal of the rpm
   # Save off container, agreements, etc. resources anax knows about for later removal

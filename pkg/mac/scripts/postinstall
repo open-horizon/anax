@@ -8,7 +8,7 @@ DESTDIR=/usr/local
 mkdir -p $DESTDIR/bin $DESTDIR/share/man/man1 $DESTDIR/etc/horizon
 ln -sf $SRCDIR/horizon-cli/bin/hzn $DESTDIR/bin
 ln -sf $SRCDIR/horizon-cli/bin/horizon-container $DESTDIR/bin
-ln -sf $SRCDIR/horizon-cli/bin/{agent-install.sh,agent-uninstall.sh,edgeNodeFiles.sh} $DESTDIR/bin
+ln -sf $SRCDIR/horizon-cli/bin/{agent-install.sh,agent-uninstall.sh,agent-auto-upgrade.sh,edgeNodeFiles.sh} $DESTDIR/bin
 ln -sf $SRCDIR/horizon-cli/bin/horizon-cli-uninstall.sh $DESTDIR/bin
 # hzn_bash_autocomplete.sh is in share/horizon, so linking the dir takes care of it
 ln -sf $SRCDIR/horizon-cli/share/horizon $DESTDIR/share

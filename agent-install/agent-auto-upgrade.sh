@@ -16,7 +16,7 @@ VERB_INFO=3
 VERB_VERBOSE=4
 VERB_DEBUG=5
 
-VERBOSITY=5
+VERBOSITY=3
 
 AGENT_PORT_DEFAULT=8510
 AGENT_CONTAINER_PORT_BASE=8080
@@ -550,6 +550,13 @@ function get_upgrade_types() {
 
 # get the directory that this script is located
 script_dir=$(cd "$(dirname "$0")" &> /dev/null && pwd)
+
+# sets the PATH environmental variable
+if [[ $OSTYPE == darwin* ]]; then
+    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/Users/Shared/horizon-cli/bin 
+else
+    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/horizon/bin
+fi
 
 # get agent port. 
 # for anax in container, the agent port is given by the first cmd paremeter

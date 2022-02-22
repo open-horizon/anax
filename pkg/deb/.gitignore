@@ -16,6 +16,7 @@
 /horizon-cli/usr/horizon/bin/horizon-container
 /horizon-cli/usr/horizon/bin/agent-install.sh
 /horizon-cli/usr/horizon/bin/agent-uninstall.sh
+/horizon-cli/usr/horizon/bin/agent-auto-upgrade.sh
 /horizon-cli/usr/horizon/bin/edgeNodeFiles.sh
 /horizon-cli/etc/bash_completion.d/
 /horizon-cli/usr/share/man/
