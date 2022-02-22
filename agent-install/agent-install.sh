@@ -1478,7 +1478,7 @@ function check_and_set_anax_port() {
     fi
 
     log_verbose "Checking if the agent port ${anax_port} is free..."
-    local netStat=$(netstat -nlp | grep $anax_port || true)
+    local netStat=$(netstat -ltn | grep $anax_port || true)
     if is_anax_in_container; then
         netStat=$(docker ps --filter "publish=$anax_port")
     fi
