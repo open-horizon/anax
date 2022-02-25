@@ -64,13 +64,14 @@ type AgentUpgradePolicyStatus struct {
 	CompletionTime       string               `json:"endTime,omitempty"`
 	UpgradedVersions     AgentUpgradeVersions `json:"upgradedVersions"`
 	Status               string               `json:"status"`
+	K8S                  *K8SResourcesStatus  `json:"k8s,omitempty"`
 	ErrorMessage         string               `json:"errorMessage,omitempty"`
 	BaseWorkingDirectory string               `json:"workingDirectory,omitempty"`
 }
 
 func (a AgentUpgradePolicyStatus) String() string {
-	return fmt.Sprintf("ScheduledTime: %v, ActualStartTime: %v, CompletionTime: %v, UpgradedVersions: %v, Status: %v, ErrorMessage: %v, BaseWorkingDirectory: %v",
-		a.ScheduledTime, a.ActualStartTime, a.CompletionTime, a.UpgradedVersions, a.Status, a.ErrorMessage, a.BaseWorkingDirectory)
+	return fmt.Sprintf("ScheduledTime: %v, ActualStartTime: %v, CompletionTime: %v, UpgradedVersions: %v, Status: %v, K8S: %v, ErrorMessage: %v, BaseWorkingDirectory: %v",
+		a.ScheduledTime, a.ActualStartTime, a.CompletionTime, a.UpgradedVersions, a.Status, a.K8S, a.ErrorMessage, a.BaseWorkingDirectory)
 }
 
 func (a AgentUpgradePolicyStatus) DeepCopy() *AgentUpgradePolicyStatus {
@@ -111,6 +112,27 @@ type AgentUpgradeVersions struct {
 
 func (a AgentUpgradeVersions) String() string {
 	return fmt.Sprintf("SoftwareVersion: %v, CertVersion: %v, ConfigVersion: %v", a.SoftwareVersion, a.CertVersion, a.ConfigVersion)
+}
+
+type K8SResourcesStatus struct {
+	ConfigMap    ResourceStatus `json:"configMap"`
+	Secret       ResourceStatus `json:"secret"`
+	ImageVersion ResourceStatus `json:"imageVersion"`
+}
+
+func (k K8SResourcesStatus) String() string {
+	return fmt.Sprintf("ConfigMap: %v, Secret: %v, ImageVersion: %v", k.ConfigMap, k.Secret, k.ImageVersion)
+}
+
+type ResourceStatus struct {
+	NeedChange bool   `json:"needChange"`
+	Updated    bool   `json:"updated"`
+	From       string `json:"from,omitempty"`
+	To         string `json:"to,omitempty"`
+}
+
+func (r ResourceStatus) String() string {
+	return fmt.Sprintf("NeedChange: %v, Updated: %v, From: %v, To: %v", r.NeedChange, r.Updated, r.From, r.To)
 }
 
 const (

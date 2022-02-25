@@ -103,9 +103,10 @@ const (
 	OBJECT_POLICIES_CHANGED EventId = "OBJECT_POLICIES_CHANGED"
 
 	// Node management policy
-	NMP_START_DOWNLOAD    EventId = "NMP_START_DOWNLOAD"
-	NMP_DOWNLOAD_COMPLETE EventId = "NMP_DOWNLOAD_COMPLETE"
-	NM_STATUS_CHANGED     EventId = "NM_STATUS_CHANGED"
+	NMP_START_DOWNLOAD       EventId = "NMP_START_DOWNLOAD"
+	NMP_DOWNLOAD_COMPLETE    EventId = "NMP_DOWNLOAD_COMPLETE"
+	NM_STATUS_CHANGED        EventId = "NM_STATUS_CHANGED"
+	AGENT_PACKAGE_DOWNLOADED EventId = "AGENT_PACKAGE_DOWNLOADED"
 
 	// Exchange change related
 	CHANGE_MESSAGE_TYPE             EventId = "EXCHANGE_CHANGE_MESSAGE"
@@ -2212,5 +2213,31 @@ func NewNMStatusChangedMessage(id EventId, nmpID string, nmStatus string) *NMSta
 		},
 		NmpID:  nmpID,
 		Status: nmStatus,
+	}
+}
+
+type AgentPackageDownloadedMessage struct {
+	event   Event
+	Message StartDownloadMessage
+}
+
+func (n *AgentPackageDownloadedMessage) Event() Event {
+	return n.event
+}
+
+func (n *AgentPackageDownloadedMessage) String() string {
+	return fmt.Sprintf("event: %v, Message: %v", n.event, n.Message)
+}
+
+func (n *AgentPackageDownloadedMessage) ShortString() string {
+	return n.String()
+}
+
+func NewAgentPackageDownloadedMessage(id EventId, message StartDownloadMessage) *AgentPackageDownloadedMessage {
+	return &AgentPackageDownloadedMessage{
+		event: Event{
+			Id: id,
+		},
+		Message: message,
 	}
 }

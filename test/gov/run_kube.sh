@@ -122,7 +122,7 @@ $cprefix microk8s.enable dns
 RC=$?
 if [ $RC -ne 0 ]
 then
-        echo "Failure enabling kube dns & storage: $RC"
+        echo "Failure enabling kube dns: $RC"
         exit 1
 fi
 
