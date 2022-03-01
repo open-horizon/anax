@@ -160,6 +160,8 @@ The script relies on an installation packages tree with the following directory 
     ├── amd64_anax.tar.gz
     ├── amd64_anax_k8s.tar.gz
     ├── deployment-template.yml
+    ├── amd64_auto-upgrade-cronjob_k8s.tar.gz
+    ├── auto-upgrade-cronjob-template.yml
     ├── horizon-2.30.0.x86_64.rpm
     ├── horizon-cli-2.30.0.pkg
     ├── horizon-cli-2.30.0.x86_64.rpm
