@@ -5,6 +5,7 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/edge-sync-service/common"
 	"net/http"
@@ -291,6 +292,20 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 	}
 
 	return nil
+}
+
+func GetManifestData(ec ExchangeContext, org string, objType string, objId string) (*exchangecommon.UpgradeManifest, error) {
+	var resp interface{}
+	resp = new(exchangecommon.UpgradeManifest)
+
+	url := path.Join("/api/v1/objects", org, objType, objId, "data")
+	url = ec.GetCSSURL() + url
+
+	if err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+		return nil, err
+	} else {
+		return resp.(*exchangecommon.UpgradeManifest), nil
+	}
 }
 
 // Get the object's list of destinations.

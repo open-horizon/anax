@@ -103,10 +103,28 @@ func (e *ExchangeNodeManagementPolicy) HasNoPatterns() bool {
 
 // The agent upgrade policy as stored in the exchange
 type ExchangeAgentUpgradePolicy struct {
-	Manifest       string `json:"manifest`
+	Manifest       string `json:"manifest"`
 	AllowDowngrade bool   `json:"allowDowngrade"`
 }
 
 func (e ExchangeAgentUpgradePolicy) String() string {
 	return fmt.Sprintf("Manifest: %v, AllowDowngrade: %v", e.Manifest, e.AllowDowngrade)
+}
+
+type UpgradeManifest struct {
+	Software      UpgradeDescription `json:"softwareUpgrade"`
+	Certificate   UpgradeDescription `json:"certificateUpgrade"`
+	Configuration UpgradeDescription `json:"configurationUpgrade"`
+}
+
+type UpgradeDescription struct {
+	Version  string   `json:"version"`
+	FileList []string `json:"files"`
+}
+
+type AgentUpgradeVersionsResponse struct {
+	SoftwareVersions []string `json:"agentSoftwareVersions"`
+	ConfigVersions   []string `json:"agentConfigVersions"`
+	CertVersions     []string `json:"agentCertVersions"`
+	LastUpdated      string   `json:"lastUpdated"`
 }

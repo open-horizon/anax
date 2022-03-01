@@ -79,7 +79,7 @@ AGBOT_TOKEN ?= Abcdefghijklmno1
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
-DOCKER_EXCH_TAG := 2.90.1
+DOCKER_EXCH_TAG := testing
 DOCKER_EXCH ?= $(HZN_TRANSPORT)://exchange-api:8080/v1
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
