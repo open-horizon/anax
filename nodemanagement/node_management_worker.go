@@ -49,7 +49,6 @@ func (w *NodeManagementWorker) Initialize() bool {
 		workingDir := w.Config.Edge.GetNodeMgmtDirectory()
 		if err := w.ProcessAllNMPS(workingDir); err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
-			// uncomment the return once nmp status is in the exchange-api
 			// return true
 		}
 		// Check if a nmp process completed
@@ -294,7 +293,7 @@ type StatusFile struct {
 	Status         string `json:"status"`
 	StartTime      uint64 `json:"startTime"`
 	CompletionTime uint64 `json:"endTime"`
-	Message        string `"json:errorMessage"`
+	Message        string `json:"errorMessage"`
 }
 
 // Read and  persist the status out of the  file

@@ -14,6 +14,8 @@ func GetNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId stri
 	var resp interface{}
 	resp = new(exchangecommon.NodeManagementPolicyStatus)
 
+	_, policyName = cutil.SplitOrgSpecUrl(policyName)
+
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/managementStatus/%v", ec.GetExchangeURL(), orgId, nodeId, policyName)
 
 	err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp)
@@ -40,6 +42,9 @@ func PutNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId stri
 
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/managementStatus/%v", ec.GetExchangeURL(), orgId, nodeId, policyName)
 
+	// set the working directory to an empty string as this is not in the exchange schema
+	nmpStatus.AgentUpgrade.BaseWorkingDirectory = ""
+
 	err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "PUT", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nmpStatus, &resp)
 	if err != nil {
 		return nil, err
@@ -54,6 +59,8 @@ func DeleteNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId s
 
 	var resp interface{}
 	resp = new(PutPostDeleteStandardResponse)
+
+	_, policyName = cutil.SplitOrgSpecUrl(policyName)
 
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/managementStatus/%v", ec.GetExchangeURL(), orgId, nodeId, policyName)
 

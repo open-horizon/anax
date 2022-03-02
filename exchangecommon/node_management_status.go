@@ -7,7 +7,7 @@ import (
 )
 
 type NodeManagementPolicyStatus struct {
-	AgentUpgrade *AgentUpgradePolicyStatus `json:"agentUpgrade"`
+	AgentUpgrade *AgentUpgradePolicyStatus `json:"agentUpgradePolicyStatus"`
 }
 
 func (n NodeManagementPolicyStatus) String() string {
@@ -54,16 +54,21 @@ type AgentUpgradePolicyStatus struct {
 	scheduledUnixTime    time.Time
 	ActualStartTime      string               `json:"startTime,omitempty"`
 	CompletionTime       string               `json:"endTime,omitempty"`
-	UpgradedVersions     AgentUpgradeVersions `json:"upgradedVersion"`
+	UpgradedVersions     AgentUpgradeVersions `json:"upgradedVersions"`
 	Status               string               `json:"status"`
 	ErrorMessage         string               `json:"errorMessage,omitempty"`
-	BaseWorkingDirectory string               `json:"workingDirectory"`
-	AllowDowngrade       bool                 `json:"allowDowngrade"`
+	BaseWorkingDirectory string               `json:"workingDirectory,omitempty"`
+	allowDowngrade       bool
+	manifest             string
 }
 
 func (a AgentUpgradePolicyStatus) String() string {
-	return fmt.Sprintf("ScheduledTime: %v, ActualStartTime: %v, CompletionTime: %v, UpgradedVersions: %v, Status: %v, ErrorMessage: %v, BaseWorkingDirectory: %v, AllowDowngrade: %v",
-		a.ScheduledTime, a.ActualStartTime, a.CompletionTime, a.UpgradedVersions, a.Status, a.ErrorMessage, a.BaseWorkingDirectory, a.AllowDowngrade)
+	return fmt.Sprintf("ScheduledTime: %v, ActualStartTime: %v, CompletionTime: %v, UpgradedVersions: %v, Status: %v, ErrorMessage: %v, BaseWorkingDirectory: %v, AllowDowngrade: %v, Manifest: %v",
+		a.ScheduledTime, a.ActualStartTime, a.CompletionTime, a.UpgradedVersions, a.Status, a.ErrorMessage, a.BaseWorkingDirectory, a.allowDowngrade, a.manifest)
+}
+
+func (a AgentUpgradePolicyStatus) GetManifest() string {
+	return a.manifest
 }
 
 type AgentUpgradeVersions struct {
@@ -102,7 +107,8 @@ func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string)
 		newStatus.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).Format(time.RFC3339)
 		newStatus.AgentUpgrade.scheduledUnixTime = time.Unix(realStartTime, 0)
 		newStatus.AgentUpgrade.BaseWorkingDirectory = workingDir
-		newStatus.AgentUpgrade.AllowDowngrade = policy.AgentAutoUpgradePolicy.AllowDowngrade
+		newStatus.AgentUpgrade.allowDowngrade = policy.AgentAutoUpgradePolicy.AllowDowngrade
+		newStatus.AgentUpgrade.manifest = policy.AgentAutoUpgradePolicy.Manifest
 	}
 	return newStatus
 }
