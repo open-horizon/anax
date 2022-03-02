@@ -154,20 +154,21 @@ copyHostOSInfo() {
     fi
 
 	# write os, distro, distro version and architecture to file
-    echo "OS=$os" > host-os-release
-    echo "DISTRO=$distro" >> host-os-release
-    echo "DISTRO_VERSION_NUM=$distroVersionNum" >> host-os-release
-    echo "ARCH=$image_arch" >> host-os-release
+    tmpfile="/tmp/host-os-release-${DOCKER_NAME}"
+    echo "OS=$os" > $tmpfile
+    echo "DISTRO=$distro" >> $tmpfile
+    echo "DISTRO_VERSION_NUM=$distroVersionNum" >> $tmpfile
+    echo "ARCH=$image_arch" >> $tmpfile
 
-	# copy file to docker container
-    docker cp host-os-release $DOCKER_NAME:/etc/host-os-release
-	if [[ $? -ne 0 ]]; then
-		echo "Could not copy host os info into agent docker container"
-		exit 2
-	fi
+    # copy file to docker container
+    docker cp $tmpfile $DOCKER_NAME:/etc/host-os-release
+    if [[ $? -ne 0 ]]; then
+        echo "Could not copy host os info into agent docker container"
+        exit 2
+    fi
 
-	# cleanup
-    rm host-os-release
+    # cleanup
+    rm $tmpfile
 }
 
 # Pull the latest horizon docker image, get some prereqs established, and start the image
@@ -335,6 +336,9 @@ start() {
 		checkrc $? "docker run"
 	fi
 
+	# add the cron job for agent auto upgrade in cron.d
+	add_horizon_upgrade_cronjob $INDEX_NUM
+
 	if [[ "$2" == "updating" ]]; then
 		echo "Horizon agent updated/restarted successfully."
 	else
@@ -355,6 +359,9 @@ start() {
 # Unregister the node, then stop/remove the container
 stop() {
 	checkRequirements	# this will exit with msg if requirements are not met
+
+	# Remove the agent auto upgrade cronjob from the cron.d
+	remove_horizon_upgrade_cronjob $INDEX_NUM
 
 	# Stop the anax container
 	echo "Unregistering the node, then stopping/removing the horizon container (this may take a minute)..."
@@ -383,6 +390,9 @@ restart() {
 	# Stop the anax container, but 1st tell it not to unregister when stopping, and dont delete the volumes
 	echo "Stopping/removing the horizon container..."
 
+	# Remove the agent auto upgrade cronjob from the cron.d
+	remove_horizon_upgrade_cronjob $INDEX_NUM
+
 	# check if the container is running or not
 	ret=$(docker inspect -f '{{.State.Running}}' $DOCKER_NAME)
 	if [ $? -eq 0 ]; then
@@ -402,6 +412,31 @@ restart() {
 	fi
 
 	start "$1" 'updating'
+}
+
+add_horizon_upgrade_cronjob() {
+	local container_number=$1
+	echo "Adding agent upgrade cron job..."
+	if isMacos; then
+		echo "A dialog box may be shown to ask your permission, please click the OK button."
+		cronjobs=$(sudo crontab -l 2>/dev/null; echo "*/5 * * * * /usr/local/bin/agent-auto-upgrade.sh ${container_number} 2>&1|/usr/bin/logger -t AgentAutoUpgrade-${container_number}")
+		echo "$cronjobs" | sudo crontab -
+	else
+		sudo echo "*/5 * * * * root /usr/horizon/bin/agent-auto-upgrade.sh ${container_number} 2>&1|/usr/bin/logger -t AgentAutoUpgrade-${container_number}" > /etc/cron.d/horizon${container_number}_agent_upgrade
+	fi
+}
+
+remove_horizon_upgrade_cronjob() {
+	local container_number=$1
+	echo "Removing agent upgrade cron job..."
+	if isMacos; then
+		echo "A dialog box may be shown to ask your permission, please click the OK button."
+		cronjobs=$(sudo crontab -l 2>/dev/null)
+		cronjobs_new=$(echo "$cronjobs" | sed "/agent-auto-upgrade.sh ${container_number} /d")
+		echo "$cronjobs_new" | sudo crontab -
+	else
+		sudo rm -f /etc/cron.d/horizon${container_number}_agent_upgrade
+	fi
 }
 
 # Main

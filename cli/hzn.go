@@ -632,7 +632,7 @@ Environment Variables:
 	nmManifestAddType := nmManifestAddCmd.Flag("type", msgPrinter.Sprintf("The type of manifest to add. Valid values include 'agent-upgrade-manifests'.")).Required().Short('t').String()
 	nmManifestAddId := nmManifestAddCmd.Flag("id", msgPrinter.Sprintf("The id of the manifest to add.")).Required().Short('i').String()
 	nmManifestAddFile := nmManifestAddCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the manifest data. Specify -f- to read from stdin.")).Short('f').Required().String()
-  	nmManifestListCmd := nmManifestCmd.Command("list | ls", msgPrinter.Sprintf("Display a list of manifest files stored in the management hub.")).Alias("ls").Alias("list")
+	nmManifestListCmd := nmManifestCmd.Command("list | ls", msgPrinter.Sprintf("Display a list of manifest files stored in the management hub.")).Alias("ls").Alias("list")
 	nmManifestListType := nmManifestListCmd.Flag("type", msgPrinter.Sprintf("The type of manifest to list. Valid values include 'agent-upgrade-manifests'.")).Short('t').String()
 	nmManifestListId := nmManifestListCmd.Flag("id", msgPrinter.Sprintf("The id of the manifest to list. Must specify --type flag.")).Short('i').String()
 	nmManifestListLong := nmManifestListCmd.Flag("long", msgPrinter.Sprintf("Display the contents of the manifest file. Must specify --type and --id flags.")).Short('l').Bool()

@@ -10,16 +10,16 @@ import (
 )
 
 type agentFileInfo struct {
-	AgentFileName		string	`json:"fileName"`
-	AgentFileType   	string	`json:"fileType"`
-	AgentFileVersion	string	`json:"fileVersion"`
+	AgentFileName    string `json:"fileName"`
+	AgentFileType    string `json:"fileType"`
+	AgentFileVersion string `json:"fileVersion"`
 }
 
 type validAgentFileTypes []string
 
 type agentFileType struct {
-	FileType 	string	`json:"fileType"`
-	Version 	string 	`json:"version"`
+	FileType string `json:"fileType"`
+	Version  string `json:"version"`
 }
 
 func (a validAgentFileTypes) contains(element string) bool {
@@ -73,7 +73,7 @@ func AgentFilesList(org, credToUse, fileTypeFilter, fileVersionFilter string) {
 	if httpCode == 404 {
 		fmt.Println("[]")
 		return
-	} 
+	}
 
 	// If no manifestID was specified, return list of manifest ID's with thier type's
 	agentFileObjects := make([]agentFileInfo, 0)
@@ -82,16 +82,16 @@ func AgentFilesList(org, credToUse, fileTypeFilter, fileVersionFilter string) {
 		// Determine if there is an underscore signifying a version string (can't be last character)
 		agentFileType := agentFile.ObjectType
 		splitIdx := strings.LastIndex(agentFileType, "_")
-		if splitIdx > 0 && splitIdx < len(agentFileType) - 1 {
+		if splitIdx > 0 && splitIdx < len(agentFileType)-1 {
 
 			// If there is a version, separate type from version, check the version string,
-			// make sure the type is in the list of valid types, filter for the type specified 
-			// by --type and the version specified by --version, if applicable. If everything 
+			// make sure the type is in the list of valid types, filter for the type specified
+			// by --type and the version specified by --version, if applicable. If everything
 			// checks out, add to list.
 			fileVersion := agentFileType[splitIdx+1:]
 			fileType := agentFileType[:splitIdx]
 			isWithinRange := true
-			if (usingVersionRange) {
+			if usingVersionRange {
 				if isWithinRange, err = fileVersionFilterRange.Is_within_range(fileVersion); err != nil {
 
 				}
@@ -99,23 +99,23 @@ func AgentFilesList(org, credToUse, fileTypeFilter, fileVersionFilter string) {
 				isWithinRange = false
 			}
 			if isWithinRange && validAgentFileTypes.contains(fileType) {
-				if (fileTypeFilter == fileType || fileTypeFilter == "") {
-					agentFileInfo := agentFileInfo {
-						AgentFileName: agentFile.ObjectID,
-						AgentFileType: fileType,
+				if fileTypeFilter == fileType || fileTypeFilter == "" {
+					agentFileInfo := agentFileInfo{
+						AgentFileName:    agentFile.ObjectID,
+						AgentFileType:    fileType,
 						AgentFileVersion: fileVersion,
 					}
 					agentFileObjects = append(agentFileObjects, agentFileInfo)
 				}
 			}
 
-		// If there was no underscore, check to see if type is valid. If so, the lack of
-		// version signifies this type is the latest version.
+			// If there was no underscore, check to see if type is valid. If so, the lack of
+			// version signifies this type is the latest version.
 		} else if validAgentFileTypes.contains(agentFileType) {
 			if (fileTypeFilter == agentFileType || fileTypeFilter == "") && (fileVersionFilter == "latest" || fileVersionFilter == "") {
-				agentFileInfo := agentFileInfo {
-					AgentFileName: agentFile.ObjectID,
-					AgentFileType: agentFile.ObjectType,
+				agentFileInfo := agentFileInfo{
+					AgentFileName:    agentFile.ObjectID,
+					AgentFileType:    agentFile.ObjectType,
 					AgentFileVersion: "latest",
 				}
 				agentFileObjects = append(agentFileObjects, agentFileInfo)
@@ -128,7 +128,7 @@ func AgentFilesList(org, credToUse, fileTypeFilter, fileVersionFilter string) {
 	if len(agentFileObjects) > 0 {
 		output = cliutils.MarshalIndent(agentFileObjects, "nodemanagement agentfiles list")
 
-	// Finally, return an empty list if there were no files with the specified features
+		// Finally, return an empty list if there were no files with the specified features
 	} else {
 		output = "[]"
 	}
@@ -172,35 +172,35 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 
 		// Determine if there is an underscore signifying a version string
 		splitIdx := strings.LastIndex(t, "_")
-		if splitIdx > 0 && splitIdx < len(t) - 1 {
+		if splitIdx > 0 && splitIdx < len(t)-1 {
 
 			// If there is a version, separate type from version, check the version string,
-			// make sure the type is in the list of valid types, and filter for the type specified 
+			// make sure the type is in the list of valid types, and filter for the type specified
 			// by --type, if applicable. If everything checks out, add to list.
 			version := t[splitIdx+1:]
 			fileType := t[:splitIdx]
 			if semanticversion.IsVersionString(version) && validAgentFileTypes.contains(fileType) {
-				if (fileTypeFilter == fileType || fileTypeFilter == "") {
-					agentFileType := agentFileType {
-						FileType: fileType, 
-						Version: version,
+				if fileTypeFilter == fileType || fileTypeFilter == "" {
+					agentFileType := agentFileType{
+						FileType: fileType,
+						Version:  version,
 					}
 					agentTypes = append(agentTypes, agentFileType)
 				}
 			}
 
-		// If there was no underscore, check to see if type is valid. If so, the lack of
-		// version signifies this type is the latest version.
+			// If there was no underscore, check to see if type is valid. If so, the lack of
+			// version signifies this type is the latest version.
 		} else if validAgentFileTypes.contains(t) && (fileTypeFilter == t || fileTypeFilter == "") {
-			agentFileType := agentFileType {
-				FileType: t, 
-				Version: "latest",
+			agentFileType := agentFileType{
+				FileType: t,
+				Version:  "latest",
 			}
 			agentTypes = append(agentTypes, agentFileType)
 		}
 	}
 
-	// If the user specified --version-only, return a list of versions extracted from the 
+	// If the user specified --version-only, return a list of versions extracted from the
 	// list of agent types
 	var output string
 	if versionOnly {
@@ -210,11 +210,11 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 		}
 		output = cliutils.MarshalIndent(versions, "nodemanagement agentfiles versions")
 
-	// Otherwise, output the list of agent types, if it isn't empty
+		// Otherwise, output the list of agent types, if it isn't empty
 	} else if len(agentTypes) > 0 {
 		output = cliutils.MarshalIndent(agentTypes, "nodemanagement agentfiles versions")
 
-	// Finally, return an empty list if there were no types with the specified features
+		// Finally, return an empty list if there were no types with the specified features
 	} else {
 		output = "[]"
 	}

@@ -12,19 +12,19 @@ import (
 )
 
 type ManifestInfo struct {
-	ManifestID     string                      `json:"manifestID"`
-	ManifestType   string                      `json:"manifestType"`
+	ManifestID   string `json:"manifestID"`
+	ManifestType string `json:"manifestType"`
 }
 
 type AgentUpgradeManifestData struct {
-	SoftwareUpgrade 		ManifestUpgradeDef	`json:"softwareUpgrade,omitempty"`
-	CertificateUpgrade 		ManifestUpgradeDef	`json:"certificateUpgrade,omitempty"`
-	ConfigurationUpgrade 	ManifestUpgradeDef	`json:"configurationUpgrade,omitempty"`
+	SoftwareUpgrade      ManifestUpgradeDef `json:"softwareUpgrade,omitempty"`
+	CertificateUpgrade   ManifestUpgradeDef `json:"certificateUpgrade,omitempty"`
+	ConfigurationUpgrade ManifestUpgradeDef `json:"configurationUpgrade,omitempty"`
 }
 
 type ManifestUpgradeDef struct {
-	Version		string		`json:"version"`
-	Files 		[]string	`json:"files"`
+	Version string   `json:"version"`
+	Files   []string `json:"files"`
 }
 
 type validManifestTypes []string
@@ -92,7 +92,7 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 	if httpCode == 404 {
 		fmt.Println("[]")
 		return
-	} 
+	}
 
 	var output string
 
@@ -101,7 +101,7 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 		manifestObjects := make([]ManifestInfo, 0)
 		for _, manifest := range manifestsMeta {
 			if validManifestTypes.contains(manifest.ObjectType) {
-				manifestInfo := ManifestInfo {
+				manifestInfo := ManifestInfo{
 					ManifestID:   manOrg + "/" + manifest.ObjectID,
 					ManifestType: manifest.ObjectType,
 				}
@@ -109,8 +109,8 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 			}
 		}
 		output = cliutils.MarshalIndent(manifestObjects, "nodemanagement manifest list")
-	
-	// Otherwise get the contents of the specified manifest file
+
+		// Otherwise get the contents of the specified manifest file
 	} else {
 
 		// The manifest metadata will be the only entry in the list since we force the user
@@ -120,7 +120,7 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 		// Assemble URL
 		urlPath := path.Join("api/v1/objects/", manOrg, manifest.ObjectType, manifest.ObjectID, "/data")
 		apiMsg := http.MethodGet + " " + cliutils.GetMMSUrl() + urlPath
-		
+
 		// Call the MMS service over HTTP to get the manifest data.
 		resp := cliutils.ExchangeGetResponse("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, credToUse))
 		if resp.Body != nil {
@@ -130,10 +130,10 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 		// Read in the manifest data bytes
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read body response from %s: %v",  apiMsg, err))
+			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read body response from %s: %v", apiMsg, err))
 		}
 
-		// Unmarshal the manifest into the correct struct type before marshaling back 
+		// Unmarshal the manifest into the correct struct type before marshaling back
 		// to ensure consistent output. As more manifest types are added, these lines
 		// will need to be repeated with the corresponding structs.
 		if manifest.ObjectType == "agent-upgrade-manifests" {
@@ -189,7 +189,7 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &manifestsMeta)
 	if httpCode != 404 {
 		updatedManifest = true
-	} 
+	}
 
 	// Call the MMS service over HTTP to add the manifest's metadata to the MMS.
 	urlPath = path.Join("api/v1/objects/", manOrg, ManifestMeta.ObjectType, ManifestMeta.ObjectID)

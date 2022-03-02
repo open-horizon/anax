@@ -35,7 +35,7 @@ fi
 echo "Removing horizon-cli files from $DESTDIR ..."
 rm -f $DESTDIR/bin/hzn 
 rm -f $DESTDIR/bin/horizon-container
-rm -f $DESTDIR/bin/{agent-install.sh,agent-uninstall.sh,edgeNodeFiles.sh}
+rm -f $DESTDIR/bin/{agent-install.sh,agent-uninstall.sh,agent-auto-upgrade.sh,edgeNodeFiles.sh}
 rm -f $DESTDIR/bin/horizon-cli-uninstall.sh
 # hzn_bash_autocomplete.sh is in share/horizon, so linking the dir takes care of it
 rm -f $DESTDIR/share/horizon
