@@ -116,13 +116,6 @@ func setupTesting(listenerCert string, listenerKey string, trustSystemCerts bool
 		t.Error(err)
 	}
 
-	// add the public key path, since we are only interested in the file names in the test for
-	// the key file fetcher, no real data are in the public key files.
-	pubKeyPath := filepath.Join(dir, "mtn-PublicKey.pem")
-	if err := ioutil.WriteFile(pubKeyPath, []byte("hello"), 0660); err != nil {
-		t.Error(err)
-	}
-
 	config := &HorizonConfig{
 		Edge: Config{
 			TrustSystemCACerts: trustSystemCerts,
