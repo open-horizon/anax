@@ -930,7 +930,7 @@ function publishUpgradeManifest() {
     echo "Generating upgrade manifest"
 
     echo "${upgradeManifest}" >  ${fileName}
-    putOneFileInCss ${fileName} "agent-upgrade-manifests" true $version
+    putOneFileInCss ${fileName} "agent_upgrade_manifests" true $version
 
     rm -f  ${fileName}
     chk $? "removing ${fileName}"

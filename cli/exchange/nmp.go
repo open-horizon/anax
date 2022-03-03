@@ -76,7 +76,7 @@ func NMPNew() {
 		`  ],`,
 		`  "enabled": false,                          /* ` + msgPrinter.Sprintf("Is this policy enabled or disabled.") + ` */`,
 		`  "start": "<RFC3339 timestamp> | now",      /* ` + msgPrinter.Sprintf("When to start an upgrade, default \"now\".") + ` */`,
-		`  "startWindow": 0,                          /* ` + msgPrinter.Sprintf("Enable agents to randomize upgrade start time within start + duration, default 0.") + ` */`,
+		`  "startWindow": 0,                          /* ` + msgPrinter.Sprintf("Enable agents to randomize upgrade start time within start + startWindow, default 0.") + ` */`,
 		`  "agentUpgradePolicy": {                    /* ` + msgPrinter.Sprintf("(Optional) Assertions on how the agent should update itself.") + ` */`,
 		`    "manifest": "",                          /* ` + msgPrinter.Sprintf("The manifest file containing the software, config and cert files to upgrade.") + ` */`,
 		`    "allowDowngrade": false                  /* ` + msgPrinter.Sprintf("Is this policy allowed to perform a downgrade to a previous version.") + ` */`,

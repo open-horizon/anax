@@ -19,10 +19,10 @@ import (
 )
 
 const (
-	CSSSOFTWAREUPGRADETYPE      = "agent-software-files"
-	CSSCONFIGUPGRADETYPE        = "agent-configuration-files"
-	CSSCERTUPGRADETYPE          = "agent-certificate-files"
-	CSSAGENTUPGRADEMANIFESTTYPE = "agent-upgrade-manifests"
+	CSSSOFTWAREUPGRADETYPE      = "agent_software_files"
+	CSSCONFIGUPGRADETYPE        = "agent_config_files"
+	CSSCERTUPGRADETYPE          = "agent_cert_files"
+	CSSAGENTUPGRADEMANIFESTTYPE = "agent_upgrade_manifests"
 	CSSSHAREDORG                = "IBM"
 
 	LATESTVERSION = "current"
