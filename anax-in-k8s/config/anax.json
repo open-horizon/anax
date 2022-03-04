@@ -3,7 +3,7 @@
     "APIListen": "127.0.0.1:8510",
     "DBPath": "/var/horizon/",
     "StaticWebContent": "/usr/horizon/web/",
-    "PublicKeyPath": "/etc/horizon/trust/mtn-publicKey.pem",
+    "PublicKeyPath": "",
     "TrustSystemCACerts": true,
     "CACertsPath": "",
     "DefaultCPUSet": "",

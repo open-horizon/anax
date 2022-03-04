@@ -308,8 +308,6 @@ e2edevtest-docker-prereqs:
 	cp -r $(CURDIR)/docker/fs/etc $(E2EDEVTEST_TEMPFS)
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(E2EDEVTEST_TEMPFS)/root
 	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
-	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/horizon.pem $(E2EDEVTEST_TEMPFS)/root/.colonus/.
-	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/mtn-publicKey.pem $(E2EDEVTEST_TEMPFS)/root/.colonus/.
 
 test-image:
 	@echo "Handling $(DOCKER_TEST_INAME)"
