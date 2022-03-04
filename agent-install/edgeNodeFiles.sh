@@ -224,6 +224,8 @@ function cleanUpPreviousFiles() {
 
 # Pull the edge cluster agent image from the package tar file or from a docker registry
 function getAgentK8sImageTarFile() {
+    local upgradeFiles=$1
+
     if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
         local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
         echo "Extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
@@ -252,6 +254,9 @@ function getAgentK8sImageTarFile() {
         version=${version##*:}   # strip the path and image name from the front
         echo "Version/tag of $AGENT_K8S_IMAGE_TAR_FILE is: $version"
         putOneFileInCss "$AGENT_K8S_IMAGE_TAR_FILE" agent_files false $version
+        putOneFileInCss "$AGENT_K8S_IMAGE_TAR_FILE" "agent_software_files-${version}"  true  ${version}
+
+        addElementToArray $upgradeFiles $AGENT_K8S_IMAGE_TAR_FILE
     fi
     echo
 }
@@ -629,6 +634,7 @@ function getHorizonPackageFiles() {
             version=${version##*:}   # strip the path and image name from the front
             echo "Version/tag of $AGENT_IMAGE_TAR_FILE is: $version"
             putOneFileInCss "$AGENT_IMAGE_TAR_FILE" agent_files false $version
+            putOneFileInCss "$AGENT_IMAGE_TAR_FILE" "agent_software_files-${version}" true $version
 
             addElementToArray $softwareFiles "$AGENT_IMAGE_TAR_FILE"
         fi
@@ -778,7 +784,9 @@ all_main() {
 
     cleanUpPreviousFiles
 
-    getAgentK8sImageTarFile
+    local upgradeSoftwareFiles=()    # define this here since we need to capture device and cluster filenames and agent-install.sh
+
+    getAgentK8sImageTarFile upgradeSoftwareFiles
 
     local upgradeConfigFiles=()    
     createAgentInstallConfig upgradeConfigFiles
@@ -794,8 +802,6 @@ all_main() {
     if [[ $certFileLength -gt 0 ]]; then 
 	    manifestAddTypeStanza mymainresult "${mymainresult}" "certificateUpgrade" "1.0.0" "${upgradeCertFiles[@]}"
     fi
-
-    local upgradeSoftwareFiles=()    # define this here since we need to capture device and cluster filenames and agent-install.sh
 
     gatherHorizonPackageFiles upgradeSoftwareFiles
 
@@ -832,7 +838,9 @@ cluster_main() {
 
     cleanUpPreviousFiles
 
-    getAgentK8sImageTarFile
+    local upgradeSoftwareFiles=()    # define this here since we need to capture device and cluster filenames and agent-install.sh
+
+    getAgentK8sImageTarFile upgradeSoftwareFiles
 
     local upgradeConfigFiles=()    
     createAgentInstallConfig upgradeConfigFiles
@@ -848,8 +856,6 @@ cluster_main() {
     if [[ $certFileLength -gt 0 ]]; then 
 	    manifestAddTypeStanza myclustermainresult "${myclustermainresult}" "certificateUpgrade" "1.0.0" "${upgradeCertFiles[@]}"
     fi
-
-    local upgradeSoftwareFiles=()    # define this here since we need to capture device and cluster filenames and agent-install.sh
 
     getEdgeClusterFiles upgradeSoftwareFiles
 
