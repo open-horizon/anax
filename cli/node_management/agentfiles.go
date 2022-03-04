@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/edge-sync-service/common"
+	"sort"
 	"strings"
 )
 
@@ -15,12 +16,12 @@ type agentFileInfo struct {
 	AgentFileVersion string `json:"fileVersion"`
 }
 
-type validAgentFileTypes []string
-
 type agentFileType struct {
-	FileType string `json:"fileType"`
-	Version  string `json:"version"`
+	AgentFileType string `json:"fileType"`
+	AgentFileVersion  string `json:"version"`
 }
+
+type validAgentFileTypes []string
 
 var (
 	// Right now, there are only agent upgrade types, but there may be more types in future
@@ -46,22 +47,20 @@ func (a validAgentFileTypes) string() string {
 }
 
 func AgentFilesList(org, credToUse, fileTypeFilter, fileVersionFilter string) {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
 
 	var agentFileObjects []agentFileInfo
 	agentFileObjects = getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter)
 
-	// Output the list of agent files, if it isn't empty
+	// Output the list of agent files
 	var output string
 	if len(agentFileObjects) > 0 {
 		output = cliutils.MarshalIndent(agentFileObjects, "nodemanagement agentfiles list")
-
-		// Finally, return an empty list if there were no files with the specified features
+		
+		// Return an empty list if there were no files with the specified features
 	} else {
 		output = "[]"
 	}
-	msgPrinter.Println("The highest version and \"latest\" refer to the same object.")
+
 	fmt.Println(output)
 }
 
@@ -117,18 +116,21 @@ func getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter string) []a
 			// checks out, add to list.
 			fileVersion := agentFileType[splitIdx+1:]
 			fileType := agentFileType[:splitIdx]
+			if !semanticversion.IsVersionString(fileVersion) {
+				continue
+			}
+			if !validFileTypes.contains(fileType) {
+				continue
+			}
 			isWithinRange := true
 			if usingVersionRange {
-				if !semanticversion.IsVersionString(fileVersion) {
-					continue
-				}
 				if isWithinRange, err = fileVersionFilterRange.Is_within_range(fileVersion); err != nil {
 					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("failed to check version range %s: %v", fileVersion, err))
 				}
-			} else if !semanticversion.IsVersionString(fileVersion) || (fileVersionFilter != "" && fileVersion != fileVersionFilter) {
+			} else if fileVersionFilter != "" && fileVersionFilter != "latest" && fileVersion != fileVersionFilter {
 				isWithinRange = false
 			}
-			if isWithinRange && validFileTypes.contains(fileType) {
+			if isWithinRange {
 				if fileTypeFilter == fileType || fileTypeFilter == "" {
 					agentFileInfo := agentFileInfo{
 						AgentFileName:    agentFile.ObjectID,
@@ -138,19 +140,30 @@ func getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter string) []a
 					agentFileObjects = append(agentFileObjects, agentFileInfo)
 				}
 			}
+		}
+	}
 
-			// If there was no underscore, check to see if type is valid. If so, the lack of
-			// version signifies this type is the latest version.
-		} else if validFileTypes.contains(agentFileType) {
-			if (fileTypeFilter == agentFileType || fileTypeFilter == "") && (fileVersionFilter == "latest" || fileVersionFilter == "") {
-				agentFileInfo := agentFileInfo{
-					AgentFileName:    agentFile.ObjectID,
-					AgentFileType:    agentFile.ObjectType,
-					AgentFileVersion: "latest",
+	// Sort the files by type (if the type was not filtered) and then by version in descending order
+	sort.Slice(agentFileObjects, func(i, j int) bool {
+		if agentFileObjects[i].AgentFileType == agentFileObjects[j].AgentFileType {
+			return agentFileObjects[i].AgentFileVersion > agentFileObjects[j].AgentFileVersion
+		}
+		return agentFileObjects[i].AgentFileType > agentFileObjects[j].AgentFileType
+	})
+
+	// If the user just wants the latest files, grab the first instance of each type in the list
+	// since it is already sorted
+	if fileVersionFilter == "latest" {
+		latestAgentFileObjects := make([]agentFileInfo, 0)
+		for _, validType := range validFileTypes {
+			for _, agentFile := range agentFileObjects {
+				if agentFile.AgentFileType == validType {
+					latestAgentFileObjects = append(latestAgentFileObjects, agentFile)
+					break
 				}
-				agentFileObjects = append(agentFileObjects, agentFileInfo)
 			}
 		}
+		agentFileObjects = latestAgentFileObjects
 	}
 
 	return agentFileObjects
@@ -183,7 +196,7 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 	}
 
 	// Check each type returned from the CSS type API and add to list, if valid
-	var agentTypes []agentFileType
+	var agentFileTypes []agentFileType
 	for _, t := range types {
 
 		// Determine if there is an underscore signifying a version string
@@ -193,47 +206,52 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 			// If there is a version, separate type from version, check the version string,
 			// make sure the type is in the list of valid types, and filter for the type specified
 			// by --type, if applicable. If everything checks out, add to list.
-			version := t[splitIdx+1:]
+			fileVersion := t[splitIdx+1:]
 			fileType := t[:splitIdx]
-			if semanticversion.IsVersionString(version) && validFileTypes.contains(fileType) {
+			if !semanticversion.IsVersionString(fileVersion) {
+				continue
+			}
+			if !validFileTypes.contains(fileType) {
+				continue
+			}
+			if semanticversion.IsVersionString(fileVersion) && validFileTypes.contains(fileType) {
 				if fileTypeFilter == fileType || fileTypeFilter == "" {
 					agentFileType := agentFileType{
-						FileType: fileType,
-						Version:  version,
+						AgentFileType: fileType,
+						AgentFileVersion:  fileVersion,
 					}
-					agentTypes = append(agentTypes, agentFileType)
+					agentFileTypes = append(agentFileTypes, agentFileType)
 				}
 			}
-
-			// If there was no underscore, check to see if type is valid. If so, the lack of
-			// version signifies this type is the latest version.
-		} else if validFileTypes.contains(t) && (fileTypeFilter == t || fileTypeFilter == "") {
-			agentFileType := agentFileType{
-				FileType: t,
-				Version:  "latest",
-			}
-			agentTypes = append(agentTypes, agentFileType)
 		}
 	}
+
+	// Sort the files by type (if the type was not filtered) and then by version in descending order
+	sort.Slice(agentFileTypes, func(i, j int) bool {
+		if agentFileTypes[i].AgentFileType == agentFileTypes[j].AgentFileType {
+			return agentFileTypes[i].AgentFileVersion > agentFileTypes[j].AgentFileVersion
+		}
+		return agentFileTypes[i].AgentFileType > agentFileTypes[j].AgentFileType
+	})
 
 	// If the user specified --version-only, return a list of versions extracted from the
 	// list of agent types
 	var output string
 	if versionOnly {
 		var versions []string
-		for _, v := range agentTypes {
-			versions = append(versions, v.Version)
+		for _, v := range agentFileTypes {
+			versions = append(versions, v.AgentFileVersion)
 		}
 		output = cliutils.MarshalIndent(versions, "nodemanagement agentfiles versions")
 
-		// Otherwise, output the list of agent types, if it isn't empty
-	} else if len(agentTypes) > 0 {
-		output = cliutils.MarshalIndent(agentTypes, "nodemanagement agentfiles versions")
-
-		// Finally, return an empty list if there were no types with the specified features
+		// Otherwise, output the list of agent types
+	} else if len(agentFileTypes) > 0 {
+		output = cliutils.MarshalIndent(agentFileTypes, "nodemanagement agentfiles versions")
+		
+		// Return an empty list if there were no files with the specified features
 	} else {
 		output = "[]"
 	}
-	msgPrinter.Println("The highest version and \"latest\" refer to the same object.")
+
 	fmt.Println(output)
 }

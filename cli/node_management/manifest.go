@@ -5,6 +5,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/edge-sync-service/common"
 	"io/ioutil"
 	"net/http"
@@ -220,6 +221,8 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 	var manSoftwareFilesVersion string
 	if manifestData.SoftwareUpgrade.Version == "latest" {
 		manSoftwareFilesVersion = ""
+	} else if _, err := semanticversion.Version_Expression_Factory(manifestData.SoftwareUpgrade.Version); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in SoftwareUpgrade is not a valid version range, version string or \"latest\": %v", err))
 	} else {
 		manSoftwareFilesVersion = manifestData.SoftwareUpgrade.Version
 	}
@@ -243,6 +246,8 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 	var manCertFilesVersion string
 	if manifestData.CertificateUpgrade.Version == "latest" {
 		manCertFilesVersion = ""
+	} else if _, err := semanticversion.Version_Expression_Factory(manifestData.CertificateUpgrade.Version); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in CertificateUpgrade is not a valid version range, version string or \"latest\": %v", err))
 	} else {
 		manCertFilesVersion = manifestData.CertificateUpgrade.Version
 	}
@@ -266,6 +271,8 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 	var manConfigFilesVersion string
 	if manifestData.ConfigurationUpgrade.Version == "latest" {
 		manConfigFilesVersion = ""
+	} else if _, err := semanticversion.Version_Expression_Factory(manifestData.ConfigurationUpgrade.Version); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in ConfigurationUpgrade is not a valid version range, version string or \"latest\": %v", err))
 	} else {
 		manConfigFilesVersion = manifestData.ConfigurationUpgrade.Version
 	}
