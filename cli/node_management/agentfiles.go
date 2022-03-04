@@ -22,6 +22,12 @@ type agentFileType struct {
 	Version  string `json:"version"`
 }
 
+var (
+	// Right now, there are only agent upgrade types, but there may be more types in future
+	// which should be added to this list
+	validFileTypes = validAgentFileTypes{"agent_software_files", "agent_cert_files", "agent_config_files"}
+)
+
 func (a validAgentFileTypes) contains(element string) bool {
 	for _, t := range a {
 		if t == element {
@@ -40,88 +46,11 @@ func (a validAgentFileTypes) string() string {
 }
 
 func AgentFilesList(org, credToUse, fileTypeFilter, fileVersionFilter string) {
-	cliutils.SetWhetherUsingApiKey(credToUse)
-
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	// Right now, there are only agent upgrade types, but there may be more types in future
-	// which should be added to this list
-	validAgentFileTypes := validAgentFileTypes{"agent-software-files", "agent-cert-files", "agent-config-files"}
-
-	// Ensure that specified type, if any, is a valid type
-	if fileTypeFilter != "" && !validAgentFileTypes.contains(fileTypeFilter) {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid agent file type specified. Valid types include: %v", validAgentFileTypes.string()))
-	}
-	// Ensure that specified version, if any, is a valid semantic version string, valid version range or "latest"
-	var err error
-	usingVersionRange := false
-	fileVersionFilter = strings.TrimSpace(strings.ReplaceAll(fileVersionFilter, " ", ""))
-	var fileVersionFilterRange *semanticversion.Version_Expression
-	if fileVersionFilterRange, err = semanticversion.Version_Expression_Factory(fileVersionFilter); err == nil {
-		usingVersionRange = true
-	} else if !semanticversion.IsVersionString(fileVersionFilter) && fileVersionFilter != "latest" && fileVersionFilter != "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--version must specify a valid version range, a valid version string or \"latest\""))
-	}
-
-	// Assemble URL
-	urlPath := "api/v1/objects/IBM?filters=true"
-
-	// Call the MMS service over HTTP to get the manifest metadata.
-	var agentFileMeta []common.MetaData
-	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &agentFileMeta)
-	if httpCode == 404 {
-		fmt.Println("[]")
-		return
-	}
-
-	// If no manifestID was specified, return list of manifest ID's with thier type's
-	agentFileObjects := make([]agentFileInfo, 0)
-	for _, agentFile := range agentFileMeta {
-
-		// Determine if there is an underscore signifying a version string (can't be last character)
-		agentFileType := agentFile.ObjectType
-		splitIdx := strings.LastIndex(agentFileType, "_")
-		if splitIdx > 0 && splitIdx < len(agentFileType)-1 {
-
-			// If there is a version, separate type from version, check the version string,
-			// make sure the type is in the list of valid types, filter for the type specified
-			// by --type and the version specified by --version, if applicable. If everything
-			// checks out, add to list.
-			fileVersion := agentFileType[splitIdx+1:]
-			fileType := agentFileType[:splitIdx]
-			isWithinRange := true
-			if usingVersionRange {
-				if isWithinRange, err = fileVersionFilterRange.Is_within_range(fileVersion); err != nil {
-
-				}
-			} else if !semanticversion.IsVersionString(fileVersion) || (fileVersionFilter != "" && fileVersion != fileVersionFilter) {
-				isWithinRange = false
-			}
-			if isWithinRange && validAgentFileTypes.contains(fileType) {
-				if fileTypeFilter == fileType || fileTypeFilter == "" {
-					agentFileInfo := agentFileInfo{
-						AgentFileName:    agentFile.ObjectID,
-						AgentFileType:    fileType,
-						AgentFileVersion: fileVersion,
-					}
-					agentFileObjects = append(agentFileObjects, agentFileInfo)
-				}
-			}
-
-			// If there was no underscore, check to see if type is valid. If so, the lack of
-			// version signifies this type is the latest version.
-		} else if validAgentFileTypes.contains(agentFileType) {
-			if (fileTypeFilter == agentFileType || fileTypeFilter == "") && (fileVersionFilter == "latest" || fileVersionFilter == "") {
-				agentFileInfo := agentFileInfo{
-					AgentFileName:    agentFile.ObjectID,
-					AgentFileType:    agentFile.ObjectType,
-					AgentFileVersion: "latest",
-				}
-				agentFileObjects = append(agentFileObjects, agentFileInfo)
-			}
-		}
-	}
+	var agentFileObjects []agentFileInfo
+	agentFileObjects = getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter)
 
 	// Output the list of agent files, if it isn't empty
 	var output string
@@ -136,6 +65,97 @@ func AgentFilesList(org, credToUse, fileTypeFilter, fileVersionFilter string) {
 	fmt.Println(output)
 }
 
+func getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter string) []agentFileInfo {
+
+	cliutils.SetWhetherUsingApiKey(credToUse)
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// Ensure that specified type, if any, is a valid type
+	if fileTypeFilter != "" && !validFileTypes.contains(fileTypeFilter) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid agent file type specified. Valid types include: %v", validFileTypes.string()))
+	}
+
+	// Ensure that specified version, if any, is a valid semantic version string, valid version range or "latest"
+	var err error
+	usingVersionRange := false
+	fileVersionFilter = strings.TrimSpace(strings.ReplaceAll(fileVersionFilter, " ", ""))
+	var fileVersionFilterRange *semanticversion.Version_Expression
+	if !semanticversion.IsVersionString(fileVersionFilter) {
+		if fileVersionFilterRange, err = semanticversion.Version_Expression_Factory(fileVersionFilter); err == nil {
+			usingVersionRange = true
+		} else if fileVersionFilter != "latest" && fileVersionFilter != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--version must specify a valid version range, a valid version string or \"latest\""))
+		}
+	}
+
+	// Assemble URL
+	urlPath := "api/v1/objects/IBM?filters=true"
+
+	// Slice to store agent files
+	agentFileObjects := make([]agentFileInfo, 0)
+
+	// Call the MMS service over HTTP to get the manifest metadata.
+	var agentFileMeta []common.MetaData
+	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &agentFileMeta)
+	if httpCode == 404 {
+		return agentFileObjects
+	}
+
+	// If no manifestID was specified, return list of manifest ID's with thier type's
+	for _, agentFile := range agentFileMeta {
+
+		// Determine if there is an underscore signifying a version string (can't be first or last character)
+		agentFileType := agentFile.ObjectType
+		splitIdx := strings.Index(agentFileType, "-")
+		if splitIdx > 0 && splitIdx < len(agentFileType)-1 {
+
+			// If there is a version, separate type from version, check the version string,
+			// make sure the type is in the list of valid types, filter for the type specified
+			// by --type and the version specified by --version, if applicable. If everything
+			// checks out, add to list.
+			fileVersion := agentFileType[splitIdx+1:]
+			fileType := agentFileType[:splitIdx]
+			isWithinRange := true
+			if usingVersionRange {
+				if !semanticversion.IsVersionString(fileVersion) {
+					continue
+				}
+				if isWithinRange, err = fileVersionFilterRange.Is_within_range(fileVersion); err != nil {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("failed to check version range %s: %v", fileVersion, err))
+				}
+			} else if !semanticversion.IsVersionString(fileVersion) || (fileVersionFilter != "" && fileVersion != fileVersionFilter) {
+				isWithinRange = false
+			}
+			if isWithinRange && validFileTypes.contains(fileType) {
+				if fileTypeFilter == fileType || fileTypeFilter == "" {
+					agentFileInfo := agentFileInfo{
+						AgentFileName:    agentFile.ObjectID,
+						AgentFileType:    fileType,
+						AgentFileVersion: fileVersion,
+					}
+					agentFileObjects = append(agentFileObjects, agentFileInfo)
+				}
+			}
+
+			// If there was no underscore, check to see if type is valid. If so, the lack of
+			// version signifies this type is the latest version.
+		} else if validFileTypes.contains(agentFileType) {
+			if (fileTypeFilter == agentFileType || fileTypeFilter == "") && (fileVersionFilter == "latest" || fileVersionFilter == "") {
+				agentFileInfo := agentFileInfo{
+					AgentFileName:    agentFile.ObjectID,
+					AgentFileType:    agentFile.ObjectType,
+					AgentFileVersion: "latest",
+				}
+				agentFileObjects = append(agentFileObjects, agentFileInfo)
+			}
+		}
+	}
+
+	return agentFileObjects
+}
+
 func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool) {
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
@@ -143,13 +163,9 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	// Right now, there are only agent upgrade types, but there may be more types in future
-	// which should be added to this list
-	validAgentFileTypes := validAgentFileTypes{"agent-software-files", "agent-cert-files", "agent-config-files"}
-
 	// Ensure that specified type, if any, is a valid type
-	if fileTypeFilter != "" && !validAgentFileTypes.contains(fileTypeFilter) {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid agent file type specified. Valid types include: %v", validAgentFileTypes.string()))
+	if fileTypeFilter != "" && !validFileTypes.contains(fileTypeFilter) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid agent file type specified. Valid types include: %v", validFileTypes.string()))
 	}
 
 	// Ensure that a type was specified if the user wants only a versions list
@@ -171,7 +187,7 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 	for _, t := range types {
 
 		// Determine if there is an underscore signifying a version string
-		splitIdx := strings.LastIndex(t, "_")
+		splitIdx := strings.Index(t, "-")
 		if splitIdx > 0 && splitIdx < len(t)-1 {
 
 			// If there is a version, separate type from version, check the version string,
@@ -179,7 +195,7 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 			// by --type, if applicable. If everything checks out, add to list.
 			version := t[splitIdx+1:]
 			fileType := t[:splitIdx]
-			if semanticversion.IsVersionString(version) && validAgentFileTypes.contains(fileType) {
+			if semanticversion.IsVersionString(version) && validFileTypes.contains(fileType) {
 				if fileTypeFilter == fileType || fileTypeFilter == "" {
 					agentFileType := agentFileType{
 						FileType: fileType,
@@ -191,7 +207,7 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 
 			// If there was no underscore, check to see if type is valid. If so, the lack of
 			// version signifies this type is the latest version.
-		} else if validAgentFileTypes.contains(t) && (fileTypeFilter == t || fileTypeFilter == "") {
+		} else if validFileTypes.contains(t) && (fileTypeFilter == t || fileTypeFilter == "") {
 			agentFileType := agentFileType{
 				FileType: t,
 				Version:  "latest",

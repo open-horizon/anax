@@ -22,12 +22,18 @@ type AgentUpgradeManifestData struct {
 	ConfigurationUpgrade ManifestUpgradeDef `json:"configurationUpgrade,omitempty"`
 }
 
+type validManifestTypes []string
+
 type ManifestUpgradeDef struct {
 	Version string   `json:"version"`
 	Files   []string `json:"files"`
 }
 
-type validManifestTypes []string
+var (
+	// Right now, there are only agent upgrade manifests, but there may be more types in future
+	// which should be added to this list
+	validManTypes = validManifestTypes{"agent_upgrade_manifests"}
+)
 
 func (m validManifestTypes) contains(element string) bool {
 	for _, t := range m {
@@ -58,13 +64,9 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	// Right now, there are only agent upgrade manifests, but there may be more types in future
-	// which should be added to this list
-	validManifestTypes := validManifestTypes{"agent-upgrade-manifests"}
-
 	// Ensure that specified type, if any, is a valid type
-	if manifestType != "" && !validManifestTypes.contains(manifestType) {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid manifest type specified. Valid types include: %v", validManifestTypes.string()))
+	if manifestType != "" && !validManTypes.contains(manifestType) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid manifest type specified. Valid types include: %v", validManTypes.string()))
 	}
 	// Ensure that if the user gives a manifest ID, that they also gave a manifest type
 	if manifestId != "" && manifestType == "" {
@@ -100,7 +102,7 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 	if !longDetails {
 		manifestObjects := make([]ManifestInfo, 0)
 		for _, manifest := range manifestsMeta {
-			if validManifestTypes.contains(manifest.ObjectType) {
+			if validManTypes.contains(manifest.ObjectType) {
 				manifestInfo := ManifestInfo{
 					ManifestID:   manOrg + "/" + manifest.ObjectID,
 					ManifestType: manifest.ObjectType,
@@ -136,7 +138,7 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 		// Unmarshal the manifest into the correct struct type before marshaling back
 		// to ensure consistent output. As more manifest types are added, these lines
 		// will need to be repeated with the corresponding structs.
-		if manifest.ObjectType == "agent-upgrade-manifests" {
+		if manifest.ObjectType == "agent_upgrade_manifests" {
 			var manifestData AgentUpgradeManifestData
 			cliutils.Unmarshal(bodyBytes, &manifestData, "nodemanagement manifest list")
 			output = cliutils.MarshalIndent(manifestData, "nodemanagement manifest list")
@@ -154,13 +156,9 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	// Right now, there are only agent upgrade manifests, but there may be more types in future
-	// which should be added to this list
-	validManifestTypes := validManifestTypes{"agent-upgrade-manifests"}
-
 	// Ensure that specified type, if any, is a valid type
-	if manifestType != "" && !validManifestTypes.contains(manifestType) {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid manifest type specified. Valid types include: %v", validManifestTypes.string()))
+	if manifestType != "" && !validManTypes.contains(manifestType) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid manifest type specified. Valid types include: %v", validManTypes.string()))
 	}
 
 	// Create the metadata file used by manifests in the MMS
@@ -179,6 +177,8 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 	var manifestData AgentUpgradeManifestData
 	manifestBytes := cliconfig.ReadJsonFileWithLocalConfig(manifestFile)
 	cliutils.Unmarshal(manifestBytes, &manifestData, "nodemanagement manifest add")
+
+	checkManifestFile(manOrg, credToUse, manifestData)
 
 	// Call the MMS service over HTTP to see if manifest exists.
 	updatedManifest := false
@@ -207,6 +207,90 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 	msgPrinter.Println()
 }
 
+func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestData) {
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	validFile := true
+	errMsg := msgPrinter.Sprintf("The following files were specified in the manifest file but do not exist in the Management Hub:")
+	errMsg += msgPrinter.Sprintln()
+
+	manSoftwareFiles := manifestData.SoftwareUpgrade.Files
+	var manSoftwareFilesVersion string
+	if manifestData.SoftwareUpgrade.Version == "latest" {
+		manSoftwareFilesVersion = ""
+	} else {
+		manSoftwareFilesVersion = manifestData.SoftwareUpgrade.Version
+	}
+	mmsSoftwareFiles := getAgentFiles(org, credToUse, "agent_software_files", manSoftwareFilesVersion)
+	for _, manFile := range manSoftwareFiles {
+		found := false
+		for _, mmsFile := range mmsSoftwareFiles {
+			if mmsFile.AgentFileName == manFile {
+				found = true
+				break
+			}
+		}
+		if !found {
+			validFile = false
+			errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_software_files\".", manFile, manifestData.SoftwareUpgrade.Version)
+			errMsg += msgPrinter.Sprintln()
+		}
+	}
+
+	manCertFiles := manifestData.CertificateUpgrade.Files
+	var manCertFilesVersion string
+	if manifestData.CertificateUpgrade.Version == "latest" {
+		manCertFilesVersion = ""
+	} else {
+		manCertFilesVersion = manifestData.CertificateUpgrade.Version
+	}
+	mmsCertFiles := getAgentFiles(org, credToUse, "agent_cert_files", manCertFilesVersion)
+	for _, manFile := range manCertFiles {
+		found := false
+		for _, mmsFile := range mmsCertFiles {
+			if mmsFile.AgentFileName == manFile {
+				found = true
+				break
+			}
+		}
+		if !found {
+			validFile = false
+			errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_cert_files\".", manFile, manifestData.CertificateUpgrade.Version)
+			errMsg += msgPrinter.Sprintln()
+		}
+	}
+
+	manConfigFiles := manifestData.ConfigurationUpgrade.Files
+	var manConfigFilesVersion string
+	if manifestData.ConfigurationUpgrade.Version == "latest" {
+		manConfigFilesVersion = ""
+	} else {
+		manConfigFilesVersion = manifestData.ConfigurationUpgrade.Version
+	}
+	mmsConfigFiles := getAgentFiles(org, credToUse, "agent_config_files", manConfigFilesVersion)
+	for _, manFile := range manConfigFiles {
+		found := false
+		for _, mmsFile := range mmsConfigFiles {
+			if mmsFile.AgentFileName == manFile {
+				found = true
+				break
+			}
+		}
+		if !found {
+			validFile = false
+			errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_config_files\".", manFile, manifestData.ConfigurationUpgrade.Version)
+			errMsg += msgPrinter.Sprintln()
+		}
+	}
+
+	if !validFile {
+		errMsg += msgPrinter.Sprintf("Run 'hzn nodemanagement agentfiles list' to get a list of valid files.")
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, errMsg)
+	}
+}
+
 func ManifestRemove(org, credToUse, manifestId, manifestType string, force bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	var manOrg string
@@ -215,13 +299,9 @@ func ManifestRemove(org, credToUse, manifestId, manifestType string, force bool)
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	// Right now, there are only agent upgrade manifests, but there may be more types in future
-	// which should be added to this list
-	validManifestTypes := validManifestTypes{"agent-upgrade-manifests"}
-
 	// Ensure that specified type, if any, is a valid type
-	if manifestType != "" && !validManifestTypes.contains(manifestType) {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid manifest type specified. Valid types include: %v", validManifestTypes.string()))
+	if manifestType != "" && !validManTypes.contains(manifestType) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid manifest type specified. Valid types include: %v", validManTypes.string()))
 	}
 
 	// Check to make sure user wants to remove the specified manifest
@@ -251,19 +331,19 @@ func ManifestNew() {
 		`{`,
 		`  "softwareUpgrade": {       /* ` + msgPrinter.Sprintf("Fill in this section to perform a software upgrade of the agent. Remove this section to prevent software upgrade.") + ` */`,
 		`    "files": [               /* ` + msgPrinter.Sprintf("A list of agent software files stored in the Management Hub.") + ` */`,
-		`      ""                     /* ` + msgPrinter.Sprintf("Run 'hzn nm agentfiles list -t agent-software-files' to get a list of available files.") + ` */`,
+		`      ""                     /* ` + msgPrinter.Sprintf("Run 'hzn nm agentfiles list -t agent_software_files' to get a list of available files.") + ` */`,
 		`    ],`,
 		`    "version": ""            /* ` + msgPrinter.Sprintf("The agent software version range this manifest applies to. Specify \"latest\" to get the most recent version.") + ` */`,
 		`  },`,
 		`  "certificateUpgrade": {    /* ` + msgPrinter.Sprintf("Fill in this section to upgrade the agent certificate. Remove this section to prevent certificate upgrade.") + ` */`,
 		`    "files": [               /* ` + msgPrinter.Sprintf("The name of a cert file stored in the Management Hub. Default is \"agent-install.crt\".") + ` */`,
-		`      "agent-install.crt"    /* ` + msgPrinter.Sprintf("Run 'hzn nm agentfiles list -t agent-cert-files' to get a list of available files.") + ` */`,
+		`      "agent-install.crt"    /* ` + msgPrinter.Sprintf("Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.") + ` */`,
 		`    ],`,
 		`    "version": ""            /* ` + msgPrinter.Sprintf("The agent cert version range this manifest applies to. Specify \"latest\" to get the most recent version.") + ` */`,
 		`  },`,
 		`  "configurationUpgrade": {  /* ` + msgPrinter.Sprintf("Fill in this section to upgrade the agent config. Remove this section to prevent config upgrade.") + ` */`,
 		`    "files": [               /* ` + msgPrinter.Sprintf("The name of a cert file stored in the Management Hub. Default is \"agent-install.crt\".") + ` */`,
-		`      "agent-install.cfg"    /* ` + msgPrinter.Sprintf("Run 'hzn nm agentfiles list -t agent-config-files' to get a list of available files.") + ` */`,
+		`      "agent-install.cfg"    /* ` + msgPrinter.Sprintf("Run 'hzn nm agentfiles list -t agent_config_files' to get a list of available files.") + ` */`,
 		`    ],`,
 		`    "version": ""            /* ` + msgPrinter.Sprintf("The agent config version range this manifest applies to. Specify \"latest\" to get the most recent version.") + ` */`,
 		`  }`,
