@@ -17,8 +17,8 @@ type agentFileInfo struct {
 }
 
 type agentFileType struct {
-	AgentFileType string `json:"fileType"`
-	AgentFileVersion  string `json:"version"`
+	AgentFileType    string `json:"fileType"`
+	AgentFileVersion string `json:"version"`
 }
 
 type validAgentFileTypes []string
@@ -55,7 +55,7 @@ func AgentFilesList(org, credToUse, fileTypeFilter, fileVersionFilter string) {
 	var output string
 	if len(agentFileObjects) > 0 {
 		output = cliutils.MarshalIndent(agentFileObjects, "nodemanagement agentfiles list")
-		
+
 		// Return an empty list if there were no files with the specified features
 	} else {
 		output = "[]"
@@ -217,8 +217,8 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 			if semanticversion.IsVersionString(fileVersion) && validFileTypes.contains(fileType) {
 				if fileTypeFilter == fileType || fileTypeFilter == "" {
 					agentFileType := agentFileType{
-						AgentFileType: fileType,
-						AgentFileVersion:  fileVersion,
+						AgentFileType:    fileType,
+						AgentFileVersion: fileVersion,
 					}
 					agentFileTypes = append(agentFileTypes, agentFileType)
 				}
@@ -247,7 +247,7 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 		// Otherwise, output the list of agent types
 	} else if len(agentFileTypes) > 0 {
 		output = cliutils.MarshalIndent(agentFileTypes, "nodemanagement agentfiles versions")
-		
+
 		// Return an empty list if there were no files with the specified features
 	} else {
 		output = "[]"

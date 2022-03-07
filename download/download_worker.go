@@ -32,6 +32,7 @@ const (
 	MACPACKAGETYPE  = "pkg"
 
 	HZN_CLUSTER_FILE   = "horizon-agent-edge-cluster-files.tar.gz"
+	HZN_CLUSTER_IMAGE  = "amd64_anax_k8s.tar.gz"
 	HZN_CONTAINER_FILE = "%v_anax.tar.gz"
 	HZN_EDGE_FILE      = "horizon-agent-%v-%v-%v.tar.gz"
 	HZN_CONFIG_FILE    = "agent-install.cfg"
@@ -78,7 +79,7 @@ func (w *DownloadWorker) CommandHandler(command worker.Command) bool {
 	case *StartDownloadCommand:
 		cmd := command.(*StartDownloadCommand)
 		if cmd.Msg.Message.NMPStatus.IsAgentUpgradePolicy() {
-			if err := w.DownloadAgentUpgradePackages(exchange.GetOrg(w.GetExchangeId()), cmd.Msg.Message.NMPStatus.AgentUpgrade.BaseWorkingDirectory, cmd.Msg.Message.NMPName, cmd.Msg.Message.NMPStatus.AgentUpgrade.GetManifest()); err != nil {
+			if err := w.DownloadAgentUpgradePackages(exchange.GetOrg(w.GetExchangeId()), cmd.Msg.Message.NMPStatus.AgentUpgrade.BaseWorkingDirectory, cmd.Msg.Message.NMPName, cmd.Msg.Message.NMPStatus.AgentUpgradeInternal.Manifest); err != nil {
 				w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, false, cmd.Msg.Message.NMPName)
 				glog.Errorf(dwlog(fmt.Sprintf("Error downloading agent packages for upgrade: %v", err)))
 			}
@@ -140,12 +141,19 @@ func (w *DownloadWorker) DownloadCSSObject(org string, objType string, objId str
 
 // Download the manifest, then all packages required by it
 func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath string, nmpName string, manifestId string) error {
-	objId, containerObjId, err := w.formAgentUpgradePackageNames()
+	objIds, containerObjId, err := w.formAgentUpgradePackageNames()
 	if err != nil {
 		return err
 	}
 
-	manifest, err := exchange.GetManifestData(w, org, CSSAGENTUPGRADEMANIFESTTYPE, manifestId)
+	// If org is specified in the manifest id, use that org. Otherwise use the user org
+	manOrg, manId := cutil.SplitOrgSpecUrl(manifestId)
+	if manOrg == "" {
+		manOrg = org
+		manId = manifestId
+	}
+
+	manifest, err := exchange.GetManifestData(w, manOrg, CSSAGENTUPGRADEMANIFESTTYPE, manId)
 	if err != nil {
 		return err
 	}
@@ -157,39 +165,44 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	}
 
 	if swType != "" {
-		if objId != "" && cutil.SliceContains(manifest.Software.FileList, objId) {
-			if err = w.DownloadCSSObject(CSSSHAREDORG, swType, objId, filePath, nmpName); err != nil {
-				return fmt.Errorf("Error downloading css object %v/%v/%v", CSSSHAREDORG, swType, objId)
+		if objIds != nil {
+			for _, objId := range *objIds {
+				if cutil.SliceContains(manifest.Software.FileList, objId) {
+					if err = w.DownloadCSSObject(CSSSHAREDORG, swType, objId, filePath, nmpName); err != nil {
+						return fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, swType, objId, err)
+					}
+				} else {
+					glog.Infof("No software upgrade object found of expected type %v found in manifest list.", objId)
+				}
 			}
-		} else if objId != "" {
-			return fmt.Errorf("Error no software upgrade object found of expected type %v found in manifest list.", objId)
 		}
+
 		if containerObjId != "" && cutil.SliceContains(manifest.Software.FileList, containerObjId) {
 			if err = w.DownloadCSSObject(CSSSHAREDORG, swType, containerObjId, "docker", nmpName); err != nil {
-				return fmt.Errorf("Error downloading css object %v/%v/%v", CSSSHAREDORG, swType, containerObjId)
+				return fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, swType, containerObjId, err)
 			}
 		} else if containerObjId != "" {
-			return fmt.Errorf("Error no software upgrade object found of expected type %v found in manifest list.", containerObjId)
+			glog.Infof("No software upgrade object found of expected type %v found in manifest list.", containerObjId)
 		}
 	}
 
 	if configType != "" {
 		if cutil.SliceContains(manifest.Configuration.FileList, HZN_CONFIG_FILE) {
 			if err = w.DownloadCSSObject(CSSSHAREDORG, configType, HZN_CONFIG_FILE, filePath, nmpName); err != nil {
-				return fmt.Errorf("Error downloading css object %v/%v/%v", CSSSHAREDORG, configType, HZN_CONFIG_FILE)
+				return fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, configType, HZN_CONFIG_FILE, err)
 			}
 		} else {
-			return fmt.Errorf("Error no config upgrade object found of expected type %v found in manifest list.", HZN_CONFIG_FILE)
+			glog.Infof("No config upgrade object found of expected type %v found in manifest list.", HZN_CONFIG_FILE)
 		}
 	}
 
 	if certType != "" {
 		if cutil.SliceContains(manifest.Certificate.FileList, HZN_CERT_FILE) {
 			if err = w.DownloadCSSObject(CSSSHAREDORG, certType, HZN_CERT_FILE, filePath, nmpName); err != nil {
-				return fmt.Errorf("Error downloading css object %v/%v/%v", CSSSHAREDORG, certType, HZN_CERT_FILE)
+				return fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, certType, HZN_CERT_FILE, err)
 			}
 		} else {
-			return fmt.Errorf("Error no cert upgrade object found of expected type %v found in manifest list.", HZN_CERT_FILE)
+			glog.Infof("No cert upgrade object found of expected type %v found in manifest list.", HZN_CERT_FILE)
 		}
 	}
 
@@ -212,21 +225,21 @@ func (w *DownloadWorker) FindAgentUpgradePackageTypes(softwareManifestVers strin
 		if vers, err := findBestMatchingVersion(versions.SoftwareVersions, softwareManifestVers); err != nil {
 			return swType, configType, certType, err
 		} else {
-			swType = fmt.Sprintf("%s_%s", CSSSOFTWAREUPGRADETYPE, vers)
+			swType = fmt.Sprintf("%s-%s", CSSSOFTWAREUPGRADETYPE, vers)
 		}
 	}
 	if configManifestVers != "" {
 		if vers, err := findBestMatchingVersion(versions.ConfigVersions, configManifestVers); err != nil {
 			return swType, configType, certType, err
 		} else {
-			configType = fmt.Sprintf("%s_%s", CSSCONFIGUPGRADETYPE, vers)
+			configType = fmt.Sprintf("%s-%s", CSSCONFIGUPGRADETYPE, vers)
 		}
 	}
 	if certManifestVers != "" {
 		if vers, err := findBestMatchingVersion(versions.CertVersions, certManifestVers); err != nil {
 			return swType, configType, certType, err
 		} else {
-			certType = fmt.Sprintf("%s_%s", CSSCERTUPGRADETYPE, vers)
+			certType = fmt.Sprintf("%s-%s", CSSCERTUPGRADETYPE, vers)
 		}
 	}
 
@@ -253,14 +266,12 @@ func findBestMatchingVersion(availibleVers []string, preferredVers string) (stri
 		comp, _ := semanticversion.CompareVersions(availibleVers[i], availibleVers[j])
 		return comp > 0
 	})
-	glog.Errorf("Maxwell: availible vers are %v and pref vers is %v", availibleVers, preferredVers)
+
 	if preferredVers == LATESTVERSION {
-		glog.Errorf("Maxwell: returning %v here", availibleVers[0])
 		return availibleVers[0], nil
 	} else if semanticversion.IsVersionString(preferredVers) {
 		for _, vers := range availibleVers {
 			if res, err := semanticversion.CompareVersions(preferredVers, vers); res == 0 && err == nil {
-				glog.Errorf("Maxwell: returning %v here", vers)
 				return vers, nil
 			}
 		}
@@ -268,7 +279,6 @@ func findBestMatchingVersion(availibleVers []string, preferredVers string) (stri
 	} else if prefVers, err := semanticversion.Version_Expression_Factory(preferredVers); err == nil {
 		for _, vers := range availibleVers {
 			if match, err := prefVers.Is_within_range(vers); err == nil && match {
-				glog.Errorf("Maxwell: returning %v here", vers)
 				return vers, nil
 			}
 		}
@@ -280,32 +290,34 @@ func findBestMatchingVersion(availibleVers []string, preferredVers string) (stri
 }
 
 // Create the package names from the system information
-func (w *DownloadWorker) formAgentUpgradePackageNames() (string, string, error) {
+func (w *DownloadWorker) formAgentUpgradePackageNames() (*[]string, string, error) {
 	pol, err := persistence.FindNodePolicy(w.db)
 	if err != nil {
-		return "", "", fmt.Errorf("Failed to retrieve node policy from local db: %v", err)
+		return nil, "", fmt.Errorf("Failed to retrieve node policy from local db: %v", err)
 	} else if pol == nil {
-		return "", "", fmt.Errorf("No node policy found in the local db.")
+		return nil, "", fmt.Errorf("No node policy found in the local db.")
+	}
+
+	if dev, err := persistence.FindExchangeDevice(w.db); dev == nil || err != nil {
+		return nil, "", fmt.Errorf("Failed to get device from the local db: %v", err)
+	} else if dev.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+		return &[]string{HZN_CLUSTER_FILE, HZN_CLUSTER_IMAGE}, "", nil
 	}
 
 	installTypeProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_OS)
 	if err != nil {
-		return "", "", fmt.Errorf("Failed to find node arch property: err")
-	}
-
-	if fmt.Sprintf("%v", installTypeProp.Value) == externalpolicy.OS_CLUSTER {
-		return HZN_CLUSTER_FILE, "", nil
+		return nil, "", fmt.Errorf("Failed to find node os property: %v", err)
 	}
 
 	archProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_ARCH)
 	if err != nil {
-		return "", "", err
+		return nil, "", err
 	}
 
 	containerAgentFiles := ""
 	containerizedProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_CONTAINERIZED)
 	if err != nil {
-		return "", "", err
+		return nil, "", err
 	}
 
 	if containPropBool, ok := containerizedProp.Value.(bool); ok && containPropBool {
@@ -316,19 +328,23 @@ func (w *DownloadWorker) formAgentUpgradePackageNames() (string, string, error) 
 	if osProp != "" {
 		pkgType := getPkgTypeForInstallType(osProp)
 		if pkgType == "" {
-			return "", containerAgentFiles, fmt.Errorf("Failed to find package type for install type %v", installTypeProp)
+			return nil, containerAgentFiles, fmt.Errorf("Failed to find package type for install type %v", installTypeProp)
 		}
 
 		osType := "linux"
 
-		if fmt.Sprintf("%v", installTypeProp.Value) == "mac" {
-			osType = "macos"
+		if fmt.Sprintf("%v", installTypeProp.Value) == externalpolicy.OS_MAC {
+			osType = externalpolicy.OS_MAC
 		}
 
-		return fmt.Sprintf(HZN_EDGE_FILE, osType, pkgType, archProp.Value), containerAgentFiles, nil
+		if archProp.Value == "amd64" && (pkgType == MACPACKAGETYPE || pkgType == RHELPACKAGETYPE) {
+			return &[]string{fmt.Sprintf(HZN_EDGE_FILE, osType, pkgType, "x86_64")}, containerAgentFiles, nil
+		}
+
+		return &[]string{fmt.Sprintf(HZN_EDGE_FILE, osType, pkgType, archProp.Value)}, containerAgentFiles, nil
 	}
 
-	return "", containerAgentFiles, nil
+	return nil, containerAgentFiles, nil
 }
 
 func getEC(config *config.HorizonConfig, db *bolt.DB) *worker.BaseExchangeContext {
