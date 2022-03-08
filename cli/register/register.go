@@ -258,10 +258,10 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	if pattern == "" {
 		if exchangePattern == "" {
 			if nodepolicyFlag == "" {
-				msgPrinter.Printf("No pattern or node policy is specified. Will proceeed with the existing node policy.")
+				msgPrinter.Printf("No pattern or node policy is specified. Will proceed with the existing node policy.")
 				msgPrinter.Println()
 			} else {
-				msgPrinter.Printf("Will proceeed with the given node policy.")
+				msgPrinter.Printf("Will proceed with the given node policy.")
 				msgPrinter.Println()
 			}
 		} else {
@@ -291,7 +291,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		if len(pat.Services) == 0 {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it does not include any services.", pattern))
 		} else {
-			msgPrinter.Printf("Will proceeed with the given pattern %s.", pattern)
+			msgPrinter.Printf("Will proceed with the given pattern %s.", pattern)
 			msgPrinter.Println()
 		}
 	}
