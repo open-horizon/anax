@@ -92,7 +92,7 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 	// Call the MMS service over HTTP to get the manifest metadata.
 	var manifestsMeta []common.MetaData
 	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &manifestsMeta)
-	if httpCode == 404 {
+	if httpCode == 404 || len(manifestsMeta) == 0 {
 		fmt.Println("[]")
 		return
 	}
@@ -163,16 +163,9 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 	}
 
 	// Create the metadata file used by manifests in the MMS
-	var ManifestMeta common.MetaData
-	ManifestMeta.ObjectID = manifestId
-	ManifestMeta.ObjectType = manifestType
-
-	// Create an object wrapper to use as the input body to the PUT request
-	type ObjectWrapper struct {
-		Meta common.MetaData `json:"meta"`
-		Data []byte          `json:"data"`
-	}
-	wrapper := ObjectWrapper{Meta: ManifestMeta}
+	var manifestsMeta common.MetaData
+	manifestsMeta.ObjectID = manifestId
+	manifestsMeta.ObjectType = manifestType
 
 	// Read in the file from the host
 	var manifestData AgentUpgradeManifestData
@@ -183,27 +176,37 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 
 	// Call the MMS service over HTTP to see if manifest exists.
 	updatedManifest := false
-	filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s", ManifestMeta.ObjectType, ManifestMeta.ObjectID)
+	filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s", manifestsMeta.ObjectType, manifestsMeta.ObjectID)
 	urlPath := "api/v1/objects/" + manOrg + "?filters=true"
 	fullPath := urlPath + filterURLPath
-	var manifestsMeta []common.MetaData
-	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &manifestsMeta)
+	var dummyManifestsMeta []common.MetaData
+	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &dummyManifestsMeta)
 	if httpCode != 404 {
 		updatedManifest = true
 	}
 
+	// TODO - remove when CSS implements ACL
+	manifestsMeta.Public = true
+
+	// Create an object wrapper to use as the input body to the PUT request
+	type ObjectWrapper struct {
+		Meta common.MetaData `json:"meta"`
+		Data []byte          `json:"data"`
+	}
+	wrapper := ObjectWrapper{Meta: manifestsMeta}
+
 	// Call the MMS service over HTTP to add the manifest's metadata to the MMS.
-	urlPath = path.Join("api/v1/objects/", manOrg, ManifestMeta.ObjectType, ManifestMeta.ObjectID)
+	urlPath = path.Join("api/v1/objects/", manOrg, manifestsMeta.ObjectType, manifestsMeta.ObjectID)
 	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, credToUse), []int{204}, wrapper, nil)
 
 	// Call the MMS service over HTTP to add the manifest's data to the MMS.
-	urlPath = path.Join("api/v1/objects/", manOrg, ManifestMeta.ObjectType, ManifestMeta.ObjectID, "data")
+	urlPath = path.Join("api/v1/objects/", manOrg, manifestsMeta.ObjectType, manifestsMeta.ObjectID, "data")
 	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, credToUse), []int{204}, manifestData, nil)
 
 	if updatedManifest {
-		msgPrinter.Printf("Manifest %v/%v updated in the Management Hub", manOrg, ManifestMeta.ObjectID)
+		msgPrinter.Printf("Manifest %v/%v updated in the Management Hub", manOrg, manifestsMeta.ObjectID)
 	} else {
-		msgPrinter.Printf("Manifest %v/%v added to the Management Hub", manOrg, ManifestMeta.ObjectID)
+		msgPrinter.Printf("Manifest %v/%v added to the Management Hub", manOrg, manifestsMeta.ObjectID)
 	}
 	msgPrinter.Println()
 }
@@ -217,81 +220,91 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 	errMsg := msgPrinter.Sprintf("The following files were specified in the manifest file but do not exist in the Management Hub:")
 	errMsg += msgPrinter.Sprintln()
 
+	// Check software files list and version, if files were specified
 	manSoftwareFiles := manifestData.SoftwareUpgrade.Files
-	var manSoftwareFilesVersion string
-	if manifestData.SoftwareUpgrade.Version == "latest" {
-		manSoftwareFilesVersion = ""
-	} else if _, err := semanticversion.Version_Expression_Factory(manifestData.SoftwareUpgrade.Version); err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in SoftwareUpgrade is not a valid version range, version string or \"latest\": %v", err))
-	} else {
-		manSoftwareFilesVersion = manifestData.SoftwareUpgrade.Version
-	}
-	mmsSoftwareFiles := getAgentFiles(org, credToUse, "agent_software_files", manSoftwareFilesVersion)
-	for _, manFile := range manSoftwareFiles {
-		found := false
-		for _, mmsFile := range mmsSoftwareFiles {
-			if mmsFile.AgentFileName == manFile {
-				found = true
-				break
-			}
+	if len(manSoftwareFiles) > 0 {
+		var manSoftwareFilesVersion string
+		if manifestData.SoftwareUpgrade.Version == "latest" {
+			manSoftwareFilesVersion = ""
+		} else if _, err := semanticversion.Version_Expression_Factory(manifestData.SoftwareUpgrade.Version); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in SoftwareUpgrade is not a valid version range, version string or \"latest\": %v", err))
+		} else {
+			manSoftwareFilesVersion = manifestData.SoftwareUpgrade.Version
 		}
-		if !found {
-			validFile = false
-			errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_software_files\".", manFile, manifestData.SoftwareUpgrade.Version)
-			errMsg += msgPrinter.Sprintln()
+		mmsSoftwareFiles := getAgentFiles(org, credToUse, "agent_software_files", manSoftwareFilesVersion)
+		for _, manFile := range manSoftwareFiles {
+			found := false
+			for _, mmsFile := range mmsSoftwareFiles {
+				if mmsFile.AgentFileName == manFile {
+					found = true
+					break
+				}
+			}
+			if !found {
+				validFile = false
+				errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_software_files\".", manFile, manifestData.SoftwareUpgrade.Version)
+				errMsg += msgPrinter.Sprintln()
+			}
 		}
 	}
 
+	// Check certificate files list and version, if files were specified
 	manCertFiles := manifestData.CertificateUpgrade.Files
-	var manCertFilesVersion string
-	if manifestData.CertificateUpgrade.Version == "latest" {
-		manCertFilesVersion = ""
-	} else if _, err := semanticversion.Version_Expression_Factory(manifestData.CertificateUpgrade.Version); err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in CertificateUpgrade is not a valid version range, version string or \"latest\": %v", err))
-	} else {
-		manCertFilesVersion = manifestData.CertificateUpgrade.Version
-	}
-	mmsCertFiles := getAgentFiles(org, credToUse, "agent_cert_files", manCertFilesVersion)
-	for _, manFile := range manCertFiles {
-		found := false
-		for _, mmsFile := range mmsCertFiles {
-			if mmsFile.AgentFileName == manFile {
-				found = true
-				break
-			}
+	if len(manCertFiles) > 0 {
+		var manCertFilesVersion string
+		if manifestData.CertificateUpgrade.Version == "latest" {
+			manCertFilesVersion = ""
+		} else if _, err := semanticversion.Version_Expression_Factory(manifestData.CertificateUpgrade.Version); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in CertificateUpgrade is not a valid version range, version string or \"latest\": %v", err))
+		} else {
+			manCertFilesVersion = manifestData.CertificateUpgrade.Version
 		}
-		if !found {
-			validFile = false
-			errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_cert_files\".", manFile, manifestData.CertificateUpgrade.Version)
-			errMsg += msgPrinter.Sprintln()
+		mmsCertFiles := getAgentFiles(org, credToUse, "agent_cert_files", manCertFilesVersion)
+		for _, manFile := range manCertFiles {
+			found := false
+			for _, mmsFile := range mmsCertFiles {
+				if mmsFile.AgentFileName == manFile {
+					found = true
+					break
+				}
+			}
+			if !found {
+				validFile = false
+				errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_cert_files\".", manFile, manifestData.CertificateUpgrade.Version)
+				errMsg += msgPrinter.Sprintln()
+			}
 		}
 	}
 
+	// Check config files list and version, if files were specified
 	manConfigFiles := manifestData.ConfigurationUpgrade.Files
-	var manConfigFilesVersion string
-	if manifestData.ConfigurationUpgrade.Version == "latest" {
-		manConfigFilesVersion = ""
-	} else if _, err := semanticversion.Version_Expression_Factory(manifestData.ConfigurationUpgrade.Version); err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in ConfigurationUpgrade is not a valid version range, version string or \"latest\": %v", err))
-	} else {
-		manConfigFilesVersion = manifestData.ConfigurationUpgrade.Version
-	}
-	mmsConfigFiles := getAgentFiles(org, credToUse, "agent_config_files", manConfigFilesVersion)
-	for _, manFile := range manConfigFiles {
-		found := false
-		for _, mmsFile := range mmsConfigFiles {
-			if mmsFile.AgentFileName == manFile {
-				found = true
-				break
-			}
+	if len(manConfigFiles) > 0 {
+		var manConfigFilesVersion string
+		if manifestData.ConfigurationUpgrade.Version == "latest" {
+			manConfigFilesVersion = ""
+		} else if _, err := semanticversion.Version_Expression_Factory(manifestData.ConfigurationUpgrade.Version); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in ConfigurationUpgrade is not a valid version range, version string or \"latest\": %v", err))
+		} else {
+			manConfigFilesVersion = manifestData.ConfigurationUpgrade.Version
 		}
-		if !found {
-			validFile = false
-			errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_config_files\".", manFile, manifestData.ConfigurationUpgrade.Version)
-			errMsg += msgPrinter.Sprintln()
+		mmsConfigFiles := getAgentFiles(org, credToUse, "agent_config_files", manConfigFilesVersion)
+		for _, manFile := range manConfigFiles {
+			found := false
+			for _, mmsFile := range mmsConfigFiles {
+				if mmsFile.AgentFileName == manFile {
+					found = true
+					break
+				}
+			}
+			if !found {
+				validFile = false
+				errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_config_files\".", manFile, manifestData.ConfigurationUpgrade.Version)
+				errMsg += msgPrinter.Sprintln()
+			}
 		}
 	}
 
+	// Throw error if any of the sections had an incorrect entry
 	if !validFile {
 		errMsg += msgPrinter.Sprintf("Run 'hzn nodemanagement agentfiles list' to get a list of valid files.")
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, errMsg)
