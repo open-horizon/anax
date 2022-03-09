@@ -53,7 +53,7 @@ func NewNodeShutdownCommand(msg *events.NodeShutdownMessage) *NodeShutdownComman
 	}
 }
 
-type NMPChangeCommand struct  {
+type NMPChangeCommand struct {
 	Msg *events.ExchangeChangeMessage
 }
 

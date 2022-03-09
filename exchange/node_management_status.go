@@ -28,7 +28,10 @@ func GetNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId stri
 }
 
 // Update/Create a single node management policy status in the exchange
-func PutNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId string, policyName string, nmpStatus *exchangecommon.NodeManagementPolicyStatus) (*PutPostDeleteStandardResponse, error) {
+func PutNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId string, policyName string, nmpStatusFull *exchangecommon.NodeManagementPolicyStatus) (*PutPostDeleteStandardResponse, error) {
+	// allowdowngrade and manifest are not in the exchange status schema. remove them here
+	nmpStatus := nmpStatusFull.DeepCopy()
+	nmpStatus.AgentUpgradeInternal = nil
 	glog.V(3).Infof("Putting node management policy status for node %v/%v and policy %v. Status is: %v.", orgId, nodeId, policyName, nmpStatus)
 
 	var resp interface{}

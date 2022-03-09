@@ -26,7 +26,7 @@ const (
 	// for install type
 	OS_CLUSTER   = "cluster"
 	OS_CONTAINER = "anax-in-container"
-	OS_MAC       = "mac"
+	OS_MAC       = "macos"
 	OS_UBUNTU    = "ubuntu"
 	OS_DEBIAN    = "debian"
 	OS_RHEL      = "rhel"
@@ -239,15 +239,13 @@ func ProfileEdgeOS() (string, bool, error) {
 			// the host os is unknown
 			return "", true, nil
 		} else {
-			os := sysInfo.Section("").Key("ID").String()
+			os := sysInfo.Section("").Key("OS").String()
 			if cutil.SliceContains(ListSupportedOperatingSystems(), os) {
 				return os, true, nil
 			}
 		}
-	}
-
-	// running natively on some kind of linux. check the relase file to find out what kind
-	if sysInfo, err := ini.Load("/etc/os-release"); err != nil {
+	} else if sysInfo, err := ini.Load("/etc/os-release"); err != nil {
+		// running natively on some kind of linux. check the relase file to find out what kind
 		return "", false, fmt.Errorf("Failed to find installation type: %v", err)
 	} else {
 		os := sysInfo.Section("").Key("ID").String()
