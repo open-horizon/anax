@@ -359,9 +359,9 @@ Environment Variables:
 	exNMPRemoveName := exNMPRemoveCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to be removed.")).Required().String()
 	exNMPRemoveIdTok := exNMPRemoveCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNMPRemoveForce := exNMPRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
-	// exNMPStatusCmd := exNMPCmd.Command("status", msgPrinter.Sprintf("List the status of a given node management policy."))
-	// exNMPStatusListName := exNMPStatusCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to check.")).Required().String()
-	// exNMPStatusListIdTok := exNMPStatusCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNMPStatusCmd := exNMPCmd.Command("status", msgPrinter.Sprintf("List the status of a given node management policy."))
+	exNMPStatusListName := exNMPStatusCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to check.")).String()
+	exNMPStatusListIdTok := exNMPStatusCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 
 	exNodeCmd := exchangeCmd.Command("node", msgPrinter.Sprintf("List and manage nodes in the Horizon Exchange"))
 	exNodeAddPolicyCmd := exNodeCmd.Command("addpolicy | addp", msgPrinter.Sprintf("Add or replace the node policy in the Horizon Exchange.")).Alias("addp").Alias("addpolicy")
@@ -849,8 +849,8 @@ Environment Variables:
 			// does not require exchange credentials
 		case "nmp remove | rm":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPRemoveIdTok)
-		// case "nmp status":
-		// 	credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPStatusListIdTok)
+		case "nmp status":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPStatusListIdTok)
 		case "node list | ls":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListNodeIdTok)
 		case "node update | up":
@@ -1083,8 +1083,8 @@ Environment Variables:
 		exchange.NMPNew()
 	case exNMPRemoveCmd.FullCommand():
 		exchange.NMPRemove(*exOrg, credToUse, *exNMPRemoveName, *exNMPRemoveForce)
-	// case exNMPStatusCmd.FullCommand():
-	// 	exchange.NMPStatus(*exOrg, credToUse, *exNMPStatusListName)
+	case exNMPStatusCmd.FullCommand():
+		exchange.NMPStatus(*exOrg, credToUse, *exNMPStatusListName)
 
 	case exNodeListCmd.FullCommand():
 		exchange.NodeList(*exOrg, credToUse, *exNode, !*exNodeLong)
