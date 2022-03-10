@@ -1499,7 +1499,7 @@ function check_and_set_anax_port() {
     fi
 
     log_verbose "Checking if the agent port ${anax_port} is free..."
-    local netStat=$(netstat -nlp | grep $anax_port || true)
+    local netStat=$(netstat -nlp | grep tcp | grep $anax_port || true)
     if is_anax_in_container; then
         netStat=$(docker ps --filter "publish=$anax_port")
     fi
@@ -1521,9 +1521,9 @@ function debian_device_install_prereqs() {
     log_info "Installing prerequisites, this could take a minute..."
 
     if [[ $AGENT_ONLY_CLI == 'true' ]]; then
-        runCmdQuietly apt-get install -yqf curl jq
+        runCmdQuietly apt-get install -yqf curl jq cron
     else
-        runCmdQuietly apt-get install -yqf curl jq software-properties-common net-tools
+        runCmdQuietly apt-get install -yqf curl jq software-properties-common net-tools cron
 
         if ! isCmdInstalled docker; then
             log_info "Docker is required, installing it..."
@@ -1537,6 +1537,10 @@ function debian_device_install_prereqs() {
             fi
         fi
     fi
+
+    # start cron service if not, cron is used by the agent auto upgrade process
+    systemctl start cron
+
     log_debug "debian_device_install_prereqs() end"
 }
 
@@ -1794,7 +1798,10 @@ function redhat_device_install_prereqs() {
         dnf install -yq https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
     fi
 
-    dnf install -yq curl jq
+    dnf install -yq curl jq cronie
+
+    # cron will be used for agent auto upgrade process
+    systemctl start crond
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         dnf install -yq net-tools

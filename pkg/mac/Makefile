@@ -71,6 +71,7 @@ $(MAC_PKG): require-version
 	cp ../../anax-in-container/horizon-container horizon-cli/bin
 	cp ../../agent-install/agent-install.sh horizon-cli/bin
 	cp ../../agent-install/agent-uninstall.sh horizon-cli/bin
+	cp ../../agent-install/agent-auto-upgrade.sh horizon-cli/bin
 	cp ../../agent-install/edgeNodeFiles.sh horizon-cli/bin
 	cp ../../agent-install/k8s/deployment-template.yml horizon-cli/share/horizon/cluster
 	cp ../../agent-install/k8s/persistentClaim-template.yml horizon-cli/share/horizon/cluster

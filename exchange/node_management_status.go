@@ -14,6 +14,8 @@ func GetNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId stri
 	var resp interface{}
 	resp = new(exchangecommon.NodeManagementPolicyStatus)
 
+	_, policyName = cutil.SplitOrgSpecUrl(policyName)
+
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/managementStatus/%v", ec.GetExchangeURL(), orgId, nodeId, policyName)
 
 	err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp)
@@ -26,7 +28,10 @@ func GetNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId stri
 }
 
 // Update/Create a single node management policy status in the exchange
-func PutNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId string, policyName string, nmpStatus *exchangecommon.NodeManagementPolicyStatus) (*PutPostDeleteStandardResponse, error) {
+func PutNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId string, policyName string, nmpStatusFull *exchangecommon.NodeManagementPolicyStatus) (*PutPostDeleteStandardResponse, error) {
+	// allowdowngrade and manifest are not in the exchange status schema. remove them here
+	nmpStatus := nmpStatusFull.DeepCopy()
+	nmpStatus.AgentUpgradeInternal = nil
 	glog.V(3).Infof("Putting node management policy status for node %v/%v and policy %v. Status is: %v.", orgId, nodeId, policyName, nmpStatus)
 
 	var resp interface{}
@@ -39,6 +44,9 @@ func PutNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId stri
 	policyName = name
 
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/managementStatus/%v", ec.GetExchangeURL(), orgId, nodeId, policyName)
+
+	// set the working directory to an empty string as this is not in the exchange schema
+	nmpStatus.AgentUpgrade.BaseWorkingDirectory = ""
 
 	err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "PUT", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nmpStatus, &resp)
 	if err != nil {
@@ -54,6 +62,8 @@ func DeleteNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId s
 
 	var resp interface{}
 	resp = new(PutPostDeleteStandardResponse)
+
+	_, policyName = cutil.SplitOrgSpecUrl(policyName)
 
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/managementStatus/%v", ec.GetExchangeURL(), orgId, nodeId, policyName)
 

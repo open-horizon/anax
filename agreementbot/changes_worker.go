@@ -258,7 +258,7 @@ func (w *ChangesWorker) postProcessChanges(changes *exchange.ExchangeChanges) {
 }
 
 // Process any error from the /changes API and update the heartbeat state appropriately. Return true if the
-// caller should not proceeed to process the response.
+// caller should not proceed to process the response.
 func (w *ChangesWorker) handleHeartbeatStateAndError(changes *exchange.ExchangeChanges, err error) bool {
 	if err != nil {
 		glog.Errorf(chglog(fmt.Sprintf("heartbeat and change retrieval failed, error %v", err)))

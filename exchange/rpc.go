@@ -10,6 +10,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -1203,6 +1204,12 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 						return nil, nil
 
 					case *ExchangeNodeManagementPolicyResponse:
+						return nil, nil
+
+					case *exchangecommon.AgentUpgradeVersionsResponse:
+						return nil, nil
+
+					case *exchangecommon.UpgradeManifest:
 						return nil, nil
 
 					default:

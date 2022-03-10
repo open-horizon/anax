@@ -394,7 +394,7 @@ Environment Variables:
 	exNodeManagementListCmd := exNodeManagementCmd.Command("list | ls", msgPrinter.Sprintf("List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.")).Alias("ls").Alias("list")
 	exNodeManagementListName := exNodeManagementListCmd.Arg("node", msgPrinter.Sprintf("List node management policies for this node")).Required().String()
 	exNodeManagementListNodeIdTok := exNodeManagementListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
-	exNodManagementListNMPsAll := exNodeManagementListCmd.Flag("all", msgPrinter.Sprintf("Include disabled NMP's.")).Short('a').Bool()
+	exNodeManagementListNMPsAll := exNodeManagementListCmd.Flag("all", msgPrinter.Sprintf("Include disabled NMP's.")).Short('a').Bool()
 	exNodeStatusList := exNodeCmd.Command("liststatus | lst", msgPrinter.Sprintf("List the run-time status of the node.")).Alias("lst").Alias("liststatus")
 	exNodeStatusIdTok := exNodeStatusList.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeStatusListNode := exNodeStatusList.Arg("node", msgPrinter.Sprintf("List status for this node")).Required().String()
@@ -609,7 +609,7 @@ Environment Variables:
 	mmsObjectPublishType := mmsObjectPublishCmd.Flag("type", msgPrinter.Sprintf("The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m")).Short('t').String()
 	mmsObjectPublishId := mmsObjectPublishCmd.Flag("id", msgPrinter.Sprintf("The id of the object to publish. This flag must be used with -t. It is mutually exclusive with -m")).Short('i').String()
 	mmsObjectPublishPat := mmsObjectPublishCmd.Flag("pattern", msgPrinter.Sprintf("If you want the object to be deployed on nodes using a given pattern, specify it using this flag. This flag is optional and can only be used with --type and --id. It is mutually exclusive with -m")).Short('p').String()
-	mmsObjectPublishDef := mmsObjectPublishCmd.Flag("def", msgPrinter.Sprintf("The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.")).Short('m').String()
+	mmsObjectPublishDef := mmsObjectPublishCmd.Flag("def", msgPrinter.Sprintf("The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.")).Short('m').String()
 	mmsObjectPublishObj := mmsObjectPublishCmd.Flag("object", msgPrinter.Sprintf("The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.")).Short('f').String()
 	mmsObjectPublishNoChunkUpload := mmsObjectPublishCmd.Flag("disableChunkUpload", msgPrinter.Sprintf("The publish command will disable chunk upload. Data will stream to CSS.")).Bool()
 	mmsObjectPublishChunkUploadDataSize := mmsObjectPublishCmd.Flag("chunkSize", msgPrinter.Sprintf("The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.")).Default("104857600").Int()
@@ -627,12 +627,26 @@ Environment Variables:
 	nmOrg := nodeManagementCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	nmUserPw := nodeManagementCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
 
+	nmManifestCmd := nodeManagementCmd.Command("manifest | man", msgPrinter.Sprintf("List and manage manifest files stored in the management hub.")).Alias("man").Alias("manifest")
+	nmManifestAddCmd := nmManifestCmd.Command("add", msgPrinter.Sprintf("Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template."))
+	nmManifestAddType := nmManifestAddCmd.Flag("type", msgPrinter.Sprintf("The type of manifest to add. Valid values include 'agent_upgrade_manifests'.")).Required().Short('t').String()
+	nmManifestAddId := nmManifestAddCmd.Flag("id", msgPrinter.Sprintf("The id of the manifest to add.")).Required().Short('i').String()
+	nmManifestAddFile := nmManifestAddCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the manifest data. Specify -f- to read from stdin.")).Short('f').Required().String()
+	nmManifestListCmd := nmManifestCmd.Command("list | ls", msgPrinter.Sprintf("Display a list of manifest files stored in the management hub.")).Alias("ls").Alias("list")
+	nmManifestListType := nmManifestListCmd.Flag("type", msgPrinter.Sprintf("The type of manifest to list. Valid values include 'agent_upgrade_manifests'.")).Short('t').String()
+	nmManifestListId := nmManifestListCmd.Flag("id", msgPrinter.Sprintf("The id of the manifest to list. Must specify --type flag.")).Short('i').String()
+	nmManifestListLong := nmManifestListCmd.Flag("long", msgPrinter.Sprintf("Display the contents of the manifest file. Must specify --type and --id flags.")).Short('l').Bool()
+	nmManifestNewCmd := nmManifestCmd.Command("new", msgPrinter.Sprintf("Display an empty manifest template that can be filled in."))
+	nmManifestRemoveCmd := nmManifestCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.")).Alias("rm").Alias("remove")
+	nmManifestRemoveType := nmManifestRemoveCmd.Flag("type", msgPrinter.Sprintf("The type of manifest to remove. Valid values include 'agent_upgrade_manifests'.")).Required().Short('t').String()
+	nmManifestRemoveId := nmManifestRemoveCmd.Flag("id", msgPrinter.Sprintf("The id of the manifest to remove.")).Required().Short('i').String()
+	nmManifestRemoveForce := nmManifestRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	nmAgentFilesCmd := nodeManagementCmd.Command("agentfiles | af", msgPrinter.Sprintf("List agent files and types stored in the management hub.")).Alias("af").Alias("agentfiles")
 	nmAgentFilesListCmd := nmAgentFilesCmd.Command("list | ls", msgPrinter.Sprintf("Display a list of agent files stored in the management hub.")).Alias("ls").Alias("list")
-	nmAgentFilesListType := nmAgentFilesListCmd.Flag("type", msgPrinter.Sprintf("Filter the list of agent upgrade files by the specified type. Valid values include 'agent-software-files', 'agent-cert-files' and 'agent-config-files'.")).Short('t').String()
+	nmAgentFilesListType := nmAgentFilesListCmd.Flag("type", msgPrinter.Sprintf("Filter the list of agent upgrade files by the specified type. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.")).Short('t').String()
 	nmAgentFilesListVersion := nmAgentFilesListCmd.Flag("version", msgPrinter.Sprintf("Filter the list of agent upgrade files by the specified version range or version string. Version can be a version range, a single version string or 'latest'.")).Short('V').String()
 	nmAgentFilesVersionsCmd := nmAgentFilesCmd.Command("versions | ver", msgPrinter.Sprintf("Display a list of agent file types with their corresponding versions.")).Alias("ver").Alias("versions")
-	nmAgentFilesVersionsType := nmAgentFilesVersionsCmd.Flag("type", msgPrinter.Sprintf("The type of agent files to list versions for. Valid values include 'agent-software-files', 'agent-cert-files' and 'agent-config-files'.")).Short('t').String()
+	nmAgentFilesVersionsType := nmAgentFilesVersionsCmd.Flag("type", msgPrinter.Sprintf("The type of agent files to list versions for. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.")).Short('t').String()
 	nmAgentFilesVersionsVersionOnly := nmAgentFilesVersionsCmd.Flag("version-only", msgPrinter.Sprintf("Show only a list of versions for a given file type. Must also specify a file type with the --type flag.")).Short('V').Bool()
 
 	policyCmd := app.Command("policy | pol", msgPrinter.Sprintf("List and manage policy for this Horizon edge node.")).Alias("pol").Alias("policy")
@@ -1097,7 +1111,7 @@ Environment Variables:
 	case exNodeStatusList.FullCommand():
 		exchange.NodeListStatus(*exOrg, credToUse, *exNodeStatusListNode)
 	case exNodeManagementListCmd.FullCommand():
-		exchange.NodeManagementList(*exOrg, credToUse, *exNodeManagementListName, *exNodManagementListNMPsAll)
+		exchange.NodeManagementList(*exOrg, credToUse, *exNodeManagementListName, *exNodeManagementListNMPsAll)
 
 	case agbotCacheServedOrgList.FullCommand():
 		agreementbot.GetServedOrgs()
@@ -1295,6 +1309,15 @@ Environment Variables:
 		node_management.AgentFilesList(*nmOrg, *nmUserPw, *nmAgentFilesListType, *nmAgentFilesListVersion)
 	case nmAgentFilesVersionsCmd.FullCommand():
 		node_management.AgentFilesVersions(*nmOrg, *nmUserPw, *nmAgentFilesVersionsType, *nmAgentFilesVersionsVersionOnly)
+
+	case nmManifestListCmd.FullCommand():
+		node_management.ManifestList(*nmOrg, *nmUserPw, *nmManifestListId, *nmManifestListType, *nmManifestListLong)
+	case nmManifestAddCmd.FullCommand():
+		node_management.ManifestAdd(*nmOrg, *nmUserPw, *nmManifestAddFile, *nmManifestAddId, *nmManifestAddType)
+	case nmManifestNewCmd.FullCommand():
+		node_management.ManifestNew()
+	case nmManifestRemoveCmd.FullCommand():
+		node_management.ManifestRemove(*nmOrg, *nmUserPw, *nmManifestRemoveId, *nmManifestRemoveType, *nmManifestRemoveForce)
 
 	// DEPRECATED (voucherInspectCmd, voucherImportCmd, voucherListCmd are deprecated commands)
 	case voucherInspectCmd.FullCommand():

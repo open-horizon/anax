@@ -52,3 +52,21 @@ func NewNodeShutdownCommand(msg *events.NodeShutdownMessage) *NodeShutdownComman
 		Msg: msg,
 	}
 }
+
+type NMPChangeCommand struct {
+	Msg *events.ExchangeChangeMessage
+}
+
+func (n NMPChangeCommand) String() string {
+	return fmt.Sprintf("Msg: %v", n.Msg)
+}
+
+func (n NMPChangeCommand) ShortString() string {
+	return n.String()
+}
+
+func NewNMPChangeCommand(msg *events.ExchangeChangeMessage) *NMPChangeCommand {
+	return &NMPChangeCommand{
+		Msg: msg,
+	}
+}

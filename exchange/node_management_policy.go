@@ -54,3 +54,20 @@ func GetAllExchangeNodeManagementPolicy(ec ExchangeContext, policyOrg string) (*
 	policies := resp.(*ExchangeNodeManagementPolicyResponse).Policies
 	return &policies, nil
 }
+
+// Get lists of the upgrade versions currently availible in the css
+func GetNodeUpgradeVersions(ec ExchangeContext) (*exchangecommon.AgentUpgradeVersionsResponse, error) {
+	glog.V(3).Infof("Getting the availible versions for agent upgrade packages from the exchange.")
+
+	var resp interface{}
+	resp = new(exchangecommon.AgentUpgradeVersionsResponse)
+
+	targetURL := fmt.Sprintf("%vorgs/IBM/AgentFileVersion", ec.GetExchangeURL())
+
+	err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*exchangecommon.AgentUpgradeVersionsResponse), nil
+}

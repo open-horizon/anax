@@ -49,6 +49,7 @@ rpmbuild: require-version
 	cp ../../../anax-in-container/horizon-container fs/usr/horizon/bin/
 	cp ../../../agent-install/agent-install.sh fs/usr/horizon/bin/
 	cp ../../../agent-install/agent-uninstall.sh fs/usr/horizon/bin/
+	cp ../../../agent-install/agent-auto-upgrade.sh fs/usr/horizon/bin/
 	cp ../../../agent-install/edgeNodeFiles.sh fs/usr/horizon/bin/
 	cp ../../../agent-install/k8s/deployment-template.yml fs/usr/horizon/cluster/
 	cp ../../../agent-install/k8s/persistentClaim-template.yml fs/usr/horizon/cluster/

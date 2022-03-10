@@ -76,7 +76,7 @@ func NMPNew() {
 		`  ],`,
 		`  "enabled": false,                          /* ` + msgPrinter.Sprintf("Is this policy enabled or disabled.") + ` */`,
 		`  "start": "<RFC3339 timestamp> | now",      /* ` + msgPrinter.Sprintf("When to start an upgrade, default \"now\".") + ` */`,
-		`  "startWindow": 0,                          /* ` + msgPrinter.Sprintf("Enable agents to randomize upgrade start time within start + duration, default 0.") + ` */`,
+		`  "startWindow": 0,                          /* ` + msgPrinter.Sprintf("Enable agents to randomize upgrade start time within start + startWindow, default 0.") + ` */`,
 		`  "agentUpgradePolicy": {                    /* ` + msgPrinter.Sprintf("(Optional) Assertions on how the agent should update itself.") + ` */`,
 		`    "manifest": "",                          /* ` + msgPrinter.Sprintf("The manifest file containing the software, config and cert files to upgrade.") + ` */`,
 		`    "allowDowngrade": false                  /* ` + msgPrinter.Sprintf("Is this policy allowed to perform a downgrade to a previous version.") + ` */`,
@@ -165,7 +165,7 @@ func NMPRemove(org, credToUse, nmpName string, force bool) {
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node management policy %s not found in org %s", nmpName, nmpOrg))
 	} else if httpCode == 204 {
-		msgPrinter.Printf("Removing node management policy %v/%v and re-evaluating all agreements. Existing agreements might be cancelled and re-negotiated", nmpOrg, nmpName)
+		msgPrinter.Printf("Removing node management policy %v/%v from the exchange.", nmpOrg, nmpName)
 		msgPrinter.Println()
 		msgPrinter.Printf("Node management policy %v/%v removed", nmpOrg, nmpName)
 		msgPrinter.Println()

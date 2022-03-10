@@ -79,7 +79,7 @@ AGBOT_TOKEN ?= Abcdefghijklmno1
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
-DOCKER_EXCH_TAG := 2.90.1
+DOCKER_EXCH_TAG := testing
 DOCKER_EXCH ?= $(HZN_TRANSPORT)://exchange-api:8080/v1
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
@@ -308,8 +308,6 @@ e2edevtest-docker-prereqs:
 	cp -r $(CURDIR)/docker/fs/etc $(E2EDEVTEST_TEMPFS)
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(E2EDEVTEST_TEMPFS)/root
 	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
-	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/horizon.pem $(E2EDEVTEST_TEMPFS)/root/.colonus/.
-	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/mtn-publicKey.pem $(E2EDEVTEST_TEMPFS)/root/.colonus/.
 
 test-image:
 	@echo "Handling $(DOCKER_TEST_INAME)"

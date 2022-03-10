@@ -247,6 +247,12 @@ function rollback_agent_image() {
 
 #====================== Main  ======================
 
+# Exit early if status.json does not exist
+auto_upgrade_disabled=$(agent_cmd "test -f /var/horizon/status.json")
+if [ auto_upgrade_disabled ]; then
+    rollback_failed "The /var/horizon/status.json does not exist."
+fi
+
 # Check agent deployment/pod status and status.json
 pod_status=$($KUBECTL get pods ${POD_ID} --no-headers -o custom-columns=":status.phase")
 log_debug "Pod status: $pod_status"

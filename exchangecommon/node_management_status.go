@@ -7,11 +7,16 @@ import (
 )
 
 type NodeManagementPolicyStatus struct {
-	AgentUpgrade *AgentUpgradePolicyStatus `json:"agentUpgrade"`
+	AgentUpgrade         *AgentUpgradePolicyStatus   `json:"agentUpgradePolicyStatus"`
+	AgentUpgradeInternal *AgentUpgradeInternalStatus `json:"agentUpgradeInternal,omitempty"`
 }
 
 func (n NodeManagementPolicyStatus) String() string {
 	return fmt.Sprintf("AgentUpgrade: %v", n.AgentUpgrade)
+}
+
+func (n NodeManagementPolicyStatus) DeepCopy() NodeManagementPolicyStatus {
+	return NodeManagementPolicyStatus{AgentUpgrade: n.AgentUpgrade.DeepCopy(), AgentUpgradeInternal: n.AgentUpgradeInternal.DeepCopy()}
 }
 
 func (n NodeManagementPolicyStatus) Status() string {
@@ -50,20 +55,37 @@ func (n NodeManagementPolicyStatus) IsAgentUpgradePolicy() bool {
 }
 
 type AgentUpgradePolicyStatus struct {
-	ScheduledTime        string `json:"scheduledTime"`
-	scheduledUnixTime    time.Time
+	ScheduledTime        string               `json:"scheduledTime"`
+	scheduledUnixTime    time.Time            `json:"scheduledUnixTime,omitempty"`
 	ActualStartTime      string               `json:"startTime,omitempty"`
 	CompletionTime       string               `json:"endTime,omitempty"`
-	UpgradedVersions     AgentUpgradeVersions `json:"upgradedVersion"`
+	UpgradedVersions     AgentUpgradeVersions `json:"upgradedVersions"`
 	Status               string               `json:"status"`
 	ErrorMessage         string               `json:"errorMessage,omitempty"`
-	BaseWorkingDirectory string               `json:"workingDirectory"`
-	AllowDowngrade       bool                 `json:"allowDowngrade"`
+	BaseWorkingDirectory string               `json:"workingDirectory,omitempty"`
 }
 
 func (a AgentUpgradePolicyStatus) String() string {
-	return fmt.Sprintf("ScheduledTime: %v, ActualStartTime: %v, CompletionTime: %v, UpgradedVersions: %v, Status: %v, ErrorMessage: %v, BaseWorkingDirectory: %v, AllowDowngrade: %v",
-		a.ScheduledTime, a.ActualStartTime, a.CompletionTime, a.UpgradedVersions, a.Status, a.ErrorMessage, a.BaseWorkingDirectory, a.AllowDowngrade)
+	return fmt.Sprintf("ScheduledTime: %v, ActualStartTime: %v, CompletionTime: %v, UpgradedVersions: %v, Status: %v, ErrorMessage: %v, BaseWorkingDirectory: %v",
+		a.ScheduledTime, a.ActualStartTime, a.CompletionTime, a.UpgradedVersions, a.Status, a.ErrorMessage, a.BaseWorkingDirectory)
+}
+
+func (a AgentUpgradePolicyStatus) DeepCopy() *AgentUpgradePolicyStatus {
+	return &AgentUpgradePolicyStatus{ScheduledTime: a.ScheduledTime, scheduledUnixTime: a.scheduledUnixTime, ActualStartTime: a.ActualStartTime, CompletionTime: a.CompletionTime,
+		UpgradedVersions: a.UpgradedVersions, Status: a.Status, ErrorMessage: a.ErrorMessage, BaseWorkingDirectory: a.BaseWorkingDirectory}
+}
+
+type AgentUpgradeInternalStatus struct {
+	AllowDowngrade bool   `json:"allowDowngrade,omitempty"`
+	Manifest       string `json:"manifest,omitempty"`
+}
+
+func (a AgentUpgradeInternalStatus) String() string {
+	return fmt.Sprintf("AllowDowngrade: %v, Manifest: %v", a.AllowDowngrade, a.Manifest)
+}
+
+func (a AgentUpgradeInternalStatus) DeepCopy() *AgentUpgradeInternalStatus {
+	return &AgentUpgradeInternalStatus{AllowDowngrade: a.AllowDowngrade, Manifest: a.Manifest}
 }
 
 type AgentUpgradeVersions struct {
@@ -91,7 +113,7 @@ const (
 
 func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string) NodeManagementPolicyStatus {
 	newStatus := NodeManagementPolicyStatus{
-		AgentUpgrade: &AgentUpgradePolicyStatus{Status: STATUS_NEW},
+		AgentUpgrade: &AgentUpgradePolicyStatus{Status: STATUS_NEW}, AgentUpgradeInternal: &AgentUpgradeInternalStatus{},
 	}
 	if policy.AgentAutoUpgradePolicy != nil {
 		startTime, _ := time.Parse(time.RFC3339, policy.PolicyUpgradeTime)
@@ -102,7 +124,8 @@ func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string)
 		newStatus.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).Format(time.RFC3339)
 		newStatus.AgentUpgrade.scheduledUnixTime = time.Unix(realStartTime, 0)
 		newStatus.AgentUpgrade.BaseWorkingDirectory = workingDir
-		newStatus.AgentUpgrade.AllowDowngrade = policy.AgentAutoUpgradePolicy.AllowDowngrade
+		newStatus.AgentUpgradeInternal.AllowDowngrade = policy.AgentAutoUpgradePolicy.AllowDowngrade
+		newStatus.AgentUpgradeInternal.Manifest = policy.AgentAutoUpgradePolicy.Manifest
 	}
 	return newStatus
 }
