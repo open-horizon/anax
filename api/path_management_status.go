@@ -51,69 +51,62 @@ func FindManagementStatusForOutput(nmpName, orgName string, errorHandler ErrorHa
 	return false, managementStatuses
 }
 
-func UpdateManagementStatus(nmStatus managementStatusInput, errorHandler ErrorHandler, statusHandler exchange.PutNodeManagementPolicyStatusHandler, nmpName string, db *bolt.DB) (bool, string, []*events.NMStatusChangedMessage) {
-	if nmStatus.Type == "agentUpgrade" {
-		// Slice to store events
-		msgs := make([]*events.NMStatusChangedMessage, 0, 10)
+func UpdateManagementStatus(nmStatus exchangecommon.NodeManagementPolicyStatus, errorHandler ErrorHandler, statusHandler exchange.PutNodeManagementPolicyStatusHandler, nmpName string, db *bolt.DB) (bool, string, []*events.NMStatusChangedMessage) {
+	// Slice to store events
+	msgs := make([]*events.NMStatusChangedMessage, 0, 10)
 
-		// Find exchange device in DB
-		pDevice, err := persistence.FindExchangeDevice(db)
-		if err != nil {
-			return errorHandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), "", nil
-		} else if pDevice == nil {
-			return errorHandler(NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "management")), "", nil
-		}
-
-		var managementStatus *exchangecommon.NodeManagementPolicyStatus
-		fullName := string(pDevice.Org) + "/" + string(nmpName)
-
-		// Check to see if status is already being stored
-		if managementStatus, err = persistence.FindNMPStatus(db, fullName); err != nil {
-			return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), "", nil
-		} else if managementStatus == nil {
-			return errorHandler(NewNotFoundError(fmt.Sprintf("The nmp %v cannot be found", nmpName), "management")), "", nil
-		}
-
-		// Initialize agent upgrade status if it does not exist
-		if managementStatus.AgentUpgrade == nil {
-			managementStatus.AgentUpgrade = new(exchangecommon.AgentUpgradePolicyStatus)
-		}
-
-		// Set the actual start time and completion time depending on new status
-		if nmStatus.Status == exchangecommon.STATUS_INITIATED && managementStatus.AgentUpgrade.ActualStartTime == "" {
-			managementStatus.AgentUpgrade.ActualStartTime = time.Now().Format(time.RFC3339)
-		} else if nmStatus.Status == exchangecommon.STATUS_SUCCESSFUL && managementStatus.AgentUpgrade.CompletionTime == "" {
-			managementStatus.AgentUpgrade.CompletionTime = time.Now().Format(time.RFC3339)
-		}
-		managementStatus.AgentUpgrade.ErrorMessage = nmStatus.ErrorMessage
-
-		// Send NM_STATUS_CHANGED message if status was changed
-		if nmStatus.Status != "" && managementStatus.AgentUpgrade.Status != nmStatus.Status {
-			managementStatus.AgentUpgrade.Status = nmStatus.Status
-			msgs = append(msgs, events.NewNMStatusChangedMessage(events.NM_STATUS_CHANGED, nmStatus.Status))
-			newNMPStatus := managementStatus.AgentUpgrade.Status
-			if managementStatus.AgentUpgrade.ErrorMessage != "" {
-				newNMPStatus += fmt.Sprintf(", ErrorMessage: %v", managementStatus.AgentUpgrade.ErrorMessage)
-			}
-			eventlog.LogNodeEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NMP_STATUS_CHANGE, pDevice.Org, nmpName, newNMPStatus), persistence.EC_NMP_STATUS_UPDATE_COMPLETE, pDevice.Id, pDevice.Org, pDevice.Pattern, pDevice.Config.State)
-		}
-
-		// Update the NMP status in the local db
-		if err := persistence.SaveOrUpdateNMPStatus(db, fullName, *managementStatus); err != nil {
-			return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object, error %v", err))), "", nil
-		}
-
-		// Update the status of the NMP in the exchange
-		// if _, err := statusHandler(pDevice.Org, pDevice.Id, nmpName, managementStatus); err != nil {
-		// 	return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object in the exchange, error %v", err))), "", nil
-		// }
-
-		// Return message
-		return false, fmt.Sprintf("Updated status for NMP %v.", fullName), msgs
-
-	} else if nmStatus.Type != "" {
-		return errorHandler(NewBadRequestError(fmt.Sprintf("Input's \"type\" field currently only supports \"agentUpgrade\"."))), "", nil
+	// Find exchange device in DB
+	pDevice, err := persistence.FindExchangeDevice(db)
+	if err != nil {
+		return errorHandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), "", nil
+	} else if pDevice == nil {
+		return errorHandler(NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "management")), "", nil
 	}
 
-	return errorHandler(NewBadRequestError(fmt.Sprintf("Input does not include \"type\" field."))), "", nil
+	var managementStatus *exchangecommon.NodeManagementPolicyStatus
+	fullName := string(pDevice.Org) + "/" + string(nmpName)
+
+	// Check to see if status is already being stored
+	if managementStatus, err = persistence.FindNMPStatus(db, fullName); err != nil {
+		return errorHandler(NewSystemError(fmt.Sprintf("unable to read management status object, error %v", err))), "", nil
+	} else if managementStatus == nil {
+		return errorHandler(NewNotFoundError(fmt.Sprintf("The nmp %v cannot be found", nmpName), "management")), "", nil
+	}
+
+	// Initialize agent upgrade status if it does not exist
+	if managementStatus.AgentUpgrade == nil {
+		managementStatus.AgentUpgrade = new(exchangecommon.AgentUpgradePolicyStatus)
+	}
+
+	// Set the actual start time and completion time depending on new status
+	if nmStatus.AgentUpgrade.Status == exchangecommon.STATUS_INITIATED && managementStatus.AgentUpgrade.ActualStartTime == "" {
+		managementStatus.AgentUpgrade.ActualStartTime = time.Now().Format(time.RFC3339)
+	} else if nmStatus.AgentUpgrade.Status == exchangecommon.STATUS_SUCCESSFUL && managementStatus.AgentUpgrade.CompletionTime == "" {
+		managementStatus.AgentUpgrade.CompletionTime = time.Now().Format(time.RFC3339)
+	}
+	managementStatus.AgentUpgrade.ErrorMessage = nmStatus.AgentUpgrade.ErrorMessage
+
+	// Send NM_STATUS_CHANGED message if status was changed
+	if nmStatus.AgentUpgrade.Status != "" && managementStatus.AgentUpgrade.Status != nmStatus.AgentUpgrade.Status {
+		managementStatus.AgentUpgrade.Status = nmStatus.AgentUpgrade.Status
+		msgs = append(msgs, events.NewNMStatusChangedMessage(events.NM_STATUS_CHANGED, nmStatus.AgentUpgrade.Status))
+		newNMPStatus := managementStatus.AgentUpgrade.Status
+		if managementStatus.AgentUpgrade.ErrorMessage != "" {
+			newNMPStatus += fmt.Sprintf(", ErrorMessage: %v", managementStatus.AgentUpgrade.ErrorMessage)
+		}
+		eventlog.LogNodeEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NMP_STATUS_CHANGE, pDevice.Org, nmpName, newNMPStatus), persistence.EC_NMP_STATUS_UPDATE_COMPLETE, pDevice.Id, pDevice.Org, pDevice.Pattern, pDevice.Config.State)
+	}
+
+	// Update the NMP status in the local db
+	if err := persistence.SaveOrUpdateNMPStatus(db, fullName, *managementStatus); err != nil {
+		return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object, error %v", err))), "", nil
+	}
+
+	// Update the status of the NMP in the exchange
+	// if _, err := statusHandler(pDevice.Org, pDevice.Id, nmpName, managementStatus); err != nil {
+	// 	return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object in the exchange, error %v", err))), "", nil
+	// }
+
+	// Return message
+	return false, fmt.Sprintf("Updated status for NMP %v.", fullName), msgs
 }
