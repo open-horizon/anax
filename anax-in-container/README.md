@@ -10,19 +10,28 @@ This page provides guidance for building and running a containerized version of 
 > **Note:** Currently supported architectures for running Horizon Agent (anax) in container:
 >
 > - amd64
-> - ppc64le
+> - arm64
+> - ppc64el
 > - s390x
 
 ## Build and Push the Horizon Agent Container
 
-If you are building a Docker image for a platform different than the one you're building on (cross-platform build), you must export the target host platform variables first, e.g. for `ppc64le` architecture with Ubuntu 18.04 host use the following procedure:
+Building multi-architecture Docker images can be done by exporting the target host platform variables and a variable to enable
+[Docker Buildx](https://docs.docker.com/buildx/working-with-buildx/). This requires Docker >= 19.03 and certain host packages to
+be installed and running (`qemu-user-static` and `binmt-support`). Alternatively, instead of installing the needed packages, you can
+also run the `multiarch/qemu-user-static` Docker image which will setup the QEMU simulator for use with Buildx. Note that you must
+continually run this Docker image in order to use Buildx to build muli-arch images.
 
 ```bash
 # List of possible values:
-#   `arch`: armhf, arm64, amd64, ppc64el
+#   `arch`: arm64, amd64, ppc64el, s390x
 #   `opsys`: Linux, Darwin
 export arch=ppl64el
+#export arch=arm64
 export opsys=Linux # (output of 'uname -s' command on target)
+export USE_DOCKER_BUILDX=true
+# setup the QEMU simulator. You can then run `docker buildx ls` to see which platforms are available.
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 # In Makefile, modify line: DOCKER_IMAGE_VERSION ?= x.x.x, or set that variable in the environment
 make anax-image
 # test container locally with:
