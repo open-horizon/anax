@@ -179,6 +179,17 @@ ifdef GO_BUILD_LDFLAGS
 	GO_BUILD_LDFLAGS := -ldflags="$(GO_BUILD_LDFLAGS)"
 endif
 
+# Test if we can use Docker buildx if USE_DOCKER_BUILDX is set. If not, then we can't build multi-arch images on x86 but 
+#  will instead need to have a build platform of each arch to build images of different archs
+DOCKER_BUILDX_PLATFORM=$(arch)
+ifeq ($(arch),ppc64el)
+DOCKER_BUILDX_PLATFORM = ppc64le
+endif
+
+DOCKER_BUILD_CMD = build
+ifneq ($(origin USE_DOCKER_BUILDX), undefined)
+DOCKER_BUILD_CMD = buildx build --platform linux/$(DOCKER_BUILDX_PLATFORM)
+endif
 
 ifndef verbose
 .SILENT:
@@ -283,6 +294,7 @@ macinstall: $(MAC_PKG)
 macpkginfo:
 	$(MAKE) -C pkg/mac macpkginfo
 
+# note that we can use Docker buildx for building multiplatform archs on x86 if we export USE_DOCKER_BUILDX=true
 anax-image:
 	@echo "Producing anax docker image $(ANAX_IMAGE)"
 	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "s390x" || $(arch) == "arm64" ]]; then \
@@ -291,7 +303,7 @@ anax-image:
 	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
 	  cp $(CLI_EXECUTABLE) $(ANAX_CONTAINER_DIR); \
 	  cp -f $(LICENSE_FILE) $(ANAX_CONTAINER_DIR); \
-	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_IMAGE_LABELS) -t $(ANAX_IMAGE) -f Dockerfile.ubi.$(arch) . && \
+	  cd $(ANAX_CONTAINER_DIR) && docker $(DOCKER_BUILD_CMD) $(DOCKER_MAYBE_CACHE) $(ANAX_IMAGE_LABELS) -t $(ANAX_IMAGE) -f Dockerfile.ubi.$(arch) . && \
 	  docker tag $(ANAX_IMAGE) $(ANAX_IMAGE_STG); \
 	else echo "Building the anax docker image is not supported on $(arch)"; fi
 
@@ -366,13 +378,14 @@ agbot-package: agbot-image
 		echo "anax-k8s container $(AGBOT_IMAGE_STG):$(AGBOT_IMAGE_VERSION) already present in $(IMAGE_REPO)"; \
 	fi
 
+# note that we can use Docker buildx for building multiplatform archs on x86 if we export USE_DOCKER_BUILDX=true
 anax-k8s-image: anax-k8s-clean
 	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp -f $(LICENSE_FILE) $(ANAX_K8S_CONTAINER_DIR)
 	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
 	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" ]]; then \
-		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_LABELS) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi.$(arch) .; \
+		cd $(ANAX_K8S_CONTAINER_DIR) && docker $(DOCKER_BUILD_CMD) $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_LABELS) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi.$(arch) .; \
 	fi
 	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
 
