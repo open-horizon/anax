@@ -120,7 +120,7 @@ func setupTesting(listenerCert string, listenerKey string, trustSystemCerts bool
 		Edge: Config{
 			TrustSystemCACerts: trustSystemCerts,
 			CACertsPath:        certPath,
-			PublicKeyPath:      pubKeyPath,
+			PublicKeyPath:      "",
 		},
 	}
 

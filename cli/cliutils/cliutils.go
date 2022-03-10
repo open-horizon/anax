@@ -218,15 +218,15 @@ func GetDockerAuth(domain string) (auth dockerclient.AuthConfiguration, err erro
 	if strings.Contains(cutil.GetDockerEndpoint(), "podman.sock") == true {
 		// podman can provide authentication file by setting REGISTRY_AUTH_FILE
 		if os.Getenv("DOCKER_CONFIG") == "" && os.Getenv("REGISTRY_AUTH_FILE") != "" {
-			if  _,err := os.Stat(os.Getenv("REGISTRY_AUTH_FILE")); err  == nil {
+			if _, err := os.Stat(os.Getenv("REGISTRY_AUTH_FILE")); err == nil {
 				if authtmp, err2 := dockerclient.NewAuthConfigurationsFromFile(os.Getenv("REGISTRY_AUTH_FILE")); err2 == nil {
 					auths = authtmp
 				}
 			}
 		}
-		if  auths == nil && os.Getenv("DOCKER_CONFIG") == "" && os.Getenv("XDG_RUNTIME_DIR") != "" {
-		        // podman default location is $XDG_RUNTIME_DIR/containers/auth.json
-			if  _,err := os.Stat(os.Getenv("XDG_RUNTIME_DIR") + "/containers/auth.json"); err  == nil {
+		if auths == nil && os.Getenv("DOCKER_CONFIG") == "" && os.Getenv("XDG_RUNTIME_DIR") != "" {
+			// podman default location is $XDG_RUNTIME_DIR/containers/auth.json
+			if _, err := os.Stat(os.Getenv("XDG_RUNTIME_DIR") + "/containers/auth.json"); err == nil {
 				if authtmp, err2 := dockerclient.NewAuthConfigurationsFromFile(os.Getenv("XDG_RUNTIME_DIR") + "/containers/auth.json"); err2 == nil {
 					auths = authtmp
 				}

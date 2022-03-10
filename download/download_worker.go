@@ -325,6 +325,7 @@ func (w *DownloadWorker) formAgentUpgradePackageNames() (*[]string, string, erro
 	}
 
 	osProp := fmt.Sprintf("%v", installTypeProp.Value)
+	archPropVal := fmt.Sprintf("%v", archProp.Value)
 	if osProp != "" {
 		pkgType := getPkgTypeForInstallType(osProp)
 		if pkgType == "" {
@@ -337,11 +338,9 @@ func (w *DownloadWorker) formAgentUpgradePackageNames() (*[]string, string, erro
 			osType = externalpolicy.OS_MAC
 		}
 
-		if archProp.Value == "amd64" && (pkgType == MACPACKAGETYPE || pkgType == RHELPACKAGETYPE) {
-			return &[]string{fmt.Sprintf(HZN_EDGE_FILE, osType, pkgType, "x86_64")}, containerAgentFiles, nil
-		}
+		pkgArch := getPkgArch(pkgType, archPropVal)
 
-		return &[]string{fmt.Sprintf(HZN_EDGE_FILE, osType, pkgType, archProp.Value)}, containerAgentFiles, nil
+		return &[]string{fmt.Sprintf(HZN_EDGE_FILE, osType, pkgType, pkgArch)}, containerAgentFiles, nil
 	}
 
 	return nil, containerAgentFiles, nil
@@ -359,13 +358,24 @@ func getEC(config *config.HorizonConfig, db *bolt.DB) *worker.BaseExchangeContex
 func getPkgTypeForInstallType(install string) string {
 	if install == externalpolicy.OS_MAC {
 		return MACPACKAGETYPE
-	} else if install == externalpolicy.OS_UBUNTU || install == externalpolicy.OS_DEBIAN {
+	} else if install == externalpolicy.OS_UBUNTU || install == externalpolicy.OS_DEBIAN || install == externalpolicy.OS_RASPBIAN {
 		return DEBPACKAGETYPE
 	} else if install == externalpolicy.OS_RHEL {
 		return RHELPACKAGETYPE
 	}
 
 	return ""
+}
+
+func getPkgArch(pkgType string, arch string) string {
+	pkgArch := arch
+	if arch == "arm" {
+		pkgArch = "armhf"
+	} else if arch == "amd64" && (pkgType == MACPACKAGETYPE || pkgType == RHELPACKAGETYPE) {
+		pkgArch = "x86_64"
+	}
+
+	return pkgArch
 }
 
 func dwlog(input string) string {

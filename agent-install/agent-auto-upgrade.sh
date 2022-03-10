@@ -31,6 +31,9 @@ UPGRADE_TYPE_SW="software"
 UPGRADE_TYPE_CERT="cert"
 UPGRADE_TYPE_CFG="config"
 
+# Type of container engine to use; RedHat might have podman
+DOCKER_ENGINE="docker"
+
 #====================== functions ======================
 # variable that holds the return message for a function
 FUNC_RET_MSG=""
@@ -83,6 +86,41 @@ function is_redhat_variant() {
     return $(which rpm > /dev/null 2>&1)
 }
 
+# A RedHat system might use podman instead of docker; default to docker
+function get_docker_engine() {
+
+    log_debug "get_docker_engine() begin"
+
+    if [[ $OSTYPE == linux* ]]; then
+        if command -v docker > /dev/null 2>&1; then
+            : # use docker
+        elif command -v podman > /dev/null 2>&1; then
+            # podman is installed... lets make sure it is acceptable version (ie > 4.0.0)
+            podman_ver=$(podman --version)
+            rc=$?
+            if [[ $rc -eq 0 ]]; then
+               # should be of form 'podman version 4.0.0'
+               log_debug "podman version string - ${podman_ver}"
+               OLDIFS=${IFS}
+               IFS=' '
+               read -a podman_ver_array <<< "${podman_ver}"
+               if [[ ${#podman_ver_array[@]} -eq 3 ]]; then
+                  IFS='.'
+                  read -a podman_ver_num_array <<< "${podman_ver_array[2]}"
+                  major_version=$(expr "${podman_ver_num_array[0]}" + 0)
+                  if [[ $major_version -ge 4 ]]; then
+                     DOCKER_ENGINE="podman"
+                  fi 
+               fi
+               IFS=${OLDIFS}
+            fi
+        fi
+    fi
+
+    log_info "DOCKER_ENGINE set to ${DOCKER_ENGINE}"
+    log_debug "get_docker_engine() end"
+}
+
 # Create a status.json file to save the status.
 # It is only called when calling anax API failed to update the status.
 # The saved the status will be picked up by the anax node management
@@ -104,10 +142,12 @@ function write_status_file() {
 
     cat > $status_file_name << EOF
 {
-    "status": "$status",
-    "startTime": "$startTime",
-    "endTime": "$endTime",
-    "errorMessage": "$err_msg"
+    "agentUpgradePolicyStatus": {
+        "status": "$status",
+        "startTime": "$startTime",
+        "endTime": "$endTime",
+        "errorMessage": "$err_msg"
+    }
 }
 EOF
 }
@@ -136,9 +176,10 @@ function set_nodemanagement_status() {
     # call agent API to save the status
     read -d '' nm_status <<EOF
  {
-    "type": "agentUpgrade",
-    "status": "$status",
-    "errorMessage": "$err_msg"
+    "agentUpgradePolicyStatus": {
+        "status": "$status",
+        "errorMessage": "$err_msg"
+    }
  }
 EOF
     local output=$(echo "$nm_status" | curl -sS -X PUT -w %{http_code} -H "Content-Type: application/json" --data @- "${HORIZON_URL}/nodemanagement/status/$nmp")
@@ -359,16 +400,19 @@ function backup_agent_and_cli_container() {
         copy_pkg_files "$backup_dir/horizon" "$cert_file_name"
     fi
 
+    # make sure if use docker or podman command
+    get_docker_engine
+
     # save image name, local db and anax.json file
     horizon_num=$CONTAINER_NUMBER
-    container_info=$(docker inspect horizon${horizon_num})
+    container_info=$(${DOCKER_ENGINE} inspect horizon${horizon_num})
     if [ $? -eq 0 ]; then
         mkdir -p $backup_dir/container
         echo $container_info > $backup_dir/container/container_info.json
         mkdir -p $backup_dir/container/var/horizon
-        docker cp horizon${horizon_num}:/var/horizon/anax.db $backup_dir/container/var/horizon/anax.db
+        ${DOCKER_ENGINE} cp horizon${horizon_num}:/var/horizon/anax.db $backup_dir/container/var/horizon/anax.db
         mkdir -p $backup_dir/container/etc/horizon/
-        docker cp horizon${horizon_num}:/etc/horizon/anax.json $backup_dir/container/etc/horizon/anax.json
+        ${DOCKER_ENGINE} cp horizon${horizon_num}:/etc/horizon/anax.json $backup_dir/container/etc/horizon/anax.json
     fi
 
     log_debug "End backing up horizon container agent, cli binaries and configuration on Linux."
@@ -475,8 +519,8 @@ function rollback_agent_and_cli_container() {
     image="${image#\"}"
 
     # start the container
-    docker cp $backup_dir/container/var/horizon/anax.db horizon${horizon_num}:/var/horizon/anax.db
-    docker cp $backup_dir/container/etc/horizon/anax.json horizon${horizon_num}:/etc/horizon/anax.json
+    ${DOCKER_ENGINE} cp $backup_dir/container/var/horizon/anax.db horizon${horizon_num}:/var/horizon/anax.db
+    ${DOCKER_ENGINE} cp $backup_dir/container/etc/horizon/anax.json horizon${horizon_num}:/etc/horizon/anax.json
     HC_DOCKER_IMAGE=${image%:*} HC_DOCKER_TAG=${image##*:} horizon-container update $horizon_num
     log_debug "Rollback: horizon container restored."
 
@@ -603,7 +647,7 @@ fi
 
 # make sure the status is 'downloaded'
 nmp_id=$(jq -r '.|keys[0]' 2>/dev/null <<< $nextjob || true)
-nm_status=$(jq -r ".\"$nmp_id\".agentUpgrade.status" 2>/dev/null <<< $nextjob || true)
+nm_status=$(jq -r ".\"$nmp_id\".agentUpgradePolicyStatus.status" 2>/dev/null <<< $nextjob || true)
 if [ "$nm_status" != "downloaded" ]; then
     log_info "Cannot continue because the current node management status is '$nm_status' instead of 'downloaded'."  
     exit 0
@@ -616,7 +660,7 @@ exch_url=$(jq -r .configuration.exchange_api 2>/dev/null <<< $hzn_node_list || t
 log_debug "The exchange url is: $exch_url"
 
 # get package directory
-pkg_dir=$(jq -r ".\"$nmp_id\".agentUpgrade.workingDirectory" 2>/dev/null <<< $nextjob || true)
+pkg_dir=$(jq -r ".\"$nmp_id\".agentUpgradePolicyStatus.workingDirectory" 2>/dev/null <<< $nextjob || true)
 if [ -z "$pkg_dir" ]; then
     pkg_dir="$DEFAULT_VAR_BASE"
 fi
@@ -671,8 +715,7 @@ fi
 set_nodemanagement_status "$nmp_id" "$status_file" "initiated" "" 
 
 # get allowDowngrade attribute from the node management status
-allow_downgrade=$(jq -r ".\"$nmp_id\".agentUpgrade.allowDowngrade" 2>/dev/null <<< $nextjob || true)
-allow_downgrade="true"  #TODO remove
+allow_downgrade=$(jq -r ".\"$nmp_id\".agentUpgradeInternal.allowDowngrade" 2>/dev/null <<< $nextjob || true)
 if [ "$allow_downgrade" == "true" ]; then
     overwrite_flag="-f"
 else
@@ -697,7 +740,6 @@ eval "$(${cmd} \
         > >(Std_msg=$(cat); typeset -p Std_msg); \
         RC=$?; typeset -p RC)"
 rc=$RC
-#rc=5 #TODO remove
 # display the agenty-install.sh output
 echo "$Std_msg"
 #check the return code
