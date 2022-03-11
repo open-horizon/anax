@@ -16,6 +16,14 @@ const DEFAULT_BASE_OS_VALUE = "alpine:latest"
 
 const MAKE_FILE_CONTENT = `# Make targets for building the IBM example helloworld edge service
 
+DOCKER_ENGINE := $(shell command -v docker 2> /dev/null)
+ifndef DOCKER_ENGINE
+    DOCKER_ENGINE := $(shell command -v podman 2> /dev/null)
+    ifndef DOCKER_ENGINE
+       $(error "Neither docker nor podman is available. Please install one of them")
+    endif
+endif
+
 # This imports the variables from horizon/hzn.json. You can ignore these lines, but do not remove them.
 -include PROJECT_DIR/.hzn.json.tmp.mk
 
@@ -24,7 +32,7 @@ export ARCH ?= $(shell hzn architecture)
 
 # Build the docker image for the current architecture
 build:
-	docker build -t $(DOCKER_IMAGE_BASE)_$(ARCH):$(SERVICE_VERSION) -f ./Dockerfile.$(ARCH) .
+	$(DOCKER_ENGINE) build -t $(DOCKER_IMAGE_BASE)_$(ARCH):$(SERVICE_VERSION) -f ./Dockerfile.$(ARCH) .
 
 # Build the docker image for 3 architectures
 build-all-arches:
@@ -33,7 +41,7 @@ build-all-arches:
 	ARCH=arm64 $(MAKE) build
 
 clean:
-	-docker rmi $(DOCKER_IMAGE_BASE)_$(ARCH):$(SERVICE_VERSION) 2> /dev/null || :
+	-$(DOCKER_ENGINE) rmi $(DOCKER_IMAGE_BASE)_$(ARCH):$(SERVICE_VERSION) 2> /dev/null || :
 
 clean-all-archs:
 	ARCH=amd64 $(MAKE) clean

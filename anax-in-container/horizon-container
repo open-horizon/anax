@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 # This script starts or stops the horizon edge node agent in a container. Supports linux and mac os x.
 
 usage() {
@@ -75,7 +77,7 @@ isSocatRunning() {
 }
 
 isContainerRunning() {
-	docker ps --filter "name=$1" | tail -n +2 | grep -q -w "$1"
+	${DOCKER_ENGINE} ps --filter "name=$1" | tail -n +2 | grep -q -w "$1"
 	return $?
 }
 
@@ -98,8 +100,8 @@ killSocat() {
 
 # Check that they have the necessary software installed
 checkRequirements() {
-	if ! which docker >/dev/null; then
-		echo "You must have docker installed to run this command."
+	if ! which ${DOCKER_ENGINE} >/dev/null; then
+		echo "You must have docker or podman installed to run this command."
 		if isMacos; then
 			echo "Install docker on Mac OS X: https://docs.docker.com/docker-for-mac/install/"
 		fi
@@ -161,7 +163,7 @@ copyHostOSInfo() {
     echo "ARCH=$image_arch" >> $tmpfile
 
     # copy file to docker container
-    docker cp $tmpfile $DOCKER_NAME:/etc/host-os-release
+    ${DOCKER_ENGINE} cp $tmpfile $DOCKER_NAME:/etc/host-os-release
     if [[ $? -ne 0 ]]; then
         echo "Could not copy host os info into agent docker container"
         exit 2
@@ -289,7 +291,7 @@ start() {
 	# HC_DONT_PULL is an intentionally undocumented env var that allows us to test a new image before pushing it to docker hub
 	if [[ -n "$HC_DONT_PULL" ]]; then
 		# check if the image exists,if not exit out
-		docker inspect $dockerImage:$dockerTag > /dev/null 2>&1
+		${DOCKER_ENGINE} inspect $dockerImage:$dockerTag > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
 			pull_image=0
 		else
@@ -303,7 +305,7 @@ start() {
 	fi
 
 	if [[ $pull_image -eq 1 ]];  then
-		docker pull $dockerImage:$dockerTag
+		${DOCKER_ENGINE} pull $dockerImage:$dockerTag
 		checkrc $? "docker pull $dockerImage:$dockerTag"
 	fi
 
@@ -327,12 +329,18 @@ start() {
 		DOCKER_ADD_HOSTS="--add-host=$HZN_EXCHANGE_HOSTS"
 	fi
 
+	DOMAIN_SOCKET_MOUNT="/var/run/docker.sock:/var/run/docker.sock"
+        if [[ $DOCKER_ENGINE == "podman" ]]; then
+		# In the container, leave the mount as /var/run/docker.sock so the anax.service can stay the same
+	        DOMAIN_SOCKET_MOUNT="/var/run/podman/podman.sock:/var/run/docker.sock"
+        fi
+
 	if isMacos; then
 		DOCKER_HOST=tcp://host.docker.internal:$SOCAT_LISTEN_PORT
 		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e ANAX_DOCKER_ENDPOINT=${DOCKER_HOST} -e DOCKER_HOST=${DOCKER_HOST} -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
 		checkrc $? "docker run"
 	else
-		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
+		${DOCKER_ENGINE} run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} -v ${DOMAIN_SOCKET_MOUNT} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
 		checkrc $? "docker run"
 	fi
 
@@ -365,17 +373,17 @@ stop() {
 
 	# Stop the anax container
 	echo "Unregistering the node, then stopping/removing the horizon container (this may take a minute)..."
-	docker stop -t 120 $DOCKER_NAME  # give it time to unregister and stop the service containers
+	${DOCKER_ENGINE} stop -t 120 $DOCKER_NAME  # give it time to unregister and stop the service containers
 	if [[ $? -ne 0 ]]; then
 		echo "Error stopping container: $DOCKER_NAME. Resuming stop procedures."
 	fi
-	docker rm -f $DOCKER_NAME
+	${DOCKER_ENGINE} rm -f $DOCKER_NAME
 	if [[ $? -ne 0 ]]; then
 		echo "Error removing container: $DOCKER_NAME. Resuming stop procedures."
 	fi
 
 	# Remove the volumes
-	docker volume rm ${DOCKER_NAME}_var ${DOCKER_NAME}_etc
+	${DOCKER_ENGINE} volume rm ${DOCKER_NAME}_var ${DOCKER_NAME}_etc
 
 	# Stop socat
 	killSocat
@@ -394,20 +402,20 @@ restart() {
 	remove_horizon_upgrade_cronjob $INDEX_NUM
 
 	# check if the container is running or not
-	ret=$(docker inspect -f '{{.State.Running}}' $DOCKER_NAME)
+	ret=$(${DOCKER_ENGINE} inspect -f '{{.State.Running}}' $DOCKER_NAME)
 	if [ $? -eq 0 ]; then
 		# if not running, bring it up
 		if [ "$ret" == "false" ]; then
-			docker start $DOCKER_NAME
+			${DOCKER_ENGINE} start $DOCKER_NAME
 			checkrc $? "docker start"
 		fi
 
 		# now the container is running, set the dont-unregister-on-exit falg
-		docker exec $DOCKER_NAME touch /root/dont-unregister-on-exit
+		${DOCKER_ENGINE} exec $DOCKER_NAME touch /root/dont-unregister-on-exit
 		checkrc $? "docker dont-unregister-on-exit"
-		docker stop $DOCKER_NAME
+		${DOCKER_ENGINE} stop $DOCKER_NAME
 		checkrc $? "docker stop"
-		docker rm $DOCKER_NAME
+		${DOCKER_ENGINE} rm $DOCKER_NAME
 		checkrc $? "docker rm"
 	fi
 
@@ -477,6 +485,22 @@ fi
 # use arithmetic addition in case index num is > 9
 HORIZON_AGENT_PORT=$(( 8080 + $INDEX_NUM ))
 DOCKER_NAME="horizon$INDEX_NUM"
+
+# Need to determine docker or podman
+DOCKER_ENGINE="docker"
+if isMacos; then   # Only support docker for macOS for now
+    :
+else
+    command -v docker >/dev/null 2>&1
+    rc=$?
+    if [[ $rc -ne 0 ]]; then
+        command -v podman >/dev/null 2>&1
+        rc=$?
+        if [[ $rc -eq 0 ]]; then
+            DOCKER_ENGINE="podman"
+        fi
+    fi
+fi
 
 case "$1" in
 	start)

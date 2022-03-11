@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 # Installs the Horizon agent on an edge node (device or edge cluster)
 
 set -e   #future: remove?
@@ -61,6 +63,10 @@ EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
 UPGRADE_TYPE_SW="software"
 UPGRADE_TYPE_CERT="cert"
 UPGRADE_TYPE_CFG="config"
+
+# Type of container engine to use; RedHat might have podman
+DOCKER_ENGINE="docker"
+
 
 # Script usage info
 function usage() {
@@ -997,7 +1003,7 @@ function trim_variable() {
 
 function isDockerContainerRunning() {
     local container="$1"
-    if [[ -n $(docker ps -q --filter name=$container) ]]; then
+    if [[ -n $(${DOCKER_ENGINE} ps -q --filter name=$container) ]]; then
         return 0
     else
         return 1
@@ -1480,7 +1486,7 @@ function check_and_set_anax_port() {
     log_verbose "Checking if the agent port ${anax_port} is free..."
     local netStat=$(netstat -nlp | grep tcp | grep $anax_port || true)
     if is_anax_in_container; then
-        netStat=$(docker ps --filter "publish=$anax_port")
+        netStat=$(${DOCKER_ENGINE} ps --filter "publish=$anax_port")
     fi
     if [[ $netStat == *$anax_port* && ! $netStat == *anax* ]]; then
         log_fatal 2 "Another process is listening on Horizon agent port $anax_port. Free the port in order to install Horizon"
@@ -1772,9 +1778,13 @@ function install_dnf() {
 function redhat_device_install_prereqs() {
     log_debug "redhat_device_install_prereqs() begin"
 
-    # Need EPEL for at least jq
-    if [[ -z "$(dnf repolist -q epel)" ]]; then
-        dnf install -yq https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    dnf install -yq jq 
+    rc=$?
+    if [[ $rc -ne 0 ]]; then
+        # Need EPEL might be needed for jq
+        if [[ -z "$(dnf repolist -q epel)" ]]; then
+           dnf install -yq https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+        fi
     fi
 
     dnf install -yq curl jq cronie
@@ -1784,9 +1794,9 @@ function redhat_device_install_prereqs() {
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         dnf install -yq net-tools
-        if ! isCmdInstalled docker; then
+        if ! isCmdInstalled ${DOCKER_ENGINE}; then
             # Can't install docker for them on red hat, because they make it difficult. See: https://linuxconfig.org/how-to-install-docker-in-rhel-8
-            log_fatal 2 "Docker is required, but not installed. Install it and rerun this script."
+            log_fatal 2 "${DOCKER_ENGINE} is required, but not installed. Install it and rerun this script."
         fi
     fi
     log_debug "redhat_device_install_prereqs() end"
@@ -1975,7 +1985,7 @@ function install_redhat_container() {
     fi
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
-        confirmCmds docker jq
+        confirmCmds ${DOCKER_ENGINE} jq
         if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
             if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
                 unregister
@@ -2139,8 +2149,8 @@ function load_docker_image() {
     fi
     gunzip -k $tar_file_name   # keep the original file
     chk $? "uncompressing $tar_file_name"
-    local loaded_image_message=$(docker load --input ${tar_file_name%.gz})
-    chk $? "docker loading ${tar_file_name%.gz}"
+    local loaded_image_message=$(${DOCKER_ENGINE} load --input ${tar_file_name%.gz})
+    chk $? "${DOCKER_ENGINE} loading ${tar_file_name%.gz}"
     rm ${tar_file_name%.gz}   # clean up this temporary file
     # loaded_image_message is like: Loaded image: {repo}/{image_name}:{version_number}
     local image_full_path=$(echo $loaded_image_message | awk -F': ' '{print $2}')
@@ -2185,14 +2195,14 @@ function start_device_agent_container() {
     #else let horizon-container do its default thing (run openhorizon/amd64_anax:latest)
 
     if ! isDockerContainerRunning $container_name; then
-        if [[ -z $(docker ps -aq --filter name=${container_name}) ]]; then
+        if [[ -z $(${DOCKER_ENGINE} ps -aq --filter name=${container_name}) ]]; then
             # horizon services container doesn't exist
             log_info "Starting horizon agent container version $HC_DOCKER_TAG ..."
             horizon-container start $container_num
         else
             # horizon container is stopped but the container exists
-            log_info "The horizon agent container was in a stopped state via docker, restarting it..."
-            docker start $container_name
+            log_info "The horizon agent container was in a stopped state via ${DOCKER_ENGINE}, restarting it..."
+            ${DOCKER_ENGINE} start $container_name
             horizon-container update $container_num  # ensure it is running the latest version
         fi
     else
@@ -2649,7 +2659,7 @@ function loadClusterAgentImage() {
             local image_arch=$(get_image_arch)
             local image_path="openhorizon/${image_arch}_anax_k8s:$image_tag"
             log_info "Pulling $image_path from docker hub..."
-            docker pull "$image_path"
+            ${DOCKER_ENGINE} pull "$image_path"
             chk $? "pulling $image_path"
             AGENT_IMAGE=$image_path
             AGENT_IMAGE_VERSION_IN_TAR=${AGENT_IMAGE##*:}
@@ -2685,13 +2695,13 @@ function pushImageToEdgeClusterRegistry() {
         : # even for a registry in the insecure-registries list, if we don't specify user/pw it will prompt for it
         #docker login $EDGE_CLUSTER_REGISTRY_HOST
     else
-        echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | docker login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
+        echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | ${DOCKER_ENGINE} login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
         chk $? "logging into edge cluster's registry: $EDGE_CLUSTER_REGISTRY_HOST"
     fi
 
     log_info "Pushing docker image $AGENT_IMAGE to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
-    docker tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-    runCmdQuietly docker push ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+    ${DOCKER_ENGINE} tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+    runCmdQuietly ${DOCKER_ENGINE} push ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
     log_verbose "successfully pushed image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
 
     log_debug "pushImageToEdgeClusterRegistry() end"
@@ -3225,7 +3235,7 @@ function patch_deployment_with_image_registry_volume() {
 # Cluster only: to install/update agent in cluster
 function install_update_cluster() {
     log_debug "install_update_cluster() begin"
-    confirmCmds docker jq
+    confirmCmds ${DOCKER_ENGINE} jq
 
     check_existing_exch_node_is_correct_type "cluster"
 
@@ -3251,7 +3261,7 @@ function install_update_cluster() {
 # Cluster only: to install agent in cluster
 function install_cluster() {
     log_debug "install_cluster() begin"
-    confirmCmds docker jq
+    confirmCmds ${DOCKER_ENGINE} jq
 
     # generate files based on templates
     generate_installation_files
@@ -3323,6 +3333,42 @@ function update_cluster() {
     log_debug "update_cluster() end"
 }
 
+
+# A RedHat system might use podman instead of docker; default to docker
+function get_docker_engine() {
+
+    log_debug "get_docker_engine() begin"
+
+    if is_linux; then
+        if isCmdInstalled docker; then
+            : # use docker
+        elif isCmdInstalled podman;  then
+            # podman is installed... lets make sure it is acceptable version (ie > 4.0.0)
+            podman_ver=$(podman --version)
+            rc=$?
+            if [[ $rc -eq 0 ]]; then
+               # should be of form 'podman version 4.0.0'
+               log_debug "podman version string - ${podman_ver}"
+               OLDIFS=${IFS}
+               IFS=' '
+               read -a podman_ver_array <<< "${podman_ver}"
+               if [[ ${#podman_ver_array[@]} -eq 3 ]]; then
+                  IFS='.'
+                  read -a podman_ver_num_array <<< "${podman_ver_array[2]}"
+                  major_version=$(expr "${podman_ver_num_array[0]}" + 0)
+                  if [[ $major_version -ge 3 ]]; then
+                     DOCKER_ENGINE="podman"
+                  fi 
+               fi
+               IFS=${OLDIFS}
+            fi
+        fi
+    fi
+
+    log_info "DOCKER_ENGINE set to ${DOCKER_ENGINE}"
+    log_debug "get_docker_engine() end"
+}
+
 #====================== Main Code ======================
 
 # Get and verify all input
@@ -3333,6 +3379,9 @@ check_variables
 find_node_id_in_mapping_file   # for bulk install. Sets NODE_ID if it finds it in mapping file. Also sets BULK_INSTALL
 
 log_info "Node type: ${AGENT_DEPLOY_TYPE}"
+
+get_docker_engine 
+
 if is_device; then
     check_device_os   # sets: PACKAGES
 

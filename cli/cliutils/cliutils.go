@@ -202,7 +202,7 @@ func SetWhetherUsingApiKey(creds string) {
 
 func NewDockerClient() (client *dockerclient.Client) {
 	var err error
-	dockerEndpoint := "unix:///var/run/docker.sock" // if we need this to be user configurable someday, we can get it from an env var
+	dockerEndpoint := cutil.GetDockerEndpoint()
 	if client, err = dockerclient.NewClient(dockerEndpoint); err != nil {
 		Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("unable to create docker client: %v", err))
 	}
@@ -212,9 +212,32 @@ func NewDockerClient() (client *dockerclient.Client) {
 // GetDockerAuth finds the docker credentials for this registry in ~/.docker/config.json.
 // It also will try to obtains credentials from a docker credential store if it's in use.
 func GetDockerAuth(domain string) (auth dockerclient.AuthConfiguration, err error) {
-	var auths *dockerclient.AuthConfigurations
-	if auths, err = dockerclient.NewAuthConfigurationsFromDockerCfg(); err != nil {
-		return
+	var auths *dockerclient.AuthConfigurations = nil
+
+	// Will be true if podman.sock is being used
+	if strings.Contains(cutil.GetDockerEndpoint(), "podman.sock") == true {
+		// podman can provide authentication file by setting REGISTRY_AUTH_FILE
+		if os.Getenv("DOCKER_CONFIG") == "" && os.Getenv("REGISTRY_AUTH_FILE") != "" {
+			if  _,err := os.Stat(os.Getenv("REGISTRY_AUTH_FILE")); err  == nil {
+				if authtmp, err2 := dockerclient.NewAuthConfigurationsFromFile(os.Getenv("REGISTRY_AUTH_FILE")); err2 == nil {
+					auths = authtmp
+				}
+			}
+		}
+		if  auths == nil && os.Getenv("DOCKER_CONFIG") == "" && os.Getenv("XDG_RUNTIME_DIR") != "" {
+		        // podman default location is $XDG_RUNTIME_DIR/containers/auth.json
+			if  _,err := os.Stat(os.Getenv("XDG_RUNTIME_DIR") + "/containers/auth.json"); err  == nil {
+				if authtmp, err2 := dockerclient.NewAuthConfigurationsFromFile(os.Getenv("XDG_RUNTIME_DIR") + "/containers/auth.json"); err2 == nil {
+					auths = authtmp
+				}
+			}
+		}
+	}
+
+	if auths == nil {
+		if auths, err = dockerclient.NewAuthConfigurationsFromDockerCfg(); err != nil {
+			return
+		}
 	}
 
 	for domainName, creds := range auths.Configs {
