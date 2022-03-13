@@ -171,6 +171,7 @@ type Service struct {
 	MaxCPUs          float32              `json:"max_cpus,omitempty"`
 	LogDriver        string               `json:"log_driver,omitempty"` // Docker's log-driver. Syslog will be used as default driver
 	Secrets          map[string]Secret    `json:"secrets"`
+	SecurityOpt      []string             `json:"security_opt,omitempty"`
 }
 
 func (s *Service) AddFilesystemBinding(bind string) {
