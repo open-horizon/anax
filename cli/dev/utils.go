@@ -827,7 +827,7 @@ func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *com
 	cfg.Collaborators = *col
 
 	// Create a docker client so that we can convert the downloaded images into docker images.
-	dockerEP := "unix:///var/run/docker.sock"
+	dockerEP := cutil.GetDockerEndpoint()
 	client, derr := docker.NewClient(dockerEP)
 	if derr != nil {
 		return errors.New(msgPrinter.Sprintf("failed to create docker client, error: %v", derr))
