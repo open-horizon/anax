@@ -17,7 +17,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
 )
 
 const STATUS_FILE_NAME = "status.json"
@@ -313,13 +312,6 @@ func (n *NodeManagementWorker) CheckNMPStatus(baseWorkingFile string, statusFile
 	return nil
 }
 
-type StatusFile struct {
-	Status         string `json:"status"`
-	StartTime      uint64 `json:"startTime"`
-	CompletionTime uint64 `json:"endTime"`
-	Message        string `json:"errorMessage"`
-}
-
 // Read and  persist the status out of the  file
 // Update status in the exchange
 // If everything is successful, delete the job working dir
@@ -332,16 +324,16 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 	if path, err := os.Open(filePath); err != nil {
 		return fmt.Errorf("Failed to open status file %v for management job %v. Errorf was: %v", filePath, policyName, err)
 	} else {
-		contents := StatusFile{}
+		contents := exchangecommon.NodeManagementPolicyStatus{}
 		err = json.NewDecoder(path).Decode(&contents)
 		if err != nil {
 			return fmt.Errorf("Failed to decode status file %v for management job %v. Error was %v.", filePath, policyName, err)
 		}
 
-		dbStatus.SetActualStartTime(time.Unix(int64(contents.StartTime), 0).Format(time.RFC3339))
-		dbStatus.SetCompletionTime(time.Unix(int64(contents.CompletionTime), 0).Format(time.RFC3339))
-		dbStatus.SetStatus(contents.Status)
-		dbStatus.SetErrorMessage(contents.Message)
+		dbStatus.SetActualStartTime(contents.AgentUpgrade.ActualStartTime)
+		dbStatus.SetCompletionTime(contents.AgentUpgrade.CompletionTime)
+		dbStatus.SetStatus(contents.AgentUpgrade.Status)
+		dbStatus.SetErrorMessage(contents.AgentUpgrade.ErrorMessage)
 		pattern := ""
 		configState := ""
 		exchDev, err := persistence.FindExchangeDevice(n.db)
@@ -352,7 +344,6 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 			configState = exchDev.Config.State
 		}
 		if dbStatus.Status() == "" {
-			eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, exchangecommon.STATUS_UNKNOWN), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 			dbStatus.SetStatus(exchangecommon.STATUS_UNKNOWN)
 		}
 		if err = n.UpdateStatus(policyName, dbStatus); err != nil {
