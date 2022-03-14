@@ -303,7 +303,7 @@ func RemoveServiceContainers() error {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// get docker client
-	dockerEP := "unix:///var/run/docker.sock"
+	dockerEP := cutil.GetDockerEndpoint()
 	client, derr := docker.NewClient(dockerEP)
 	if derr != nil {
 		return derr

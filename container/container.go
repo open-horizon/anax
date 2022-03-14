@@ -241,6 +241,20 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 			return nil, err
 		}
 
+		// Determine if docker or podman as there are some differences
+		if w.apiServerType == "" {
+			if svType, err := GetServerEnginType(w.client); err != nil {
+				return nil, err
+			} else {
+				w.apiServerType = svType
+			}
+		}
+
+		// Needed in case SELinux is enabled with podman. Podman won't allow the use of the unix domain socket without it
+		if w.apiServerType == API_SERVER_TYPE_PODMAN {
+			service.SecurityOpt = append(service.SecurityOpt, "label=disable")
+		}
+
 		// If the FSS is using a unix domain socket listener, add a filesystem binding for it.
 		if uds != "" {
 			service.Binds = append(service.Binds, fmt.Sprintf("%v:%v", uds, uds))
@@ -294,13 +308,6 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		// If -log-driver is not defined
 		// Use journald log driver by default if podman is running
 		// Otherwise use syslog log driver by default.
-		if w.apiServerType == "" {
-			if svType, err := GetServerEnginType(w.client); err != nil {
-				return nil, err
-			} else {
-				w.apiServerType = svType
-			}
-		}
 		logDriver := LOG_DRIVER_SYSLOG
 		if w.apiServerType == API_SERVER_TYPE_PODMAN {
 			logDriver = LOG_DRIVER_JOURNALD
@@ -361,6 +368,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				Binds:           service.Binds,
 				GroupAdd:        groupAdds,
 				Tmpfs:           service.Tmpfs,
+				SecurityOpt:     service.SecurityOpt,
 			},
 		}
 
@@ -501,6 +509,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 			serviceConfig: serviceConfig,
 			service:       service,
 		}
+
 	}
 
 	return services, nil
@@ -567,7 +576,7 @@ func (cw *ContainerWorker) GetSecretsManager() *resource.SecretsManager {
 }
 
 func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, error) {
-	dockerEP := "unix:///var/run/docker.sock"
+	dockerEP := cutil.GetDockerEndpoint()
 	client, derr := docker.NewClient(dockerEP)
 	if derr != nil {
 		return nil, derr
