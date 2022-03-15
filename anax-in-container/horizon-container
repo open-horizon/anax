@@ -37,6 +37,11 @@ isMacos() {
 	fi
 }
 
+function is_linux() {
+    if [[ $OS == 'linux' ]]; then return 0
+    else return 1; fi
+}
+
 # Turn a potentially relative path, with symlinks at any level, into the absolute canonical path. Works on both linux and mac.
 canonicalPath() {
 	relPath="$1"
@@ -445,6 +450,53 @@ remove_horizon_upgrade_cronjob() {
 	fi
 }
 
+# Returns operating system.
+function get_os() {
+    # OSTYPE is set automatically by the shell
+    if [[ $OSTYPE == linux* ]]; then
+        echo 'linux'
+    elif [[ $OSTYPE == darwin* ]]; then
+        echo 'macos'
+    else
+        echo 'unknown'
+    fi
+}
+
+# Returns exit code 0 if the specified cmd is in the path
+function isCmdInstalled() {
+    local cmd=$1
+    command -v $cmd >/dev/null 2>&1
+}
+
+# A RedHat system might use podman instead of docker; default to docker
+function get_docker_engine() {
+
+    if is_linux; then
+        if isCmdInstalled docker; then
+            : # use docker
+        elif isCmdInstalled podman;  then
+            # podman is installed... lets make sure it is acceptable version (ie > 4.0.0)
+            podman_ver=$(podman --version)
+            rc=$?
+            if [[ $rc -eq 0 ]]; then
+               # should be of form 'podman version 4.0.0'
+               OLDIFS=${IFS}
+               IFS=' '
+               read -a podman_ver_array <<< "${podman_ver}"
+               if [[ ${#podman_ver_array[@]} -eq 3 ]]; then
+                  IFS='.'
+                  read -a podman_ver_num_array <<< "${podman_ver_array[2]}"
+                  major_version=$(expr "${podman_ver_num_array[0]}" + 0)
+                  if [[ $major_version -ge 4 ]]; then
+                     DOCKER_ENGINE="podman"
+                  fi
+               fi
+               IFS=${OLDIFS}
+            fi
+        fi
+    fi
+}
+
 # Main
 
 # Environment Variables
@@ -484,21 +536,11 @@ fi
 HORIZON_AGENT_PORT=$(( 8080 + $INDEX_NUM ))
 DOCKER_NAME="horizon$INDEX_NUM"
 
-# Need to determine docker or podman
-DOCKER_ENGINE="docker"
-if isMacos; then   # Only support docker for macOS for now
-    :
-else
-    command -v docker >/dev/null 2>&1
-    rc=$?
-    if [[ $rc -ne 0 ]]; then
-        command -v podman >/dev/null 2>&1
-        rc=$?
-        if [[ $rc -eq 0 ]]; then
-            DOCKER_ENGINE="podman"
-        fi
-    fi
-fi
+
+OS=$(get_os)
+DOCKER_ENGINE=docker   # Default to docker
+get_docker_engine
+
 
 case "$1" in
 	start)

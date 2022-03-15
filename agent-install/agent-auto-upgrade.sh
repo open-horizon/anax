@@ -361,14 +361,14 @@ function backup_agent_and_cli_container() {
 
     # save image name, local db and anax.json file
     horizon_num=$CONTAINER_NUMBER
-    container_info=$(docker inspect horizon${horizon_num})
+    container_info=$(${DOCKER_ENGINE} inspect horizon${horizon_num})
     if [ $? -eq 0 ]; then
         mkdir -p $backup_dir/container
         echo $container_info > $backup_dir/container/container_info.json
         mkdir -p $backup_dir/container/var/horizon
-        docker cp horizon${horizon_num}:/var/horizon/anax.db $backup_dir/container/var/horizon/anax.db
+        ${DOCKER_ENGINE} cp horizon${horizon_num}:/var/horizon/anax.db $backup_dir/container/var/horizon/anax.db
         mkdir -p $backup_dir/container/etc/horizon/
-        docker cp horizon${horizon_num}:/etc/horizon/anax.json $backup_dir/container/etc/horizon/anax.json
+        ${DOCKER_ENGINE} cp horizon${horizon_num}:/etc/horizon/anax.json $backup_dir/container/etc/horizon/anax.json
     fi
 
     log_debug "End backing up horizon container agent, cli binaries and configuration on Linux."
@@ -475,8 +475,8 @@ function rollback_agent_and_cli_container() {
     image="${image#\"}"
 
     # start the container
-    docker cp $backup_dir/container/var/horizon/anax.db horizon${horizon_num}:/var/horizon/anax.db
-    docker cp $backup_dir/container/etc/horizon/anax.json horizon${horizon_num}:/etc/horizon/anax.json
+    ${DOCKER_ENGINE} cp $backup_dir/container/var/horizon/anax.db horizon${horizon_num}:/var/horizon/anax.db
+    ${DOCKER_ENGINE} cp $backup_dir/container/etc/horizon/anax.json horizon${horizon_num}:/etc/horizon/anax.json
     HC_DOCKER_IMAGE=${image%:*} HC_DOCKER_TAG=${image##*:} horizon-container update $horizon_num
     log_debug "Rollback: horizon container restored."
 
@@ -546,7 +546,65 @@ function get_upgrade_types() {
     return 0
 }
 
+
+function is_linux() {
+    if [[ $OS == 'linux' ]]; then return 0
+    else return 1; fi
+}
+
+# Returns exit code 0 if the specified cmd is in the path
+function isCmdInstalled() {
+    local cmd=$1
+    command -v $cmd >/dev/null 2>&1
+}
+
+# A RedHat system might use podman instead of docker; default to docker
+function get_docker_engine() {
+
+    if is_linux; then
+        if isCmdInstalled docker; then
+            : # use docker
+        elif isCmdInstalled podman;  then
+            # podman is installed... lets make sure it is acceptable version (ie > 4.0.0)
+            podman_ver=$(podman --version)
+            rc=$?
+            if [[ $rc -eq 0 ]]; then
+               # should be of form 'podman version 4.0.0'
+               OLDIFS=${IFS}
+               IFS=' '
+               read -a podman_ver_array <<< "${podman_ver}"
+               if [[ ${#podman_ver_array[@]} -eq 3 ]]; then
+                  IFS='.'
+                  read -a podman_ver_num_array <<< "${podman_ver_array[2]}"
+                  major_version=$(expr "${podman_ver_num_array[0]}" + 0)
+                  if [[ $major_version -ge 4 ]]; then
+                     DOCKER_ENGINE="podman"
+                  fi
+               fi
+               IFS=${OLDIFS}
+            fi
+        fi
+    fi
+}
+
+# Returns operating system.
+function get_os() {
+    # OSTYPE is set automatically by the shell
+    if [[ $OSTYPE == linux* ]]; then
+        echo 'linux'
+    elif [[ $OSTYPE == darwin* ]]; then
+        echo 'macos'
+    else
+        echo 'unknown'
+    fi
+}
+
 #====================== Main  ======================
+
+
+OS=$(get_os)
+DOCKER_ENGINE=docker   # Default to docker
+get_docker_engine
 
 # get the directory that this script is located
 script_dir=$(cd "$(dirname "$0")" &> /dev/null && pwd)
