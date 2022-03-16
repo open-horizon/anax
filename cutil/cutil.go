@@ -856,13 +856,13 @@ func GetHashFromString(str string) string {
 // If neither are there, default to docker.sock and there will be a failure later on
 func GetDockerEndpoint() string {
 	dockerSocket := "/var/run/docker.sock"
-        podmanSocket := "/var/run/podman/podman.sock"
-        listenerSocket := dockerSocket
-        if _,err := os.Stat(dockerSocket); os.IsNotExist(err) {
-                if _,err := os.Stat(podmanSocket);  err == nil {
-                        listenerSocket = podmanSocket
+	podmanSocket := "/var/run/podman/podman.sock"
+	listenerSocket := dockerSocket
+	if _, err := os.Stat(dockerSocket); os.IsNotExist(err) {
+		if _, err := os.Stat(podmanSocket); err == nil {
+			listenerSocket = podmanSocket
 		}
-        }
-        dockerEP := "unix://" + listenerSocket
+	}
+	dockerEP := "unix://" + listenerSocket
 	return dockerEP
 }

@@ -29,6 +29,7 @@ const (
 	OS_MAC       = "macos"
 	OS_UBUNTU    = "ubuntu"
 	OS_DEBIAN    = "debian"
+	OS_RASPBIAN  = "raspbian"
 	OS_RHEL      = "rhel"
 
 	// for service policy
@@ -47,7 +48,7 @@ func ListReadOnlyProperties() []string {
 }
 
 func ListSupportedOperatingSystems() []string {
-	return []string{OS_UBUNTU, OS_DEBIAN, OS_RHEL, OS_MAC}
+	return []string{OS_UBUNTU, OS_DEBIAN, OS_RASPBIAN, OS_RHEL, OS_MAC}
 }
 
 // CreateNodeBuiltInPolicy returns 2 externalpolicies.

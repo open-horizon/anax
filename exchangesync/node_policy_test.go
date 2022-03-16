@@ -21,7 +21,7 @@ import (
 
 var ExchangeNodePolicy *exchange.ExchangeNodePolicy
 
-const NUM_BUILT_INS = 5
+const NUM_BUILT_INS = 7
 
 // Verify that a Node Policy Object can be created and saved the first time.
 func Test_UpdateNodePolicy(t *testing.T) {
@@ -95,8 +95,8 @@ func Test_DeleteNodePolicy(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	} else if fnp, err := persistence.FindNodePolicy(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != NUM_BUILT_INS {
-		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", NUM_BUILT_INS, *fnp)
+	} else if len(fnp.Properties) != NUM_BUILT_INS+1 {
+		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", NUM_BUILT_INS+1, *fnp)
 	} else if fnp.Properties[0].Name != propName {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)
 	}
