@@ -19,6 +19,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -1446,6 +1447,25 @@ func InvokeRestApi(httpClient *http.Client, method string, urlPath string, crede
 			return resp
 		}
 	}
+}
+
+// This function will return response directly, the resp need to be closed by caller
+// Set closeRequest to true if it is last chunk
+// Range header will be added (Range:bytes={startOffset}-{endOffset})
+func MMSGetChunkDataResponse(httpClient *http.Client, credentials string, objOrg string, objType string, objID string, startOffset int64, endOffset int64, closeRequest bool) *http.Response {
+	service := "Model Management Service"
+
+	dataUrlPath := path.Join("api/v1/objects/", objOrg, objType, objID, "/data")
+	url := GetMMSUrl() + "/" + dataUrlPath
+	apiMsg := http.MethodGet + " " + url
+
+	Verbose(apiMsg)
+
+	headers := make(map[string]string)
+	headers["Range"] = fmt.Sprintf("bytes=%d-%d", startOffset, endOffset)
+
+	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg, headers, closeRequest)
+	return resp
 }
 
 // ExchangeGet runs a GET to the specified service api and fills in the specified json structure. If the structure is just a string, fill in the raw json.
