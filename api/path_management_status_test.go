@@ -75,10 +75,11 @@ func Test_UpdateManagementStatus(t *testing.T) {
 	errorHandler := GetPassThroughErrorHandler(&mainError)
 
 	// Create dummy management status
-	nmStatus := managementStatusInput{
-		Type:         "agentUpgrade",
-		Status:       exchangecommon.STATUS_DOWNLOADED,
-		ErrorMessage: "",
+	nmStatus := exchangecommon.NodeManagementPolicyStatus{
+		AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
+			Status:       exchangecommon.STATUS_DOWNLOADED,
+			ErrorMessage: "",
+		},
 	}
 
 	// Create dummy exchange device in local DB
@@ -107,47 +108,47 @@ func Test_UpdateManagementStatus(t *testing.T) {
 		t.Errorf("failed to update node management status in db, error %v", mainError)
 	} else if out != "Updated status for NMP org/testnmp." {
 		t.Errorf("incorrect return response, expected: %v, actual: %v", "Updated status for NMP org/testnmp.", out)
-	} else if msgs[0].Status != nmStatus.Status {
-		t.Errorf("incorrect event(s) sent, expected: %v, actual: %v", nmStatus.Status, msgs[0].Status)
+	} else if msgs[0].Status != nmStatus.AgentUpgrade.Status {
+		t.Errorf("incorrect event(s) sent, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, msgs[0].Status)
 	}
 	newNMPStatus, _ = persistence.FindNMPStatus(db, "org/testnmp")
-	if newNMPStatus.AgentUpgrade.Status != nmStatus.Status {
+	if newNMPStatus.AgentUpgrade.Status != nmStatus.AgentUpgrade.Status {
 		t.Errorf("NMP status was not updated: %v", newNMPStatus)
 	}
 
 	// Test #2 - Update a specific NMP Status to STATUS_INITIATED
-	nmStatus.Status = exchangecommon.STATUS_INITIATED
+	nmStatus.AgentUpgrade.Status = exchangecommon.STATUS_INITIATED
 	oldNMPStatus, _ := persistence.FindNMPStatus(db, "org/testnmp2")
 	oldStartTime := oldNMPStatus.AgentUpgrade.ActualStartTime
 	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, "testnmp2", db); errHandled {
 		t.Errorf("failed to update node management status in db, error %v", mainError)
 	} else if out != "Updated status for NMP org/testnmp2." {
 		t.Errorf("incorrect return response, expected: %v, actual: %v", "Updated status for NMP org/testnmp2.", out)
-	} else if msgs[0].Status != nmStatus.Status {
-		t.Errorf("incorrect event(s) sent, expected: %v, actual: %v", nmStatus.Status, msgs[0].Status)
+	} else if msgs[0].Status != nmStatus.AgentUpgrade.Status {
+		t.Errorf("incorrect event(s) sent, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, msgs[0].Status)
 	}
 	newNMPStatus, _ = persistence.FindNMPStatus(db, "org/testnmp2")
-	if newNMPStatus.AgentUpgrade.Status != nmStatus.Status {
-		t.Errorf("NMP status was not updated, expected: %v, actual: %v", nmStatus.Status, newNMPStatus.AgentUpgrade.Status)
+	if newNMPStatus.AgentUpgrade.Status != nmStatus.AgentUpgrade.Status {
+		t.Errorf("NMP status was not updated, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, newNMPStatus.AgentUpgrade.Status)
 	} else if oldStartTime == newNMPStatus.AgentUpgrade.ActualStartTime {
-		t.Errorf("NMP actual start time was not updated, expected: %v, actual: %v", nmStatus.Status, newNMPStatus.AgentUpgrade.Status)
+		t.Errorf("NMP actual start time was not updated, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, newNMPStatus.AgentUpgrade.Status)
 	}
 
 	// Test #3 - Update a specific NMP Status to STATUS_SUCCESSFUL
-	nmStatus.Status = exchangecommon.STATUS_SUCCESSFUL
+	nmStatus.AgentUpgrade.Status = exchangecommon.STATUS_SUCCESSFUL
 	oldNMPStatus, _ = persistence.FindNMPStatus(db, "org/testnmp2")
 	oldCompletionTime := oldNMPStatus.AgentUpgrade.CompletionTime
 	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, "testnmp2", db); errHandled {
 		t.Errorf("failed to update node management status in db, error %v", mainError)
 	} else if out != "Updated status for NMP org/testnmp2." {
 		t.Errorf("incorrect return response, expected: %v, actual: %v", "Updated status for NMP org/testnmp2.", out)
-	} else if msgs[0].Status != nmStatus.Status {
-		t.Errorf("incorrect event(s) sent, expected: %v, actual: %v", nmStatus.Status, msgs[0].Status)
+	} else if msgs[0].Status != nmStatus.AgentUpgrade.Status {
+		t.Errorf("incorrect event(s) sent, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, msgs[0].Status)
 	}
 	newNMPStatus, _ = persistence.FindNMPStatus(db, "org/testnmp2")
-	if newNMPStatus.AgentUpgrade.Status != nmStatus.Status {
-		t.Errorf("NMP status was not updated, expected: %v, actual: %v", nmStatus.Status, newNMPStatus.AgentUpgrade.Status)
+	if newNMPStatus.AgentUpgrade.Status != nmStatus.AgentUpgrade.Status {
+		t.Errorf("NMP status was not updated, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, newNMPStatus.AgentUpgrade.Status)
 	} else if oldCompletionTime == newNMPStatus.AgentUpgrade.CompletionTime {
-		t.Errorf("NMP completion time was not updated, expected: %v, actual: %v", nmStatus.Status, newNMPStatus.AgentUpgrade.Status)
+		t.Errorf("NMP completion time was not updated, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, newNMPStatus.AgentUpgrade.Status)
 	}
 }

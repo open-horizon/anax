@@ -8,17 +8,12 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
 	"io/ioutil"
 	"net/http"
 )
-
-type managementStatusInput struct {
-	Type         string `json:"type,omitempty"`
-	Status       string `json:"status,omitempty"`
-	ErrorMessage string `json:"errorMessage,omitempty"`
-}
 
 func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 
@@ -53,7 +48,7 @@ func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Read in the HTTP body.
-		var nmStatus managementStatusInput
+		var nmStatus exchangecommon.NodeManagementPolicyStatus
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nmStatus); err != nil {
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "management status"))
