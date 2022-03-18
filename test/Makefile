@@ -60,7 +60,7 @@ endif
 DOCKER_AGBOT_CNAME := agbot
 DOCKER_AGBOT2_CNAME := agbot2
 AGBOT_IMAGE_NAME ?= openhorizon/$(arch)_agbot
-AGBOT_IMAGE_TAG ?= e2edev
+AGBOT_IMAGE_TAG ?= 2.29.0-595
 old_agbot := $(shell echo -e $(TEST_VARS) | grep OLDAGBOT=1)
 ifneq ($(old_agbot),)
 	AGBOT_IMAGE_TAG = latest
@@ -74,7 +74,7 @@ AGBOT_TOKEN ?= Abcdefghijklmno1
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
-DOCKER_EXCH_TAG := testing
+DOCKER_EXCH_TAG := 2.87.0-531
 DOCKER_EXCH ?= http://exchange-api:8081/v1
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
@@ -108,7 +108,7 @@ DOCKER_REG_PW := testpassword
 # css
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
-DOCKER_CSS_TAG := e2edev
+DOCKER_CSS_TAG := 1.6.7-595
 CSS_URL ?= https://css-api:8080
 
 #css DB
@@ -124,7 +124,7 @@ endif
 #vault
 DOCKER_VAULT_CNAME := vault
 DOCKER_VAULT_INAME := openhorizon/$(arch)_vault
-DOCKER_VAULT_TAG := testing
+DOCKER_VAULT_TAG := 1.0.0
 no_vault := $(shell echo -e $(TEST_VARS) | grep NOVAULT=1)
 ifeq ($(no_vault),)
 	VAULT_ADDR = http://vault:8200
