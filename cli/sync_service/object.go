@@ -672,7 +672,6 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 				if b, err := io.ReadAll(resp.Body); err == nil {
 					responseMessage := string(b)
 					if strings.Contains(responseMessage, "leader changed") {
-						fmt.Println("Leader change detected")
 						// restart from first offset
 						mmsOwnerID = ""
 						startOffset = 0
