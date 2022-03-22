@@ -15,7 +15,7 @@ Provides: horizon = %{version}
 
 # Note: in RHEL/CentOS 8.x, docker-ce does not automatically install cleanly.
 #	Must do this manually *before* installing this horizon pkg: https://linuxconfig.org/how-to-install-docker-in-rhel-8
-Requires: horizon-cli docker-ce iptables jq
+Requires: (horizon-cli and iptables and jq and (docker-ce or podman >= 1:4.0.0))
 
 #Prefix: /usr/horizon
 #Vendor: ?
@@ -63,8 +63,41 @@ if [[ ! -f /etc/default/horizon ]]; then
     # Note: postun deletes this file in the complete removal case
 fi
 
+DOCKER_ENGINE="docker"
+command -v docker >/dev/null 2>&1
+rc=$?
+if [[ $rc -ne 0 ]]; then
+   command -v podman >/dev/null 2>&1
+   rc=$?
+   if [[ $rc -eq 0 ]]; then
+      DOCKER_ENGINE="podman"
+   fi
+fi
+
+#if podman, DockerEndpoint needs to change
+if [[ "${DOCKER_ENGINE}" == "podman" ]]; then
+   anaxjson=$(jq -c . /etc/horizon/anax.json)
+   anaxjson=$( jq  ".Edge.DockerEndpoint = \"unix:///var/run/podman/podman.sock\" " <<< $anaxjson)
+   echo "${anaxjson}" > /etc/horizon/anax.json
+fi
+
 #if systemctl > /dev/null 2>&1; then  # for testing installation in docker container
 systemctl daemon-reload
+
+#if podman, need to make sure podman.service is set to autostart since horizon depends on it
+if [[ "${DOCKER_ENGINE}" == "podman" ]]; then
+        if systemctl --quiet is-enabled podman.service; then
+                :   # all good
+        else
+                systemctl enable podman.service
+        fi
+        if systemctl --quiet is-active podman.service; then
+                :   # all good
+        else
+                systemctl start podman.service
+        fi
+fi
+
 systemctl enable horizon.service
 if systemctl --quiet is-active horizon.service; then
 	systemctl stop horizon.service   # in case this was an update
@@ -109,25 +142,38 @@ fi
 # Runs after the pkg is uninstalled. Same deal as for preun above for updates.
 if [ "$1" = "0" ]; then
   # Complete removal of the rpm
+
+  # Need to determine docker or podman
+  DOCKER_ENGINE="docker"
+  command -v docker >/dev/null 2>&1
+  rc=$?
+  if [[ $rc -ne 0 ]]; then
+    command -v podman >/dev/null 2>&1
+    rc=$?
+    if [[ $rc -eq 0 ]]; then
+      DOCKER_ENGINE="podman"
+    fi
+  fi
+
   # Now that the daemon is stopped, we can delete all the resources we collected in preun above
   # remove all running containers with horizon tags
-  containers="$(docker ps -aq 2> /dev/null)"
+  containers="$(${DOCKER_ENGINE} ps -aq 2> /dev/null)"
   if [ "$containers" != "" ]; then
     # TODO: add infrastructure labels too
     # reassign containers variable after doing some filtering
-    containers=$(echo $containers | xargs docker inspect | jq -r '.[] | select ((.Config.Labels | length != 0) and (.Config.Labels["openhorizon.anax.service_name"] !="" or .Config.Labels["openhorizon.anax.infrastructure"] != ""))')
+    containers=$(echo $containers | xargs ${DOCKER_ENGINE} inspect | jq -r '.[] | select ((.Config.Labels | length != 0) and (.Config.Labels["openhorizon.anax.service_name"] !="" or .Config.Labels["openhorizon.anax.infrastructure"] != ""))')
   fi
 
   # remove running containers
   if [ "$containers" != "" ]; then
-    echo $containers | jq -r '.Id' | xargs docker rm -f
+    echo $containers | jq -r '.Id' | xargs ${DOCKER_ENGINE} rm -f
   fi
 
   # remove networks; some errors are expected b/c we're issuing remove command for even networks that should have already been removed by anax
-  cat /var/horizon/prerm.bridges <<< $(echo $containers | jq -r '.NetworkSettings.Networks | keys[]') | sort | uniq | grep -v 'bridge' | xargs docker network rm 2> /dev/null
+  cat /var/horizon/prerm.bridges <<< $(echo $containers | jq -r '.NetworkSettings.Networks | keys[]') | sort | uniq | grep -v 'bridge' | xargs ${DOCKER_ENGINE} network rm 2> /dev/null
 
   # remove container images; TODO: use labels to remove infrastructure container images too once they are tagged properly upon
-  cat /var/horizon/prerm.images <<< $(echo $containers | jq -r '.Config.Image') | sort | uniq | xargs docker rmi 2> /dev/null
+  cat /var/horizon/prerm.images <<< $(echo $containers | jq -r '.Config.Image') | sort | uniq | xargs ${DOCKER_ENGINE} rmi 2> /dev/null
 
   # Note: in the debian pkg, these cmds only run for the purge option. There doesn't seem to be an rpm equivalent
   rm -Rf /etc/horizon /var/cache/horizon /etc/default/horizon /var/tmp/horizon /var/run/horizon

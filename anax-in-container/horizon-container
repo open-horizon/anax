@@ -37,6 +37,11 @@ isMacos() {
 	fi
 }
 
+function is_linux() {
+    if [[ $OS == 'linux' ]]; then return 0
+    else return 1; fi
+}
+
 # Turn a potentially relative path, with symlinks at any level, into the absolute canonical path. Works on both linux and mac.
 canonicalPath() {
 	relPath="$1"
@@ -79,7 +84,7 @@ isSocatRunning() {
 }
 
 isContainerRunning() {
-	docker ps --filter "name=$1" | tail -n +2 | grep -q -w "$1"
+	${DOCKER_ENGINE} ps --filter "name=$1" | tail -n +2 | grep -q -w "$1"
 	return $?
 }
 
@@ -102,8 +107,8 @@ killSocat() {
 
 # Check that they have the necessary software installed
 checkRequirements() {
-	if ! which docker >/dev/null; then
-		echo "You must have docker installed to run this command."
+	if ! which ${DOCKER_ENGINE} >/dev/null; then
+		echo "You must have docker or podman installed to run this command."
 		if isMacos; then
 			echo "Install docker on Mac OS X: https://docs.docker.com/docker-for-mac/install/"
 		fi
@@ -241,7 +246,7 @@ start() {
 	# HC_DONT_PULL is an intentionally undocumented env var that allows us to test a new image before pushing it to docker hub
 	if [[ -n "$HC_DONT_PULL" ]]; then
 		# check if the image exists,if not exit out
-		docker inspect $dockerImage:$dockerTag > /dev/null 2>&1
+		${DOCKER_ENGINE} inspect $dockerImage:$dockerTag > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
 			pull_image=0
 		else
@@ -255,7 +260,7 @@ start() {
 	fi
 
 	if [[ $pull_image -eq 1 ]];  then
-		docker pull $dockerImage:$dockerTag
+		${DOCKER_ENGINE} pull $dockerImage:$dockerTag
 		checkrc $? "docker pull $dockerImage:$dockerTag"
 	fi
 
@@ -279,12 +284,18 @@ start() {
 		DOCKER_ADD_HOSTS="--add-host=$HZN_EXCHANGE_HOSTS"
 	fi
 
+	DOMAIN_SOCKET_MOUNT="/var/run/docker.sock:/var/run/docker.sock"
+        if [[ $DOCKER_ENGINE == "podman" ]]; then
+		# In the container, leave the mount as /var/run/docker.sock so the anax.service can stay the same
+	        DOMAIN_SOCKET_MOUNT="/var/run/podman/podman.sock:/var/run/docker.sock"
+        fi
+
 	if isMacos; then
 		DOCKER_HOST=tcp://host.docker.internal:$SOCAT_LISTEN_PORT
 		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e ANAX_DOCKER_ENDPOINT=${DOCKER_HOST} -e DOCKER_HOST=${DOCKER_HOST} -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
 		checkrc $? "docker run"
 	else
-		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
+		${DOCKER_ENGINE} run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} -v ${DOMAIN_SOCKET_MOUNT} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
 		checkrc $? "docker run"
 	fi
 
@@ -307,17 +318,17 @@ stop() {
 
 	# Stop the anax container
 	echo "Unregistering the node, then stopping/removing the horizon container (this may take a minute)..."
-	docker stop -t 120 $DOCKER_NAME  # give it time to unregister and stop the service containers
+	${DOCKER_ENGINE} stop -t 120 $DOCKER_NAME  # give it time to unregister and stop the service containers
 	if [[ $? -ne 0 ]]; then
 		echo "Error stopping container: $DOCKER_NAME. Resuming stop procedures."
 	fi
-	docker rm -f $DOCKER_NAME
+	${DOCKER_ENGINE} rm -f $DOCKER_NAME
 	if [[ $? -ne 0 ]]; then
 		echo "Error removing container: $DOCKER_NAME. Resuming stop procedures."
 	fi
 
 	# Remove the volumes
-	docker volume rm ${DOCKER_NAME}_var ${DOCKER_NAME}_etc
+	${DOCKER_ENGINE} volume rm ${DOCKER_NAME}_var ${DOCKER_NAME}_etc
 
 	# Stop socat
 	killSocat
@@ -333,24 +344,71 @@ restart() {
 	echo "Stopping/removing the horizon container..."
 
 	# check if the container is running or not
-	ret=$(docker inspect -f '{{.State.Running}}' $DOCKER_NAME)
+	ret=$(${DOCKER_ENGINE} inspect -f '{{.State.Running}}' $DOCKER_NAME)
 	if [ $? -eq 0 ]; then
 		# if not running, bring it up
 		if [ "$ret" == "false" ]; then
-			docker start $DOCKER_NAME
+			${DOCKER_ENGINE} start $DOCKER_NAME
 			checkrc $? "docker start"
 		fi
 
 		# now the container is running, set the dont-unregister-on-exit falg
-		docker exec $DOCKER_NAME touch /root/dont-unregister-on-exit
+		${DOCKER_ENGINE} exec $DOCKER_NAME touch /root/dont-unregister-on-exit
 		checkrc $? "docker dont-unregister-on-exit"
-		docker stop $DOCKER_NAME
+		${DOCKER_ENGINE} stop $DOCKER_NAME
 		checkrc $? "docker stop"
-		docker rm $DOCKER_NAME
+		${DOCKER_ENGINE} rm $DOCKER_NAME
 		checkrc $? "docker rm"
 	fi
 
 	start "$1" 'updating'
+}
+
+# Returns operating system.
+function get_os() {
+    # OSTYPE is set automatically by the shell
+    if [[ $OSTYPE == linux* ]]; then
+        echo 'linux'
+    elif [[ $OSTYPE == darwin* ]]; then
+        echo 'macos'
+    else
+        echo 'unknown'
+    fi
+}
+
+# Returns exit code 0 if the specified cmd is in the path
+function isCmdInstalled() {
+    local cmd=$1
+    command -v $cmd >/dev/null 2>&1
+}
+
+# A RedHat system might use podman instead of docker; default to docker
+function get_docker_engine() {
+
+    if is_linux; then
+        if isCmdInstalled docker; then
+            : # use docker
+        elif isCmdInstalled podman;  then
+            # podman is installed... lets make sure it is acceptable version (ie > 4.0.0)
+            podman_ver=$(podman --version)
+            rc=$?
+            if [[ $rc -eq 0 ]]; then
+               # should be of form 'podman version 4.0.0'
+               OLDIFS=${IFS}
+               IFS=' '
+               read -a podman_ver_array <<< "${podman_ver}"
+               if [[ ${#podman_ver_array[@]} -eq 3 ]]; then
+                  IFS='.'
+                  read -a podman_ver_num_array <<< "${podman_ver_array[2]}"
+                  major_version=$(expr "${podman_ver_num_array[0]}" + 0)
+                  if [[ $major_version -ge 4 ]]; then
+                     DOCKER_ENGINE="podman"
+                  fi
+               fi
+               IFS=${OLDIFS}
+            fi
+        fi
+    fi
 }
 
 # Main
@@ -391,6 +449,12 @@ fi
 # use arithmetic addition in case index num is > 9
 HORIZON_AGENT_PORT=$(( 8080 + $INDEX_NUM ))
 DOCKER_NAME="horizon$INDEX_NUM"
+
+OS=$(get_os)
+
+DOCKER_ENGINE=docker   # Default to docker
+get_docker_engine
+
 
 case "$1" in
 	start)
