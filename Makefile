@@ -192,7 +192,7 @@ $(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(EXECUTABLE);
+		$(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(EXECUTABLE);
 	exch_min_ver=$(shell grep "MINIMUM_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
 	    echo "The required minimum exchange version is $$exch_min_ver";
 	exch_pref_ver=$(shell grep "PREFERRED_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
@@ -444,7 +444,6 @@ fss-package: ess-docker-image css-docker-image
 
 clean: mostlyclean 
 	@echo "Clean"
-	rm -f ./go.sum
 ifneq ($(TMPGOPATH),$(GOPATH))
 	rm -rf $(TMPGOPATH)
 endif
@@ -502,13 +501,10 @@ endif
 i18n-catalog: gopathlinks deps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
 	rm -Rf vendor; \
-	go mod vendor; \
-	mv -f go.mod go.mod.save; \
 	cd $(PKGPATH) && \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
 			tools/update-i18n-messages
 	rm -Rf vendor; \
-	mv -f go.mod.save go.mod; \
 
 i18n-translation: i18n-catalog
 	@echo "Copying message files for translation"

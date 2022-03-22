@@ -32,11 +32,7 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 		db.db.SetMaxOpenConns(cfg.AgreementBot.Postgresql.MaxOpenConnections)
 
 		// Initialize the DB instance fields.
-		if id, err := uuid.NewV4(); err != nil {
-			return errors.New(fmt.Sprintf("unable to get UUID identity for this agbot, error: %v", err))
-		} else {
-			db.identity = id.String()
-		}
+		db.identity = uuid.NewV4().String()
 		glog.V(1).Infof("Agreementbot %v initializing partitions", db.identity)
 
 		// Now create the tables and initialize them as necessary.

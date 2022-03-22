@@ -1,13 +1,10 @@
 #!/bin/bash
 
-# this command copies the out.gotext.json files from locales and cli/locales to i18n_translation directory
+# copy the out.gotext.json files from locales and cli/locales to i18n_translation directory
 cp $PKGPATH/locales/en/out.gotext.json $PKGPATH/i18n_translation/original/anax.out.gotext.json.auto
-
-# remove unnecessary fields and add NLS_CHARSET=UTF-8 comments for translation process
-cat $PKGPATH/i18n_translation/original/anax.out.gotext.json.auto | jq 'del(.messages[].placeholders)| del(.messages[].id) | del(.messages[].translatorComment) | del(.messages[].fuzzy) ' | sed 's/"message":/"id":/g' | sed '1 i // NLS_CHARSET=UTF-8'  > $PKGPATH/i18n_translation/anax.out.gotext.json
- 
 cp $PKGPATH/cli/locales/en/out.gotext.json $PKGPATH/i18n_translation/original/hzn.out.gotext.json.auto
 
-# remove unnecessary fields and add NLS_CHARSET=UTF-8 comments for translation process
-cat $PKGPATH/i18n_translation/original/hzn.out.gotext.json.auto | jq 'del(.messages[].placeholders)| del(.messages[].id) | del(.messages[].translatorComment) | del(.messages[].fuzzy) ' | sed 's/"message":/"id":/g' | sed '1 i // NLS_CHARSET=UTF-8'  > $PKGPATH/i18n_translation/hzn.out.gotext.json
+# remove unnecessary fields for translation process
+cat $PKGPATH/i18n_translation/original/anax.out.gotext.json.auto | jq '.messages | del(.[].placeholders) | del(.[].id) | del(.[].translatorComment) | del(.[].fuzzy) ' | sed 's/"message":/"id":/g' > $PKGPATH/i18n_translation/anax.out.gotext.json
+cat $PKGPATH/i18n_translation/original/hzn.out.gotext.json.auto  | jq '.messages | del(.[].placeholders) | del(.[].id) | del(.[].translatorComment) | del(.[].fuzzy) ' | sed 's/"message":/"id":/g' > $PKGPATH/i18n_translation/hzn.out.gotext.json
  

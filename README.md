@@ -20,7 +20,7 @@ Related Projects:
 
 ### Preconditions
 
-* Go version >=1.14 is a required dependency, download it [here](https://golang.org/dl/)
+* Go version >=1.16 is a required dependency, download it [here](https://golang.org/dl/)
 * To execute the lint and other code checkers (`make lint` or `make check`), you must install: `go vet`, `golint`, and `jshint`
 
 ### Operations

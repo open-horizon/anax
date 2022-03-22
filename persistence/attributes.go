@@ -459,11 +459,7 @@ func SaveOrUpdateAttribute(db *bolt.DB, attr Attribute, id string, permitPartial
 			return nil, &ConflictingAttributeFound{}
 		}
 
-		if newID, err := uuid.NewV4(); err != nil {
-			return nil, err
-		} else {
-			id = newID.String()
-		}
+		id = uuid.NewV4().String()
 		ret = &attr
 	} else {
 		// updating and existing must be found; may be a partial overwrite

@@ -28,10 +28,10 @@ jobs:
            path: go/src/github.com/${{github.repository}}
       
       # prepare the environment
-      - name: Set up golang 1.14.1
+      - name: Set up golang 1.16.1
         uses: actions/setup-go@v2
         with:
-           go-version: '1.14.1'
+           go-version: '1.16.1'
 
       # build anax binaries
       - name: Build anax binaries
