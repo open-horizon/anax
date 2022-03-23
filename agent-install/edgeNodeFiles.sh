@@ -243,6 +243,7 @@ function putOneFileInCss() {
 EOF
     echo "Publishing $filename in CSS as a public object in the IBM org..."
     hzn mms -o IBM object publish -m "${filename}-meta.json" -f $filename
+
     local rc=$?
     rm -f "${filename}-meta.json"   # clean up metadata file
     chk $rc "publishing $filename in CSS as a public object. Ensure HZN_EXCHANGE_USER_AUTH is set to credentials that can publish to the IBM org."

@@ -104,12 +104,16 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 		common.Configuration.ServerCertificate = string(essCertBytes)
 		common.Configuration.ServerKey = string(essCertKeyBytes)
 		common.Configuration.CommunicationProtocol = "http"
+		common.Configuration.EnableDataChunk = r.config.IsDataChunkEnabled()
+		common.Configuration.MaxDataChunkSize = r.config.GetFileSyncServiceMaxDataChunkSize()
 		common.Configuration.HTTPPollingInterval = r.config.GetESSPollingRate()
 		common.Configuration.PersistenceRootPath = r.config.GetFileSyncServiceStoragePath()
 		common.Configuration.HTTPCSSUseSSL = true
 		common.Configuration.HTTPCSSCACertificate = r.config.GetCSSSSLCert()
 		common.Configuration.LogTraceDestination = "glog"
 		common.Configuration.ObjectQueueBufferSize = r.config.GetFSSObjectQueueSize()
+		common.Configuration.HTTPESSClientTimeout = r.config.GetHTTPESSClientTimeout()
+		common.Configuration.HTTPESSObjClientTimeout = r.config.GetHTTPESSObjClientTimeout()
 	}
 
 	if glog.V(5) {
