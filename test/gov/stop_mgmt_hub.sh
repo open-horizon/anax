@@ -5,22 +5,6 @@ PREFIX="All-in-one management hub deployment:"
 # the environment variables set by the Makefile are:
 #  ANAX_SOURCE
 
-# copy the agbot, css and exchange config template files incase they are deleted
-tempHorizonDir="/tmp/horizon-all-in-1"
-mkdir -p ${tempHorizonDir}
-cp -f ${ANAX_SOURCE}/test/docker/fs/etc/agbot/agbot-tmpl.json ${tempHorizonDir}
-if [ $? -ne 0 ]; then
-  echo -e "${PREFIX} Failed copy the agbot config template file to ${tempHorizonDir}."
-  exit 1
-fi
-cp -f ${ANAX_SOURCE}/test/docker/fs/etc/edge-sync-service/css-tmpl.conf ${tempHorizonDir}
-if [ $? -ne 0 ]; then
-  echo -e "${PREFIX} Failed copy the css config template file to ${tempHorizonDir}."
-  exit 1
-fi
-export OH_DONT_DOWNLOAD='agbot-tmpl.json css-tmpl.conf'
-
-
 cd /tmp
 rm -f deploy-mgmt-hub.sh
 wget https://raw.githubusercontent.com/open-horizon/devops/master/mgmt-hub/deploy-mgmt-hub.sh
