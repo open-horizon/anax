@@ -108,7 +108,7 @@ DOCKER_REG_PW := testpassword
 # css
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
-DOCKER_CSS_TAG := e2edev
+DOCKER_CSS_TAG := 1.6.8
 CSS_URL ?= https://css-api:8080
 
 #css DB
