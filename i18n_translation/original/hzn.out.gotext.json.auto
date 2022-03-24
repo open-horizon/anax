@@ -4437,6 +4437,20 @@
             "fuzzy": true
         },
         {
+            "id": "The publish command will disable chunk upload. Data will stream to CSS.",
+            "message": "The publish command will disable chunk upload. Data will stream to CSS.",
+            "translation": "The publish command will disable chunk upload. Data will stream to CSS.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
+            "message": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
+            "translation": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
             "message": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
             "translation": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
@@ -10825,8 +10839,8 @@
                 {
                     "id": "Containers",
                     "string": "%[1]v",
-                    "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-                    "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+                    "type": "[]github.com/fsouza/go-dockerclient.APIContainers",
+                    "underlyingType": "[]github.com/fsouza/go-dockerclient.APIContainers",
                     "argNum": 1,
                     "expr": "containers"
                 }
@@ -12104,7 +12118,7 @@
                 {
                     "id": "ContainerNetwork",
                     "string": "%[2]v",
-                    "type": "github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.ContainerNetwork",
+                    "type": "github.com/fsouza/go-dockerclient.ContainerNetwork",
                     "underlyingType": "struct{Aliases []string \"json:\\\"Aliases,omitempty\\\" yaml:\\\"Aliases,omitempty\\\" toml:\\\"Aliases,omitempty\\\"\"; MacAddress string \"json:\\\"MacAddress,omitempty\\\" yaml:\\\"MacAddress,omitempty\\\" toml:\\\"MacAddress,omitempty\\\"\"; GlobalIPv6PrefixLen int \"json:\\\"GlobalIPv6PrefixLen,omitempty\\\" yaml:\\\"GlobalIPv6PrefixLen,omitempty\\\" toml:\\\"GlobalIPv6PrefixLen,omitempty\\\"\"; GlobalIPv6Address string \"json:\\\"GlobalIPv6Address,omitempty\\\" yaml:\\\"GlobalIPv6Address,omitempty\\\" toml:\\\"GlobalIPv6Address,omitempty\\\"\"; IPv6Gateway string \"json:\\\"IPv6Gateway,omitempty\\\" yaml:\\\"IPv6Gateway,omitempty\\\" toml:\\\"IPv6Gateway,omitempty\\\"\"; IPPrefixLen int \"json:\\\"IPPrefixLen,omitempty\\\" yaml:\\\"IPPrefixLen,omitempty\\\" toml:\\\"IPPrefixLen,omitempty\\\"\"; IPAddress string \"json:\\\"IPAddress,omitempty\\\" yaml:\\\"IPAddress,omitempty\\\" toml:\\\"IPAddress,omitempty\\\"\"; Gateway string \"json:\\\"Gateway,omitempty\\\" yaml:\\\"Gateway,omitempty\\\" toml:\\\"Gateway,omitempty\\\"\"; EndpointID string \"json:\\\"EndpointID,omitempty\\\" yaml:\\\"EndpointID,omitempty\\\" toml:\\\"EndpointID,omitempty\\\"\"; NetworkID string \"json:\\\"NetworkID,omitempty\\\" yaml:\\\"NetworkID,omitempty\\\" toml:\\\"NetworkID,omitempty\\\"\"}",
                     "argNum": 2,
                     "expr": "nw"
@@ -12232,23 +12246,6 @@
                     "underlyingType": "*github.com/open-horizon/anax/common.DeploymentConfig",
                     "argNum": 1,
                     "expr": "depConfig"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to generate instance ID: {Err}",
-            "message": "unable to generate instance ID: {Err}",
-            "translation": "unable to generate instance ID: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Err",
-                    "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
-                    "expr": "err"
                 }
             ],
             "fuzzy": true
@@ -17217,7 +17214,7 @@
                 {
                     "id": "PortBinding",
                     "string": "%[2]v",
-                    "type": "github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.PortBinding",
+                    "type": "github.com/fsouza/go-dockerclient.PortBinding",
                     "underlyingType": "struct{HostIP string \"json:\\\"HostIp,omitempty\\\" yaml:\\\"HostIp,omitempty\\\" toml:\\\"HostIp,omitempty\\\"\"; HostPort string \"json:\\\"HostPort,omitempty\\\" yaml:\\\"HostPort,omitempty\\\" toml:\\\"HostPort,omitempty\\\"\"}",
                     "argNum": 2,
                     "expr": "pb"
@@ -19545,9 +19542,9 @@
             "fuzzy": true
         },
         {
-            "id": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
-            "message": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
-            "translation": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+            "id": "Invalid metadata file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+            "message": "Invalid metadata file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+            "translation": "Invalid metadata file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -19570,9 +19567,9 @@
             "fuzzy": true
         },
         {
-            "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
-            "message": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
-            "translation": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
+            "id": "Invalid metadata file. Key already exists in SDO owner services for org \"{Org}\".",
+            "message": "Invalid metadata file. Key already exists in SDO owner services for org \"{Org}\".",
+            "translation": "Invalid metadata file. Key already exists in SDO owner services for org \"{Org}\".",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -19695,9 +19692,59 @@
             "fuzzy": true
         },
         {
-            "id": "given key {KeyFileName} has missing fields:\n{Err}",
-            "message": "given key {KeyFileName} has missing fields:\n{Err}",
-            "translation": "given key {KeyFileName} has missing fields:\n{Err}",
+            "id": "given metadata file {KeyFileName} has missing fields:\n{Err}",
+            "message": "given metadata file {KeyFileName} has missing fields:\n{Err}",
+            "translation": "given metadata file {KeyFileName} has missing fields:\n{Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "KeyFileName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "keyFileName"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
+            "message": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
+            "translation": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "KeyFileName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "keyFileName"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
+            "message": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
+            "translation": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -21623,6 +21670,23 @@
             "fuzzy": true
         },
         {
+            "id": "Upload object in chunk, chunk size is: {ChunkSize}",
+            "message": "Upload object in chunk, chunk size is: {ChunkSize}",
+            "translation": "Upload object in chunk, chunk size is: {ChunkSize}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ChunkSize",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "chunkSize"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
             "message": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
             "translation": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
@@ -21660,6 +21724,31 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "string(resp)"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Object status is still {Stringresp} after {Count} try",
+            "message": "Object status is still {Stringresp} after {Count} try",
+            "translation": "Object status is still {Stringresp} after {Count} try",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Stringresp",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "string(resp)"
+                },
+                {
+                    "id": "Count",
+                    "string": "%[2]v",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 2,
+                    "expr": "count"
                 }
             ],
             "fuzzy": true
@@ -21748,6 +21837,204 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "hashAlgo"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to get file info of object file {Name}: {Err}",
+            "message": "unable to get file info of object file {Name}: {Err}",
+            "translation": "unable to get file info of object file {Name}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "fileInfo.Name()"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "error to read object file {Name} from offset {StartOffset}: {Err}",
+            "message": "error to read object file {Name} from offset {StartOffset}: {Err}",
+            "translation": "error to read object file {Name} from offset {StartOffset}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "fileInfo.Name()"
+                },
+                {
+                    "id": "StartOffset",
+                    "string": "%[2]d",
+                    "type": "int64",
+                    "underlyingType": "int64",
+                    "argNum": 2,
+                    "expr": "startOffset"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[3]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 3,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "read unexpected length of data (read data length: {N}, expected data length: {DataLength}) from object file {Name} from offset {StartOffset}: {Err}",
+            "message": "read unexpected length of data (read data length: {N}, expected data length: {DataLength}) from object file {Name} from offset {StartOffset}: {Err}",
+            "translation": "read unexpected length of data (read data length: {N}, expected data length: {DataLength}) from object file {Name} from offset {StartOffset}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "N",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "n"
+                },
+                {
+                    "id": "DataLength",
+                    "string": "%[2]d",
+                    "type": "int64",
+                    "underlyingType": "int64",
+                    "argNum": 2,
+                    "expr": "dataLength"
+                },
+                {
+                    "id": "Name",
+                    "string": "%[3]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "fileInfo.Name()"
+                },
+                {
+                    "id": "StartOffset",
+                    "string": "%[4]d",
+                    "type": "int64",
+                    "underlyingType": "int64",
+                    "argNum": 4,
+                    "expr": "startOffset"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[5]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 5,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+            "message": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+            "translation": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                },
+                {
+                    "id": "ApiMsg",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "apiMsg"
+                },
+                {
+                    "id": "Httpstatus",
+                    "string": "%[3]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "http_status"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+            "message": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+            "translation": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                },
+                {
+                    "id": "ApiMsg",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "apiMsg"
+                },
+                {
+                    "id": "Httpstatus",
+                    "string": "%[3]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "http_status"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error during calling MMS REST API {ApiMsg}: {Error}",
+            "message": "Error during calling MMS REST API {ApiMsg}: {Error}",
+            "translation": "Error during calling MMS REST API {ApiMsg}: {Error}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ApiMsg",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "apiMsg"
+                },
+                {
+                    "id": "Error",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "err.Error()"
                 }
             ],
             "fuzzy": true
