@@ -360,7 +360,7 @@ func getPkgTypeForInstallType(install string) string {
 		return MACPACKAGETYPE
 	} else if install == externalpolicy.OS_UBUNTU || install == externalpolicy.OS_DEBIAN || install == externalpolicy.OS_RASPBIAN {
 		return DEBPACKAGETYPE
-	} else if install == externalpolicy.OS_RHEL {
+	} else if install == externalpolicy.OS_RHEL || install == externalpolicy.OS_CENTOS || install == externalpolicy.OS_FEDORA || install == externalpolicy.OS_SUSE {
 		return RHELPACKAGETYPE
 	}
 

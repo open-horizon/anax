@@ -69,6 +69,8 @@ func (w *NodeManagementWorker) checkNMPTimeToRun() int {
 			if nmpStatus.TimeToStart() {
 				glog.Infof(nmwlog(fmt.Sprintf("Time to start nmp %v", nmpName)))
 				w.Messages() <- events.NewNMPStartDownloadMessage(events.NMP_START_DOWNLOAD, events.StartDownloadMessage{NMPStatus: nmpStatus, NMPName: nmpName})
+			} else {
+				glog.Infof(nmwlog(fmt.Sprintf("Not time to start %v", nmpStatus)))
 			}
 		}
 	}
@@ -108,6 +110,9 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 	if err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Failed to get nmp status %v from the database: %v", cmd.Msg.NMPName, err)))
 		return
+	} else if status == nil {
+		glog.Errorf(nmwlog(fmt.Sprintf("Failed to find status for nmp %v in the database.", cmd.Msg.NMPName)))
+		return
 	}
 	pattern := ""
 	configState := ""
@@ -119,9 +124,11 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 		configState = exchDev.Config.State
 	}
 	if cmd.Msg.Success {
+		glog.Infof(nmwlog(fmt.Sprintf("Sucessfully downloaded packages for nmp %v.", cmd.Msg.NMPName)))
 		status.SetStatus(exchangecommon.STATUS_DOWNLOADED)
 		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOADED), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 	} else {
+		glog.Infof(nmwlog(fmt.Sprintf("Failed to download packages for nmp %v.", cmd.Msg.NMPName)))
 		status.SetStatus(exchangecommon.STATUS_DOWNLOAD_FAILED)
 		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOAD_FAILED), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 	}
@@ -143,6 +150,8 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 		n.TerminateSubworkers()
 		n.HandleUnregister()
 	case *NMPChangeCommand:
+		n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory())
+	case *NodePolChangeCommand:
 		n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory())
 	default:
 		return false
@@ -191,32 +200,39 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 		return fmt.Errorf("Error getting device from database: %v", err)
 	}
 	nodePattern = exchDev.Pattern
+	matchingNMPs := map[string]exchangecommon.ExchangeNodeManagementPolicy{}
 
 	for name, policy := range *allNMPs {
 		if match, _ := VerifyCompatible(&nodePol.Management, nodePattern, &policy); match {
-			deleted := false
+			matchingNMPs[name] = policy
+			org, nodeId := cutil.SplitOrgSpecUrl(n.GetExchangeId())
 			glog.Infof(nmwlog(fmt.Sprintf("Found matching node management policy %v in the exchange.", name)))
 			if !policy.Enabled {
-				if _, err = persistence.DeleteNMPStatus(n.db, name); err != nil {
-					return fmt.Errorf("Failed to delete status for deactivated node policy %v from database. Error was %v", name, err)
+				existingStatus, err := persistence.DeleteNMPStatus(n.db, name)
+				if err != nil {
+					glog.Errorf(nmwlog(fmt.Sprintf("Failed to delete status for deactivated node policy %v from database. Error was %v", name, err)))
 				}
-				deleted = true
-			}
-			if err = persistence.SaveOrUpdateNodeManagementPolicy(n.db, name, policy); err != nil {
-				return err
-			}
-			existingStatus, err := persistence.FindNMPStatus(n.db, name)
-			if err != nil {
-				return fmt.Errorf("Error getting status for policy %v from the database: %v", name, err)
-			} else if existingStatus == nil && !deleted {
-				eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CREATED, name), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), nodePattern, exchDev.Config.State)
-				glog.Infof(nmwlog(fmt.Sprintf("Saving node management policy status %v in the db.", name)))
-				newStatus := exchangecommon.StatusFromNewPolicy(policy, baseWorkingFile)
-				org, nodeId := cutil.SplitOrgSpecUrl(n.GetExchangeId())
-				if err = persistence.SaveOrUpdateNMPStatus(n.db, name, newStatus); err != nil {
+				if existingStatus != nil {
+					if err := exchange.DeleteNodeManagementPolicyStatus(n, org, nodeId, name); err != nil {
+						glog.Errorf(nmwlog(fmt.Sprintf("Error removing status %v from exchange", name)))
+					}
+				}
+			} else {
+				if err = persistence.SaveOrUpdateNodeManagementPolicy(n.db, name, policy); err != nil {
 					return err
-				} else if _, err = exchange.PutNodeManagementPolicyStatus(n, org, nodeId, name, &newStatus); err != nil {
-					return err
+				}
+				existingStatus, err := persistence.FindNMPStatus(n.db, name)
+				if err != nil {
+					return fmt.Errorf("Error getting status for policy %v from the database: %v", name, err)
+				} else if existingStatus == nil {
+					eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CREATED, name), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), nodePattern, exchDev.Config.State)
+					glog.Infof(nmwlog(fmt.Sprintf("Saving node management policy status %v in the db.", name)))
+					newStatus := exchangecommon.StatusFromNewPolicy(policy, baseWorkingFile)
+					if err = persistence.SaveOrUpdateNMPStatus(n.db, name, newStatus); err != nil {
+						glog.Errorf(nmwlog(fmt.Sprintf("Failed to update status for %v in the local db: %v", name, err)))
+					} else if _, err = exchange.PutNodeManagementPolicyStatus(n, org, nodeId, name, &newStatus); err != nil {
+						glog.Errorf(nmwlog(fmt.Sprintf("Failed to update status for %v in the exchange: %v", name, err)))
+					}
 				}
 			}
 		}
@@ -225,7 +241,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string) error {
 		return err
 	} else {
 		for statusName, _ := range allStatuses {
-			if _, ok := (*allNMPs)[statusName]; !ok {
+			if _, ok := matchingNMPs[statusName]; !ok {
 				// The nmp this status is for is no longer in the exchange. Delete it
 				glog.Infof(nmwlog(fmt.Sprintf("Removing status %v from the local database as if no longer exists in the exchange.", statusName)))
 				if _, err := persistence.DeleteNMPStatus(n.db, statusName); err != nil {
@@ -271,6 +287,8 @@ func (n *NodeManagementWorker) NewEvent(incoming events.Message) {
 		switch msg.Event().Id {
 		case events.CHANGE_NMP_TYPE:
 			n.Commands <- NewNMPChangeCommand(msg)
+		case events.CHANGE_NODE_POLICY_TYPE:
+			n.Commands <- NewNodePolChangeCommand(msg)
 		}
 	}
 }

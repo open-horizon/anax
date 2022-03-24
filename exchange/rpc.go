@@ -1259,8 +1259,8 @@ func IsTransportError(pResp *http.Response, err error) bool {
 			return true
 		} else if strings.Contains(l_error_string, "broken pipe") {
 			return true
-		} else if (strings.Contains(l_error_string, "dial tcp") && strings.Contains(l_error_string, "server misbehaving")) {
-			// Could be from DNS like: dial tcp: lookup cp-console.cloud on 127.0.0.53:53: server misbehaving: 
+		} else if strings.Contains(l_error_string, "dial tcp") && strings.Contains(l_error_string, "server misbehaving") {
+			// Could be from DNS like: dial tcp: lookup cp-console.cloud on 127.0.0.53:53: server misbehaving:
 			return true
 		}
 	}
