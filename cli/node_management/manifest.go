@@ -226,8 +226,8 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 		var manSoftwareFilesVersion string
 		if manifestData.SoftwareUpgrade.Version == "latest" {
 			manSoftwareFilesVersion = ""
-		} else if _, err := semanticversion.Version_Expression_Factory(manifestData.SoftwareUpgrade.Version); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in SoftwareUpgrade is not a valid version range, version string or \"latest\": %v", err))
+		} else if isValidVersion := semanticversion.IsVersionString(manifestData.SoftwareUpgrade.Version); !isValidVersion {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in SoftwareUpgrade is not a valid version string or \"latest\": %v", manifestData.SoftwareUpgrade.Version))
 		} else {
 			manSoftwareFilesVersion = manifestData.SoftwareUpgrade.Version
 		}
@@ -242,7 +242,7 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 			}
 			if !found {
 				validFile = false
-				errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_software_files\".", manFile, manifestData.SoftwareUpgrade.Version)
+				errMsg += msgPrinter.Sprintf("File \"%s\" version \"%s\" of type \"agent_software_files\".", manFile, manifestData.SoftwareUpgrade.Version)
 				errMsg += msgPrinter.Sprintln()
 			}
 		}
@@ -254,8 +254,8 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 		var manCertFilesVersion string
 		if manifestData.CertificateUpgrade.Version == "latest" {
 			manCertFilesVersion = ""
-		} else if _, err := semanticversion.Version_Expression_Factory(manifestData.CertificateUpgrade.Version); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in CertificateUpgrade is not a valid version range, version string or \"latest\": %v", err))
+		} else if isValidVersion := semanticversion.IsVersionString(manifestData.CertificateUpgrade.Version); !isValidVersion {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in CertificateUpgrade is not a valid version string or \"latest\": %v", manifestData.CertificateUpgrade.Version))
 		} else {
 			manCertFilesVersion = manifestData.CertificateUpgrade.Version
 		}
@@ -270,7 +270,7 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 			}
 			if !found {
 				validFile = false
-				errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_cert_files\".", manFile, manifestData.CertificateUpgrade.Version)
+				errMsg += msgPrinter.Sprintf("File \"%s\" version \"%s\" of type \"agent_cert_files\".", manFile, manifestData.CertificateUpgrade.Version)
 				errMsg += msgPrinter.Sprintln()
 			}
 		}
@@ -282,8 +282,8 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 		var manConfigFilesVersion string
 		if manifestData.ConfigurationUpgrade.Version == "latest" {
 			manConfigFilesVersion = ""
-		} else if _, err := semanticversion.Version_Expression_Factory(manifestData.ConfigurationUpgrade.Version); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in ConfigurationUpgrade is not a valid version range, version string or \"latest\": %v", err))
+		} else if isValidVersion := semanticversion.IsVersionString(manifestData.ConfigurationUpgrade.Version); !isValidVersion {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The version specified in ConfigurationUpgrade is not a valid version string or \"latest\": %v", manifestData.ConfigurationUpgrade.Version))
 		} else {
 			manConfigFilesVersion = manifestData.ConfigurationUpgrade.Version
 		}
@@ -298,7 +298,7 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 			}
 			if !found {
 				validFile = false
-				errMsg += msgPrinter.Sprintf("File \"%s\" version(s) \"%s\" of type \"agent_config_files\".", manFile, manifestData.ConfigurationUpgrade.Version)
+				errMsg += msgPrinter.Sprintf("File \"%s\" version \"%s\" of type \"agent_config_files\".", manFile, manifestData.ConfigurationUpgrade.Version)
 				errMsg += msgPrinter.Sprintln()
 			}
 		}
@@ -353,19 +353,19 @@ func ManifestNew() {
 		`    "files": [               /* ` + msgPrinter.Sprintf("A list of agent software files stored in the Management Hub.") + ` */`,
 		`      ""                     /* ` + msgPrinter.Sprintf("Run 'hzn nm agentfiles list -t agent_software_files' to get a list of available files.") + ` */`,
 		`    ],`,
-		`    "version": ""            /* ` + msgPrinter.Sprintf("The agent software version range this manifest applies to. Specify \"latest\" to get the most recent version.") + ` */`,
+		`    "version": ""            /* ` + msgPrinter.Sprintf("The agent software version this manifest applies to. Specify \"latest\" to get the most recent version.") + ` */`,
 		`  },`,
 		`  "certificateUpgrade": {    /* ` + msgPrinter.Sprintf("Fill in this section to upgrade the agent certificate. Remove this section to prevent certificate upgrade.") + ` */`,
 		`    "files": [               /* ` + msgPrinter.Sprintf("The name of a cert file stored in the Management Hub. Default is \"agent-install.crt\".") + ` */`,
 		`      "agent-install.crt"    /* ` + msgPrinter.Sprintf("Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.") + ` */`,
 		`    ],`,
-		`    "version": ""            /* ` + msgPrinter.Sprintf("The agent cert version range this manifest applies to. Specify \"latest\" to get the most recent version.") + ` */`,
+		`    "version": ""            /* ` + msgPrinter.Sprintf("The agent cert version this manifest applies to. Specify \"latest\" to get the most recent version.") + ` */`,
 		`  },`,
 		`  "configurationUpgrade": {  /* ` + msgPrinter.Sprintf("Fill in this section to upgrade the agent config. Remove this section to prevent config upgrade.") + ` */`,
 		`    "files": [               /* ` + msgPrinter.Sprintf("The name of a cert file stored in the Management Hub. Default is \"agent-install.crt\".") + ` */`,
 		`      "agent-install.cfg"    /* ` + msgPrinter.Sprintf("Run 'hzn nm agentfiles list -t agent_config_files' to get a list of available files.") + ` */`,
 		`    ],`,
-		`    "version": ""            /* ` + msgPrinter.Sprintf("The agent config version range this manifest applies to. Specify \"latest\" to get the most recent version.") + ` */`,
+		`    "version": ""            /* ` + msgPrinter.Sprintf("The agent config version this manifest applies to. Specify \"latest\" to get the most recent version.") + ` */`,
 		`  }`,
 		`}`,
 	}
