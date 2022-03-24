@@ -31,6 +31,9 @@ const (
 	OS_DEBIAN    = "debian"
 	OS_RASPBIAN  = "raspbian"
 	OS_RHEL      = "rhel"
+	OS_CENTOS    = "centos"
+	OS_FEDORA    = "fedora"
+	OS_SUSE      = "suse"
 
 	// for service policy
 	PROP_SVC_URL        = "openhorizon.service.url"     // The unique name of the service.
@@ -48,7 +51,7 @@ func ListReadOnlyProperties() []string {
 }
 
 func ListSupportedOperatingSystems() []string {
-	return []string{OS_UBUNTU, OS_DEBIAN, OS_RASPBIAN, OS_RHEL, OS_MAC}
+	return []string{OS_UBUNTU, OS_DEBIAN, OS_RASPBIAN, OS_RHEL, OS_MAC, OS_CENTOS, OS_FEDORA, OS_SUSE}
 }
 
 // CreateNodeBuiltInPolicy returns 2 externalpolicies.
