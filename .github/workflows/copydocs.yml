@@ -1,0 +1,24 @@
+name : Copy Docs
+on: 
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+ 
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Copycat
+      uses: andstor/copycat-action@v3
+      with:
+        commit_message: "Syncing from anax"
+        clean: false
+        personal_token: ${{ secrets.PERSONAL_TOKEN }}
+        src_path: docs
+        dst_path: /docs/anax
+        dst_owner: open-horizon
+        dst_repo_name: open-horizon.github.io
+        dst_branch: master
+        src_branch: master
