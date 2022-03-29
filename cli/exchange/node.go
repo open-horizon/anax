@@ -698,9 +698,9 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 					continue
 				} else {
 					if nmp.Enabled {
-						compatibleNMPs = append(compatibleNMPs, nmpName+": enabled")
+						compatibleNMPs = append(compatibleNMPs, nmpName+": " + msgPrinter.Sprintf("enabled"))
 					} else {
-						compatibleNMPs = append(compatibleNMPs, nmpName+": disabled")
+						compatibleNMPs = append(compatibleNMPs, nmpName+": " + msgPrinter.Sprintf("disabled"))
 					}
 				}
 			}
