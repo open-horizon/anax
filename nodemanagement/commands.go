@@ -70,3 +70,21 @@ func NewNMPChangeCommand(msg *events.ExchangeChangeMessage) *NMPChangeCommand {
 		Msg: msg,
 	}
 }
+
+type NodePolChangeCommand struct {
+	Msg *events.ExchangeChangeMessage
+}
+
+func (n NodePolChangeCommand) String() string {
+	return fmt.Sprintf("Msg: %v", n.Msg)
+}
+
+func (n NodePolChangeCommand) ShortString() string {
+	return n.String()
+}
+
+func NewNodePolChangeCommand(msg *events.ExchangeChangeMessage) *NodePolChangeCommand {
+	return &NodePolChangeCommand{
+		Msg: msg,
+	}
+}

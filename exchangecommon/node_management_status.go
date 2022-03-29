@@ -56,7 +56,6 @@ func (n NodeManagementPolicyStatus) IsAgentUpgradePolicy() bool {
 
 type AgentUpgradePolicyStatus struct {
 	ScheduledTime        string               `json:"scheduledTime"`
-	scheduledUnixTime    time.Time            `json:"scheduledUnixTime,omitempty"`
 	ActualStartTime      string               `json:"startTime,omitempty"`
 	CompletionTime       string               `json:"endTime,omitempty"`
 	UpgradedVersions     AgentUpgradeVersions `json:"upgradedVersions"`
@@ -71,21 +70,22 @@ func (a AgentUpgradePolicyStatus) String() string {
 }
 
 func (a AgentUpgradePolicyStatus) DeepCopy() *AgentUpgradePolicyStatus {
-	return &AgentUpgradePolicyStatus{ScheduledTime: a.ScheduledTime, scheduledUnixTime: a.scheduledUnixTime, ActualStartTime: a.ActualStartTime, CompletionTime: a.CompletionTime,
+	return &AgentUpgradePolicyStatus{ScheduledTime: a.ScheduledTime, ActualStartTime: a.ActualStartTime, CompletionTime: a.CompletionTime,
 		UpgradedVersions: a.UpgradedVersions, Status: a.Status, ErrorMessage: a.ErrorMessage, BaseWorkingDirectory: a.BaseWorkingDirectory}
 }
 
 type AgentUpgradeInternalStatus struct {
-	AllowDowngrade bool   `json:"allowDowngrade,omitempty"`
-	Manifest       string `json:"manifest,omitempty"`
+	AllowDowngrade    bool      `json:"allowDowngrade,omitempty"`
+	Manifest          string    `json:"manifest,omitempty"`
+	ScheduledUnixTime time.Time `json:"scheduledUnixTime,omitempty"`
 }
 
 func (a AgentUpgradeInternalStatus) String() string {
-	return fmt.Sprintf("AllowDowngrade: %v, Manifest: %v", a.AllowDowngrade, a.Manifest)
+	return fmt.Sprintf("AllowDowngrade: %v, Manifest: %v, ScheduledUnixTime: %v", a.AllowDowngrade, a.Manifest, a.ScheduledUnixTime)
 }
 
 func (a AgentUpgradeInternalStatus) DeepCopy() *AgentUpgradeInternalStatus {
-	return &AgentUpgradeInternalStatus{AllowDowngrade: a.AllowDowngrade, Manifest: a.Manifest}
+	return &AgentUpgradeInternalStatus{AllowDowngrade: a.AllowDowngrade, Manifest: a.Manifest, ScheduledUnixTime: a.ScheduledUnixTime}
 }
 
 type AgentUpgradeVersions struct {
@@ -122,7 +122,7 @@ func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string)
 			realStartTime = realStartTime + int64(rand.Intn(policy.UpgradeWindowDuration))
 		}
 		newStatus.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).Format(time.RFC3339)
-		newStatus.AgentUpgrade.scheduledUnixTime = time.Unix(realStartTime, 0)
+		newStatus.AgentUpgradeInternal.ScheduledUnixTime = time.Unix(realStartTime, 0)
 		newStatus.AgentUpgrade.BaseWorkingDirectory = workingDir
 		newStatus.AgentUpgradeInternal.AllowDowngrade = policy.AgentAutoUpgradePolicy.AllowDowngrade
 		newStatus.AgentUpgradeInternal.Manifest = policy.AgentAutoUpgradePolicy.Manifest
@@ -132,7 +132,7 @@ func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string)
 
 func (n NodeManagementPolicyStatus) TimeToStart() bool {
 	if n.AgentUpgrade != nil {
-		return n.AgentUpgrade.scheduledUnixTime.Before(time.Now())
+		return n.AgentUpgradeInternal.ScheduledUnixTime.Before(time.Now())
 	}
 	return false
 }
