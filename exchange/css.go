@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/edge-sync-service/common"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -292,6 +293,92 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 	}
 
 	return nil
+}
+
+// Get object data by chunk and saved to the file
+// set CloseRequest to true if this is the last chunk
+// return true, nil if response code is 200 -- get all the object data
+// return false, nil if response code is 206 -- get data in range of bytes {startOffset} - {endOffset}
+func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId string, startOffset int64, endOffset int64, closeRequest bool, fileName string) (bool, error) {
+	url := path.Join("/api/v1/objects", org, objType, objId, "data")
+	url = ec.GetCSSURL() + url
+
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return false, fmt.Errorf("Failed to create request for css object: %v", err)
+	}
+
+	request.SetBasicAuth(ec.GetExchangeId(), ec.GetExchangeToken())
+	request.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", startOffset, endOffset))
+	if closeRequest {
+		request.Close = true
+	}
+
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return false, fmt.Errorf("failed to create file for object '%s' of type '%s', err: %v", objId, objType, err)
+	}
+	defer file.Close()
+
+	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
+	for {
+		response, err := ec.GetHTTPFactory().NewHTTPClient(nil).Do(request)
+		if err != nil {
+			return false, fmt.Errorf("Failed to get object data from %d-%d : %v\n", startOffset, endOffset, err)
+		}
+
+		if response != nil && response.Body != nil {
+			defer response.Body.Close()
+		}
+
+		if IsTransportError(response, err) {
+			if ec.GetHTTPFactory().RetryCount == 0 || retryCount > 0 {
+				if ec.GetHTTPFactory().RetryCount != 0 {
+					retryCount--
+				}
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return false, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, err)
+			}
+
+		} else if err != nil {
+			return false, fmt.Errorf("Received non-transport error: %v", err)
+		}
+
+		if response != nil && response.StatusCode == http.StatusPartialContent {
+			// received partial data
+			if _, err = file.Seek(int64(startOffset), io.SeekStart); err != nil {
+				return false, fmt.Errorf("Failed to seek to the offset %d of a file. Error: %v", startOffset, err)
+			}
+
+			written, err := io.Copy(file, response.Body)
+			if err != nil && err != io.EOF {
+				return false, fmt.Errorf("Failed to write to file. Error: %v", err)
+			}
+			if written != int64(endOffset-startOffset+1) {
+				return false, fmt.Errorf("Failed to write all the data to file.")
+			}
+
+			return false, nil
+		} else if response != nil && response.StatusCode == http.StatusOK {
+			// received all data
+			if _, err := file.Seek(0, io.SeekStart); err != nil {
+				return false, fmt.Errorf("Failed to seek to the offset from beginning of a file. Error: %v", err)
+			}
+
+			if _, err := io.Copy(file, response.Body); err != nil && err != io.EOF {
+				return false, fmt.Errorf("Failed to write to file. Error: %v", err)
+			}
+
+			return true, nil
+		} else {
+			return false, fmt.Errorf("Failed to get chunk data of object %s/%s", objType, objId)
+		}
+
+	}
+
 }
 
 func GetManifestData(ec ExchangeContext, org string, objType string, objId string) (*exchangecommon.UpgradeManifest, error) {
