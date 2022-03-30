@@ -558,6 +558,11 @@ i18n-translation: i18n-catalog
 		export PKGPATH=$(PKGPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
 			tools/copy-i18n-messages
 
+i18n-unpack:
+	@echo "Unpacking the translated messages..."
+	cd $(PKGPATH) && \
+		export PKGPATH=$(PKGPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
+		tools/unpack-i18n-messages
 
 $(TMPGOPATH)/bin/gotext:
 	if [ ! -e "$(TMPGOPATH)/bin/gotext" ]; then \
