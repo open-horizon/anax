@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# this function creates message file using translated file (arg2) and original out.gotext.json (arg1).
+# it inserts the translated text back to the "translation' key of the original and save the output to a new file (arg3).
+# The arg4 is the locale. 
+function insert_tranlated_messages_to_code() {
+
+	original_file=$1
+	translated_file=$2
+	output_file=$3
+	locale=$4
+
+	# sanity check 
+	if [ ! -f $translated_file ]; then
+		echo "File $translated_file does not exists."
+		exit 1
+	fi
+
+	if [ ! -f $original_file ]; then
+		echo "File $original_file does not exists."
+		exit 1
+	fi
+
+	# remove the markups from the PII process
+	translated_json_file="/tmp/translated.json"
+	cat $translated_file | sed 's/"id":/"message":/g' > $translated_json_file
+
+	# replace the original file with the translation
+	output=$(jq '.messages | del(.[].translatorComment)' $original_file)
+	while read -r i; do
+		orig_msg=$(echo "$i" | jq -r '.message')
+		trans_msg=$(echo "$i" | jq -r '.translation')
+
+		output=$(echo "$output" | jq --arg omsg "$orig_msg" --arg tmsg "$trans_msg" 'map(if .message==$omsg then .translation=$tmsg else . end)')
+	done < <(jq -c '.[]' $translated_json_file) 
+
+	# add language part back and save to output file
+	echo "[{\"key\": \"language\", \"value\": \"$locale\"}, {\"key\": \"messages\", \"value\": $output}]" | jq 'from_entries' > $output_file
+}
+
+
+# main program starts here
+cd $PKGPATH
+
+# remove ^M from the translated files
+sed -i "s/\r//g" i18n_translation/translated/*
+
+# get the translated messages from i18n_translation/translated directory and insert them one by one to 
+# messages.gotext.json file for each locale
+all_locales="de  es  fr  it  ja  ko  pt-BR  zh-CN  zh-TW"
+for lan in $all_locales
+do
+	echo -e "locale=$lan"
+	f_lan=$(echo -e "$lan" | tr '-' _)
+	echo -e "  i18n_translation/translated/anax.out.gotext_${f_lan}.json => locales/${lan}/messages.gotext.json"
+    insert_tranlated_messages_to_code i18n_translation/original/anax.out.gotext.json.auto i18n_translation/translated/anax.out.gotext_${f_lan}.json locales/${lan}/messages.gotext.json $lan
+	echo -e "  i18n_translation/translated/hzn.out.gotext_${f_lan}.json => cli/locales/${lan}/messages.gotext.json"
+    insert_tranlated_messages_to_code i18n_translation/original/hzn.out.gotext.json.auto i18n_translation/translated/hzn.out.gotext_${f_lan}.json cli/locales/${lan}/messages.gotext.json $lan
+done
+
+
