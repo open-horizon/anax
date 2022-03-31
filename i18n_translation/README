@@ -1,26 +1,33 @@
 Note for translating "*.out.gotext.json" files:
-1. At line 2, change the value of "language" from "en" to your lanuage
-   it could be
-	de
-	es
-	fr
-	it
-	ja
-	ko
-	pt-BR
-	zh-CN
-	zh-TW
-2. Please only make the changes to the line with: "translation": "". 
+1. Please only make the changes to the line with: "translation": "". 
    The original English message is above this line with: "message":.
    Do not modify the "message" line even if you see English errors.
    Do not modify any other lines.
-3. For text within {} or with leading $:
+2. For text within {} or with leading $:
    For example:
       "Property value is of type {ActualType}, expected type {DeclaredType}".
       "Edge $SERVICE_NAME Service Pattern for $ARCH".
    They are variables that will be replaced by the code. 
    Please keep the text within {} and with leading $ sign as is. 
    You can change the order but please do not translate them.
-4. Please do not the translate the following keywords:
+3. Please do not the translate the following keywords:
    Exchange, Agbot, Horizon. 
+
+Note for the process:
+To build the translated messages into the binary:
+   make i18n-catalog  (This will take about one hour.)
+   make
+
+To extract messages from code for translation:
+   make i18n-clean
+   make i18n-translation
+Then the following files will be used by the translation team.
+   i18n_translation/anax.out.gotext.json
+   i18n_translation/hzn.out.gotext.json
+
+To unpack the translated messages:
+Copy the translated files to i18n_translation/translated directory, then run the following command to insert the translated messages back to code.
+   make i18n-unpack
+Then run the following command to verify that the translated messages contain correct tags. (This will take about one hour.)
+   make i18n-catalog
 
