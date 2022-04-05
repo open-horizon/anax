@@ -1051,9 +1051,12 @@ func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementI
 			if err != nil {
 				return fail(nil, container.Name, fmt.Errorf("Unable to find container detail for container during post-creation step: Error: %v", err))
 			}
-			if serviceName, exists := conDetail.Config.Labels[LABEL_PREFIX+".service_name"]; exists {
-				if deployment.Services[serviceName].NetworkIsolation != nil {
-					requiresProcessPostCreate = true
+
+			if conDetail != nil && conDetail.Config != nil && conDetail.Config.Labels != nil {
+				if serviceName, exists := conDetail.Config.Labels[LABEL_PREFIX+".service_name"]; exists {
+					if deployment.Services[serviceName].NetworkIsolation != nil {
+						requiresProcessPostCreate = true
+					}
 				}
 			}
 		}
