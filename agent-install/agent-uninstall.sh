@@ -11,6 +11,7 @@ SECRET_NAME="openhorizon-agent-secrets"
 IMAGE_REGISTRY_SECRET_NAME="openhorizon-agent-secrets-docker-cert"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
+CRONJOB_AUTO_UPGRADE_NAME="auto-upgrade-cronjob"
 AGENT_NAMESPACE="openhorizon-agent"
 USE_DELETE_FORCE=false
 DELETE_TIMEOUT=10 # Default delete timeout
@@ -363,6 +364,14 @@ function deleteAgentResources() {
 
     log_info "Deleting persistent volume..."
     $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
+    set -e
+
+    log_info "Deleting auto-upgrade cronjob..."
+    if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+        $KUBECTL delete cronjob $CRONJOB_AUTO_UPGRADE_NAME -n $AGENT_NAMESPACE
+    else
+        log_info "cronjob ${CRONJOB_AUTO_UPGRADE_NAME} does not exist, skip deleting cronjob"
+    fi
     set -e
 
     log_info "Deleting clusterrolebinding..."

@@ -80,6 +80,16 @@ ANAX_K8S_IMAGE_PROD = $(ANAX_K8S_IMAGE_BASE):stable$(BRANCH_NAME)
 ANAX_K8S_IMAGE_LATEST = $(ANAX_K8S_IMAGE_BASE):latest$(BRANCH_NAME)
 ANAX_K8S_IMAGE_LABELS ?= --label "name=$(arch)_anax_k8s" --label "version=$(ANAX_K8S_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
 
+# agent-auto-upgrade cronjob container running in kubernetes
+CRONJOB_AUTO_UPGRADE_IMAGE_BASE = $(IMAGE_REPO)/$(arch)_auto-upgrade-cronjob
+CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE = $(CRONJOB_AUTO_UPGRADE_IMAGE_BASE)_k8s
+CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION ?= $(ANAX_IMAGE_VERSION)
+CRONJOB_AUTO_UPGRADE_K8S_IMAGE = $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):$(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION)
+CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG = $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):testing$(BRANCH_NAME)
+CRONJOB_AUTO_UPGRADE_K8S_IMAGE_PROD = $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):stable$(BRANCH_NAME)
+CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LATEST = $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):latest$(BRANCH_NAME)
+CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LABELS ?= --label "name=$(arch)_auto-upgrade-cronjob_k8s" --label "version=$(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
+
 # Variables that control packaging the file sync service containers
 DOCKER_REGISTRY ?= "dockerhub"
 ANAX_K8S_REGISTRY ?= $(DOCKER_REGISTRY)
@@ -391,6 +401,14 @@ promote-anax-k8s:
 	docker tag $(ANAX_K8S_IMAGE) $(ANAX_K8S_IMAGE_LATEST)
 	docker push $(ANAX_K8S_IMAGE_LATEST)
 
+promote-auto-upgrade-cronjob-k8s:
+	@echo "Promoting $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE)"
+	docker pull $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE)
+	docker tag $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_PROD)
+	docker push $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_PROD)
+	docker tag $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LATEST)
+	docker push $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LATEST)
+
 anax-package: anax-image
 	@echo "Packaging anax image"
 	if [[ $(shell tools/image-exists $(ANAX_REGISTRY) $(ANAX_IMAGE_BASE) $(ANAX_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
@@ -422,12 +440,29 @@ anax-k8s-image: anax-k8s-clean
 	fi
 	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
 
+auto-upgrade-cronjob-k8s-image: auto-upgrade-cronjob-k8s-clean
+	@echo "Producing Agent Auto Upgrade CronJob K8S docker image $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG)"
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" ]]; then \
+		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LABELS) -t $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) -f Dockerfile.auto-upgrade-cron .; \
+	fi
+	docker tag $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):$(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION)
+
 anax-k8s-package: anax-k8s-image
 	@echo "Packaging anax-k8s container"
 	if [[ $(shell tools/image-exists $(ANAX_K8S_REGISTRY) $(ANAX_K8S_IMAGE_BASE) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
 		echo "Pushing anax-k8s docker image $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)"; \
 		docker push $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION); \
 		docker push $(ANAX_K8S_IMAGE_STG); \
+	else \
+		echo "anax-k8s container $(ANAX_K8S_IMAGE_STG):$(ANAX_K8S_IMAGE_VERSION) already present in $(IMAGE_REPO)"; \
+	fi
+
+auto-upgrade-cronjob-k8s-package: auto-upgrade-cronjob-k8s-image
+	@echo "Packaging anax-k8s container"
+	if [[ $(shell tools/image-exists $(ANAX_K8S_REGISTRY) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
+		echo "Pushing anax-k8s docker image $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):$(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION)"; \
+		docker push $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):$(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION); \
+		docker push $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG); \
 	else \
 		echo "anax-k8s container $(ANAX_K8S_IMAGE_STG):$(ANAX_K8S_IMAGE_VERSION) already present in $(IMAGE_REPO)"; \
 	fi
@@ -536,6 +571,10 @@ anax-k8s-clean:
 	rm -f $(ANAX_K8S_CONTAINER_DIR)/$(LICENSE_FILE)
 	-docker rmi $(ANAX_K8S_IMAGE) 2> /dev/null || :
 	-docker rmi $(ANAX_K8S_IMAGE_STG) 2> /dev/null || :
+
+auto-upgrade-cronjob-k8s-clean:
+	-docker rmi $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE) 2> /dev/null || :
+	-docker rmi $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) 2> /dev/null || :
 
 gofolders:
 ifneq ($(GOPATH),$(TMPGOPATH))

@@ -53,6 +53,7 @@ rpmbuild: require-version
 	cp ../../../agent-install/edgeNodeFiles.sh fs/usr/horizon/bin/
 	cp ../../../agent-install/k8s/deployment-template.yml fs/usr/horizon/cluster/
 	cp ../../../agent-install/k8s/persistentClaim-template.yml fs/usr/horizon/cluster/
+	cp ../../../agent-install/k8s/auto-upgrade-cronjob-template.yml fs/usr/horizon/cluster/
 	cp ../../../cli/bash_completion/hzn_bash_autocomplete.sh fs/etc/bash_completion.d/
 	mkdir -p fs/usr/share/man/man1
 	gzip --stdout ../../../cli/man1/hzn.1 > fs/usr/share/man/man1/hzn.1.gz

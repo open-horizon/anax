@@ -75,6 +75,7 @@ $(MAC_PKG): require-version
 	cp ../../agent-install/edgeNodeFiles.sh horizon-cli/bin
 	cp ../../agent-install/k8s/deployment-template.yml horizon-cli/share/horizon/cluster
 	cp ../../agent-install/k8s/persistentClaim-template.yml horizon-cli/share/horizon/cluster
+	cp ../../agent-install/k8s/auto-upgrade-cronjob-template.yml horizon-cli/share/horizon/cluster
 	cp scripts/horizon-cli-uninstall.sh horizon-cli/bin
 	cp ../../$(LICENSE_FILE) horizon-cli/share/horizon
 	cp ../../$(CLI_MAN_DIR)/hzn.1 horizon-cli/share/man/man1

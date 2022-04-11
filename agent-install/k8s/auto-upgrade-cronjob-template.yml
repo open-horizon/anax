@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: auto-upgrade-cronjob
+spec:
+  schedule: '*/15 * * * *'
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: agent-auto-upgrade
+              image: '__ImagePath__'
+              command:
+                - /bin/sh
+                - '-c'
+                - >-
+                  /usr/local/bin/auto-upgrade-cronjob.sh
+              imagePullPolicy: Always
+          restartPolicy: OnFailure
+          serviceAccountName: __ServiceAccount__
+          serviceAccount: __ServiceAccount__
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
