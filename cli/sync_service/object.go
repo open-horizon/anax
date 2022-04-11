@@ -677,8 +677,13 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 		makeHeaderMap(headers, startOffset, endOffset, fileInfo.Size(), dataLength, mmsOwnerID, creds)
 		resp, err := makeChunkUploadRequest(httpClient, mmsUrl, headers, chunkData, closeRequest)
 
+		// In order for HTTP client connection to be re-used, the response body must be fully read. Do it here 
+		responseMessage := ""
 		if resp != nil && resp.Body != nil {
-			defer resp.Body.Close()
+			if b, err := io.ReadAll(resp.Body); err == nil {
+				responseMessage = string(b)
+			}
+			resp.Body.Close()
 		}
 
 		if exchange.IsTransportError(resp, err) {
@@ -704,15 +709,12 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 
 		if resp.StatusCode != http.StatusPartialContent && resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusTemporaryRedirect {
 			if resp.StatusCode == http.StatusInternalServerError && resp.Body != nil {
-				if b, err := io.ReadAll(resp.Body); err == nil {
-					responseMessage := string(b)
-					if strings.Contains(responseMessage, "leader changed") {
-						// restart from first offset
-						mmsOwnerID = ""
-						startOffset = 0
-						totalSent = 0
-						continue
-					}
+				if strings.Contains(responseMessage, "leader changed") {
+					// restart from first offset
+					mmsOwnerID = ""
+					startOffset = 0
+					totalSent = 0
+					continue
 				}
 			}
 			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s", resp.StatusCode, apiMsg))
