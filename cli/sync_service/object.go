@@ -22,6 +22,7 @@ import (
 	"github.com/open-horizon/rsapss-tool/sign"
 	"hash"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -35,8 +36,6 @@ import (
 const BatchSize = 50
 
 const MaxTry = 150
-
-const MMSUploadOwnerHeaderName = "MMS-Upload-Owner"
 
 type MMSObjectInfo struct {
 	ObjectID     string                      `json:"objectID,omitempty"`
@@ -411,12 +410,13 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 	}
 
 	var resp []byte
-	if objFile == "" || skipDigitalSig {
+	if objFile == "" {
 		// Grab the object status and display it.
 		urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "status")
 		cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
 		cliutils.Verbose(msgPrinter.Sprintf("Object status: %v", string(resp)))
 	} else {
+		// Need to do this now for mongo implementation since even with noIntegrity the chunks have to be copied in CSS
 		count := 0
 		for {
 			if count == MaxTry {
@@ -644,7 +644,6 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 	var endOffset int64
 	var dataLength int64
 	var mmsOwnerID string
-	var ownerIDInResponse string
 	retryCount := 0
 	for int64(startOffset) < fileInfo.Size() {
 		dataLength = int64(chunkSize)
@@ -659,7 +658,6 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 
 		headers["Content-Range"] = fmt.Sprintf("bytes %d-%d/%d", startOffset, endOffset, fileInfo.Size())
 		headers["Content-Length"] = strconv.FormatInt(dataLength, 10)
-		headers[MMSUploadOwnerHeaderName] = mmsOwnerID
 
 		if err != nil && err != io.EOF {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("error to read object file %v from offset %d: %v", fileInfo.Name(), startOffset, err))
@@ -678,11 +676,8 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 		resp, err := makeChunkUploadRequest(httpClient, mmsUrl, headers, chunkData, closeRequest)
 
 		// In order for HTTP client connection to be re-used, the response body must be fully read. Do it here 
-		responseMessage := ""
 		if resp != nil && resp.Body != nil {
-			if b, err := io.ReadAll(resp.Body); err == nil {
-				responseMessage = string(b)
-			}
+			io.Copy(ioutil.Discard, resp.Body);
 			resp.Body.Close()
 		}
 
@@ -690,9 +685,6 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 			http_status := ""
 			if resp != nil {
 				http_status = resp.Status
-				if resp.Body != nil {
-					resp.Body.Close()
-				}
 			}
 			if retryCount <= maxRetries {
 				retryCount++
@@ -708,21 +700,8 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 		}
 
 		if resp.StatusCode != http.StatusPartialContent && resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusTemporaryRedirect {
-			if resp.StatusCode == http.StatusInternalServerError && resp.Body != nil {
-				if strings.Contains(responseMessage, "leader changed") {
-					// restart from first offset
-					mmsOwnerID = ""
-					startOffset = 0
-					totalSent = 0
-					continue
-				}
-			}
 			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s", resp.StatusCode, apiMsg))
-		} else if resp.StatusCode != http.StatusTemporaryRedirect {
-			if mmsOwnerID == "" {
-				ownerIDInResponse = resp.Header.Get(MMSUploadOwnerHeaderName)
-				mmsOwnerID = ownerIDInResponse
-			}
+		} else if resp.StatusCode == http.StatusNoContent {
 			totalSent += dataLength
 			startOffset += dataLength
 		}
@@ -757,7 +736,6 @@ func makeChunkUploadRequest(httpClient *http.Client, mmsUrl string, headers map[
 func makeHeaderMap(headers map[string]string, startOffset int64, endOffset int64, fileSize int64, dataLength int64, mmsOwnerID string, creds string) {
 	headers["Content-Range"] = fmt.Sprintf("bytes %d-%d/%d", startOffset, endOffset, fileSize)
 	headers["Content-Length"] = strconv.FormatInt(dataLength, 10)
-	headers[MMSUploadOwnerHeaderName] = mmsOwnerID
 	headers["Authorization"] = fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(creds)))
 	headers["Content-Type"] = "application/octet-stream"
 }
