@@ -3,6 +3,7 @@ package node_management
 import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/edge-sync-service/common"
@@ -19,31 +20,6 @@ type agentFileInfo struct {
 type agentFileType struct {
 	AgentFileType    string `json:"fileType"`
 	AgentFileVersion string `json:"version"`
-}
-
-type validAgentFileTypes []string
-
-var (
-	// Right now, there are only agent upgrade types, but there may be more types in future
-	// which should be added to this list
-	validFileTypes = validAgentFileTypes{"agent_software_files", "agent_cert_files", "agent_config_files"}
-)
-
-func (a validAgentFileTypes) contains(element string) bool {
-	for _, t := range a {
-		if t == element {
-			return true
-		}
-	}
-	return false
-}
-
-func (a validAgentFileTypes) string() string {
-	str := ""
-	for _, t := range a {
-		str += fmt.Sprintf("%v, ", t)
-	}
-	return str[:len(str)-2]
 }
 
 func AgentFilesList(org, credToUse, fileTypeFilter, fileVersionFilter string) {
@@ -72,8 +48,8 @@ func getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter string) []a
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Ensure that specified type, if any, is a valid type
-	if fileTypeFilter != "" && !validFileTypes.contains(fileTypeFilter) {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid agent file type specified. Valid types include: %v", validFileTypes.string()))
+	if fileTypeFilter != "" && !exchangecommon.ValidFileTypes.Contains(fileTypeFilter) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid agent file type specified. Valid types include: %v", exchangecommon.ValidFileTypes.String()))
 	}
 
 	// Ensure that specified version, if any, is a valid semantic version string, valid version range or "latest"
@@ -119,7 +95,7 @@ func getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter string) []a
 			if !semanticversion.IsVersionString(fileVersion) {
 				continue
 			}
-			if !validFileTypes.contains(fileType) {
+			if !exchangecommon.ValidFileTypes.Contains(fileType) {
 				continue
 			}
 			isWithinRange := true
@@ -159,7 +135,7 @@ func getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter string) []a
 	// since it is already sorted
 	if fileVersionFilter == "latest" {
 		latestAgentFileObjects := make([]agentFileInfo, 0)
-		for _, validType := range validFileTypes {
+		for _, validType := range exchangecommon.ValidFileTypes {
 			for _, agentFile := range agentFileObjects {
 				if agentFile.AgentFileType == validType {
 					latestAgentFileObjects = append(latestAgentFileObjects, agentFile)
@@ -181,8 +157,8 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Ensure that specified type, if any, is a valid type
-	if fileTypeFilter != "" && !validFileTypes.contains(fileTypeFilter) {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid agent file type specified. Valid types include: %v", validFileTypes.string()))
+	if fileTypeFilter != "" && !exchangecommon.ValidFileTypes.Contains(fileTypeFilter) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid agent file type specified. Valid types include: %v", exchangecommon.ValidFileTypes.String()))
 	}
 
 	// Ensure that a type was specified if the user wants only a versions list
@@ -215,10 +191,10 @@ func AgentFilesVersions(org, credToUse, fileTypeFilter string, versionOnly bool)
 			if !semanticversion.IsVersionString(fileVersion) {
 				continue
 			}
-			if !validFileTypes.contains(fileType) {
+			if !exchangecommon.ValidFileTypes.Contains(fileType) {
 				continue
 			}
-			if semanticversion.IsVersionString(fileVersion) && validFileTypes.contains(fileType) {
+			if semanticversion.IsVersionString(fileVersion) && exchangecommon.ValidFileTypes.Contains(fileType) {
 				if fileTypeFilter == fileType || fileTypeFilter == "" {
 					agentFileType := agentFileType{
 						AgentFileType:    fileType,

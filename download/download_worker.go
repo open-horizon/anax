@@ -19,11 +19,7 @@ import (
 )
 
 const (
-	CSSSOFTWAREUPGRADETYPE      = "agent_software_files"
-	CSSCONFIGUPGRADETYPE        = "agent_config_files"
-	CSSCERTUPGRADETYPE          = "agent_cert_files"
-	CSSAGENTUPGRADEMANIFESTTYPE = "agent_upgrade_manifests"
-	CSSSHAREDORG                = "IBM"
+	CSSSHAREDORG = "IBM"
 
 	LATESTVERSION = "current"
 
@@ -153,7 +149,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 		manId = nmpStatus.AgentUpgradeInternal.Manifest
 	}
 
-	manifest, err := exchange.GetManifestData(w, manOrg, CSSAGENTUPGRADEMANIFESTTYPE, manId)
+	manifest, err := exchange.GetManifestData(w, manOrg, exchangecommon.AU_MANIFEST_TYPE, manId)
 	if err != nil {
 		return err
 	}
@@ -316,13 +312,13 @@ func getUpgradeCSSType(vers *exchangecommon.AgentUpgradeVersions) (swType string
 	configType = ""
 	certType = ""
 	if vers.SoftwareVersion != "" {
-		swType = fmt.Sprintf("%s-%s", CSSSOFTWAREUPGRADETYPE, vers.SoftwareVersion)
+		swType = fmt.Sprintf("%s-%s", exchangecommon.AU_AGENTFILE_TYPE_SOFTWARE, vers.SoftwareVersion)
 	}
 	if vers.ConfigVersion != "" {
-		configType = fmt.Sprintf("%s-%s", CSSCONFIGUPGRADETYPE, vers.ConfigVersion)
+		configType = fmt.Sprintf("%s-%s", exchangecommon.AU_AGENTFILE_TYPE_CONFIG, vers.ConfigVersion)
 	}
 	if vers.CertVersion != "" {
-		certType = fmt.Sprintf("%s-%s", CSSCERTUPGRADETYPE, vers.CertVersion)
+		certType = fmt.Sprintf("%s-%s", exchangecommon.AU_AGENTFILE_TYPE_CERT, vers.CertVersion)
 	}
 	return
 }

@@ -1182,6 +1182,9 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 					case *common.MetaData:
 						return nil, nil
 
+					case *MetaDataList:
+						return nil, nil
+
 					case *ObjectDestinationStatuses:
 						return nil, nil
 
@@ -1206,7 +1209,10 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 					case *ExchangeNodeManagementPolicyResponse:
 						return nil, nil
 
-					case *exchangecommon.AgentUpgradeVersionsResponse:
+					case *exchangecommon.AgentFileVersions:
+						return nil, nil
+
+					case *exchangecommon.AgentUpgradeVersions:
 						return nil, nil
 
 					case *exchangecommon.UpgradeManifest:

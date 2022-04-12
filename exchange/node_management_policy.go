@@ -55,12 +55,12 @@ func GetAllExchangeNodeManagementPolicy(ec ExchangeContext, policyOrg string) (*
 	return &policies, nil
 }
 
-// Get lists of the upgrade versions currently availible in the css
-func GetNodeUpgradeVersions(ec ExchangeContext) (*exchangecommon.AgentUpgradeVersionsResponse, error) {
+// Get lists of the agent file versions currently availible in the css
+func GetNodeUpgradeVersions(ec ExchangeContext) (*exchangecommon.AgentFileVersions, error) {
 	glog.V(3).Infof("Getting the availible versions for agent upgrade packages from the exchange.")
 
 	var resp interface{}
-	resp = new(exchangecommon.AgentUpgradeVersionsResponse)
+	resp = new(exchangecommon.AgentFileVersions)
 
 	targetURL := fmt.Sprintf("%vorgs/IBM/AgentFileVersion", ec.GetExchangeURL())
 
@@ -69,5 +69,22 @@ func GetNodeUpgradeVersions(ec ExchangeContext) (*exchangecommon.AgentUpgradeVer
 		return nil, err
 	}
 
-	return resp.(*exchangecommon.AgentUpgradeVersionsResponse), nil
+	return resp.(*exchangecommon.AgentFileVersions), nil
+}
+
+// Sets lists of the agent file versions currently availible in the css
+func PutNodeUpgradeVersions(ec ExchangeContext, afv *exchangecommon.AgentFileVersions) error {
+	glog.V(3).Infof("Putting the availible versions for agent upgrade packages to the exchange. %v", afv)
+
+	var resp interface{}
+	resp = ""
+
+	targetURL := fmt.Sprintf("%vorgs/IBM/AgentFileVersion", ec.GetExchangeURL())
+
+	err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "PUT", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), afv, &resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
