@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -30,6 +31,12 @@ func (c Configstate) String() string {
 	return fmt.Sprintf("State: %v, Time: %v", c.State, c.LastUpdateTime)
 }
 
+type SoftwareVersion map[string]string
+
+const AGENT_VERSION = "agent_version"
+const CERT_VERSION = "cert_version"
+const CONFIG_VERSION = "config_version"
+
 // This function returns the pattern org, pattern name and formatted pattern string 'pattern org/pattern name'.
 // If the input pattern does not contain the org name, the device org name will be used as the pattern org name.
 // The input is a pattern string 'pattern org/pattern name' or just 'pattern name' for backward compatibility.
@@ -49,16 +56,17 @@ func GetFormatedPatternString(pattern string, device_org string) (string, string
 }
 
 type ExchangeDevice struct {
-	Id                 string      `json:"id"`
-	Org                string      `json:"organization"`
-	Pattern            string      `json:"pattern"`
-	Name               string      `json:"name"`
-	NodeType           string      `json:"nodeType"`
-	Token              string      `json:"token"`
-	TokenLastValidTime uint64      `json:"token_last_valid_time"`
-	TokenValid         bool        `json:"token_valid"`
-	HA                 bool        `json:"ha"`
-	Config             Configstate `json:"configstate"`
+	Id                 string          `json:"id"`
+	Org                string          `json:"organization"`
+	Pattern            string          `json:"pattern"`
+	Name               string          `json:"name"`
+	NodeType           string          `json:"nodeType"`
+	Token              string          `json:"token"`
+	TokenLastValidTime uint64          `json:"token_last_valid_time"`
+	TokenValid         bool            `json:"token_valid"`
+	HA                 bool            `json:"ha"`
+	Config             Configstate     `json:"configstate"`
+	SoftwareVersions   SoftwareVersion `json:"softwareVersions"`
 }
 
 func (e ExchangeDevice) String() string {
@@ -69,14 +77,14 @@ func (e ExchangeDevice) String() string {
 		tokenShadow = "unset"
 	}
 
-	return fmt.Sprintf("Org: %v, Token: <%s>, Name: %v, NodeType: %v, TokenLastValidTime: %v, TokenValid: %v, Pattern: %v, %v", e.Org, tokenShadow, e.Name, e.NodeType, e.TokenLastValidTime, e.TokenValid, e.Pattern, e.Config)
+	return fmt.Sprintf("Org: %v, Token: <%s>, Name: %v, NodeType: %v, TokenLastValidTime: %v, TokenValid: %v, Pattern: %v, Config: %v, SoftwareVersions: %v", e.Org, tokenShadow, e.Name, e.NodeType, e.TokenLastValidTime, e.TokenValid, e.Pattern, e.Config, e.SoftwareVersions)
 }
 
 func (e ExchangeDevice) GetId() string {
 	return fmt.Sprintf("%v/%v", e.Org, e.Id)
 }
 
-func newExchangeDevice(id string, token string, name string, nodeType string, tokenLastValidTime uint64, ha bool, org string, pattern string, configstate string) (*ExchangeDevice, error) {
+func newExchangeDevice(id string, token string, name string, nodeType string, tokenLastValidTime uint64, ha bool, org string, pattern string, configstate string, softwareVersions SoftwareVersion) (*ExchangeDevice, error) {
 	if id == "" || token == "" || name == "" || tokenLastValidTime == 0 || org == "" {
 		return nil, errors.New("Cannot create exchange device, illegal arguments")
 	}
@@ -103,6 +111,7 @@ func newExchangeDevice(id string, token string, name string, nodeType string, to
 		Org:                org,
 		Pattern:            pattern,
 		Config:             cfg,
+		SoftwareVersions:   softwareVersions,
 	}, nil
 }
 
@@ -176,6 +185,39 @@ func (e *ExchangeDevice) SetPattern(db *bolt.DB, deviceId string, pattern string
 	})
 }
 
+func (e *ExchangeDevice) SetAgentVersion(db *bolt.DB, deviceId string, agentSoftwareVersion string) (*ExchangeDevice, error) {
+	if deviceId == "" {
+		return nil, errors.New("Device id cannot be empty.")
+	}
+
+	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		d.SoftwareVersions[AGENT_VERSION] = agentSoftwareVersion
+		return &d
+	})
+}
+
+func (e *ExchangeDevice) SetConfigVersion(db *bolt.DB, deviceId string, configVersion string) (*ExchangeDevice, error) {
+	if deviceId == "" {
+		return nil, errors.New("Device id cannot be empty.")
+	}
+
+	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		d.SoftwareVersions[CONFIG_VERSION] = configVersion
+		return &d
+	})
+}
+
+func (e *ExchangeDevice) SetCertVersion(db *bolt.DB, deviceId string, certVersion string) (*ExchangeDevice, error) {
+	if deviceId == "" {
+		return nil, errors.New("Device id cannot be empty.")
+	}
+
+	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		d.SoftwareVersions[CERT_VERSION] = certVersion
+		return &d
+	})
+}
+
 func (e *ExchangeDevice) IsState(state string) bool {
 	return e.Config.State == state
 }
@@ -236,6 +278,11 @@ func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, in
 				mod.Pattern = update.Pattern
 			}
 
+			// Update the software versions
+			if !reflect.DeepEqual(mod.SoftwareVersions, update.SoftwareVersions) {
+				mod.SoftwareVersions = update.SoftwareVersions
+			}
+
 			// note: DEVICES is used as the key b/c we only want to store one value in this bucket
 
 			if serialized, err := json.Marshal(mod); err != nil {
@@ -252,7 +299,7 @@ func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, in
 }
 
 // always assumed the given token is valid at the time of call
-func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, nodeType string, ha bool, organization string, pattern string, configstate string) (*ExchangeDevice, error) {
+func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, nodeType string, ha bool, organization string, pattern string, configstate string, softwareVersions SoftwareVersion) (*ExchangeDevice, error) {
 
 	if id == "" || token == "" || name == "" || organization == "" || configstate == "" {
 		return nil, errors.New("Argument null and must not be")
@@ -276,7 +323,7 @@ func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, no
 		return nil, fmt.Errorf("Duplicate record found in devices for %v.", name)
 	}
 
-	exDevice, err := newExchangeDevice(id, token, name, nodeType, uint64(time.Now().Unix()), ha, organization, pattern, configstate)
+	exDevice, err := newExchangeDevice(id, token, name, nodeType, uint64(time.Now().Unix()), ha, organization, pattern, configstate, softwareVersions)
 
 	if err != nil {
 		return nil, err

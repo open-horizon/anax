@@ -25,7 +25,7 @@ func Test_FindManagementStatusForOutput(t *testing.T) {
 	errorHandler := GetPassThroughErrorHandler(&myError)
 
 	// Create dummy exchange device in local DB
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate")
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate", persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("Unable to read node object, error %v", err)
 	} else if pDevice == nil {
@@ -83,7 +83,7 @@ func Test_UpdateManagementStatus(t *testing.T) {
 	}
 
 	// Create dummy exchange device in local DB
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate")
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate", persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("Unable to read node object, error %v", err)
 	} else if pDevice == nil {

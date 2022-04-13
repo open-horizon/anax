@@ -6,6 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/exchangecommon"
+	"time"
 )
 
 const NODE_MANAGEMENT_STATUS = "nodemanagementstatus"
@@ -97,6 +98,31 @@ func StatusNMSFilter(status string) NMStatusFilter {
 	return func(e exchangecommon.NodeManagementPolicyStatus) bool { return e.Status() == status }
 }
 
+// return the statuses scheduled for after the given time
+func TimeScheduledNMSFilter(t time.Time) NMStatusFilter {
+	return func(e exchangecommon.NodeManagementPolicyStatus) bool {
+		return t.Before(e.AgentUpgradeInternal.ScheduledUnixTime)
+	}
+}
+
+func SoftwareUpdateNMSFilter() NMStatusFilter {
+	return func(e exchangecommon.NodeManagementPolicyStatus) bool {
+		return e.AgentUpgrade.UpgradedVersions.SoftwareVersion != ""
+	}
+}
+
+func ConfigUpdateNMSFilter() NMStatusFilter {
+	return func(e exchangecommon.NodeManagementPolicyStatus) bool {
+		return e.AgentUpgrade.UpgradedVersions.ConfigVersion != ""
+	}
+}
+
+func CertUpdateNMSFilter() NMStatusFilter {
+	return func(e exchangecommon.NodeManagementPolicyStatus) bool {
+		return e.AgentUpgrade.UpgradedVersions.CertVersion != ""
+	}
+}
+
 func FindNMPStatusWithFilters(db *bolt.DB, filters []NMStatusFilter) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
 	statuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
 
@@ -137,6 +163,34 @@ func FindWaitingNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagem
 
 func FindInitiatedNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
 	return FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(exchangecommon.STATUS_INITIATED)})
+}
+
+func FindNMPSWithStatuses(db *bolt.DB, statuses []string) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
+	NMPStatuses := map[string]*exchangecommon.NodeManagementPolicyStatus{}
+	for _, status := range statuses {
+		matchingStatuses, err := FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(status)})
+		if err != nil {
+			return nil, err
+		}
+		for matchingStatusKey, matchingStatus := range matchingStatuses {
+			NMPStatuses[matchingStatusKey] = matchingStatus
+		}
+	}
+
+	return NMPStatuses, nil
+}
+
+func FindNodeUpgradeStatusesWithTypeAfterTime(db *bolt.DB, t time.Time, upgradeType string) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
+	if upgradeType == "software" {
+		return FindNMPStatusWithFilters(db, []NMStatusFilter{SoftwareUpdateNMSFilter(), TimeScheduledNMSFilter(t)})
+	}
+	if upgradeType == "config" {
+		return FindNMPStatusWithFilters(db, []NMStatusFilter{ConfigUpdateNMSFilter(), TimeScheduledNMSFilter(t)})
+	}
+	if upgradeType == "cert" {
+		return FindNMPStatusWithFilters(db, []NMStatusFilter{CertUpdateNMSFilter(), TimeScheduledNMSFilter(t)})
+	}
+	return nil, fmt.Errorf("Unrecognized upgrade type: \"%v\".", upgradeType)
 }
 
 func DeleteAllNMPStatuses(db *bolt.DB) error {
