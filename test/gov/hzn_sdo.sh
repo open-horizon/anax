@@ -107,9 +107,9 @@ read -r -d '' inspectSingleKeyList <<'EOF'
 [
   {
     "name": "test-sdo-key",
-    "orgid": "e2edev@somecomp.com",
-    "owner": "e2edevadmin",
-    "filename": "e2edev@somecomp.com_test-sdo-key_public-key.pem",
+    "orgid": "SDO_ORG_ID",
+    "owner": "SDO_USER_AUTH",
+    "filename": "SDO_ORG_ID_test-sdo-key_public-key.pem",
     "isExpired": false
   }
 ]
@@ -119,20 +119,41 @@ read -r -d '' inspectDoubleKeyList <<'EOF'
 [
   {
     "name": "test-sdo-key2",
-    "orgid": "e2edev@somecomp.com",
-    "owner": "e2edevadmin",
-    "filename": "e2edev@somecomp.com_test-sdo-key2_public-key.pem",
+    "orgid": "SDO_ORG_ID",
+    "owner": "SDO_USER_AUTH",
+    "filename": "SDO_ORG_ID_test-sdo-key2_public-key.pem",
     "isExpired": false
   },
   {
     "name": "test-sdo-key",
-    "orgid": "e2edev@somecomp.com",
-    "owner": "e2edevadmin",
-    "filename": "e2edev@somecomp.com_test-sdo-key_public-key.pem",
+    "orgid": "SDO_ORG_ID",
+    "owner": "SDO_USER_AUTH",
+    "filename": "SDO_ORG_ID_test-sdo-key_public-key.pem",
     "isExpired": false
   }
 ]
 EOF
+
+# Get HZN_ORG_ID and HZN_EXCHANGE_USER_AUTH, if they are set, otherwise set
+# to e2edev defaults
+if [ -z "$HZN_ORG_ID" ]
+then
+	SDO_ORG_ID="e2edev@somecomp.com"
+else
+	SDO_ORG_ID=$HZN_ORG_ID
+fi
+if [ -z "$HZN_EXCHANGE_USER_AUTH" ]
+then
+	SDO_USER_AUTH="e2edevadmin"
+else
+	SDO_USER_AUTH=${HZN_EXCHANGE_USER_AUTH#*/}
+fi
+
+# fill in key inpections with correct credentials
+inspectSingleKeyList="${inspectSingleKeyList//SDO_ORG_ID/$SDO_ORG_ID}"
+inspectSingleKeyList="${inspectSingleKeyList//SDO_USER_AUTH/${SDO_USER_AUTH%:*}}"
+inspectDoubleKeyList="${inspectDoubleKeyList//SDO_ORG_ID/$SDO_ORG_ID}"
+inspectDoubleKeyList="${inspectDoubleKeyList//SDO_USER_AUTH/${SDO_USER_AUTH%:*}}"
 
 # save voucher device-id
 VOUCHER_DEVICE_ID="566926f7-b709-4694-8798-b7dbc8ccb20b"
@@ -141,15 +162,35 @@ VOUCHER_IP_DEVICE_ID="2ee0cdb7-2fb5-428b-8f69-fe4977f69241"
 # save key names
 SDO_KEY_NAME="test-sdo-key"
 
+cleanup() {
+	rm -f /tmp/sdo_key.json &> /dev/null
+	rm -f /tmp/sdo_key2.json &> /dev/null
+	rm -f /tmp/sdo_key_unsupported.json &> /dev/null
+	rm -f /tmp/sdo_key_unsupported2.json &> /dev/null
+	rm -f /tmp/sdo_voucher.json &> /dev/null
+	rm -f /tmp/sdo_voucher-ip.json &> /dev/null
+	rm -f /tmp/voucher.badextension &> /dev/null
+	rm -f /tmp/node-policy.json &> /dev/null
+	rm -f /tmp/test_voucher.json &> /dev/null
+	rm -f /tmp/$VOUCHER_DEVICE_ID.json &> /dev/null
+	rm -f /tmp/sample_key.json &> /dev/null
+	rm -f /tmp/$SDO_KEY_NAME &> /dev/null
+	rm -f /tmp/test_sdo_pub_key &> /dev/null
+	hzn sdo key rm test-sdo-key &> /dev/null
+	hzn sdo key rm test-sdo-key2 &> /dev/null
+}
+
 # Test hzn sdo voucher inspect
 echo -e "${PREFIX} Testing 'hzn sdo voucher inspect <voucher-file>'"
 cmdOutput=$(hzn sdo voucher inspect /tmp/sdo_voucher.json 2>&1)
 rc=$?
 if [[ $rc -ne 0 ]]; then
 	echo -e "${PREFIX} Failed: exit code $rc from 'hzn sdo voucher inspect': $cmdOutput."
+	cleanup
 	exit 1
 elif [[ "$cmdOutput" != "$inspectOutput" ]]; then
 	echo -e "${PREFIX} Failed: Wrong output for 'hzn sdo voucher inspect <voucher-file>': $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -159,9 +200,11 @@ cmdOutput=$(hzn sdo voucher inspect /tmp/sdo_voucher-ip.json 2>&1)
 rc=$?
 if [[ $rc -ne 0 ]]; then
 	echo -e "${PREFIX} Failed: exit code $rc from 'hzn sdo voucher inspect' with IP: $cmdOutput."
+	cleanup
 	exit 1
 elif [[ "$cmdOutput" != "$inspectOutputIp" ]]; then
 	echo -e "${PREFIX} Failed: Wrong output for 'hzn sdo voucher inspect <voucher-file>' with IP: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -173,6 +216,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'error:'*'required argument'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher inspect': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -183,6 +227,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'error:'*'no such file'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher inspect file-not-there': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -193,6 +238,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'error:'*'unexpected 2nd-arg'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher inspect <voucher-file> 2nd-arg': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -217,6 +263,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'error:'*'required argument'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -227,6 +274,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'error:'*'no such file'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import file-not-there': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -237,6 +285,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'error:'*'unexpected 2nd-arg'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import <voucher-file> 2nd-arg': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -248,6 +297,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'unsupported voucher file type extension'* ]
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import /tmp/voucher.badextension': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 rm -f /tmp/voucher.badextension
@@ -259,6 +309,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'rror:'*'accessing policy-not-there.json'* ]
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import <voucher-file> --policy policy-not-there.json': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -270,6 +321,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'rror:'*'mutually exclusive'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import <voucher-file> -e foo --policy /tmp/node-policy.json': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -280,6 +332,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'rror:'*'mutually exclusive'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import <voucher-file> -e foo --pattern bar': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -290,18 +343,23 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'rror:'*'mutually exclusive'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import <voucher-file> --pattern bar --policy /tmp/node-policy.json': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 rm -f /tmp/node-policy.json
 
 echo -e "${PREFIX} Testing 'hzn sdo voucher import <voucher-file>' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
+mv /etc/default/horizon /etc/default/horizonOLD &> /dev/null
 cmdOutput=$(hzn sdo voucher import /tmp/sdo_voucher.json 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import <voucher-file>' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
+	cleanup
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
@@ -314,6 +372,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import <voucher-file>' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
@@ -326,6 +385,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must 
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher import <voucher-file>' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
@@ -339,6 +399,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must 
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher list' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
@@ -351,18 +412,23 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher list' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
 echo -e "${PREFIX} Testing 'hzn sdo voucher list' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
+mv /etc/default/horizon /etc/default/horizonOLD &> /dev/null
 cmdOutput=$(hzn sdo voucher list 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher list' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
+	cleanup
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
@@ -374,6 +440,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'error:'*'unexpected 2nd-arg'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher list <voucher> 2nd-arg': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -391,6 +458,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must 
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
@@ -403,6 +471,7 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
@@ -415,6 +484,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
@@ -427,18 +497,23 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
 echo -e "${PREFIX} Testing 'hzn sdo voucher download' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
+mv /etc/default/horizon /etc/default/horizonOLD &> /dev/null
 cmdOutput=$(hzn sdo voucher download $VOUCHER_DEVICE_ID 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
+	cleanup
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
@@ -450,6 +525,7 @@ if [[ $rc -eq 0 && "$cmdOutput" == *"$(cat /tmp/sdo_voucher.json)"* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -461,13 +537,16 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_voucher.json ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo voucher download <device-id> -f /tmp/test_voucher.json' not downloaded to /tmp/test_voucher.json"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo voucher download <device-id> -f /tmp/test_voucher.json': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -478,6 +557,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please spec
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download' when /tmp/test_voucher.json already exists: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -489,15 +569,18 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_voucher.json ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo voucher download <device-id> -f /tmp/test_voucher.json' not downloaded to /tmp/test_voucher.json"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo voucher download <device-id> -f /tmp/test_voucher.json': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 elif [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
 	echo -e "${PREFIX} Failed: 'hzn sdo voucher download' did not overwrite output file with -O flag set."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 rm /tmp/test_voucher.json
@@ -510,13 +593,16 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/$VOUCHER_DEVICE_ID.json ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo voucher download <device-id> -f /tmp' not downloaded to /tmp/$VOUCHER_DEVICE_ID.json"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo voucher download <device-id> -f /tmp': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 rm /tmp/$VOUCHER_DEVICE_ID.json
@@ -528,6 +614,7 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid voucher name.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo voucher download' with incorrect voucher name argument: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -548,6 +635,7 @@ if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
@@ -561,6 +649,7 @@ if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
@@ -574,6 +663,7 @@ if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
@@ -587,6 +677,7 @@ if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
@@ -594,12 +685,16 @@ rm /tmp/sample_key.json
 
 echo -e "${PREFIX} Testing 'hzn sdo key new' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
+mv /etc/default/horizon /etc/default/horizonOLD &> /dev/null
 cmdOutput=$(hzn sdo key new -f /tmp/sample_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 0 ]]; then
 	echo -e "${PREFIX} completed."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
+	cleanup
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
@@ -612,6 +707,7 @@ if [[ $rc -eq 0 && "$cmdOutput" == *"$inspectSampleKey"* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -623,13 +719,16 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/sample_key.json ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo key new <file-path> -f /tmp/sample_key.json' not downloaded to /tmp/sample_key.json"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo key new <file-path> -f /tmp/sample_key.json': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -640,6 +739,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please spec
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new' when /tmp/sample_key.json already exists: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -651,15 +751,18 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/sample_key.json ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo key new <file-path> -f /tmp/sample_key.json' not downloaded to /tmp/sample_key.json"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo key new <file-path> -f /tmp/sample_key.json': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 elif [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
 	echo -e "${PREFIX} Failed: 'hzn sdo key new' did not overwrite output file with -O flag set."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 rm /tmp/sample_key.json
@@ -673,6 +776,7 @@ if [[ $rc -eq 0 ]]; then
 	fi
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key new': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -690,6 +794,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must 
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
@@ -702,6 +807,7 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
@@ -714,6 +820,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
@@ -726,18 +833,23 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
 echo -e "${PREFIX} Testing 'hzn sdo key create' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
+mv /etc/default/horizon /etc/default/horizonOLD &> /dev/null
 cmdOutput=$(hzn sdo key create /tmp/sdo_key.json 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
+	cleanup
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
@@ -749,6 +861,7 @@ if [[ $rc -eq 0 && "$cmdOutput" == *'-----BEGIN PUBLIC KEY-----'*'-----END PUBLI
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -763,6 +876,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'given metadata'*'has missing field
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 rm /tmp/sample_key.json
@@ -774,6 +888,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'given metadata'*'has unsupported k
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -784,6 +899,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'given metadata'*'has unsupported c
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -794,6 +910,7 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid metadata file.'*'Key'*'alr
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -807,6 +924,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must 
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
@@ -819,6 +937,7 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
@@ -831,6 +950,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
@@ -843,18 +963,23 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
 echo -e "${PREFIX} Testing 'hzn sdo key remove ' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
+mv /etc/default/horizon /etc/default/horizonOLD &> /dev/null
 cmdOutput=$(hzn sdo key remove test-sdo-key 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
+	cleanup
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
@@ -866,6 +991,7 @@ if [[ $rc -eq 0 && "$cmdOutput" == *'Key'*'successfully deleted from the SDO own
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -876,6 +1002,7 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid key name.'* ]]; then
 	echo -e "${PREFIX} received expected error response.."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key remove' when key does not exist: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -893,6 +1020,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must 
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
@@ -905,6 +1033,7 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
@@ -917,6 +1046,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
@@ -929,18 +1059,23 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
 echo -e "${PREFIX} Testing 'hzn sdo key list' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
+mv /etc/default/horizon /etc/default/horizonOLD &> /dev/null
 cmdOutput=$(hzn sdo key list 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
+	cleanup
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
@@ -952,6 +1087,11 @@ if [[ $rc -eq 0 && "$cmdOutput" == "$inspectSingleKeyList" ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list': exit code: $rc, output: $cmdOutput."
+	echo "Expected:"
+	echo $inspectSingleKeyList
+	echo "Actual:"
+	echo $cmdOutput
+	cleanup
 	exit 1
 fi
 
@@ -966,6 +1106,7 @@ if [[ $rc -eq 0 && "$cmdOutput" == "$inspectDoubleKeyList" ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -976,6 +1117,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'SDO key name'*'not found'* ]]; the
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -993,6 +1135,7 @@ if [[ $rc -eq 0 && "$cmdOutput" == *'[]'* ]]; then
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key list': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 echo -e "${PREFIX} adding test key to SDO owner services..."
@@ -1008,6 +1151,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must 
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
@@ -1020,6 +1164,7 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' with incorrect HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_EXCHANGE_USER_AUTH=$USERDEV_ADMIN_AUTH
@@ -1032,6 +1177,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' with incorrect HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
@@ -1044,18 +1190,23 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid credentials.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 export HZN_ORG_ID=$HZN_ORG_ID_SAVE
 
 echo -e "${PREFIX} Testing 'hzn sdo key download' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
+mv /etc/default/horizon /etc/default/horizonOLD &> /dev/null
 cmdOutput=$(hzn sdo key download $SDO_KEY_NAME 2>&1)
 rc=$?
 if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
 	echo -e "${PREFIX} received expected error response."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	mv /etc/default/horizonOLD /etc/default/horizon &> /dev/null
+	cleanup
 	exit 1
 fi
 export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
@@ -1067,6 +1218,7 @@ if [[ $rc -eq 0 && "$cmdOutput" == *'-----BEGIN PUBLIC KEY-----'*'-----END PUBLI
 	echo -e "${PREFIX} completed."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -1078,13 +1230,16 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_sdo_key ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp/test_sdo_key' not downloaded to /tmp/test_sdo_key"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp/test_sdo_key': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -1095,6 +1250,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please spec
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' when /tmp/test_sdo_key already exists: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -1106,15 +1262,18 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_sdo_key ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp/test_sdo_key' not downloaded to /tmp/test_sdo_key"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp/test_sdo_key': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 elif [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
 	echo -e "${PREFIX} Failed: 'hzn sdo key download' did not overwrite output file with -O flag set."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 rm /tmp/test_sdo_key
@@ -1127,13 +1286,16 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/$SDO_KEY_NAME ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp' not downloaded to /tmp/$SDO_KEY_NAME"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo key download <keyName> -f /tmp': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 rm /tmp/$SDO_KEY_NAME
@@ -1145,6 +1307,7 @@ if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Invalid key name.'* ]]; then
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key download' with incorrect key name argument: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -1165,13 +1328,16 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_sdo_pub_key ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key' not downloaded to /tmp/test_sdo_pub_key"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -1186,6 +1352,7 @@ if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please spec
 	echo -e "${PREFIX} received expected error response."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create' when /tmp/test_sdo_pub_key already exists: exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 
@@ -1197,15 +1364,18 @@ if [[ $rc -eq 0 ]]; then
 		echo -e "${PREFIX} completed."
 	elif [[ ! -f /tmp/test_sdo_pub_key ]]; then
 		echo -e "${PREFIX} Failed: 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key' not downloaded to /tmp/test_sdo_pub_key"
+		cleanup
 		exit 1
 	else
 		echo -e "${PREFIX} Failed: 'hzn sdo key create /tmp/sdo_key.json -f /tmp/test_sdo_pub_key': downloaded file does not match expected output."
+		cleanup
 		exit 1
 	fi
 elif [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'File'*'already exists. Please specify a different file path or file name.'* ]]; then
 	echo -e "${PREFIX} Failed: 'hzn sdo key new' did not overwrite output file with -O flag set."
 else
 	echo -e "${PREFIX} Failed: Wrong error response from 'hzn sdo key create': exit code: $rc, output: $cmdOutput."
+	cleanup
 	exit 1
 fi
 rm /tmp/test_sdo_pub_key
@@ -1214,9 +1384,6 @@ rm /tmp/test_sdo_pub_key
 echo -e "${PREFIX} removing test key from SDO owner services..."
 hzn sdo key rm test-sdo-key &> /dev/null
 echo -e "${PREFIX} done."
-rm /tmp/sdo_key.json
-rm /tmp/sdo_key2.json
-rm /tmp/sdo_key_unsupported.json
-rm /tmp/sdo_key_unsupported2.json
+cleanup
 
 echo -e "${PREFIX} Done"

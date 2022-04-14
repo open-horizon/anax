@@ -47,7 +47,7 @@ type MMSObjectInfo struct {
 }
 
 // Display the object metadata for given flags in the MMS.
-func ObjectList(org string, userPw string, objType string, objId string, destPolicy string, dpService string, dpPropertyName string, dpUpdateTimeSince string, destType string, destId string, withData string, expirationTimeBefore string, long bool, details bool) {
+func ObjectList(org string, userPw string, objType string, objId string, destPolicy string, dpService string, dpPropertyName string, dpUpdateTimeSince string, destType string, destId string, withData string, expirationTimeBefore string, deleted string, long bool, details bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -70,6 +70,7 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 	// 3. must set --objectType if use --objectId
 	// 4. must set --destinationType if use --destinationId
 	// 5. expiration in RC3339 format or use "now"
+	// 6. if --deleted is not omitted, must set value to true or false
 	if destPolicy != "" {
 		if strings.ToLower(destPolicy) != "true" && strings.ToLower(destPolicy) != "false" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid --policy/-p value: %s, --policy/-p should be true or false", destPolicy))
@@ -126,7 +127,15 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 		}
 	}
 
-	filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s&destinationPolicy=%s&dpService=%s&dpPropertyName=%s&since=%s&destinationType=%s&destinationID=%s&noData=%s&expirationTimeBefore=%s", objType, objId, destPolicy, dpService, dpPropertyName, dpUpdateTimeSince, destType, destId, noData, expirationTimeBefore)
+	deletedValue := ""
+	if deleted != "" {
+		deletedValue = strings.ToLower(deleted)
+		if deletedValue != "true" && deletedValue != "false" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid --deleted value: %s, --data should be true or false", withData))
+		}
+	}
+
+	filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s&destinationPolicy=%s&dpService=%s&dpPropertyName=%s&since=%s&destinationType=%s&destinationID=%s&noData=%s&expirationTimeBefore=%s&deleted=%s", objType, objId, destPolicy, dpService, dpPropertyName, dpUpdateTimeSince, destType, destId, noData, expirationTimeBefore, deletedValue)
 
 	urlPath := "api/v1/objects/" + org + "?filters=true"
 	fullPath := urlPath + filterURLPath

@@ -306,7 +306,6 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 
 		// Use -log-driver defined in the deployment string of the service.
 		// If -log-driver is not defined
-		// Use syslog log driver by default.
 		// Use journald log driver by default if podman is running
 		// Otherwise use syslog log driver by default.
 		logDriver := LOG_DRIVER_SYSLOG
@@ -531,7 +530,7 @@ func GetServerEnginType(client *docker.Client) (string, error) {
 
 	versionInfo, err := client.Version()
 	if err != nil {
-		return svType, fmt.Errorf("Failed to get the container HTTP server version info. %v", err)
+		return svType, fmt.Errorf("Failed to get the container server API version info. %v", err)
 	}
 	glog.V(5).Infof("API version info: %v", versionInfo)
 
@@ -649,11 +648,6 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, 
 		}
 	}
 
-	svType, err := GetServerEnginType(client)
-	if err != nil {
-		glog.Errorf(fmt.Sprintf("Failed to get the docker API server engine type. %v", err))
-	}
-
 	pattern := ""
 	if dev != nil {
 		pattern = dev.Pattern
@@ -667,7 +661,7 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, 
 		authMgr:       am,
 		secretMgr:     sm,
 		pattern:       pattern,
-		apiServerType: svType,
+		apiServerType: "",
 	}
 	worker.SetDeferredDelay(15)
 

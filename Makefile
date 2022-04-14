@@ -14,7 +14,7 @@ SHELL := /bin/bash
 # DO NOT set this variable to the branch in which you are doing development work.
 BRANCH_NAME ?= ""
 
-export VERSION ?= 2.29.0
+export VERSION ?= 2.30.0
 # BUILD_NUMBER will be added to the version if set. It can be a simple number or something like a numeric timestamp or jenkins hash.
 # It can NOT contain dashes, but can contain: plus, period, and tilde.
 export BUILD_NUMBER
@@ -41,6 +41,9 @@ CLI_TEMP_EXECUTABLE := cli/hzn.tmp
 
 IMAGE_REPO ?= openhorizon
 IMAGE_OVERRIDE ?= ""
+
+# by default, do not use upx
+USE_UPX ?= false
 
 ANAX_CONTAINER_DIR := anax-in-container
 ANAX_IMAGE_VERSION ?= $(VERSION)
@@ -176,7 +179,7 @@ ifeq (${NO_DEBUG_PKGS},true)
 endif
 
 ifdef GO_BUILD_LDFLAGS
-	GO_BUILD_LDFLAGS := -ldflags="$(GO_BUILD_LDFLAGS)"
+	GO_BUILD_LDFLAGS := -ldflags="$(GO_BUILD_LDFLAGS) -s -w"
 endif
 
 
@@ -184,7 +187,7 @@ ifndef verbose
 .SILENT:
 endif
 
-all: gopathlinks deps $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
+all: check-upx gopathlinks deps $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
 
 deps: gofolders
 
@@ -196,7 +199,14 @@ $(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	exch_min_ver=$(shell grep "MINIMUM_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
 	    echo "The required minimum exchange version is $$exch_min_ver";
 	exch_pref_ver=$(shell grep "PREFERRED_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
-	    echo "The preferred exchange version is $$exch_pref_ver"
+	    echo "The preferred exchange version is $$exch_pref_ver"; \
+	    if [[ $(USE_UPX) == "true" ]]; then \
+			echo "Packing executable $(EXECUTABLE) with UPX"; \
+	    	upx $(EXECUTABLE); \
+	    fi; 
+
+	    
+
 
 $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
@@ -226,13 +236,21 @@ $(CSS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CSS_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(CSS_EXECUTABLE) css/cmd/cloud-sync-service/main.go;
+	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(CSS_EXECUTABLE) css/cmd/cloud-sync-service/main.go; \
+	if [[ $(USE_UPX) == "true" ]]; then \
+		echo "Packing executable $(CSS_EXECUTABLE) with UPX"; \
+		upx $(CSS_EXECUTABLE); \
+	fi; \
 
 $(ESS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(ESS_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(ESS_EXECUTABLE) ess/cmd/edge-sync-service/main.go;
+	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(ESS_EXECUTABLE) ess/cmd/edge-sync-service/main.go; \
+	if [[ $(USE_UPX) == "true" ]]; then \
+		echo "Packing executable $(ESS_EXECUTABLE) with UPX"; \
+		upx $(ESS_EXECUTABLE); \
+	fi;
 
 # Build the deb pkgs and put them in pkg/deb/debs/
 debpkgs:
@@ -245,6 +263,17 @@ rpmpkgs:
 # Build the horizon-cli pkg for mac
 MAC_PKG_VERSION = $(VERSION)$(BUILD_NUMBER)
 MAC_PKG = pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
+
+check-upx:
+	@if [[ $(USE_UPX) == "true" ]]; then \
+		if ! type upx >/dev/null 2>&1  ; then \
+			if [[ $(opsys_local) == "Linux" ]]; then \
+				echo "upx is not installed, consider doing apt-get install upx" && exit 1; \
+			else \
+				echo "upx is not installed, consider doing brew install upx" && exit 1; \
+			fi; \
+		fi; \
+	fi;
 
 # This is a 1-time step to create the private signing key and public cert for the mac pkg.
 # You must first set HORIZON_CLI_PRIV_KEY_PW to the passphrase to use the private key.

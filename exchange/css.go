@@ -14,6 +14,8 @@ import (
 // so that we can use our types when demarhsalling them, which enables us to perform compatibility checks
 // using these policies.
 
+const DestinationsSizeLogLimit = 50
+
 type DestinationPolicy struct {
 	// Properties is the set of properties for a particular policy
 	Properties externalpolicy.PropertyList `json:"properties" bson:"properties"`
@@ -55,7 +57,11 @@ type ObjectDestinationPolicy struct {
 }
 
 func (d ObjectDestinationPolicy) String() string {
-	return fmt.Sprintf("Object Destination Policy: Org %v, Type %v, ID %v, %v, Destinations %v", d.OrgID, d.ObjectType, d.ObjectID, d.DestinationPolicy, d.Destinations)
+	if len(d.Destinations) < DestinationsSizeLogLimit {
+		return fmt.Sprintf("Object Destination Policy: Org %v, Type %v, ID %v, %v, Destinations %v", d.OrgID, d.ObjectType, d.ObjectID, d.DestinationPolicy, d.Destinations)
+	} else {
+		return fmt.Sprintf("Object Destination Policy: Org %v, Type %v, ID %v, %v, Destinations size %v", d.OrgID, d.ObjectType, d.ObjectID, d.DestinationPolicy, len(d.Destinations))
+	}
 }
 
 type PostDestsRequest struct {
@@ -103,7 +109,9 @@ func GetObjectsByService(ec ExchangeContext, org string, serviceId string) (*Obj
 			}
 		} else {
 			objPolicies := resp.(*ObjectDestinationPolicies)
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("found object policies for objects in %v, with service %v, %v", org, serviceId, objPolicies)))
+			if glog.V(5) {
+				glog.Infof(rpclogString(fmt.Sprintf("found object policies for objects in %v, with service %v, %v", org, serviceId, objPolicies)))
+			}
 			return objPolicies, nil
 		}
 	}
@@ -144,7 +152,9 @@ func GetUpdatedObjects(ec ExchangeContext, org string, since int64) (*ObjectDest
 			}
 		} else {
 			objPolicies := resp.(*ObjectDestinationPolicies)
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("found object policies for org %v, objpolicies %v", org, objPolicies)))
+			if glog.V(5) {
+				glog.Infof(rpclogString(fmt.Sprintf("found object policies for org %v, objpolicies %v", org, objPolicies)))
+			}
 			return objPolicies, nil
 		}
 	}
@@ -178,7 +188,13 @@ func AddOrRemoveDestinations(ec ExchangeContext, org string, objType string, obj
 				continue
 			}
 		} else {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with %v", postDestsRequest.Action, objID, objType, postDestsRequest.Destinations)))
+			if glog.V(5) {
+				if len(postDestsRequest.Destinations) > DestinationsSizeLogLimit {
+					glog.Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with length of destinations %v", postDestsRequest.Action, objID, objType, len(postDestsRequest.Destinations))))
+				} else {
+					glog.Infof(rpclogString(fmt.Sprintf("%s destinations for object %v of type %v with %v", postDestsRequest.Action, objID, objType, postDestsRequest.Destinations)))
+				}
+			}
 			return nil
 		}
 	}
@@ -254,10 +270,18 @@ func GetObjectDestinations(ec ExchangeContext, org string, objID string, objType
 		} else {
 			dests := resp.(*ObjectDestinationStatuses)
 			if len(*dests) != 0 {
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("found destinations for %v %v %v: %v", org, objID, objType, dests)))
+				if glog.V(5) {
+					if len(*(dests)) > DestinationsSizeLogLimit {
+						glog.Infof(rpclogString(fmt.Sprintf("found destinations for %v %v %v: length of %v", org, objID, objType, len(*(dests)))))
+					} else {
+						glog.Infof(rpclogString(fmt.Sprintf("found destinations for %v %v %v: %v", org, objID, objType, dests)))
+					}
+				}
 				return dests, nil
 			} else {
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("no destinations found for %v %v %v", org, objID, objType)))
+				if glog.V(5) {
+					glog.Infof(rpclogString(fmt.Sprintf("no destinations found for %v %v %v", org, objID, objType)))
+				}
 				return nil, nil
 			}
 		}
@@ -292,7 +316,9 @@ func SetPolicyReceived(ec ExchangeContext, objPol *ObjectDestinationPolicy) erro
 				continue
 			}
 		} else {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("set policy received for object %v %v of type %v", objPol.OrgID, objPol.ObjectID, objPol.ObjectType)))
+			if glog.V(5) {
+				glog.Infof(rpclogString(fmt.Sprintf("set policy received for object %v %v of type %v", objPol.OrgID, objPol.ObjectID, objPol.ObjectType)))
+			}
 			return nil
 		}
 	}

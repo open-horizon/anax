@@ -268,6 +268,13 @@ func processDeployment(tar string, envVars map[string]string, agId string, crIns
 
 // CreateConfigMap will create a config map with the provided environment variable map
 func (c KubeClient) CreateConfigMap(envVars map[string]string, agId string, namespace string) (string, error) {
+	// a userinput with an empty string for the name will cause an error. need to remove before creating the configmap
+	for varName, varVal := range envVars {
+		if varName == "" {
+			glog.Errorf("Omitting userinput with empty name and value: %v", varVal)
+		}
+		delete(envVars, "")
+	}
 	hznEnvConfigMap := corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-%s", HZN_ENV_VARS, agId)}, Data: envVars}
 	res, err := c.Client.CoreV1().ConfigMaps(namespace).Create(context.Background(), &hznEnvConfigMap, metav1.CreateOptions{})
 	if err != nil {

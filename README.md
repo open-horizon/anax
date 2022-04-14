@@ -23,6 +23,13 @@ Related Projects:
 * Go version >=1.16 is a required dependency, download it [here](https://golang.org/dl/)
 * To execute the lint and other code checkers (`make lint` or `make check`), you must install: `go vet`, `golint`, and `jshint`
 
+### Pull Request Guidelines
+* The PR should have only 1 commit in it when you submit for review. You can commit as often as you want in your Git workspace, but you will need to squash them all to 1 before you submit for review.
+* The commit message should be in the form: "Issue xxxx - some short description"
+* Don't forget to commit with the -s flag to digitally sign your PR as your original work.
+Items 1 and 2 are necessary because the build process automatically produces a change log that goes into the final packages, and it uses commit message to indicate each change, this the need for 1 commit per PR and a standard message format.
+Please feel free to reach out for help to the Agent workgroup in the [LF Edge IM system](https://chat.lfx.linuxfoundation.org/).
+
 ### Operations
 
 Note that the Makefile silences a lot of its output by default. If you want to see more output from build steps, execute a build like this:
@@ -101,6 +108,8 @@ Only `hzn` command supports internationalization. To test, set LANG or HZN_LANG 
 #### Development Environment
 
 Note that this Makefile can construct its own `GOPATH` and build from it; this is a convenience that can sometimes cause problems for development tooling that expects a project to be in a subdirector of `$GOPATH/src`. To get full tool support clone this project as `$GOPATH/src/github.com/open-horizon/anax`.
+
+Information for setting up the e2e development environment can be found in the [test](https://github.com/open-horizon/anax/tree/master/test) folder.
 
 ## Deprecated Commands and APIs
 * `hzn policy patch` command is deprecated. Please use `hzn policy update` to update the node policy.

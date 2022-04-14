@@ -36,6 +36,15 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 		os.Setenv(config.HTTPRequestTimeoutOverride, "0")
 	}
 
+	// Call the MMS service over HTTP to get object metadata and determine the file size.
+	var objectMeta common.MetaData
+	metaUrlPath := path.Join("api/v1/objects/", org, objType, objId)
+	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), metaUrlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectMeta)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object '%s' of type '%s' not found in org %s", objId, objType, org))
+	}
+	size := objectMeta.ObjectSize
+
 	// Call the MMS service over HTTP to download the object data.
 	var data io.Reader
 	urlPath := path.Join("api/v1/objects/", org, objType, objId, "/data")
@@ -46,7 +55,11 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 	if resp.StatusCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object '%s' of type '%s' not found in org %s", objId, objType, org))
 	}
-	data = resp.Body
+
+	// Display download progress on console
+	if size > 0 {
+		data = cliutils.DisplayProgress(resp.Body, int(size), "Downloading")
+	}
 
 	// Restore HTTP request override if necessary.
 	if setHTTPOverride {
@@ -93,15 +106,6 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 	var verified bool
 	var err error
 	if !skipDigitalSigVerify {
-		// Verify digital signature, save to a tmp file, rename tmp file
-		// Call the MMS service over HTTP to get object metadata
-		var objectMeta common.MetaData
-		urlPath = path.Join("api/v1/objects/", org, objType, objId)
-		httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectMeta)
-		if httpCode == 404 {
-			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object metadata '%s' of type '%s' not found in org %s", objId, objType, org))
-		}
-
 		if objectMeta.HashAlgorithm != "" && objectMeta.PublicKey != "" && objectMeta.Signature != "" {
 			// verify data
 			//dataReader := bytes.NewReader(data)

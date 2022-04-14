@@ -22,7 +22,8 @@ type ExchangeChange struct {
 
 func (e ExchangeChange) String() string {
 	detailedChanges := fmt.Sprintf("%v", len(e.ResourceChanges))
-	if glog.V(5) {
+	// Avoid producing extremely long log message
+	if glog.V(5) && len(e.ResourceChanges) < 50 {
 		detailedChanges = fmt.Sprintf("%v", e.ResourceChanges)
 	}
 
@@ -168,7 +169,8 @@ type ExchangeChanges struct {
 
 func (e ExchangeChanges) String() string {
 	detailedChanges := fmt.Sprintf("%v", len(e.Changes))
-	if glog.V(5) {
+	// Avoid producing extremely long log message
+	if glog.V(5) && len(e.Changes) < 50 {
 		detailedChanges = fmt.Sprintf("%v", e.Changes)
 	}
 
@@ -285,7 +287,11 @@ func GetExchangeChanges(ec ExchangeContext, changeId uint64, maxRecords int, org
 			} else {
 				glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v changes since ID %v with latest change ID %v in orgs %v", len(changes.Changes), changeId, changes.MostRecentChangeID, orgList)))
 			}
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("Raw changes response: %v", changes)))
+			if glog.V(5) {
+				if len(changes.Changes) < 25 {
+					glog.Infof(rpclogString(fmt.Sprintf("Raw changes response: %v", changes)))
+				}
+			}
 			return changes, nil
 		}
 	}

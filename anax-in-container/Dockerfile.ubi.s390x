@@ -7,16 +7,15 @@ LABEL description="A container which holds the edge node agent, to be used in en
 ARG DOCKER_VER=18.06.3-ce
 
 # yum is not installed, use microdnf instead
-RUN microdnf update -y --nodocs && microdnf clean all
-
 # shadow-utils contains groupadd and adduser commands
-RUN microdnf install --nodocs -y shadow-utils \
+# build jq v1.6 from sources
+# install docker cli
+# create other required directories
+RUN microdnf update -y --nodocs && microdnf clean all && microdnf install --nodocs -y shadow-utils \
     && microdnf install --nodocs -y openssl ca-certificates \
     && microdnf install -y wget iptables vim-minimal procps tar gzip libtool autoconf make automake \
-    && microdnf update -y --nodocs --nobest && microdnf clean all
-
-# build jq v1.6 from sources
-RUN wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-1.6.tar.gz \
+    && microdnf update -y --nodocs --nobest && microdnf clean all \
+    && wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-1.6.tar.gz \
     && tar -xvf jq-1.6.tar.gz \
     && cd jq-1.6 \
     && autoreconf -fi \
@@ -24,19 +23,15 @@ RUN wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-1.6.tar.gz \
     && make \
     && make install \
     && cd - \
-    && rm -rf jq-1.6 jq-1.6.tar.gz
-
-# install docker cli
-RUN curl -fsSLO https://download.docker.com/linux/static/stable/s390x/docker-${DOCKER_VER}.tgz \
+    && rm -rf jq-1.6 jq-1.6.tar.gz \
+    && curl -fsSLO https://download.docker.com/linux/static/stable/s390x/docker-${DOCKER_VER}.tgz \
   	&& tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \
-  	&& rm docker-${DOCKER_VER}.tgz
+  	&& rm docker-${DOCKER_VER}.tgz \
+    && mkdir -p /licenses && mkdir -p /usr/horizon/bin /usr/horizon/web /var/horizon \
+    && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust
 
 # add license file
-RUN mkdir -p /licenses
 COPY LICENSE.txt /licenses
-
-RUN mkdir -p /usr/horizon/bin /usr/horizon/web /var/horizon \
-    && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust
 
 # copy the horizon configurations
 COPY config/anax.json /etc/horizon/

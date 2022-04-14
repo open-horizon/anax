@@ -729,7 +729,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 
 			if glog.V(5) {
-				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
+				glog.Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
 			}
 		}
 
@@ -903,7 +903,9 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 			// Iterate the bound secrets, extracting the details for each secret.
 			for serviceSecretName, secretName := range boundSecret {
 
-				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("extracting secret details for %v:%v", serviceSecretName, secretName)))
+				if glog.V(5) {
+					glog.Infof(BAWlogstring(workerId, fmt.Sprintf("extracting secret details for %v:%v", serviceSecretName, secretName)))
+				}
 
 				// The secret name might be a user private or org wide secret. Parse the name to determine which it is.
 				secretUser, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
@@ -1060,7 +1062,9 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 					} else if nodePolicy == nil {
 						glog.Warning(BAWlogstring(workerId, fmt.Sprintf("cannot find node policy for this node %v.", agreement.DeviceId)))
 					} else {
-						glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
+						if glog.V(5) {
+							glog.Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
+						}
 					}
 
 					// Query the MMS cache to find objects with policies that refer to the agreed-to service(s). Service IDs are

@@ -9,6 +9,9 @@ import (
 // BusinessPolicy the external policy
 // swagger:model
 type ExternalPolicy struct {
+	Label       string `json:"label,omitempty"`
+	Description string `json:"description,omitempty"`
+
 	// The properties this node wishes to expose about itself. These properties can be referred to by constraint expressions in other policies,
 	// (e.g. service policy, model policy, business policy).
 	Properties PropertyList `json:"properties,omitempty"`
@@ -18,7 +21,7 @@ type ExternalPolicy struct {
 }
 
 func (e ExternalPolicy) String() string {
-	return fmt.Sprintf("ExternalPolicy: Properties: %v, Constraints: %v", e.Properties, e.Constraints)
+	return fmt.Sprintf("ExternalPolicy: Properties: %v, Constraints: %v, Label: %v, Description: %v", e.Properties, e.Constraints, e.Label, e.Description)
 }
 
 // This function validates the properties and constrains. It also updates the node's and service's
@@ -118,7 +121,7 @@ func (e *ExternalPolicy) DeepCopy() *ExternalPolicy {
 		copy(copyCons, e.Constraints)
 	}
 
-	copyE := ExternalPolicy{Properties: copyProp, Constraints: copyCons}
+	copyE := ExternalPolicy{Properties: copyProp, Constraints: copyCons, Label: e.Label, Description: e.Description}
 
 	return &copyE
 
