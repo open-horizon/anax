@@ -117,24 +117,6 @@
     },
     {
       "id": [
-        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
-        "unable to read node policy from the local database. {Arg_1}"
-      ],
-      "message": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "Knotenrichtlinie kann nicht in lokaler Datenbank gelesen werden. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
         "EL_AG_UNABLE_READ_NODE_FROM_DB",
         "Unable to read node object from the local database. {Arg_1}"
       ],
@@ -1049,11 +1031,11 @@
     },
     {
       "id": [
-        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR2",
+        "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}"
       ],
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "Fehler beim Parsing der Eingabe für Knotenrichtlinienpatch. Eingabehauptteil enthielt keinen Bedingungsausdruck oder keine Eigenschaftsliste: {Arg_1}; Fehler: {Arg_2}.",
+      "message": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
+      "translation": "Fehler beim Parsing der Eingabe für Knotenrichtlinienpatch. Der Hauptteil der Eingabe enthält nicht das Attribut 'properties', 'constraints', 'deployment' oder 'management': {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -1061,13 +1043,6 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
         }
       ],
       "fuzzy": true
@@ -3572,30 +3547,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "errUrl"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "translation": "Upload: {Float32totalSent__float32bodyLen__100} {}",
-      "placeholders": [
-        {
-          "id": "Float32totalSent__float32bodyLen__100",
-          "string": "%.2[1]f",
-          "type": "float32",
-          "underlyingType": "float32",
-          "argNum": 1,
-          "expr": "float32(totalSent) / float32(bodyLen) * 100"
-        },
-        {
-          "id": "",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "\"%\""
         }
       ],
       "fuzzy": true
@@ -7070,6 +7021,46 @@
       "fuzzy": true
     },
     {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "message": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "Die digitale Signatur konnte nicht überprüft werden, da der Hash-Algorithmus leer ist",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "message": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "Die digitale Signatur konnte nicht überprüft werden, da die Zeichenfolge 'publicKey' leer ist",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "message": "Failed to verify digital signature because the signature string is empty",
+      "translation": "Digitale Signatur konnte nicht überprüft werden, da die Signaturzeichenfolge leer ist",
+      "fuzzy": true
+    },
+    {
+      "id": "Hash algorithm {HashAlgo} is not supported",
+      "message": "Hash algorithm {HashAlgo} is not supported",
+      "translation": "Hashalgorithmus {HashAlgo} wird nicht unterstützt",
+      "placeholders": [
+        {
+          "id": "HashAlgo",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "hashAlgo"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Label, or Enabled is empty.",
+      "message": "Label, or Enabled is empty.",
+      "translation": "Bezeichnung oder Aktiviert ist leer.",
+      "fuzzy": true
+    },
+    {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
       "message": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
       "translation": "Die Eigenschaft {PROPNODEPRIVILEGED} muss einen booleschen Wert haben ('true' oder 'false').",
@@ -7621,6 +7612,24 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_ERR_RETRIEVE_NODE_POL_FROM_DB",
+        "Error retrieving node policy from database, error {Arg_1}"
+      ],
+      "message": "Error retrieving node policy from database, error {Arg_1}",
+      "translation": "Fehler beim Abrufen der Knotenrichtlinie aus der Datenbank, Fehler {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -9390,6 +9399,49 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CREATED",
+        "New node management policy status created for policy {Arg_1}."
+      ],
+      "message": "New node management policy status created for policy {Arg_1}.",
+      "translation": "Neuer Status der Knotenmanagementrichtlinie für Richtlinie {Arg_1} erstellt.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED",
+        "Node management status for {Arg_1} changed to {Arg_2}"
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}",
+      "translation": "Der Knotenmanagementstatus für {Arg_1} wurde in {Arg_2} geändert",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true

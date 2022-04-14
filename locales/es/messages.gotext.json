@@ -117,24 +117,6 @@
     },
     {
       "id": [
-        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
-        "unable to read node policy from the local database. {Arg_1}"
-      ],
-      "message": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "No se ha podido leer la política de nodo de la base de datos local. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
         "EL_AG_UNABLE_READ_NODE_FROM_DB",
         "Unable to read node object from the local database. {Arg_1}"
       ],
@@ -1049,11 +1031,11 @@
     },
     {
       "id": [
-        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR2",
+        "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}"
       ],
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "Se ha producido un error al analizar la entrada para el parche de política de nodo. El cuerpo de entrada no contenía una expresión de restricción o la lista de propiedades: {Arg_1}, error: {Arg_2}",
+      "message": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
+      "translation": "Error al analizar la entrada del parche de política de nodo. El cuerpo de entrada no contiene los atributos 'properties', 'constraints', 'deployment' o 'management'': {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -1061,13 +1043,6 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
         }
       ],
       "fuzzy": true
@@ -3572,30 +3547,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "errUrl"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "translation": "Cargando: {Float32totalSent__float32bodyLen__100} {}",
-      "placeholders": [
-        {
-          "id": "Float32totalSent__float32bodyLen__100",
-          "string": "%.2[1]f",
-          "type": "float32",
-          "underlyingType": "float32",
-          "argNum": 1,
-          "expr": "float32(totalSent) / float32(bodyLen) * 100"
-        },
-        {
-          "id": "",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "\"%\""
         }
       ],
       "fuzzy": true
@@ -7070,6 +7021,46 @@
       "fuzzy": true
     },
     {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "message": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "No se ha podido verificar la firma digital porque hashAlgorithm está vacío",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "message": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "No se ha podido verificar la firma digital porque la serie publicKey está vacía",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "message": "Failed to verify digital signature because the signature string is empty",
+      "translation": "No se ha podido verificar la firma digital porque la serie de firma está vacía",
+      "fuzzy": true
+    },
+    {
+      "id": "Hash algorithm {HashAlgo} is not supported",
+      "message": "Hash algorithm {HashAlgo} is not supported",
+      "translation": "El algoritmo hash {HashAlgo} no está soportado",
+      "placeholders": [
+        {
+          "id": "HashAlgo",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "hashAlgo"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Label, or Enabled is empty.",
+      "message": "Label, or Enabled is empty.",
+      "translation": "La etiqueta o Habilitado está vacío.",
+      "fuzzy": true
+    },
+    {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
       "message": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
       "translation": "La propiedad {PROPNODEPRIVILEGED} debe tener un valor booleano (true o false).",
@@ -7621,6 +7612,24 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_ERR_RETRIEVE_NODE_POL_FROM_DB",
+        "Error retrieving node policy from database, error {Arg_1}"
+      ],
+      "message": "Error retrieving node policy from database, error {Arg_1}",
+      "translation": "Error al recuperar la política de nodo de la base de datos, error {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -9390,6 +9399,49 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CREATED",
+        "New node management policy status created for policy {Arg_1}."
+      ],
+      "message": "New node management policy status created for policy {Arg_1}.",
+      "translation": "Nuevo estado de política de gestión de nodos creado para la política {Arg_1}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED",
+        "Node management status for {Arg_1} changed to {Arg_2}"
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}",
+      "translation": "El estado de gestión de nodos para {Arg_1} ha cambiado a {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true

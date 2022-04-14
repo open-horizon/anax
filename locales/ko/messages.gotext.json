@@ -117,24 +117,6 @@
     },
     {
       "id": [
-        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
-        "unable to read node policy from the local database. {Arg_1}"
-      ],
-      "message": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "로컬 데이터베이스에서 노드 정책을 읽을 수 없습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
         "EL_AG_UNABLE_READ_NODE_FROM_DB",
         "Unable to read node object from the local database. {Arg_1}"
       ],
@@ -1049,11 +1031,11 @@
     },
     {
       "id": [
-        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR2",
+        "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}"
       ],
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "노드 정책 패치를 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문에 제한조건 표현식 또는 특성 목록 {Arg_1}이(가) 없습니다. 오류: {Arg_2}",
+      "message": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
+      "translation": "노드 정책 패치에 대한 입력을 구문 분석하는 중 오류가 발생했습니다. 입력 본문에 '특성', '제한조건', '배치' 또는 '관리' 속성이 포함되지 않음: {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -1061,13 +1043,6 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
         }
       ],
       "fuzzy": true
@@ -3572,30 +3547,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "errUrl"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "translation": "업로드 중: {Float32totalSent__float32bodyLen__100} {}",
-      "placeholders": [
-        {
-          "id": "Float32totalSent__float32bodyLen__100",
-          "string": "%.2[1]f",
-          "type": "float32",
-          "underlyingType": "float32",
-          "argNum": 1,
-          "expr": "float32(totalSent) / float32(bodyLen) * 100"
-        },
-        {
-          "id": "",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "\"%\""
         }
       ],
       "fuzzy": true
@@ -7070,6 +7021,46 @@
       "fuzzy": true
     },
     {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "message": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "해시 알고리즘이 비어 있어서 디지털 서명을 확인하는 데 실패했습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "message": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "공개 키 문자열이 비어 있어서 디지털 서명을 확인하는 데 실패했습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "message": "Failed to verify digital signature because the signature string is empty",
+      "translation": "서명 문자열이 비어 있어서 디지털 서명을 확인하는 데 실패했습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Hash algorithm {HashAlgo} is not supported",
+      "message": "Hash algorithm {HashAlgo} is not supported",
+      "translation": "해시 알고리즘 {HashAlgo}이(가) 지원되지 않습니다.",
+      "placeholders": [
+        {
+          "id": "HashAlgo",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "hashAlgo"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Label, or Enabled is empty.",
+      "message": "Label, or Enabled is empty.",
+      "translation": "레이블 또는 사용 가능이 비어 있습니다.",
+      "fuzzy": true
+    },
+    {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
       "message": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
       "translation": "{PROPNODEPRIVILEGED} 특성은 부울 값(true 또는 false)을 가져야 합니다.",
@@ -7621,6 +7612,24 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_ERR_RETRIEVE_NODE_POL_FROM_DB",
+        "Error retrieving node policy from database, error {Arg_1}"
+      ],
+      "message": "Error retrieving node policy from database, error {Arg_1}",
+      "translation": "데이터베이스에서 노드 정책을 검색하는 중 오류가 발생했습니다. 오류 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -9390,6 +9399,49 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CREATED",
+        "New node management policy status created for policy {Arg_1}."
+      ],
+      "message": "New node management policy status created for policy {Arg_1}.",
+      "translation": "{Arg_1}정책에 대해 새 노드 관리 정책 상태가 작성되었습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED",
+        "Node management status for {Arg_1} changed to {Arg_2}"
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}",
+      "translation": "{Arg_1}에 대한 노드 관리 상태가 {Arg_2}(으)로 변경됨",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true
