@@ -146,10 +146,11 @@ func getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter string) []a
 	// Sort the files by type (if the type was not filtered) and then by version in descending order
 	sort.Slice(agentFileObjects, func(i, j int) bool {
 		if agentFileObjects[i].AgentFileType == agentFileObjects[j].AgentFileType {
-			if strings.Contains(agentFileObjects[i].AgentFileVersion, agentFileObjects[j].AgentFileVersion) {
-				return agentFileObjects[i].AgentFileVersion < agentFileObjects[j].AgentFileVersion
+			if greaterThan, err := semanticversion.CompareVersions(agentFileObjects[i].AgentFileVersion, agentFileObjects[j].AgentFileVersion); err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("error comparing agent file versions: %v", err))
+			} else {
+				return greaterThan > 0
 			}
-			return agentFileObjects[i].AgentFileVersion > agentFileObjects[j].AgentFileVersion
 		}
 		return agentFileObjects[i].AgentFileType > agentFileObjects[j].AgentFileType
 	})
