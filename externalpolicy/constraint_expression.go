@@ -91,7 +91,6 @@ func (c ConstraintExpression) IsSame(other ConstraintExpression) bool {
 // This function is used to determine if an input set of properties and values will satisfy
 // the ConstraintExpression expression.
 func (self *ConstraintExpression) IsSatisfiedBy(props []Property) error {
-
 	// If there is no expression at all, then there is nothing to satisify
 	if len(*self) == 0 {
 		return nil

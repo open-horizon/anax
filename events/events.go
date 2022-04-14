@@ -2155,9 +2155,11 @@ func NewNMPStartDownloadMessage(id EventId, message StartDownloadMessage) *NMPSt
 }
 
 type NMPDownloadCompleteMessage struct {
-	event   Event
-	Success bool
-	NMPName string
+	event    Event
+	Status   string
+	NMPName  string
+	Versions *exchangecommon.AgentUpgradeVersions
+	Latests  *exchangecommon.AgentUpgradeLatest
 }
 
 func (n *NMPDownloadCompleteMessage) Event() Event {
@@ -2165,20 +2167,22 @@ func (n *NMPDownloadCompleteMessage) Event() Event {
 }
 
 func (n *NMPDownloadCompleteMessage) String() string {
-	return fmt.Sprintf("event: %v, Success: %v", n.event, n.Success)
+	return fmt.Sprintf("event: %v, Status: %v", n.event, n.Status)
 }
 
 func (n *NMPDownloadCompleteMessage) ShortString() string {
 	return n.String()
 }
 
-func NewNMPDownloadCompleteMessage(id EventId, success bool, name string) *NMPDownloadCompleteMessage {
+func NewNMPDownloadCompleteMessage(id EventId, status string, name string, vers *exchangecommon.AgentUpgradeVersions, latest *exchangecommon.AgentUpgradeLatest) *NMPDownloadCompleteMessage {
 	return &NMPDownloadCompleteMessage{
 		event: Event{
 			Id: id,
 		},
-		Success: success,
-		NMPName: name,
+		Status:   status,
+		NMPName:  name,
+		Versions: vers,
+		Latests:  latest,
 	}
 }
 

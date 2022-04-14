@@ -33,7 +33,7 @@ func Test_UpdateNodePolicy(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -73,7 +73,7 @@ func Test_DeleteNodePolicy(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "cluster", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "cluster", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -121,7 +121,7 @@ func Test_ExchangeNodePolicyChanged(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -183,7 +183,7 @@ func Test_SetDefaultNodePolicy(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -243,7 +243,7 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 		t.Errorf("Wrong error, should say 'Exchange registration not recorded' but got: %v", err)
 	}
 
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}

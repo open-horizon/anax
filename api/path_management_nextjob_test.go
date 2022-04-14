@@ -25,7 +25,7 @@ func Test_FindManagementNextJobForOutput(t *testing.T) {
 	errorHandler := GetPassThroughErrorHandler(&myError)
 
 	// Create dummy exchange device in local DB
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate")
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate", persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("Unable to read node object, error %v", err)
 	} else if pDevice == nil {
@@ -34,7 +34,7 @@ func Test_FindManagementNextJobForOutput(t *testing.T) {
 
 	// test #1 - No NMP Statuses in local db
 	if errHandled, statuses := FindManagementNextJobForOutput("agentUpgrade", "true", errorHandler, db); errHandled {
-		t.Errorf("failed to find node management status in db, error %v", err)
+		t.Errorf("failed to find node management status in db, error %v", errHandled)
 	} else if statuses != nil && len(statuses) != 0 {
 		t.Errorf("incorrect number of management statuses returned from db, expected: %v, actual: %v", 0, len(statuses))
 	}

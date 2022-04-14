@@ -490,7 +490,6 @@ func GetAllExchangeNodeManagementPoliciesHandler(ec ExchangeContext) AllNodeMana
 	return func(policyOrg string) (*map[string]exchangecommon.ExchangeNodeManagementPolicy, error) {
 		return GetAllExchangeNodeManagementPolicy(ec, policyOrg)
 	}
-
 }
 
 // A handler for getting a single node management policy status.
@@ -535,5 +534,14 @@ type DeleteAllNodeManagementPolicyStatusHandler func(orgId string, nodeId string
 func GetDeleteAllNodeManagementPolicyStatusHandler(ec ExchangeContext) DeleteAllNodeManagementPolicyStatusHandler {
 	return func(orgId string, nodeId string) error {
 		return DeleteNodeManagementAllStatuses(ec, orgId, nodeId)
+	}
+}
+
+// A handler for getting the availible upgrade versions.
+type NodeUpgradeVersionsHandler func() (*exchangecommon.AgentUpgradeVersionsResponse, error)
+
+func GetNodeUpgradeVersionsHandler(ec ExchangeContext) NodeUpgradeVersionsHandler {
+	return func() (*exchangecommon.AgentUpgradeVersionsResponse, error) {
+		return GetNodeUpgradeVersions(ec)
 	}
 }
