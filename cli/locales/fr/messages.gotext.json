@@ -687,11 +687,11 @@
     },
     {
       "id": [
-        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR2",
+        "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}"
       ],
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "Erreur lors de l'analyse syntaxique de l'entrée pour le correctif de la règle du noeud. Le corps de l'entrée ne comportait pas d'expression de contrainte ni de liste de propriétés {Arg_1}. Erreur {Arg_2}",
+      "message": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
+      "translation": "Erreur lors de l'analyse de l'entrée du correctif de règle de nœud. Le corps d'entrée ne contient pas les attributs 'properties', 'constraints', 'deployment' ou 'management' : {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -699,13 +699,6 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
         }
       ],
       "fuzzy": true
@@ -2642,9 +2635,9 @@
       "fuzzy": true
     },
     {
-      "id": "The name of the policy to add or overwrite.",
-      "message": "The name of the policy to add or overwrite.",
-      "translation": "Nom de la règle à ajouter ou écraser.",
+      "id": "The name of the deployment policy to add or overwrite.",
+      "message": "The name of the deployment policy to add or overwrite.",
+      "translation": "Nom de la règle de déploiement à ajouter ou à remplacer.",
       "fuzzy": true
     },
     {
@@ -2672,9 +2665,9 @@
       "fuzzy": true
     },
     {
-      "id": "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
-      "message": "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
-      "translation": "Afficher cette règle uniquement. Utilisez <org>/<policy> pour spécifier une règle publique d'une autre organisation, ou <org>/ pour dresser la liste de toutes les règles publiques d'une autre organisation.",
+      "id": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
+      "message": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
+      "translation": "Listez uniquement cette règle de déploiement. Utilisez <org>/<policy> pour spécifier une politique publique dans une autre organisation, ou <org>/ pour répertorier toutes les politiques publiques d'une autre organisation.",
       "fuzzy": true
     },
     {
@@ -2702,9 +2695,9 @@
       "fuzzy": true
     },
     {
-      "id": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
-      "message": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
-      "translation": "Mettre à jour un attribut d'une règle existante dans Horizon Exchange. Les attributs pris en charge sont les attributs de premier niveau dans la définition de règle, comme indiqué par la commande 'hzn exchange deployment new'.",
+      "id": "Update one attribute of an existing deployment policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
+      "message": "Update one attribute of an existing deployment policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
+      "translation": "Met à jour un attribut d'une règle de déploiement existante dans Horizon Exchange. Les attributs pris en charge sont les attributs de niveau supérieur de la définition de règle, comme indiqué par la commande 'hzn exchange deployment new'.",
       "fuzzy": true
     },
     {
@@ -2717,6 +2710,84 @@
       "id": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
       "translation": "Chemin d'accès au fichier json contenant l'attribut de règle de déploiement mis à jour à modifier dans Horizon Exchange. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "fuzzy": true
+    },
+    {
+      "id": "List and manage node management policies in the Horizon Exchange.",
+      "message": "List and manage node management policies in the Horizon Exchange.",
+      "translation": "Répertoriez et gérez les règles de gestion des nœuds dans Horizon Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the node management policies from the Horizon Exchange.",
+      "message": "Display the node management policies from the Horizon Exchange.",
+      "translation": "Affichez les règles de gestion des nœuds à partir de Horizon Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "List just this one node management policy.",
+      "message": "List just this one node management policy.",
+      "translation": "Répertoriez uniquement cette règle de gestion des nœuds.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display detailed output about the node management policies.",
+      "message": "Display detailed output about the node management policies.",
+      "translation": "Affichez la sortie détaillée des règles de gestion des nœuds.",
+      "fuzzy": true
+    },
+    {
+      "id": "List all the nodes that apply for the given node management policy.",
+      "message": "List all the nodes that apply for the given node management policy.",
+      "translation": "Répertoriez tous les nœuds qui s'appliquent à la règle de gestion des nœuds donnée.",
+      "fuzzy": true
+    },
+    {
+      "id": "Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template.",
+      "message": "Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template.",
+      "translation": "Ajoutez ou remplacez une règle de gestion des nœuds dans Horizon Exchange. Utilisez 'hzn exchange nmp new' pour un modèle de règle de gestion des nœuds vide.",
+      "fuzzy": true
+    },
+    {
+      "id": "List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.",
+      "message": "List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.",
+      "translation": "Répertoriez tous les nœuds qui seront compatibles avec cette règle de gestion des nœuds. Utilisez cet indicateur avec --dry-run pour répertorier les nœuds sans publier la règle sur Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to add or overwrite.",
+      "message": "The name of the node management policy to add or overwrite.",
+      "translation": "Nom de la règle de gestion des nœuds à ajouter ou à remplacer.",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.",
+      "message": "The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "Chemin d'un fichier JSON contenant les métadonnées nécessaires à la création/mise à jour de la règle de gestion des nœuds dans Horizon Exchange. Spécifiez -f- pour lire à partir de l'entrée standard (stdin).",
+      "fuzzy": true
+    },
+    {
+      "id": "Allow this node management policy to be published even though it does not have any constraints.",
+      "message": "Allow this node management policy to be published even though it does not have any constraints.",
+      "translation": "Autorisez la publication de cette règle de gestion des nœuds même si elle n'a aucune contrainte.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display an empty node management policy template that can be filled in.",
+      "message": "Display an empty node management policy template that can be filled in.",
+      "translation": "Affichez un modèle de règle de gestion des nœuds vide qui peut être défini.",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove the node management policy in the Horizon Exchange.",
+      "message": "Remove the node management policy in the Horizon Exchange.",
+      "translation": "Supprimez la règle de gestion des nœuds dans Horizon Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to be removed.",
+      "message": "The name of the node management policy to be removed.",
+      "translation": "Nom de la règle de gestion des nœuds à supprimer.",
       "fuzzy": true
     },
     {
@@ -2744,9 +2815,9 @@
       "fuzzy": true
     },
     {
-      "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin.",
-      "message": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès à un fichier JSON qui contient les métadonnées nécessaires à la création/mise à jour de la règle de noeud dans Horizon Exchange. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "message": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "translation": "Chemin d'un fichier JSON contenant les métadonnées nécessaires à la création/mise à jour de la règle de nœud dans Horizon Exchange. Spécifiez -f- pour lire à partir de l'entrée standard (stdin). Une règle de nœud contient les attributs 'deployment' et 'management'. Utilisez 'hzn policy new' pour afficher le format de la règle de nœud.",
       "fuzzy": true
     },
     {
@@ -2864,6 +2935,30 @@
       "fuzzy": true
     },
     {
+      "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
+      "message": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
+      "translation": "Répertoriez les règles de gestion des nœuds compatibles pour le nœud. Seules les règles activées seront affichées sauf si l'option -a est spécifiée.",
+      "fuzzy": true
+    },
+    {
+      "id": "List node management policies for this node",
+      "message": "List node management policies for this node",
+      "translation": "Répertoriez les règles de gestion des nœuds pour ce nœud",
+      "fuzzy": true
+    },
+    {
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "translation": "ID noeud et jeton Horizon Exchange à utiliser comme données d'identification pour interroger et modifier les ressources de noeud si l'indicateur -u n'est pas spécifié. La variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut pour -n. Si vous n'ajoutez pas l'organisation du noeud en préfixe, elle sera automatiquement ajoutée avec la valeur -o.",
+      "fuzzy": true
+    },
+    {
+      "id": "Include disabled NMP's.",
+      "message": "Include disabled NMP's.",
+      "translation": "Inclure les NMP désactivés.",
+      "fuzzy": true
+    },
+    {
       "id": "List the run-time status of the node.",
       "message": "List the run-time status of the node.",
       "translation": "Afficher le statut d'exécution du noeud.",
@@ -2879,12 +2974,6 @@
       "id": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
       "message": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
       "translation": "Retirer une ressource de noeud d'Horizon Exchange. A ne PAS faire lorsqu'un noeud de périphérie est enregistré avec cet ID noeud.",
-      "fuzzy": true
-    },
-    {
-      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "ID noeud et jeton Horizon Exchange à utiliser comme données d'identification pour interroger et modifier les ressources de noeud si l'indicateur -u n'est pas spécifié. La variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut pour -n. Si vous n'ajoutez pas l'organisation du noeud en préfixe, elle sera automatiquement ajoutée avec la valeur -o.",
       "fuzzy": true
     },
     {
@@ -3918,6 +4007,12 @@
       "fuzzy": true
     },
     {
+      "id": "Specify true to show objects that are marked deleted. Specify false to show objects that are not marked deleted. If this flag is omitted, both kinds of objects are shown. Object will be marked deleted if object is deleted in CSS but it doesn't receive notifications from all the destinations",
+      "message": "Specify true to show objects that are marked deleted. Specify false to show objects that are not marked deleted. If this flag is omitted, both kinds of objects are shown. Object will be marked deleted if object is deleted in CSS but it doesn't receive notifications from all the destinations",
+      "translation": "Indiquez la valeur true pour afficher les objets marqués comme étant supprimés. Indiquez false pour afficher les objets non marqués comme étant supprimés. Si cette option est omise, les deux types d'objets sont affichés. L'objet sera marqué comme étant supprimé si l'objet est supprimé dans CSS mais il ne reçoit pas de notifications de toutes les destinations",
+      "fuzzy": true
+    },
+    {
       "id": "Show detailed object metadata information",
       "message": "Show detailed object metadata information",
       "translation": "Afficher les informations détaillées sur les métadonnées d'objet",
@@ -3960,15 +4055,27 @@
       "fuzzy": true
     },
     {
-      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
-      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
-      "translation": "Définition de l'objet à publier. Vous pouvez obtenir un modèle vide à l'aide de la commande 'hzn mss object new'. Spécifiez -m- pour lire à partir de stdin.",
+      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.",
+      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.",
+      "translation": "Définition de l'objet à publier. Il est possible d'obtenir un modèle vierge à partir de la commande 'hzn mms object new'. Spécifiez -m- pour lire à partir de l'entrée standard (stdin).",
       "fuzzy": true
     },
     {
       "id": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
       "message": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
       "translation": "Objet (au format fichier) à publier. Cet indicateur est facultatif pour que vous puissiez mettre à jour uniquement la définition de l'objet.",
+      "fuzzy": true
+    },
+    {
+      "id": "The publish command will disable chunk upload. Data will stream to CSS.",
+      "message": "The publish command will disable chunk upload. Data will stream to CSS.",
+      "translation": "La commande de publication désactive le téléchargement de bloc. Les données seront diffusées vers les CSS.",
+      "fuzzy": true
+    },
+    {
+      "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
+      "message": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
+      "translation": "La taille du bloc de données qui sera publié avec. La valeur par défaut est 104857600 (100 Mo). Ignoré si --disableChunkUpload est spécifié.",
       "fuzzy": true
     },
     {
@@ -3996,6 +4103,12 @@
       "fuzzy": true
     },
     {
+      "id": "Display a list of object types stored in the Horizon Model Management Service.",
+      "message": "Display a list of object types stored in the Horizon Model Management Service.",
+      "translation": "Affichez la liste des types d'objet stockés dans le service de gestion des modèles Horizon.",
+      "fuzzy": true
+    },
+    {
       "id": "Display the status of the Horizon Model Management Service.",
       "message": "Display the status of the Horizon Model Management Service.",
       "translation": "Affiche le statut du service de gestion des modèles Horizon.",
@@ -4011,6 +4124,132 @@
       "id": "Display general information about this Horizon edge node.",
       "message": "Display general information about this Horizon edge node.",
       "translation": "Afficher des informations générales sur le noeud de périphérie Horizon.",
+      "fuzzy": true
+    },
+    {
+      "id": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
+      "message": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
+      "translation": "Données d'identification de l'utilisateur Horizon permettant d'interroger et de créer des ressources de gestion de nœud. Si cet attribut n'est pas défini, HZN_EXCHANGE_USER_AUTH est utilisé comme valeur par défaut. Si vous n'ajoutez pas en préfixe l'organisation de l'utilisateur, cet attribut sera automatiquement précédé de valeur -o.",
+      "fuzzy": true
+    },
+    {
+      "id": "List and manage manifest files stored in the management hub.",
+      "message": "List and manage manifest files stored in the management hub.",
+      "translation": "Répertoriez et gérez les fichiers manifeste stockés dans le concentrateur de gestion.",
+      "fuzzy": true
+    },
+    {
+      "id": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
+      "message": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
+      "translation": "Ajoutez ou remplacez un fichier manifeste dans le concentrateur de gestion. Utilisez 'hzn nodemanagement manifest new' pour ajouter un modèle de manifeste vide.",
+      "fuzzy": true
+    },
+    {
+      "id": "The type of manifest to add. Valid values include 'agent_upgrade_manifests'.",
+      "message": "The type of manifest to add. Valid values include 'agent_upgrade_manifests'.",
+      "translation": "Type de manifeste à ajouter. Les valeurs valides sont 'agent_upgrade_manifests'.",
+      "fuzzy": true
+    },
+    {
+      "id": "The id of the manifest to add.",
+      "message": "The id of the manifest to add.",
+      "translation": "ID du manifeste à ajouter.",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
+      "message": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
+      "translation": "Chemin d'un fichier JSON contenant les données du manifeste. Spécifiez -f- pour lire à partir de l'entrée standard (stdin).",
+      "fuzzy": true
+    },
+    {
+      "id": "Display a list of manifest files stored in the management hub.",
+      "message": "Display a list of manifest files stored in the management hub.",
+      "translation": "Affichez la liste des fichiers manifeste stockés dans le concentrateur de gestion.",
+      "fuzzy": true
+    },
+    {
+      "id": "The type of manifest to list. Valid values include 'agent_upgrade_manifests'.",
+      "message": "The type of manifest to list. Valid values include 'agent_upgrade_manifests'.",
+      "translation": "Type de manifeste à répertorier. Les valeurs valides sont 'agent_upgrade_manifests'.",
+      "fuzzy": true
+    },
+    {
+      "id": "The id of the manifest to list. Must specify --type flag.",
+      "message": "The id of the manifest to list. Must specify --type flag.",
+      "translation": "ID du manifeste à répertorier. Vous devez indiquer un indicateur --type.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the contents of the manifest file. Must specify --type and --id flags.",
+      "message": "Display the contents of the manifest file. Must specify --type and --id flags.",
+      "translation": "Affichez le contenu du fichier manifeste. Vous devez indiquer les indicateurs -- type et -- id.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display an empty manifest template that can be filled in.",
+      "message": "Display an empty manifest template that can be filled in.",
+      "translation": "Affichez un modèle de manifeste vide qui peut être rempli.",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
+      "message": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
+      "translation": "Supprimez un fichier manifeste du concentrateur de gestion. Utilisez 'hzn nodemanagement manifest new' pour ajouter un modèle de manifeste vide.",
+      "fuzzy": true
+    },
+    {
+      "id": "The type of manifest to remove. Valid values include 'agent_upgrade_manifests'.",
+      "message": "The type of manifest to remove. Valid values include 'agent_upgrade_manifests'.",
+      "translation": "Type de manifeste à supprimer. Les valeurs valides sont 'agent_upgrade_manifests'.",
+      "fuzzy": true
+    },
+    {
+      "id": "The id of the manifest to remove.",
+      "message": "The id of the manifest to remove.",
+      "translation": "ID du manifeste à supprimer.",
+      "fuzzy": true
+    },
+    {
+      "id": "List agent files and types stored in the management hub.",
+      "message": "List agent files and types stored in the management hub.",
+      "translation": "Répertoriez les fichiers et les types d'agent stockés dans le concentrateur de gestion.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display a list of agent files stored in the management hub.",
+      "message": "Display a list of agent files stored in the management hub.",
+      "translation": "Affichez la liste des fichiers d'agent stockés dans le concentrateur de gestion.",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter the list of agent upgrade files by the specified type. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
+      "message": "Filter the list of agent upgrade files by the specified type. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
+      "translation": "Filtrez la liste des fichiers de mise à niveau de l'agent en fonction du type indiqué. Les valeurs valides sont 'agent_software_files', 'agent_cert_files' et 'agent_config_files'.",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter the list of agent upgrade files by the specified version range or version string. Version can be a version range, a single version string or 'latest'.",
+      "message": "Filter the list of agent upgrade files by the specified version range or version string. Version can be a version range, a single version string or 'latest'.",
+      "translation": "Filtrez la liste des fichiers de mise à niveau de l'agent en fonction de la plage de versions ou de la chaîne de version spécifiée. La version peut être une plage de versions, une chaîne de version unique ou la valeur 'latest'.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display a list of agent file types with their corresponding versions.",
+      "message": "Display a list of agent file types with their corresponding versions.",
+      "translation": "Affichez une liste des types de fichiers d'agent avec leurs versions correspondantes.",
+      "fuzzy": true
+    },
+    {
+      "id": "The type of agent files to list versions for. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
+      "message": "The type of agent files to list versions for. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
+      "translation": "Type des fichiers d'agent pour lesquels une liste des versions doit être affichée. Les valeurs valides sont 'agent_software_files', 'agent_cert_files' et 'agent_config_files'.",
+      "fuzzy": true
+    },
+    {
+      "id": "Show only a list of versions for a given file type. Must also specify a file type with the --type flag.",
+      "message": "Show only a list of versions for a given file type. Must also specify a file type with the --type flag.",
+      "translation": "Affichez uniquement une liste de versions pour un type de fichier donné. Vous devez également indiquer un type de fichier avec l'indicateur -- type.",
       "fuzzy": true
     },
     {
@@ -4074,9 +4313,9 @@
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
-      "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
-      "translation": "Nom du fichier d'entrée JSON qui contient la règle de noeud. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "translation": "Nom du fichier d'entrée JSON contenant la règle de nœud. Spécifiez -f- pour lire à partir de l'entrée standard (stdin). Une règle de nœud contient les attributs 'deployment' et 'management'. Utilisez 'hzn policy new' pour afficher le format de la règle de nœud.",
       "fuzzy": true
     },
     {
@@ -4168,9 +4407,9 @@
       "fuzzy": true
     },
     {
-      "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
-      "message": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
-      "translation": "Fichier JSON qui définit ou substitue la règle du noeud qui sera utilisé pour la règle basée sur la négociation de l'accord.",
+      "id": "A JSON file that sets or overrides the node policy for this node. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "message": "A JSON file that sets or overrides the node policy for this node. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "translation": "Fichier JSON qui définit ou remplace la règle de nœud pour ce nœud. Une règle de nœud contient les attributs 'deployment' et 'management'. Utilisez 'hzn policy new' pour afficher le format de la règle de nœud.",
       "fuzzy": true
     },
     {
@@ -4345,6 +4584,12 @@
       "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
       "message": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
       "translation": "Nombre de minutes d'attente pour que l'annulation de l'enregistrement se termine. La valeur par défaut est zéro, ce qui signifie que l'attente dure indéfiniment.",
+      "fuzzy": true
+    },
+    {
+      "id": "Perform a deep clean on a node running in a container. This flag  must be used with -D and only if the agent was installed as anax-in-container.",
+      "message": "Perform a deep clean on a node running in a container. This flag  must be used with -D and only if the agent was installed as anax-in-container.",
+      "translation": "Effectuez un nettoyage profond sur un nœud qui s'exécute dans un conteneur. Cet indicateur doit être utilisé avec -D et uniquement si l'agent a été installé en tant qu'anax-in-container.",
       "fuzzy": true
     },
     {
@@ -4696,9 +4941,9 @@
       "fuzzy": true
     },
     {
-      "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
-      "message": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
-      "translation": "Fichier de la règle de noeud à utiliser pour le dispositif de périphérie associé au coupon. Mutuellement exclusif avec -e et -p.",
+      "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "message": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "translation": "Fichier de règles de nœud à utiliser pour l'unité de périphérie associée à ce récépissé. Cet attribut est mutuellement exclusif avec -e et -p. Une règle de nœud contient les attributs 'deployment' et 'management'. Utilisez 'hzn policy new' pour afficher le format de la règle de nœud.",
       "fuzzy": true
     },
     {
@@ -4756,9 +5001,9 @@
       "fuzzy": true
     },
     {
-      "id": "The mms command is not supported on an edge cluster node.",
-      "message": "The mms command is not supported on an edge cluster node.",
-      "translation": "La commande mms n'est pas prise en charge sur les noeuds de cluster de périphérie.",
+      "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
+      "message": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
+      "translation": "Fichier de la règle de noeud à utiliser pour le dispositif de périphérie associé au coupon. Mutuellement exclusif avec -e et -p.",
       "fuzzy": true
     },
     {
@@ -6924,30 +7169,6 @@
       "fuzzy": true
     },
     {
-      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "translation": "Téléchargement en cours : {Float32totalSent__float32bodyLen__100} {}",
-      "placeholders": [
-        {
-          "id": "Float32totalSent__float32bodyLen__100",
-          "string": "%.2[1]f",
-          "type": "float32",
-          "underlyingType": "float32",
-          "argNum": 1,
-          "expr": "float32(totalSent) / float32(bodyLen) * 100"
-        },
-        {
-          "id": "",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "\"%\""
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "unable to open object file {Name}: {Err}",
       "message": "unable to open object file {Name}: {Err}",
       "translation": "impossible d'ouvrir le fichier objet {Name} : {Err}",
@@ -7831,7 +8052,7 @@
           "id": "CompCheckInput",
           "string": "%[1]v",
           "type": "github.com/open-horizon/anax/compcheck.CompCheck",
-          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
+          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/exchangecommon.NodePolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "compCheckInput"
         }
@@ -9953,8 +10174,8 @@
         {
           "id": "Containers",
           "string": "%[1]v",
-          "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-          "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+          "type": "[]github.com/fsouza/go-dockerclient.APIContainers",
+          "underlyingType": "[]github.com/fsouza/go-dockerclient.APIContainers",
           "argNum": 1,
           "expr": "containers"
         }
@@ -11175,7 +11396,7 @@
         {
           "id": "ContainerNetwork",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.ContainerNetwork",
+          "type": "github.com/fsouza/go-dockerclient.ContainerNetwork",
           "underlyingType": "struct{Aliases []string \"json:\\\"Aliases,omitempty\\\" yaml:\\\"Aliases,omitempty\\\" toml:\\\"Aliases,omitempty\\\"\"; MacAddress string \"json:\\\"MacAddress,omitempty\\\" yaml:\\\"MacAddress,omitempty\\\" toml:\\\"MacAddress,omitempty\\\"\"; GlobalIPv6PrefixLen int \"json:\\\"GlobalIPv6PrefixLen,omitempty\\\" yaml:\\\"GlobalIPv6PrefixLen,omitempty\\\" toml:\\\"GlobalIPv6PrefixLen,omitempty\\\"\"; GlobalIPv6Address string \"json:\\\"GlobalIPv6Address,omitempty\\\" yaml:\\\"GlobalIPv6Address,omitempty\\\" toml:\\\"GlobalIPv6Address,omitempty\\\"\"; IPv6Gateway string \"json:\\\"IPv6Gateway,omitempty\\\" yaml:\\\"IPv6Gateway,omitempty\\\" toml:\\\"IPv6Gateway,omitempty\\\"\"; IPPrefixLen int \"json:\\\"IPPrefixLen,omitempty\\\" yaml:\\\"IPPrefixLen,omitempty\\\" toml:\\\"IPPrefixLen,omitempty\\\"\"; IPAddress string \"json:\\\"IPAddress,omitempty\\\" yaml:\\\"IPAddress,omitempty\\\" toml:\\\"IPAddress,omitempty\\\"\"; Gateway string \"json:\\\"Gateway,omitempty\\\" yaml:\\\"Gateway,omitempty\\\" toml:\\\"Gateway,omitempty\\\"\"; EndpointID string \"json:\\\"EndpointID,omitempty\\\" yaml:\\\"EndpointID,omitempty\\\" toml:\\\"EndpointID,omitempty\\\"\"; NetworkID string \"json:\\\"NetworkID,omitempty\\\" yaml:\\\"NetworkID,omitempty\\\" toml:\\\"NetworkID,omitempty\\\"\"}",
           "argNum": 2,
           "expr": "nw"
@@ -11299,22 +11520,6 @@
           "underlyingType": "*github.com/open-horizon/anax/common.DeploymentConfig",
           "argNum": 1,
           "expr": "depConfig"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to generate instance ID: {Err}",
-      "message": "unable to generate instance ID: {Err}",
-      "translation": "Impossible de générer un ID instance : {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -12366,9 +12571,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
-      "message": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
-      "translation": "Impossible d'obtenir les services {ServiceOrg}/{ServiceName} version {ServiceVersion} à partir d'Exchange pour toutes les architectures. {Err}",
+      "id": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all architectures. {Err}",
+      "message": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all architectures. {Err}",
+      "translation": "Impossible d'obtenir les services {ServiceOrg}/{ServiceName} version {ServiceVersion} à partir de la structure Exchange pour toutes les architectures. {Err}",
       "placeholders": [
         {
           "id": "ServiceOrg",
@@ -12699,6 +12904,318 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "NMP {NmpName} not found in org {NmpOrg}",
+      "message": "NMP {NmpName} not found in org {NmpOrg}",
+      "translation": "NMP {NmpName} introuvable dans org {NmpOrg}",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'hzn exchange nmp list' output: {Err}",
+      "message": "failed to marshal 'hzn exchange nmp list' output: {Err}",
+      "translation": "échec de l’ordonnancement de la sortie 'hzn exchange nmp list' : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "A short description of the policy.",
+      "message": "A short description of the policy.",
+      "translation": "Brève description de la règle.",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) A much longer description of the policy.",
+      "message": "(Optional) A much longer description of the policy.",
+      "translation": "(Facultatif) Description beaucoup plus longue de la règle.",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
+      "message": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
+      "translation": "(Facultatif) Liste des expressions de contrainte au format <property name> <operator> <property value>,",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) A list of policy properties that describe this policy.",
+      "message": "(Optional) A list of policy properties that describe this policy.",
+      "translation": "(Facultatif) Liste des propriétés de règle qui décrivent cette règle.",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) This policy applies to nodes using one of these patterns.",
+      "message": "(Optional) This policy applies to nodes using one of these patterns.",
+      "translation": "(Facultatif) Cette règle s'applique aux nœuds utilisant l'un de ces modèles.",
+      "fuzzy": true
+    },
+    {
+      "id": "Is this policy enabled or disabled.",
+      "message": "Is this policy enabled or disabled.",
+      "translation": "Indique si cette règle est activée ou désactivée.",
+      "fuzzy": true
+    },
+    {
+      "id": "When to start an upgrade, default \"now\".",
+      "message": "When to start an upgrade, default \"now\".",
+      "translation": "Lors du démarrage d'une mise à niveau, la valeur par défaut est \"now\".",
+      "fuzzy": true
+    },
+    {
+      "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
+      "message": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
+      "translation": "Permet aux agents de rendre aléatoire l'heure de début de la mise à niveau dans une procédure start + startWindow, valeur par défaut : 0.",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) Assertions on how the agent should update itself.",
+      "message": "(Optional) Assertions on how the agent should update itself.",
+      "translation": "(Facultatif) Assertions sur la façon dont l'agent doit se mettre à jour lui-même.",
+      "fuzzy": true
+    },
+    {
+      "id": "The manifest file containing the software, config and cert files to upgrade.",
+      "message": "The manifest file containing the software, config and cert files to upgrade.",
+      "translation": "Fichier manifeste contenant les fichiers logiciels, de configuration et de certification à mettre à niveau.",
+      "fuzzy": true
+    },
+    {
+      "id": "Is this policy allowed to perform a downgrade to a previous version.",
+      "message": "Is this policy allowed to perform a downgrade to a previous version.",
+      "translation": "Indique si cette règle est autorisée à effectuer une rétromigration vers une version précédente.",
+      "fuzzy": true
+    },
+    {
+      "id": "Incorrect node management policy format in file {JsonFilePath}: {Err}",
+      "message": "Incorrect node management policy format in file {JsonFilePath}: {Err}",
+      "translation": "Format de règle de gestion des nœuds incorrect dans le fichier {JsonFilePath} : {Err}",
+      "placeholders": [
+        {
+          "id": "JsonFilePath",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "jsonFilePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
+      "message": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
+      "translation": "La règle de gestion des nœuds n'a pas de contraintes pouvant entraîner son déploiement sur tous les nœuds. Veuillez spécifier --no-constraints pour confirmer que cela est acceptable.",
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "message": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "translation": "Règle de gestion des nœuds : {NmpOrg}/{NmpName} mis à jour dans Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
+      "message": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
+      "translation": "Impossible de créer la règle de gestion des nœuds {NmpOrg}/{NmpName} : {Msg}",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        },
+        {
+          "id": "Msg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "message": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "translation": "Règle de gestion des nœuds : {NmpOrg}/{NmpName} ajouté dans Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
+      "translation": "Êtes-vous sûr de vouloir supprimer la règle de gestion des nœuds {NmpName} pour l'organisation {NmpOrg} dans Horizon Exchange ?",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpName} not found in org {NmpOrg}",
+      "message": "Node management policy {NmpName} not found in org {NmpOrg}",
+      "translation": "La règle de gestion des nœuds {NmpName} est introuvable dans l'organisation {NmpOrg}",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
+      "message": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
+      "translation": "Suppression de la règle de gestion des nœuds {NmpOrg}/{NmpName} de la structure Exchange.",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpOrg}/{NmpName} removed",
+      "message": "Node management policy {NmpOrg}/{NmpName} removed",
+      "translation": "La règle de gestion des nœuds {NmpOrg}/{NmpName} a été supprimée",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
         }
       ],
       "fuzzy": true
@@ -13200,6 +13717,12 @@
       "fuzzy": true
     },
     {
+      "id": "Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.",
+      "message": "Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.",
+      "translation": "Remarque : Aucune propriété ni contrainte n'est spécifiée sous l'attribut 'deployment'. Les propriétés et contraintes de niveau supérieur sont utilisées.",
+      "fuzzy": true
+    },
+    {
       "id": "Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
       "message": "Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
       "translation": "Mise à jour de la règle du noeud et réévaluation de tous les accords basés sur cette règle. Il se peut que les accords existants soient annulés et renégociés.",
@@ -13242,9 +13765,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid property list {Attribute}: {Err}",
-      "message": "Invalid property list {Attribute}: {Err}",
-      "translation": "Liste de propriétés non valide {Attribute} : {Err}",
+      "id": "failed to unmarshal attribute input {Attribute} for {AttribName}: {Err}",
+      "message": "failed to unmarshal attribute input {Attribute} for {AttribName}: {Err}",
+      "translation": "échec du désordonnancement de l'entrée d'attribut {Attribute} pour {AttribName} : {Err}",
       "placeholders": [
         {
           "id": "Attribute",
@@ -13253,6 +13776,38 @@
           "underlyingType": "[]byte",
           "argNum": 1,
           "expr": "attribute"
+        },
+        {
+          "id": "AttribName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "attribName"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid property list {NewProp}: {Err}",
+      "message": "Invalid property list {NewProp}: {Err}",
+      "translation": "Liste de propriétés non valide {NewProp} : {Err}",
+      "placeholders": [
+        {
+          "id": "NewProp",
+          "string": "%[1]s",
+          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
+          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
+          "argNum": 1,
+          "expr": "newProp"
         },
         {
           "id": "Err",
@@ -13266,41 +13821,9 @@
       "fuzzy": true
     },
     {
-      "id": "Updating Node {Node} policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Node {Node} policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Mise à jour des propriétés de règle du noeud {Node} dans Horizon Exchange et réévaluation de tous les accords basés sur cette règle. Il se peut que les accords existants soient annulés et renégociés.",
-      "placeholders": [
-        {
-          "id": "Node",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "node"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Node {Node} policy properties updated in the horizon exchange.",
-      "message": "Node {Node} policy properties updated in the horizon exchange.",
-      "translation": "Les propriétés de règle du noeud {Node} ont été mises à jour dans Horizon Exchange.",
-      "placeholders": [
-        {
-          "id": "Node",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "node"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Invalid constraint expression {Attribute}: {Err}",
-      "message": "Invalid constraint expression {Attribute}: {Err}",
-      "translation": "Expression de contrainte non valide {Attribute} : {Err}",
+      "id": "failed to unmarshal attribute input {Attribute} for {AttribName}s: {Err}",
+      "message": "failed to unmarshal attribute input {Attribute} for {AttribName}s: {Err}",
+      "translation": "échec du désordonnancement de l'entrée d'attribut {Attribute} pour {AttribName}s : {Err}",
       "placeholders": [
         {
           "id": "Attribute",
@@ -13309,6 +13832,38 @@
           "underlyingType": "[]byte",
           "argNum": 1,
           "expr": "attribute"
+        },
+        {
+          "id": "AttribName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "attribName"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid constraint expression {NewConstr}: {Err}",
+      "message": "Invalid constraint expression {NewConstr}: {Err}",
+      "translation": "Expression de contrainte non valide {NewConstr} : {Err}",
+      "placeholders": [
+        {
+          "id": "NewConstr",
+          "string": "%[1]s",
+          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "newConstr"
         },
         {
           "id": "Err",
@@ -13322,41 +13877,57 @@
       "fuzzy": true
     },
     {
-      "id": "Updating Node {Node} policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Node {Node} policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Mise à jour des contraintes de règle du noeud {Node} dans Horizon Exchange et réévaluation de tous les accords basés sur cette règle. Il se peut que les accords existants soient annulés et renégociés.",
+      "id": "Invalid deployment attribute {ExternPol}: {Err}",
+      "message": "Invalid deployment attribute {ExternPol}: {Err}",
+      "translation": "Attribut de déploiement non valide {ExternPol} : {Err}",
       "placeholders": [
         {
-          "id": "Node",
+          "id": "ExternPol",
           "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "github.com/open-horizon/anax/externalpolicy.ExternalPolicy",
+          "underlyingType": "struct{Properties github.com/open-horizon/anax/externalpolicy.PropertyList \"json:\\\"properties\\\"\"; Constraints github.com/open-horizon/anax/externalpolicy.ConstraintExpression \"json:\\\"constraints\\\"\"}",
           "argNum": 1,
-          "expr": "node"
+          "expr": "externPol"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Node {Node} policy constraints updated in the horizon exchange.",
-      "message": "Node {Node} policy constraints updated in the horizon exchange.",
-      "translation": "Les contraintes de règle du noeud {Node} ont été mises à jour dans Horizon Exchange.",
+      "id": "Invalid management attribute {ExternPol}: {Err}",
+      "message": "Invalid management attribute {ExternPol}: {Err}",
+      "translation": "Attribut de gestion non valide {ExternPol} : {Err}",
       "placeholders": [
         {
-          "id": "Node",
+          "id": "ExternPol",
           "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "github.com/open-horizon/anax/externalpolicy.ExternalPolicy",
+          "underlyingType": "struct{Properties github.com/open-horizon/anax/externalpolicy.PropertyList \"json:\\\"properties\\\"\"; Constraints github.com/open-horizon/anax/externalpolicy.ConstraintExpression \"json:\\\"constraints\\\"\"}",
           "argNum": 1,
-          "expr": "node"
+          "expr": "externPol"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Failed to find valid attribute to update in input {Attribute}. Attributes are constraints and properties.",
-      "message": "Failed to find valid attribute to update in input {Attribute}. Attributes are constraints and properties.",
-      "translation": "Impossible de trouver un attribut valide à mettre jour dans l'entrée {Attribute}. Les attributs sont des contraintes et des propriétés.",
+      "id": "Failed to find valid attribute to update in input {Attribute}. Valid attribute names are properties, constraints, deployment and management.",
+      "message": "Failed to find valid attribute to update in input {Attribute}. Valid attribute names are properties, constraints, deployment and management.",
+      "translation": "Impossible de trouver un attribut valide à mettre à jour dans l'entrée {Attribute}. Les noms d'attribut valides sont 'properties', 'constraints', 'deployment' et 'management'.",
       "placeholders": [
         {
           "id": "Attribute",
@@ -13365,6 +13936,54 @@
           "underlyingType": "[]byte",
           "argNum": 1,
           "expr": "attribute"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Updating Node policy {AttribName} attribute for node {Node} in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
+      "message": "Updating Node policy {AttribName} attribute for node {Node} in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "Mise à jour de l'attribut {AttribName} de la règle de nœud pour le nœud {Node} dans Horizon Exchange et réévaluation de tous les accords basés sur cette règle. Les accords existants pourraient être annulés et renégociés.",
+      "placeholders": [
+        {
+          "id": "AttribName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "attribName"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node policy {AttribName} attribute updated for node {Node} in the horizon exchange.",
+      "message": "Node policy {AttribName} attribute updated for node {Node} in the horizon exchange.",
+      "translation": "Attribut {AttribName} de la règle de nœud mis à jour pour le nœud {Node} dans Horizon Exchange.",
+      "placeholders": [
+        {
+          "id": "AttribName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "attribName"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
         }
       ],
       "fuzzy": true
@@ -13443,6 +14062,66 @@
           "expr": "node"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "node '{NodeName}' is not registered with the exchange in org {NodeOrg}",
+      "message": "node '{NodeName}' is not registered with the exchange in org {NodeOrg}",
+      "translation": "Le nœud '{NodeName}' n'est pas enregistré auprès de la structure Exchange dans l'organisation {NodeOrg}",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node policy for {NodeName} not found in org {NodeOrg}",
+      "message": "Node policy for {NodeName} not found in org {NodeOrg}",
+      "translation": "La règle de nœud pour {NodeName} est introuvable dans l'organisation {NodeOrg}",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "enabled",
+      "message": "enabled",
+      "translation": "activé",
+      "fuzzy": true
+    },
+    {
+      "id": "disabled",
+      "message": "disabled",
+      "translation": "désactivé",
       "fuzzy": true
     },
     {
@@ -15999,7 +16678,7 @@
         {
           "id": "PortBinding",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.PortBinding",
+          "type": "github.com/fsouza/go-dockerclient.PortBinding",
           "underlyingType": "struct{HostIP string \"json:\\\"HostIp,omitempty\\\" yaml:\\\"HostIp,omitempty\\\" toml:\\\"HostIp,omitempty\\\"\"; HostPort string \"json:\\\"HostPort,omitempty\\\" yaml:\\\"HostPort,omitempty\\\" toml:\\\"HostPort,omitempty\\\"\"}",
           "argNum": 2,
           "expr": "pb"
@@ -16362,6 +17041,418 @@
       "fuzzy": true
     },
     {
+      "id": "Invalid agent file type specified. Valid types include: {String}",
+      "message": "Invalid agent file type specified. Valid types include: {String}",
+      "translation": "Un type de fichier d'agent non valide a été spécifié. Les types valides sont les suivants : {String}",
+      "placeholders": [
+        {
+          "id": "String",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "validFileTypes.string()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "--version must specify a valid version range, a valid version string or \"latest\"",
+      "message": "--version must specify a valid version range, a valid version string or \"latest\"",
+      "translation": "--version doit spécifier une plage de versions valide, une chaîne de version valide ou la valeur \"latest\"",
+      "fuzzy": true
+    },
+    {
+      "id": "failed to check version range {FileVersion}: {Err}",
+      "message": "failed to check version range {FileVersion}: {Err}",
+      "translation": "échec de la vérification de la plage de versions {FileVersion} : {Err}",
+      "placeholders": [
+        {
+          "id": "FileVersion",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileVersion"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "must specify --type with --version-only",
+      "message": "must specify --type with --version-only",
+      "translation": "vous devez spécifier --type avec --version-only",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid manifest type specified. Valid types include: {String}",
+      "message": "Invalid manifest type specified. Valid types include: {String}",
+      "translation": "Type de manifeste non valide spécifié. Les types valides sont les suivants : {String}",
+      "placeholders": [
+        {
+          "id": "String",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "validManTypes.string()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "must specify --type with --id",
+      "message": "must specify --type with --id",
+      "translation": "Spécifiez l'indicateur --type avec --id",
+      "fuzzy": true
+    },
+    {
+      "id": "must specify --type and --id with --long",
+      "message": "must specify --type and --id with --long",
+      "translation": "vous devez spécifier --type et --id avec --long",
+      "fuzzy": true
+    },
+    {
+      "id": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
+      "message": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
+      "translation": "Manifeste {ManOrg}/{ObjectID} mis à jour dans le concentrateur de gestion",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ObjectID",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestsMeta.ObjectID"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Manifest {ManOrg}/{ObjectID} added to the Management Hub",
+      "message": "Manifest {ManOrg}/{ObjectID} added to the Management Hub",
+      "translation": "Manifeste {ManOrg}/{ObjectID} ajouté au concentrateur de gestion",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ObjectID",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestsMeta.ObjectID"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The following files were specified in the manifest file but do not exist in the Management Hub:",
+      "message": "The following files were specified in the manifest file but do not exist in the Management Hub:",
+      "translation": "Les fichiers suivants ont été spécifiés dans le fichier manifeste mais n'existent pas dans le concentrateur de gestion :",
+      "fuzzy": true
+    },
+    {
+      "id": "The version specified in SoftwareUpgrade is not a valid version string or \"latest\": {Version}",
+      "message": "The version specified in SoftwareUpgrade is not a valid version string or \"latest\": {Version}",
+      "translation": "La version spécifiée dans SoftwareUpgrade n'est ni une chaîne de version valide ni la valeur \"latest\" : {Version}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manifestData.SoftwareUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_software_files\".",
+      "message": "File \"{ManFile}\" version \"{Version}\" of type \"agent_software_files\".",
+      "translation": "Fichier \"{ManFile}\" version \"{Version}\" de type \"agent_software_files\".",
+      "placeholders": [
+        {
+          "id": "ManFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manFile"
+        },
+        {
+          "id": "Version",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestData.SoftwareUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The version specified in CertificateUpgrade is not a valid version string or \"latest\": {Version}",
+      "message": "The version specified in CertificateUpgrade is not a valid version string or \"latest\": {Version}",
+      "translation": "La version spécifiée dans CertificateUpgrade n'est ni chaîne de version valide ni la valeur \"latest\" : {Version}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manifestData.CertificateUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_cert_files\".",
+      "message": "File \"{ManFile}\" version \"{Version}\" of type \"agent_cert_files\".",
+      "translation": "Fichier \"{ManFile}\" version \"{Version}\" de type \"agent_cert_files\".",
+      "placeholders": [
+        {
+          "id": "ManFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manFile"
+        },
+        {
+          "id": "Version",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestData.CertificateUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The version specified in ConfigurationUpgrade is not a valid version string or \"latest\": {Version}",
+      "message": "The version specified in ConfigurationUpgrade is not a valid version string or \"latest\": {Version}",
+      "translation": "La version spécifiée dans ConfigurationUpgrade n'est ni une chaîne de version valide ni la valeur \"latest\" : {Version}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manifestData.ConfigurationUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_config_files\".",
+      "message": "File \"{ManFile}\" version \"{Version}\" of type \"agent_config_files\".",
+      "translation": "Fichier \"{ManFile}\" version \"{Version}\" de type \"agent_config_files\".",
+      "placeholders": [
+        {
+          "id": "ManFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manFile"
+        },
+        {
+          "id": "Version",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestData.ConfigurationUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
+      "message": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
+      "translation": "Exécutez 'hzn nodemanagement agentfiles list' pour obtenir une liste de fichiers valides.",
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
+      "message": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
+      "translation": "Voulez-vous vraiment supprimer le manifeste {ManOrg}/{ManifestId} du concentrateur de gestion ?",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ManifestId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Manifest '{ManOrg}/{ManifestId}' of type '{ManifestType}' not found in the Management Hub",
+      "message": "Manifest '{ManOrg}/{ManifestId}' of type '{ManifestType}' not found in the Management Hub",
+      "translation": "Le manifeste '{ManOrg}/{ManifestId}' de type '{ManifestType}' est introuvable dans le concentrateur de gestion",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ManifestId",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestId"
+        },
+        {
+          "id": "ManifestType",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "manifestType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Manifest {ManOrg}/{ManifestId} deleted from the Management Hub",
+      "message": "Manifest {ManOrg}/{ManifestId} deleted from the Management Hub",
+      "translation": "Manifeste {ManOrg}/{ManifestId} supprimé du concentrateur de gestion",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ManifestId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Fill in this section to perform a software upgrade of the agent. Remove this section to prevent software upgrade.",
+      "message": "Fill in this section to perform a software upgrade of the agent. Remove this section to prevent software upgrade.",
+      "translation": "Indiquez cette section pour effectuer une mise à niveau logicielle de l'agent. Supprimez cette section pour empêcher la mise à niveau logicielle.",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of agent software files stored in the Management Hub.",
+      "message": "A list of agent software files stored in the Management Hub.",
+      "translation": "Liste des fichiers logiciels agent stockés dans le concentrateur de gestion.",
+      "fuzzy": true
+    },
+    {
+      "id": "Run 'hzn nm agentfiles list -t agent_software_files' to get a list of available files.",
+      "message": "Run 'hzn nm agentfiles list -t agent_software_files' to get a list of available files.",
+      "translation": "Exécutez 'hzn nm agentfiles list -t agent_software_files' pour obtenir une liste des fichiers disponibles.",
+      "fuzzy": true
+    },
+    {
+      "id": "The agent software version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "message": "The agent software version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "translation": "Version du logiciel agent à laquelle s'applique ce manifeste. Indiquez \"latest\" pour obtenir la version la plus récente.",
+      "fuzzy": true
+    },
+    {
+      "id": "Fill in this section to upgrade the agent certificate. Remove this section to prevent certificate upgrade.",
+      "message": "Fill in this section to upgrade the agent certificate. Remove this section to prevent certificate upgrade.",
+      "translation": "Indiquez cette section pour mettre à niveau le certificat d'agent. Supprimez cette section pour empêcher la mise à niveau du certificat.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of a certificate file stored in the Management Hub. Default is \"agent-install.crt\".",
+      "message": "The name of a certificate file stored in the Management Hub. Default is \"agent-install.crt\".",
+      "translation": "Nom d'un fichier de certificat stocké dans le concentrateur de gestion. La valeur par défaut est \"agent-install.crt\".",
+      "fuzzy": true
+    },
+    {
+      "id": "Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.",
+      "message": "Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.",
+      "translation": "Exécutez 'hzn nm agentfiles list -t agent_cert_files' pour obtenir une liste des fichiers disponibles.",
+      "fuzzy": true
+    },
+    {
+      "id": "The agent certificate version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "message": "The agent certificate version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "translation": "Version du certificat d'agent à laquelle s'applique ce manifeste. Indiquez \"latest\" pour obtenir la version la plus récente.",
+      "fuzzy": true
+    },
+    {
+      "id": "Fill in this section to upgrade the agent config. Remove this section to prevent config upgrade.",
+      "message": "Fill in this section to upgrade the agent config. Remove this section to prevent config upgrade.",
+      "translation": "Indiquez cette section pour mettre à niveau la configuration de l'agent. Supprimez cette section pour empêcher la mise à niveau de la configuration.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of a config file stored in the Management Hub. Default is \"agent-install.crt\".",
+      "message": "The name of a config file stored in the Management Hub. Default is \"agent-install.crt\".",
+      "translation": "Nom d'un fichier de configuration stocké dans le concentrateur de gestion. La valeur par défaut est \"agent-install.crt\".",
+      "fuzzy": true
+    },
+    {
+      "id": "Run 'hzn nm agentfiles list -t agent_config_files' to get a list of available files.",
+      "message": "Run 'hzn nm agentfiles list -t agent_config_files' to get a list of available files.",
+      "translation": "Exécutez 'hzn nm agentfiles list -t agent_config_files' pour obtenir une liste des fichiers disponibles.",
+      "fuzzy": true
+    },
+    {
+      "id": "The agent config version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "message": "The agent config version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "translation": "Version de configuration de l'agent à laquelle s'applique ce manifeste. Indiquez \"latest\" pour obtenir la version la plus récente.",
+      "fuzzy": true
+    },
+    {
       "id": "deployment config {Dep} is not supported",
       "message": "deployment config {Dep} is not supported",
       "translation": "La configuration du déploiement {Dep} n'est pas prise en charge",
@@ -16452,6 +17543,72 @@
       "fuzzy": true
     },
     {
+      "id": "It applies to both deployment and node management.",
+      "message": "It applies to both deployment and node management.",
+      "translation": "Ce paramètre s'applique à la fois au déploiement et à la gestion des nœuds.",
+      "fuzzy": true
+    },
+    {
+      "id": "It usually containts the built-in node properties.",
+      "message": "It usually containts the built-in node properties.",
+      "translation": "Ce paramètre contient généralement les propriétés du nœud intégré.",
+      "fuzzy": true
+    },
+    {
+      "id": "It should be empty unless deployment and managment have the same constraint expressions.",
+      "message": "It should be empty unless deployment and managment have the same constraint expressions.",
+      "translation": "Il doit être vide sauf si le déploiement et la gestion ont les mêmes expressions de contrainte.",
+      "fuzzy": true
+    },
+    {
+      "id": "Policies that are used for deployment only.",
+      "message": "Policies that are used for deployment only.",
+      "translation": "Règles utilisées uniquement pour le déploiement.",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of policy properties for deployment.",
+      "message": "A list of policy properties for deployment.",
+      "translation": "Liste des propriétés de règle pour le déploiement.",
+      "fuzzy": true
+    },
+    {
+      "id": "It overwrites the properties with the same name on the top level.",
+      "message": "It overwrites the properties with the same name on the top level.",
+      "translation": "Ce paramètre remplace les propriétés portant le même nom au niveau supérieur.",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of constraints for deployment.",
+      "message": "A list of constraints for deployment.",
+      "translation": "Liste des contraintes de déploiement.",
+      "fuzzy": true
+    },
+    {
+      "id": "It overwrites all the constraints on the top level if not empty.",
+      "message": "It overwrites all the constraints on the top level if not empty.",
+      "translation": "Ce paramètre remplace toutes les contraintes du niveau supérieur s'il n'est pas vide.",
+      "fuzzy": true
+    },
+    {
+      "id": "Policies that are used for node management only.",
+      "message": "Policies that are used for node management only.",
+      "translation": "Règles utilisées uniquement pour la gestion des nœuds.",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of policy properties for node management.",
+      "message": "A list of policy properties for node management.",
+      "translation": "Liste des propriétés de règle pour la gestion des nœuds.",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of constraints for node management.",
+      "message": "A list of constraints for node management.",
+      "translation": "Liste des contraintes pour la gestion des nœuds.",
+      "fuzzy": true
+    },
+    {
       "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
       "message": "Unable to create UserInputFile object from file {FilePath}. {Err}",
       "translation": "Impossible de créer l'objet UserInputFile à partir du fichier {FilePath}. {Err}",
@@ -16535,6 +17692,22 @@
           "underlyingType": "*github.com/open-horizon/anax/common.UserInputFile",
           "argNum": 2,
           "expr": "userInputFileObj"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Note: No properties and constraints are specified under 'deployment' attribute in the node policy file {NodepolicyFlag}. The top level properties and constraints will be used.",
+      "message": "Note: No properties and constraints are specified under 'deployment' attribute in the node policy file {NodepolicyFlag}. The top level properties and constraints will be used.",
+      "translation": "Remarque : Aucune propriété ni contrainte n'est spécifiée sous l'attribut 'deployment' dans le fichier de règles de nœud {NodepolicyFlag}. Les propriétés et contraintes de niveau supérieur sont utilisées.",
+      "placeholders": [
+        {
+          "id": "NodepolicyFlag",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodepolicyFlag"
         }
       ],
       "fuzzy": true
@@ -16828,15 +18001,15 @@
       "fuzzy": true
     },
     {
-      "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
-      "message": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
-      "translation": "Aucun pattern ou aucune règle de noeud spécifié(e). La règle de noeud existante sera utilisée.",
+      "id": "No pattern or node policy is specified. Will proceed with the existing node policy.",
+      "message": "No pattern or node policy is specified. Will proceed with the existing node policy.",
+      "translation": "Aucun pattern ou aucune règle de noeud spécifié(e). Le traitement va se poursuivre avec la règle de nœud existante.",
       "fuzzy": true
     },
     {
-      "id": "Will proceeed with the given node policy.",
-      "message": "Will proceeed with the given node policy.",
-      "translation": "La règle de noeud donnée sera utilisée.",
+      "id": "Will proceed with the given node policy.",
+      "message": "Will proceed with the given node policy.",
+      "translation": "Le traitement va se poursuivre avec la règle de nœud indiquée.",
       "fuzzy": true
     },
     {
@@ -16920,9 +18093,9 @@
       "fuzzy": true
     },
     {
-      "id": "Will proceeed with the given pattern {Pattern}.",
-      "message": "Will proceeed with the given pattern {Pattern}.",
-      "translation": "Le pattern {Pattern} donné sera utilisé.",
+      "id": "Will proceed with the given pattern {Pattern}.",
+      "message": "Will proceed with the given pattern {Pattern}.",
+      "translation": "Le traitement va se poursuivre avec le modèle indiqué {Pattern}.",
       "placeholders": [
         {
           "id": "Pattern",
@@ -18022,6 +19195,46 @@
       "fuzzy": true
     },
     {
+      "id": "Key \"{Name}\" successfully added to the SDO owner services.",
+      "message": "Key \"{Name}\" successfully added to the SDO owner services.",
+      "translation": "La clé \"{Name}\" a été ajoutée avec succès aux services du propriétaire d'objets SDO.",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile.Name()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Key \"{Name}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "message": "Key \"{Name}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "translation": "La clé \"{Name}\" a été téléchargée avec succès dans {FileName} à partir des services du propriétaire d'objets SDO.",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile.Name()"
+        },
+        {
+          "id": "FileName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Listing SDO keys.",
       "message": "Listing SDO keys.",
       "translation": "Liste des clés SDO.",
@@ -18124,6 +19337,22 @@
       "fuzzy": true
     },
     {
+      "id": "Key \"{KeyName}\" successfully deleted from the SDO owner services.",
+      "message": "Key \"{KeyName}\" successfully deleted from the SDO owner services.",
+      "translation": "La clé \"{KeyName}\" a été supprimée des services du propriétaire d'objets SDO.",
+      "placeholders": [
+        {
+          "id": "KeyName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Creating SDO key template at \"{OutputFile}\".",
       "message": "Creating SDO key template at \"{OutputFile}\".",
       "translation": "Création d'un modèle de clé SDO dans \"{OutputFile}\".",
@@ -18156,6 +19385,22 @@
       "fuzzy": true
     },
     {
+      "id": "Key template successfully written to {FileName}.",
+      "message": "Key template successfully written to {FileName}.",
+      "translation": "Le modèle de clé a été écrit avec succès dans {FileName}.",
+      "placeholders": [
+        {
+          "id": "FileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
       "message": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
       "translation": "Nom de clé non valide. La clé \"{KeyName}\" n'existe pas dans l'organisation \"{Org}\".",
@@ -18180,9 +19425,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
-      "message": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
-      "translation": "Fichier de clés non valide. La clé \"{Name}\" existe déjà dans les services de propriétaire SDO pour l'organisation \"{Org}\".",
+      "id": "Invalid metadata file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "message": "Invalid metadata file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Fichier de métadonnées non valide. La clé \"{Name}\" existe déjà dans les services du propriétaire SDO pour l'organisation \"{Org}\".",
       "placeholders": [
         {
           "id": "Name",
@@ -18204,9 +19449,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
-      "message": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
-      "translation": "Fichier de clés non valide. La clé existe déjà dans les services de propriétaire SDO pour l'organisation \"{Org}\".",
+      "id": "Invalid metadata file. Key already exists in SDO owner services for org \"{Org}\".",
+      "message": "Invalid metadata file. Key already exists in SDO owner services for org \"{Org}\".",
+      "translation": "Fichier de métadonnées non valide. La clé existe déjà dans les services du propriétaire SDO pour l'organisation \"{Org}\".",
       "placeholders": [
         {
           "id": "Org",
@@ -18324,9 +19569,57 @@
       "fuzzy": true
     },
     {
-      "id": "given key {KeyFileName} has missing fields:\n{Err}",
-      "message": "given key {KeyFileName} has missing fields:\n{Err}",
-      "translation": "La clé fournie {KeyFileName} comporte des zones manquantes :\n{Err}",
+      "id": "given metadata file {KeyFileName} has missing fields:\n{Err}",
+      "message": "given metadata file {KeyFileName} has missing fields:\n{Err}",
+      "translation": "Le fichier de métadonnées donné {KeyFileName} comporte des zones manquantes : \n{Err}",
+      "placeholders": [
+        {
+          "id": "KeyFileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFileName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]s",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
+      "message": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
+      "translation": "Le nom de clé du fichier de métadonnées donné {KeyFileName} n'est pas pris en charge. \n{Err}",
+      "placeholders": [
+        {
+          "id": "KeyFileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFileName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]s",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
+      "message": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
+      "translation": "Le nom de pays du fichier de métadonnées donné {KeyFileName} n'est  pas pris en charge. \n{Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -19580,38 +20873,6 @@
       "fuzzy": true
     },
     {
-      "id": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "message": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "translation": "métadonnées d'objet '{ObjId}' de type '{ObjType}' introuvables dans l'organisation {Org}",
-      "placeholders": [
-        {
-          "id": "ObjId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "objId"
-        },
-        {
-          "id": "ObjType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "objType"
-        },
-        {
-          "id": "Org",
-          "string": "%[3]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 3,
-          "expr": "org"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Verifying data with digital signature....",
       "message": "Verifying data with digital signature....",
       "translation": "Vérification des données avec signature numérique...",
@@ -19704,24 +20965,6 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
-      "message": "Failed to verify digital signature because the hashAlgorithm is empty",
-      "translation": "Impossible de vérifier la signature numérique car l'algorithme de hachage est vide",
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to verify digital signature because the publicKey string is empty",
-      "message": "Failed to verify digital signature because the publicKey string is empty",
-      "translation": "Impossible de vérifier la signature numérique car la chaîne publicKey est vide",
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to verify digital signature because the signature string is empty",
-      "message": "Failed to verify digital signature because the signature string is empty",
-      "translation": "Impossible de vérifier la signature numérique car la chaîne de signature est vide",
-      "fuzzy": true
-    },
-    {
       "id": "must specify exchange credentials to access the model management service.",
       "message": "must specify exchange credentials to access the model management service.",
       "translation": "Vous devez spécifier les données d'identification Exchange pour pouvoir accéder au service de gestion du pattern.",
@@ -19778,12 +21021,6 @@
       "fuzzy": true
     },
     {
-      "id": "must specify --type with --id",
-      "message": "must specify --type with --id",
-      "translation": "Spécifiez l'indicateur --type avec --id",
-      "fuzzy": true
-    },
-    {
       "id": "must specify destinationType if set destinationId",
       "message": "must specify destinationType if set destinationId",
       "translation": "doit spécifier destinationType si destinationId défini",
@@ -19793,6 +21030,22 @@
       "id": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
       "message": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
       "translation": "expirationTimeBefore doit être spécifié 'maintenant' ou avec horodatage au format RC3339 : aaaa-MM-jjTHH:mm:ssZ",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid --deleted value: {WithData}, --data should be true or false",
+      "message": "Invalid --deleted value: {WithData}, --data should be true or false",
+      "translation": "Valeur --deleted non valide : {WithData}, --data doit être défini sur true ou false",
+      "placeholders": [
+        {
+          "id": "WithData",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "withData"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -20126,6 +21379,22 @@
       "fuzzy": true
     },
     {
+      "id": "Upload object in chunk, chunk size is: {ChunkSize}",
+      "message": "Upload object in chunk, chunk size is: {ChunkSize}",
+      "translation": "Envoi par téléchargement de l'objet en bloc, la taille du bloc est : {ChunkSize}",
+      "placeholders": [
+        {
+          "id": "ChunkSize",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "chunkSize"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
       "message": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
       "translation": "L'objet {ObjFile} a été téléchargé vers l'organisation {Org} dans le service de gestion des modèles (MMS)",
@@ -20161,6 +21430,30 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "string(resp)"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Object status is still {Stringresp} after {Count} try",
+      "message": "Object status is still {Stringresp} after {Count} try",
+      "translation": "L'état de l'objet est toujours {Stringresp} après l'essai {Count}",
+      "placeholders": [
+        {
+          "id": "Stringresp",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(resp)"
+        },
+        {
+          "id": "Count",
+          "string": "%[2]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "count"
         }
       ],
       "fuzzy": true
@@ -20214,6 +21507,22 @@
       "fuzzy": true
     },
     {
+      "id": "failed to marshal 'hzn mms object types' output: {Err}",
+      "message": "failed to marshal 'hzn mms object types' output: {Err}",
+      "translation": "échec de l’ordonnancement de la sortie 'hzn mms object types' : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Hash value is loaded.",
       "message": "Hash value is loaded.",
       "translation": "La valeur de hachage est chargée.",
@@ -20243,6 +21552,222 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "hashAlgo"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to get file info of object file {Name}: {Err}",
+      "message": "unable to get file info of object file {Name}: {Err}",
+      "translation": "Impossible d'obtenir les informations du fichier d'objet {Name}: {Err}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileInfo.Name()"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "error to read object file {Name} from offset {StartOffset}: {Err}",
+      "message": "error to read object file {Name} from offset {StartOffset}: {Err}",
+      "translation": "Erreur de lecture du fichier objet {Name} à partir du décalage {StartOffset}: {Err}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileInfo.Name()"
+        },
+        {
+          "id": "StartOffset",
+          "string": "%[2]d",
+          "type": "int64",
+          "underlyingType": "int64",
+          "argNum": 2,
+          "expr": "startOffset"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "read unexpected length of data (read data length: {N}, expected data length: {DataLength}) from object file {Name} from offset {StartOffset}: {Err}",
+      "message": "read unexpected length of data (read data length: {N}, expected data length: {DataLength}) from object file {Name} from offset {StartOffset}: {Err}",
+      "translation": "Lecture d'une longueur inattendue des données (longueur des données lue: {N}, longueur des données attendue : {DataLength}) pour le fichier d'objet {Name} à partir du décalage {StartOffset}: {Err}",
+      "placeholders": [
+        {
+          "id": "N",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "n"
+        },
+        {
+          "id": "DataLength",
+          "string": "%[2]d",
+          "type": "int64",
+          "underlyingType": "int64",
+          "argNum": 2,
+          "expr": "dataLength"
+        },
+        {
+          "id": "Name",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "fileInfo.Name()"
+        },
+        {
+          "id": "StartOffset",
+          "string": "%[4]d",
+          "type": "int64",
+          "underlyingType": "int64",
+          "argNum": 4,
+          "expr": "startOffset"
+        },
+        {
+          "id": "Err",
+          "string": "%[5]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 5,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Uploading: {Size__100} {}",
+      "message": "Uploading: {Size__100} {}",
+      "translation": "Téléchargement en cours : {Size__100} {}",
+      "placeholders": [
+        {
+          "id": "Size__100",
+          "string": "%.2[1]f",
+          "type": "float32",
+          "underlyingType": "float32",
+          "argNum": 1,
+          "expr": "float32(totalSent+dataLength) / float32(fileInfo.Size()) * 100"
+        },
+        {
+          "id": "",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "\"%\""
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "message": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "translation": "Erreur HTTP rencontrée: {Err} appel de l'API MMS REST API {ApiMsg}. Statut HTTP: {Httpstatus}. Nouvel essai.",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Httpstatus",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "http_status"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "message": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "translation": "Erreur HTTP rencontrée : {Err} appel de l'API MMS REST {ApiMsg}. Statut HTTP: {Httpstatus}.",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Httpstatus",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "http_status"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error during calling MMS REST API {ApiMsg}: {Error}",
+      "message": "Error during calling MMS REST API {ApiMsg}: {Error}",
+      "translation": "Erreur lors de l'appel de l'API REST MMS {ApiMsg}: {Error}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Error",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "err.Error()"
         }
       ],
       "fuzzy": true
@@ -21204,6 +22729,12 @@
       "fuzzy": true
     },
     {
+      "id": "Cannot use -C flag if not performing a deep clean. Must specify -D flag to use -C flag.",
+      "message": "Cannot use -C flag if not performing a deep clean. Must specify -D flag to use -C flag.",
+      "translation": "Impossible d'utiliser l'indicateur -C si aucun nettoyage en profondeur n'est effectué. Vous devez indiquer l'indicateur -D pour utiliser l'indicateur -C.",
+      "fuzzy": true
+    },
+    {
       "id": "Are you sure you want to unregister this Horizon node?",
       "message": "Are you sure you want to unregister this Horizon node?",
       "translation": "Voulez-vous vraiment désenregistrer de ce noeud Horizon ?",
@@ -21822,17 +23353,39 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
-      "message": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
-      "translation": "Impossible d'obtenir les variables à partir du fichier de configuration {CofigFile}. Erreur : {Err}",
+      "id": "Failed to get project configuration file. Error: {Err}",
+      "message": "Failed to get project configuration file. Error: {Err}",
+      "translation": "Impossible d'obtenir le fichier de configuration du projet. Erreur : {Err}",
       "placeholders": [
         {
-          "id": "CofigFile",
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Please use the -f flag to specify a configuration file.",
+      "message": "Please use the -f flag to specify a configuration file.",
+      "translation": "Veuillez utiliser l'indicateur -f pour spécifier un fichier de configuration.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get the variables from configuration file {ConfigFile}. Error: {Err}",
+      "message": "Failed to get the variables from configuration file {ConfigFile}. Error: {Err}",
+      "translation": "Échec de l'extraction des variables à partir du fichier de configuration {ConfigFile}. Erreur : {Err}",
+      "placeholders": [
+        {
+          "id": "ConfigFile",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "cofigFile"
+          "expr": "configFile"
         },
         {
           "id": "Err",
@@ -24429,6 +25982,30 @@
           "argNum": 1
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "message": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "Impossible de vérifier la signature numérique car l'algorithme de hachage est vide",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "message": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "Impossible de vérifier la signature numérique car la chaîne publicKey est vide",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "message": "Failed to verify digital signature because the signature string is empty",
+      "translation": "Impossible de vérifier la signature numérique car la chaîne de signature est vide",
+      "fuzzy": true
+    },
+    {
+      "id": "Label, or Enabled is empty.",
+      "message": "Label, or Enabled is empty.",
+      "translation": "Le libellé ou la zone Activé est vide.",
       "fuzzy": true
     },
     {

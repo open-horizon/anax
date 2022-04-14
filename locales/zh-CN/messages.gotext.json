@@ -117,24 +117,6 @@
     },
     {
       "id": [
-        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
-        "unable to read node policy from the local database. {Arg_1}"
-      ],
-      "message": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "无法从本地数据库读取节点策略。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
         "EL_AG_UNABLE_READ_NODE_FROM_DB",
         "Unable to read node object from the local database. {Arg_1}"
       ],
@@ -1049,11 +1031,11 @@
     },
     {
       "id": [
-        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR2",
+        "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}"
       ],
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点策略修补程序的输入出错。 输入主体未包含约束表达式或属性列表：{Arg_1}，错误：{Arg_2}",
+      "message": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
+      "translation": "解析节点策略补丁的输入时出错。 输入主体不包含“properties”、“constraints”、“deployment”或“management”属性：{Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -1061,13 +1043,6 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
         }
       ],
       "fuzzy": true
@@ -3572,30 +3547,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "errUrl"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "translation": "正在上载：{Float32totalSent__float32bodyLen__100} {}",
-      "placeholders": [
-        {
-          "id": "Float32totalSent__float32bodyLen__100",
-          "string": "%.2[1]f",
-          "type": "float32",
-          "underlyingType": "float32",
-          "argNum": 1,
-          "expr": "float32(totalSent) / float32(bodyLen) * 100"
-        },
-        {
-          "id": "",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "\"%\""
         }
       ],
       "fuzzy": true
@@ -7070,6 +7021,46 @@
       "fuzzy": true
     },
     {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "message": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "无法验证数字签名，因为 hashAlgorithm 为空",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "message": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "无法验证数字签名，因为 publicKey 字符串为空",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "message": "Failed to verify digital signature because the signature string is empty",
+      "translation": "无法验证数字签名，因为签名字符串为空",
+      "fuzzy": true
+    },
+    {
+      "id": "Hash algorithm {HashAlgo} is not supported",
+      "message": "Hash algorithm {HashAlgo} is not supported",
+      "translation": "散列算法 {HashAlgo} 不受支持",
+      "placeholders": [
+        {
+          "id": "HashAlgo",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "hashAlgo"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Label, or Enabled is empty.",
+      "message": "Label, or Enabled is empty.",
+      "translation": "“标签”或“已启用”为空。",
+      "fuzzy": true
+    },
+    {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
       "message": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
       "translation": "{PROPNODEPRIVILEGED} 属性必须包含布尔值（true 或 false）。",
@@ -7621,6 +7612,24 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_ERR_RETRIEVE_NODE_POL_FROM_DB",
+        "Error retrieving node policy from database, error {Arg_1}"
+      ],
+      "message": "Error retrieving node policy from database, error {Arg_1}",
+      "translation": "从数据库检索节点策略时出错，错误 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -9390,6 +9399,49 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CREATED",
+        "New node management policy status created for policy {Arg_1}."
+      ],
+      "message": "New node management policy status created for policy {Arg_1}.",
+      "translation": "已为策略 {Arg_1} 创建新的节点管理策略状态。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED",
+        "Node management status for {Arg_1} changed to {Arg_2}"
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}",
+      "translation": "{Arg_1} 的节点管理状态已更改为 {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true

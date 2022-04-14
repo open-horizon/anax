@@ -1,2014 +1,2034 @@
-// NLS_CHARSET=UTF-8
-{
-  "language": "ja",
-  "messages": [
-    {
-      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-      "translation": "サービス {Arg_2} のポリシー・ファイル {Arg_1} を読み取れません。エラー: {Arg_3}"
-    },
-    {
-      "id": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを開始します。"
-    },
-    {
-      "id": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用してポリシーをアドバタイズできません。エラー: {Arg_3}"
-    },
-    {
-      "id": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを完了します。"
-    },
-    {
-      "id": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "ローカル・データベースからノード・ポリシーを読み取れません。 {Arg_1}"
-    },
-    {
-      "id": "Unable to read node object from the local database. {Arg_1}",
-      "translation": "ローカル・データベースからノード・オブジェクトを読み取れません。 {Arg_1}"
-    },
-    {
-      "id": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
-      "translation": "ローカル・ノード・ポリシーを Exchange のコピーと同期できません。 エラー: {Arg_1}"
-    },
-    {
-      "id": "Node policy updated with the Exchange copy: {Arg_1}",
-      "translation": "ノード・ポリシーが Exchange のコピーによって更新されました: {Arg_1}"
-    },
-    {
-      "id": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
-      "translation": "ローカル・ノード・ユーザー入力を Exchange のコピーと同期できません。 エラー: {Arg_1}"
-    },
-    {
-      "id": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "ノードのユーザー入力が Exchange のコピーによって更新されました。 変更されたユーザー入力: {Arg_1}"
-    },
-    {
-      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-      "translation": "ノードは利用者との契約 {Arg_1} を検証できませんでした。 キャンセルします。"
-    },
-    {
-      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-      "translation": "ノードはオフラインです。 接続が復元されるまで、定期的なオフライン・エラー・メッセージのログ記録は抑制されます"
-    },
-    {
-      "id": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
-      "translation": "ノードを Exchange のコピーと同期できません。 エラー: {Arg_1}"
-    },
-    {
-      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
-      "translation": "ノード・リソース {Arg_1} のサービス構成状態を Exchange から取得できません。エラー {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
-      "translation": "ローカル・データベースから保存済みノード Exchange パターンを取得できません。 {Arg_1}"
-    },
-    {
-      "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
-      "translation": "新しいノード Exchange パターン {Arg_1} をローカル・データベースに保存できません。 エラー: {Arg_2}"
-    },
-    {
-      "id": "anax terminating, unable to sync up containers.",
-      "translation": "anax を終了します。コンテナーを同期できません。"
-    },
-    {
-      "id": "anax terminating, unable to complete agreement sync up. {Arg_1}",
-      "translation": "anax を終了します。契約の同期を実行できません。 {Arg_1}"
-    },
-    {
-      "id": "No input found.",
-      "translation": "入力が見つかりません。"
-    },
-    {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。"
-    },
-    {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "ユーザーを Exchange で認証できませんでした。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
-      "translation": "入力ボディを SecretBindingCheck オブジェクトにデシリアライズできませんでした。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。 {Err}"
-    },
-    {
-      "id": "No exchange user id is supplied.",
-      "translation": "Exchange ユーザー ID が提供されていません。"
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "Exchange ユーザー組織 ID が提供されていません。"
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。"
-    },
-    {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
-    },
-    {
-      "id": "Exchange user {Key} is not in the correct format, should be org/username.",
-      "translation": "Exchange ユーザー {Key} の形式が正しくありません。org/username でなければなりません。"
-    },
-    {
-      "id": "Internal server error",
-      "translation": "内部サーバー・エラー"
-    },
-    {
-      "id": "There is no secrets provider configured, secrets are unavailable.",
-      "translation": "構成された秘密プロバイダーはなく、秘密は使用不可です。"
-    },
-    {
-      "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
-      "translation": "秘密プロバイダーの準備ができていません。 呼び出し元は、秘密プロバイダーが使用不可であることを確認するため、呼び出しと呼び出しの間で少し遅延させてこの API 呼び出しを数回再試行するべきです。"
-    },
-    {
-      "id": "Secret name must be provided",
-      "translation": "秘密名を指定してください"
-    },
-    {
-      "id": "Unable to read request body, error: {Err}.",
-      "translation": "要求ボディを読み取ることができません。エラー: {Err}。"
-    },
-    {
-      "id": "Request body is empty.",
-      "translation": "要求ボディが空です。"
-    },
-    {
-      "id": "Request body parse error, {Uerr}",
-      "translation": "要求ボディ構文解析エラー: {Uerr}"
-    },
-    {
-      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
-      "translation": "許可が拒否されました。ユーザー「{ExUser}」は、組織「{Org}」で秘密の {Action} を行うことはできません"
-    },
-    {
-      "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
-      "translation": "許可が拒否されました。ユーザー「{ExUser}」は、組織「{Org}」で秘密「{SecretName}」の {Action} を行うことはできません"
-    },
-    {
-      "id": "Unable to read the vault response: {Error}",
-      "translation": "ボールトの応答を読み取ることができません: {Error}"
-    },
-    {
-      "id": "Unable to parse the vault response \"{Response}\": {Error}",
-      "translation": "ボールトの応答「{Response}」を構文解析できません: {Error}"
-    },
-    {
-      "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
-      "translation": "組織「{Org}」で秘密の {Action} を行うことはできません。秘密プロバイダーでサポートされていない操作です。"
-    },
-    {
-      "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
-      "translation": "組織「{Org}」で秘密「{SecretName}」の {Action} を行うことはできません。秘密プロバイダーでサポートされていない操作です。"
-    },
-    {
-      "id": "Secrets provider received a bad request, please check all the provided inputs.",
-      "translation": "秘密プロバイダーは不正な要求を受け取りました。指定した入力をすべて確認してください。"
-    },
-    {
-      "id": "Response: {Response}",
-      "translation": "応答: {Response}"
-    },
-    {
-      "id": "No secret(s) found in organization \"{Org}\"",
-      "translation": "組織「{Org}」内で秘密が見つかりません"
-    },
-    {
-      "id": "No secret(s) found under secret name \"{SecretName}\"",
-      "translation": "秘密名「{SecretName}」の秘密が見つかりません"
-    },
-    {
-      "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
-      "translation": "不明なエラーが発生しました。 秘密プロバイダーから応答コード {ResponseCode} を受け取りました。"
-    },
-    {
-      "id": "Organization must be specified in the API path",
-      "translation": "API パスに組織を指定する必要があります"
-    },
-    {
-      "id": "User must be specified in the API path",
-      "translation": "API パスにユーザーを指定する必要があります"
-    },
-    {
-      "id": "Error checking secret {FullSecretName} in the secret manager.",
-      "translation": "秘密マネージャー内で秘密 {FullSecretName} を検査中にエラーが発生しました。"
-    },
-    {
-      "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
-      "translation": "秘密マネージャー内で秘密名を検査中に誤ったタイプが返されました: {Payload}"
-    },
-    {
-      "id": "Secret {FullSecretName} does not exist in the secret manager.",
-      "translation": "秘密 {FullSecretName} は秘密マネージャー内に存在しません。"
-    },
-    {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "translation": "選択 {Form} の構文解析にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "translation": "出力の {Resource} の取得中にエラーが発生しました、エラー {Err}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディを configstate オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード更新の入力を構文解析しているときにエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード・ポリシー用の入力の構文解析中にエラーが発生しました。 入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディに制約式またはプロパティー・リストが含まれていませんでした:{Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノードのユーザー入力用の入力の構文解析中にエラーが発生しました。 入力ボディを UserInput オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
-    },
-    {
-      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "ノード {Arg_1} のノード構成/登録でエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "ノード {Arg_1} の更新でエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error in node unregistration. {Arg_1}",
-      "translation": "ノードの登録解除でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "Exchange のバージョンの確認でエラーが発生しました。 エラー: {Arg_1}"
-    },
-    {
-      "id": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "ノード・ポリシーの作成または置換中にエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in patching node policy. {Arg_1}",
-      "translation": "ノード・ポリシーへのパッチ適用でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node policy. {Arg_1}",
-      "translation": "ノード・ポリシーの削除でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in updating node user input. {Arg_1}",
-      "translation": "ノードのユーザー入力の更新でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in patching node user input. {Arg_1}",
-      "translation": "ノードのユーザー入力へのパッチ適用でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node userinput. {Arg_1}",
-      "translation": "ノードのユーザー入力の削除でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "ノード {Arg_1} に対するノード構成/登録を開始します。"
-    },
-    {
-      "id": "Start updating node {Arg_1}.",
-      "translation": "ノード {Arg_1} の更新を開始します。"
-    },
-    {
-      "id": "Complete node update for {Arg_1}.",
-      "translation": "{Arg_1} に対するノード更新を完了します。"
-    },
-    {
-      "id": "Start node unregistration.",
-      "translation": "ノードの登録解除を開始します。"
-    },
-    {
-      "id": "Node unregistration complete for node {Arg_1}.",
-      "translation": "ノード {Arg_1} に対するノードの登録解除が完了しました。"
-    },
-    {
-      "id": "Error unregistering the node. The node is not found from the database.",
-      "translation": "ノードの登録抹消中にエラーが発生しました。 このノードはデータベースで見つかりません。"
-    },
-    {
-      "id": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "ノードの登録抹消中にエラーが発生しました。 ノードの構成解除を行うには、ノードが「configured」または「configuring」の状態である必要があります。"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "ノード登録解除の入力エラー。 {Arg_1} は removeNode の誤った値です"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "ノード登録解除の入力エラー。 {Arg_1} は deepClean の誤った値です"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "ノード登録解除の入力エラー。 {Arg_1} は block の誤った値です"
-    },
-    {
-      "id": "Unable to read node object from database, error {Arg_1}",
-      "translation": "データベースからノード・オブジェクトを読み取れません。エラー {Arg_1}"
-    },
-    {
-      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "新規ノードの構成状態 (「unconfiguring」) をデータベースに保存する際にエラーが発生しました: {Arg_1}"
-    },
-    {
-      "id": "Error in node configuration. The node is not found from the database.",
-      "translation": "ノード構成のエラー。 このノードはデータベースで見つかりません。"
-    },
-    {
-      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "ノード構成のエラー。 状態を {Arg_1} に変更するには、ノードが「configured」または「configuring」の状態である必要があります。"
-    },
-    {
-      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "「{Arg_1}」から「{Arg_2}」へのノードの状態遷移はサポートされていません。"
-    },
-    {
-      "id": "Failed get user input from local db. {Arg_1}",
-      "translation": "ローカル・データベースからのユーザー入力の取得に失敗しました。 {Arg_1}"
-    },
-    {
-      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "ローカル・ユーザー入力からサービス {Arg_1}/{Arg_2} の設定を見つけられませんでした。エラー: {Arg_3}"
-    },
-    {
-      "id": "Error saving new node config state to database: {Arg_1}",
-      "translation": "新規ノードの構成状態をデータベースに保存する際にエラーが発生しました: {Arg_1}"
-    },
-    {
-      "id": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "ノード {Arg_1} のノード構成/登録を完了します。"
-    },
-    {
-      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} のサービス構成でエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "パターン {Arg_1} のサービス参照の取得でエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Ignoring service. {Arg_1}",
-      "translation": "サービスを無視します。 {Arg_1}"
-    },
-    {
-      "id": "New node policy: {Arg_1}",
-      "translation": "新規ノード・ポリシー: {Arg_1}"
-    },
-    {
-      "id": "Deleted node policy",
-      "translation": "ノード・ポリシーを削除しました"
-    },
-    {
-      "id": "New node user input: {Arg_1}",
-      "translation": "新規ノードのユーザー入力: {Arg_1}"
-    },
-    {
-      "id": "No node user input to detele",
-      "translation": "削除するノード・ユーザー入力はありません"
-    },
-    {
-      "id": "Deleted all node user input",
-      "translation": "すべてのノード・ユーザー入力を削除しました"
-    },
-    {
-      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "ユーザー入力を使用して {Arg_1}/{Arg_2} のサービス構成を開始します。"
-    },
-    {
-      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を開始します。"
-    },
-    {
-      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するサービスの構成を完了します。"
-    },
-    {
-      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を完了します。"
-    },
-    {
-      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
-      "translation": "変数 {Arg_1} が {Arg_2}/{Arg_3} のサービス構成にありません。 欠落している変数の設定がデプロイメント・ポリシーに含まれていない場合、契約が結ばれない可能性があります。"
-    },
-    {
-      "id": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "サービス {Arg_1} の構成中にエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "サービスの構成状態 {Arg_1} の変更中にエラーが発生しました、エラー {Arg_2}"
-    },
-    {
-      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を開始します。"
-    },
-    {
-      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を完了します。"
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "translation": "Name または Org が空ストリングです。"
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 配列が空です。"
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
-    },
-    {
-      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "プロパティー {PROPSVCPRIVILEGED} にはブール値 (true または false) が必要です。"
-    },
-    {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが失敗しました。 エラー: {Arg_3}"
-    },
-    {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが復元されました。"
-    },
-    {
-      "id": "[verbose] {M}",
-      "translation": "[詳細] {M}"
-    },
-    {
-      "id": "Error: {Msg}",
-      "translation": "エラー: {Msg}"
-    },
-    {
-      "id": "Warning: {Msg}",
-      "translation": "警告: {Msg}"
-    },
-    {
-      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
-      "translation": "{ErrMsg} のバイトのアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to marshal data type from {ErrMsg}: {Err}",
-      "translation": "{ErrMsg} のデータ・タイプのマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "problem testing api key match: {Err}",
-      "translation": "API 鍵マッチングのテストで問題が発生しました: {Err}"
-    },
-    {
-      "id": "Using API key",
-      "translation": "API 鍵の使用"
-    },
-    {
-      "id": "unable to create docker client: {Err}",
-      "translation": "Docker クライアントを作成できません: {Err}"
-    },
-    {
-      "id": "docker auth domainName: {DomainName}",
-      "translation": "Docker 認証ドメイン・ネーム: {DomainName}"
-    },
-    {
-      "id": "unable to load docker credentials for {Domain}: {Err}",
-      "translation": "{Domain} 用の Docker 資格情報をロードできません: {Err}"
-    },
-    {
-      "id": "unable to find docker credentials for {Domain}",
-      "translation": "{Domain} 用の Docker 資格情報が見つかりませんでした"
-    },
-    {
-      "id": "Pushing {ImageName}...",
-      "translation": "{ImageName} をプッシュ中..."
-    },
-    {
-      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
-      "translation": "~/.docker/config.json から Docker 資格情報 を取得できませんでした: {Err}。 「docker login ...」を実行してイメージ・レジストリーの資格情報を入力する必要がある場合があります。"
-    },
-    {
-      "id": "unable to push docker image {Repository____tag}: {Err}",
-      "translation": "Docker イメージ {Repository____tag} をプッシュできません: {Err}"
-    },
-    {
-      "id": "Pulling {ImageName}...",
-      "translation": "{ImageName} をプル中..."
-    },
-    {
-      "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
-      "translation": "docker.io または {Domain} ドメイン用の Docker 認証を取得できません: {Err}"
-    },
-    {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
-      "translation": "Docker イメージ {Repository____tag} をプルできません。 Docker 資格情報が見つかりませんでした。 専用のイメージ・レジストリーの場合は「docker login ...」を実行する必要がある場合があります。 エラー: {Err}: {LoginErr}"
-    },
-    {
-      "id": "unable to pull docker image {Repository____tag}: {Err}",
-      "translation": "Docker イメージ {Repository____tag} をプルできません: {Err}"
-    },
-    {
-      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
-      "translation": "Docker 出力でイメージ・ダイジェストが見つけられなかったので、イメージ・ダイジェストを直接イメージから取得します。"
-    },
-    {
-      "id": "could not inspect image {ImageName}: {Err}.",
-      "translation": "イメージ {ImageName} を検査できませんでした: {Err}"
-    },
-    {
-      "id": "could not find digest for image {ImageName}.",
-      "translation": "イメージ {ImageName} のダイジェストを見つけられませんでした。"
-    },
-    {
-      "id": "the id can not contain more than 1 '/'",
-      "translation": "ID には複数の「/」を含めることはできません"
-    },
-    {
-      "id": "reading stdin failed: {Err}",
-      "translation": "標準入力の読み取りに失敗しました: {Err}"
-    },
-    {
-      "id": "reading {FilePath} failed: {Err}",
-      "translation": "{FilePath} の読み取りに失敗しました: {Err}"
-    },
-    {
-      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
-      "translation": "警告: 環境変数「{EnvVarName}」は入力ファイルで参照されていますが、環境で定義されていません。"
-    },
-    {
-      "id": "Error reading input, error {Err}",
-      "translation": "入力の読み取りでエラーが発生しました、エラー {Err}"
-    },
-    {
-      "id": "Exiting.",
-      "translation": "終了します。"
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "ファイル {KeyFile} の絶対パスの取得に失敗しました。 {Err}"
-    },
-    {
-      "id": "Error checking absolute path for file {KeyFile}. {Err}",
-      "translation": "ファイル {KeyFile} の絶対パスの検査中にエラーが発生しました。{Err}"
-    },
-    {
-      "id": "Error parsing HORIZON_URL: {Err}",
-      "translation": "HORIZON_URL の構文解析でエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Error parsing host of the HORIZON_URL: {Err}",
-      "translation": "HORIZON_URL のホストの構文解析でエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Error parsing port of the HORIZON_URL: {Err}",
-      "translation": "HORIZON_URL のポートの構文解析でエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Unexpected port of the HORIZON_URL: {PortInt}",
-      "translation": "HORIZON_URL のポートが予期しないものです: {PortInt}"
-    },
-    {
-      "id": "The agbot url: {EnvVar}",
-      "translation": "agbot url: {EnvVar}"
-    },
-    {
-      "id": "Error reading HTTP response, error {Err}",
-      "translation": "HTTP 応答の読み取りでエラーが発生しました、エラー {Err}"
-    },
-    {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 「{StatusCommand}」を実行して Horizon エージェントが実行中であるか確認してください。 または「{StatusURL}」を実行して Horizon エージェントの状況を確認してください。 または、SSH トンネルを介してリモート Horizon エージェントに接続されている別のローカル・ポートに接続するように HORIZON_URL を設定します。 具体的なエラーは次のとおりです: {Err}"
-    },
-    {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 ポートに関連付けられている SSH トンネルが停止している可能性があります。 または、トンネルの向こう側にあるリモート Horizon エージェントが停止している可能性があります。 具体的なエラーは次のとおりです: {Err}"
-    },
-    {
-      "id": "{ApiMsg} new request failed: {Err}",
-      "translation": "{ApiMsg} 新規要求が失敗しました: {Err}"
-    },
-    {
-      "id": "HTTP code: {HttpCode}",
-      "translation": "HTTP コード: {HttpCode}"
-    },
-    {
-      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "{ApiMsg} からの誤った HTTP コード: {HttpCode}"
-    },
-    {
-      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "{ApiMsg} からの誤った HTTP コード: {HttpCode}"
-    },
-    {
-      "id": "Failed to read body response from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg} のボディ応答の読み取りに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to read body response from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg} のボディ応答の読み取りに失敗しました: {Err}"
-    },
-    {
-      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg} のボディ応答のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg} のボディ応答のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
-      "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}: {Body}"
-    },
-    {
-      "id": "failed to marshal body for {ApiMsg}: {Err}",
-      "translation": "{ApiMsg} のボディのマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "HZN_AGBOT_URL is not defined",
-      "translation": "HZN_AGBOT_URL が定義されていません"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}、出力: {StringbodyBytes}"
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg} の Exchange ボディ応答のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg} の Exchange 出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "Failed to unmarshal bytes. {Err}",
-      "translation": "バイトのアンマーシャルに失敗しました。 {Err}"
-    },
-    {
-      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
-      "translation": "{ANAXOVERWRITEFILE} から {OldMgmtHubCertPath} を取得しているときにエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-      "translation": "ICP 証明書ファイル {IcpCertPath} の読み取り中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "{ANAXOVERWRITEFILE} から HZN_EXCHANGE_URL の取得中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
-      "translation": "{ANAXCONFIGFILE} から ExchangeUrl の取得中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
-      "translation": "HZN_EXCHANGE_URL が設定されていません、ノードの Horizon エージェント構成から取得してください。"
-    },
-    {
-      "id": "Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
-      "translation": "環境変数 HZN_EXCHANGE_URL または Horizon エージェントから Exchange URL を取得できませんでした"
-    },
-    {
-      "id": "The exchange url: {ExchUrl}",
-      "translation": "Exchange URL: {ExchUrl}"
-    },
-    {
-      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "{ANAXOVERWRITEFILE} から HZN_FSS_CSSURL の取得中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
-      "translation": "{ANAXCONFIGFILE} から モデル管理サービスの URL の取得中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
-      "translation": "HZN_FSS_CSSURL が設定されていません、ノードの Horizon エージェント構成から取得してください。"
-    },
-    {
-      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
-      "translation": "環境変数 HZN_FSS_CSSURL または Horizon エージェントからモデル管理サービスの URL を取得できませんでした"
-    },
-    {
-      "id": "The model management service url: {MmsUrl}",
-      "translation": "モデル管理サービス URL: {MmsUrl}"
-    },
-    {
-      "id": "HZN_SDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
-      "translation": "HZN_SDO_SVC_URL が設定されていません。{ANAXOVERWRITEFILE} から取得してください。"
-    },
-    {
-      "id": "Error getting HZN_SDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
-      "translation": "{ANAXOVERWRITEFILE} から HZN_SDO_SVC_URL を取得中にエラーが発生しました。{Err}"
-    },
-    {
-      "id": "Could not get the HZN_SDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
-      "translation": "環境の {ANAXOVERWRITEFILE} ファイル、またはいずれかの hzn.json ファイルから、HZN_SDO_SVC_URL 値を取得できませんでした"
-    },
-    {
-      "id": "The SDO service url: {SdoUrl}",
-      "translation": "SDO サービス URL: {SdoUrl}"
-    },
-    {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "{ApiMethod} を実行するために Horizon {HorizonService} REST API に接続できません。 Horizon エージェントが現在構成されている対象の {Article} {HorizonService_1} とは別のものを使用するように {ServiceEnvVarName} を設定します。 具体的なエラーは次のとおりです: {Err}"
-    },
-    {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "{ApiMethod} を実行するために Horizon {HorizonService} REST API に接続できません。 {ServiceEnvVarName} の設定に誤りがある可能性があります。 または、{ServiceEnvVarName_1} の設定を解除して、Horizon エージェントが構成されている対象の {HorizonService_1} を使用します。 具体的なエラーは次のとおりです: {Err}"
-    },
-    {
-      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
-      "translation": "{ApiMsg} の Exchange ボディのマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "Failed to get file info: {Err}",
-      "translation": "ファイル情報の取得に失敗しました: {Err}"
-    },
-    {
-      "id": "Malformed URL: {UrlPath}. {ErrUrl}",
-      "translation": "URL の形式に誤りがあります: {UrlPath}。 {ErrUrl}"
-    },
-    {
-      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "translation": "アップロード中: {Float32totalSent__float32bodyLen__100} {}"
-    },
-    {
-      "id": "unable to open object file {Name}: {Err}",
-      "translation": "オブジェクト・ファイル {Name} を開くことができません: {Err}"
-    },
-    {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
-      "translation": "HTTP エラーが発生しました: {Service} REST API {ApiMsg} のコール中に {Err} が発生しました。 HTTP 状況: {Httpstatus}。 再試行します。"
-    },
-    {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
-      "translation": "HTTP エラーが発生しました: {Service} REST API {ApiMsg} のコール中に {Err} が発生しました。 HTTP 状況: {Httpstatus}。"
-    },
-    {
-      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
-      "translation": "{ApiMsg} の Exchange ボディ応答の読み取りに失敗しました: {Err}"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
-      "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}: {Code}、{Msg}"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
-      "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}"
-    },
-    {
-      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
-      "translation": "Exchange 認証は次のいずれかで指定する必要があります: -u フラグ、-n フラグ、HZN_EXCHANGE_USER_AUTH、または HZN_EXCHANGE_NODE_AUTH"
-    },
-    {
-      "id": "Verifying public key file ...",
-      "translation": "公開鍵ファイルを検証中 ..."
-    },
-    {
-      "id": "provided public key is not valid; error: {Err}",
-      "translation": "指定された公開鍵は無効です、エラー: {Err}"
-    },
-    {
-      "id": "Checking private key file format ...",
-      "translation": "秘密鍵ファイル・フォーマットを確認中..."
-    },
-    {
-      "id": "provided private key {KeyFile} is not valid; error: {Err}",
-      "translation": "指定された秘密鍵 {KeyFile} は無効です。エラー: {Err}"
-    },
-    {
-      "id": "{Err}. Please create the signing key.",
-      "translation": "{Err}。 署名鍵を作成してください。"
-    },
-    {
-      "id": "private key could not be generated; error: {Err}",
-      "translation": "秘密鍵を生成できませんでした。エラー: {Err}"
-    },
-    {
-      "id": "{Arg_1}. Public key could not be generated.",
-      "translation": "{Arg_1}。公開鍵を生成できませんでした。"
-    },
-    {
-      "id": "running: {CmdStr}",
-      "translation": "実行中: {CmdStr}"
-    },
-    {
-      "id": "did not get a command object",
-      "translation": "コマンド・オブジェクトを取得しませんでした"
-    },
-    {
-      "id": "Could not get Stdin pipe, error: {Err}",
-      "translation": "標準入力パイプを取得できませんでした、エラー: {Err}"
-    },
-    {
-      "id": "could not retrieve output from command, error: {Err}",
-      "translation": "コマンドから出力を取得できませんでした、エラー: {Err}"
-    },
-    {
-      "id": "could not retrieve stderr from command, error: {Err}",
-      "translation": "コマンドから標準エラー出力を取得できませんでした、エラー: {Err}"
-    },
-    {
-      "id": "Unable to start command, error: {Err}",
-      "translation": "コマンドを開始できません、エラー: {Err}"
-    },
-    {
-      "id": "Unable to write to stdin of command, error: {Err}",
-      "translation": "コマンドの標準入力に書き込むことができません、エラー: {Err}"
-    },
-    {
-      "id": "Unable to close stdin, error: {Err}",
-      "translation": "標準入力を閉じることができません、エラー: {Err}"
-    },
-    {
-      "id": "could not read stdout, error: {Err}",
-      "translation": "標準出力を読み取ることができませんでした、エラー: {Err}"
-    },
-    {
-      "id": "could not read stderr, error: {Err}",
-      "translation": "標準エラー出力を読み取ることができませんでした、エラー: {Err}"
-    },
-    {
-      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
-      "translation": "コマンドが失敗しました: {Err}、標準エラー出力: {StringstderrBytes}"
-    },
-    {
-      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
-      "translation": "{HTTPRequestTimeoutOverride} を使用して要求タイムアウトを設定できません。値は有効な数値ではありません: {EnvTimeout}"
-    },
-    {
-      "id": "HTTP request timeout set to {RequestTimeout} seconds",
-      "translation": "HTTP 要求タイムアウトは {RequestTimeout} 秒に設定されています"
-    },
-    {
-      "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
-      "translation": "環境変数 HZN_HTTP_RETRIES {MaxRetriess} を整数に変換中にエラーが発生しました。 {Err1}"
-    },
-    {
-      "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
-      "translation": "環境変数 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} を整数に変換中にエラーが発生しました。 {Err1}"
-    },
-    {
-      "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "ファイル {FileName} は既に存在します。 別のファイル・パスまたはファイル名を指定してください。 既存のファイルを上書きするには、「--overwrite」フラグを使用します。"
-    },
-    {
-      "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
-      "translation": "オブジェクト「{DefaultFileName}」のデータをファイル {FileName} に保存できませんでした。エラー: {Err}"
-    },
-    {
-      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
-      "translation": "{Image} は次のとおり構文解析されました: domain={Domain}、path={Path}、tag={Tag}"
-    },
-    {
-      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
-      "translation": "警告: イメージ・パス「{Image}」を構文解析できませんでした。 Docker レジストリーにはプッシュせず、そのままの状態で「deployment」フィールドに含めます。"
-    },
-    {
-      "id": "Docker pull failure: {Err}",
-      "translation": "Docker プルの失敗: {Err}"
-    },
-    {
-      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
-      "translation": "提供されたログ・ドライバー ({LogDriver}) はログの表示をサポートしません。 ログが使用可能なドライバーは {DockerDriversWithLoggingSupport} だけです。"
-    },
-    {
-      "id": "Error creating StdoutPipe for command: {Err}",
-      "translation": "コマンドの StdoutPipe を作成しているときにエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Error starting command: {Err}",
-      "translation": "コマンドを開始中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Error waiting for command: {Err}",
-      "translation": "コマンドを待機中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
-      "translation": "{SysLogPath} を開けなかったか、存在しません。{Err}"
-    },
-    {
-      "id": "{SysLogPath} could not get stats: {Err}",
-      "translation": "{SysLogPath} は stats を取得できませんでした。{Err}"
-    },
-    {
-      "id": "Error reading from {SysLogPath}: {Err}",
-      "translation": "{SysLogPath} から読み取り中にエラーが発生しました。{Err}"
-    },
-    {
-      "id": "Unable to state {SysLogPath}: {Err}",
-      "translation": "{SysLogPath} の状態がわかりません。{Err}"
-    },
-    {
-      "id": "no service name",
-      "translation": "サービス名がありません"
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "サービス {ServiceName} の Docker イメージがありません"
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "{D} のボディのマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
-    },
-    {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "「requiredServices」はクラスター・タイプ・サービスではサポートされません。"
-    },
-    {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "サービス {ReqSvc} のバージョン {Ver} をバージョン範囲式に変換できませんでした。"
-    },
-    {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "Exchange から {ReqSvc} のサービスを取得しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "必須サービス {SId} のサービス・タイプが正しくありません: {SType}。"
-    },
-    {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "必須サービス {SId} の従属サービス {Id} のサービス・タイプが正しくありません: {SType1}。"
-    },
-    {
-      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
-      "translation": "JSON 入力 {JsonBytes} のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "Error getting new user input format. {Err1}",
-      "translation": "新しいユーザー入力形式の取得中にエラーが発生しました。 {Err1}"
-    },
-    {
-      "id": "Failed to create json object for user input. {Err1}",
-      "translation": "ユーザー入力用の JSON オブジェクトの作成に失敗しました。 {Err1}"
-    },
-    {
-      "id": "Deployment policy and pattern are mutually exclusive.",
-      "translation": "デプロイメント・ポリシーとパターンは同時に指定することはできません。"
-    },
-    {
-      "id": "Neither deployment policy nor pattern is specified.",
-      "translation": "デプロイメント・ポリシーもパターンも指定されていません。"
-    },
-    {
-      "id": "Incompatible",
-      "translation": "非互換"
-    },
-    {
-      "id": "Compatible",
-      "translation": "互換"
-    },
-    {
-      "id": "The given node id is empty.",
-      "translation": "指定されたノード ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "指定されたノード ID には組織が指定されていません: {NodeId}。"
-    },
-    {
-      "id": "Error getting node {NodeId} from the Exchange. {Err}",
-      "translation": "Exchange からノード {NodeId} を取得しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "No node found for this node id {NodeId}.",
-      "translation": "このノード ID {NodeId} に該当するノードが見つかりませんでした。"
-    },
-    {
-      "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
-      "translation": "deployment ストリングを内部デプロイメント構造にアンマーシャル中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Invalid node type: {NodeType}. It must be 'device' or 'cluster'.",
-      "translation": "ノード・タイプが無効です: {NodeType}。 これは「device」または「cluster」でなければなりません。"
-    },
-    {
-      "id": "The input node type '{NodeType}' does not match the node type '{ExchNodeType}' from the node {NodeId}.",
-      "translation": "入力ノード・タイプ「{NodeType}」が、ノード {NodeId} のノード・タイプ「{ExchNodeType}」と一致しません。"
-    },
-    {
-      "id": "Service does not have deployment configuration for node type 'device'.",
-      "translation": "サービスには、ノード・タイプ「device」のデプロイメント構成はありません。"
-    },
-    {
-      "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
-      "translation": "サービスには、ノード・タイプ「cluster」のクラスター・デプロイメント構成はありません。"
-    },
-    {
-      "id": "Unable to create version expression from {VersionRange}. {Err}",
-      "translation": "{VersionRange} からバージョン式を作成できません。 {Err}"
-    },
-    {
-      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "{TopId} の従属サービスの定義が見つかりませんでした。 すべてのサービスが Exchange に含まれるまで {PROPNODEPRIVILEGED} の互換性を完全には評価できません。"
-    },
-    {
-      "id": "The PolicyCheck input cannot be null",
-      "translation": "PolicyCheck 入力を NULL にすることはできません"
-    },
-    {
-      "id": "The input node architecture {NodeArch} does not match the Exchange node architecture {Arch} for node {NodeId}.",
-      "translation": "入力ノード・アーキテクチャー {NodeArch} が、ノード {NodeId} の Exchange ノード・アーキテクチャー {Arch} と一致しません。"
-    },
-    {
-      "id": "Policy Incompatible",
-      "translation": "ポリシー非互換"
-    },
-    {
-      "id": "Architecture does not match.",
-      "translation": "アーキテクチャーが一致しません。"
-    },
-    {
-      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
-      "translation": "{Org}/{WorkloadURL} バージョン {Version} のすべてのアーキテクチャーのサービスを取得することに失敗しました。 {Err}"
-    },
-    {
-      "id": "Failed to validate the service policy. {Err}",
-      "translation": "サービス・ポリシーの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
-      "translation": "デプロイメント・ポリシー内で 'arch' {NodeArch} を持つサービスが見つかりません。"
-    },
-    {
-      "id": "No services found in the deployment policy.",
-      "translation": "デプロイメント・ポリシー内でサービスが見つかりません。"
-    },
-    {
-      "id": "Node policy cannot be null.",
-      "translation": "ノード・ポリシーを NULL にすることはできません。"
-    },
-    {
-      "id": "Deployment policy cannot be null.",
-      "translation": "デプロイメント・ポリシーを NULL にすることはできません。"
-    },
-    {
-      "id": "Merged service policy cannot be null.",
-      "translation": "マージされるサービス・ポリシーを NULL にすることはできません。"
-    },
-    {
-      "id": "Error merging node policy with arch property. {Err}",
-      "translation": "arch プロパティーを使用してノード・ポリシーをマージしているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to validate the node policy. {Err}",
-      "translation": "ノード・ポリシーの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
-      "translation": "ノード {NodeId} のノード・ポリシーを内部ポリシー・フォーマットに変換できませんでした: {Err}"
-    },
-    {
-      "id": "No node policy found for this node {NodeId}.",
-      "translation": "このノード {NodeId} のノード・ポリシーが見つかりませんでした。"
-    },
-    {
-      "id": "Neither node policy nor node id is specified.",
-      "translation": "ノード・ポリシーもノード ID も指定されていません。"
-    },
-    {
-      "id": "Node id is empty.",
-      "translation": "ノード ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the node id: {NodeId}.",
-      "translation": "このノード ID には組織が指定されていません: {NodeId}。"
-    },
-    {
-      "id": "Error trying to query node policy for {NodeId}: {Err}",
-      "translation": "{NodeId} のノード・ポリシーを照会しようとしているときにエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
-      "translation": "ノード {NodeId} のノード・ポリシーの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
-      "translation": "ノード {NodeId} のノード・ポリシーを内部ポリシーに変換できませんでした: {Err}"
-    },
-    {
-      "id": "Failed to convert deployment policy {BpId} to internal policy: {Err1}",
-      "translation": "デプロイメント・ポリシー {BpId} を内部ポリシーに変換できませんでした: {Err1}"
-    },
-    {
-      "id": "Validation failure for deployment policy {BpId}. {Err}",
-      "translation": "デプロイメント・ポリシー {BpId} の検証失敗。 {Err}"
-    },
-    {
-      "id": "No services specified in the given deployment policy {BpId}.",
-      "translation": "指定されたデプロイメント・ポリシー {BpId} にはサービスが指定されていません。"
-    },
-    {
-      "id": "No services specified in the deployment policy {Name}.",
-      "translation": "デプロイメント・ポリシー {Name} にはサービスが指定されていません。"
-    },
-    {
-      "id": "Neither deployment policy nor deployment policy id is specified.",
-      "translation": "デプロイメント・ポリシーもデプロイメント・ポリシー ID も指定されていません。"
-    },
-    {
-      "id": "Deployment policy id is empty.",
-      "translation": "デプロイメント・ポリシー ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the deployment policy id: {BpId}.",
-      "translation": "このデプロイメント・ポリシー ID には組織が指定されていません: {BpId}。"
-    },
-    {
-      "id": "Unable to get deployment policy for {BpId}, {Err}",
-      "translation": "{BpId} のデプロイメント・ポリシーを取得できません。{Err}"
-    },
-    {
-      "id": "No deployment policy found for this id {BpId}.",
-      "translation": "この ID {BpId} に該当するデプロイメント・ポリシーが見つかりません。"
-    },
-    {
-      "id": "Failed to convert deployment policy {BpId} to internal policy format: {Err}",
-      "translation": "デプロイメント・ポリシー {BpId} を内部ポリシー・フォーマットに変換できませんでした: {Err}"
-    },
-    {
-      "id": "Service policy id is empty.",
-      "translation": "サービス・ポリシー ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the service policy id: {SvcId}.",
-      "translation": "このサービス・ポリシー ID には組織が指定されていません: {SvcId}。"
-    },
-    {
-      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
-      "translation": "サービス ID {SvcId} のサービス・ポリシーを照会しようとしているときにエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Error validating the service policy {SvcId}. {Err}",
-      "translation": "サービス・ポリシー {SvcId} を検証しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Service name is empty.",
-      "translation": "サービス名が空です。"
-    },
-    {
-      "id": "Service organization is empty.",
-      "translation": "サービス組織が空です。"
-    },
-    {
-      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "{SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} のサービス・ポリシーを照会しようとしているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "{SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} のサービス・ポリシーの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "The given deployment policy should not be null.",
-      "translation": "指定されたデプロイメント・ポリシーは、NULL であってはなりません。"
-    },
-    {
-      "id": "Error merging deployment policy with service policy. {Err}",
-      "translation": "デプロイメント・ポリシーとサービス・ポリシーをマージしているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Unable to find service definition from the input services.",
-      "translation": "入力サービスからサービス定義が見つかりません。"
-    },
-    {
-      "id": "The SecretBindingCheck input cannot be null",
-      "translation": "SecretBindingCheck 入力を NULL にすることはできません"
-    },
-    {
-      "id": "Node type '{NodeType}' does not support secret binding check.",
-      "translation": "ノード・タイプ「{NodeType}」は秘密バインディング検査をサポートしません。"
-    },
-    {
-      "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
-      "translation": "アーキテクチャー {NodeArch} を持つサービス・バージョンがデプロイメント・ポリシーにもパターンにも指定されていません。"
-    },
-    {
-      "id": "No service versions specified in the deployment policy or pattern.",
-      "translation": "デプロイメント・ポリシーにもパターンにもサービス・バージョンが指定されていません。"
-    },
-    {
-      "id": "Secret Binding Incompatible",
-      "translation": "秘密バインディング非互換"
-    },
-    {
-      "id": "Type Incompatible",
-      "translation": "タイプ非互換"
-    },
-    {
-      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
-      "translation": "{ServiceOrg}/{ServiceURL} バージョン {Version} のすべてのアーキテクチャーのサービスを取得しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Service definition not found in the input.",
-      "translation": "入力内でサービス定義が見つかりません。"
-    },
-    {
-      "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
-      "translation": "警告: 次の秘密バインディングはどのサービスにも必要とされていません: {ExtraneousSB}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "translation": "'arch' {NodeArch} を持つサービスがデプロイメント・ポリシーにもパターンにも見つかりません。"
-    },
-    {
-      "id": "No services found in the deployment policy or pattern.",
-      "translation": "デプロイメント・ポリシーにもパターンにもサービスが見つかりません。"
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "translation": "入力サービス定義オブジェクトを NULL にすることはできません。"
-    },
-    {
-      "id": "Error verifying secret in the secret manager. {Err}",
-      "translation": "秘密マネージャー内で秘密を検証中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "translation": "入力サービス・スペック・オブジェクトを NULL にすることはできません。"
-    },
-    {
-      "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
-      "translation": "{Org}/{URL} {Arch} {Version} の従属サービスが見つかりませんでした。 {Err}"
-    },
-    {
-      "id": "Secret binding for a cluster service is not supported.",
-      "translation": "クラスター・サービス用の秘密バインディングはサポートされていません。"
-    },
-    {
-      "id": "No secret binding found for the following service secrets: {NbArray}.",
-      "translation": "次のサービス秘密の秘密バインディングが見つかりません: {NbArray}。"
-    },
-    {
-      "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
-      "translation": "サービス {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} の秘密バインディングに、誤ったバージョン・ストリング {ServiceVersionRange} が指定されています。エラー: {Err}"
-    },
-    {
-      "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
-      "translation": "範囲 {VExp} のバージョン {SvcVersion} の検査中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
-      "translation": "秘密バインディングの検査時に agbot URL が空ストリングであってはなりません。 HZN_AGBOT_URL が設定されていることを確認してください。"
-    },
-    {
-      "id": "The node organization must be provided.",
-      "translation": "ノード組織が指定されている必要があります。"
-    },
-    {
-      "id": "Error parsing secret name in the secret binding. {Errparse}",
-      "translation": "秘密バインディング内の秘密名の構文解析でエラーが発生しました。 {Errparse}"
-    },
-    {
-      "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
-      "translation": "秘密マネージャー内で秘密 {VaultSecretName} を検査中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "バインディング秘密名を空ストリングにすることはできません。 有効なフォーマットは、「<secretname>」(組織レベルの秘密の場合) および「user/<username>/<secretname>」(ユーザー・レベルの秘密の場合) です。"
-    },
-    {
-      "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
-      "translation": "バインディング秘密名のフォーマットが無効です: {SecretName}。 有効なフォーマットは、「<secretname>」(組織レベルの秘密の場合) および「user/<username>/<secretname>」(ユーザー・レベルの秘密の場合) です。"
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "UserInputCheck 入力を NULL にすることはできません"
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "ノード・ユーザー入力もノード ID も指定されていません。"
-    },
-    {
-      "id": "User Input Incompatible",
-      "translation": "互換性のないユーザー入力"
-    },
-    {
-      "id": "Warning: checking node user input:  {Err}",
-      "translation": "警告: ノード・ユーザー入力を検査中: {Err}"
-    },
-    {
-      "id": "Warning: checking user input for the deployment policy: {Err}",
-      "translation": "警告: デプロイメント・ポリシーのユーザー入力を検査中: {Err}"
-    },
-    {
-      "id": "Warning: checking user input for the pattern: {Err}",
-      "translation": "警告: パターンのユーザー入力を検査中: {Err}"
-    },
-    {
-      "id": "Error verifing user input for service {SId}. {Err}",
-      "translation": "サービス {SId} のユーザー入力を検証しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to verify user input for service {SId}. {Reason}",
-      "translation": "サービス {SId} のユーザー入力の検証に失敗しました。 {Reason}"
-    },
-    {
-      "id": "Error verifing user input for dependent service {Id}. {Err}",
-      "translation": "従属サービス {Id} のユーザー入力を検証しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
-      "translation": "従属サービス {Id} のユーザー入力の検証に失敗しました。 {Reason}"
-    },
-    {
-      "id": "Failed to get the service from the Exchange. {Err}",
-      "translation": "Exchange からサービスの取得に失敗しました。 {Err}"
-    },
-    {
-      "id": "Service does not exist on the Exchange.",
-      "translation": "サービスは Exchange 上に存在しません。"
-    },
-    {
-      "id": "No user input found for service.",
-      "translation": "サービスのユーザー入力が見つかりません。"
-    },
-    {
-      "id": "Failed to validate the user input type for variable {Name}. {Err}",
-      "translation": "変数 {Name} のユーザー入力タイプの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "A required user input value is missing for variable {Name}.",
-      "translation": "変数 {Name} には、必要なユーザー入力値がありません。"
-    },
-    {
-      "id": "{Errmsg} Service {Org}/{URL} version {Version} arch {Arch} is missing in the node user input.",
-      "translation": "{Errmsg} サービス {Org}/{URL} バージョン {Version} アーキテクチャー {Arch} がノード・ユーザー入力にありません。"
-    },
-    {
-      "id": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
-      "translation": "サービス URL {URL} が、デプロイメント・ポリシー内に指定されているサービス URL {Name} と一致しません。"
-    },
-    {
-      "id": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
-      "translation": "サービス組織 {Org} が、デプロイメント・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
-    },
-    {
-      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
-      "translation": "サービス・アーキテクチャー {Arch} が、デプロイメント・ポリシー内に指定されているサービス・アーキテクチャー {Arch_1} と一致しません。"
-    },
-    {
-      "id": "Service version {Version} does not match any service versions specified in the deployment policy.",
-      "translation": "サービス・バージョン {Version} が、デプロイメント・ポリシー内に指定されているいずれのサービス・バージョンとも一致しません。"
-    },
-    {
-      "id": "The service does not match any services in the pattern.",
-      "translation": "サービスがパターン内のどのサービスにも一致しません。"
-    },
-    {
-      "id": "Pattern {PatId} cannot be found on the Exchange.",
-      "translation": "パターン {PatId} が Exchange で見つかりません。"
-    },
-    {
-      "id": "Neither pattern nor pattern id is specified.",
-      "translation": "パターンもパターン ID も指定されていません。"
-    },
-    {
-      "id": "Pattern id is empty.",
-      "translation": "パターン ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the pattern id: {PatId}.",
-      "translation": "パターン ID {PatId} に組織が指定されていません。"
-    },
-    {
-      "id": "Error getting pattern {PatId} from the Exchange, {Err}",
-      "translation": "Exchange からパターン {PatId} を取得中にエラーが発生しました。{Err}"
-    },
-    {
-      "id": "No pattern found for this id {PatId}.",
-      "translation": "この ID {PatId} のパターンが見つかりません。"
-    },
-    {
-      "id": "URL must be specified in the service definition.",
-      "translation": "サービス定義に URL を指定する必要があります。"
-    },
-    {
-      "id": "Version must be specified in the service definition for service {URL}.",
-      "translation": "サービス {URL} のサービス定義でバージョンを指定する必要があります。"
-    },
-    {
-      "id": "Invalid version format {Version} for service {URL}.",
-      "translation": "サービス {URL} のバージョン・フォーマット {Version} が無効です。"
-    },
-    {
-      "id": "Arch must be specified in the service definition for service {URL}.",
-      "translation": "サービス {URL} のサービス定義でアーキテクチャーを指定する必要があります。"
-    },
-    {
-      "id": "Org must be specified in the service definition for service {URL}.",
-      "translation": "サービス {URL} のサービス定義で組織を指定する必要があります。"
-    },
-    {
-      "id": "Validation failure for input service {SId}. {Err}",
-      "translation": "入力サービス {SId} の検証失敗。 {Err}"
-    },
-    {
-      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
-      "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} は、パターンでもデプロイメント・ポリシーでも参照されていません。 serviceOrgid、serviceUrl、serviceArch、および serviceVersionRange が正しいことを確認してください。"
-    },
-    {
-      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
-      "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} は、パターンでもデプロイメント・ポリシーでも参照されていません。 サービス仕様が正しいことを確認してください。"
-    },
-    {
-      "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
-      "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} の変数 {Name} は使用されていません。 正しい名前であることを確認してください。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "anax を終了します。 構成に指定されたサービス・ストレージ・ディレクトリーにアクセスできません: {Arg_1}。 {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax を終了します。 iptables クライアントのインスタンス化に失敗しました。 {Arg_1}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax を終了します。 Docker クライアントのインスタンス化に失敗しました。 {Arg_1}"
-    },
-    {
-      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "プロパティー {PROPNODEPRIVILEGED} にはブール値 (true または false) が必要です。"
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}"
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および string のリストです。"
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。"
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。"
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています"
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "制約式に対応しない括弧が含まれています。"
-    },
-    {
-      "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
-      "translation": "契約 {Arg_1} をデータベースから取得しているときにエラーが発生しました。エラー {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
-      "translation": "MeteringNotification メッセージに対してデータベースから契約 {Arg_1} を取得できません。エラー {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
-      "translation": "Cancel メッセージに対してデータベースから契約 {Arg_1} を取得できません。エラー {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
-      "translation": "ReplyAck メッセージに対してデータベースから契約 {Arg_1} を取得できません。エラー {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
-      "translation": "DataReceived メッセージに対してデータベースから契約 {Arg_1} を取得できません。エラー {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve unarchived agreements from database. {Arg_1}",
-      "translation": "解凍された契約をデータベースから取得できません。 {Arg_1}"
-    },
-    {
-      "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
-      "translation": "データベースで契約 {Arg_1} に終了のマークを付けているときにエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
-      "translation": "データベースからサービス定義 {Arg_1} を取得しているときにエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error retrieving all service definitions from db. {Arg_1}",
-      "translation": "すべてのサービス定義をデータベースから取得しているときにエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
-      "translation": "{Arg_1}/{Arg_2} バージョン {Arg_3} キー {Arg_4} のすべてのサービス・インスタンスをデータベースから取得しているときにエラーが発生しました。 {Arg_5}"
-    },
-    {
-      "id": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} のすべてのサービス・インスタンスをデータベースから取得しているときにエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error retrieving all service instances from database, error: {Arg_1}",
-      "translation": "すべてのサービス・インスタンスをデータベースから取得しているときにエラーが発生しました。エラー: {Arg_1}"
-    },
-    {
-      "id": "Error getting service instance {Arg_1} from db. {Arg_2}",
-      "translation": "データベースからサービス・インスタンス {Arg_1} を取得しているときにエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
-      "translation": "ワークロード {Arg_1} の一致する契約をデータベースから取得しているときにエラーが発生しました。 エラー: {Arg_2}"
-    },
-    {
-      "id": "Error perisisting node config state in database to {Arg_1}. Error: {Arg_2}",
-      "translation": "データベース内のノード構成状態を {Arg_1} に保持しているときにエラーが発生しました。 エラー: {Arg_2}"
-    },
-    {
-      "id": "Error retrieving device from database. Error: {Arg_1}",
-      "translation": "データベースからデバイスを取得しているときにエラーが発生しました。 エラー: {Arg_1}"
-    },
-    {
-      "id": "Error deleting node exchange pattern from the local database. {Arg_1}",
-      "translation": "ローカル・データベースからノード Exchange パターンを削除しているときにエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error retrieving node {Arg_1} from the Exchange: {Arg_2}",
-      "translation": "ノード {Arg_1} を Exchange から取得しているときにエラーが発生しました。{Arg_2}"
-    },
-    {
-      "id": "Error updating registeredServices for node {Arg_1} in the Exchange: {Arg_2}",
-      "translation": "Exchange でノード {Arg_1} の registeredService を更新しているときにエラーが発生しました。{Arg_2}"
-    },
-    {
-      "id": "Image loaded for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するイメージがロードされました。"
-    },
-    {
-      "id": "Image loaded for service {Arg_1}/{Arg_2}.",
-      "translation": "サービス {Arg_1}/{Arg_2} に対するイメージがロードされました。"
-    },
-    {
-      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} に対するイメージをロードしているときにエラーが発生しました。 理由: {Arg_3}"
-    },
-    {
-      "id": "Error loading image for service {Arg_1}/{Arg_2}.",
-      "translation": "サービス {Arg_1}/{Arg_2} に対するイメージをロードしているときにエラーが発生しました。"
-    },
-    {
-      "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-      "translation": "{Arg_1} に対する契約の終了を開始します。 終了の理由: {Arg_2}"
-    },
-    {
-      "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
-      "translation": "サービス {Arg_1} に対する合意に達しました。 契約 ID は {Arg_2} です。"
-    },
-    {
-      "id": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
-      "translation": "{Arg_1} に対する契約は agbot でもはや有効ではありません。 ノードはそれをキャンセルします。"
-    },
-    {
-      "id": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
-      "translation": "{Arg_1}/{Arg_2} のワークロード・サービス・コンテナーは稼働中です。"
-    },
-    {
-      "id": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-      "translation": "{Arg_1} に対する契約の終了を完了します。 終了の理由: {Arg_2}"
-    },
-    {
-      "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
-      "translation": "Exchange で {Arg_1} に対する契約を削除しているときにエラーが発生しました: {Arg_2}。 再試行します。"
-    },
-    {
-      "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
-      "translation": "agbot を使用した {Arg_1} の AgreementVerification でエラーを検出しました。エラー {Arg_2}"
-    },
-    {
-      "id": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
-      "translation": "ReplyAck は、agbot が {Arg_1} に対する契約の達成を望んでいなかったことを示しました。 ノードは契約をキャンセルします"
-    },
-    {
-      "id": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
-      "translation": "ノードが agbot {Arg_3} から {Arg_1}/{Arg_2} に対する Cancel メッセージを受け取りました。"
-    },
-    {
-      "id": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} に対する ReplyAck メッセージを処理しているときにエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error handling ReplyAck message. {Arg_1}",
-      "translation": "ReplyAck メッセージを処理しているときにエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} に対する DataReceived メッセージを処理しているときにエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error handling DataReceived message. {Arg_1}",
-      "translation": "DataReceived メッセージを処理しているときにエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} に対する MeterNotification メッセージを処理しているときにエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error handling MeterNotification message. {Arg_1}",
-      "translation": "MeterNotification メッセージを処理しているときにエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error handling Cancel message for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} に対する Cancel メッセージを処理しているときにエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error handling Cancel message. {Arg_1}",
-      "translation": "Cancel メッセージを処理しているときにエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Start workload service for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するワークロード・サービスを開始します。"
-    },
-    {
-      "id": "Workload destroyed for {Arg_1}",
-      "translation": "{Arg_1} に対するワークロードが破棄されました"
-    },
-    {
-      "id": "Service containers for {Arg_1} started.",
-      "translation": "{Arg_1} に対するサービス・コンテナーが開始されました。"
-    },
-    {
-      "id": "Complete cleaning up the service instance {Arg_1}.",
-      "translation": "サービス・インスタンス {Arg_1} のクリーンアップを完了します。"
-    },
-    {
-      "id": "Start dependent services for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対する従属サービスを開始します。"
-    },
-    {
-      "id": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} に対する従属サービスを開始しているときにエラーが発生しました。 {Arg_3}"
-    },
-    {
-      "id": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
-      "translation": "契約 {Arg_4} に対して従属サービス {Arg_1}/{Arg_2} バージョン {Arg_3} を開始しているときにエラーが発生しました。 {Arg_5}"
-    },
-    {
-      "id": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
-      "translation": "契約 {Arg_2} が終了したため、サービス {Arg_1} のクリーンアップを開始します。"
-    },
-    {
-      "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-      "translation": "サービス {Arg_1}/{Arg_2} バージョン {Arg_3} を開始しているときにエラーが発生しました。エラー: {Arg_4}"
-    },
-    {
-      "id": "Error getting all the services from agreements: {Arg_1}",
-      "translation": "契約からすべてのサービスを取得しようとしているときにエラーが発生しました: {Arg_1}"
-    },
-    {
-      "id": "Start agreement-less service {Arg_1}/{Arg_2}.",
-      "translation": "契約なしのサービス {Arg_1}/{Arg_2} を開始します。"
-    },
-    {
-      "id": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
-      "translation": "契約なしのサービス {Arg_1}/{Arg_2} とその従属サービスの開始を完了します。"
-    },
-    {
-      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
-      "translation": "契約なしのサービス {Arg_1}/{Arg_2} を開始できません。エラー {Arg_3}"
-    },
-    {
-      "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
-      "translation": "契約なしのサービスを開始できません。Exchange でパターン {Arg_1} を検索しているときにエラーが発生しました。エラー: {Arg_2}"
-    },
-    {
-      "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
-      "translation": "契約なしのサービスを開始できません。Exchange でパターン {Arg_1} が見つかりません"
-    },
-    {
-      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
-      "translation": "契約なしのサービス {Arg_1}/{Arg_2} を開始できません。ローカルのサービス定義が見つかりません"
-    },
-    {
-      "id": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のアップグレードを開始します。"
-    },
-    {
-      "id": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のアップグレードを完了します。"
-    },
-    {
-      "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
-      "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のアップグレードに失敗しました。エラー: {Arg_5}"
-    },
-    {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
-      "translation": "契約に対するサービスを開始できなかったため、サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードを開始します。"
-    },
-    {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
-      "translation": "サービスを開始できなかったため、サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードを開始します。"
-    },
-    {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed.",
-      "translation": "アップグレードに失敗したため、サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードを開始します。"
-    },
-    {
-      "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-      "translation": "サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードに失敗しました。エラー: {Arg_4}"
-    },
-    {
-      "id": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のダウングレードを完了しました。"
-    },
-    {
-      "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
-      "translation": "{Arg_1}/{Arg_2} バージョン {Arg_3} キー {Arg_4} のダウングレード先となる新しいサービス定義を見つけようとしているときにエラーが発生しました。 エラー: {Arg_5}"
-    },
-    {
-      "id": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
-      "translation": "{Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレード先となる、低いバージョンが見つかりませんでした。"
-    },
-    {
-      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}",
-      "translation": "サービス {Arg_1}/{Arg_2} をバージョン {Arg_3} からバージョン {Arg_4} にダウングレードしようとしてエラーが発生しました。 エラー: {Arg_5}"
-    },
-    {
-      "id": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
-      "translation": "サービス {Arg_1}/{Arg_2} バージョン {Arg_3} をダウングレードしようとしてエラーが発生しました。 {Arg_4}"
-    },
-    {
-      "id": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
-      "translation": "従属サービス {Arg_2} バージョン {Arg_3} が失敗したため、サービスに対する再試行番号 {Arg_1} を開始します。"
-    },
-    {
-      "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
-      "translation": "従属サービス {Arg_2} バージョン {Arg_3} に対する再試行番号 {Arg_1} が失敗しました。"
-    },
-    {
-      "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
-      "translation": "{Arg_1} バージョン {Arg_2} に対するサービス再試行回数を取得できませんでした。 {Arg_3}"
-    },
-    {
-      "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
-      "translation": "データベース内でサービス・インスタンス {Arg_1} に対する再試行開始状態を更新しているときにエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Node pattern changed on the Exchange from {Arg_1} to {Arg_2}.",
-      "translation": "Exchange 上でノード・パターンが {Arg_1} から {Arg_2} に変更されました。"
-    },
-    {
-      "id": "Encountered error while re-registering node with new pattern {Arg_1}. {Arg_2}",
-      "translation": "新規パターン {Arg_1} でノードを再登録している間にエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Start re-registering node after pattern changed to {Arg_1}.",
-      "translation": "パターンが {Arg_1} に変更された後のノードの再登録を開始します。"
-    },
-    {
-      "id": "Complete re-registering node after pattern changed to {Arg_1}.",
-      "translation": "パターンが {Arg_1} に変更された後のノードの再登録を完了します。"
-    },
-    {
-      "id": "Node pattern changed again on the Exchange. Will register the node with the new pattern: {Arg_1}",
-      "translation": "Exchange 上で、再度ノード・パターンが変更されました。 新規パターンでノードを登録します: {Arg_1}"
-    },
-    {
-      "id": "Error validating new node pattern {Arg_1}: {Arg_2}",
-      "translation": "新しいノード・パターン {Arg_1} を検証しているときにエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "The node will keep using the old pattern {Arg_1}",
-      "translation": "ノードは、古いパターン {Arg_1} を使用し続けます"
-    },
-    {
-      "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
-      "translation": "新規パターン {Arg_1} が検証されました。 契約を取り消し、新規パターンでノードを再登録します。"
-    },
-    {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "互換性エラー: スキーマ・バージョンが一致していません。コンシューマー・ポリシー: {Version}、プロデューサー・ポリシー {Version_1}"
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "互換性エラー: ノードのプロパティー {Properties} が、制約条件 {Constraints} を満たしていません。 基礎のエラー: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "互換性エラー: ノードのプロパティーが制約条件を満たしていません。 {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "互換性エラー: プロパティー {Properties} が、ノード制約 {Constraints} を満たしていません。 基礎のエラー: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "互換性エラー: プロパティーがノード制約を満たしていません。 {Err}"
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "互換性エラー: {AgreementProtocols} と {AgreementProtocols_1} の間に共通する契約プロトコルがありません。 基礎のエラー: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "互換性エラー: データ検査は対応している必要がありますが、プロデューサーは {DataVerify} で、コンシューマーは {DataVerify_1} です。"
-    },
-    {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "契約 {Arg_1} は既に存在します。提案 {Arg_2} を無視します"
-    },
-    {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "契約 {Arg_1} の TsAndCs をアンマーシャルしているときにエラーを受け取りました。{Arg_2}"
-    },
-    {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "ノードは、agbot {Arg_4} からサービス {Arg_2}/{Arg_3} に対する契約 {Arg_1} を使用しているときに Proposal メッセージを受け取りました。"
-    },
-    {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "ノードは、サービス {Arg_1}/{Arg_2} に対する提案を拒否しました。"
-    },
-    {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する提案を処理しているときにエラーが発生しました。 エラー: {Arg_3}"
-    },
-    {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "自己署名 MMS API 証明書用のディレクトリーを作成できません。エラー {Err}"
-    },
-    {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "MMS API 証明書シリアル番号用に乱数を生成できません、エラー {Err}"
-    },
-    {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "MMS API 証明書用の秘密鍵を生成できません、エラー {Err}"
-    },
-    {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "translation": "MMS API 証明書を作成できません。エラー {Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "MMS API 証明書をファイル {ServerCertificate} に書き込むことができません、エラー {Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "MMS API 証明書をファイル {ServerCertificate} にエンコードすることができません、エラー {Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "MMS API 証明書ファイル {ServerCertificate} を閉じることができません、エラー {Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} に書き込むことができません、エラー {Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} にエンコードすることができません、エラー {Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "MMS API 証明書の秘密鍵ファイル {ServerKey} を閉じることができません、エラー {Err}"
-    },
-    {
-      "id": "Unable to authenticate nil request for secrets API",
-      "translation": "秘密 API の nil 要求を認証できません"
-    },
-    {
-      "id": "Unable to extract basic auth for request",
-      "translation": "要求の基本認証を抽出できません"
-    },
-    {
-      "id": "unable to verify {AppKey}, error {Err}",
-      "translation": "{AppKey} を検証できません。エラー: {Err}"
-    },
-    {
-      "id": "credentials for {AppKey} are not valid",
-      "translation": "{AppKey} の資格情報は無効です"
-    },
-    {
-      "id": "Version_Expression: Empty string is not a valid version.",
-      "translation": "Version_Expression: 空ストリングは有効なバージョンではありません。"
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: {Expr} で空白文字は使用できません。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。"
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。"
-    }
-  ]
-}
+[
+  {
+    "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+    "translation": "サービス {Arg_2} のポリシー・ファイル {Arg_1} を読み取れません。エラー: {Arg_3}"
+  },
+  {
+    "id": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+    "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを開始します。"
+  },
+  {
+    "id": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+    "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用してポリシーをアドバタイズできません。エラー: {Arg_3}"
+  },
+  {
+    "id": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+    "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを完了します。"
+  },
+  {
+    "id": "Unable to read node object from the local database. {Arg_1}",
+    "translation": "ローカル・データベースからノード・オブジェクトを読み取れません。 {Arg_1}"
+  },
+  {
+    "id": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
+    "translation": "ローカル・ノード・ポリシーを Exchange のコピーと同期できません。 エラー: {Arg_1}"
+  },
+  {
+    "id": "Node policy updated with the Exchange copy: {Arg_1}",
+    "translation": "ノード・ポリシーが Exchange のコピーによって更新されました: {Arg_1}"
+  },
+  {
+    "id": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
+    "translation": "ローカル・ノード・ユーザー入力を Exchange のコピーと同期できません。 エラー: {Arg_1}"
+  },
+  {
+    "id": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
+    "translation": "ノードのユーザー入力が Exchange のコピーによって更新されました。 変更されたユーザー入力: {Arg_1}"
+  },
+  {
+    "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+    "translation": "ノードは利用者との契約 {Arg_1} を検証できませんでした。 キャンセルします。"
+  },
+  {
+    "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+    "translation": "ノードはオフラインです。 接続が復元されるまで、定期的なオフライン・エラー・メッセージのログ記録は抑制されます"
+  },
+  {
+    "id": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
+    "translation": "ノードを Exchange のコピーと同期できません。 エラー: {Arg_1}"
+  },
+  {
+    "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
+    "translation": "ノード・リソース {Arg_1} のサービス構成状態を Exchange から取得できません。エラー {Arg_2}"
+  },
+  {
+    "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
+    "translation": "ローカル・データベースから保存済みノード Exchange パターンを取得できません。 {Arg_1}"
+  },
+  {
+    "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
+    "translation": "新しいノード Exchange パターン {Arg_1} をローカル・データベースに保存できません。 エラー: {Arg_2}"
+  },
+  {
+    "id": "anax terminating, unable to sync up containers.",
+    "translation": "anax を終了します。コンテナーを同期できません。"
+  },
+  {
+    "id": "anax terminating, unable to complete agreement sync up. {Arg_1}",
+    "translation": "anax を終了します。契約の同期を実行できません。 {Arg_1}"
+  },
+  {
+    "id": "No input found.",
+    "translation": "入力が見つかりません。"
+  },
+  {
+    "id": "Unauthorized. No exchange user id is supplied.",
+    "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。"
+  },
+  {
+    "id": "Failed to authenticate the user with the Exchange. {Err}",
+    "translation": "ユーザーを Exchange で認証できませんでした。 {Err}"
+  },
+  {
+    "id": "Input body couldn't be deserialized to JSON object. {Err}",
+    "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}"
+  },
+  {
+    "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+    "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+  },
+  {
+    "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+    "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+  },
+  {
+    "id": "Input body couldn't be deserialized to SecretBindingCheck object. {Err}",
+    "translation": "入力ボディを SecretBindingCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+  },
+  {
+    "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+    "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+  },
+  {
+    "id": "No exchange user id is supplied.",
+    "translation": "Exchange ユーザー ID が提供されていません。"
+  },
+  {
+    "id": "No exchange user organization id is supplied.",
+    "translation": "Exchange ユーザー組織 ID が提供されていません。"
+  },
+  {
+    "id": "No exchange user password or api key is supplied.",
+    "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。"
+  },
+  {
+    "id": "Wrong organization id, user id or password.",
+    "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
+  },
+  {
+    "id": "Exchange user {Key} is not in the correct format, should be org/username.",
+    "translation": "Exchange ユーザー {Key} の形式が正しくありません。org/username でなければなりません。"
+  },
+  {
+    "id": "Internal server error",
+    "translation": "内部サーバー・エラー"
+  },
+  {
+    "id": "There is no secrets provider configured, secrets are unavailable.",
+    "translation": "構成された秘密プロバイダーはなく、秘密は使用不可です。"
+  },
+  {
+    "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
+    "translation": "秘密プロバイダーの準備ができていません。 呼び出し元は、秘密プロバイダーが使用不可であることを確認するため、呼び出しと呼び出しの間で少し遅延させてこの API 呼び出しを数回再試行するべきです。"
+  },
+  {
+    "id": "Secret name must be provided",
+    "translation": "秘密名を指定してください"
+  },
+  {
+    "id": "Unable to read request body, error: {Err}.",
+    "translation": "要求ボディを読み取ることができません。エラー: {Err}。"
+  },
+  {
+    "id": "Request body is empty.",
+    "translation": "要求ボディが空です。"
+  },
+  {
+    "id": "Request body parse error, {Uerr}",
+    "translation": "要求ボディ構文解析エラー: {Uerr}"
+  },
+  {
+    "id": "Permission denied, user \"{ExUser}\" cannot {Action} secrets in organization \"{Org}\"",
+    "translation": "許可が拒否されました。ユーザー「{ExUser}」は、組織「{Org}」で秘密の {Action} を行うことはできません"
+  },
+  {
+    "id": "Permission denied, user \"{ExUser}\" cannot {Action} secret \"{SecretName}\" in organization \"{Org}\"",
+    "translation": "許可が拒否されました。ユーザー「{ExUser}」は、組織「{Org}」で秘密「{SecretName}」の {Action} を行うことはできません"
+  },
+  {
+    "id": "Unable to read the vault response: {Error}",
+    "translation": "ボールトの応答を読み取ることができません: {Error}"
+  },
+  {
+    "id": "Unable to parse the vault response \"{Response}\": {Error}",
+    "translation": "ボールトの応答「{Response}」を構文解析できません: {Error}"
+  },
+  {
+    "id": "Unable to {Action} secrets in organization \"{Org}\", operation not supported by the secrets provider.",
+    "translation": "組織「{Org}」で秘密の {Action} を行うことはできません。秘密プロバイダーでサポートされていない操作です。"
+  },
+  {
+    "id": "Unable to {Action} secret \"{SecretName}\" in organization \"{Org}\", operation not supported by the secrets provider.",
+    "translation": "組織「{Org}」で秘密「{SecretName}」の {Action} を行うことはできません。秘密プロバイダーでサポートされていない操作です。"
+  },
+  {
+    "id": "Secrets provider received a bad request, please check all the provided inputs.",
+    "translation": "秘密プロバイダーは不正な要求を受け取りました。指定した入力をすべて確認してください。"
+  },
+  {
+    "id": "Response: {Response}",
+    "translation": "応答: {Response}"
+  },
+  {
+    "id": "No secret(s) found in organization \"{Org}\"",
+    "translation": "組織「{Org}」内で秘密が見つかりません"
+  },
+  {
+    "id": "No secret(s) found under secret name \"{SecretName}\"",
+    "translation": "秘密名「{SecretName}」の秘密が見つかりません"
+  },
+  {
+    "id": "An unknown error occurred. Response code {ResponseCode} received from the secrets provider.",
+    "translation": "不明なエラーが発生しました。 秘密プロバイダーから応答コード {ResponseCode} を受け取りました。"
+  },
+  {
+    "id": "Organization must be specified in the API path",
+    "translation": "API パスに組織を指定する必要があります"
+  },
+  {
+    "id": "User must be specified in the API path",
+    "translation": "API パスにユーザーを指定する必要があります"
+  },
+  {
+    "id": "Error checking secret {FullSecretName} in the secret manager.",
+    "translation": "秘密マネージャー内で秘密 {FullSecretName} を検査中にエラーが発生しました。"
+  },
+  {
+    "id": "Wrong type returned checking the secret name in the secret manager: {Payload}",
+    "translation": "秘密マネージャー内で秘密名を検査中に誤ったタイプが返されました: {Payload}"
+  },
+  {
+    "id": "Secret {FullSecretName} does not exist in the secret manager.",
+    "translation": "秘密 {FullSecretName} は秘密マネージャー内に存在しません。"
+  },
+  {
+    "id": "Error parsing the selections {Form}. {Err}",
+    "translation": "選択 {Form} の構文解析にエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Error getting {Resource} for output, error {Err}",
+    "translation": "出力の {Resource} の取得中にエラーが発生しました、エラー {Err}"
+  },
+  {
+    "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+    "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+  },
+  {
+    "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+    "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディを configstate オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+  },
+  {
+    "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+    "translation": "ノード更新の入力を構文解析しているときにエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+  },
+  {
+    "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+    "translation": "ノード・ポリシー用の入力の構文解析中にエラーが発生しました。 入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
+  },
+  {
+    "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+    "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}"
+  },
+  {
+    "id": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
+    "translation": "ノード・ポリシー・パッチで入力されたエラー解析。 入力本文に 'properties'、'constraints '、'deployment'、または 'management' 属性が含まれていません: {Arg_1}"
+  },
+  {
+    "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+    "translation": "ノードのユーザー入力用の入力の構文解析中にエラーが発生しました。 入力ボディを UserInput オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
+  },
+  {
+    "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+    "translation": "ノード {Arg_1} のノード構成/登録でエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error in updating node {Arg_1}. {Arg_2}",
+    "translation": "ノード {Arg_1} の更新でエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error in node unregistration. {Arg_1}",
+    "translation": "ノードの登録解除でエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error verifiying exchange version. error: {Arg_1}",
+    "translation": "Exchange のバージョンの確認でエラーが発生しました。 エラー: {Arg_1}"
+  },
+  {
+    "id": "Error in creating or replacing node policy. {Arg_1}",
+    "translation": "ノード・ポリシーの作成または置換中にエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error in patching node policy. {Arg_1}",
+    "translation": "ノード・ポリシーへのパッチ適用でエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error in deleting node policy. {Arg_1}",
+    "translation": "ノード・ポリシーの削除でエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error in updating node user input. {Arg_1}",
+    "translation": "ノードのユーザー入力の更新でエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error in patching node user input. {Arg_1}",
+    "translation": "ノードのユーザー入力へのパッチ適用でエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error in deleting node userinput. {Arg_1}",
+    "translation": "ノードのユーザー入力の削除でエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Start node configuration/registration for node {Arg_1}.",
+    "translation": "ノード {Arg_1} に対するノード構成/登録を開始します。"
+  },
+  {
+    "id": "Start updating node {Arg_1}.",
+    "translation": "ノード {Arg_1} の更新を開始します。"
+  },
+  {
+    "id": "Complete node update for {Arg_1}.",
+    "translation": "{Arg_1} に対するノード更新を完了します。"
+  },
+  {
+    "id": "Start node unregistration.",
+    "translation": "ノードの登録解除を開始します。"
+  },
+  {
+    "id": "Node unregistration complete for node {Arg_1}.",
+    "translation": "ノード {Arg_1} に対するノードの登録解除が完了しました。"
+  },
+  {
+    "id": "Error unregistering the node. The node is not found from the database.",
+    "translation": "ノードの登録抹消中にエラーが発生しました。 このノードはデータベースで見つかりません。"
+  },
+  {
+    "id": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+    "translation": "ノードの登録抹消中にエラーが発生しました。 ノードの構成解除を行うには、ノードが「configured」または「configuring」の状態である必要があります。"
+  },
+  {
+    "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+    "translation": "ノード登録解除の入力エラー。 {Arg_1} は removeNode の誤った値です"
+  },
+  {
+    "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+    "translation": "ノード登録解除の入力エラー。 {Arg_1} は deepClean の誤った値です"
+  },
+  {
+    "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+    "translation": "ノード登録解除の入力エラー。 {Arg_1} は block の誤った値です"
+  },
+  {
+    "id": "Unable to read node object from database, error {Arg_1}",
+    "translation": "データベースからノード・オブジェクトを読み取れません。エラー {Arg_1}"
+  },
+  {
+    "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+    "translation": "新規ノードの構成状態 (「unconfiguring」) をデータベースに保存する際にエラーが発生しました: {Arg_1}"
+  },
+  {
+    "id": "Error in node configuration. The node is not found from the database.",
+    "translation": "ノード構成のエラー。 このノードはデータベースで見つかりません。"
+  },
+  {
+    "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+    "translation": "ノード構成のエラー。 状態を {Arg_1} に変更するには、ノードが「configured」または「configuring」の状態である必要があります。"
+  },
+  {
+    "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+    "translation": "「{Arg_1}」から「{Arg_2}」へのノードの状態遷移はサポートされていません。"
+  },
+  {
+    "id": "Failed get user input from local db. {Arg_1}",
+    "translation": "ローカル・データベースからのユーザー入力の取得に失敗しました。 {Arg_1}"
+  },
+  {
+    "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+    "translation": "ローカル・ユーザー入力からサービス {Arg_1}/{Arg_2} の設定を見つけられませんでした。エラー: {Arg_3}"
+  },
+  {
+    "id": "Error saving new node config state to database: {Arg_1}",
+    "translation": "新規ノードの構成状態をデータベースに保存する際にエラーが発生しました: {Arg_1}"
+  },
+  {
+    "id": "Complete node configuration/registration for node {Arg_1}.",
+    "translation": "ノード {Arg_1} のノード構成/登録を完了します。"
+  },
+  {
+    "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+    "translation": "{Arg_1} のサービス構成でエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+    "translation": "パターン {Arg_1} のサービス参照の取得でエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Ignoring service. {Arg_1}",
+    "translation": "サービスを無視します。 {Arg_1}"
+  },
+  {
+    "id": "New node policy: {Arg_1}",
+    "translation": "新規ノード・ポリシー: {Arg_1}"
+  },
+  {
+    "id": "Deleted node policy",
+    "translation": "ノード・ポリシーを削除しました"
+  },
+  {
+    "id": "New node user input: {Arg_1}",
+    "translation": "新規ノードのユーザー入力: {Arg_1}"
+  },
+  {
+    "id": "No node user input to detele",
+    "translation": "削除するノード・ユーザー入力はありません"
+  },
+  {
+    "id": "Deleted all node user input",
+    "translation": "すべてのノード・ユーザー入力を削除しました"
+  },
+  {
+    "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+    "translation": "ユーザー入力を使用して {Arg_1}/{Arg_2} のサービス構成を開始します。"
+  },
+  {
+    "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+    "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を開始します。"
+  },
+  {
+    "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+    "translation": "{Arg_1}/{Arg_2} に対するサービスの構成を完了します。"
+  },
+  {
+    "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+    "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を完了します。"
+  },
+  {
+    "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
+    "translation": "変数 {Arg_1} が {Arg_2}/{Arg_3} のサービス構成にありません。 欠落している変数の設定がデプロイメント・ポリシーに含まれていない場合、契約が結ばれない可能性があります。"
+  },
+  {
+    "id": "Error configuring service {Arg_1}. {Arg_2}",
+    "translation": "サービス {Arg_1} の構成中にエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+    "translation": "サービスの構成状態 {Arg_1} の変更中にエラーが発生しました、エラー {Arg_2}"
+  },
+  {
+    "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+    "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を開始します。"
+  },
+  {
+    "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+    "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を完了します。"
+  },
+  {
+    "id": "Error converting the selections into Selectors: {Err}",
+    "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
+  },
+  {
+    "id": "Name, or Org is empty string.",
+    "translation": "Name または Org が空ストリングです。"
+  },
+  {
+    "id": "The serviceVersions array is empty.",
+    "translation": "serviceVersions 配列が空です。"
+  },
+  {
+    "id": "properties contains an invalid property: {Err}",
+    "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
+  },
+  {
+    "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+    "translation": "プロパティー {PROPSVCPRIVILEGED} にはブール値 (true または false) が必要です。"
+  },
+  {
+    "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+    "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが失敗しました。 エラー: {Arg_3}"
+  },
+  {
+    "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+    "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが復元されました。"
+  },
+  {
+    "id": "[verbose] {M}",
+    "translation": "[詳細] {M}"
+  },
+  {
+    "id": "Error: {Msg}",
+    "translation": "エラー: {Msg}"
+  },
+  {
+    "id": "Warning: {Msg}",
+    "translation": "警告: {Msg}"
+  },
+  {
+    "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+    "translation": "{ErrMsg} のバイトのアンマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "failed to marshal data type from {ErrMsg}: {Err}",
+    "translation": "{ErrMsg} のデータ・タイプのマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "problem testing api key match: {Err}",
+    "translation": "API 鍵マッチングのテストで問題が発生しました: {Err}"
+  },
+  {
+    "id": "Using API key",
+    "translation": "API 鍵の使用"
+  },
+  {
+    "id": "unable to create docker client: {Err}",
+    "translation": "Docker クライアントを作成できません: {Err}"
+  },
+  {
+    "id": "docker auth domainName: {DomainName}",
+    "translation": "Docker 認証ドメイン・ネーム: {DomainName}"
+  },
+  {
+    "id": "unable to load docker credentials for {Domain}: {Err}",
+    "translation": "{Domain} 用の Docker 資格情報をロードできません: {Err}"
+  },
+  {
+    "id": "unable to find docker credentials for {Domain}",
+    "translation": "{Domain} 用の Docker 資格情報が見つかりませんでした"
+  },
+  {
+    "id": "Pushing {ImageName}...",
+    "translation": "{ImageName} をプッシュ中..."
+  },
+  {
+    "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+    "translation": "~/.docker/config.json から Docker 資格情報 を取得できませんでした: {Err}。 「docker login ...」を実行してイメージ・レジストリーの資格情報を入力する必要がある場合があります。"
+  },
+  {
+    "id": "unable to push docker image {Repository____tag}: {Err}",
+    "translation": "Docker イメージ {Repository____tag} をプッシュできません: {Err}"
+  },
+  {
+    "id": "Pulling {ImageName}...",
+    "translation": "{ImageName} をプル中..."
+  },
+  {
+    "id": "unable to get docker auth for docker.io or {Domain} domain: {Err}",
+    "translation": "docker.io または {Domain} ドメイン用の Docker 認証を取得できません: {Err}"
+  },
+  {
+    "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}: {LoginErr}",
+    "translation": "Docker イメージ {Repository____tag} をプルできません。 Docker 資格情報が見つかりませんでした。 専用のイメージ・レジストリーの場合は「docker login ...」を実行する必要がある場合があります。 エラー: {Err}: {LoginErr}"
+  },
+  {
+    "id": "unable to pull docker image {Repository____tag}: {Err}",
+    "translation": "Docker イメージ {Repository____tag} をプルできません: {Err}"
+  },
+  {
+    "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+    "translation": "Docker 出力でイメージ・ダイジェストが見つけられなかったので、イメージ・ダイジェストを直接イメージから取得します。"
+  },
+  {
+    "id": "could not inspect image {ImageName}: {Err}.",
+    "translation": "イメージ {ImageName} を検査できませんでした: {Err}"
+  },
+  {
+    "id": "could not find digest for image {ImageName}.",
+    "translation": "イメージ {ImageName} のダイジェストを見つけられませんでした。"
+  },
+  {
+    "id": "the id can not contain more than 1 '/'",
+    "translation": "ID には複数の「/」を含めることはできません"
+  },
+  {
+    "id": "reading stdin failed: {Err}",
+    "translation": "標準入力の読み取りに失敗しました: {Err}"
+  },
+  {
+    "id": "reading {FilePath} failed: {Err}",
+    "translation": "{FilePath} の読み取りに失敗しました: {Err}"
+  },
+  {
+    "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+    "translation": "警告: 環境変数「{EnvVarName}」は入力ファイルで参照されていますが、環境で定義されていません。"
+  },
+  {
+    "id": "Error reading input, error {Err}",
+    "translation": "入力の読み取りでエラーが発生しました、エラー {Err}"
+  },
+  {
+    "id": "Exiting.",
+    "translation": "終了します。"
+  },
+  {
+    "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+    "translation": "ファイル {KeyFile} の絶対パスの取得に失敗しました。 {Err}"
+  },
+  {
+    "id": "Error checking absolute path for file {KeyFile}. {Err}",
+    "translation": "ファイル {KeyFile} の絶対パスの検査中にエラーが発生しました。{Err}"
+  },
+  {
+    "id": "Error parsing HORIZON_URL: {Err}",
+    "translation": "HORIZON_URL の構文解析でエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Error parsing host of the HORIZON_URL: {Err}",
+    "translation": "HORIZON_URL のホストの構文解析でエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Error parsing port of the HORIZON_URL: {Err}",
+    "translation": "HORIZON_URL のポートの構文解析でエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Unexpected port of the HORIZON_URL: {PortInt}",
+    "translation": "HORIZON_URL のポートが予期しないものです: {PortInt}"
+  },
+  {
+    "id": "The agbot url: {EnvVar}",
+    "translation": "agbot url: {EnvVar}"
+  },
+  {
+    "id": "Error reading HTTP response, error {Err}",
+    "translation": "HTTP 応答の読み取りでエラーが発生しました、エラー {Err}"
+  },
+  {
+    "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+    "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 「{StatusCommand}」を実行して Horizon エージェントが実行中であるか確認してください。 または「{StatusURL}」を実行して Horizon エージェントの状況を確認してください。 または、SSH トンネルを介してリモート Horizon エージェントに接続されている別のローカル・ポートに接続するように HORIZON_URL を設定します。 具体的なエラーは次のとおりです: {Err}"
+  },
+  {
+    "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+    "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 ポートに関連付けられている SSH トンネルが停止している可能性があります。 または、トンネルの向こう側にあるリモート Horizon エージェントが停止している可能性があります。 具体的なエラーは次のとおりです: {Err}"
+  },
+  {
+    "id": "{ApiMsg} new request failed: {Err}",
+    "translation": "{ApiMsg} 新規要求が失敗しました: {Err}"
+  },
+  {
+    "id": "HTTP code: {HttpCode}",
+    "translation": "HTTP コード: {HttpCode}"
+  },
+  {
+    "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+    "translation": "{ApiMsg} からの誤った HTTP コード: {HttpCode}"
+  },
+  {
+    "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
+    "translation": "{ApiMsg} からの誤った HTTP コード: {HttpCode}"
+  },
+  {
+    "id": "Failed to read body response from {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} のボディ応答の読み取りに失敗しました: {Err}"
+  },
+  {
+    "id": "failed to read body response from {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} のボディ応答の読み取りに失敗しました: {Err}"
+  },
+  {
+    "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} のボディ応答のアンマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} のボディ応答のアンマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+    "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}: {Body}"
+  },
+  {
+    "id": "failed to marshal body for {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} のボディのマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "HZN_AGBOT_URL is not defined",
+    "translation": "HZN_AGBOT_URL が定義されていません"
+  },
+  {
+    "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+    "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}、出力: {StringbodyBytes}"
+  },
+  {
+    "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} の Exchange ボディ応答のアンマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} の Exchange 出力のマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "Failed to unmarshal bytes. {Err}",
+    "translation": "バイトのアンマーシャルに失敗しました。 {Err}"
+  },
+  {
+    "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
+    "translation": "{ANAXOVERWRITEFILE} から {OldMgmtHubCertPath} を取得しているときにエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+    "translation": "ICP 証明書ファイル {IcpCertPath} の読み取り中にエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+    "translation": "{ANAXOVERWRITEFILE} から HZN_EXCHANGE_URL の取得中にエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+    "translation": "{ANAXCONFIGFILE} から ExchangeUrl の取得中にエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+    "translation": "HZN_EXCHANGE_URL が設定されていません、ノードの Horizon エージェント構成から取得してください。"
+  },
+  {
+    "id": "Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+    "translation": "環境変数 HZN_EXCHANGE_URL または Horizon エージェントから Exchange URL を取得できませんでした"
+  },
+  {
+    "id": "The exchange url: {ExchUrl}",
+    "translation": "Exchange URL: {ExchUrl}"
+  },
+  {
+    "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+    "translation": "{ANAXOVERWRITEFILE} から HZN_FSS_CSSURL の取得中にエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+    "translation": "{ANAXCONFIGFILE} から モデル管理サービスの URL の取得中にエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+    "translation": "HZN_FSS_CSSURL が設定されていません、ノードの Horizon エージェント構成から取得してください。"
+  },
+  {
+    "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+    "translation": "環境変数 HZN_FSS_CSSURL または Horizon エージェントからモデル管理サービスの URL を取得できませんでした"
+  },
+  {
+    "id": "The model management service url: {MmsUrl}",
+    "translation": "モデル管理サービス URL: {MmsUrl}"
+  },
+  {
+    "id": "HZN_SDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+    "translation": "HZN_SDO_SVC_URL が設定されていません。{ANAXOVERWRITEFILE} から取得してください。"
+  },
+  {
+    "id": "Error getting HZN_SDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+    "translation": "{ANAXOVERWRITEFILE} から HZN_SDO_SVC_URL を取得中にエラーが発生しました。{Err}"
+  },
+  {
+    "id": "Could not get the HZN_SDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+    "translation": "環境の {ANAXOVERWRITEFILE} ファイル、またはいずれかの hzn.json ファイルから、HZN_SDO_SVC_URL 値を取得できませんでした"
+  },
+  {
+    "id": "The SDO service url: {SdoUrl}",
+    "translation": "SDO サービス URL: {SdoUrl}"
+  },
+  {
+    "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+    "translation": "{ApiMethod} を実行するために Horizon {HorizonService} REST API に接続できません。 Horizon エージェントが現在構成されている対象の {Article} {HorizonService_1} とは別のものを使用するように {ServiceEnvVarName} を設定します。 具体的なエラーは次のとおりです: {Err}"
+  },
+  {
+    "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+    "translation": "{ApiMethod} を実行するために Horizon {HorizonService} REST API に接続できません。 {ServiceEnvVarName} の設定に誤りがある可能性があります。 または、{ServiceEnvVarName_1} の設定を解除して、Horizon エージェントが構成されている対象の {HorizonService_1} を使用します。 具体的なエラーは次のとおりです: {Err}"
+  },
+  {
+    "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} の Exchange ボディのマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "Failed to get file info: {Err}",
+    "translation": "ファイル情報の取得に失敗しました: {Err}"
+  },
+  {
+    "id": "Malformed URL: {UrlPath}. {ErrUrl}",
+    "translation": "URL の形式に誤りがあります: {UrlPath}。 {ErrUrl}"
+  },
+  {
+    "id": "unable to open object file {Name}: {Err}",
+    "translation": "オブジェクト・ファイル {Name} を開くことができません: {Err}"
+  },
+  {
+    "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+    "translation": "HTTP エラーが発生しました: {Service} REST API {ApiMsg} のコール中に {Err} が発生しました。 HTTP 状況: {Httpstatus}。 再試行します。"
+  },
+  {
+    "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+    "translation": "HTTP エラーが発生しました: {Service} REST API {ApiMsg} のコール中に {Err} が発生しました。 HTTP 状況: {Httpstatus}。"
+  },
+  {
+    "id": "failed to read exchange body response from {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} の Exchange ボディ応答の読み取りに失敗しました: {Err}"
+  },
+  {
+    "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+    "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}: {Code}、{Msg}"
+  },
+  {
+    "id": "bad HTTP code {HttpCode} from {ApiMsg}",
+    "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}"
+  },
+  {
+    "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+    "translation": "Exchange 認証は次のいずれかで指定する必要があります: -u フラグ、-n フラグ、HZN_EXCHANGE_USER_AUTH、または HZN_EXCHANGE_NODE_AUTH"
+  },
+  {
+    "id": "Verifying public key file ...",
+    "translation": "公開鍵ファイルを検証中 ..."
+  },
+  {
+    "id": "provided public key is not valid; error: {Err}",
+    "translation": "指定された公開鍵は無効です、エラー: {Err}"
+  },
+  {
+    "id": "Checking private key file format ...",
+    "translation": "秘密鍵ファイル・フォーマットを確認中..."
+  },
+  {
+    "id": "provided private key {KeyFile} is not valid; error: {Err}",
+    "translation": "指定された秘密鍵 {KeyFile} は無効です。エラー: {Err}"
+  },
+  {
+    "id": "{Err}. Please create the signing key.",
+    "translation": "{Err}。 署名鍵を作成してください。"
+  },
+  {
+    "id": "private key could not be generated; error: {Err}",
+    "translation": "秘密鍵を生成できませんでした。エラー: {Err}"
+  },
+  {
+    "id": "{Arg_1}. Public key could not be generated.",
+    "translation": "{Arg_1}。公開鍵を生成できませんでした。"
+  },
+  {
+    "id": "running: {CmdStr}",
+    "translation": "実行中: {CmdStr}"
+  },
+  {
+    "id": "did not get a command object",
+    "translation": "コマンド・オブジェクトを取得しませんでした"
+  },
+  {
+    "id": "Could not get Stdin pipe, error: {Err}",
+    "translation": "標準入力パイプを取得できませんでした、エラー: {Err}"
+  },
+  {
+    "id": "could not retrieve output from command, error: {Err}",
+    "translation": "コマンドから出力を取得できませんでした、エラー: {Err}"
+  },
+  {
+    "id": "could not retrieve stderr from command, error: {Err}",
+    "translation": "コマンドから標準エラー出力を取得できませんでした、エラー: {Err}"
+  },
+  {
+    "id": "Unable to start command, error: {Err}",
+    "translation": "コマンドを開始できません、エラー: {Err}"
+  },
+  {
+    "id": "Unable to write to stdin of command, error: {Err}",
+    "translation": "コマンドの標準入力に書き込むことができません、エラー: {Err}"
+  },
+  {
+    "id": "Unable to close stdin, error: {Err}",
+    "translation": "標準入力を閉じることができません、エラー: {Err}"
+  },
+  {
+    "id": "could not read stdout, error: {Err}",
+    "translation": "標準出力を読み取ることができませんでした、エラー: {Err}"
+  },
+  {
+    "id": "could not read stderr, error: {Err}",
+    "translation": "標準エラー出力を読み取ることができませんでした、エラー: {Err}"
+  },
+  {
+    "id": "command failed: {Err}, stderr: {StringstderrBytes}",
+    "translation": "コマンドが失敗しました: {Err}、標準エラー出力: {StringstderrBytes}"
+  },
+  {
+    "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
+    "translation": "{HTTPRequestTimeoutOverride} を使用して要求タイムアウトを設定できません。値は有効な数値ではありません: {EnvTimeout}"
+  },
+  {
+    "id": "HTTP request timeout set to {RequestTimeout} seconds",
+    "translation": "HTTP 要求タイムアウトは {RequestTimeout} 秒に設定されています"
+  },
+  {
+    "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
+    "translation": "環境変数 HZN_HTTP_RETRIES {MaxRetriess} を整数に変換中にエラーが発生しました。 {Err1}"
+  },
+  {
+    "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
+    "translation": "環境変数 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} を整数に変換中にエラーが発生しました。 {Err1}"
+  },
+  {
+    "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
+    "translation": "ファイル {FileName} は既に存在します。 別のファイル・パスまたはファイル名を指定してください。 既存のファイルを上書きするには、「--overwrite」フラグを使用します。"
+  },
+  {
+    "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
+    "translation": "オブジェクト「{DefaultFileName}」のデータをファイル {FileName} に保存できませんでした。エラー: {Err}"
+  },
+  {
+    "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+    "translation": "{Image} は次のとおり構文解析されました: domain={Domain}、path={Path}、tag={Tag}"
+  },
+  {
+    "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+    "translation": "警告: イメージ・パス「{Image}」を構文解析できませんでした。 Docker レジストリーにはプッシュせず、そのままの状態で「deployment」フィールドに含めます。"
+  },
+  {
+    "id": "Docker pull failure: {Err}",
+    "translation": "Docker プルの失敗: {Err}"
+  },
+  {
+    "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+    "translation": "提供されたログ・ドライバー ({LogDriver}) はログの表示をサポートしません。 ログが使用可能なドライバーは {DockerDriversWithLoggingSupport} だけです。"
+  },
+  {
+    "id": "Error creating StdoutPipe for command: {Err}",
+    "translation": "コマンドの StdoutPipe を作成しているときにエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Error starting command: {Err}",
+    "translation": "コマンドを開始中にエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Error waiting for command: {Err}",
+    "translation": "コマンドを待機中にエラーが発生しました: {Err}"
+  },
+  {
+    "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+    "translation": "{SysLogPath} を開けなかったか、存在しません。{Err}"
+  },
+  {
+    "id": "{SysLogPath} could not get stats: {Err}",
+    "translation": "{SysLogPath} は stats を取得できませんでした。{Err}"
+  },
+  {
+    "id": "Error reading from {SysLogPath}: {Err}",
+    "translation": "{SysLogPath} から読み取り中にエラーが発生しました。{Err}"
+  },
+  {
+    "id": "Unable to state {SysLogPath}: {Err}",
+    "translation": "{SysLogPath} の状態がわかりません。{Err}"
+  },
+  {
+    "id": "no service name",
+    "translation": "サービス名がありません"
+  },
+  {
+    "id": "no docker image for service {ServiceName}",
+    "translation": "サービス {ServiceName} の Docker イメージがありません"
+  },
+  {
+    "id": "failed to marshal body for {D}: {Err}",
+    "translation": "{D} のボディのマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+    "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "user input {Name} has no default value and is not set",
+    "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
+  },
+  {
+    "id": "'requiredServices' is not supported for cluster type service.",
+    "translation": "「requiredServices」はクラスター・タイプ・サービスではサポートされません。"
+  },
+  {
+    "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+    "translation": "サービス {ReqSvc} のバージョン {Ver} をバージョン範囲式に変換できませんでした。"
+  },
+  {
+    "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
+    "translation": "Exchange から {ReqSvc} のサービスを取得しているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "The required service {SId} has the wrong service type: {SType}.",
+    "translation": "必須サービス {SId} のサービス・タイプが正しくありません: {SType}。"
+  },
+  {
+    "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+    "translation": "必須サービス {SId} の従属サービス {Id} のサービス・タイプが正しくありません: {SType1}。"
+  },
+  {
+    "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+    "translation": "JSON 入力 {JsonBytes} のアンマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "Error getting new user input format. {Err1}",
+    "translation": "新しいユーザー入力形式の取得中にエラーが発生しました。 {Err1}"
+  },
+  {
+    "id": "Failed to create json object for user input. {Err1}",
+    "translation": "ユーザー入力用の JSON オブジェクトの作成に失敗しました。 {Err1}"
+  },
+  {
+    "id": "Deployment policy and pattern are mutually exclusive.",
+    "translation": "デプロイメント・ポリシーとパターンは同時に指定することはできません。"
+  },
+  {
+    "id": "Neither deployment policy nor pattern is specified.",
+    "translation": "デプロイメント・ポリシーもパターンも指定されていません。"
+  },
+  {
+    "id": "Incompatible",
+    "translation": "非互換"
+  },
+  {
+    "id": "Compatible",
+    "translation": "互換"
+  },
+  {
+    "id": "The given node id is empty.",
+    "translation": "指定されたノード ID が空です。"
+  },
+  {
+    "id": "Organization is not specified in the given node id: {NodeId}.",
+    "translation": "指定されたノード ID には組織が指定されていません: {NodeId}。"
+  },
+  {
+    "id": "Error getting node {NodeId} from the Exchange. {Err}",
+    "translation": "Exchange からノード {NodeId} を取得しているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "No node found for this node id {NodeId}.",
+    "translation": "このノード ID {NodeId} に該当するノードが見つかりませんでした。"
+  },
+  {
+    "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
+    "translation": "deployment ストリングを内部デプロイメント構造にアンマーシャル中にエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Invalid node type: {NodeType}. It must be 'device' or 'cluster'.",
+    "translation": "ノード・タイプが無効です: {NodeType}。 これは「device」または「cluster」でなければなりません。"
+  },
+  {
+    "id": "The input node type '{NodeType}' does not match the node type '{ExchNodeType}' from the node {NodeId}.",
+    "translation": "入力ノード・タイプ「{NodeType}」が、ノード {NodeId} のノード・タイプ「{ExchNodeType}」と一致しません。"
+  },
+  {
+    "id": "Service does not have deployment configuration for node type 'device'.",
+    "translation": "サービスには、ノード・タイプ「device」のデプロイメント構成はありません。"
+  },
+  {
+    "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
+    "translation": "サービスには、ノード・タイプ「cluster」のクラスター・デプロイメント構成はありません。"
+  },
+  {
+    "id": "Unable to create version expression from {VersionRange}. {Err}",
+    "translation": "{VersionRange} からバージョン式を作成できません。 {Err}"
+  },
+  {
+    "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+    "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+    "translation": "{TopId} の従属サービスの定義が見つかりませんでした。 すべてのサービスが Exchange に含まれるまで {PROPNODEPRIVILEGED} の互換性を完全には評価できません。"
+  },
+  {
+    "id": "The PolicyCheck input cannot be null",
+    "translation": "PolicyCheck 入力を NULL にすることはできません"
+  },
+  {
+    "id": "The input node architecture {NodeArch} does not match the Exchange node architecture {Arch} for node {NodeId}.",
+    "translation": "入力ノード・アーキテクチャー {NodeArch} が、ノード {NodeId} の Exchange ノード・アーキテクチャー {Arch} と一致しません。"
+  },
+  {
+    "id": "Policy Incompatible",
+    "translation": "ポリシー非互換"
+  },
+  {
+    "id": "Architecture does not match.",
+    "translation": "アーキテクチャーが一致しません。"
+  },
+  {
+    "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
+    "translation": "{Org}/{WorkloadURL} バージョン {Version} のすべてのアーキテクチャーのサービスを取得することに失敗しました。 {Err}"
+  },
+  {
+    "id": "Failed to validate the service policy. {Err}",
+    "translation": "サービス・ポリシーの検証に失敗しました。 {Err}"
+  },
+  {
+    "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
+    "translation": "デプロイメント・ポリシー内で 'arch' {NodeArch} を持つサービスが見つかりません。"
+  },
+  {
+    "id": "No services found in the deployment policy.",
+    "translation": "デプロイメント・ポリシー内でサービスが見つかりません。"
+  },
+  {
+    "id": "Node policy cannot be null.",
+    "translation": "ノード・ポリシーを NULL にすることはできません。"
+  },
+  {
+    "id": "Deployment policy cannot be null.",
+    "translation": "デプロイメント・ポリシーを NULL にすることはできません。"
+  },
+  {
+    "id": "Merged service policy cannot be null.",
+    "translation": "マージされるサービス・ポリシーを NULL にすることはできません。"
+  },
+  {
+    "id": "Error merging node policy with arch property. {Err}",
+    "translation": "arch プロパティーを使用してノード・ポリシーをマージしているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Failed to validate the node policy. {Err}",
+    "translation": "ノード・ポリシーの検証に失敗しました。 {Err}"
+  },
+  {
+    "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
+    "translation": "ノード {NodeId} のノード・ポリシーを内部ポリシー・フォーマットに変換できませんでした: {Err}"
+  },
+  {
+    "id": "No node policy found for this node {NodeId}.",
+    "translation": "このノード {NodeId} のノード・ポリシーが見つかりませんでした。"
+  },
+  {
+    "id": "Neither node policy nor node id is specified.",
+    "translation": "ノード・ポリシーもノード ID も指定されていません。"
+  },
+  {
+    "id": "Node id is empty.",
+    "translation": "ノード ID が空です。"
+  },
+  {
+    "id": "Organization is not specified in the node id: {NodeId}.",
+    "translation": "このノード ID には組織が指定されていません: {NodeId}。"
+  },
+  {
+    "id": "Error trying to query node policy for {NodeId}: {Err}",
+    "translation": "{NodeId} のノード・ポリシーを照会しようとしているときにエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Failed to validate the node policy for node {NodeId}. {Err}",
+    "translation": "ノード {NodeId} のノード・ポリシーの検証に失敗しました。 {Err}"
+  },
+  {
+    "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
+    "translation": "ノード {NodeId} のノード・ポリシーを内部ポリシーに変換できませんでした: {Err}"
+  },
+  {
+    "id": "Failed to convert deployment policy {BpId} to internal policy: {Err1}",
+    "translation": "デプロイメント・ポリシー {BpId} を内部ポリシーに変換できませんでした: {Err1}"
+  },
+  {
+    "id": "Validation failure for deployment policy {BpId}. {Err}",
+    "translation": "デプロイメント・ポリシー {BpId} の検証失敗。 {Err}"
+  },
+  {
+    "id": "No services specified in the given deployment policy {BpId}.",
+    "translation": "指定されたデプロイメント・ポリシー {BpId} にはサービスが指定されていません。"
+  },
+  {
+    "id": "No services specified in the deployment policy {Name}.",
+    "translation": "デプロイメント・ポリシー {Name} にはサービスが指定されていません。"
+  },
+  {
+    "id": "Neither deployment policy nor deployment policy id is specified.",
+    "translation": "デプロイメント・ポリシーもデプロイメント・ポリシー ID も指定されていません。"
+  },
+  {
+    "id": "Deployment policy id is empty.",
+    "translation": "デプロイメント・ポリシー ID が空です。"
+  },
+  {
+    "id": "Organization is not specified in the deployment policy id: {BpId}.",
+    "translation": "このデプロイメント・ポリシー ID には組織が指定されていません: {BpId}。"
+  },
+  {
+    "id": "Unable to get deployment policy for {BpId}, {Err}",
+    "translation": "{BpId} のデプロイメント・ポリシーを取得できません。{Err}"
+  },
+  {
+    "id": "No deployment policy found for this id {BpId}.",
+    "translation": "この ID {BpId} に該当するデプロイメント・ポリシーが見つかりません。"
+  },
+  {
+    "id": "Failed to convert deployment policy {BpId} to internal policy format: {Err}",
+    "translation": "デプロイメント・ポリシー {BpId} を内部ポリシー・フォーマットに変換できませんでした: {Err}"
+  },
+  {
+    "id": "Service policy id is empty.",
+    "translation": "サービス・ポリシー ID が空です。"
+  },
+  {
+    "id": "Organization is not specified in the service policy id: {SvcId}.",
+    "translation": "このサービス・ポリシー ID には組織が指定されていません: {SvcId}。"
+  },
+  {
+    "id": "Error trying to query service policy for service id {SvcId}: {Err}",
+    "translation": "サービス ID {SvcId} のサービス・ポリシーを照会しようとしているときにエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Error validating the service policy {SvcId}. {Err}",
+    "translation": "サービス・ポリシー {SvcId} を検証しているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Service name is empty.",
+    "translation": "サービス名が空です。"
+  },
+  {
+    "id": "Service organization is empty.",
+    "translation": "サービス組織が空です。"
+  },
+  {
+    "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+    "translation": "{SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} のサービス・ポリシーを照会しようとしているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+    "translation": "{SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} のサービス・ポリシーの検証に失敗しました。 {Err}"
+  },
+  {
+    "id": "The given deployment policy should not be null.",
+    "translation": "指定されたデプロイメント・ポリシーは、NULL であってはなりません。"
+  },
+  {
+    "id": "Error merging deployment policy with service policy. {Err}",
+    "translation": "デプロイメント・ポリシーとサービス・ポリシーをマージしているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Unable to find service definition from the input services.",
+    "translation": "入力サービスからサービス定義が見つかりません。"
+  },
+  {
+    "id": "The SecretBindingCheck input cannot be null",
+    "translation": "SecretBindingCheck 入力を NULL にすることはできません"
+  },
+  {
+    "id": "Node type '{NodeType}' does not support secret binding check.",
+    "translation": "ノード・タイプ「{NodeType}」は秘密バインディング検査をサポートしません。"
+  },
+  {
+    "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
+    "translation": "アーキテクチャー {NodeArch} を持つサービス・バージョンがデプロイメント・ポリシーにもパターンにも指定されていません。"
+  },
+  {
+    "id": "No service versions specified in the deployment policy or pattern.",
+    "translation": "デプロイメント・ポリシーにもパターンにもサービス・バージョンが指定されていません。"
+  },
+  {
+    "id": "Secret Binding Incompatible",
+    "translation": "秘密バインディング非互換"
+  },
+  {
+    "id": "Type Incompatible",
+    "translation": "タイプ非互換"
+  },
+  {
+    "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
+    "translation": "{ServiceOrg}/{ServiceURL} バージョン {Version} のすべてのアーキテクチャーのサービスを取得しているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Service definition not found in the input.",
+    "translation": "入力内でサービス定義が見つかりません。"
+  },
+  {
+    "id": "Warning: The following secret bindings are not required by any services: {ExtraneousSB}",
+    "translation": "警告: 次の秘密バインディングはどのサービスにも必要とされていません: {ExtraneousSB}"
+  },
+  {
+    "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+    "translation": "'arch' {NodeArch} を持つサービスがデプロイメント・ポリシーにもパターンにも見つかりません。"
+  },
+  {
+    "id": "No services found in the deployment policy or pattern.",
+    "translation": "デプロイメント・ポリシーにもパターンにもサービスが見つかりません。"
+  },
+  {
+    "id": "The input service definition object cannot be null.",
+    "translation": "入力サービス定義オブジェクトを NULL にすることはできません。"
+  },
+  {
+    "id": "Error verifying secret in the secret manager. {Err}",
+    "translation": "秘密マネージャー内で秘密を検証中にエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "The input service spec object cannot be null.",
+    "translation": "入力サービス・スペック・オブジェクトを NULL にすることはできません。"
+  },
+  {
+    "id": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}",
+    "translation": "{Org}/{URL} {Arch} {Version} の従属サービスが見つかりませんでした。 {Err}"
+  },
+  {
+    "id": "Secret binding for a cluster service is not supported.",
+    "translation": "クラスター・サービス用の秘密バインディングはサポートされていません。"
+  },
+  {
+    "id": "No secret binding found for the following service secrets: {NbArray}.",
+    "translation": "次のサービス秘密の秘密バインディングが見つかりません: {NbArray}。"
+  },
+  {
+    "id": "Wrong version string {ServiceVersionRange} specified in secret binding for service {SvcOrg}/{SvcName} {SvcVersion} {SvcArch}, error {Err}",
+    "translation": "サービス {SvcOrg}/{SvcName} {SvcVersion} {SvcArch} の秘密バインディングに、誤ったバージョン・ストリング {ServiceVersionRange} が指定されています。エラー: {Err}"
+  },
+  {
+    "id": "Error checking version {SvcVersion} in range {VExp}. {Err}",
+    "translation": "範囲 {VExp} のバージョン {SvcVersion} の検査中にエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set.",
+    "translation": "秘密バインディングの検査時に agbot URL が空ストリングであってはなりません。 HZN_AGBOT_URL が設定されていることを確認してください。"
+  },
+  {
+    "id": "The node organization must be provided.",
+    "translation": "ノード組織が指定されている必要があります。"
+  },
+  {
+    "id": "Error parsing secret name in the secret binding. {Errparse}",
+    "translation": "秘密バインディング内の秘密名の構文解析でエラーが発生しました。 {Errparse}"
+  },
+  {
+    "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
+    "translation": "秘密マネージャー内で秘密 {VaultSecretName} を検査中にエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+    "translation": "バインディング秘密名を空ストリングにすることはできません。 有効なフォーマットは、「<secretname>」(組織レベルの秘密の場合) および「user/<username>/<secretname>」(ユーザー・レベルの秘密の場合) です。"
+  },
+  {
+    "id": "Invalid format for the binding secret name: {SecretName}. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
+    "translation": "バインディング秘密名のフォーマットが無効です: {SecretName}。 有効なフォーマットは、「<secretname>」(組織レベルの秘密の場合) および「user/<username>/<secretname>」(ユーザー・レベルの秘密の場合) です。"
+  },
+  {
+    "id": "The UserInputCheck input cannot be null",
+    "translation": "UserInputCheck 入力を NULL にすることはできません"
+  },
+  {
+    "id": "Neither node user input nor node id is specified.",
+    "translation": "ノード・ユーザー入力もノード ID も指定されていません。"
+  },
+  {
+    "id": "User Input Incompatible",
+    "translation": "互換性のないユーザー入力"
+  },
+  {
+    "id": "Warning: checking node user input:  {Err}",
+    "translation": "警告: ノード・ユーザー入力を検査中: {Err}"
+  },
+  {
+    "id": "Warning: checking user input for the deployment policy: {Err}",
+    "translation": "警告: デプロイメント・ポリシーのユーザー入力を検査中: {Err}"
+  },
+  {
+    "id": "Warning: checking user input for the pattern: {Err}",
+    "translation": "警告: パターンのユーザー入力を検査中: {Err}"
+  },
+  {
+    "id": "Error verifing user input for service {SId}. {Err}",
+    "translation": "サービス {SId} のユーザー入力を検証しているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Failed to verify user input for service {SId}. {Reason}",
+    "translation": "サービス {SId} のユーザー入力の検証に失敗しました。 {Reason}"
+  },
+  {
+    "id": "Error verifing user input for dependent service {Id}. {Err}",
+    "translation": "従属サービス {Id} のユーザー入力を検証しているときにエラーが発生しました。 {Err}"
+  },
+  {
+    "id": "Failed to verify user input for dependent service {Id}. {Reason}",
+    "translation": "従属サービス {Id} のユーザー入力の検証に失敗しました。 {Reason}"
+  },
+  {
+    "id": "Failed to get the service from the Exchange. {Err}",
+    "translation": "Exchange からサービスの取得に失敗しました。 {Err}"
+  },
+  {
+    "id": "Service does not exist on the Exchange.",
+    "translation": "サービスは Exchange 上に存在しません。"
+  },
+  {
+    "id": "No user input found for service.",
+    "translation": "サービスのユーザー入力が見つかりません。"
+  },
+  {
+    "id": "Failed to validate the user input type for variable {Name}. {Err}",
+    "translation": "変数 {Name} のユーザー入力タイプの検証に失敗しました。 {Err}"
+  },
+  {
+    "id": "A required user input value is missing for variable {Name}.",
+    "translation": "変数 {Name} には、必要なユーザー入力値がありません。"
+  },
+  {
+    "id": "{Errmsg} Service {Org}/{URL} version {Version} arch {Arch} is missing in the node user input.",
+    "translation": "{Errmsg} サービス {Org}/{URL} バージョン {Version} アーキテクチャー {Arch} がノード・ユーザー入力にありません。"
+  },
+  {
+    "id": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
+    "translation": "サービス URL {URL} が、デプロイメント・ポリシー内に指定されているサービス URL {Name} と一致しません。"
+  },
+  {
+    "id": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
+    "translation": "サービス組織 {Org} が、デプロイメント・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
+  },
+  {
+    "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
+    "translation": "サービス・アーキテクチャー {Arch} が、デプロイメント・ポリシー内に指定されているサービス・アーキテクチャー {Arch_1} と一致しません。"
+  },
+  {
+    "id": "Service version {Version} does not match any service versions specified in the deployment policy.",
+    "translation": "サービス・バージョン {Version} が、デプロイメント・ポリシー内に指定されているいずれのサービス・バージョンとも一致しません。"
+  },
+  {
+    "id": "The service does not match any services in the pattern.",
+    "translation": "サービスがパターン内のどのサービスにも一致しません。"
+  },
+  {
+    "id": "Pattern {PatId} cannot be found on the Exchange.",
+    "translation": "パターン {PatId} が Exchange で見つかりません。"
+  },
+  {
+    "id": "Neither pattern nor pattern id is specified.",
+    "translation": "パターンもパターン ID も指定されていません。"
+  },
+  {
+    "id": "Pattern id is empty.",
+    "translation": "パターン ID が空です。"
+  },
+  {
+    "id": "Organization is not specified in the pattern id: {PatId}.",
+    "translation": "パターン ID {PatId} に組織が指定されていません。"
+  },
+  {
+    "id": "Error getting pattern {PatId} from the Exchange, {Err}",
+    "translation": "Exchange からパターン {PatId} を取得中にエラーが発生しました。{Err}"
+  },
+  {
+    "id": "No pattern found for this id {PatId}.",
+    "translation": "この ID {PatId} のパターンが見つかりません。"
+  },
+  {
+    "id": "URL must be specified in the service definition.",
+    "translation": "サービス定義に URL を指定する必要があります。"
+  },
+  {
+    "id": "Version must be specified in the service definition for service {URL}.",
+    "translation": "サービス {URL} のサービス定義でバージョンを指定する必要があります。"
+  },
+  {
+    "id": "Invalid version format {Version} for service {URL}.",
+    "translation": "サービス {URL} のバージョン・フォーマット {Version} が無効です。"
+  },
+  {
+    "id": "Arch must be specified in the service definition for service {URL}.",
+    "translation": "サービス {URL} のサービス定義でアーキテクチャーを指定する必要があります。"
+  },
+  {
+    "id": "Org must be specified in the service definition for service {URL}.",
+    "translation": "サービス {URL} のサービス定義で組織を指定する必要があります。"
+  },
+  {
+    "id": "Validation failure for input service {SId}. {Err}",
+    "translation": "入力サービス {SId} の検証失敗。 {Err}"
+  },
+  {
+    "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
+    "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} は、パターンでもデプロイメント・ポリシーでも参照されていません。 serviceOrgid、serviceUrl、serviceArch、および serviceVersionRange が正しいことを確認してください。"
+  },
+  {
+    "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
+    "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} は、パターンでもデプロイメント・ポリシーでも参照されていません。 サービス仕様が正しいことを確認してください。"
+  },
+  {
+    "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
+    "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} の変数 {Name} は使用されていません。 正しい名前であることを確認してください。"
+  },
+  {
+    "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+    "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。"
+  },
+  {
+    "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+    "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。"
+  },
+  {
+    "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+    "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。"
+  },
+  {
+    "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+    "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。"
+  },
+  {
+    "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+    "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}"
+  },
+  {
+    "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+    "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}"
+  },
+  {
+    "id": "Error starting containers: {Arg_1}",
+    "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}"
+  },
+  {
+    "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+    "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}"
+  },
+  {
+    "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+    "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}"
+  },
+  {
+    "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+    "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}"
+  },
+  {
+    "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+    "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}"
+  },
+  {
+    "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+    "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}"
+  },
+  {
+    "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+    "translation": "anax を終了します。 構成に指定されたサービス・ストレージ・ディレクトリーにアクセスできません: {Arg_1}。 {Arg_2}"
+  },
+  {
+    "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+    "translation": "anax を終了します。 iptables クライアントのインスタンス化に失敗しました。 {Arg_1}"
+  },
+  {
+    "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+    "translation": "anax を終了します。 Docker クライアントのインスタンス化に失敗しました。 {Arg_1}"
+  },
+  {
+    "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+    "translation": "hashAlgorithm が空であるため、デジタル署名の検証に失敗しました"
+  },
+  {
+    "id": "Failed to verify digital signature because the publicKey string is empty",
+    "translation": "publicKey ストリングが空であるため、デジタル署名の検証に失敗しました"
+  },
+  {
+    "id": "Failed to verify digital signature because the signature string is empty",
+    "translation": "署名ストリングが空であるため、デジタル署名の検証に失敗しました"
+  },
+  {
+    "id": "Hash algorithm {HashAlgo} is not supported",
+    "translation": "ハッシュ・アルゴリズム {HashAlgo} はサポートされていません"
+  },
+  {
+    "id": "Label, or Enabled is empty.",
+    "translation": "「ラベル」または「有効」が空です。"
+  },
+  {
+    "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+    "translation": "プロパティー {PROPNODEPRIVILEGED} にはブール値 (true または false) が必要です。"
+  },
+  {
+    "id": "Property must include a name and a value: {Property}",
+    "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}"
+  },
+  {
+    "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+    "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および string のリストです。"
+  },
+  {
+    "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+    "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です"
+  },
+  {
+    "id": "Value {Value} of property {Name} is not an integer type",
+    "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。"
+  },
+  {
+    "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+    "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。"
+  },
+  {
+    "id": "Property {Name} with value {Value} is not a valid verion string",
+    "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。"
+  },
+  {
+    "id": "Property {Name} has invalid value type {ActualType}",
+    "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています"
+  },
+  {
+    "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+    "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています"
+  },
+  {
+    "id": "The constraint expression contains unmatched parentheses.",
+    "translation": "制約式に対応しない括弧が含まれています。"
+  },
+  {
+    "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
+    "translation": "契約 {Arg_1} をデータベースから取得しているときにエラーが発生しました。エラー {Arg_2}"
+  },
+  {
+    "id": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
+    "translation": "MeteringNotification メッセージに対してデータベースから契約 {Arg_1} を取得できません。エラー {Arg_2}"
+  },
+  {
+    "id": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
+    "translation": "Cancel メッセージに対してデータベースから契約 {Arg_1} を取得できません。エラー {Arg_2}"
+  },
+  {
+    "id": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
+    "translation": "ReplyAck メッセージに対してデータベースから契約 {Arg_1} を取得できません。エラー {Arg_2}"
+  },
+  {
+    "id": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
+    "translation": "DataReceived メッセージに対してデータベースから契約 {Arg_1} を取得できません。エラー {Arg_2}"
+  },
+  {
+    "id": "Unable to retrieve unarchived agreements from database. {Arg_1}",
+    "translation": "解凍された契約をデータベースから取得できません。 {Arg_1}"
+  },
+  {
+    "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
+    "translation": "データベースで契約 {Arg_1} に終了のマークを付けているときにエラーが発生しました: {Arg_2}"
+  },
+  {
+    "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
+    "translation": "データベースからサービス定義 {Arg_1} を取得しているときにエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error retrieving all service definitions from db. {Arg_1}",
+    "translation": "すべてのサービス定義をデータベースから取得しているときにエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
+    "translation": "{Arg_1}/{Arg_2} バージョン {Arg_3} キー {Arg_4} のすべてのサービス・インスタンスをデータベースから取得しているときにエラーが発生しました。 {Arg_5}"
+  },
+  {
+    "id": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
+    "translation": "{Arg_1} のすべてのサービス・インスタンスをデータベースから取得しているときにエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error retrieving all service instances from database, error: {Arg_1}",
+    "translation": "すべてのサービス・インスタンスをデータベースから取得しているときにエラーが発生しました。エラー: {Arg_1}"
+  },
+  {
+    "id": "Error getting service instance {Arg_1} from db. {Arg_2}",
+    "translation": "データベースからサービス・インスタンス {Arg_1} を取得しているときにエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
+    "translation": "ワークロード {Arg_1} の一致する契約をデータベースから取得しているときにエラーが発生しました。 エラー: {Arg_2}"
+  },
+  {
+    "id": "Error retrieving node policy from database, error {Arg_1}",
+    "translation": "データベースからノード・ポリシーを取得中にエラーが発生しました。エラー {Arg_1}"
+  },
+  {
+    "id": "Error perisisting node config state in database to {Arg_1}. Error: {Arg_2}",
+    "translation": "データベース内のノード構成状態を {Arg_1} に保持しているときにエラーが発生しました。 エラー: {Arg_2}"
+  },
+  {
+    "id": "Error retrieving device from database. Error: {Arg_1}",
+    "translation": "データベースからデバイスを取得しているときにエラーが発生しました。 エラー: {Arg_1}"
+  },
+  {
+    "id": "Error deleting node exchange pattern from the local database. {Arg_1}",
+    "translation": "ローカル・データベースからノード Exchange パターンを削除しているときにエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error retrieving node {Arg_1} from the Exchange: {Arg_2}",
+    "translation": "ノード {Arg_1} を Exchange から取得しているときにエラーが発生しました。{Arg_2}"
+  },
+  {
+    "id": "Error updating registeredServices for node {Arg_1} in the Exchange: {Arg_2}",
+    "translation": "Exchange でノード {Arg_1} の registeredService を更新しているときにエラーが発生しました。{Arg_2}"
+  },
+  {
+    "id": "Image loaded for {Arg_1}/{Arg_2}.",
+    "translation": "{Arg_1}/{Arg_2} に対するイメージがロードされました。"
+  },
+  {
+    "id": "Image loaded for service {Arg_1}/{Arg_2}.",
+    "translation": "サービス {Arg_1}/{Arg_2} に対するイメージがロードされました。"
+  },
+  {
+    "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+    "translation": "{Arg_1}/{Arg_2} に対するイメージをロードしているときにエラーが発生しました。 理由: {Arg_3}"
+  },
+  {
+    "id": "Error loading image for service {Arg_1}/{Arg_2}.",
+    "translation": "サービス {Arg_1}/{Arg_2} に対するイメージをロードしているときにエラーが発生しました。"
+  },
+  {
+    "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+    "translation": "{Arg_1} に対する契約の終了を開始します。 終了の理由: {Arg_2}"
+  },
+  {
+    "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
+    "translation": "サービス {Arg_1} に対する合意に達しました。 契約 ID は {Arg_2} です。"
+  },
+  {
+    "id": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
+    "translation": "{Arg_1} に対する契約は agbot でもはや有効ではありません。 ノードはそれをキャンセルします。"
+  },
+  {
+    "id": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
+    "translation": "{Arg_1}/{Arg_2} のワークロード・サービス・コンテナーは稼働中です。"
+  },
+  {
+    "id": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+    "translation": "{Arg_1} に対する契約の終了を完了します。 終了の理由: {Arg_2}"
+  },
+  {
+    "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
+    "translation": "Exchange で {Arg_1} に対する契約を削除しているときにエラーが発生しました: {Arg_2}。 再試行します。"
+  },
+  {
+    "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
+    "translation": "agbot を使用した {Arg_1} の AgreementVerification でエラーを検出しました。エラー {Arg_2}"
+  },
+  {
+    "id": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
+    "translation": "ReplyAck は、agbot が {Arg_1} に対する契約の達成を望んでいなかったことを示しました。 ノードは契約をキャンセルします"
+  },
+  {
+    "id": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
+    "translation": "ノードが agbot {Arg_3} から {Arg_1}/{Arg_2} に対する Cancel メッセージを受け取りました。"
+  },
+  {
+    "id": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
+    "translation": "{Arg_1} に対する ReplyAck メッセージを処理しているときにエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error handling ReplyAck message. {Arg_1}",
+    "translation": "ReplyAck メッセージを処理しているときにエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
+    "translation": "{Arg_1} に対する DataReceived メッセージを処理しているときにエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error handling DataReceived message. {Arg_1}",
+    "translation": "DataReceived メッセージを処理しているときにエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
+    "translation": "{Arg_1} に対する MeterNotification メッセージを処理しているときにエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error handling MeterNotification message. {Arg_1}",
+    "translation": "MeterNotification メッセージを処理しているときにエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Error handling Cancel message for {Arg_1}. {Arg_2}",
+    "translation": "{Arg_1} に対する Cancel メッセージを処理しているときにエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Error handling Cancel message. {Arg_1}",
+    "translation": "Cancel メッセージを処理しているときにエラーが発生しました。 {Arg_1}"
+  },
+  {
+    "id": "Start workload service for {Arg_1}/{Arg_2}.",
+    "translation": "{Arg_1}/{Arg_2} に対するワークロード・サービスを開始します。"
+  },
+  {
+    "id": "Workload destroyed for {Arg_1}",
+    "translation": "{Arg_1} に対するワークロードが破棄されました"
+  },
+  {
+    "id": "Service containers for {Arg_1} started.",
+    "translation": "{Arg_1} に対するサービス・コンテナーが開始されました。"
+  },
+  {
+    "id": "Complete cleaning up the service instance {Arg_1}.",
+    "translation": "サービス・インスタンス {Arg_1} のクリーンアップを完了します。"
+  },
+  {
+    "id": "Start dependent services for {Arg_1}/{Arg_2}.",
+    "translation": "{Arg_1}/{Arg_2} に対する従属サービスを開始します。"
+  },
+  {
+    "id": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
+    "translation": "{Arg_1}/{Arg_2} に対する従属サービスを開始しているときにエラーが発生しました。 {Arg_3}"
+  },
+  {
+    "id": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
+    "translation": "契約 {Arg_4} に対して従属サービス {Arg_1}/{Arg_2} バージョン {Arg_3} を開始しているときにエラーが発生しました。 {Arg_5}"
+  },
+  {
+    "id": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
+    "translation": "契約 {Arg_2} が終了したため、サービス {Arg_1} のクリーンアップを開始します。"
+  },
+  {
+    "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+    "translation": "サービス {Arg_1}/{Arg_2} バージョン {Arg_3} を開始しているときにエラーが発生しました。エラー: {Arg_4}"
+  },
+  {
+    "id": "Error getting all the services from agreements: {Arg_1}",
+    "translation": "契約からすべてのサービスを取得しようとしているときにエラーが発生しました: {Arg_1}"
+  },
+  {
+    "id": "Start agreement-less service {Arg_1}/{Arg_2}.",
+    "translation": "契約なしのサービス {Arg_1}/{Arg_2} を開始します。"
+  },
+  {
+    "id": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
+    "translation": "契約なしのサービス {Arg_1}/{Arg_2} とその従属サービスの開始を完了します。"
+  },
+  {
+    "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
+    "translation": "契約なしのサービス {Arg_1}/{Arg_2} を開始できません。エラー {Arg_3}"
+  },
+  {
+    "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
+    "translation": "契約なしのサービスを開始できません。Exchange でパターン {Arg_1} を検索しているときにエラーが発生しました。エラー: {Arg_2}"
+  },
+  {
+    "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
+    "translation": "契約なしのサービスを開始できません。Exchange でパターン {Arg_1} が見つかりません"
+  },
+  {
+    "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
+    "translation": "契約なしのサービス {Arg_1}/{Arg_2} を開始できません。ローカルのサービス定義が見つかりません"
+  },
+  {
+    "id": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+    "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のアップグレードを開始します。"
+  },
+  {
+    "id": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+    "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のアップグレードを完了します。"
+  },
+  {
+    "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
+    "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のアップグレードに失敗しました。エラー: {Arg_5}"
+  },
+  {
+    "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
+    "translation": "契約に対するサービスを開始できなかったため、サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードを開始します。"
+  },
+  {
+    "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
+    "translation": "サービスを開始できなかったため、サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードを開始します。"
+  },
+  {
+    "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed.",
+    "translation": "アップグレードに失敗したため、サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードを開始します。"
+  },
+  {
+    "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+    "translation": "サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードに失敗しました。エラー: {Arg_4}"
+  },
+  {
+    "id": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+    "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のダウングレードを完了しました。"
+  },
+  {
+    "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
+    "translation": "{Arg_1}/{Arg_2} バージョン {Arg_3} キー {Arg_4} のダウングレード先となる新しいサービス定義を見つけようとしているときにエラーが発生しました。 エラー: {Arg_5}"
+  },
+  {
+    "id": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
+    "translation": "{Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレード先となる、低いバージョンが見つかりませんでした。"
+  },
+  {
+    "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}",
+    "translation": "サービス {Arg_1}/{Arg_2} をバージョン {Arg_3} からバージョン {Arg_4} にダウングレードしようとしてエラーが発生しました。 エラー: {Arg_5}"
+  },
+  {
+    "id": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
+    "translation": "サービス {Arg_1}/{Arg_2} バージョン {Arg_3} をダウングレードしようとしてエラーが発生しました。 {Arg_4}"
+  },
+  {
+    "id": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
+    "translation": "従属サービス {Arg_2} バージョン {Arg_3} が失敗したため、サービスに対する再試行番号 {Arg_1} を開始します。"
+  },
+  {
+    "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
+    "translation": "従属サービス {Arg_2} バージョン {Arg_3} に対する再試行番号 {Arg_1} が失敗しました。"
+  },
+  {
+    "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
+    "translation": "{Arg_1} バージョン {Arg_2} に対するサービス再試行回数を取得できませんでした。 {Arg_3}"
+  },
+  {
+    "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
+    "translation": "データベース内でサービス・インスタンス {Arg_1} に対する再試行開始状態を更新しているときにエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Node pattern changed on the Exchange from {Arg_1} to {Arg_2}.",
+    "translation": "Exchange 上でノード・パターンが {Arg_1} から {Arg_2} に変更されました。"
+  },
+  {
+    "id": "Encountered error while re-registering node with new pattern {Arg_1}. {Arg_2}",
+    "translation": "新規パターン {Arg_1} でノードを再登録している間にエラーが発生しました。 {Arg_2}"
+  },
+  {
+    "id": "Start re-registering node after pattern changed to {Arg_1}.",
+    "translation": "パターンが {Arg_1} に変更された後のノードの再登録を開始します。"
+  },
+  {
+    "id": "Complete re-registering node after pattern changed to {Arg_1}.",
+    "translation": "パターンが {Arg_1} に変更された後のノードの再登録を完了します。"
+  },
+  {
+    "id": "Node pattern changed again on the Exchange. Will register the node with the new pattern: {Arg_1}",
+    "translation": "Exchange 上で、再度ノード・パターンが変更されました。 新規パターンでノードを登録します: {Arg_1}"
+  },
+  {
+    "id": "Error validating new node pattern {Arg_1}: {Arg_2}",
+    "translation": "新しいノード・パターン {Arg_1} を検証しているときにエラーが発生しました: {Arg_2}"
+  },
+  {
+    "id": "The node will keep using the old pattern {Arg_1}",
+    "translation": "ノードは、古いパターン {Arg_1} を使用し続けます"
+  },
+  {
+    "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
+    "translation": "新規パターン {Arg_1} が検証されました。 契約を取り消し、新規パターンでノードを再登録します。"
+  },
+  {
+    "id": "New node management policy status created for policy {Arg_1}.",
+    "translation": "ポリシー {Arg_1}の新規ノード管理ポリシー状況が作成されました。"
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}",
+    "translation": "{Arg_1} のノード管理状況が {Arg_2} に変更されました"
+  },
+  {
+    "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+    "translation": "互換性エラー: スキーマ・バージョンが一致していません。コンシューマー・ポリシー: {Version}、プロデューサー・ポリシー {Version_1}"
+  },
+  {
+    "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+    "translation": "互換性エラー: ノードのプロパティー {Properties} が、制約条件 {Constraints} を満たしていません。 基礎のエラー: {Err}"
+  },
+  {
+    "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+    "translation": "互換性エラー: ノードのプロパティーが制約条件を満たしていません。 {Err}"
+  },
+  {
+    "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+    "translation": "互換性エラー: プロパティー {Properties} が、ノード制約 {Constraints} を満たしていません。 基礎のエラー: {Err}"
+  },
+  {
+    "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+    "translation": "互換性エラー: プロパティーがノード制約を満たしていません。 {Err}"
+  },
+  {
+    "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+    "translation": "互換性エラー: {AgreementProtocols} と {AgreementProtocols_1} の間に共通する契約プロトコルがありません。 基礎のエラー: {Err}"
+  },
+  {
+    "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+    "translation": "互換性エラー: データ検査は対応している必要がありますが、プロデューサーは {DataVerify} で、コンシューマーは {DataVerify_1} です。"
+  },
+  {
+    "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+    "translation": "契約 {Arg_1} は既に存在します。提案 {Arg_2} を無視します"
+  },
+  {
+    "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+    "translation": "契約 {Arg_1} の TsAndCs をアンマーシャルしているときにエラーを受け取りました。{Arg_2}"
+  },
+  {
+    "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+    "translation": "ノードは、agbot {Arg_4} からサービス {Arg_2}/{Arg_3} に対する契約 {Arg_1} を使用しているときに Proposal メッセージを受け取りました。"
+  },
+  {
+    "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+    "translation": "ノードは、サービス {Arg_1}/{Arg_2} に対する提案を拒否しました。"
+  },
+  {
+    "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+    "translation": "サービス {Arg_1}/{Arg_2} に対する提案を処理しているときにエラーが発生しました。 エラー: {Arg_3}"
+  },
+  {
+    "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+    "translation": "自己署名 MMS API 証明書用のディレクトリーを作成できません。エラー {Err}"
+  },
+  {
+    "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+    "translation": "MMS API 証明書シリアル番号用に乱数を生成できません、エラー {Err}"
+  },
+  {
+    "id": "unable to generate private key for MMS API certificate, error {Err}",
+    "translation": "MMS API 証明書用の秘密鍵を生成できません、エラー {Err}"
+  },
+  {
+    "id": "unable to create MMS API certificate, error {Err}",
+    "translation": "MMS API 証明書を作成できません。エラー {Err}"
+  },
+  {
+    "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+    "translation": "MMS API 証明書をファイル {ServerCertificate} に書き込むことができません、エラー {Err}"
+  },
+  {
+    "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+    "translation": "MMS API 証明書をファイル {ServerCertificate} にエンコードすることができません、エラー {Err}"
+  },
+  {
+    "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+    "translation": "MMS API 証明書ファイル {ServerCertificate} を閉じることができません、エラー {Err}"
+  },
+  {
+    "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+    "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} に書き込むことができません、エラー {Err}"
+  },
+  {
+    "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+    "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} にエンコードすることができません、エラー {Err}"
+  },
+  {
+    "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+    "translation": "MMS API 証明書の秘密鍵ファイル {ServerKey} を閉じることができません、エラー {Err}"
+  },
+  {
+    "id": "Unable to authenticate nil request for secrets API",
+    "translation": "秘密 API の nil 要求を認証できません"
+  },
+  {
+    "id": "Unable to extract basic auth for request",
+    "translation": "要求の基本認証を抽出できません"
+  },
+  {
+    "id": "unable to verify {AppKey}, error {Err}",
+    "translation": "{AppKey} を検証できません。エラー: {Err}"
+  },
+  {
+    "id": "credentials for {AppKey} are not valid",
+    "translation": "{AppKey} の資格情報は無効です"
+  },
+  {
+    "id": "Version_Expression: Empty string is not a valid version.",
+    "translation": "Version_Expression: 空ストリングは有効なバージョンではありません。"
+  },
+  {
+    "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+    "translation": "Version_Expression: {Expr} で空白文字は使用できません。"
+  },
+  {
+    "id": "Version_Expression: {Verstring} is not a valid version string.",
+    "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。"
+  },
+  {
+    "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+    "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。"
+  },
+  {
+    "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+    "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。"
+  },
+  {
+    "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+    "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
+  },
+  {
+    "id": "Input version string {V1} or {V2} is not a valid single version string.",
+    "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。"
+  }
+]

@@ -687,11 +687,11 @@
     },
     {
       "id": [
-        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR2",
+        "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}"
       ],
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入內文不包含限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}",
+      "message": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
+      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入主體不包含 'properties'、'constraints '、'deployment' 或 'management' 屬性：{Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -699,13 +699,6 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
         }
       ],
       "fuzzy": true
@@ -2642,9 +2635,9 @@
       "fuzzy": true
     },
     {
-      "id": "The name of the policy to add or overwrite.",
-      "message": "The name of the policy to add or overwrite.",
-      "translation": "要新增或改寫之原則的名稱。",
+      "id": "The name of the deployment policy to add or overwrite.",
+      "message": "The name of the deployment policy to add or overwrite.",
+      "translation": "要新增或改寫的部署原則名稱。",
       "fuzzy": true
     },
     {
@@ -2672,9 +2665,9 @@
       "fuzzy": true
     },
     {
-      "id": "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
-      "message": "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
-      "translation": "僅列出這一個原則。 使用 <org>/<policy> 來指定另一個組織中的公用原則，或使用 <org>/ 來列出另一個組織中的所有公用原則。",
+      "id": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
+      "message": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
+      "translation": "只列出一個部署原則。 使用 <org>/<policy> 來指定另一個組織中的公用原則，或使用 <org>/ 來列出另一個組織中的所有公用原則。",
       "fuzzy": true
     },
     {
@@ -2702,9 +2695,9 @@
       "fuzzy": true
     },
     {
-      "id": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
-      "message": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
-      "translation": "在 Horizon Exchange 中更新現有原則的屬性。 受支援的屬性是原則定義中的最上層屬性，如指令 'hzn exchange deployment new' 所示。",
+      "id": "Update one attribute of an existing deployment policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
+      "message": "Update one attribute of an existing deployment policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
+      "translation": "在 Horizon Exchange 中更新現有部署原則的一個屬性。 支援的屬性是原則定義中的最上層屬性，如指令 'hzn exchange deployment new' 所示。",
       "fuzzy": true
     },
     {
@@ -2717,6 +2710,84 @@
       "id": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
       "translation": "要在 Horizon Exchange 中變更之已更新部署原則屬性所在的 JSON 檔案的路徑。 指定 -f- 以從 stdin 中讀取。",
+      "fuzzy": true
+    },
+    {
+      "id": "List and manage node management policies in the Horizon Exchange.",
+      "message": "List and manage node management policies in the Horizon Exchange.",
+      "translation": "列出並管理 Horizon Exchange 中的節點管理原則。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the node management policies from the Horizon Exchange.",
+      "message": "Display the node management policies from the Horizon Exchange.",
+      "translation": "顯示 Horizon Exchange 中的節點管理原則。",
+      "fuzzy": true
+    },
+    {
+      "id": "List just this one node management policy.",
+      "message": "List just this one node management policy.",
+      "translation": "只列出這一個節點管理原則。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display detailed output about the node management policies.",
+      "message": "Display detailed output about the node management policies.",
+      "translation": "顯示節點管理原則的詳細輸出。",
+      "fuzzy": true
+    },
+    {
+      "id": "List all the nodes that apply for the given node management policy.",
+      "message": "List all the nodes that apply for the given node management policy.",
+      "translation": "列出適用於給定節點管理原則的所有節點。",
+      "fuzzy": true
+    },
+    {
+      "id": "Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template.",
+      "message": "Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template.",
+      "translation": "在 Horizon Exchange 中新增或取代節點管理原則。 針對空的節點管理原則範本使用 'hzn exchange nmp new'。",
+      "fuzzy": true
+    },
+    {
+      "id": "List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.",
+      "message": "List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.",
+      "translation": "列出將與此節點管理原則相容的所有節點。 搭配使用此旗標與 --dry-run 來列出節點，而不將原則發佈至 Exchange。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to add or overwrite.",
+      "message": "The name of the node management policy to add or overwrite.",
+      "translation": "要新增或改寫的節點管理原則名稱。",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.",
+      "message": "The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "JSON 檔案的路徑，其中包含在 Horizon Exchange 中建立/更新節點管理原則所需的 meta 資料。 指定 -f- 以從 stdin 讀取。",
+      "fuzzy": true
+    },
+    {
+      "id": "Allow this node management policy to be published even though it does not have any constraints.",
+      "message": "Allow this node management policy to be published even though it does not have any constraints.",
+      "translation": "容許發佈此節點管理原則，即使它沒有任何限制。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display an empty node management policy template that can be filled in.",
+      "message": "Display an empty node management policy template that can be filled in.",
+      "translation": "顯示可以填寫的空節點管理原則範本。",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove the node management policy in the Horizon Exchange.",
+      "message": "Remove the node management policy in the Horizon Exchange.",
+      "translation": "移除 Horizon Exchange 中的節點管理原則。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to be removed.",
+      "message": "The name of the node management policy to be removed.",
+      "translation": "要移除的節點管理原則名稱。",
       "fuzzy": true
     },
     {
@@ -2744,9 +2815,9 @@
       "fuzzy": true
     },
     {
-      "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin.",
-      "message": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin.",
-      "translation": "在 Horizon Exchange 中建立/更新節點原則所需 meta 資料所在的 JSON 檔案的路徑。 指定 -f- 以從 stdin 中讀取。",
+      "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "message": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "translation": "JSON 檔案的路徑，該檔案包含在 Horizon Exchange 中建立/更新節點原則所需的 meta 資料。 指定 -f- 以從 stdin 讀取。 節點原則包含 'deployment' 和 'management' 屬性。 請使用 'hzn policy new' 來查看節點原則格式。",
       "fuzzy": true
     },
     {
@@ -2864,6 +2935,30 @@
       "fuzzy": true
     },
     {
+      "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
+      "message": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
+      "translation": "列出節點的相容節點管理原則。 除非指定 -a 旗標，否則只會顯示已啟用的原則。",
+      "fuzzy": true
+    },
+    {
+      "id": "List node management policies for this node",
+      "message": "List node management policies for this node",
+      "translation": "列出此節點的節點管理原則",
+      "fuzzy": true
+    },
+    {
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "translation": "用來作為查詢和修改節點資源之認證的 Horizon Exchange 節點 ID 和記號（如果未指定 -u 旗標）。 HZN_EXCHANGE_NODE_AUTH 將用作 -n 的預設值。 如果您未在它前面加上節點的組織，則它前面會自動加上 -o 值。",
+      "fuzzy": true
+    },
+    {
+      "id": "Include disabled NMP's.",
+      "message": "Include disabled NMP's.",
+      "translation": "包括已停用的 NMP。",
+      "fuzzy": true
+    },
+    {
       "id": "List the run-time status of the node.",
       "message": "List the run-time status of the node.",
       "translation": "列出節點的執行時期狀態。",
@@ -2879,12 +2974,6 @@
       "id": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
       "message": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
       "translation": "從 Horizon Exchange 中移除節點資源。 當邊緣節點已使用此節點 ID 登錄時請勿這樣做。",
-      "fuzzy": true
-    },
-    {
-      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "用來作為查詢和修改節點資源之認證的 Horizon Exchange 節點 ID 和記號（如果未指定 -u 旗標）。 HZN_EXCHANGE_NODE_AUTH 將用作 -n 的預設值。 如果您未在它前面加上節點的組織，則它前面會自動加上 -o 值。",
       "fuzzy": true
     },
     {
@@ -3918,6 +4007,12 @@
       "fuzzy": true
     },
     {
+      "id": "Specify true to show objects that are marked deleted. Specify false to show objects that are not marked deleted. If this flag is omitted, both kinds of objects are shown. Object will be marked deleted if object is deleted in CSS but it doesn't receive notifications from all the destinations",
+      "message": "Specify true to show objects that are marked deleted. Specify false to show objects that are not marked deleted. If this flag is omitted, both kinds of objects are shown. Object will be marked deleted if object is deleted in CSS but it doesn't receive notifications from all the destinations",
+      "translation": "指定 true 以顯示標示為已刪除的物件。 指定 false 以顯示未標示為已刪除的物件。 如果省略此旗標，則會顯示這兩種類型的物件。 如果在 CSS 中刪除物件，但未收到來自所有目的地的通知，則會將物件標示為已刪除",
+      "fuzzy": true
+    },
+    {
       "id": "Show detailed object metadata information",
       "message": "Show detailed object metadata information",
       "translation": "顯示詳細的物件 Meta 資料資訊",
@@ -3960,15 +4055,27 @@
       "fuzzy": true
     },
     {
-      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
-      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
-      "translation": "要發佈之物件的定義。 空白範本可透過 'hzn mss object new' 指令來獲取。 指定 -m- 以從 stdin 進行讀取。",
+      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.",
+      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.",
+      "translation": "要發佈之物件的定義。 可以從 'hzn mms object new' 指令取得空白範本。 指定 -m- 以從 stdin 讀取。",
       "fuzzy": true
     },
     {
       "id": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
       "message": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
       "translation": "要發佈的物件（檔案格式）。 這是選用旗標，以便您可以僅更新物件的定義。",
+      "fuzzy": true
+    },
+    {
+      "id": "The publish command will disable chunk upload. Data will stream to CSS.",
+      "message": "The publish command will disable chunk upload. Data will stream to CSS.",
+      "translation": "發佈指令將停用區塊上傳。 資料將串流至 CSS。",
+      "fuzzy": true
+    },
+    {
+      "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
+      "message": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
+      "translation": "將使用發佈的資料區塊大小。 預設值為 104857600（100MB）。 如果指定 --disableChunkUpload ，則會忽略。",
       "fuzzy": true
     },
     {
@@ -3996,6 +4103,12 @@
       "fuzzy": true
     },
     {
+      "id": "Display a list of object types stored in the Horizon Model Management Service.",
+      "message": "Display a list of object types stored in the Horizon Model Management Service.",
+      "translation": "顯示儲存在 Horizon 模型管理服務中的物件類型清單。",
+      "fuzzy": true
+    },
+    {
       "id": "Display the status of the Horizon Model Management Service.",
       "message": "Display the status of the Horizon Model Management Service.",
       "translation": "顯示 Horizon 模型管理服務的狀態。",
@@ -4011,6 +4124,132 @@
       "id": "Display general information about this Horizon edge node.",
       "message": "Display general information about this Horizon edge node.",
       "translation": "顯示關於這個 Horizon 邊緣節點的一般資訊。",
+      "fuzzy": true
+    },
+    {
+      "id": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
+      "message": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
+      "translation": "用來查詢及建立「節點管理」資源的 Horizon 使用者認證。 如果未指定，將使用 HZN_EXCHANGE_USER_AUTH 作為預設值。 如果您未在其前面附加使用者的組織，則會自動在其前面附加 -o 值。",
+      "fuzzy": true
+    },
+    {
+      "id": "List and manage manifest files stored in the management hub.",
+      "message": "List and manage manifest files stored in the management hub.",
+      "translation": "列出並管理儲存在管理中心的資訊清單檔。",
+      "fuzzy": true
+    },
+    {
+      "id": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
+      "message": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
+      "translation": "在管理中心新增或取代資訊清單檔。 針對空的資訊清單範本使用 'hzn nodemanagement manifest new'。",
+      "fuzzy": true
+    },
+    {
+      "id": "The type of manifest to add. Valid values include 'agent_upgrade_manifests'.",
+      "message": "The type of manifest to add. Valid values include 'agent_upgrade_manifests'.",
+      "translation": "要新增的資訊清單類型。 有效值包括 'agent_upgrade_manifests'。",
+      "fuzzy": true
+    },
+    {
+      "id": "The id of the manifest to add.",
+      "message": "The id of the manifest to add.",
+      "translation": "要新增之資訊清單的 ID。",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
+      "message": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
+      "translation": "包含資訊清單資料之 JSON 檔案的路徑。 指定 -f- 以從 stdin 讀取。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display a list of manifest files stored in the management hub.",
+      "message": "Display a list of manifest files stored in the management hub.",
+      "translation": "顯示管理中心中儲存的資訊清單檔清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "The type of manifest to list. Valid values include 'agent_upgrade_manifests'.",
+      "message": "The type of manifest to list. Valid values include 'agent_upgrade_manifests'.",
+      "translation": "要列出的資訊清單類型。 有效值包括 'agent_upgrade_manifests'。",
+      "fuzzy": true
+    },
+    {
+      "id": "The id of the manifest to list. Must specify --type flag.",
+      "message": "The id of the manifest to list. Must specify --type flag.",
+      "translation": "要列出之資訊清單的 ID。 必須指定 --type 旗標。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the contents of the manifest file. Must specify --type and --id flags.",
+      "message": "Display the contents of the manifest file. Must specify --type and --id flags.",
+      "translation": "顯示資訊清單檔的內容。 必須指定 --type 和 --id 旗標。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display an empty manifest template that can be filled in.",
+      "message": "Display an empty manifest template that can be filled in.",
+      "translation": "顯示可填寫的空資訊清單範本。",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
+      "message": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
+      "translation": "從管理中心移除資訊清單檔。 針對空的資訊清單範本使用 'hzn nodemanagement manifest new'。",
+      "fuzzy": true
+    },
+    {
+      "id": "The type of manifest to remove. Valid values include 'agent_upgrade_manifests'.",
+      "message": "The type of manifest to remove. Valid values include 'agent_upgrade_manifests'.",
+      "translation": "要移除的資訊清單類型。 有效值包括 'agent_upgrade_manifests'。",
+      "fuzzy": true
+    },
+    {
+      "id": "The id of the manifest to remove.",
+      "message": "The id of the manifest to remove.",
+      "translation": "要移除之資訊清單的 ID。",
+      "fuzzy": true
+    },
+    {
+      "id": "List agent files and types stored in the management hub.",
+      "message": "List agent files and types stored in the management hub.",
+      "translation": "列出管理中心中儲存的代理程式檔案及類型。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display a list of agent files stored in the management hub.",
+      "message": "Display a list of agent files stored in the management hub.",
+      "translation": "顯示管理中心中儲存的代理程式檔案清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter the list of agent upgrade files by the specified type. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
+      "message": "Filter the list of agent upgrade files by the specified type. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
+      "translation": "依指定的類型過濾代理程式升級檔案清單。 有效值包括 'agent_software_files'、'agent_cert_files' 及 'agent_config_files'。",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter the list of agent upgrade files by the specified version range or version string. Version can be a version range, a single version string or 'latest'.",
+      "message": "Filter the list of agent upgrade files by the specified version range or version string. Version can be a version range, a single version string or 'latest'.",
+      "translation": "依指定的版本範圍或版本字串過濾代理程式升級檔案的清單。 版本可以是版本範圍、單一版本字串或 'latest'。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display a list of agent file types with their corresponding versions.",
+      "message": "Display a list of agent file types with their corresponding versions.",
+      "translation": "顯示代理程式檔案類型及其對應版本的清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "The type of agent files to list versions for. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
+      "message": "The type of agent files to list versions for. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
+      "translation": "要列出其版本的代理程式檔案類型。 有效值包括 'agent_software_files'、'agent_cert_files' 及 'agent_config_files'。",
+      "fuzzy": true
+    },
+    {
+      "id": "Show only a list of versions for a given file type. Must also specify a file type with the --type flag.",
+      "message": "Show only a list of versions for a given file type. Must also specify a file type with the --type flag.",
+      "translation": "只顯示給定檔案類型的版本清單。 必須同樣以 --type 旗標指定檔案類型。",
       "fuzzy": true
     },
     {
@@ -4074,9 +4313,9 @@
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
-      "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
-      "translation": "包含節點原則的 JSON 輸入檔名稱。 指定 -f- 以從 stdin 中讀取。",
+      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "translation": "包含節點原則的 JSON 輸入檔名稱。 指定 -f- 以從 stdin 讀取。 節點原則包含 'deployment' 和 'management' 屬性。 請使用 'hzn policy new' 來查看節點原則格式。",
       "fuzzy": true
     },
     {
@@ -4168,9 +4407,9 @@
       "fuzzy": true
     },
     {
-      "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
-      "message": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
-      "translation": "用來設定或置換此節點的節點原則（將用於原則型合約協議）的 JSON 檔案。",
+      "id": "A JSON file that sets or overrides the node policy for this node. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "message": "A JSON file that sets or overrides the node policy for this node. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "translation": "設定或置換此節點的節點原則的 JSON 檔案。 節點原則包含 'deployment' 和 'management' 屬性。 請使用 'hzn policy new' 來查看節點原則格式。",
       "fuzzy": true
     },
     {
@@ -4345,6 +4584,12 @@
       "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
       "message": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
       "translation": "等待完成取消註冊的分鐘數。 預設值是零，表示永遠等待。",
+      "fuzzy": true
+    },
+    {
+      "id": "Perform a deep clean on a node running in a container. This flag  must be used with -D and only if the agent was installed as anax-in-container.",
+      "message": "Perform a deep clean on a node running in a container. This flag  must be used with -D and only if the agent was installed as anax-in-container.",
+      "translation": "針對容器中執行的節點執行深度清除。 此旗標必須與 -D 搭配使用，且只在代理程式安裝為 anax-in-container 時才使用。",
       "fuzzy": true
     },
     {
@@ -4696,9 +4941,9 @@
       "fuzzy": true
     },
     {
-      "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
-      "message": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
-      "translation": "與此憑證相關聯的邊緣裝置使用的節點原則檔案。 與 -e 及 -p 互斥。",
+      "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "message": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
+      "translation": "要用於與此憑單相關聯之邊緣裝置的節點原則檔案。 它與 -e 和 -p 互斥。 節點原則包含 'deployment' 和 'management' 屬性。 請使用 'hzn policy new' 來查看節點原則格式。",
       "fuzzy": true
     },
     {
@@ -4756,9 +5001,9 @@
       "fuzzy": true
     },
     {
-      "id": "The mms command is not supported on an edge cluster node.",
-      "message": "The mms command is not supported on an edge cluster node.",
-      "translation": "邊緣叢集節點上不支援 mms 指令。",
+      "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
+      "message": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
+      "translation": "與此憑證相關聯的邊緣裝置使用的節點原則檔案。 與 -e 及 -p 互斥。",
       "fuzzy": true
     },
     {
@@ -6924,30 +7169,6 @@
       "fuzzy": true
     },
     {
-      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "translation": "正在上傳：{Float32totalSent__float32bodyLen__100} {}",
-      "placeholders": [
-        {
-          "id": "Float32totalSent__float32bodyLen__100",
-          "string": "%.2[1]f",
-          "type": "float32",
-          "underlyingType": "float32",
-          "argNum": 1,
-          "expr": "float32(totalSent) / float32(bodyLen) * 100"
-        },
-        {
-          "id": "",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "\"%\""
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "unable to open object file {Name}: {Err}",
       "message": "unable to open object file {Name}: {Err}",
       "translation": "無法開啟物件檔 {Name}：{Err}",
@@ -7831,7 +8052,7 @@
           "id": "CompCheckInput",
           "string": "%[1]v",
           "type": "github.com/open-horizon/anax/compcheck.CompCheck",
-          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
+          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/exchangecommon.NodePolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "compCheckInput"
         }
@@ -9953,8 +10174,8 @@
         {
           "id": "Containers",
           "string": "%[1]v",
-          "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-          "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+          "type": "[]github.com/fsouza/go-dockerclient.APIContainers",
+          "underlyingType": "[]github.com/fsouza/go-dockerclient.APIContainers",
           "argNum": 1,
           "expr": "containers"
         }
@@ -11175,7 +11396,7 @@
         {
           "id": "ContainerNetwork",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.ContainerNetwork",
+          "type": "github.com/fsouza/go-dockerclient.ContainerNetwork",
           "underlyingType": "struct{Aliases []string \"json:\\\"Aliases,omitempty\\\" yaml:\\\"Aliases,omitempty\\\" toml:\\\"Aliases,omitempty\\\"\"; MacAddress string \"json:\\\"MacAddress,omitempty\\\" yaml:\\\"MacAddress,omitempty\\\" toml:\\\"MacAddress,omitempty\\\"\"; GlobalIPv6PrefixLen int \"json:\\\"GlobalIPv6PrefixLen,omitempty\\\" yaml:\\\"GlobalIPv6PrefixLen,omitempty\\\" toml:\\\"GlobalIPv6PrefixLen,omitempty\\\"\"; GlobalIPv6Address string \"json:\\\"GlobalIPv6Address,omitempty\\\" yaml:\\\"GlobalIPv6Address,omitempty\\\" toml:\\\"GlobalIPv6Address,omitempty\\\"\"; IPv6Gateway string \"json:\\\"IPv6Gateway,omitempty\\\" yaml:\\\"IPv6Gateway,omitempty\\\" toml:\\\"IPv6Gateway,omitempty\\\"\"; IPPrefixLen int \"json:\\\"IPPrefixLen,omitempty\\\" yaml:\\\"IPPrefixLen,omitempty\\\" toml:\\\"IPPrefixLen,omitempty\\\"\"; IPAddress string \"json:\\\"IPAddress,omitempty\\\" yaml:\\\"IPAddress,omitempty\\\" toml:\\\"IPAddress,omitempty\\\"\"; Gateway string \"json:\\\"Gateway,omitempty\\\" yaml:\\\"Gateway,omitempty\\\" toml:\\\"Gateway,omitempty\\\"\"; EndpointID string \"json:\\\"EndpointID,omitempty\\\" yaml:\\\"EndpointID,omitempty\\\" toml:\\\"EndpointID,omitempty\\\"\"; NetworkID string \"json:\\\"NetworkID,omitempty\\\" yaml:\\\"NetworkID,omitempty\\\" toml:\\\"NetworkID,omitempty\\\"\"}",
           "argNum": 2,
           "expr": "nw"
@@ -11299,22 +11520,6 @@
           "underlyingType": "*github.com/open-horizon/anax/common.DeploymentConfig",
           "argNum": 1,
           "expr": "depConfig"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to generate instance ID: {Err}",
-      "message": "unable to generate instance ID: {Err}",
-      "translation": "無法產生實例 ID：{Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -12366,9 +12571,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
-      "message": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all archetctures. {Err}",
-      "translation": "無法從所有架構的 Exchange 中取得服務 {ServiceOrg}/{ServiceName} {ServiceVersion} 版。 {Err}",
+      "id": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all architectures. {Err}",
+      "message": "Failed to get services {ServiceOrg}/{ServiceName} version {ServiceVersion} from the exchange for all architectures. {Err}",
+      "translation": "無法從 Exchange 取得所有架構的服務 {ServiceOrg}/{ServiceName} 版本 {ServiceVersion}。{Err}",
       "placeholders": [
         {
           "id": "ServiceOrg",
@@ -12699,6 +12904,318 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "NMP {NmpName} not found in org {NmpOrg}",
+      "message": "NMP {NmpName} not found in org {NmpOrg}",
+      "translation": "在組織 {NmpOrg} 中找不到 NMP {NmpName}",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'hzn exchange nmp list' output: {Err}",
+      "message": "failed to marshal 'hzn exchange nmp list' output: {Err}",
+      "translation": "無法配置 'hzn exchange nmp list' 輸出：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "A short description of the policy.",
+      "message": "A short description of the policy.",
+      "translation": "原則的簡要說明。",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) A much longer description of the policy.",
+      "message": "(Optional) A much longer description of the policy.",
+      "translation": "（選用）原則的詳細說明。",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
+      "message": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
+      "translation": "（選用）<property name> <operator> <property value> 格式的限制表示式清單，",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) A list of policy properties that describe this policy.",
+      "message": "(Optional) A list of policy properties that describe this policy.",
+      "translation": "（選用）說明此原則的原則內容清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) This policy applies to nodes using one of these patterns.",
+      "message": "(Optional) This policy applies to nodes using one of these patterns.",
+      "translation": "（選用）此原則適用於使用下列其中一個型樣的節點。",
+      "fuzzy": true
+    },
+    {
+      "id": "Is this policy enabled or disabled.",
+      "message": "Is this policy enabled or disabled.",
+      "translation": "此原則是已啟用還是已停用。",
+      "fuzzy": true
+    },
+    {
+      "id": "When to start an upgrade, default \"now\".",
+      "message": "When to start an upgrade, default \"now\".",
+      "translation": "何時開始升級，預設值為 \"now\"。",
+      "fuzzy": true
+    },
+    {
+      "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
+      "message": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
+      "translation": "讓代理程式在 start + startWindow 內隨機化升級開始時間，預設值為 0。",
+      "fuzzy": true
+    },
+    {
+      "id": "(Optional) Assertions on how the agent should update itself.",
+      "message": "(Optional) Assertions on how the agent should update itself.",
+      "translation": "（選用）關於如何更新代理程式本身的主張。",
+      "fuzzy": true
+    },
+    {
+      "id": "The manifest file containing the software, config and cert files to upgrade.",
+      "message": "The manifest file containing the software, config and cert files to upgrade.",
+      "translation": "包含要升級之軟體、配置及憑證檔案的資訊清單檔。",
+      "fuzzy": true
+    },
+    {
+      "id": "Is this policy allowed to perform a downgrade to a previous version.",
+      "message": "Is this policy allowed to perform a downgrade to a previous version.",
+      "translation": "是否容許此原則執行降級以回復到舊版。",
+      "fuzzy": true
+    },
+    {
+      "id": "Incorrect node management policy format in file {JsonFilePath}: {Err}",
+      "message": "Incorrect node management policy format in file {JsonFilePath}: {Err}",
+      "translation": "檔案 {JsonFilePath} 中的節點管理原則格式不正確：{Err}",
+      "placeholders": [
+        {
+          "id": "JsonFilePath",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "jsonFilePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
+      "message": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
+      "translation": "節點管理原則沒有任何限制，這可能導致管理原則部署至所有節點。 請指定 --no-constraints 以確認這是可接受的。",
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "message": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中更新節點管理原則：{NmpOrg}/{NmpName}",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
+      "message": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
+      "translation": "無法建立節點管理原則 {NmpOrg}/{NmpName}：{Msg}",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        },
+        {
+          "id": "Msg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "message": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中新增節點管理原則：{NmpOrg}/{NmpName}",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
+      "translation": "確定要從 Horizon Exchange 中移除組織 {NmpName} {NmpOrg} 的節點管理原則嗎？",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpName} not found in org {NmpOrg}",
+      "message": "Node management policy {NmpName} not found in org {NmpOrg}",
+      "translation": "在組織 {NmpOrg} 中找不到節點管理原則 {NmpName}",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
+      "message": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
+      "translation": "正在從 Exchange 中移除節點管理原則 {NmpOrg}/{NmpName}。",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpOrg}/{NmpName} removed",
+      "message": "Node management policy {NmpOrg}/{NmpName} removed",
+      "translation": "已移除節點管理原則 {NmpOrg}/{NmpName}",
+      "placeholders": [
+        {
+          "id": "NmpOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpOrg"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
         }
       ],
       "fuzzy": true
@@ -13200,6 +13717,12 @@
       "fuzzy": true
     },
     {
+      "id": "Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.",
+      "message": "Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.",
+      "translation": "附註：在 'deployment' 屬性下未指定任何內容及限制。 將使用最上層內容及限制。",
+      "fuzzy": true
+    },
+    {
       "id": "Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
       "message": "Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
       "translation": "正在更新節點原則並根據此原則來重新評估所有合約。 必須取消現有合約並重新協議。",
@@ -13242,9 +13765,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid property list {Attribute}: {Err}",
-      "message": "Invalid property list {Attribute}: {Err}",
-      "translation": "內容清單 {Attribute} 無效：{Err}",
+      "id": "failed to unmarshal attribute input {Attribute} for {AttribName}: {Err}",
+      "message": "failed to unmarshal attribute input {Attribute} for {AttribName}: {Err}",
+      "translation": "無法解除配置 {AttribName} 的屬性輸入 {Attribute}：{Err}",
       "placeholders": [
         {
           "id": "Attribute",
@@ -13253,6 +13776,38 @@
           "underlyingType": "[]byte",
           "argNum": 1,
           "expr": "attribute"
+        },
+        {
+          "id": "AttribName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "attribName"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid property list {NewProp}: {Err}",
+      "message": "Invalid property list {NewProp}: {Err}",
+      "translation": "內容清單 {NewProp} 無效：{Err}",
+      "placeholders": [
+        {
+          "id": "NewProp",
+          "string": "%[1]s",
+          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
+          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
+          "argNum": 1,
+          "expr": "newProp"
         },
         {
           "id": "Err",
@@ -13266,41 +13821,9 @@
       "fuzzy": true
     },
     {
-      "id": "Updating Node {Node} policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Node {Node} policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "正在更新 Horizon Exchange 中的節點 {Node} 原則內容並根據此原則重新評估所有合約。 必須取消現有合約並重新協議。",
-      "placeholders": [
-        {
-          "id": "Node",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "node"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Node {Node} policy properties updated in the horizon exchange.",
-      "message": "Node {Node} policy properties updated in the horizon exchange.",
-      "translation": "在 Horizon Exchange 中更新了節點 {Node} 原則內容。",
-      "placeholders": [
-        {
-          "id": "Node",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "node"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Invalid constraint expression {Attribute}: {Err}",
-      "message": "Invalid constraint expression {Attribute}: {Err}",
-      "translation": "限制項表示式 {Attribute} 無效：{Err}",
+      "id": "failed to unmarshal attribute input {Attribute} for {AttribName}s: {Err}",
+      "message": "failed to unmarshal attribute input {Attribute} for {AttribName}s: {Err}",
+      "translation": "無法解除配置 {AttribName} 的屬性輸入 {Attribute}：{Err}",
       "placeholders": [
         {
           "id": "Attribute",
@@ -13309,6 +13832,38 @@
           "underlyingType": "[]byte",
           "argNum": 1,
           "expr": "attribute"
+        },
+        {
+          "id": "AttribName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "attribName"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid constraint expression {NewConstr}: {Err}",
+      "message": "Invalid constraint expression {NewConstr}: {Err}",
+      "translation": "限制表示式 {NewConstr} 無效：{Err}",
+      "placeholders": [
+        {
+          "id": "NewConstr",
+          "string": "%[1]s",
+          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "newConstr"
         },
         {
           "id": "Err",
@@ -13322,41 +13877,57 @@
       "fuzzy": true
     },
     {
-      "id": "Updating Node {Node} policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Node {Node} policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "正在更新 Horizon Exchange 中的節點 {Node} 原則限制項並根據此原則重新評估所有合約。 必須取消現有合約並重新協議。",
+      "id": "Invalid deployment attribute {ExternPol}: {Err}",
+      "message": "Invalid deployment attribute {ExternPol}: {Err}",
+      "translation": "部署屬性 {ExternPol} 無效：{Err}",
       "placeholders": [
         {
-          "id": "Node",
+          "id": "ExternPol",
           "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "github.com/open-horizon/anax/externalpolicy.ExternalPolicy",
+          "underlyingType": "struct{Properties github.com/open-horizon/anax/externalpolicy.PropertyList \"json:\\\"properties\\\"\"; Constraints github.com/open-horizon/anax/externalpolicy.ConstraintExpression \"json:\\\"constraints\\\"\"}",
           "argNum": 1,
-          "expr": "node"
+          "expr": "externPol"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Node {Node} policy constraints updated in the horizon exchange.",
-      "message": "Node {Node} policy constraints updated in the horizon exchange.",
-      "translation": "在 Horizon Exchange 中更新了節點 {Node} 原則限制項。",
+      "id": "Invalid management attribute {ExternPol}: {Err}",
+      "message": "Invalid management attribute {ExternPol}: {Err}",
+      "translation": "管理屬性 {ExternPol} 無效：{Err}",
       "placeholders": [
         {
-          "id": "Node",
+          "id": "ExternPol",
           "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "github.com/open-horizon/anax/externalpolicy.ExternalPolicy",
+          "underlyingType": "struct{Properties github.com/open-horizon/anax/externalpolicy.PropertyList \"json:\\\"properties\\\"\"; Constraints github.com/open-horizon/anax/externalpolicy.ConstraintExpression \"json:\\\"constraints\\\"\"}",
           "argNum": 1,
-          "expr": "node"
+          "expr": "externPol"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Failed to find valid attribute to update in input {Attribute}. Attributes are constraints and properties.",
-      "message": "Failed to find valid attribute to update in input {Attribute}. Attributes are constraints and properties.",
-      "translation": "在輸入 {Attribute} 中找不到要更新的有效屬性。 屬性是限制項和內容。",
+      "id": "Failed to find valid attribute to update in input {Attribute}. Valid attribute names are properties, constraints, deployment and management.",
+      "message": "Failed to find valid attribute to update in input {Attribute}. Valid attribute names are properties, constraints, deployment and management.",
+      "translation": "在輸入 {Attribute} 中找不到要更新的有效屬性。 有效的屬性名稱為 properties、constraints、deployment 和 management。",
       "placeholders": [
         {
           "id": "Attribute",
@@ -13365,6 +13936,54 @@
           "underlyingType": "[]byte",
           "argNum": 1,
           "expr": "attribute"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Updating Node policy {AttribName} attribute for node {Node} in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
+      "message": "Updating Node policy {AttribName} attribute for node {Node} in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "在 Horizon Exchange 中更新節點 {Node} 的節點原則 {AttribName} 屬性，並根據此原則重新評估所有合約。 現有合約可能已取消並重新協議。",
+      "placeholders": [
+        {
+          "id": "AttribName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "attribName"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node policy {AttribName} attribute updated for node {Node} in the horizon exchange.",
+      "message": "Node policy {AttribName} attribute updated for node {Node} in the horizon exchange.",
+      "translation": "已在 Horizon Exchange 中更新節點 {Node} 的節點原則 {AttribName} 屬性。",
+      "placeholders": [
+        {
+          "id": "AttribName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "attribName"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
         }
       ],
       "fuzzy": true
@@ -13443,6 +14062,66 @@
           "expr": "node"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "node '{NodeName}' is not registered with the exchange in org {NodeOrg}",
+      "message": "node '{NodeName}' is not registered with the exchange in org {NodeOrg}",
+      "translation": "節點 '{NodeName}' 未在組織 {NodeOrg} 中向 Exchange 登錄",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node policy for {NodeName} not found in org {NodeOrg}",
+      "message": "Node policy for {NodeName} not found in org {NodeOrg}",
+      "translation": "在組織 {NodeOrg} 中找不到 {NodeName} 的節點原則",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "enabled",
+      "message": "enabled",
+      "translation": "enabled",
+      "fuzzy": true
+    },
+    {
+      "id": "disabled",
+      "message": "disabled",
+      "translation": "已停用",
       "fuzzy": true
     },
     {
@@ -15999,7 +16678,7 @@
         {
           "id": "PortBinding",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.PortBinding",
+          "type": "github.com/fsouza/go-dockerclient.PortBinding",
           "underlyingType": "struct{HostIP string \"json:\\\"HostIp,omitempty\\\" yaml:\\\"HostIp,omitempty\\\" toml:\\\"HostIp,omitempty\\\"\"; HostPort string \"json:\\\"HostPort,omitempty\\\" yaml:\\\"HostPort,omitempty\\\" toml:\\\"HostPort,omitempty\\\"\"}",
           "argNum": 2,
           "expr": "pb"
@@ -16362,6 +17041,418 @@
       "fuzzy": true
     },
     {
+      "id": "Invalid agent file type specified. Valid types include: {String}",
+      "message": "Invalid agent file type specified. Valid types include: {String}",
+      "translation": "指定的代理程式檔案類型無效。 有效類型包括：{String}",
+      "placeholders": [
+        {
+          "id": "String",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "validFileTypes.string()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "--version must specify a valid version range, a valid version string or \"latest\"",
+      "message": "--version must specify a valid version range, a valid version string or \"latest\"",
+      "translation": "--version 必須指定有效的版本範圍、有效的版本字串或 \"latest\"",
+      "fuzzy": true
+    },
+    {
+      "id": "failed to check version range {FileVersion}: {Err}",
+      "message": "failed to check version range {FileVersion}: {Err}",
+      "translation": "無法檢查版本範圍 {FileVersion}：{Err}",
+      "placeholders": [
+        {
+          "id": "FileVersion",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileVersion"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "must specify --type with --version-only",
+      "message": "must specify --type with --version-only",
+      "translation": "必須指定 --type 與 --version-only",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid manifest type specified. Valid types include: {String}",
+      "message": "Invalid manifest type specified. Valid types include: {String}",
+      "translation": "指定的資訊清單類型無效。 有效類型包括：{String}",
+      "placeholders": [
+        {
+          "id": "String",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "validManTypes.string()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "must specify --type with --id",
+      "message": "must specify --type with --id",
+      "translation": "必須指定 --type 與 --id",
+      "fuzzy": true
+    },
+    {
+      "id": "must specify --type and --id with --long",
+      "message": "must specify --type and --id with --long",
+      "translation": "必須指定 --type 和 --id 與 --long",
+      "fuzzy": true
+    },
+    {
+      "id": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
+      "message": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
+      "translation": "已在「管理中心」中更新資訊清單 {ManOrg}/{ObjectID}",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ObjectID",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestsMeta.ObjectID"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Manifest {ManOrg}/{ObjectID} added to the Management Hub",
+      "message": "Manifest {ManOrg}/{ObjectID} added to the Management Hub",
+      "translation": "已在「管理中心」中新增資訊清單 {ManOrg}/{ObjectID}",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ObjectID",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestsMeta.ObjectID"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The following files were specified in the manifest file but do not exist in the Management Hub:",
+      "message": "The following files were specified in the manifest file but do not exist in the Management Hub:",
+      "translation": "下列檔案已在資訊清單檔中指定，但不在「管理中心」中：",
+      "fuzzy": true
+    },
+    {
+      "id": "The version specified in SoftwareUpgrade is not a valid version string or \"latest\": {Version}",
+      "message": "The version specified in SoftwareUpgrade is not a valid version string or \"latest\": {Version}",
+      "translation": "SoftwareUpgrade 中指定的版本不是有效的版本字串或 'latest'：{Version}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manifestData.SoftwareUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_software_files\".",
+      "message": "File \"{ManFile}\" version \"{Version}\" of type \"agent_software_files\".",
+      "translation": "檔案 \"{ManFile}\" 版本 \"{Version}\"，類型為 \"agent_software_files\"。",
+      "placeholders": [
+        {
+          "id": "ManFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manFile"
+        },
+        {
+          "id": "Version",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestData.SoftwareUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The version specified in CertificateUpgrade is not a valid version string or \"latest\": {Version}",
+      "message": "The version specified in CertificateUpgrade is not a valid version string or \"latest\": {Version}",
+      "translation": "CertificateUpgrade 中指定的版本不是有效的版本字串或 'latest'：{Version}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manifestData.CertificateUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_cert_files\".",
+      "message": "File \"{ManFile}\" version \"{Version}\" of type \"agent_cert_files\".",
+      "translation": "檔案 \"{ManFile}\" 版本 \"{Version}\"，類型為 \"agent_cert_files\"。",
+      "placeholders": [
+        {
+          "id": "ManFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manFile"
+        },
+        {
+          "id": "Version",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestData.CertificateUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The version specified in ConfigurationUpgrade is not a valid version string or \"latest\": {Version}",
+      "message": "The version specified in ConfigurationUpgrade is not a valid version string or \"latest\": {Version}",
+      "translation": "ConfigurationUpgrade 中指定的版本不是有效的版本字串或 \"latest\"：{Version}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manifestData.ConfigurationUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_config_files\".",
+      "message": "File \"{ManFile}\" version \"{Version}\" of type \"agent_config_files\".",
+      "translation": "檔案 \"{ManFile}\" 版本 \"{Version}\"，類型為 \"agent_config_files\"。",
+      "placeholders": [
+        {
+          "id": "ManFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manFile"
+        },
+        {
+          "id": "Version",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestData.ConfigurationUpgrade.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
+      "message": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
+      "translation": "請執行 'hzn nodemanagentfiles list' 以取得有效檔案的清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
+      "message": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
+      "translation": "確定要從「管理中心」移除資訊清單 {ManOrg}/{ManifestId} 嗎？",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ManifestId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Manifest '{ManOrg}/{ManifestId}' of type '{ManifestType}' not found in the Management Hub",
+      "message": "Manifest '{ManOrg}/{ManifestId}' of type '{ManifestType}' not found in the Management Hub",
+      "translation": "在「管理中心」中找不到類型為 '{ManifestType}' 的資訊清單 '{ManOrg}/{ManifestId}'",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ManifestId",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestId"
+        },
+        {
+          "id": "ManifestType",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "manifestType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Manifest {ManOrg}/{ManifestId} deleted from the Management Hub",
+      "message": "Manifest {ManOrg}/{ManifestId} deleted from the Management Hub",
+      "translation": "已從「管理中心」刪除資訊清單 {ManOrg}/{ManifestId}",
+      "placeholders": [
+        {
+          "id": "ManOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manOrg"
+        },
+        {
+          "id": "ManifestId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manifestId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Fill in this section to perform a software upgrade of the agent. Remove this section to prevent software upgrade.",
+      "message": "Fill in this section to perform a software upgrade of the agent. Remove this section to prevent software upgrade.",
+      "translation": "填寫此區段以執行代理程式的軟體升級。 移除此區段以防止軟體升級。",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of agent software files stored in the Management Hub.",
+      "message": "A list of agent software files stored in the Management Hub.",
+      "translation": "儲存在「管理中心」中的代理程式軟體檔案清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "Run 'hzn nm agentfiles list -t agent_software_files' to get a list of available files.",
+      "message": "Run 'hzn nm agentfiles list -t agent_software_files' to get a list of available files.",
+      "translation": "執行 'hzn nm agentfiles list -t agent_software_files' 以取得可用檔案的清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "The agent software version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "message": "The agent software version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "translation": "此資訊清單適用的代理程式軟體版本。 指定 \"latest\" 以取得最新版本。",
+      "fuzzy": true
+    },
+    {
+      "id": "Fill in this section to upgrade the agent certificate. Remove this section to prevent certificate upgrade.",
+      "message": "Fill in this section to upgrade the agent certificate. Remove this section to prevent certificate upgrade.",
+      "translation": "填寫此區段以升級代理程式憑證。 移除此區段以防止憑證升級。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of a certificate file stored in the Management Hub. Default is \"agent-install.crt\".",
+      "message": "The name of a certificate file stored in the Management Hub. Default is \"agent-install.crt\".",
+      "translation": "儲存在「管理中心」中的憑證檔名稱。 預設值為 \"agent-install.crt\"。",
+      "fuzzy": true
+    },
+    {
+      "id": "Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.",
+      "message": "Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.",
+      "translation": "執行 'hzn nm agentfiles list -t agent_cert_files' 以取得可用檔案的清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "The agent certificate version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "message": "The agent certificate version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "translation": "此資訊清單適用的代理程式憑證版本。 指定 \"latest\" 以取得最新版本。",
+      "fuzzy": true
+    },
+    {
+      "id": "Fill in this section to upgrade the agent config. Remove this section to prevent config upgrade.",
+      "message": "Fill in this section to upgrade the agent config. Remove this section to prevent config upgrade.",
+      "translation": "填寫此區段以升級代理程式配置。 移除此區段以防止配置升級。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of a config file stored in the Management Hub. Default is \"agent-install.crt\".",
+      "message": "The name of a config file stored in the Management Hub. Default is \"agent-install.crt\".",
+      "translation": "儲存在「管理中心」中的配置檔名稱。 預設值為 \"agent-install.crt\"。",
+      "fuzzy": true
+    },
+    {
+      "id": "Run 'hzn nm agentfiles list -t agent_config_files' to get a list of available files.",
+      "message": "Run 'hzn nm agentfiles list -t agent_config_files' to get a list of available files.",
+      "translation": "執行 'hzn nm agentfiles list -t agent_config_files' 以取得可用檔案的清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "The agent config version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "message": "The agent config version this manifest applies to. Specify \"latest\" to get the most recent version.",
+      "translation": "此資訊清單適用的代理程式配置版本。 指定 \"latest\" 以取得最新版本。",
+      "fuzzy": true
+    },
+    {
       "id": "deployment config {Dep} is not supported",
       "message": "deployment config {Dep} is not supported",
       "translation": "不支援部署配置 {Dep}",
@@ -16452,6 +17543,72 @@
       "fuzzy": true
     },
     {
+      "id": "It applies to both deployment and node management.",
+      "message": "It applies to both deployment and node management.",
+      "translation": "它同時適用於部署和節點管理。",
+      "fuzzy": true
+    },
+    {
+      "id": "It usually containts the built-in node properties.",
+      "message": "It usually containts the built-in node properties.",
+      "translation": "它通常包含內建節點內容。",
+      "fuzzy": true
+    },
+    {
+      "id": "It should be empty unless deployment and managment have the same constraint expressions.",
+      "message": "It should be empty unless deployment and managment have the same constraint expressions.",
+      "translation": "除非部署和管理具有相同的限制表示式，否則它應該是空的。",
+      "fuzzy": true
+    },
+    {
+      "id": "Policies that are used for deployment only.",
+      "message": "Policies that are used for deployment only.",
+      "translation": "僅用於部署的原則。",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of policy properties for deployment.",
+      "message": "A list of policy properties for deployment.",
+      "translation": "適用於部署的原則內容清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "It overwrites the properties with the same name on the top level.",
+      "message": "It overwrites the properties with the same name on the top level.",
+      "translation": "它會改寫最上層的同名內容。",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of constraints for deployment.",
+      "message": "A list of constraints for deployment.",
+      "translation": "適用於部署的限制清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "It overwrites all the constraints on the top level if not empty.",
+      "message": "It overwrites all the constraints on the top level if not empty.",
+      "translation": "如果不是空的，它會改寫最上層的所有限制。",
+      "fuzzy": true
+    },
+    {
+      "id": "Policies that are used for node management only.",
+      "message": "Policies that are used for node management only.",
+      "translation": "僅用於節點管理的原則。",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of policy properties for node management.",
+      "message": "A list of policy properties for node management.",
+      "translation": "適用於節點管理的原則內容清單。",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of constraints for node management.",
+      "message": "A list of constraints for node management.",
+      "translation": "適用於節點管理的限制清單。",
+      "fuzzy": true
+    },
+    {
       "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
       "message": "Unable to create UserInputFile object from file {FilePath}. {Err}",
       "translation": "無法從檔案 {FilePath} 建立 UserInputFile 物件。 {Err}",
@@ -16535,6 +17692,22 @@
           "underlyingType": "*github.com/open-horizon/anax/common.UserInputFile",
           "argNum": 2,
           "expr": "userInputFileObj"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Note: No properties and constraints are specified under 'deployment' attribute in the node policy file {NodepolicyFlag}. The top level properties and constraints will be used.",
+      "message": "Note: No properties and constraints are specified under 'deployment' attribute in the node policy file {NodepolicyFlag}. The top level properties and constraints will be used.",
+      "translation": "附註：在節點原則檔 {NodepolicyFlag} 的 'deployment' 屬性下未指定任何內容及限制。 將使用最上層內容及限制。",
+      "placeholders": [
+        {
+          "id": "NodepolicyFlag",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodepolicyFlag"
         }
       ],
       "fuzzy": true
@@ -16828,14 +18001,14 @@
       "fuzzy": true
     },
     {
-      "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
-      "message": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
-      "translation": "未指定型樣或節點原則。 將繼續使用現有的節點原則。",
+      "id": "No pattern or node policy is specified. Will proceed with the existing node policy.",
+      "message": "No pattern or node policy is specified. Will proceed with the existing node policy.",
+      "translation": "未指定型樣或節點原則。 將繼續使用現有節點原則。",
       "fuzzy": true
     },
     {
-      "id": "Will proceeed with the given node policy.",
-      "message": "Will proceeed with the given node policy.",
+      "id": "Will proceed with the given node policy.",
+      "message": "Will proceed with the given node policy.",
       "translation": "將繼續使用給定的節點原則。",
       "fuzzy": true
     },
@@ -16920,8 +18093,8 @@
       "fuzzy": true
     },
     {
-      "id": "Will proceeed with the given pattern {Pattern}.",
-      "message": "Will proceeed with the given pattern {Pattern}.",
+      "id": "Will proceed with the given pattern {Pattern}.",
+      "message": "Will proceed with the given pattern {Pattern}.",
       "translation": "將繼續使用給定的型樣 {Pattern}。",
       "placeholders": [
         {
@@ -18022,6 +19195,46 @@
       "fuzzy": true
     },
     {
+      "id": "Key \"{Name}\" successfully added to the SDO owner services.",
+      "message": "Key \"{Name}\" successfully added to the SDO owner services.",
+      "translation": "金鑰 \"{Name}\" 已順利新增至 SDO 擁有者服務。",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile.Name()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Key \"{Name}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "message": "Key \"{Name}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "translation": "金鑰 \"{Name}\" 已從 SDO 擁有者服務順利下載至 {FileName}。",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile.Name()"
+        },
+        {
+          "id": "FileName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Listing SDO keys.",
       "message": "Listing SDO keys.",
       "translation": "正在列出 SDO 金鑰。",
@@ -18124,6 +19337,22 @@
       "fuzzy": true
     },
     {
+      "id": "Key \"{KeyName}\" successfully deleted from the SDO owner services.",
+      "message": "Key \"{KeyName}\" successfully deleted from the SDO owner services.",
+      "translation": "已順利從 SDO 擁有者服務中刪除金鑰 \"{KeyName}\"。",
+      "placeholders": [
+        {
+          "id": "KeyName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Creating SDO key template at \"{OutputFile}\".",
       "message": "Creating SDO key template at \"{OutputFile}\".",
       "translation": "正在於 \"{OutputFile}\" 建立 SDO 金鑰範本。",
@@ -18156,6 +19385,22 @@
       "fuzzy": true
     },
     {
+      "id": "Key template successfully written to {FileName}.",
+      "message": "Key template successfully written to {FileName}.",
+      "translation": "金鑰範本已順利寫入 {FileName}。",
+      "placeholders": [
+        {
+          "id": "FileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
       "message": "Invalid key name. Key \"{KeyName}\" does not exist in org \"{Org}\".",
       "translation": "金鑰名稱無效。 金鑰 \"{KeyName}\" 未存在於組織 \"{Org}\" 中。",
@@ -18180,9 +19425,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
-      "message": "Invalid key file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
-      "translation": "金鑰檔無效。 金鑰 \"{Name}\" 已存在於組織 \"{Org}\" 的 SDO 擁有者服務中。",
+      "id": "Invalid metadata file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "message": "Invalid metadata file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
+      "translation": "meta 資料檔案無效。 金鑰“{Name}”已存在於組織“{Org}”的 SDO 擁有者服務中。",
       "placeholders": [
         {
           "id": "Name",
@@ -18204,9 +19449,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
-      "message": "Invalid key file. Key already exists in SDO owner services for org \"{Org}\".",
-      "translation": "金鑰檔無效。 金鑰已存在於組織 \"{Org}\" 的 SDO 擁有者服務中。",
+      "id": "Invalid metadata file. Key already exists in SDO owner services for org \"{Org}\".",
+      "message": "Invalid metadata file. Key already exists in SDO owner services for org \"{Org}\".",
+      "translation": "meta 資料檔案無效。 組織“{Org}”的 SDO 擁有者服務中已存在金鑰。",
       "placeholders": [
         {
           "id": "Org",
@@ -18324,9 +19569,57 @@
       "fuzzy": true
     },
     {
-      "id": "given key {KeyFileName} has missing fields:\n{Err}",
-      "message": "given key {KeyFileName} has missing fields:\n{Err}",
-      "translation": "給定的金鑰 {KeyFileName} 具有遺漏欄位：\n{Err}",
+      "id": "given metadata file {KeyFileName} has missing fields:\n{Err}",
+      "message": "given metadata file {KeyFileName} has missing fields:\n{Err}",
+      "translation": "給定的 meta 資料檔 {KeyFileName} 遺漏欄位：\n{Err}",
+      "placeholders": [
+        {
+          "id": "KeyFileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFileName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]s",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
+      "message": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
+      "translation": "給定的 meta 資料檔 {KeyFileName} 具有不受支援的金鑰名稱。\n{Err}",
+      "placeholders": [
+        {
+          "id": "KeyFileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFileName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]s",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
+      "message": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
+      "translation": "給定的 meta 資料檔 {KeyFileName} 具有不受支援的國家/地區名稱。\n{Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -19580,38 +20873,6 @@
       "fuzzy": true
     },
     {
-      "id": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "message": "object metadata '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "translation": "在組織 {Org} 中找不到類型為 '{ObjType}' 的物件 meta 資料 '{ObjId}'",
-      "placeholders": [
-        {
-          "id": "ObjId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "objId"
-        },
-        {
-          "id": "ObjType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "objType"
-        },
-        {
-          "id": "Org",
-          "string": "%[3]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 3,
-          "expr": "org"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Verifying data with digital signature....",
       "message": "Verifying data with digital signature....",
       "translation": "正在使用數位簽章驗證資料....",
@@ -19704,24 +20965,6 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
-      "message": "Failed to verify digital signature because the hashAlgorithm is empty",
-      "translation": "無法驗證數位簽章，因為雜湊演算法是空的",
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to verify digital signature because the publicKey string is empty",
-      "message": "Failed to verify digital signature because the publicKey string is empty",
-      "translation": "無法驗證數位簽章，因為公開金鑰字串是空的",
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to verify digital signature because the signature string is empty",
-      "message": "Failed to verify digital signature because the signature string is empty",
-      "translation": "無法驗證數位簽章，因為簽章字串是空的",
-      "fuzzy": true
-    },
-    {
       "id": "must specify exchange credentials to access the model management service.",
       "message": "must specify exchange credentials to access the model management service.",
       "translation": "必須指定 Exchange 認證來存取模型管理服務。",
@@ -19778,12 +21021,6 @@
       "fuzzy": true
     },
     {
-      "id": "must specify --type with --id",
-      "message": "must specify --type with --id",
-      "translation": "必須指定 --type 與 --id",
-      "fuzzy": true
-    },
-    {
       "id": "must specify destinationType if set destinationId",
       "message": "must specify destinationType if set destinationId",
       "translation": "如果設定了 destinationId，則必須指定 destinationType",
@@ -19793,6 +21030,22 @@
       "id": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
       "message": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
       "translation": "expirationTimeBefore 應該指定為 'now' 或採用 RC3339 格式 (yyyy-MM-ddTHH:mm:ssZ) 的時間戳記",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid --deleted value: {WithData}, --data should be true or false",
+      "message": "Invalid --deleted value: {WithData}, --data should be true or false",
+      "translation": "無效 --deleted 值：{WithData}，--data 應該為 true 或 false",
+      "placeholders": [
+        {
+          "id": "WithData",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "withData"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -20126,6 +21379,22 @@
       "fuzzy": true
     },
     {
+      "id": "Upload object in chunk, chunk size is: {ChunkSize}",
+      "message": "Upload object in chunk, chunk size is: {ChunkSize}",
+      "translation": "在區塊中上傳物件，區塊大小為：{ChunkSize}",
+      "placeholders": [
+        {
+          "id": "ChunkSize",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "chunkSize"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
       "message": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
       "translation": "物件 {ObjFile} 已上傳至「模型管理服務」中的組織 {Org}",
@@ -20161,6 +21430,30 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "string(resp)"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Object status is still {Stringresp} after {Count} try",
+      "message": "Object status is still {Stringresp} after {Count} try",
+      "translation": "在嘗試 {Count} 之後，物件狀態仍為 {Stringresp}",
+      "placeholders": [
+        {
+          "id": "Stringresp",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(resp)"
+        },
+        {
+          "id": "Count",
+          "string": "%[2]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "count"
         }
       ],
       "fuzzy": true
@@ -20214,6 +21507,22 @@
       "fuzzy": true
     },
     {
+      "id": "failed to marshal 'hzn mms object types' output: {Err}",
+      "message": "failed to marshal 'hzn mms object types' output: {Err}",
+      "translation": "無法配置 'hzn mms object types' 輸出：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Hash value is loaded.",
       "message": "Hash value is loaded.",
       "translation": "已載入雜湊值。",
@@ -20243,6 +21552,222 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "hashAlgo"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to get file info of object file {Name}: {Err}",
+      "message": "unable to get file info of object file {Name}: {Err}",
+      "translation": "無法取得物件檔 {Name}的檔案資訊：{Err}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileInfo.Name()"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "error to read object file {Name} from offset {StartOffset}: {Err}",
+      "message": "error to read object file {Name} from offset {StartOffset}: {Err}",
+      "translation": "從偏移 {StartOffset}讀取目的檔 {Name} 時發生錯誤：{Err}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fileInfo.Name()"
+        },
+        {
+          "id": "StartOffset",
+          "string": "%[2]d",
+          "type": "int64",
+          "underlyingType": "int64",
+          "argNum": 2,
+          "expr": "startOffset"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "read unexpected length of data (read data length: {N}, expected data length: {DataLength}) from object file {Name} from offset {StartOffset}: {Err}",
+      "message": "read unexpected length of data (read data length: {N}, expected data length: {DataLength}) from object file {Name} from offset {StartOffset}: {Err}",
+      "translation": "從物件檔 {Name} 從偏移 {StartOffset}讀取非預期的資料長度（讀取資料長度：{N}，預期資料長度：{DataLength}）：{Err}",
+      "placeholders": [
+        {
+          "id": "N",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "n"
+        },
+        {
+          "id": "DataLength",
+          "string": "%[2]d",
+          "type": "int64",
+          "underlyingType": "int64",
+          "argNum": 2,
+          "expr": "dataLength"
+        },
+        {
+          "id": "Name",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "fileInfo.Name()"
+        },
+        {
+          "id": "StartOffset",
+          "string": "%[4]d",
+          "type": "int64",
+          "underlyingType": "int64",
+          "argNum": 4,
+          "expr": "startOffset"
+        },
+        {
+          "id": "Err",
+          "string": "%[5]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 5,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Uploading: {Size__100} {}",
+      "message": "Uploading: {Size__100} {}",
+      "translation": "正在上傳：{Size__100} {}",
+      "placeholders": [
+        {
+          "id": "Size__100",
+          "string": "%.2[1]f",
+          "type": "float32",
+          "underlyingType": "float32",
+          "argNum": 1,
+          "expr": "float32(totalSent+dataLength) / float32(fileInfo.Size()) * 100"
+        },
+        {
+          "id": "",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "\"%\""
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "message": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "translation": "發現 HTTP 錯誤：{Err} 呼叫 MMS REST API {ApiMsg}。 HTTP 狀態：{Httpstatus}。 將重試。",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Httpstatus",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "http_status"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "message": "Encountered HTTP error: {Err} calling MMS REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "translation": "發現 HTTP 錯誤：{Err} 呼叫 MMS REST API {ApiMsg}。 HTTP 狀態：{Httpstatus}。",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Httpstatus",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "http_status"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error during calling MMS REST API {ApiMsg}: {Error}",
+      "message": "Error during calling MMS REST API {ApiMsg}: {Error}",
+      "translation": "呼叫 MMS REST API {ApiMsg}期間發生錯誤：{Error}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Error",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "err.Error()"
         }
       ],
       "fuzzy": true
@@ -21204,6 +22729,12 @@
       "fuzzy": true
     },
     {
+      "id": "Cannot use -C flag if not performing a deep clean. Must specify -D flag to use -C flag.",
+      "message": "Cannot use -C flag if not performing a deep clean. Must specify -D flag to use -C flag.",
+      "translation": "如果未執行深度清除，則無法使用 -C 旗標。 必須指定 -D 旗標才能使用 -C 旗標。",
+      "fuzzy": true
+    },
+    {
       "id": "Are you sure you want to unregister this Horizon node?",
       "message": "Are you sure you want to unregister this Horizon node?",
       "translation": "確定要取消登錄這個 Horizon 節點嗎？",
@@ -21822,17 +23353,39 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
-      "message": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
-      "translation": "無法從 {CofigFile} 中獲取變數。 錯誤為：{Err}",
+      "id": "Failed to get project configuration file. Error: {Err}",
+      "message": "Failed to get project configuration file. Error: {Err}",
+      "translation": "無法取得專案配置檔。 錯誤：{Err}",
       "placeholders": [
         {
-          "id": "CofigFile",
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Please use the -f flag to specify a configuration file.",
+      "message": "Please use the -f flag to specify a configuration file.",
+      "translation": "請使用 -f 旗標來指定配置檔。",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get the variables from configuration file {ConfigFile}. Error: {Err}",
+      "message": "Failed to get the variables from configuration file {ConfigFile}. Error: {Err}",
+      "translation": "無法從配置檔 {ConfigFile} 取得變數。 錯誤：{Err}",
+      "placeholders": [
+        {
+          "id": "ConfigFile",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "cofigFile"
+          "expr": "configFile"
         },
         {
           "id": "Err",
@@ -24429,6 +25982,30 @@
           "argNum": 1
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "message": "Failed to verify digital signature because the hashAlgorithm is empty",
+      "translation": "無法驗證數位簽章，因為雜湊演算法是空的",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the publicKey string is empty",
+      "message": "Failed to verify digital signature because the publicKey string is empty",
+      "translation": "無法驗證數位簽章，因為公開金鑰字串是空的",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to verify digital signature because the signature string is empty",
+      "message": "Failed to verify digital signature because the signature string is empty",
+      "translation": "無法驗證數位簽章，因為簽章字串是空的",
+      "fuzzy": true
+    },
+    {
+      "id": "Label, or Enabled is empty.",
+      "message": "Label, or Enabled is empty.",
+      "translation": "Label 或 Enabled 是空的。",
       "fuzzy": true
     },
     {

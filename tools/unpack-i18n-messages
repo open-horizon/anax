@@ -39,9 +39,6 @@ function insert_tranlated_messages_to_code() {
 }
 
 
-# main program starts here
-cd $PKGPATH
-
 # remove ^M from the translated files
 sed -i "s/\r//g" i18n_translation/translated/*
 
