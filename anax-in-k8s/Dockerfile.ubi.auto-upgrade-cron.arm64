@@ -1,0 +1,20 @@
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.0
+
+LABEL vendor="IBM"
+LABEL summary="The agent auto upgrade cron job for edge clusters."
+LABEL description=""
+
+# yum is not installed, use microdnf instead
+# shadow-utils contains groupadd and adduser commands
+RUN microdnf update -y --nodocs && microdnf clean all && microdnf install --nodocs -y shadow-utils \
+    && microdnf install --nodocs -y openssl ca-certificates \
+    && microdnf install -y jq procps tar \
+    && curl -4LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/arm64/kubectl \
+    && chmod +x ./kubectl \
+    && mv ./kubectl /usr/local/bin
+
+# Copy cronjob script into container
+COPY cronjobs/auto-upgrade-cronjob.sh /usr/local/bin/
+
+# Give user access to cronjob script
+RUN chmod 755 /usr/local/bin/auto-upgrade-cronjob.sh

@@ -443,7 +443,7 @@ anax-k8s-image: anax-k8s-clean
 auto-upgrade-cronjob-k8s-image: auto-upgrade-cronjob-k8s-clean
 	@echo "Producing Agent Auto Upgrade CronJob K8S docker image $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG)"
 	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" ]]; then \
-		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LABELS) -t $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) -f Dockerfile.auto-upgrade-cron .; \
+		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LABELS) -t $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) -f Dockerfile.auto-upgrade-cron.$(arch) .; \
 	fi
 	docker tag $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):$(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION)
 
