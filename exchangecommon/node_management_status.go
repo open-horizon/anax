@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+type ExchangeNMPStatus struct {
+	ManagementStatus	map[string]*NodeManagementPolicyStatus	`json:"managementStatus"`
+}
+
 type NodeManagementPolicyStatus struct {
 	AgentUpgrade         *AgentUpgradePolicyStatus   `json:"agentUpgradePolicyStatus"`
 	AgentUpgradeInternal *AgentUpgradeInternalStatus `json:"agentUpgradeInternal,omitempty"`
