@@ -538,10 +538,10 @@ func GetDeleteAllNodeManagementPolicyStatusHandler(ec ExchangeContext) DeleteAll
 }
 
 // A handler for getting the availible upgrade versions.
-type NodeUpgradeVersionsHandler func() (*exchangecommon.AgentUpgradeVersionsResponse, error)
+type NodeUpgradeVersionsHandler func() (*exchangecommon.AgentFileVersions, error)
 
 func GetNodeUpgradeVersionsHandler(ec ExchangeContext) NodeUpgradeVersionsHandler {
-	return func() (*exchangecommon.AgentUpgradeVersionsResponse, error) {
+	return func() (*exchangecommon.AgentFileVersions, error) {
 		return GetNodeUpgradeVersions(ec)
 	}
 }

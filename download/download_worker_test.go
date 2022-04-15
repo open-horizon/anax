@@ -91,7 +91,7 @@ func Test_ResolveUpgradeVersions(t *testing.T) {
 }
 
 func Test_findAgentUpgradePackageVersions(t *testing.T) {
-	availVers := exchangecommon.AgentUpgradeVersionsResponse{SoftwareVersions: []string{"1.0.1", "1.0.5", "2.3.4"}, ConfigVersions: []string{"2.0.1", "3.0.5", "4.4.4"}, CertVersions: []string{"0.0.5"}}
+	availVers := exchangecommon.AgentFileVersions{SoftwareVersions: []string{"1.0.1", "1.0.5", "2.3.4"}, ConfigVersions: []string{"2.0.1", "3.0.5", "4.4.4"}, CertVersions: []string{"0.0.5"}}
 	vers, err := findAgentUpgradePackageVersions(LATESTVERSION, "3.0.5", LATESTVERSION, getAvailibleVersionsHandler(&availVers))
 	if err != nil {
 		t.Errorf("No error expected but got %v.", err)
@@ -120,8 +120,8 @@ func Test_findAgentUpgradePackageVersions(t *testing.T) {
 	}
 }
 
-func getAvailibleVersionsHandler(vers *exchangecommon.AgentUpgradeVersionsResponse) exchange.NodeUpgradeVersionsHandler {
-	return func() (*exchangecommon.AgentUpgradeVersionsResponse, error) {
+func getAvailibleVersionsHandler(vers *exchangecommon.AgentFileVersions) exchange.NodeUpgradeVersionsHandler {
+	return func() (*exchangecommon.AgentFileVersions, error) {
 		return vers, nil
 	}
 }

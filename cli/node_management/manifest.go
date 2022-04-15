@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/edge-sync-service/common"
@@ -33,7 +34,7 @@ type ManifestUpgradeDef struct {
 var (
 	// Right now, there are only agent upgrade manifests, but there may be more types in future
 	// which should be added to this list
-	validManTypes = validManifestTypes{"agent_upgrade_manifests"}
+	validManTypes = validManifestTypes{exchangecommon.AU_MANIFEST_TYPE}
 )
 
 func (m validManifestTypes) contains(element string) bool {

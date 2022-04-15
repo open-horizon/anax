@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+type MetaDataList []common.MetaData
+
 // These structs are mirrors of similar structs in the edge-sync-service library. They are mirrored here
 // so that we can use our types when demarhsalling them, which enables us to perform compatibility checks
 // using these policies.
@@ -247,6 +249,45 @@ func GetObject(ec ExchangeContext, org string, objID string, objType string) (*c
 				}
 				return nil, nil
 			}
+		}
+	}
+}
+
+// Get the a list css object metadata by the type.
+// If objType is an empty string, all of the objects metadate will be returned
+// for the given org.
+func GetCSSObjectsByType(ec ExchangeContext, org string, objType string) (*MetaDataList, error) {
+
+	var resp interface{}
+	resp = new(MetaDataList)
+
+	url := ec.GetCSSURL() + path.Join("/api/v1/objects", org)
+	url = url + "?filters=true"
+	if objType != "" {
+		url = fmt.Sprintf(url+"&objectType=%v", objType)
+	}
+
+	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
+		} else {
+			mObjs := resp.(*MetaDataList)
+			return mObjs, nil
 		}
 	}
 }

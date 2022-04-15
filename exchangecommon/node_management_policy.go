@@ -122,9 +122,13 @@ type UpgradeDescription struct {
 	FileList []string `json:"files"`
 }
 
-type AgentUpgradeVersionsResponse struct {
+type AgentFileVersions struct {
 	SoftwareVersions []string `json:"agentSoftwareVersions"`
 	ConfigVersions   []string `json:"agentConfigVersions"`
 	CertVersions     []string `json:"agentCertVersions"`
-	LastUpdated      string   `json:"lastUpdated"`
+	LastUpdated      string   `json:"lastUpdated,omitempty"`
+}
+
+func (a AgentFileVersions) String() string {
+	return fmt.Sprintf("SoftwareVersions: %v, ConfigVersions: %v, CertVersions: %v", a.SoftwareVersions, a.ConfigVersions, a.CertVersions)
 }

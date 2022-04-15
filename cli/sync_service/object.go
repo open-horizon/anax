@@ -675,9 +675,9 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 		makeHeaderMap(headers, startOffset, endOffset, fileInfo.Size(), dataLength, mmsOwnerID, creds)
 		resp, err := makeChunkUploadRequest(httpClient, mmsUrl, headers, chunkData, closeRequest)
 
-		// In order for HTTP client connection to be re-used, the response body must be fully read. Do it here 
+		// In order for HTTP client connection to be re-used, the response body must be fully read. Do it here
 		if resp != nil && resp.Body != nil {
-			io.Copy(ioutil.Discard, resp.Body);
+			io.Copy(ioutil.Discard, resp.Body)
 			resp.Body.Close()
 		}
 

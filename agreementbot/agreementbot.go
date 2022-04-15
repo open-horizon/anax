@@ -28,6 +28,7 @@ const GOVERN_AGREEMENTS = "AgBotGovernAgreements"
 const GOVERN_ARCHIVED_AGREEMENTS = "AgBotGovernArchivedAgreements"
 const SECRETS_PROVIDER = "AgbotSecretsProvider"
 const SECRETS_UPDATE = "AgbotSecretsUpdate"
+const AGENT_FILE_VERSION_UPDATE = "AgbotUpdateAgentFileVersion"
 
 //const GOVERN_BC_NEEDS = "AgBotGovernBlockchain"
 const POLICY_WATCHER = "AgBotPolicyWatcher"
@@ -324,6 +325,9 @@ func (w *AgreementBotWorker) Initialize() bool {
 		glog.Errorf("AgreementBotWorker cannot clean up pattern based policy files under %v. %v", w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, err)
 		return w.fail()
 	}
+
+	// Start the go thread that updates the IBM/AgentFileVersion object in the exchange periodically.
+	w.DispatchSubworker(AGENT_FILE_VERSION_UPDATE, w.updateAgentFileVersions, 60, false)
 
 	// Start the go thread that heartbeats to the database.
 	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3), false)
