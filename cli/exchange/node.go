@@ -705,11 +705,49 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 				}
 			}
 		}
-		output = cliutils.MarshalIndent(compatibleNMPs, "exchange node listnmps")
+		output = cliutils.MarshalIndent(compatibleNMPs, "node management list")
 	}
 
 	fmt.Printf(output)
 	msgPrinter.Println()
+}
+
+func NodeManagementStatus(org, credToUse, nodeName string, long bool) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+
+    var nodeOrg string
+    nodeOrg, nodeName = cliutils.TrimOrg(org, nodeName)
+
+    if nodeName == "*" {
+        nodeName = ""
+    }
+
+	// Get message printer
+    msgPrinter := i18n.GetMessagePrinter()
+
+	// Get the list of NMP statuses
+	var nmpStatusList exchangecommon.ExchangeNMPStatus
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+nodeName+"/managementStatus", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpStatusList)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Statuses for node %s not found in org %s", nodeName, nodeOrg))
+	}
+
+	// Add the found status to the map (loops only once to get key, value pair)
+	nmpStatuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
+	nmpStatusNames := make(map[string]string, 0)
+	for nmpStatusName, nmpStatus := range nmpStatusList.ManagementStatus {
+		nmpStatuses[nmpStatusName] = nmpStatus
+		nmpStatusNames[nodeName] = nmpStatus.Status()
+	}
+
+	// Format output and print
+    if len(nmpStatuses) == 0 {
+        fmt.Println("[]")
+    } else if long {
+		fmt.Println(cliutils.MarshalIndent(nmpStatusNames, "node management status"))
+	} else {
+        fmt.Println(cliutils.MarshalIndent(nmpStatuses, "node management status"))
+    }
 }
 
 // Verify the node user input for the pattern case. Make sure that the given

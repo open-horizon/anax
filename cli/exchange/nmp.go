@@ -200,27 +200,65 @@ func NMPListNodes(org, credToUse, nmpName string) {
 			nodes := determineCompatibleNodes(org, credToUse, nmpName, nmpPolicy)
 			compatibleNodeMap[nmp] = nodes
 		}
-		output = cliutils.MarshalIndent(compatibleNodeMap, "management nmp list --nodes")
+		output = cliutils.MarshalIndent(compatibleNodeMap, "exchange nmp list --nodes")
 	}
 	fmt.Printf(output)
 	msgPrinter.Println()
 }
 
-func NMPStatus(org, credToUse, nmpName string) {
-	// cliutils.SetWhetherUsingApiKey(credToUse)
+func NMPStatus(org, credToUse, nmpName string, long bool) {
+	
+	cliutils.SetWhetherUsingApiKey(credToUse)
 
-	// var nmpOrg string
-	// nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
+    var nmpOrg string
+    nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
 
-	// if nmpName == "*" {
-	// 	nmpName = ""
-	// }
+    if nmpName == "*" {
+        nmpName = ""
+    }
 
-	// get message printer
-	// msgPrinter := i18n.GetMessagePrinter()
+    // Get message printer
+    msgPrinter := i18n.GetMessagePrinter()
 
-	// var nmpList exchange.ExchangeNodeManagementPolicyResponse
-	// httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/managementpolicies"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpList)
+    // Get names of nodes user can access from the Exchange
+    var resp ExchangeNodes
+    cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+
+    // Map to store NMP statuses across all nodes
+    allNMPStatuses := make(map[string]map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
+	allNMPStatusNames := make(map[string]string, 0)
+
+    // Loop over each node
+    for nodeNameWithOrg := range resp.Nodes {
+
+        // Get the list of NMP statuses, or try to find the given nmpName, if applicable
+        var nmpStatusList exchangecommon.ExchangeNMPStatus
+        _, nodeName := cliutils.TrimOrg(org, nodeNameWithOrg)
+        httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes/"+nodeName+"/managementStatus"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpStatusList)
+        if httpCode == 404 {
+            continue
+        }
+
+        // Add the found status to the map (loops only once to get key, value pair)
+		nmpStatuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
+        for nmpStatusName, nmpStatus := range nmpStatusList.ManagementStatus {
+            nmpStatuses[nmpStatusName] = nmpStatus
+			allNMPStatusNames[nodeNameWithOrg] = nmpStatus.Status()
+        }
+
+		if len(nmpStatuses) > 0 {
+			allNMPStatuses[nodeNameWithOrg] = nmpStatuses
+		}
+    }
+
+    // Format output and print
+    if len(allNMPStatuses) == 0 {
+        cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Status for NMP %s not found in org %s", nmpName, nmpOrg))
+    } else if long {
+		fmt.Println(cliutils.MarshalIndent(allNMPStatusNames, "exchange nmp status"))
+	} else {
+        fmt.Println(cliutils.MarshalIndent(allNMPStatuses, "exchange nmp status"))
+    }
 }
 
 func determineCompatibleNodes(org, credToUse, nmpName string, nmpPolicy exchangecommon.ExchangeNodeManagementPolicy) []string {
