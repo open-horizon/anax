@@ -374,7 +374,19 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 
 	// Call the MMS service over HTTP to add the object's metadata to the MMS.
 	urlPath := path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID)
+
+	// Set the override putting the metadata since if overwriting an existing model, the old model has to be deleted and large models can take long time to delete
+	metaDataSetHTTPOverride := false
+	if os.Getenv(config.HTTPRequestTimeoutOverride) == "" {
+		metaDataSetHTTPOverride = true
+		os.Setenv(config.HTTPRequestTimeoutOverride, "120")
+	}
+
 	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, wrapper, nil)
+
+	if metaDataSetHTTPOverride == true {
+		os.Setenv(config.HTTPRequestTimeoutOverride, "")
+	}
 
 	// The object's data might be quite large, so upload it in a second call that will stream the file contents
 	// to the MSS (CSS).
@@ -459,7 +471,20 @@ func ObjectDelete(org string, userPw string, objType string, objId string) {
 
 	// Call the MMS service over HTTP to delete the object.
 	urlPath := path.Join("api/v1/objects/", org, objType, objId)
+
+	// Set the override on deleting since deleting a large model can take long time to delete 
+	deleteSetHTTPOverride := false
+	if os.Getenv(config.HTTPRequestTimeoutOverride) == "" {
+		deleteSetHTTPOverride = true
+		os.Setenv(config.HTTPRequestTimeoutOverride, "120")
+	}
+
 	httpCode := cliutils.ExchangeDelete("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+
+	if deleteSetHTTPOverride == true {
+		os.Setenv(config.HTTPRequestTimeoutOverride, "")
+	}
+
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object '%s' of type '%s' not found in org %s", objId, objType, org))
 	}
