@@ -427,12 +427,12 @@ restart() {
 
 add_horizon_upgrade_cronjob() {
 	local container_number=$1
-	echo "Adding agent upgrade cron job..."
 	if isMacos; then
-		echo "A dialog box may be shown to ask your permission, please click the OK button."
+		echo "Adding a cronjob for agent auto-upgrade. A dialog box may be shown to ask your permission, please click the OK button."
 		cronjobs=$(sudo crontab -l 2>/dev/null; echo "*/5 * * * * /usr/local/bin/agent-auto-upgrade.sh ${container_number} 2>&1|/usr/bin/logger -t AgentAutoUpgrade-${container_number}")
 		echo "$cronjobs" | sudo crontab -
 	else
+		echo "Adding a cron job for agent auto-upgrade..."
 		sudo echo "*/5 * * * * root /usr/horizon/bin/agent-auto-upgrade.sh ${container_number} 2>&1|/usr/bin/logger -t AgentAutoUpgrade-${container_number}" > /etc/cron.d/horizon${container_number}_agent_upgrade
 	fi
 }
