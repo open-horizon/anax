@@ -1096,6 +1096,18 @@
     "translation": "The name of the node management policy to be removed."
   },
   {
+    "id": "List the status of a given node management policy across all nodes in given org.",
+    "translation": "List the status of a given node management policy across all nodes in given org."
+  },
+  {
+    "id": "The name of the node management policy status to check.",
+    "translation": "The name of the node management policy status to check."
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+    "translation": "Show the entire contents of each node management policy status object, instead of just the status."
+  },
+  {
     "id": "List and manage nodes in the Horizon Exchange",
     "translation": "List and manage nodes in the Horizon Exchange"
   },
@@ -1206,6 +1218,14 @@
   {
     "id": "Include disabled NMP's.",
     "translation": "Include disabled NMP's."
+  },
+  {
+    "id": "List the node management policy statuses for this node.",
+    "translation": "List the node management policy statuses for this node."
+  },
+  {
+    "id": "List node management policy statuses for this node.",
+    "translation": "List node management policy statuses for this node."
   },
   {
     "id": "List the run-time status of the node.",
@@ -1932,8 +1952,8 @@
     "translation": "The publish command will disable chunk upload. Data will stream to CSS."
   },
   {
-    "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-    "translation": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified."
+    "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+    "translation": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified."
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
@@ -4320,6 +4340,10 @@
     "translation": "Node management policy {NmpOrg}/{NmpName} removed"
   },
   {
+    "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+    "translation": "Status for NMP {NmpName} not found in org {NmpOrg}"
+  },
+  {
     "id": "failed to marshal 'exchange node list' output: {Err}",
     "translation": "failed to marshal 'exchange node list' output: {Err}"
   },
@@ -4530,6 +4554,10 @@
   {
     "id": "disabled",
     "translation": "disabled"
+  },
+  {
+    "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+    "translation": "Statuses for node {NodeName} not found in org {NodeOrg}"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5238,6 +5266,10 @@
   {
     "id": "failed to check version range {FileVersion}: {Err}",
     "translation": "failed to check version range {FileVersion}: {Err}"
+  },
+  {
+    "id": "error comparing agent file versions: {Err}",
+    "translation": "error comparing agent file versions: {Err}"
   },
   {
     "id": "must specify --type with --version-only",
