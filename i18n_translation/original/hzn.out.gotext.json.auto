@@ -3065,6 +3065,27 @@
             "fuzzy": true
         },
         {
+            "id": "List the status of a given node management policy across all nodes in given org.",
+            "message": "List the status of a given node management policy across all nodes in given org.",
+            "translation": "List the status of a given node management policy across all nodes in given org.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The name of the node management policy status to check.",
+            "message": "The name of the node management policy status to check.",
+            "translation": "The name of the node management policy status to check.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+            "message": "Show the entire contents of each node management policy status object, instead of just the status.",
+            "translation": "Show the entire contents of each node management policy status object, instead of just the status.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "List and manage nodes in the Horizon Exchange",
             "message": "List and manage nodes in the Horizon Exchange",
             "translation": "List and manage nodes in the Horizon Exchange",
@@ -3257,6 +3278,20 @@
             "id": "Include disabled NMP's.",
             "message": "Include disabled NMP's.",
             "translation": "Include disabled NMP's.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List the node management policy statuses for this node.",
+            "message": "List the node management policy statuses for this node.",
+            "translation": "List the node management policy statuses for this node.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List node management policy statuses for this node.",
+            "message": "List node management policy statuses for this node.",
+            "translation": "List node management policy statuses for this node.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -4556,9 +4591,9 @@
             "fuzzy": true
         },
         {
-            "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-            "message": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-            "translation": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
+            "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+            "message": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+            "translation": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -14301,6 +14336,31 @@
             "fuzzy": true
         },
         {
+            "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+            "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
+            "translation": "Status for NMP {NmpName} not found in org {NmpOrg}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NmpName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "nmpName"
+                },
+                {
+                    "id": "NmpOrg",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "nmpOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "failed to marshal 'exchange node list' output: {Err}",
             "message": "failed to marshal 'exchange node list' output: {Err}",
             "translation": "failed to marshal 'exchange node list' output: {Err}",
@@ -15255,6 +15315,31 @@
             "message": "disabled",
             "translation": "disabled",
             "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+            "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
+            "translation": "Statuses for node {NodeName} not found in org {NodeOrg}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NodeName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "nodeName"
+                },
+                {
+                    "id": "NodeOrg",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "nodeOrg"
+                }
+            ],
             "fuzzy": true
         },
         {
@@ -18359,7 +18444,7 @@
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "validFileTypes.string()"
+                    "expr": "exchangecommon.ValidFileTypes.String()"
                 }
             ],
             "fuzzy": true
@@ -18391,6 +18476,23 @@
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
                     "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "error comparing agent file versions: {Err}",
+            "message": "error comparing agent file versions: {Err}",
+            "translation": "error comparing agent file versions: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
                     "expr": "err"
                 }
             ],
