@@ -37,6 +37,10 @@ ANAX_DEFAULT_PORT=8510
 AGENT_CERT_FILE_DEFAULT='agent-install.crt'
 AGENT_CFG_FILE_DEFAULT='agent-install.cfg'
 CSS_OBJ_PATH_DEFAULT='/api/v1/objects/IBM/agent_files'
+CSS_OBJ_AGENT_SOFTWARE_BASE='/api/v1/objects/IBM/agent_software_files'
+CSS_OBJ_AGENT_CERT_BASE='/api/v1/objects/IBM/agent_cert_files'
+CSS_OBJ_AGENT_CONFIG_BASE='/api/v1/objects/IBM/agent_config_files'
+
 SEMVER_REGEX='^[0-9]+\.[0-9]+(\.[0-9]+)+'   # matches a version like 1.2.3 (must be at least 3 fields). Also allows a bld num on the end like: 1.2.3-RC1
 DEFAULT_AGENT_IMAGE_TAR_FILE='amd64_anax.tar.gz'
 INSTALLED_AGENT_CFG_FILE="/etc/default/horizon"
@@ -67,6 +71,8 @@ UPGRADE_TYPE_CFG="config"
 # Type of container engine to use; RedHat might have podman
 DOCKER_ENGINE="docker"
 
+#0 - not initialized, 1 - supported, 2 - not supported
+AGENT_FILE_VERSIONS_STATUS=0 
 
 # Script usage info
 function usage() {
@@ -80,9 +86,9 @@ Required Input Variables (via flag, environment, or config file):
     HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_ORG_ID, either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH
 
 Options/Flags:
-    -c                  Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
-    -k                  Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. All other variables for this script can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
-    -i                  Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
+    -c                  Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the certificate file from the MMS. If only 'css:' is specified, the path for the highest certificate file version $CSS_OBJ_AGENT_CERT_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
+    -k                  Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the config file from the MMS. If only 'css:' is specified, the path for the highest config file version $CSS_OBJ_AGENT_CONFIG_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. All other variables for this script can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
+    -i                  Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the path for the highest package file version $CSS_OBJ_AGENT_SOFTWARE_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
     -z                  The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (This flag is equivalent to AGENT_INSTALL_ZIP)
     -j                  File location for the public key for an APT repository specified with '-i' (This flag is equivalent to PKG_APT_KEY)
     -t                  Branch to use in the APT repo specified with -i. Default is 'updates' (This flag is equivalent to APT_REPO_BRANCH)
@@ -106,7 +112,7 @@ Options/Flags:
         --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to AGENT_IN_CONTAINER)
     -N                  The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
-    -h                  This usage
+    -h  --help          This usage
 
 Additional Variables (in environment or config file):
     HZN_AGBOT_URL: The URL that is used for the 'hzn agbot ...' commands.
@@ -158,6 +164,9 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
                 ;;
             auto-upgrade)
                 ARG_AGENT_AUTO_UPGRADE=true
+                ;;
+            help)
+                usage 0
                 ;;
             *)  echo "Invalid option: --$OPTARG"
                 usage 1
@@ -321,14 +330,50 @@ function get_variable() {
     log_debug "get_variable() end"
 }
 
+# Get the correct css obj download path for the software packages if 'css:version' is specified.
+# The path is $CSS_OBJ_AGENT_SOFTWARE_BASE-version
+# The input is 'css:', 'css:version' or 'css:path'.
+# Please do not add debug messages.
+function get_input_file_css_path() {
+    local __resultvar=$1
+
+    local input_file_path
+
+    if [[ $INPUT_FILE_PATH == css:* ]]; then
+        # split the input into 2 parts
+        local part2=${INPUT_FILE_PATH#"css:"}
+
+        if [[ -n $part2 ]]; then
+            if [[ $part2 == /* ]]; then
+                input_file_path=$INPUT_FILE_PATH
+            else
+                # new path with version
+                input_file_path="css:${CSS_OBJ_AGENT_SOFTWARE_BASE}-${part2}"
+            fi
+        else
+            # 'css:' case - need to use AgentFileVersion to decide if we can get the latest cert 
+            get_agent_file_versions
+            if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_SW_VERSIONS[@]} -gt 0 ]; then
+                # new way
+                input_file_path="css:${CSS_OBJ_AGENT_SOFTWARE_BASE}-${AGENT_SW_VERSIONS[0]}"
+            else
+                # fall back to old default way
+                input_file_path="css:$CSS_OBJ_PATH_DEFAULT"
+            fi
+        fi
+    fi
+
+    eval $__resultvar="'${input_file_path}'"
+}
+
 # If INPUT_FILE_PATH is a short-hand value, turn it into the long-hand value. There are several variants of INPUT_FILE_PATH. See the -i flag in the usage.
 # Side-effect: INPUT_FILE_PATH
 function adjust_input_file_path() {
     log_debug "adjust_input_file_path() begin"
     local save_input_file_path=$INPUT_FILE_PATH
     INPUT_FILE_PATH="${INPUT_FILE_PATH%/}"   # remove trailing / if there
-    if [[ $INPUT_FILE_PATH == 'css:' ]]; then
-        INPUT_FILE_PATH="$INPUT_FILE_PATH$CSS_OBJ_PATH_DEFAULT"
+    if [[ $INPUT_FILE_PATH == css:* ]]; then
+        :
     elif [[ $INPUT_FILE_PATH == 'anax:' ]]; then
         INPUT_FILE_PATH='https://github.com/open-horizon/anax/releases/latest/download'
     elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
@@ -384,21 +429,159 @@ function get_anax_release_version() {
     #else return empty string, meaning we couldn't find it (so they should probably just use latest)
 }
 
+# get the exchange AgentFileVersion object. 
+function get_agent_file_versions() {
+    log_debug "get_agent_file_versions() begin"
+
+    # make sure it is only called once
+    if [ $AGENT_FILE_VERSIONS_STATUS -ne 0 ]; then
+        return 0
+    fi
+
+    # input checking requires either user creds or node creds
+    local exch_creds cert_flag
+    if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH"
+    elif [[ -n $HZN_EXCHANGE_NODE_AUTH ]]; then exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH"
+    else
+        # no creds available to get the agent file versions
+        log_debug "No user or node credentials available to get the agent file versions"
+        AGENT_FILE_VERSIONS_STATUS=2
+        return 0
+    fi
+
+    # make sure HZN_EXCHANGE_URL is set
+    if [[ -z $HZN_EXCHANGE_URL ]]; then
+        log_fatal 1 "HZN_EXCHANGE_URL is not set."
+    fi
+
+    if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
+        cert_flag="--cacert $AGENT_CERT_FILE"
+    elif [[ -f $PERMANENT_CERT_PATH ]]; then
+        # using cert from a previous install, see if that works
+        cert_flag="--cacert $PERMANENT_CERT_PATH"
+    else
+        cert_flag="--insecure"
+    fi
+
+    local exch_output=$(curl -sSL -w "%{http_code}" ${cert_flag} ${HZN_EXCHANGE_URL}/orgs/IBM/AgentFileVersion -u ${exch_creds} 2>&1) || true
+    log_debug "GET AgentFileVersion: $exch_output"
+
+    if [[ -n $exch_output ]]; then
+        local http_code="${exch_output: -3}"
+        local output="${exch_output::-3}"
+        if [[ $http_code -eq 200 ]]; then
+            # The outpit of AgentFileVersion has the following format:
+            # {
+            #      "agentSoftwareVersions": ["2.30.0", "2.25.4", "1.4.5-123"],
+            #      "agentConfigVersions": ["0.0.4", "0.0.3"],     
+            #      "agentCertVersions": ["0.0.15"],
+            # }
+            OLDIFS=${IFS}
+            IFS=' '
+            local tmp=$(echo $output |jq -r '.agentSoftwareVersions[]' | sort -rV |tr '\n' ' ')
+            read -a AGENT_SW_VERSIONS <<< $tmp
+            tmp=$(echo $output |jq -r '.agentConfigVersions[]' | sort -rV |tr '\n' ' ')
+            read -a AGENT_CONFIG_VERSIONS <<< $tmp
+            tmp=$(echo $output |jq -r '.agentCertVersions[]' | sort -rV |tr '\n' ' ')
+            read -a AGENT_CERT_VERSIONS <<< $tmp
+            #0 - not initialized, 1 - supported, 2 - not supported
+            AGENT_FILE_VERSIONS_STATUS=1 
+            IFS=${OLDIFS}
+        elif [[ $http_code -eq 404 ]]; then
+            # exchange-api version 2.98.0 and older does not support AgentFileVersion API
+            AGENT_FILE_VERSIONS_STATUS=2
+        else
+            log_fatal 1 "Failed to get AgentFileVersion from the exchange. $exch_output"
+        fi
+    fi
+
+    log_debug "AGENT_FILE_VERSIONS_STATUS: $AGENT_FILE_VERSIONS_STATUS"
+    log_debug "AGENT_SW_VERSIONS: ${AGENT_SW_VERSIONS[@]} sizs=${#AGENT_SW_VERSIONS[@]}"
+    log_debug "AGENT_CERT_VERSIONS: ${AGENT_CERT_VERSIONS[@]} sizs=${#AGENT_CERT_VERSIONS[@]}"
+    log_debug "AGENT_CONFIG_VERSIONS: ${AGENT_CONFIG_VERSIONS[@]} sizs=${#AGENT_CONFIG_VERSIONS[@]}"
+
+    log_debug "get_agent_file_versions() end"
+}
+
 # Download the certificate file from CSS if not present
 function get_certificate() {
     log_debug "get_certificate() begin"
 
-    if [[ $AGENT_CERT_FILE_CSS == css:* ]]; then
-        download_css_file "$AGENT_CERT_FILE_CSS/$AGENT_CERT_FILE_DEFAULT"   # AGENT_CERT_FILE is already set to where it will end up in this case
-    elif [[ $INPUT_FILE_PATH == css:* ]]; then
-        if [[ -n $AGENT_CERT_FILE && ! -f $AGENT_CERT_FILE ]]; then
-            download_css_file "$INPUT_FILE_PATH/$AGENT_CERT_FILE_DEFAULT"
-        fi
+    local css_path
+    get_cert_file_css_path css_path
+
+    if [[ -n $css_path ]]; then
+        download_css_file "$css_path"
     fi
 
     #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
 
     log_debug "get_certificate() end"
+}
+
+# get the cert file path beased on the value in AGENT_CERT_FILE_CSS and INPUT_FILE_PATH
+function get_cert_file_css_path() {
+    log_debug "get_cert_file_css_path() begin"
+
+    local __resultvar=$1
+
+    local css_path
+
+    local need_latest_cert=false
+    if [[ $AGENT_CERT_FILE_CSS == css:* ]]; then
+        local part2=${AGENT_CERT_FILE_CSS#"css:"}
+        if [[ -n $part2 ]]; then
+            if [[ $part2 == /* ]]; then
+                # new or old with css path
+                css_path=$AGENT_CERT_FILE_CSS
+            else
+                # new with version
+                css_path="css:${CSS_OBJ_AGENT_CERT_BASE}-${part2}"
+            fi
+        else
+            # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert 
+            need_latest_cert=true
+        fi
+    elif [[ $INPUT_FILE_PATH == css:* ]]; then
+        if [[ -n $AGENT_CERT_FILE && ! -f $AGENT_CERT_FILE ]]; then
+            local part2=${INPUT_FILE_PATH#"css:"}
+            if [[ -n $part2 ]]; then
+                if [[ $part2 == /* ]]; then
+                    if [[ "$INPUT_FILE_PATH" == "css:$CSS_OBJ_PATH_DEFAULT" ]]; then 
+                        # old way with css default path
+                        css_path=$INPUT_FILE_PATH
+                    else
+                        # INPUT_FILE_PATH new way with css path, get the latest cert
+                        need_latest_cert=true
+                    fi
+                else
+                    # new with version
+                    need_latest_cert=true
+                fi
+            else
+                # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert 
+                need_latest_cert=true
+            fi
+        fi
+    fi
+
+    if [ $need_latest_cert == true ]; then 
+        # get the latest cert versions from AgentFileVersion exchange API
+        get_agent_file_versions
+        if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_CERT_VERSIONS[@]} -gt 0 ]; then
+            # new way
+            css_path="css:${CSS_OBJ_AGENT_CERT_BASE}-${AGENT_CERT_VERSIONS[0]}"
+        else
+            # fall back to old default way
+            css_path="css:$CSS_OBJ_PATH_DEFAULT"
+        fi
+    fi
+
+    css_path="$css_path/$AGENT_CERT_FILE_DEFAULT"
+    echo "css_path=$css_path"
+    eval $__resultvar="'${css_path}'"
+
+    log_debug "get_cert_file_css_path() end"
 }
 
 # Download a file from the specified CSS path
@@ -425,11 +608,18 @@ function download_css_file() {
     fi
 
     # Set cert flag. This is a special case, because sometimes the cert we need is coming from CSS. In that case be creative to try to get it.
-    local remote_cert_path="${remote_path%/*/data}/$AGENT_CERT_FILE_DEFAULT/data"
     if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
         # Either we have already downloaded it, or they gave it to us separately
         cert_flag="--cacert $AGENT_CERT_FILE"
-    elif [[ -f $PERMANENT_CERT_PATH ]]; then
+    fi
+
+    local remote_cert_path
+    if [[ -z $cert_flag && -f $PERMANENT_CERT_PATH ]]; then
+        # get the cert file path
+        local css_cert_path
+        get_cert_file_css_path css_cert_path
+        remote_cert_path="${css_cert_path/#css:/${HZN_FSS_CSSURL%/}}/data"
+
         # Cert from a previous install, see if that works
         log_info "Attempting to download file $remote_cert_path using $PERMANENT_CERT_PATH ..."
         httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" --cacert "$PERMANENT_CERT_PATH" -o "$AGENT_CERT_FILE" $remote_cert_path 2>/dev/null || true)
@@ -437,9 +627,18 @@ function download_css_file() {
             cert_flag="--cacert $AGENT_CERT_FILE"   # we got it
         fi
     fi
+
     if [[ -z $cert_flag && $HZN_FSS_CSSURL == https:* ]]; then   #todo: this check still doesn't account for a CA-trusted cert
         # Still didn't find a valid cert. Get the cert from CSS by disabling cert checking
         rm -f "$AGENT_CERT_FILE"   # this probably has the error msg from the previous curl in it
+
+        # get the cert file path
+        if [[ -z $remote_cert_path ]]; then 
+            local css_cert_path
+            get_cert_file_css_path css_cert_path
+            remote_cert_path="${css_cert_path/#css:/${HZN_FSS_CSSURL%/}}/data"
+        fi
+
         log_info "Downloading file $remote_cert_path using --insecure ..."
         #echo "DEBUG: curl -sSL -w \"%{http_code}\" -u \"$exch_creds\" --insecure -o \"$AGENT_CERT_FILE\" $remote_cert_path || true"   # log_debug isn't set up yet
         httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" --insecure -o "$AGENT_CERT_FILE" $remote_cert_path || true)
@@ -471,15 +670,68 @@ function download_anax_release_file() {
 }
 
 # If necessary, download the cfg file from CSS.
+# The input_file_path is either AGENT_CFG_FILE or INPUT_FILE_PATH, the second 
+# parameter tells which one it is: 1 for AGENT_CFG_FILE, 0 for INPUT_FILE_PATH. 
 function download_config_file() {
     log_debug "download_config_file() begin"
     local input_file_path=$1   # normally the value of INPUT_FILE_PATH or AGENT_CFG_FILE
+    local is_config_path=$2
+
     if [[ $input_file_path == css:* ]]; then
-        download_css_file "$input_file_path/$AGENT_CFG_FILE_DEFAULT"
+        local css_path
+        local need_latest_cfg=false
+        local part2=${input_file_path#"css:"}
+        if [[ -n $part2 ]]; then
+            if [[ $part2 == /* ]]; then
+                if [[ $is_config_path -eq 1 ]]; then
+                    # AGENT_CFG_FILE contains path css path, use it
+                    css_path=$input_file_path
+                else
+                    # INPUT_FILE_PATH contains the path, only use it when it is the old default way
+                    need_latest_cfg=true
+                    if [[ "$input_file_path" == "css:$CSS_OBJ_PATH_DEFAULT" ]]; then 
+                        # old way with css default path
+                        css_path=$input_file_path
+                    else
+                        # INPUT_FILE_PATH new way with css path, get the latest config
+                        need_latest_cfg=true
+                    fi
+                fi
+            else
+                if [[ $is_config_path -eq 1 ]]; then
+                    # AGENT_CFG_FILE contains the version, use it
+                    css_path="css:${CSS_OBJ_AGENT_CONFIG_BASE}-${part2}"
+                else
+                    # INPUT_FILE_PATH contains the version, cannot use it
+                    need_latest_cfg=true
+                fi
+            fi
+        else
+            # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert 
+            need_latest_cfg=true
+        fi
+
+        if [ $need_latest_cfg == true ]; then 
+            # get the latest config versions from AgentFileVersion exchange API
+            get_agent_file_versions
+            if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_CONFIG_VERSIONS[@]} -gt 0 ]; then
+                # new way
+                css_path="css:${CSS_OBJ_AGENT_CONFIG_BASE}-${AGENT_CONFIG_VERSIONS[0]}"
+            else
+                # fall back to old default way
+                css_path="css:$CSS_OBJ_PATH_DEFAULT"
+            fi
+        fi           
+
+        # now do the downloading
+        if [[ -n $css_path ]]; then
+            download_css_file "$css_path/$AGENT_CFG_FILE_DEFAULT"
+        fi
+    fi
+
     # the cfg is specific to the instance of the cluster, so not available from anax/release
     #elif [[ $input_file_path == https://github.com/open-horizon/anax/releases* ]]; then
     #    download_anax_release_file "$input_file_path/$AGENT_CFG_FILE_DEFAULT"
-    fi
     log_debug "download_config_file() end"
 }
 
@@ -493,12 +745,12 @@ function read_config_file() {
         :   # just fall thru this if-else to read the config file
     elif using_remote_input_files 'cfg'; then
         if [[ $AGENT_CFG_FILE == css:*  ]]; then
-            download_config_file "$AGENT_CFG_FILE"   # in this case AGENT_CFG_FILE is the css object path NOT including the last part (agent-install.cfg)
+            download_config_file "$AGENT_CFG_FILE" 1  # in this case AGENT_CFG_FILE is the css object path NOT including the last part (agent-install.cfg)
         else
             if [[ -n $AGENT_CFG_FILE && $AGENT_CFG_FILE != $AGENT_CFG_FILE_DEFAULT ]]; then
                 log_fatal 1 "Can not specify both -k (AGENT_CFG_FILE) and -i (INPUT_FILE_PATH)"
             fi
-            download_config_file "$INPUT_FILE_PATH"
+            download_config_file "$INPUT_FILE_PATH" 0
         fi
         AGENT_CFG_FILE=$AGENT_CFG_FILE_DEFAULT   # this is where download_config_file() will put it
     elif [[ -z $AGENT_CFG_FILE ]]; then
@@ -562,9 +814,6 @@ function varify_upgrade_types() {
         fi
     fi
 
-    # TODO-LING if software update is not specified 
-    # if ! has_upgrade_type_sw; then
-    # fi
     log_debug "varify_upgrade_types() end" 
 }
 
@@ -671,9 +920,7 @@ function get_all_variables() {
     get_variable INPUT_FILE_PATH '.'
     adjust_input_file_path
     get_variable AGENT_CFG_FILE "$(get_cfg_file_default)"
-    if [[ $AGENT_CFG_FILE == 'css:' ]]; then
-        AGENT_CFG_FILE="$AGENT_CFG_FILE$CSS_OBJ_PATH_DEFAULT"   # expand the shorthand syntax
-    fi
+
     if [[ -n $AGENT_CFG_FILE && -f $AGENT_CFG_FILE ]] || ! using_remote_input_files 'cfg'; then
         # Read this as soon as possible, so things like HZN_ORG_ID can be specified in the cfg file
         read_config_file
@@ -684,12 +931,11 @@ function get_all_variables() {
         log_fatal 1 "AGENT_VERBOSITY must be in the range 0 - $VERB_DEBUG"
     fi
     # these are needed to read the cfg file from CSS
+    get_variable HZN_EXCHANGE_URL '' 'false'
     get_variable HZN_ORG_ID '' 'true'
     get_variable HZN_MGMT_HUB_CERT_PATH
     get_variable AGENT_CERT_FILE "${HZN_MGMT_HUB_CERT_PATH:-$AGENT_CERT_FILE_DEFAULT}"   # use the default value even if the file doesn't exist yet, because '-i css:'' might create it
-    if [[ $AGENT_CERT_FILE == 'css:' ]]; then
-        AGENT_CERT_FILE="$AGENT_CERT_FILE$CSS_OBJ_PATH_DEFAULT"   # expand the shorthand syntax
-    fi
+
     if [[ $AGENT_CERT_FILE == css:* ]]; then
         # Store the css path for the cert file, so we can change AGENT_CERT_FILE to where it will end up locally
         AGENT_CERT_FILE_CSS=$AGENT_CERT_FILE
@@ -1165,7 +1411,9 @@ function download_pkgs_from_css() {
     local tar_file_name="horizon-agent-${OS}-$(get_pkg_type)-${ARCH}.tar.gz"
 
     # Download and unpack the package tar file
-    download_css_file "$INPUT_FILE_PATH/$tar_file_name"
+    local input_path
+    get_input_file_css_path input_path
+    download_css_file "$input_path/$tar_file_name"
     log_verbose "Download of $INPUT_FILE_PATH successful, now unpacking it..."
     rm -f horizon*.$(get_pkg_type)   # remove older pkgs so there is no confusion about what is being installed
     tar -zxf $tar_file_name
@@ -2193,7 +2441,9 @@ function start_device_agent_container() {
     # Note: install_mac_horizon-cli() sets HC_DOCKER_TAG appropriately
     # In the css case, get amd64_anax.tar.gz from css, docker load it, and set HC_DOCKER_IMAGE and HC_DONT_PULL
     if [[ $INPUT_FILE_PATH == css:* ]]; then
-        download_css_file "$INPUT_FILE_PATH/$AGENT_IMAGE_TAR_FILE"
+        local input_path
+        get_input_file_css_path input_path
+        download_css_file "$input_path/$AGENT_IMAGE_TAR_FILE"
         log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
         local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
         #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
@@ -2668,7 +2918,9 @@ function loadClusterAgentImage() {
             log_fatal 1 "Can not specify both AGENT_K8S_IMAGE_TAR_FILE and -i (INPUT_FILE_PATH)"
         fi
         if [[ $INPUT_FILE_PATH == css:* ]]; then
-            download_css_file "$INPUT_FILE_PATH/$AGENT_K8S_IMAGE_TAR_FILE"
+            local input_path
+            get_input_file_css_path input_path
+            download_css_file "$input_path/$AGENT_K8S_IMAGE_TAR_FILE"
         elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
             # Get the docker image from docker hub in this case
             local image_tag=$(get_anax_release_version $INPUT_FILE_PATH)   # use the version from INPUT_FILE_PATH, if possible
@@ -2742,7 +2994,9 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
             log_fatal 1 "Can not specify both CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE and -i (INPUT_FILE_PATH)"
         fi
         if [[ $INPUT_FILE_PATH == css:* ]]; then
-            download_css_file "$INPUT_FILE_PATH/$CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE"
+            local input_path
+            get_input_file_css_path input_path
+            download_css_file "$input_path/$CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE"
         elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
             # Get the docker image from docker hub in this case
             local image_tag=$(get_anax_release_version $INPUT_FILE_PATH)   # use the version from INPUT_FILE_PATH, if possible
@@ -2843,7 +3097,9 @@ function get_edge_cluster_files() {
     if using_remote_input_files 'yml'; then
         log_verbose "Getting template.yml files and agent-uninstall.sh from $INPUT_FILE_PATH ..."
         if [[ $INPUT_FILE_PATH == css:* ]]; then
-            download_css_file "$INPUT_FILE_PATH/$EDGE_CLUSTER_TAR_FILE_NAME"
+            local input_path
+            get_input_file_css_path input_path
+            download_css_file "$input_path/$EDGE_CLUSTER_TAR_FILE_NAME"
         elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
             download_anax_release_file "$INPUT_FILE_PATH/$EDGE_CLUSTER_TAR_FILE_NAME"
         fi
