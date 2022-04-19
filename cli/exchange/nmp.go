@@ -206,7 +206,7 @@ func NMPListNodes(org, credToUse, nmpName string) {
 	msgPrinter.Println()
 }
 
-func NMPStatus(org, credToUse, nmpName string, long bool) {
+func NMPStatus(org, credToUse, nmpName, nodeName string, long bool) {
 	
 	cliutils.SetWhetherUsingApiKey(credToUse)
 
@@ -222,7 +222,10 @@ func NMPStatus(org, credToUse, nmpName string, long bool) {
 
     // Get names of nodes user can access from the Exchange
     var resp ExchangeNodes
-    cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+    httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes"+cliutils.AddSlash(nodeName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node %s not found in org %s", nodeName, nmpOrg))
+	}
 
     // Map to store NMP statuses across all nodes
     allNMPStatuses := make(map[string]map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
@@ -234,7 +237,7 @@ func NMPStatus(org, credToUse, nmpName string, long bool) {
         // Get the list of NMP statuses, or try to find the given nmpName, if applicable
         var nmpStatusList exchangecommon.ExchangeNMPStatus
         _, nodeName := cliutils.TrimOrg(org, nodeNameWithOrg)
-        httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes/"+nodeName+"/managementStatus"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpStatusList)
+        httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes/"+nodeName+"/managementStatus"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpStatusList)
         if httpCode == 404 {
             continue
         }
@@ -253,7 +256,11 @@ func NMPStatus(org, credToUse, nmpName string, long bool) {
 
     // Format output and print
     if len(allNMPStatuses) == 0 {
-        cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Status for NMP %s not found in org %s", nmpName, nmpOrg))
+		if nodeName == "" {
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Status for NMP %s not found in org %s", nmpName, nmpOrg))
+		} else {
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Status for NMP %s not found for node %s in org %s", nmpName, nodeName, nmpOrg))
+		}
     } else if long {
 		fmt.Println(cliutils.MarshalIndent(allNMPStatusNames, "exchange nmp status"))
 	} else {

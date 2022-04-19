@@ -689,7 +689,7 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 	if httpCode == 404 {
 		output = "[]"
 	} else {
-		compatibleNMPs := []string{}
+		compatibleNMPs := make(map[string]string, 0)
 		for nmpName, nmp := range nmpList.Policies {
 			if nmp.Enabled || all {
 				if err := nodePol_nm.Constraints.IsSatisfiedBy(nmp.Properties); err != nil {
@@ -698,9 +698,9 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 					continue
 				} else {
 					if nmp.Enabled {
-						compatibleNMPs = append(compatibleNMPs, nmpName+": "+msgPrinter.Sprintf("enabled"))
+						compatibleNMPs[nmpName] = "enabled"
 					} else {
-						compatibleNMPs = append(compatibleNMPs, nmpName+": "+msgPrinter.Sprintf("disabled"))
+						compatibleNMPs[nmpName] = "disabled"
 					}
 				}
 			}
@@ -712,7 +712,7 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 	msgPrinter.Println()
 }
 
-func NodeManagementStatus(org, credToUse, nodeName string, long bool) {
+func NodeManagementStatus(org, credToUse, nodeName, nmpName string, long bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 
     var nodeOrg string
@@ -736,14 +736,19 @@ func NodeManagementStatus(org, credToUse, nodeName string, long bool) {
 	nmpStatuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
 	nmpStatusNames := make(map[string]string, 0)
 	for nmpStatusName, nmpStatus := range nmpStatusList.ManagementStatus {
-		nmpStatuses[nmpStatusName] = nmpStatus
-		nmpStatusNames[nodeName] = nmpStatus.Status()
+		_, nmpStatusNameNoOrg := cliutils.TrimOrg(org, nmpStatusName)
+		if nmpName == "" || nmpStatusNameNoOrg == nmpName {
+			nmpStatuses[nmpStatusName] = nmpStatus
+			nmpStatusNames[nmpStatusName] = nmpStatus.Status()
+		}
+	}
+
+	if nmpName != "" && len(nmpStatusNames) == 0 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node %s does not contain a status for %s in org %s", nodeName, nmpName, nodeOrg))
 	}
 
 	// Format output and print
-    if len(nmpStatuses) == 0 {
-        fmt.Println("[]")
-    } else if long {
+    if long {
 		fmt.Println(cliutils.MarshalIndent(nmpStatusNames, "node management status"))
 	} else {
         fmt.Println(cliutils.MarshalIndent(nmpStatuses, "node management status"))
