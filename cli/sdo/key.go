@@ -274,46 +274,55 @@ func import1Key(org, userCreds string, keyFileReader io.Reader, keyFileName stri
 
 // Check if keyfile stored in KeyFile struct as any empty fields
 func checkEmptyKeyFields(key KeyFile) error {
+	msgPrinter := i18n.GetMessagePrinter()
 	errMsg := ""
 	if key.Name == "" {
-		errMsg += "\tfield \"key_name\" is missing\n"
+		errMsg += fmt.Sprintf("\t") + msgPrinter.Sprintf("field \"key_name\" is missing") + fmt.Sprintf("\n")
 	}
 	if key.CommonName == "" {
-		errMsg += "\tfield \"common_name\" is missing\n"
+		field := "common_name"
+		errMsg += fmt.Sprintf("\t") + msgPrinter.Sprintf("field \"%s\" is missing", field) + fmt.Sprintf("\n")
 	}
 	if key.Email == "" {
-		errMsg += "\tfield \"email_name\" is missing\n"
+		field := "email_name"
+		errMsg += fmt.Sprintf("\t") + msgPrinter.Sprintf("field \"%s\" is missing", field) + fmt.Sprintf("\n")
 	}
 	if key.Company == "" {
-		errMsg += "\tfield \"company_name\" is missing\n"
+		field := "company_name"
+		errMsg += fmt.Sprintf("\t") + msgPrinter.Sprintf("field \"%s\" is missing", field) + fmt.Sprintf("\n")
 	}
 	if key.Country == "" {
-		errMsg += "\tfield \"country_name\" is missing\n"
+		field := "country_name"
+		errMsg += fmt.Sprintf("\t") + msgPrinter.Sprintf("field \"%s\" is missing", field) + fmt.Sprintf("\n")
 	}
 	if key.State == "" {
-		errMsg += "\tfield \"state_name\" is missing\n"
+		field := "state_name"
+		errMsg += fmt.Sprintf("\t") + msgPrinter.Sprintf("field \"%s\" is missing", field) + fmt.Sprintf("\n")
 	}
 	if key.Locale == "" {
-		errMsg += "\tfield \"locale_name\" is missing\n"
+		field := "locale_name"
+		errMsg += fmt.Sprintf("\t") + msgPrinter.Sprintf("field \"%s\" is missing", field) + fmt.Sprintf("\n")
 	}
 	if errMsg != "" {
-		errMsg += "Please fill these and try again.\n"
+		errMsg += fmt.Sprintf("\t") + msgPrinter.Sprintf("Please fill these and try again.") + fmt.Sprintf("\n")
 		return errors.New(errMsg)
 	}
 	return nil
 }
 
 func checkKeyName(s string) error {
+	msgPrinter := i18n.GetMessagePrinter()
 	for _, r := range s {
 		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
-			return errors.New("Key name can only contain lowercase characters, numbers, and hyphens")
+			return errors.New(msgPrinter.Sprintf("Key name can only contain lowercase characters, numbers, and hyphens"))
 		}
 	}
 	return nil
 }
 
 func checkKeyCountry(s string) error {
-	err := "Country name must be a 2 Letter Country Code"
+	msgPrinter := i18n.GetMessagePrinter()
+	err := msgPrinter.Sprintf("Country name must be a 2 Letter Country Code")
 	if len(s) != 2 {
 		return errors.New(err)
 	}

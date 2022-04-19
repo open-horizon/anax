@@ -180,7 +180,7 @@ func (self *Version_Expression) Get_end_version() string {
 //
 func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 	if !IsVersionString(expr) {
-		errorString := fmt.Sprintf("Version_Expression: %v is not a valid version string.", expr)
+		errorString := i18n.GetMessagePrinter().Sprintf("Version_Expression: %v is not a valid version string.", expr)
 		return false, errors.New(errorString)
 	}
 
@@ -247,10 +247,10 @@ func (self *Version_Expression) IntersectsWith(other *Version_Expression) error 
 			return err
 		} else if c == 0 {
 			if !self.start_inclusive && !self.end_inclusive {
-				return fmt.Errorf("No intersection found.")
+				return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("No intersection found."))
 			}
 		} else if c == 1 {
-			return fmt.Errorf("No intersection found.")
+			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("No intersection found."))
 		}
 	}
 
@@ -263,7 +263,7 @@ func (self *Version_Expression) IntersectsWith(other *Version_Expression) error 
 func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive bool) error {
 
 	if len(ceiling_version) == 0 {
-		return fmt.Errorf("The input string is not a version string, it is an empty string.")
+		return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The input string is not a version string, it is an empty string."))
 	}
 
 	if ceiling_version == INF {
@@ -271,16 +271,16 @@ func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive 
 		// always set the false, ignore the inclusive input
 		self.end_inclusive = false
 	} else if !IsVersionString(ceiling_version) {
-		return fmt.Errorf("The input string %v is not a version string.", ceiling_version)
+		return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The input string %v is not a version string.", ceiling_version))
 	} else {
 
 		if c, err := CompareVersions(ceiling_version, self.start); err != nil {
 			return err
 		} else if c < 0 {
-			return fmt.Errorf("The input ceiling version %v is lower than the start version %v.", ceiling_version, self.start)
+			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The input ceiling version %v is lower than the start version %v.", ceiling_version, self.start))
 		} else if c == 0 {
 			if !(inclusive && self.start_inclusive) {
-				return fmt.Errorf("The input ceiling version %v is the same as the start version, but either the start or the end is not inclusive.", ceiling_version)
+				return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The input ceiling version %v is the same as the start version, but either the start or the end is not inclusive.", ceiling_version))
 			}
 		}
 

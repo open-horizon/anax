@@ -367,7 +367,7 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 				if strings.Contains(el.Message, serviceFullName) {
 					printLog = true
 				} else if es, err := persistence.GetRealEventSource(el.SourceType, el.Source); err != nil {
-					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to convert eventlog source, error: %v", err)
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("unable to convert eventlog source, error: %v", err))
 				} else if (*es).Matches(match) {
 					printLog = true
 				}

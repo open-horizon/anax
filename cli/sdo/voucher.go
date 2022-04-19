@@ -53,8 +53,8 @@ type InspectOutput struct {
 // hzn sdo voucher inspect <voucher-file>
 func VoucherInspect(voucherFile *os.File) {
 	defer voucherFile.Close()
-	cliutils.Verbose("Inspecting voucher file name: %s", voucherFile.Name())
 	msgPrinter := i18n.GetMessagePrinter()
+	cliutils.Verbose(msgPrinter.Sprintf("Inspecting voucher file name: %s", voucherFile.Name()))
 
 	outStruct := InspectOutput{}
 	voucherBytes, err := ioutil.ReadAll(bufio.NewReader(voucherFile))
@@ -70,7 +70,8 @@ func VoucherInspect(voucherFile *os.File) {
 }
 
 func DeprecatedVoucherInspect(voucherFile *os.File) {
-	fmt.Fprintf(os.Stderr, "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.\n")
+	msgPrinter := i18n.GetMessagePrinter()
+	fmt.Fprintf(os.Stderr, msgPrinter.Sprintf("WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.\n"))
 	VoucherInspect(voucherFile)
 }
 
@@ -79,7 +80,7 @@ func parseVoucherBytes(voucherBytes []byte, outStruct *InspectOutput) error {
 	msgPrinter := i18n.GetMessagePrinter()
 	voucher := Voucher{}
 	if err := json.Unmarshal(voucherBytes, &voucher); err != nil {
-		return errors.New("parsing json: " + err.Error())
+		return errors.New(msgPrinter.Sprintf("parsing json: %s", err.Error()))
 	}
 
 	// Do further parsing of the json, for those parts that have varying types
@@ -108,7 +109,7 @@ func parseVoucherBytes(voucherBytes []byte, outStruct *InspectOutput) error {
 											cliutils.Warning(msgPrinter.Sprintf("base64 decoding %s: %v", t4, err))
 										} else {
 											// The decoded value is a byte array of length 4. Each byte is 1 of the numbers of the IP address
-											cliutils.Verbose("decoding %s yielded %d bytes", t4, n)
+											cliutils.Verbose(msgPrinter.Sprintf("decoding %s yielded %d bytes", t4, n))
 											if n == 4 && len(ipBytes) == 4 {
 												host = fmt.Sprintf("%d.%d.%d.%d", int(ipBytes[0]), int(ipBytes[1]), int(ipBytes[2]), int(ipBytes[3]))
 											}
@@ -129,13 +130,13 @@ func parseVoucherBytes(voucherBytes []byte, outStruct *InspectOutput) error {
 		}
 	}
 	if len(outStruct.Voucher.RendezvousUrls) == 0 {
-		return errors.New("did not find any rendezvous server URLs in the voucher")
+		return errors.New(msgPrinter.Sprintf("did not find any rendezvous server URLs in the voucher"))
 	}
 
 	// Get, decode, and convert the device uuid
 	uu, err := uuid.FromBytes(voucher.Oh.Guid)
 	if err != nil {
-		return errors.New("decoding UUID: " + err.Error())
+		return errors.New(msgPrinter.Sprintf("decoding UUID: %s", err.Error()))
 	}
 	outStruct.Device.Uuid = uu.String()
 
@@ -286,7 +287,8 @@ func VoucherList(org, userCreds, voucher string, namesOnly bool) {
 }
 
 func DeprecatedVoucherList(org, userCreds, voucher string, namesOnly bool) {
-	fmt.Fprintf(os.Stderr, "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.\n")
+	msgPrinter := i18n.GetMessagePrinter()
+	fmt.Fprintf(os.Stderr, msgPrinter.Sprintf("WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.\n"))
 	VoucherList(org, userCreds, voucher, namesOnly)
 }
 
@@ -303,7 +305,8 @@ func VoucherDownload(org, userCreds, device, outputFile string, overwrite bool) 
 	// Download response body directly to file
 	if outputFile != "" {
 		fileName := cliutils.DownloadToFile(outputFile, device, respBodyBytes, ".json", 0600, overwrite)
-		fmt.Printf("Voucher \"%s\" successfully downloaded to %s from the SDO owner services.\n", device, fileName)
+		msgPrinter.Printf("Voucher \"%s\" successfully downloaded to %s from the SDO owner services.", device, fileName)
+		msgPrinter.Println()
 	} else {
 		// List voucher on screen
 		fmt.Printf("%s\n", respBodyBytes)
@@ -346,7 +349,8 @@ func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyF
 }
 
 func DeprecatedVoucherImport(org, userCreds string, voucherFile *os.File, example, policyFilePath, patternName string) {
-	fmt.Fprintf(os.Stderr, "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.\n")
+	msgPrinter := i18n.GetMessagePrinter()
+	fmt.Fprintf(os.Stderr, msgPrinter.Sprintf("WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.\n"))
 	VoucherImport(org, userCreds, voucherFile, example, policyFilePath, patternName)
 }
 

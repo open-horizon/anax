@@ -160,7 +160,7 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 			if timeout != 0 {
 				totalWait = totalWait - channelWait
 				if totalWait <= 0 {
-					return fmt.Errorf("Timeout unregistering the node.")
+					return fmt.Errorf(msgPrinter.Sprintf("Timeout unregistering the node."))
 				}
 				updateStatus := msgPrinter.Sprintf("Timeout in %v seconds ...", totalWait)
 				msgPrinter.Printf("Waiting for Horizon node unregister to complete: %v", updateStatus)
