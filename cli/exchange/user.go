@@ -135,9 +135,9 @@ func checkExchangeVersionForOptionalUserEmail(org, userPwCreds string) (bool, er
 	exchangeVersion := strings.TrimSpace(string(output))
 
 	if !semanticversion.IsVersionString(exchangeVersion) {
-		return false, fmt.Errorf("The current exchange version %v is not a valid version string.", exchangeVersion)
+		return false, fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The current exchange version %v is not a valid version string.", exchangeVersion))
 	} else if comp, err := semanticversion.CompareVersions(exchangeVersion, USER_EMAIL_OPTIONAL_EXCHANGE_VERSION); err != nil {
-		return false, fmt.Errorf("Failed to compare the versions. %v", err)
+		return false, fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Failed to compare the versions. %v", err))
 	} else if comp < 0 {
 		// current exchange version < 2.61.0. User email is required
 		return false, nil

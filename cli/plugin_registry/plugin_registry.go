@@ -3,7 +3,6 @@ package plugin_registry
 import (
 	"crypto/rsa"
 	"errors"
-	"fmt"
 	"github.com/open-horizon/anax/i18n"
 )
 
@@ -92,7 +91,7 @@ func (d DeploymentConfigRegistry) StopTest(homeDirectory string) error {
 		}
 	}
 
-	return errors.New(fmt.Sprintf("stopping test mode is not supported for this project"))
+	return errors.New(i18n.GetMessagePrinter().Sprintf("stopping test mode is not supported for this project"))
 }
 
 func (d DeploymentConfigRegistry) HasPlugin(name string) bool {

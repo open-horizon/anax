@@ -462,7 +462,7 @@ func CreateNode(nodeDevice api.HorizonDevice, timeout int) error {
 				if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 					cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first."))
 				} else if httpCode != 200 && httpCode != 201 {
-					return fmt.Errorf("Bad HTTP code %d returned from node.", httpCode)
+					return fmt.Errorf(msgPrinter.Sprintf("Bad HTTP code %d returned from node.", httpCode))
 				} else {
 					return nil
 				}
@@ -548,7 +548,7 @@ func SetConfigState(timeout int, inputFile string) error {
 		select {
 		case output := <-c:
 			if output == "done" {
-				cliutils.Verbose("Call to node to change state to configured executed successfully.")
+				cliutils.Verbose(msgPrinter.Sprintf("Call to node to change state to configured executed successfully."))
 				return nil
 			} else {
 				return fmt.Errorf("%v", output)
@@ -557,14 +557,14 @@ func SetConfigState(timeout int, inputFile string) error {
 		case <-time.After(time.Duration(channelWait) * time.Second):
 			totalWait = totalWait - channelWait
 			if totalWait <= 0 {
-				cliutils.Verbose("Timeout on the call to update node config state. Checking if it is updated.")
+				cliutils.Verbose(msgPrinter.Sprintf("Timeout on the call to update node config state. Checking if it is updated."))
 				state := api.Configstate{}
 				cliutils.HorizonGet("node/configstate", []int{200, 201}, &state, true)
 				if *state.State == "unconfigured" {
-					cliutils.Verbose("Node state is unconfigured.")
+					cliutils.Verbose(msgPrinter.Sprintf("Node state is unconfigured."))
 					return nil
 				}
-				return fmt.Errorf("Timeout waiting for node config state call to return.")
+				return fmt.Errorf(msgPrinter.Sprintf("Timeout waiting for node config state call to return."))
 			}
 			cliutils.Verbose(msgPrinter.Sprintf("Waiting for node config state update call to return. %d seconds until timeout.", totalWait))
 		}

@@ -46,6 +46,8 @@ func printResponse(resp []byte, structure interface{}) {
 // as long as a 503 is returned. If a code other than 503 is returned, or the number of retries is reached, the code of the final
 // query will be returned.
 func queryWithRetry(query func() int, retryCount, retryInterval int) (httpCode int) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// on a 503, we want to retry a small number of times
 	for i := 0; i < retryCount; i++ {
@@ -53,7 +55,7 @@ func queryWithRetry(query func() int, retryCount, retryInterval int) (httpCode i
 		if httpCode != 503 {
 			return httpCode
 		}
-		cliutils.Verbose("Vault component not found in the management hub. Retrying...")
+		cliutils.Verbose(msgPrinter.Sprintf("Vault component not found in the management hub. Retrying..."))
 		time.Sleep(time.Duration(retryInterval) * time.Second)
 	}
 
