@@ -195,10 +195,8 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 
 	w := NewDownloadWorker("download", &config.HorizonConfig{}, db)
 
-	if downloadFiles, dockerFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
-	} else if dockerFiles != "" {
-		t.Errorf("No files for docker download expected. Got %v.", dockerFiles)
 	} else if len(*downloadFiles) != 2 {
 		t.Errorf("Expected 2 files for download. Got %v.", downloadFiles)
 	} else if !cutil.SliceContains(*downloadFiles, HZN_CLUSTER_FILE) {
@@ -219,10 +217,8 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error updating node in db: %v", err)
 	}
 
-	if downloadFiles, dockerFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
-	} else if dockerFiles != "" {
-		t.Errorf("No files for docker download expected. Got %v.", dockerFiles)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
 	} else if !cutil.SliceContains(*downloadFiles, "horizon-agent-linux-deb-amd64.tar.gz") {
@@ -236,10 +232,8 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, dockerFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
-	} else if dockerFiles != "" {
-		t.Errorf("No files for docker download expected. Got %v.", dockerFiles)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
 	} else if !cutil.SliceContains(*downloadFiles, "horizon-agent-linux-rpm-x86_64.tar.gz") {
@@ -253,14 +247,14 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, dockerFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
-	} else if dockerFiles != "amd64_anax.tar.gz" {
-		t.Errorf("Expected %v for docker download expected. Got %v.", "amd64_anax.tar.gz", dockerFiles)
-	} else if len(*downloadFiles) != 1 {
-		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
+	} else if len(*downloadFiles) != 2 {
+		t.Errorf("Expected 2 file for download. Got %v.", downloadFiles)
 	} else if !cutil.SliceContains(*downloadFiles, "horizon-agent-linux-rpm-x86_64.tar.gz") {
 		t.Errorf("Did not find expected file %s for download. Got %v.", "horizon-agent-linux-rpm-x86_64.tar.gz", downloadFiles)
+	} else if !cutil.SliceContains(*downloadFiles, "amd64_anax.tar.gz") {
+		t.Errorf("Did not find expected file %s for download. Got %v.", "amd64_anax.tar.gz", downloadFiles)
 	}
 
 	nodeProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_NODE_OS, externalpolicy.OS_MAC), true)
@@ -270,14 +264,14 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, dockerFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
-	} else if dockerFiles != "amd64_anax.tar.gz" {
-		t.Errorf("Expected %v for docker download expected. Got %v.", "amd64_anax.tar.gz", dockerFiles)
-	} else if len(*downloadFiles) != 1 {
-		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
+	} else if len(*downloadFiles) != 2 {
+		t.Errorf("Expected 2 file for download. Got %v.", downloadFiles)
 	} else if !cutil.SliceContains(*downloadFiles, "horizon-agent-macos-pkg-x86_64.tar.gz") {
 		t.Errorf("Did not find expected file %s for download. Got %v.", "horizon-agent-macos-pkg-x86_64.tar.gz", downloadFiles)
+	} else if !cutil.SliceContains(*downloadFiles, "amd64_anax.tar.gz") {
+		t.Errorf("Did not find expected file %s for download. Got %v.", "amd64_anax.tar.gz", downloadFiles)
 	}
 
 	nodeProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_NODE_OS, externalpolicy.OS_DEBIAN), true)
@@ -289,10 +283,8 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, dockerFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
-	} else if dockerFiles != "" {
-		t.Errorf("No files for docker download expected. Got %v.", dockerFiles)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
 	} else if !cutil.SliceContains(*downloadFiles, "horizon-agent-linux-deb-armhf.tar.gz") {
@@ -306,10 +298,8 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, dockerFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
-	} else if dockerFiles != "" {
-		t.Errorf("No files for docker download expected. Got %v.", dockerFiles)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
 	} else if !cutil.SliceContains(*downloadFiles, "horizon-agent-linux-deb-arm64.tar.gz") {

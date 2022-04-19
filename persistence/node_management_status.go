@@ -123,6 +123,12 @@ func CertUpdateNMSFilter() NMStatusFilter {
 	}
 }
 
+func LatestKeywordNMSFilter() NMStatusFilter {
+	return func(e exchangecommon.NodeManagementPolicyStatus) bool {
+		return e.AgentUpgradeInternal.LatestMap.SoftwareLatest || e.AgentUpgradeInternal.LatestMap.ConfigLatest || e.AgentUpgradeInternal.LatestMap.CertLatest
+	}
+}
+
 func FindNMPStatusWithFilters(db *bolt.DB, filters []NMStatusFilter) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
 	statuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
 
@@ -163,6 +169,14 @@ func FindWaitingNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagem
 
 func FindInitiatedNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
 	return FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(exchangecommon.STATUS_INITIATED)})
+}
+
+func FindDownloadStartedNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
+	return FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(exchangecommon.STATUS_DOWNLOAD_STARTED)})
+}
+
+func FindNMPWithLatestKeywordVersion(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
+	return FindNMPStatusWithFilters(db, []NMStatusFilter{LatestKeywordNMSFilter()})
 }
 
 func FindNMPSWithStatuses(db *bolt.DB, statuses []string) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
