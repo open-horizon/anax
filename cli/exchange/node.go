@@ -715,15 +715,15 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 func NodeManagementStatus(org, credToUse, nodeName, nmpName string, long bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 
-    var nodeOrg string
-    nodeOrg, nodeName = cliutils.TrimOrg(org, nodeName)
+	var nodeOrg string
+	nodeOrg, nodeName = cliutils.TrimOrg(org, nodeName)
 
-    if nodeName == "*" {
-        nodeName = ""
-    }
+	if nodeName == "*" {
+		nodeName = ""
+	}
 
 	// Get message printer
-    msgPrinter := i18n.GetMessagePrinter()
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Get the list of NMP statuses
 	var nmpStatusList exchangecommon.ExchangeNMPStatus
@@ -748,11 +748,11 @@ func NodeManagementStatus(org, credToUse, nodeName, nmpName string, long bool) {
 	}
 
 	// Format output and print
-    if long {
+	if long {
 		fmt.Println(cliutils.MarshalIndent(nmpStatusNames, "node management status"))
 	} else {
-        fmt.Println(cliutils.MarshalIndent(nmpStatuses, "node management status"))
-    }
+		fmt.Println(cliutils.MarshalIndent(nmpStatuses, "node management status"))
+	}
 }
 
 // Verify the node user input for the pattern case. Make sure that the given

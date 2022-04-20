@@ -304,36 +304,52 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 
 	request.SetBasicAuth(ec.GetExchangeId(), ec.GetExchangeToken())
 
-	response, err := ec.GetHTTPFactory().NewHTTPClient(nil).Do(request)
-	if err != nil {
-		return fmt.Errorf("Failed to get object data : %v\n", err)
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode >= 400 && response.StatusCode < 600 {
-		return fmt.Errorf("Failed to get the data for the object: %v\n", response.Body)
-	}
-
-	if filePath == "docker" {
-		loadImgOpts := docker.LoadImageOptions{InputStream: response.Body}
-		if err = dockerClient.LoadImage(loadImgOpts); err != nil {
-			return fmt.Errorf("Failed to load image %v into docker.", objId)
+	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
+	for {
+		response, err := ec.GetHTTPFactory().NewHTTPClient(nil).Do(request)
+		if err != nil {
+			return fmt.Errorf("Failed to get object data : %v\n", err)
 		}
+
+		if response != nil && response.Body != nil {
+			defer response.Body.Close()
+		}
+
+		if IsTransportError(response, err) {
+			if ec.GetHTTPFactory().RetryCount == 0 || retryCount > 0 {
+				if ec.GetHTTPFactory().RetryCount != 0 {
+					retryCount--
+				}
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, err)
+			}
+		} else if err != nil {
+			return fmt.Errorf("Received non-transport error: %v", err)
+		}
+
+		if filePath == "docker" {
+			loadImgOpts := docker.LoadImageOptions{InputStream: response.Body}
+			if err = dockerClient.LoadImage(loadImgOpts); err != nil {
+				return fmt.Errorf("Failed to load image %v into docker.", objId)
+			}
+			return nil
+		}
+
+		err = os.MkdirAll(filePath, 0755)
+		if err != nil {
+			return fmt.Errorf("Failed to create folder %v for agent upgrade files: %s\n", filePath, err)
+		}
+
+		err = cutil.WriteDateStreamToFile(response.Body, path.Join(filePath, fileName))
+		if err != nil {
+			return fmt.Errorf("Failed to read the body of a get containing the data for the object: %s\n", err)
+		}
+
 		return nil
 	}
-
-	err = os.MkdirAll(filePath, 0755)
-	if err != nil {
-		return fmt.Errorf("Failed to create folder %v for agent upgrade files: %s\n", filePath, err)
-	}
-
-	err = cutil.WriteDateStreamToFile(response.Body, path.Join(filePath, fileName))
-	if err != nil {
-		return fmt.Errorf("Failed to read the body of a get containing the data for the object: %s\n", err)
-	}
-
-	return nil
 }
 
 // Get object data by chunk and saved to the file

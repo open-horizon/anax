@@ -7,7 +7,7 @@ import (
 )
 
 type ExchangeNMPStatus struct {
-	ManagementStatus	map[string]*NodeManagementPolicyStatus	`json:"managementStatus"`
+	ManagementStatus map[string]*NodeManagementPolicyStatus `json:"managementStatus"`
 }
 
 type NodeManagementPolicyStatus struct {
