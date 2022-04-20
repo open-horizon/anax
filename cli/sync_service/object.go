@@ -22,6 +22,7 @@ import (
 	"github.com/open-horizon/rsapss-tool/sign"
 	"hash"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -35,8 +36,6 @@ import (
 const BatchSize = 50
 
 const MaxTry = 150
-
-const MMSUploadOwnerHeaderName = "MMS-Upload-Owner"
 
 type MMSObjectInfo struct {
 	ObjectID     string                      `json:"objectID,omitempty"`
@@ -366,7 +365,19 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 
 	// Call the MMS service over HTTP to add the object's metadata to the MMS.
 	urlPath := path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID)
+
+	// Set the override putting the metadata since if overwriting an existing model, the old model has to be deleted and large models can take long time to delete
+	metaDataSetHTTPOverride := false
+	if os.Getenv(config.HTTPRequestTimeoutOverride) == "" {
+		metaDataSetHTTPOverride = true
+		os.Setenv(config.HTTPRequestTimeoutOverride, "120")
+	}
+
 	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, wrapper, nil)
+
+	if metaDataSetHTTPOverride == true {
+		os.Setenv(config.HTTPRequestTimeoutOverride, "")
+	}
 
 	// The object's data might be quite large, so upload it in a second call that will stream the file contents
 	// to the MSS (CSS).
@@ -402,12 +413,13 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 	}
 
 	var resp []byte
-	if objFile == "" || skipDigitalSig {
+	if objFile == "" {
 		// Grab the object status and display it.
 		urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "status")
 		cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
 		cliutils.Verbose(msgPrinter.Sprintf("Object status: %v", string(resp)))
 	} else {
+		// Need to do this now for mongo implementation since even with noIntegrity the chunks have to be copied in CSS
 		count := 0
 		for {
 			if count == MaxTry {
@@ -450,7 +462,20 @@ func ObjectDelete(org string, userPw string, objType string, objId string) {
 
 	// Call the MMS service over HTTP to delete the object.
 	urlPath := path.Join("api/v1/objects/", org, objType, objId)
+
+	// Set the override on deleting since deleting a large model can take long time to delete 
+	deleteSetHTTPOverride := false
+	if os.Getenv(config.HTTPRequestTimeoutOverride) == "" {
+		deleteSetHTTPOverride = true
+		os.Setenv(config.HTTPRequestTimeoutOverride, "120")
+	}
+
 	httpCode := cliutils.ExchangeDelete("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+
+	if deleteSetHTTPOverride == true {
+		os.Setenv(config.HTTPRequestTimeoutOverride, "")
+	}
+
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object '%s' of type '%s' not found in org %s", objId, objType, org))
 	}
@@ -609,7 +634,6 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 	var endOffset int64
 	var dataLength int64
 	var mmsOwnerID string
-	var ownerIDInResponse string
 	retryCount := 0
 	for int64(startOffset) < fileInfo.Size() {
 		dataLength = int64(chunkSize)
@@ -624,7 +648,6 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 
 		headers["Content-Range"] = fmt.Sprintf("bytes %d-%d/%d", startOffset, endOffset, fileInfo.Size())
 		headers["Content-Length"] = strconv.FormatInt(dataLength, 10)
-		headers[MMSUploadOwnerHeaderName] = mmsOwnerID
 
 		if err != nil && err != io.EOF {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("error to read object file %v from offset %d: %v", fileInfo.Name(), startOffset, err))
@@ -642,17 +665,16 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 		makeHeaderMap(headers, startOffset, endOffset, fileInfo.Size(), dataLength, mmsOwnerID, creds)
 		resp, err := makeChunkUploadRequest(httpClient, mmsUrl, headers, chunkData, closeRequest)
 
+		// In order for HTTP client connection to be re-used, the response body must be fully read. Do it here 
 		if resp != nil && resp.Body != nil {
-			defer resp.Body.Close()
+			io.Copy(ioutil.Discard, resp.Body);
+			resp.Body.Close()
 		}
 
 		if exchange.IsTransportError(resp, err) {
 			http_status := ""
 			if resp != nil {
 				http_status = resp.Status
-				if resp.Body != nil {
-					resp.Body.Close()
-				}
 			}
 			if retryCount <= maxRetries {
 				retryCount++
@@ -668,24 +690,8 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 		}
 
 		if resp.StatusCode != http.StatusPartialContent && resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusTemporaryRedirect {
-			if resp.StatusCode == http.StatusInternalServerError && resp.Body != nil {
-				if b, err := io.ReadAll(resp.Body); err == nil {
-					responseMessage := string(b)
-					if strings.Contains(responseMessage, "leader changed") {
-						// restart from first offset
-						mmsOwnerID = ""
-						startOffset = 0
-						totalSent = 0
-						continue
-					}
-				}
-			}
 			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s", resp.StatusCode, apiMsg))
-		} else if resp.StatusCode != http.StatusTemporaryRedirect {
-			if mmsOwnerID == "" {
-				ownerIDInResponse = resp.Header.Get(MMSUploadOwnerHeaderName)
-				mmsOwnerID = ownerIDInResponse
-			}
+		} else if resp.StatusCode == http.StatusNoContent {
 			totalSent += dataLength
 			startOffset += dataLength
 		}
@@ -720,7 +726,6 @@ func makeChunkUploadRequest(httpClient *http.Client, mmsUrl string, headers map[
 func makeHeaderMap(headers map[string]string, startOffset int64, endOffset int64, fileSize int64, dataLength int64, mmsOwnerID string, creds string) {
 	headers["Content-Range"] = fmt.Sprintf("bytes %d-%d/%d", startOffset, endOffset, fileSize)
 	headers["Content-Length"] = strconv.FormatInt(dataLength, 10)
-	headers[MMSUploadOwnerHeaderName] = mmsOwnerID
 	headers["Authorization"] = fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(creds)))
 	headers["Content-Type"] = "application/octet-stream"
 }
