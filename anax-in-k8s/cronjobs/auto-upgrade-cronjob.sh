@@ -1,13 +1,22 @@
 #!/bin/bash
 
+# Variables for interfacing with agent pod
 KUBECTL="kubectl"
 AGENT_NAMESPACE="openhorizon-agent"
 POD_ID=$($KUBECTL get pod -l app=agent -n ${AGENT_NAMESPACE} 2>/dev/null | grep "agent-" | cut -d " " -f1 2>/dev/null)
 
+# Timeout value for agent deployment
 AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS='75'
 
-# logging levels
-#VERB_FATAL=0   # we always show fata error msgs
+# status.json status options
+STATUS_FAILED="failed"
+STATUS_INITIATED="initiated"
+STATUS_ROLLBACK_STARTED="rollback started"
+STATUS_ROLLBACK_FAILED="rollback failed"
+STATUS_ROLLBACK_SUCCESSFUL="rollback successful"
+
+# Logging levels
+VERB_FATAL=0
 VERB_ERROR=1
 VERB_WARNING=2
 VERB_INFO=3
@@ -29,12 +38,15 @@ EndOfMessage
     exit $exit_code
 }
 
+# Get current date/timestamp
 function now() {
     echo $(date '+%Y-%m-%d %H:%M:%S')
 }
 
-AGENT_VERBOSITY=5   # default
+# Default logginf level
+AGENT_VERBOSITY=4
 
+# Get script flags (should never really run unless testing script manually)
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts begin"; fi
 while getopts "c:h" opt; do
     case $opt in
@@ -49,6 +61,9 @@ while getopts "c:h" opt; do
     esac
 done
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts end"; fi
+
+
+# Logging functions
 
 function log_fatal() {
     : ${1:?} ${2:?}
@@ -92,15 +107,24 @@ function log() {
     fi
 }
 
-function agent_cmd() {
-    $KUBECTL exec -i ${POD_ID} -n ${AGENT_NAMESPACE} -c anax -- bash -c "$@"
+# Writes cronjob pod logs to /var/horizon/cronjob.log
+# Only last 1 million lines of /var/horizon/cronjob.log is kept 
+#  - (~100 days worth if schedule is every 15 minutes)
+function write_logs() {
+    sleep 5 # delay due to syncing issue between k8s and container status
+    echo $(now) "CRONJOB LOGS FOR JOB: $CRONJOB_POD_NAME" >> /var/horizon/cronjob.log
+    $KUBECTL logs $CRONJOB_POD_NAME -n $AGENT_NAMESPACE >> /var/horizon/cronjob.log
+    tail -n 1000000 /var/horizon/cronjob.log > /var/horizon/cronjob.log.tmp
+    mv -f /var/horizon/cronjob.log.tmp /var/horizon/cronjob.log
 }
 
 # Sets the status to "rollback failed" and exits with a fatal error
+# Also pushes logs to /var/horizon/cronjob.log
 function rollback_failed() {
     local msg="$1"
-    log_verbose "Setting status to \"rollback failed\""
-    agent_cmd "sed -i 's/\"status\":.*/\"status\": \"rollback failed\",/g' /var/horizon/status.json"
+    log_verbose "Setting status to \"$STATUS_ROLLBACK_FAILED\""
+    sed -i 's/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_FAILED\",/g' $STATUS_PATH 
+    write_logs
     log_fatal 1 "$msg"
 }
 
@@ -108,8 +132,12 @@ function rollback_failed() {
 function rollback_configmap() {
     log_debug "rollback_configmap() begin"
 
+    local cmd_output
+    local rc
+
     # Check if a backup exists. If not, keep it and set status.json to "rollback failed"
     log_verbose "Checking for backup config map..."
+    local backup_config
     backup_config=$($KUBECTL get configmap -n ${AGENT_NAMESPACE} | grep openhorizon-agent-config-backup)
     if [[ -z $backup_config ]]; then
         rollback_failed "Config Map needs rollback, but \"openhorizon-agent-config-backup\" does not exist in the ${AGENT_NAMESPACE} namespace"
@@ -150,8 +178,12 @@ function rollback_configmap() {
 function rollback_secret() {
     log_debug "rollback_secret() begin"
 
+    local cmd_output
+    local rc
+
     # Check if a backup exists. If not, keep it and set status.json to "rollback failed"
     log_verbose "Checking for backup secret..."
+    local backup_secret
     backup_secret=$($KUBECTL get secret -n ${AGENT_NAMESPACE} | grep openhorizon-agent-secrets-backup)
     if [[ -z $backup_secret ]]; then
         rollback_failed "Secret needs rollback, but \"openhorizon-agent-secrets-backup\" does not exist in the ${AGENT_NAMESPACE} namespace"
@@ -193,6 +225,7 @@ function check_deployment_status() {
     log_debug "check_deployment_status() begin"
     log_info "Waiting up to $AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS seconds for the agent deployment to complete..."
 
+    local dep_status
     dep_status=$($KUBECTL rollout status --timeout=${AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS}s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out")
     if [[ -z "$dep_status" ]]; then
         rollback_failed "Deployment rollout status failed"
@@ -204,11 +237,16 @@ function check_deployment_status() {
 function rollback_agent_image() {
     log_debug "rollback_agent_image() begin"
 
+    local cmd_output
+    local rc
+
     # Determine what version the agent attempted to upgrade from
     log_verbose "Checking agent image version change..."
-    old_image_version=$(agent_cmd "cat /var/horizon/status.json | jq '.k8s.image.from'")
+    local old_image_version
+    old_image_version=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.image.from')
     log_debug "Old image version: $old_image_version"
-    new_image_version=$(agent_cmd "cat /var/horizon/status.json | jq '.k8s.image.to'")
+    local new_image_version
+    new_image_version=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.image.to')
     log_debug "New image version: $new_image_version"
 
     # Download the agent deployment to a yaml file
@@ -245,57 +283,182 @@ function rollback_agent_image() {
     log_debug "rollback_agent_image() end"
 }
 
+# Sets $STATUS_PATH to the path of the next agent upgrade job that failed
+function get_status_path() {
+    log_debug "get_status_path() start"
+
+    # Exit early if /var/horizon/nmp does not exist
+    log_verbose "Checking if /var/horizon/nmp directory exists..."
+    local auto_upgrade_disabled
+    test -d /var/horizon/nmp 2>&1
+    auto_upgrade_disabled=$?
+    if [ "$auto_upgrade_disabled" -eq "1" ]; then
+        log_info "Auto agent upgrade is disabled. /var/horizon/nmp does not exist."
+        write_logs
+        exit 0
+    fi
+
+    # Get the org of the node, exit early if /var/horizon/nmp/{org} does not exist
+    log_verbose "Checking if /var/horizon/nmp/{org} directory exists..."
+    local nmp_org_arr
+    nmp_org_arr=( $(dir /var/horizon/nmp/) )
+    local nmp_org_arr_len
+    nmp_org_arr_len=$(echo ${#nmp_org_arr[@]})
+    if [ "$nmp_org_arr_len" -eq "0" ]; then
+        log_info "There are no active auto upgrade jobs. /var/horizon/nmp has no org directory."
+        write_logs
+        exit 0
+    fi
+    if [ "$nmp_org_arr_len" -ne "1" ]; then
+        write_logs
+        log_fatal 1 "/var/horizon/nmp has multiple org directories: ${nmp_org_arr[*]}"
+    fi
+    local nmp_org
+    nmp_org=${nmp_org_arr[0]}
+
+    # Exit early if no NMP subdirectories exist
+    log_verbose "Searching NMP subdirectories..."
+    local nmp_arr
+    nmp_arr=( $(dir /var/horizon/nmp/$nmp_org/) )
+    local nmp_arr_len
+    nmp_arr_len=$(echo ${#nmp_arr[@]})
+    if [ "$nmp_arr_len" -eq "0" ]; then
+        log_info "There are no active auto upgrade jobs. /var/horizon/nmp/$nmp_org has no NMP directories."
+        write_logs
+        exit 0
+    fi
+
+    # Loop through NMP subdirectories and check each status.json for newest job that needs rollback
+    log_verbose "Getting latest upgrade job status file..."
+    local latest
+    latest=-1
+    local filepath
+    filepath=/var/horizon/nmp/$nmp_org
+    STATUS_PATH=""
+    for nmp_name in "${nmp_arr[@]}"; do
+
+        # Check if status.json ile exists, throw warning if it doesn't and continue
+        local status_not_exists
+        test -f $filepath/$nmp_name/status.json 2>&1
+        status_not_exists=$?
+        if [ "$status_not_exists" -eq "1" ]; then
+            log_warning "$filepath/$nmp_name exists, but does not contain status.json file, skipping."
+        else
+            # Get timestamp of status file and convert to seconds, ans get status of file
+            local timestamp
+            timestamp=$(cat $filepath/$nmp_name/status.json | jq -r '.agentUpgradePolicyStatus.startTime')
+            local status
+            status=$(cat $filepath/$nmp_name/status.json | jq -r '.agentUpgradePolicyStatus.status')
+            local seconds
+            seconds=$(date -d $timestamp "+%s")
+
+            # Only set STATUS_PATH to current status file if it is the newest so far, and has a failed status
+            if [ "$seconds" -gt "$latest" ]; then
+                if [ "$status" = "$STATUS_FAILED" ] || [ "$status" = "$STATUS_INITIATED" ] || [ "$status" = "$STATUS_ROLLBACK_STARTED" ]; then
+                    latest=$seconds
+                    STATUS_PATH=$filepath/$nmp_name/status.json
+                fi
+            fi
+        fi
+    done
+
+    # Exit early if status.json does not exist
+    local no_active_jobs
+    test -f $STATUS_PATH 2>&1
+    no_active_jobs=$?
+    if [ "$no_active_jobs" -eq "1" ]; then
+        log_info "There are no active auto upgrade jobs."
+        write_logs
+        exit 0
+    fi
+
+    log_verbose "Found job: $STATUS_PATH"
+
+    log_debug "get_status_path() end"
+}
+
+function restart_agent_pod() {
+    log_debug "function restart_agent_pod() start"
+
+    log_info "Restarting agent pod..."
+    cmd_output=$( { $KUBECTL rollout restart deployment agent -n ${AGENT_NAMESPACE}; } 2>&1 )
+    rc=$?
+    if [[ $rc != 0 ]]; then
+        rollback_failed "There was an unexpected error while restarting agent pod: $cmd_output"
+    fi
+
+    log_debug "function restart_agent_pod() end"
+}
+
 #====================== Main  ======================
 
-# Exit early if status.json does not exist
-auto_upgrade_disabled=$(agent_cmd "test -f /var/horizon/status.json")
-if [ auto_upgrade_disabled ]; then
-    rollback_failed "The /var/horizon/status.json does not exist."
-fi
+# Sets STATUS_PATH for rest of script
+get_status_path
 
 # Check agent deployment/pod status and status.json
 pod_status=$($KUBECTL get pods ${POD_ID} --no-headers -o custom-columns=":status.phase")
 log_debug "Pod status: $pod_status"
 dep_status=$($KUBECTL rollout status deployment/agent -n ${AGENT_NAMESPACE} | awk '{ print $3 }' | sed 's/successfully/Running/g')
 log_debug "Deployment status: $dep_status"
-json_status=$(agent_cmd "cat /var/horizon/status.json | jq '.status' | sed 's/\"//g'")
+json_status=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.status' | sed 's/\"//g')
 log_debug "Cron Job status: $json_status"
 
-# Exit early if cron job already executed to success or failure
-if [[ "$json_status" == "rollback failed" ]]; then
-    rollback_failed "Rollback was already initiated, but it failed. Deployment status: $dep_status, Pod status: $pod_status"
-elif [[ "$json_status" == "rollback successful" ]]; then
-    log_info "Rollback already completed successfully."
-    exit 0
-fi
-
+# Check deployment/pod status
 log_info "Checking if agent is running and deployment is successful..."
 if [[ "$pod_status" != "Running" || "$dep_status" != "Running" ]]; then
     
-    # If k8s deployment status is "error" and if status.json has "rollback started" -> set status to "rollback failed" (stop here)
+    # Should never happen, but if k8s deployment status is "error" and if status.json has "rollback started", set status to "rollback failed" and exit
     log_info "Agent is not running. Checking if rollback was already attempted..."
-    if [[ "$json_status" == "rollback started" ]]; then
-        rollback_failed "Rollback was already initiated, but it failed. Deployment status: $dep_status"
+    if [[ "$json_status" == "$STATUS_ROLLBACK_STARTED" ]]; then
+        log_info "Waiting up to $AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS seconds for the agent deployment to complete..."
+        dep_status=$($KUBECTL rollout status --timeout=${AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS}s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out")
 
-    # If k8s deployment status is "error" and status.json is not "initiated" status -> throw error
-    log_debug "Checking if agent upgrade was initiated..."
-    elif [[ "$json_status" != "initiated" ]]; then
-        log_info "The agent is up-to-date."
-        exit 0
+        # Agent is running, exit and let agent upgrade worker determine if agent upgrade was successful
+        if [[ ! -z "$dep_status" ]]; then
+            log_info "Agent pod is running successfully"
+            log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
+            sed -i "s/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_SUCCESSFUL\",/g" $STATUS_PATH
+            write_logs
+            exit 0
+        else
+            rollback_failed "Rollback was already initiated, but it failed. Deployment status: $dep_status"
+        fi
     fi
+
+    # If k8s deployment status is "error" and status.json is "initiated" status, wait to see if pod is just waiting to spin back up
+    log_debug "Checking if agent upgrade was $STATUS_INITIATED..."
+    if [[ "$json_status" == "$STATUS_INITIATED" ]]; then
+        log_info "Waiting up to $AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS seconds for the agent deployment to complete..."
+        dep_status=$($KUBECTL rollout status --timeout=${AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS}s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out")
+        
+        # Agent is running, exit and let agent upgrade worker determine if agent upgrade was successful
+        if [[ ! -z "$dep_status" ]]; then
+            log_info "agent is up-to-date"
+            write_logs
+            exit 0
+        fi
+    fi
+
+# Should never happen, but if status is initiated, or rollback started, and pod is running, agent is up-to-date
+elif [[ "$json_status" == "$STATUS_INITIATED" || "$json_status" == "$STATUS_ROLLBACK_STARTED" ]]; then
+    log_info "Agent pod is running successfully"
+    log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
+    sed -i "s/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_SUCCESSFUL\",/g" $STATUS_PATH
+    write_logs
+    exit 0
 fi
 
 # Rollback
 log_info "Starting rollback process..."
     
 # Set the status to "rollback started" in status.json
-log_verbose "Setting the status to \"rollback started\"..."
-agent_cmd "sed -i 's/\"status\":.*/\"status\": \"rollback started\",/g' /var/horizon/status.json"
+log_verbose "Setting the status to \"$STATUS_ROLLBACK_STARTED\"..."
+sed -i "s/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_STARTED\",/g" $STATUS_PATH
 
 # Configmap:
 log_info "Checking config map status..."
-config_change=$(agent_cmd "cat /var/horizon/status.json | jq '.k8s.configMap.needChange'")
-config_updated=$(agent_cmd "cat /var/horizon/status.json | jq '.k8s.configMap.updated'")
+config_change=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.configMap.needChange')
+config_updated=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.configMap.updated')
 
 log_debug "Config map needs change: $config_change"
 log_debug "Config map was updated: $config_updated"
@@ -303,7 +466,7 @@ log_debug "Config map was updated: $config_updated"
 # If the status.json set config_updated to true, perform a rollback of the config map
 if [[ "$config_updated" == "true" ]]; then
     if [[ "$config_change" == "false" ]]; then
-        log_error "The config map was updated, but there was no config map change request. Attempting rollback anyway..."
+        log_warning "The config map was updated, but there was no config map change request. Attempting rollback anyway..."
     fi
     log_info "Rollback config map..."
     rollback_configmap
@@ -311,8 +474,8 @@ fi
 
 # Secret:
 log_info "Checking secrets status..."
-secret_change=$(agent_cmd "cat /var/horizon/status.json | jq '.k8s.secret.needChange'")
-secret_updated=$(agent_cmd "cat /var/horizon/status.json | jq '.k8s.secret.updated'")
+secret_change=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.secret.needChange')
+secret_updated=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.secret.updated')
 
 log_debug "Secret needs change: $secret_change"
 log_debug "Secret was updated: $secret_updated"
@@ -320,7 +483,7 @@ log_debug "Secret was updated: $secret_updated"
 # If the status.json set secret_updated to true, perform a rollback of the secret
 if [[ "$secret_updated" == "true" ]]; then
     if [[ "$secret_change" == "false" ]]; then
-        log_error "The secret was updated, but there was no secret change request. Attempting rollback anyway..."
+        log_warning "The secret was updated, but there was no secret change request. Attempting rollback anyway..."
     fi
     log_info "Rollback secrets..."
     rollback_secret
@@ -328,8 +491,8 @@ fi
 
 # Agent image rollback:
 log_info "Checking agent image status..."
-image_change=$(agent_cmd "cat /var/horizon/status.json | jq '.k8s.image.needChange'")
-image_updated=$(agent_cmd "cat /var/horizon/status.json | jq '.k8s.image.updated'")
+image_change=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.imageVersion.needChange')
+image_updated=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.imageVersion.updated')
 
 log_debug "Agent image needs change: $image_change"
 log_debug "Agent image was updated: $image_updated"
@@ -344,17 +507,13 @@ if [[ $image_updated == "true" ]]; then
 
 # If the pod is not running, simply restart it
 elif [[ "$pod_status" != "Running" || "$dep_status" != "Running" ]]; then
-    log_info "Restarting agent pod..."
-    cmd_output=$( { $KUBECTL rollout restart deployment agent -n ${AGENT_NAMESPACE}; } 2>&1 )
-    rc=$?
-    if [[ $rc != 0 ]]; then
-        rollback_failed "There was an unexpected error while restarting agent pod: $cmd_output"
-    fi
+    restart_agent_pod
+    check_deployment_status
 fi
 
 # If the rollback ran successfully, update status to "rollback successful". 
-log_verbose "Setting the status to \"rollback successful\"..."
-agent_cmd "sed -i 's/\"status\":.*/\"status\": \"rollback successful\",/g' /var/horizon/status.json"
+log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
+sed -i "s/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_SUCCESSFUL\",/g" $STATUS_PATH
 
 # Delete backup configmap
 if [[ "$config_updated" == "true" ]]; then
@@ -377,3 +536,4 @@ if [[ "$secret_updated" == "true" ]]; then
 fi
 
 log_info "Rollback successful."
+write_logs

@@ -6,7 +6,7 @@ metadata:
 spec:
   storageClassName: __StorageClass__
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 10Gi

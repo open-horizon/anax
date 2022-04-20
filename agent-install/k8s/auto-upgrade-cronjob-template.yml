@@ -4,21 +4,39 @@ metadata:
   name: auto-upgrade-cronjob
 spec:
   schedule: '*/15 * * * *'
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 0
+  successfulJobsHistoryLimit: 0
   jobTemplate:
     spec:
+      backoffLimit: 0
       template:
         spec:
+          volumes:
+          - name: agent-pvc-storage
+            persistentVolumeClaim:
+              claimName: openhorizon-agent-pvc
           containers:
-            - name: agent-auto-upgrade
-              image: '__ImagePath__'
-              command:
-                - /bin/sh
-                - '-c'
-                - >-
-                  /usr/local/bin/auto-upgrade-cronjob.sh
-              imagePullPolicy: Always
-          restartPolicy: OnFailure
+          - name: agent-auto-upgrade
+            image: '__ImagePath__'
+            command:
+              - /bin/sh
+              - '-c'
+              - >-
+                /usr/local/bin/auto-upgrade-cronjob.sh
+            imagePullPolicy: Always
+            volumeMounts:
+            - mountPath: /var/horizon
+              name: agent-pvc-storage
+              subPath: horizon
+            - mountPath: /var/horizon/cronjobs
+              name: agent-pvc-storage
+              subPath: cronjobs
+            env:
+            - name: CRONJOB_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          restartPolicy: Never
           serviceAccountName: __ServiceAccount__
           serviceAccount: __ServiceAccount__
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
