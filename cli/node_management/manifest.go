@@ -186,9 +186,6 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 		updatedManifest = true
 	}
 
-	// TODO - remove when CSS implements ACL
-	manifestsMeta.Public = true
-
 	// Create an object wrapper to use as the input body to the PUT request
 	type ObjectWrapper struct {
 		Meta common.MetaData `json:"meta"`

@@ -207,7 +207,7 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 						log.Error(cssALS(fmt.Sprintf("unable to verify identity %v as exchange node, error %v", appKey, err)))
 					}
 				} else {
-					// exchange node is AuthNodeUser. Without configuring ACLs, AuthNodeUser only has read access to public objects of any org
+					// exchange node is AuthNodeUser. Without configuring ACLs, AuthNodeUser only has read access to public objects of any org, and have read access to manifest under its own org
 					authCode = security.AuthNodeUser
 					authOrg = parts[0]
 					authId = parts[1]
@@ -217,10 +217,15 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 				authCode = security.AuthSyncAdmin
 				authOrg = parts[0]
 				authId = username
-			} else {
-				// exchange regular users are always mapped to authAdmin so that ACLs do not need to be configured in order for a regular user to get read/write access to objects in their own org.
-				// It also gives them read access to public objects in other orgs without needing an ACL
+			} else if exchangeRole == EX_ORG_ADMIN {
+				// exchange org admin are authAdmin, have write/read acess to MMS objects and manifests under its own org
 				authCode = security.AuthAdmin
+				authOrg = parts[0]
+				authId = username
+			} else {
+				// exchange regular users are always mapped to AuthObjectAdmin, have write/read access to all MMS objects under its own org
+				// It also gives them read access to public objects in other orgs without needing an ACL. AuthObjectAdmin doesn't have write access to manifests
+				authCode = security.AuthObjectAdmin
 				authOrg = parts[0]
 				authId = username
 			}
