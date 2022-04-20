@@ -472,7 +472,7 @@ func ObjectDelete(org string, userPw string, objType string, objId string) {
 	// Call the MMS service over HTTP to delete the object.
 	urlPath := path.Join("api/v1/objects/", org, objType, objId)
 
-	// Set the override on deleting since deleting a large model can take long time to delete 
+	// Set the override on deleting since deleting a large model can take long time to delete
 	deleteSetHTTPOverride := false
 	if os.Getenv(config.HTTPRequestTimeoutOverride) == "" {
 		deleteSetHTTPOverride = true
