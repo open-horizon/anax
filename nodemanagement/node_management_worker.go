@@ -407,11 +407,11 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 	if _, err := os.Stat(filePath); err != nil {
 		return fmt.Errorf("Failed to open status file %v for management job %v. Error was: %v", filePath, policyName, err)
 	}
-	if path, err := os.Open(filePath); err != nil {
+	if openPath, err := os.Open(filePath); err != nil {
 		return fmt.Errorf("Failed to open status file %v for management job %v. Errorf was: %v", filePath, policyName, err)
 	} else {
 		contents := exchangecommon.NodeManagementPolicyStatus{}
-		err = json.NewDecoder(path).Decode(&contents)
+		err = json.NewDecoder(openPath).Decode(&contents)
 		if err != nil {
 			return fmt.Errorf("Failed to decode status file %v for management job %v. Error was %v.", filePath, policyName, err)
 		}
@@ -446,10 +446,12 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 		}
 		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, dbStatus), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 
+		if dbStatus.AgentUpgrade.Status == exchangecommon.STATUS_SUCCESSFUL {
 		// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
-		err = os.RemoveAll(workingFolderPath)
-		if err != nil {
-			return fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", policyName, err)
+			err = os.RemoveAll(path.Join(workingFolderPath,policyName))
+			if err != nil {
+				return fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", policyName, err)
+			}
 		}
 	}
 	return nil
