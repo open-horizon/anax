@@ -507,11 +507,11 @@ function get_agent_file_versions() {
 function get_certificate() {
     log_debug "get_certificate() begin"
 
-    local css_path
-    get_cert_file_css_path css_path
+    local css_cert_path
+    get_cert_file_css_path css_cert_path
 
-    if [[ -n $css_path ]]; then
-        download_css_file "$css_path"
+    if [[ -n $css_cert_path ]]; then
+        download_css_file "$css_cert_path"
     fi
 
     #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
