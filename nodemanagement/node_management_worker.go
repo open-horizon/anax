@@ -48,12 +48,14 @@ func (w *NodeManagementWorker) Initialize() bool {
 		workingDir := w.Config.Edge.GetNodeMgmtDirectory()
 		if err := w.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(w), exchange.GetDeleteNodeManagementPolicyStatusHandler(w), exchange.GetPutNodeManagementPolicyStatusHandler(w)); err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
-			// return true
 		}
 		// Check if a nmp process completed
 		if err := w.CheckNMPStatus(workingDir, STATUS_FILE_NAME); err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Failed to collect status. error: %v", err)))
-			return true
+		}
+		// Set any statuses in "download started" status back to waiting so the download will be retried
+		if err := w.ResetDownloadStartedStatuses(); err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf("Failed to reset nmp statuses in \"download started\" status back to \"waiting\".")))
 		}
 	}
 
@@ -66,7 +68,7 @@ func (w *NodeManagementWorker) Initialize() bool {
 // this is to ensure that a newly registered node will reach the same state as a node that has been registered as policies were added
 func (w *NodeManagementWorker) checkNMPTimeToRun() int {
 	glog.Infof(nmwlog("Starting run of node management policy monitoring subworker."))
-	if downloadedInitiatedStatuses, err := persistence.FindNMPSWithStatuses(w.db, []string{exchangecommon.STATUS_DOWNLOADED, exchangecommon.STATUS_INITIATED}); err != nil {
+	if downloadedInitiatedStatuses, err := persistence.FindNMPSWithStatuses(w.db, []string{exchangecommon.STATUS_DOWNLOADED, exchangecommon.STATUS_INITIATED, exchangecommon.STATUS_DOWNLOAD_STARTED}); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Failed to get nmp statuses from the database. Error was %v", err)))
 	} else if len(downloadedInitiatedStatuses) > 0 {
 		glog.Infof(nmwlog("There is an nmp currently being executed or downloaded. Exiting without looking for the next nmp to run."))
@@ -81,12 +83,33 @@ func (w *NodeManagementWorker) checkNMPTimeToRun() int {
 			earliestNmpName, earliestNmpStatus = getEarliest(&waitingNMPs)
 			if earliestNmpName != "" {
 				glog.Infof(nmwlog(fmt.Sprintf("Time to start nmp %v", earliestNmpName)))
+				earliestNmpStatus.AgentUpgrade.Status = exchangecommon.STATUS_DOWNLOAD_STARTED
+				err = w.UpdateStatus(earliestNmpName, earliestNmpStatus, exchange.GetPutNodeManagementPolicyStatusHandler(w))
+				if err != nil {
+					glog.Errorf(nmwlog(fmt.Sprintf("Failed to update nmp status %v: %v", earliestNmpName, err)))
+				}
 				w.Messages() <- events.NewNMPStartDownloadMessage(events.NMP_START_DOWNLOAD, events.StartDownloadMessage{NMPStatus: earliestNmpStatus, NMPName: earliestNmpName})
 				return 60
 			}
 		}
 	}
 	return 60
+}
+
+// this function will set the status of any nmp in "download started" to "waiting"
+// run this when the node starts or is registered so a partial download that ended unexpectedly  will be restarted
+func (w *NodeManagementWorker) ResetDownloadStartedStatuses() error {
+	downloadStartedStatuses, err := persistence.FindDownloadStartedNMPStatuses(w.db)
+	if err != nil {
+		return err
+	}
+	for statusName, status := range downloadStartedStatuses {
+		if err := w.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(w)); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // this returns the name and status struct of the status with the eariest scheduled start time and deletes that earliest status from the map passed in
@@ -168,11 +191,15 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 		status.SetStatus(cmd.Msg.Status)
 		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOAD_FAILED), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 	}
-	status.AgentUpgrade.UpgradedVersions = *cmd.Msg.Versions
-	status.AgentUpgradeInternal.LatestMap = *cmd.Msg.Latests
+	if cmd.Msg.Versions != nil {
+		status.AgentUpgrade.UpgradedVersions = *cmd.Msg.Versions
+	}
+	if cmd.Msg.Latests != nil {
+		status.AgentUpgradeInternal.LatestMap = *cmd.Msg.Latests
+	}
 	err = n.UpdateStatus(cmd.Msg.NMPName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n))
 	if err != nil {
-		glog.Errorf(nmwlog(fmt.Sprintf("Failed to update nmp status %v in the database: %v", cmd.Msg.NMPName, err)))
+		glog.Errorf(nmwlog(fmt.Sprintf("Failed to update nmp status %v: %v", cmd.Msg.NMPName, err)))
 	}
 }
 
@@ -438,6 +465,23 @@ func (n *NodeManagementWorker) UpdateStatus(policyName string, status *exchangec
 		return fmt.Errorf("Failed to put node management policy status for policy %v to the exchange: %v", policyName, err)
 	}
 	return nil
+}
+
+// Change the statuses of all nmp statuses that specify "latest" for a version to waiting as there is a new version availible
+// If there is no new version for whatever the status has "latest" for, it will be marked successful without executing
+func (n *NodeManagementWorker) HandleAgentFilesVersionChange() {
+	if latestStatuses, err := persistence.FindNMPWithLatestKeywordVersion(n.db); err != nil {
+		glog.Errorf("Error getting nmp statuses from db to change to \"waiting\". Error was: %v", err)
+		return
+	} else {
+		for statusName, status := range latestStatuses {
+			status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
+			err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n))
+			if err != nil {
+				glog.Errorf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)
+			}
+		}
+	}
 }
 
 func nmwlog(message string) string {

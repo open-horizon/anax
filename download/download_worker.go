@@ -3,7 +3,6 @@ package download
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
-	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -37,27 +36,15 @@ const (
 
 type DownloadWorker struct {
 	worker.BaseWorker
-	db     *bolt.DB
-	client *docker.Client
+	db *bolt.DB
 }
 
 func NewDownloadWorker(name string, config *config.HorizonConfig, db *bolt.DB) *DownloadWorker {
 	ec := getEC(config, db)
 
-	var dockerClient *docker.Client
-	var err error
-	if config.Edge.DockerEndpoint != "" {
-		dockerClient, err = docker.NewClient(config.Edge.DockerEndpoint)
-		if err != nil {
-			glog.Errorf("Failed to instantiate docker Client: %v", err)
-			panic("Unable to instantiate docker Client")
-		}
-	}
-
 	worker := &DownloadWorker{
 		BaseWorker: worker.NewBaseWorker(name, config, ec),
 		db:         db,
-		client:     dockerClient,
 	}
 
 	glog.Info(dwlog(fmt.Sprintf("Starting Download Worker %v", worker.EC)))
@@ -119,17 +106,37 @@ func (w *DownloadWorker) NewEvent(incoming events.Message) {
 
 // Download the given object from css
 func (w *DownloadWorker) DownloadCSSObject(org string, objType string, objId string, filePath string, nmpName string) error {
-	filePath = path.Join(filePath, nmpName)
 	glog.Infof(dwlog(fmt.Sprintf("Attempting to download css file %v/%v/%v to file %v", org, objType, objId, filePath)))
 	objMeta, err := exchange.GetObject(w, org, objId, objType)
 	if err != nil {
 		return fmt.Errorf("Failed to get metadata for css object %v/%v/%v. Error was: %v", org, objType, objId, err)
 	}
 
-	err = exchange.GetObjectData(w, org, objType, objId, filePath, objId, objMeta, w.client)
-	if err != nil {
-		w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_DOWNLOAD_FAILED, nmpName, nil, nil)
-		return fmt.Errorf("Failed to get data for object %v/%v/%v. Error was: %v", org, objType, objId, err)
+	filePath = path.Join(filePath, nmpName)
+
+	if w.Config.IsDataChunkEnabled() && int(objMeta.ObjectSize) > w.Config.GetFileSyncServiceMaxDataChunkSize() {
+		offsetStep := w.Config.GetFileSyncServiceMaxDataChunkSize()
+		startOffest := 0
+		endOffset := offsetStep
+		lastChunk := false
+		for !lastChunk {
+			if endOffset > int(objMeta.ObjectSize) {
+				lastChunk = true
+				endOffset = int(objMeta.ObjectSize)
+			}
+			_, err = exchange.GetObjectDataByChunk(w, org, objType, objId, int64(startOffest), int64(endOffset), lastChunk, filePath, objId)
+			if err != nil {
+				return fmt.Errorf("Failed to get object %v/%v/%v data chunk. Error was %v.", org, objType, objId, err)
+			}
+			startOffest = endOffset
+			endOffset = endOffset + offsetStep
+		}
+	} else {
+		err = exchange.GetObjectData(w, org, objType, objId, filePath, objId, objMeta)
+		if err != nil {
+			w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_DOWNLOAD_FAILED, nmpName, nil, nil)
+			return fmt.Errorf("Failed to get data for object %v/%v/%v. Error was: %v", org, objType, objId, err)
+		}
 	}
 
 	return nil
@@ -137,7 +144,7 @@ func (w *DownloadWorker) DownloadCSSObject(org string, objType string, objId str
 
 // Download the manifest, then all packages required by it
 func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath string, nmpName string, nmpStatus *exchangecommon.NodeManagementPolicyStatus) error {
-	objIds, containerObjId, err := w.formAgentUpgradePackageNames()
+	objIds, err := w.formAgentUpgradePackageNames()
 	if err != nil {
 		return err
 	}
@@ -177,14 +184,6 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 					glog.Infof("No software upgrade object found of expected type %v found in manifest list.", objId)
 				}
 			}
-		}
-
-		if containerObjId != "" && cutil.SliceContains(manifest.Software.FileList, containerObjId) {
-			if err = w.DownloadCSSObject(CSSSHAREDORG, swType, containerObjId, "docker", nmpName); err != nil {
-				return fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, swType, containerObjId, err)
-			}
-		} else if containerObjId != "" {
-			glog.Infof("No software upgrade object found of expected type %v found in manifest list.", containerObjId)
 		}
 	}
 
@@ -328,7 +327,7 @@ func findAgentUpgradePackageVersions(softwareManifestVers string, configManifest
 	versions, err := getUpgradeVers()
 	upgradeVersions := exchangecommon.AgentUpgradeVersions{}
 	if err != nil {
-		// 	return nil, err
+		return nil, err
 	}
 
 	if softwareManifestVers != "" {
@@ -360,9 +359,6 @@ func findAgentUpgradePackageVersions(softwareManifestVers string, configManifest
 // If the preferred version is current, return the highest version
 // If the preferred version is a range, return the highest version currrently availible
 func findBestMatchingVersion(availibleVers []string, preferredVers string) (string, error) {
-	// Only works for single versions specified until the exchange file version api is ready
-	return preferredVers, nil
-
 	goodVers := []string{}
 	for _, vers := range availibleVers {
 		if !semanticversion.IsVersionString(vers) {
@@ -401,38 +397,39 @@ func findBestMatchingVersion(availibleVers []string, preferredVers string) (stri
 }
 
 // Create the package names from the system information
-func (w *DownloadWorker) formAgentUpgradePackageNames() (*[]string, string, error) {
+func (w *DownloadWorker) formAgentUpgradePackageNames() (*[]string, error) {
 	pol, err := persistence.FindNodePolicy(w.db)
 	if err != nil {
-		return nil, "", fmt.Errorf("Failed to retrieve node policy from local db: %v", err)
+		return nil, fmt.Errorf("Failed to retrieve node policy from local db: %v", err)
 	} else if pol == nil {
-		return nil, "", fmt.Errorf("No node policy found in the local db.")
+		return nil, fmt.Errorf("No node policy found in the local db.")
 	}
 
 	if dev, err := persistence.FindExchangeDevice(w.db); dev == nil || err != nil {
-		return nil, "", fmt.Errorf("Failed to get device from the local db: %v", err)
+		return nil, fmt.Errorf("Failed to get device from the local db: %v", err)
 	} else if dev.NodeType == persistence.DEVICE_TYPE_CLUSTER {
-		return &[]string{HZN_CLUSTER_FILE, HZN_CLUSTER_IMAGE}, "", nil
+		return &[]string{HZN_CLUSTER_FILE, HZN_CLUSTER_IMAGE}, nil
 	}
 
 	installTypeProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_OS)
 	if err != nil {
-		return nil, "", fmt.Errorf("Failed to find node os property: %v", err)
+		return nil, fmt.Errorf("Failed to find node os property: %v", err)
 	}
 
 	archProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_ARCH)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	containerAgentFiles := ""
+	allFiles := []string{}
+
 	containerizedProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_CONTAINERIZED)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	if containPropBool, ok := containerizedProp.Value.(bool); ok && containPropBool {
-		containerAgentFiles = fmt.Sprintf(HZN_CONTAINER_FILE, archProp.Value)
+		allFiles = append(allFiles, fmt.Sprintf(HZN_CONTAINER_FILE, archProp.Value))
 	}
 
 	osProp := fmt.Sprintf("%v", installTypeProp.Value)
@@ -440,7 +437,7 @@ func (w *DownloadWorker) formAgentUpgradePackageNames() (*[]string, string, erro
 	if osProp != "" {
 		pkgType := getPkgTypeForInstallType(osProp)
 		if pkgType == "" {
-			return nil, containerAgentFiles, fmt.Errorf("Failed to find package type for install type %v", installTypeProp)
+			return &allFiles, fmt.Errorf("Failed to find package type for install type %v", installTypeProp)
 		}
 
 		osType := "linux"
@@ -450,11 +447,11 @@ func (w *DownloadWorker) formAgentUpgradePackageNames() (*[]string, string, erro
 		}
 
 		pkgArch := getPkgArch(pkgType, archPropVal)
-
-		return &[]string{fmt.Sprintf(HZN_EDGE_FILE, osType, pkgType, pkgArch)}, containerAgentFiles, nil
+		allFiles = append(allFiles, fmt.Sprintf(HZN_EDGE_FILE, osType, pkgType, pkgArch))
+		return &allFiles, nil
 	}
 
-	return nil, containerAgentFiles, nil
+	return &allFiles, nil
 }
 
 func checkForLatestKeywords(manifest *exchangecommon.UpgradeManifest) *exchangecommon.AgentUpgradeLatest {

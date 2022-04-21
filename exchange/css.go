@@ -2,7 +2,6 @@ package exchange
 
 import (
 	"fmt"
-	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchangecommon"
@@ -293,7 +292,7 @@ func GetCSSObjectsByType(ec ExchangeContext, org string, objType string) (*MetaD
 }
 
 // Get the object data
-func GetObjectData(ec ExchangeContext, org string, objType string, objId string, filePath string, fileName string, objectMeta *common.MetaData, dockerClient *docker.Client) error {
+func GetObjectData(ec ExchangeContext, org string, objType string, objId string, filePath string, fileName string, objectMeta *common.MetaData) error {
 	url := path.Join("/api/v1/objects", org, objType, objId, "data")
 	url = ec.GetCSSURL() + url
 
@@ -330,14 +329,6 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 			return fmt.Errorf("Received non-transport error: %v", err)
 		}
 
-		if filePath == "docker" {
-			loadImgOpts := docker.LoadImageOptions{InputStream: response.Body}
-			if err = dockerClient.LoadImage(loadImgOpts); err != nil {
-				return fmt.Errorf("Failed to load image %v into docker.", objId)
-			}
-			return nil
-		}
-
 		err = os.MkdirAll(filePath, 0755)
 		if err != nil {
 			return fmt.Errorf("Failed to create folder %v for agent upgrade files: %s\n", filePath, err)
@@ -356,7 +347,7 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 // set CloseRequest to true if this is the last chunk
 // return true, nil if response code is 200 -- get all the object data
 // return false, nil if response code is 206 -- get data in range of bytes {startOffset} - {endOffset}
-func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId string, startOffset int64, endOffset int64, closeRequest bool, fileName string) (bool, error) {
+func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId string, startOffset int64, endOffset int64, closeRequest bool, filePath string, fileName string) (bool, error) {
 	url := path.Join("/api/v1/objects", org, objType, objId, "data")
 	url = ec.GetCSSURL() + url
 
@@ -371,7 +362,12 @@ func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId 
 		request.Close = true
 	}
 
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0600)
+	err = os.MkdirAll(filePath, 0755)
+	if err != nil {
+		return false, fmt.Errorf("Failed to create folder %v for agent upgrade files: %s\n", filePath, err)
+	}
+
+	file, err := os.OpenFile(path.Join(filePath, fileName), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return false, fmt.Errorf("failed to create file for object '%s' of type '%s', err: %v", objId, objType, err)
 	}
@@ -410,12 +406,9 @@ func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId 
 				return false, fmt.Errorf("Failed to seek to the offset %d of a file. Error: %v", startOffset, err)
 			}
 
-			written, err := io.Copy(file, response.Body)
+			_, err = io.Copy(file, response.Body)
 			if err != nil && err != io.EOF {
 				return false, fmt.Errorf("Failed to write to file. Error: %v", err)
-			}
-			if written != int64(endOffset-startOffset+1) {
-				return false, fmt.Errorf("Failed to write all the data to file.")
 			}
 
 			return false, nil
@@ -425,13 +418,17 @@ func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId 
 				return false, fmt.Errorf("Failed to seek to the offset from beginning of a file. Error: %v", err)
 			}
 
-			if _, err := io.Copy(file, response.Body); err != nil && err != io.EOF {
+			if written, err := io.Copy(file, response.Body); err != nil && err != io.EOF {
 				return false, fmt.Errorf("Failed to write to file. Error: %v", err)
+			} else if written != int64(endOffset-startOffset+1) {
+				return false, fmt.Errorf("Failed to write all the data to file.")
 			}
 
 			return true, nil
+		} else if response != nil {
+			return false, fmt.Errorf("Failed to get chunk data of object %s/%s. Response code was %v.", objType, objId, response.StatusCode)
 		} else {
-			return false, fmt.Errorf("Failed to get chunk data of object %s/%s", objType, objId)
+			return false, fmt.Errorf("Failed to get chunk data of object %s/%s.", objType, objId)
 		}
 
 	}

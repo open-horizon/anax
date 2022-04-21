@@ -116,6 +116,7 @@ func (a AgentUpgradeVersions) String() string {
 const (
 	STATUS_NEW                 = "waiting"
 	STATUS_UNKNOWN             = "unknown"
+	STATUS_DOWNLOAD_STARTED    = "download started"
 	STATUS_DOWNLOADED          = "downloaded"
 	STATUS_DOWNLOAD_FAILED     = "download failed"
 	STATUS_SUCCESSFUL          = "successful"
