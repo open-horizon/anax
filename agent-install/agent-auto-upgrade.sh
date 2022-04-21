@@ -130,6 +130,12 @@ function write_status_file() {
     local status=$2
     local err_msg=$3
 
+    dir=$(dirname "$status_file_name")
+    if [ ! -d "$dir" ]; then
+        log_warning "Cannot write status into file $status_file_name because the directory does not exist"
+        return
+    fi
+
     local startTime=0
     local endTime=0
     if [ "$status" == "initiated" ]; then

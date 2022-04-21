@@ -447,8 +447,8 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, dbStatus), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 
 		if dbStatus.AgentUpgrade.Status == exchangecommon.STATUS_SUCCESSFUL {
-		// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
-			err = os.RemoveAll(path.Join(workingFolderPath,policyName))
+			// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
+			err = os.RemoveAll(path.Join(workingFolderPath, policyName))
 			if err != nil {
 				return fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", policyName, err)
 			}

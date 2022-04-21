@@ -73,7 +73,7 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 	}
 
 	// Delete the node's management policy statuses from the exchange
-	if err := exchange.DeleteNodeManagementAllStatuses(w, exchange.GetOrg(w.GetExchangeId()), exchange.GetId(w.GetExchangeId())); err != nil {
+	if err := w.DeleteNodeManagementAllStatuses(); err != nil {
 		w.continueWithError(logString(err.Error()))
 	}
 
@@ -596,6 +596,33 @@ func (w *GovernanceWorker) deleteNodeError() error {
 	glog.V(3).Infof(logString(fmt.Sprintf("deleted node surface error from local db")))
 	return nil
 
+}
+
+// Delete the node management policy status for the node one by one
+func (w *GovernanceWorker) DeleteNodeManagementAllStatuses() error {
+	glog.V(3).Infof(logString(fmt.Sprintf("deleting all node management status for node %v from exchange", w.GetExchangeId())))
+	// get all the nmps that applies to this node
+	allNmpStatus, err := exchange.GetNodeManagementAllStatuses(w, exchange.GetOrg(w.GetExchangeId()), exchange.GetId(w.GetExchangeId()))
+	if err != nil {
+		return err
+	} else {
+		glog.V(5).Infof(logString(fmt.Sprintf("GetNodeManagementAllStatuses returns: %v", allNmpStatus)))
+	}
+
+	// delete nmp status one by one
+	if allNmpStatus != nil {
+		for nmp_name, _ := range allNmpStatus.PolicyStatuses {
+			glog.V(3).Infof(logString(fmt.Sprintf("deleting node management status for nmp %v for node %v from exchange", nmp_name, w.GetExchangeId())))
+			if err := exchange.DeleteNodeManagementPolicyStatus(w, exchange.GetOrg(w.GetExchangeId()), exchange.GetId(w.GetExchangeId()), nmp_name); err != nil {
+				return err
+			} else {
+				glog.V(3).Infof(logString(fmt.Sprintf("deleted node management status for nmp %v for node %v from exchange", nmp_name, w.GetExchangeId())))
+			}
+		}
+	}
+
+	glog.V(3).Infof(logString(fmt.Sprintf("deleted all node management status for node %v from exchange", w.GetExchangeId())))
+	return nil
 }
 
 // Send the shutdown completed message on the internal message bus.

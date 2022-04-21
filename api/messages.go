@@ -157,4 +157,7 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_API_ERR_CHANGE_SVC_CONFIGSTATE)
 	msgPrinter.Sprintf(EL_API_START_CHANGE_SVC_CONFIGSTATE)
 	msgPrinter.Sprintf(EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE)
+
+	// from path_management_status.go
+	msgPrinter.Sprintf(EL_API_NMP_STATUS_CHANGE)
 }

@@ -103,9 +103,9 @@ func UpdateManagementStatus(nmStatus exchangecommon.NodeManagementPolicyStatus, 
 	}
 
 	// Update the status of the NMP in the exchange
-	// if _, err := statusHandler(pDevice.Org, pDevice.Id, nmpName, managementStatus); err != nil {
-	// 	return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object in the exchange, error %v", err))), "", nil
-	// }
+	if _, err := statusHandler(pDevice.Org, pDevice.Id, nmpName, managementStatus); err != nil {
+		return errorHandler(NewSystemError(fmt.Sprintf("Unable to update node management status object in the exchange, error %v", err))), "", nil
+	}
 
 	// Return message
 	return false, fmt.Sprintf("Updated status for NMP %v.", fullName), msgs
