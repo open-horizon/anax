@@ -362,16 +362,16 @@ function deleteAgentResources() {
     $KUBECTL delete secret $SECRET_NAME -n $AGENT_NAMESPACE
     $KUBECTL delete secret $IMAGE_REGISTRY_SECRET_NAME -n $AGENT_NAMESPACE
 
-    log_info "Deleting persistent volume..."
-    $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
-    set -e
-
     log_info "Deleting auto-upgrade cronjob..."
     if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
         $KUBECTL delete cronjob $CRONJOB_AUTO_UPGRADE_NAME -n $AGENT_NAMESPACE
     else
         log_info "cronjob ${CRONJOB_AUTO_UPGRADE_NAME} does not exist, skip deleting cronjob"
     fi
+    set -e
+
+    log_info "Deleting persistent volume..."
+    $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
     set -e
 
     log_info "Deleting clusterrolebinding..."
