@@ -76,8 +76,8 @@ func DeleteNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId s
 }
 
 type NodeManagementAllStatuses struct {
-	PolicyStatuses map[string]exchangecommon.NodeManagementPolicyStatus
-	LastUpdated    string `json:"lastUpdated"`
+	PolicyStatuses map[string]exchangecommon.NodeManagementPolicyStatus `json:"managementStatus"`
+	LastUpdated    string                                               `json:"lastUpdated"`
 }
 
 func (n NodeManagementAllStatuses) String() string {
@@ -92,7 +92,6 @@ func GetNodeManagementAllStatuses(ec ExchangeContext, orgId string, nodeId strin
 	resp = new(NodeManagementAllStatuses)
 
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/managementStatus", ec.GetExchangeURL(), orgId, nodeId)
-
 	err := InvokeExchangeRetryOnTransportError(ec.GetHTTPFactory(), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp)
 	if err != nil {
 		return nil, err
@@ -101,6 +100,7 @@ func GetNodeManagementAllStatuses(ec ExchangeContext, orgId string, nodeId strin
 	return resp.(*NodeManagementAllStatuses), nil
 }
 
+// (the exchange does not support it now, please delete one by one)
 // Delete all the node management policy statuses in the exchange for a given node
 func DeleteNodeManagementAllStatuses(ec ExchangeContext, orgId string, nodeId string) error {
 	glog.V(3).Infof("Deleting all node management policy statuses for node: %v/%v.", orgId, nodeId)

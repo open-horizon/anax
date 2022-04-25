@@ -347,12 +347,12 @@ start() {
 		checkrc $? "docker run"
 	fi
 
-	# add the cron job for agent auto upgrade in cron.d
-	add_horizon_upgrade_cronjob $INDEX_NUM
-
 	if [[ "$2" == "updating" ]]; then
 		echo "Horizon agent updated/restarted successfully."
 	else
+		# add the cron job for agent auto upgrade in cron.d
+		add_horizon_upgrade_cronjob $INDEX_NUM
+
 		if isDefaultIndex; then
 			# hzn on mac sets HORIZON_URL correctly by default for index 1, so the user does not need to do it
 			echo "Horizon agent started successfully. Now use 'hzn node list', 'hzn register ...', and 'hzn agreement list'"
@@ -400,9 +400,6 @@ restart() {
 
 	# Stop the anax container, but 1st tell it not to unregister when stopping, and dont delete the volumes
 	echo "Stopping/removing the horizon container..."
-
-	# Remove the agent auto upgrade cronjob from the cron.d
-	remove_horizon_upgrade_cronjob $INDEX_NUM
 
 	# check if the container is running or not
 	ret=$(${DOCKER_ENGINE} inspect -f '{{.State.Running}}' $DOCKER_NAME)
