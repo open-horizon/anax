@@ -2791,6 +2791,24 @@
       "fuzzy": true
     },
     {
+      "id": "List the status of a given node management policy across all nodes in given org.",
+      "message": "List the status of a given node management policy across all nodes in given org.",
+      "translation": "列出给定组织中所有节点中给定节点管理策略的状态。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy status to check.",
+      "message": "The name of the node management policy status to check.",
+      "translation": "要检查的节点管理策略状态的名称。",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+      "message": "Show the entire contents of each node management policy status object, instead of just the status.",
+      "translation": "显示每个节点管理策略状态对象的整个内容，而不仅仅显示状态。",
+      "fuzzy": true
+    },
+    {
       "id": "List and manage nodes in the Horizon Exchange",
       "message": "List and manage nodes in the Horizon Exchange",
       "translation": "列示和管理 Horizon Exchange 中的节点",
@@ -2956,6 +2974,18 @@
       "id": "Include disabled NMP's.",
       "message": "Include disabled NMP's.",
       "translation": "包含已禁用的 NMP。",
+      "fuzzy": true
+    },
+    {
+      "id": "List the node management policy statuses for this node.",
+      "message": "List the node management policy statuses for this node.",
+      "translation": "列出此节点的节点管理策略状态。",
+      "fuzzy": true
+    },
+    {
+      "id": "List node management policy statuses for this node.",
+      "message": "List node management policy statuses for this node.",
+      "translation": "列出此节点的节点管理策略状态。",
       "fuzzy": true
     },
     {
@@ -4073,9 +4103,9 @@
       "fuzzy": true
     },
     {
-      "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-      "message": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-      "translation": "将与之一起发布的数据块的大小。 缺省值为 104857600（100MB）。 如果指定 --disableChunkUpload ，那么忽略。",
+      "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+      "message": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+      "translation": "将与之一起发布的数据块的大小。 如果指定 --disableChunkUpload ，那么忽略。",
       "fuzzy": true
     },
     {
@@ -13221,6 +13251,30 @@
       "fuzzy": true
     },
     {
+      "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+      "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
+      "translation": "在组织 {NmpOrg} 中找不到 NMP {NmpName} 的状态",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'exchange node list' output: {Err}",
       "message": "failed to marshal 'exchange node list' output: {Err}",
       "translation": "对“exchange node list”输出进行序列化失败：{Err}",
@@ -14122,6 +14176,30 @@
       "id": "disabled",
       "message": "disabled",
       "translation": "已禁用",
+      "fuzzy": true
+    },
+    {
+      "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+      "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
+      "translation": "在组织 {NodeOrg} 中找不到节点 {NodeName} 的状态",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -17051,7 +17129,7 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "validFileTypes.string()"
+          "expr": "exchangecommon.ValidFileTypes.String()"
         }
       ],
       "fuzzy": true
@@ -17081,6 +17159,22 @@
           "type": "error",
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "error comparing agent file versions: {Err}",
+      "message": "error comparing agent file versions: {Err}",
+      "translation": "比较代理程序文件版本时出错：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
           "expr": "err"
         }
       ],

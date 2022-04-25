@@ -1096,6 +1096,18 @@
     "translation": "El nombre de la política de gestión de nodos a eliminar."
   },
   {
+    "id": "List the status of a given node management policy across all nodes in given org.",
+    "translation": "Liste el estado de una política de gestión de nodos determinada en todos los nodos de una organización determinada."
+  },
+  {
+    "id": "The name of the node management policy status to check.",
+    "translation": "El nombre del estado de la política de gestión de nodos que se debe comprobar."
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+    "translation": "Muestre todo el contenido de cada objeto de estado de política de gestión de nodos, en lugar de solo el estado."
+  },
+  {
     "id": "List and manage nodes in the Horizon Exchange",
     "translation": "Listar y gestionar nodos en Horizon Exchange"
   },
@@ -1206,6 +1218,14 @@
   {
     "id": "Include disabled NMP's.",
     "translation": "Incluir NMP inhabilitados."
+  },
+  {
+    "id": "List the node management policy statuses for this node.",
+    "translation": "Liste los estados de política de gestión de nodos para este nodo."
+  },
+  {
+    "id": "List node management policy statuses for this node.",
+    "translation": "Liste los estados de política de gestión de nodos para este nodo."
   },
   {
     "id": "List the run-time status of the node.",
@@ -1932,8 +1952,8 @@
     "translation": "El mandato de publicación inhabilitará la carga de fragmentos. Los datos se transmitirán a CSS."
   },
   {
-    "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-    "translation": "El tamaño del fragmento de datos con el que se publicará. El valor predeterminado es 104857600 (100MB). Se omite si se especifica --disableChunkUpload."
+    "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+    "translation": "El tamaño del fragmento de datos con el que se publicará. Se omite si se especifica --disableChunkUpload."
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
@@ -4320,6 +4340,10 @@
     "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha eliminado"
   },
   {
+    "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+    "translation": "No se ha encontrado el estado de NMP {NmpName} en la org organización {NmpOrg}"
+  },
+  {
     "id": "failed to marshal 'exchange node list' output: {Err}",
     "translation": "No se ha podido ordenar la salida de 'exchange node list': {Err}"
   },
@@ -4530,6 +4554,10 @@
   {
     "id": "disabled",
     "translation": "inhabilitado"
+  },
+  {
+    "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+    "translation": "No se han encontrado los estados para el nodo {NodeName} en la organización {NodeOrg}"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5238,6 +5266,10 @@
   {
     "id": "failed to check version range {FileVersion}: {Err}",
     "translation": "no se ha podido comprobar el rango de versiones {FileVersion}: {Err}"
+  },
+  {
+    "id": "error comparing agent file versions: {Err}",
+    "translation": "error al comparar las versiones de archivo del agente: {Err}"
   },
   {
     "id": "must specify --type with --version-only",

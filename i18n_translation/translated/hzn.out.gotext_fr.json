@@ -1096,6 +1096,18 @@
     "translation": "Nom de la règle de gestion des nœuds à supprimer."
   },
   {
+    "id": "List the status of a given node management policy across all nodes in given org.",
+    "translation": "Répertorez l'état d'une règle de gestion de noeud donnée sur tous les noeuds d'une organisation donnée."
+  },
+  {
+    "id": "The name of the node management policy status to check.",
+    "translation": "Nom de l'état de la règle de gestion des nœuds à vérifier."
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+    "translation": "Afficher tout le contenu de chaque objet d'état de la règle de gestion de noeud, au lieu de simplement le statut."
+  },
+  {
     "id": "List and manage nodes in the Horizon Exchange",
     "translation": "Répertorier et gérer des noeuds dans Horizon Exchange"
   },
@@ -1206,6 +1218,14 @@
   {
     "id": "Include disabled NMP's.",
     "translation": "Inclure les NMP désactivés."
+  },
+  {
+    "id": "List the node management policy statuses for this node.",
+    "translation": "Répertoriez les statuts de la règle de gestion des nœuds pour ce noeud."
+  },
+  {
+    "id": "List node management policy statuses for this node.",
+    "translation": "Répertoriez les statuts des règles de gestion des nœuds pour ce noeud."
   },
   {
     "id": "List the run-time status of the node.",
@@ -1932,8 +1952,8 @@
     "translation": "La commande de publication désactive le téléchargement de bloc. Les données seront diffusées vers les CSS."
   },
   {
-    "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-    "translation": "La taille du bloc de données qui sera publié avec. La valeur par défaut est 104857600 (100 Mo). Ignoré si --disableChunkUpload est spécifié."
+    "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+    "translation": "La taille du bloc de données qui sera publié avec. Ignoré si --disableChunkUpload est spécifié."
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
@@ -4320,6 +4340,10 @@
     "translation": "La règle de gestion des nœuds {NmpOrg}/{NmpName} a été supprimée"
   },
   {
+    "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+    "translation": "État de NMP {NmpName} introuvable dans org {NmpOrg}"
+  },
+  {
     "id": "failed to marshal 'exchange node list' output: {Err}",
     "translation": "Echec de sérialisation de la sortie 'exchange node list' : {Err}"
   },
@@ -4530,6 +4554,10 @@
   {
     "id": "disabled",
     "translation": "désactivé"
+  },
+  {
+    "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+    "translation": "Statuts de nœuds {NodeName}introuvables dans org {NodeOrg}"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5238,6 +5266,10 @@
   {
     "id": "failed to check version range {FileVersion}: {Err}",
     "translation": "échec de la vérification de la plage de versions {FileVersion} : {Err}"
+  },
+  {
+    "id": "error comparing agent file versions: {Err}",
+    "translation": "erreur lors de la comparaison des versions de fichier d'agent: {Err}"
   },
   {
     "id": "must specify --type with --version-only",

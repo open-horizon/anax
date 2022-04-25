@@ -2791,6 +2791,24 @@
       "fuzzy": true
     },
     {
+      "id": "List the status of a given node management policy across all nodes in given org.",
+      "message": "List the status of a given node management policy across all nodes in given org.",
+      "translation": "特定の組織内のすべてのノードにわたる特定のノード管理ポリシーの状況をリストします。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy status to check.",
+      "message": "The name of the node management policy status to check.",
+      "translation": "検査するノード管理ポリシーの状況の名前。",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+      "message": "Show the entire contents of each node management policy status object, instead of just the status.",
+      "translation": "各ノード管理ポリシーの状況だけではなく、状況オブジェクトの内容全体を表示します。",
+      "fuzzy": true
+    },
+    {
       "id": "List and manage nodes in the Horizon Exchange",
       "message": "List and manage nodes in the Horizon Exchange",
       "translation": "Horizon Exchange のノードをリストおよび管理します。",
@@ -2956,6 +2974,18 @@
       "id": "Include disabled NMP's.",
       "message": "Include disabled NMP's.",
       "translation": "無効な NMP を含めます。",
+      "fuzzy": true
+    },
+    {
+      "id": "List the node management policy statuses for this node.",
+      "message": "List the node management policy statuses for this node.",
+      "translation": "このノードのノード管理ポリシーの状況をリストします。",
+      "fuzzy": true
+    },
+    {
+      "id": "List node management policy statuses for this node.",
+      "message": "List node management policy statuses for this node.",
+      "translation": "このノードのノード管理ポリシーの状況をリストします。",
       "fuzzy": true
     },
     {
@@ -4073,9 +4103,9 @@
       "fuzzy": true
     },
     {
-      "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-      "message": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-      "translation": "パブリッシュに使用されるデータ・チャンクのサイズ。 デフォルトは 104857600 (100MB) です。 --disableChunkUpload が指定されている場合は無視されます。",
+      "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+      "message": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+      "translation": "パブリッシュに使用されるデータ・チャンクのサイズ。 --disableChunkUpload が指定されている場合は無視されます。",
       "fuzzy": true
     },
     {
@@ -13221,6 +13251,30 @@
       "fuzzy": true
     },
     {
+      "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+      "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
+      "translation": "組織 {NmpOrg} 内に NMP {NmpName} の状況が見つかりません",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'exchange node list' output: {Err}",
       "message": "failed to marshal 'exchange node list' output: {Err}",
       "translation": "「exchange node list」の出力のマーシャルに失敗しました: {Err}",
@@ -14122,6 +14176,30 @@
       "id": "disabled",
       "message": "disabled",
       "translation": "無効",
+      "fuzzy": true
+    },
+    {
+      "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+      "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
+      "translation": "組織 {NodeOrg} 内にノード {NodeName} の状況が見つかりません",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -17051,7 +17129,7 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "validFileTypes.string()"
+          "expr": "exchangecommon.ValidFileTypes.String()"
         }
       ],
       "fuzzy": true
@@ -17081,6 +17159,22 @@
           "type": "error",
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "error comparing agent file versions: {Err}",
+      "message": "error comparing agent file versions: {Err}",
+      "translation": "エージェント・ファイルのバージョンの比較中にエラーが発生しました: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
           "expr": "err"
         }
       ],
