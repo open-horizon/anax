@@ -1096,6 +1096,18 @@
     "translation": "除去されるノード管理ポリシーの名前です。"
   },
   {
+    "id": "List the status of a given node management policy across all nodes in given org.",
+    "translation": "特定の組織内のすべてのノードにわたる特定のノード管理ポリシーの状況をリストします。"
+  },
+  {
+    "id": "The name of the node management policy status to check.",
+    "translation": "検査するノード管理ポリシーの状況の名前。"
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+    "translation": "各ノード管理ポリシーの状況だけではなく、状況オブジェクトの内容全体を表示します。"
+  },
+  {
     "id": "List and manage nodes in the Horizon Exchange",
     "translation": "Horizon Exchange のノードをリストおよび管理します。"
   },
@@ -1206,6 +1218,14 @@
   {
     "id": "Include disabled NMP's.",
     "translation": "無効な NMP を含めます。"
+  },
+  {
+    "id": "List the node management policy statuses for this node.",
+    "translation": "このノードのノード管理ポリシーの状況をリストします。"
+  },
+  {
+    "id": "List node management policy statuses for this node.",
+    "translation": "このノードのノード管理ポリシーの状況をリストします。"
   },
   {
     "id": "List the run-time status of the node.",
@@ -1932,8 +1952,8 @@
     "translation": "publishコマンドはチャンク・アップロードを無効にします。 データは CSS にストリーミングされます。"
   },
   {
-    "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-    "translation": "パブリッシュに使用されるデータ・チャンクのサイズ。 デフォルトは 104857600 (100MB) です。 --disableChunkUpload が指定されている場合は無視されます。"
+    "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+    "translation": "パブリッシュに使用されるデータ・チャンクのサイズ。 --disableChunkUpload が指定されている場合は無視されます。"
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
@@ -4320,6 +4340,10 @@
     "translation": "ノード管理ポリシー {NmpOrg}/{NmpName} が削除されました"
   },
   {
+    "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+    "translation": "組織 {NmpOrg} 内に NMP {NmpName} の状況が見つかりません"
+  },
+  {
     "id": "failed to marshal 'exchange node list' output: {Err}",
     "translation": "「exchange node list」の出力のマーシャルに失敗しました: {Err}"
   },
@@ -4530,6 +4554,10 @@
   {
     "id": "disabled",
     "translation": "無効"
+  },
+  {
+    "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+    "translation": "組織 {NodeOrg} 内にノード {NodeName} の状況が見つかりません"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5238,6 +5266,10 @@
   {
     "id": "failed to check version range {FileVersion}: {Err}",
     "translation": "バージョン範囲 {FileVersion}の検査に失敗しました: {Err}"
+  },
+  {
+    "id": "error comparing agent file versions: {Err}",
+    "translation": "エージェント・ファイルのバージョンの比較中にエラーが発生しました: {Err}"
   },
   {
     "id": "must specify --type with --version-only",

@@ -1096,6 +1096,18 @@
     "translation": "Der Name der zu entfernenden Knotenmanagementrichtlinie."
   },
   {
+    "id": "List the status of a given node management policy across all nodes in given org.",
+    "translation": "Listen Sie den Status einer bestimmten Knotenmanagementrichtlinie für alle Knoten in der angegebenen Organisation auf."
+  },
+  {
+    "id": "The name of the node management policy status to check.",
+    "translation": "Der Name der zu überprüfenden Knotenmanagementrichtlinie."
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+    "translation": "Zeigen Sie den gesamten Inhalt jedes Richtlinienstatusobjekts für das Knotenmanagement anstelle des Status an."
+  },
+  {
     "id": "List and manage nodes in the Horizon Exchange",
     "translation": "Listet die Knoten in Horizon Exchange auf und verwaltet sie."
   },
@@ -1206,6 +1218,14 @@
   {
     "id": "Include disabled NMP's.",
     "translation": "Inaktivierte NMPs einschließen."
+  },
+  {
+    "id": "List the node management policy statuses for this node.",
+    "translation": "Listen Sie den Richtlinienstatus für das Knotenmanagement für diesen Knoten auf."
+  },
+  {
+    "id": "List node management policy statuses for this node.",
+    "translation": "Listen Sie den Richtlinienstatus für das Knotenmanagement für diesen Knoten auf."
   },
   {
     "id": "List the run-time status of the node.",
@@ -1932,8 +1952,8 @@
     "translation": "Der Befehl zum Publizieren inaktiviert den Chunk-Upload. Daten werden an CSS gestreamt."
   },
   {
-    "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-    "translation": "Die Größe des Datenchunks, der veröffentlicht wird. Der Standardwert ist 104857600 (100MB). Wird bei Angabe von --disableChunkUpload ignoriert."
+    "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+    "translation": "Die Größe des Datenchunks, der veröffentlicht wird. Wird bei Angabe von --disableChunkUpload ignoriert."
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
@@ -4320,6 +4340,10 @@
     "translation": "Knotenmanagementrichtlinie {NmpOrg}/{NmpName} entfernt"
   },
   {
+    "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+    "translation": "Status für NMP {NmpName} nicht gefunden in Organisation {NmpOrg}"
+  },
+  {
     "id": "failed to marshal 'exchange node list' output: {Err}",
     "translation": "Marshalling der Ausgabe von 'exchange node list' ist fehlgeschlagen: {Err}"
   },
@@ -4530,6 +4554,10 @@
   {
     "id": "disabled",
     "translation": "inaktiviert"
+  },
+  {
+    "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+    "translation": "Status für Knoten {NodeName} nicht in Organisation gefunden {NodeOrg}"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5238,6 +5266,10 @@
   {
     "id": "failed to check version range {FileVersion}: {Err}",
     "translation": "Überprüfung des Versionsbereichs fehlgeschlagen {FileVersion}: {Err}"
+  },
+  {
+    "id": "error comparing agent file versions: {Err}",
+    "translation": "Fehler beim Vergleichen von Agentendateiversionen: {Err}"
   },
   {
     "id": "must specify --type with --version-only",

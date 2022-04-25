@@ -1096,6 +1096,18 @@
     "translation": "要移除的節點管理原則名稱。"
   },
   {
+    "id": "List the status of a given node management policy across all nodes in given org.",
+    "translation": "列出給定組織中所有節點的給定節點管理原則狀態。"
+  },
+  {
+    "id": "The name of the node management policy status to check.",
+    "translation": "要檢查的節點管理原則狀態名稱。"
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+    "translation": "顯示每一個節點管理原則狀態物件的整個內容，而不只是狀態。"
+  },
+  {
     "id": "List and manage nodes in the Horizon Exchange",
     "translation": "列出並管理 Horizon Exchange 中的節點。"
   },
@@ -1206,6 +1218,14 @@
   {
     "id": "Include disabled NMP's.",
     "translation": "包括已停用的 NMP。"
+  },
+  {
+    "id": "List the node management policy statuses for this node.",
+    "translation": "列出此節點的節點管理原則狀態。"
+  },
+  {
+    "id": "List node management policy statuses for this node.",
+    "translation": "列出此節點的節點管理原則狀態。"
   },
   {
     "id": "List the run-time status of the node.",
@@ -1932,8 +1952,8 @@
     "translation": "發佈指令將停用區塊上傳。 資料將串流至 CSS。"
   },
   {
-    "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-    "translation": "將使用發佈的資料區塊大小。 預設值為 104857600（100MB）。 如果指定 --disableChunkUpload ，則會忽略。"
+    "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+    "translation": "將使用發佈的資料區塊大小。 如果指定 --disableChunkUpload ，則會忽略。"
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
@@ -4320,6 +4340,10 @@
     "translation": "已移除節點管理原則 {NmpOrg}/{NmpName}"
   },
   {
+    "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+    "translation": "在組織 {NmpOrg} 中找不到 NMP {NmpName} 的狀態"
+  },
+  {
     "id": "failed to marshal 'exchange node list' output: {Err}",
     "translation": "無法配置 'exchange node list' 輸出：{Err}"
   },
@@ -4530,6 +4554,10 @@
   {
     "id": "disabled",
     "translation": "已停用"
+  },
+  {
+    "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+    "translation": "在組織 {NodeOrg} 中找不到節點 {NodeName} 的狀態"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5238,6 +5266,10 @@
   {
     "id": "failed to check version range {FileVersion}: {Err}",
     "translation": "無法檢查版本範圍 {FileVersion}：{Err}"
+  },
+  {
+    "id": "error comparing agent file versions: {Err}",
+    "translation": "比較代理程式檔案版本時發生錯誤：{Err}"
   },
   {
     "id": "must specify --type with --version-only",

@@ -1096,6 +1096,18 @@
     "translation": "제거할 노드 관리 정책의 이름입니다."
   },
   {
+    "id": "List the status of a given node management policy across all nodes in given org.",
+    "translation": "제공된 조직의 모든 노드에서 지정된 노드 관리 정책의 상태를 나열합니다."
+  },
+  {
+    "id": "The name of the node management policy status to check.",
+    "translation": "확인할 노드 관리 정책 상태의 이름입니다."
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
+    "translation": "상태만이 아니라 각 노드 관리 정책 상태 오브젝트의 전체 내용을 표시합니다."
+  },
+  {
     "id": "List and manage nodes in the Horizon Exchange",
     "translation": "Horizon Exchange에서 노드를 나열하고 관리합니다."
   },
@@ -1206,6 +1218,14 @@
   {
     "id": "Include disabled NMP's.",
     "translation": "사용 불가능한 NMP를 포함합니다."
+  },
+  {
+    "id": "List the node management policy statuses for this node.",
+    "translation": "이 노드의 노드 관리 정책 상태를 나열합니다."
+  },
+  {
+    "id": "List node management policy statuses for this node.",
+    "translation": "이 노드의 노드 관리 정책 상태를 나열합니다."
   },
   {
     "id": "List the run-time status of the node.",
@@ -1932,8 +1952,8 @@
     "translation": "공개 명령은 청크 업로드를 사용 안함으로 설정합니다. 데이터가 CSS에 스트림됩니다."
   },
   {
-    "id": "The size of data chunk that will be published with. The default is 104857600 (100MB). Ignored if --disableChunkUpload is specified.",
-    "translation": "공개되는 데이터 청크의 크기입니다. 기본값은 104857600(100MB)입니다. --disableChunkUpload가 지정되는 경우 무시됩니다."
+    "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
+    "translation": "공개되는 데이터 청크의 크기입니다. --disableChunkUpload가 지정되는 경우 무시됩니다."
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
@@ -4320,6 +4340,10 @@
     "translation": "노드 관리 정책 {NmpOrg}/{NmpName}이(가) 제거됨"
   },
   {
+    "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
+    "translation": "NMP {NmpName}의 상태를 {NmpOrg} 조직에서 찾을 수 없음"
+  },
+  {
     "id": "failed to marshal 'exchange node list' output: {Err}",
     "translation": "'exchange node list' 출력을 마샬링하는 데 실패함: {Err}"
   },
@@ -4530,6 +4554,10 @@
   {
     "id": "disabled",
     "translation": "사용 안함"
+  },
+  {
+    "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
+    "translation": "노드 {NodeName}의 상태를 {NodeOrg} 조직에서 찾을 수 없음"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5238,6 +5266,10 @@
   {
     "id": "failed to check version range {FileVersion}: {Err}",
     "translation": "버전 범위 {FileVersion}을(를) 확인하는 데 실패했습니다.{Err}"
+  },
+  {
+    "id": "error comparing agent file versions: {Err}",
+    "translation": "에이전트 파일 버전을 비교하는 중 오류 발생: {Err}"
   },
   {
     "id": "must specify --type with --version-only",
