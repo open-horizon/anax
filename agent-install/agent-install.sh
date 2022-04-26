@@ -2440,28 +2440,51 @@ function start_device_agent_container() {
 
     # Note: install_mac_horizon-cli() sets HC_DOCKER_TAG appropriately
     # In the css case, get amd64_anax.tar.gz from css, docker load it, and set HC_DOCKER_IMAGE and HC_DONT_PULL
-    if [[ $INPUT_FILE_PATH == css:* ]]; then
-        local input_path
-        get_input_file_css_path input_path
-        download_css_file "$input_path/$AGENT_IMAGE_TAR_FILE"
-        log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
-        local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
-        #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
-        export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
-        export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
-        export HC_DOCKER_TAG=${agent_image_full_path##*:}   # remove everything but the tag
-    elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
-        : # we've already set HC_DOCKER_TAG from the horizon-cli version. From there horizon-container naturally does the right thing (pulls it from docker hub)
-    elif [[ -f $AGENT_IMAGE_TAR_FILE ]]; then
-        # They gave us the agent docker image tar file in the input path
-        log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
-        local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
-        #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
-        export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
-        export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
-        export HC_DOCKER_TAG=${agent_image_full_path##*:}   # remove everything but the tag
+    if has_upgrade_type_sw; then
+        if [[ $INPUT_FILE_PATH == css:* ]]; then
+            local input_path
+            get_input_file_css_path input_path
+            download_css_file "$input_path/$AGENT_IMAGE_TAR_FILE"
+            log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
+            local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
+            #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
+            export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
+            export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
+            export HC_DOCKER_TAG=${agent_image_full_path##*:}   # remove everything but the tag
+        elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+            : # we've already set HC_DOCKER_TAG from the horizon-cli version. From there horizon-container naturally does the right thing (pulls it from docker hub)
+        elif [[ -f $AGENT_IMAGE_TAR_FILE ]]; then
+            # They gave us the agent docker image tar file in the input path
+            log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
+            local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
+            #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
+            export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
+            export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
+            export HC_DOCKER_TAG=${agent_image_full_path##*:}   # remove everything but the tag
+        fi
+        #else let horizon-container do its default thing (run openhorizon/amd64_anax:latest)
+    else
+        # just a restart, but we have to find the image and version
+        container_info=$(${DOCKER_ENGINE} inspect ${container_name})
+        if [ $? -eq 0 ]; then
+            image=$(echo "$container_info" |jq '.[].Config.Image' 2>&1)
+            rc=$?
+            if [ $rc -ne 0 ]; then
+                log_info "Failed to get the original agent image name."
+            else
+                # remove the quotes from the image name
+                image="${image%\"}"
+                image="${image#\"}"
+
+                export HC_DONT_PULL=1
+                export HC_DOCKER_IMAGE=${image%:*}
+                export HC_DOCKER_TAG=${image##*:}
+            fi  
+        else
+            log_info "Failed to inspect the container horizon${container_name}: $container_info" 
+            # take the default way
+        fi
     fi
-    #else let horizon-container do its default thing (run openhorizon/amd64_anax:latest)
 
     if ! isDockerContainerRunning $container_name; then
         if [[ -z $(${DOCKER_ENGINE} ps -aq --filter name=${container_name}) ]]; then

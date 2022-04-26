@@ -1071,21 +1071,21 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 					// all 3 pieces.
 					for _, serviceId := range agreement.ServiceId {
 
-					        // Array to contain the decomposed pieces from the agreementServiceID 
+						// Array to contain the decomposed pieces from the agreementServiceID
 						serviceNamePieces := make([]string, 3)
 
-						// Break the service id into the individual tuple pieces, service name (which includes org), arch and version.  
-						// The id will be in the format of name_version_arch (ie. hello-world_1.0.0_am64) 
-						// We can't just split the agreementServiceID with "_" since the name can contain "_" characters too. 
-						// Instead, look at the last index and grab the arch first, then the version, and then the name 
+						// Break the service id into the individual tuple pieces, service name (which includes org), arch and version.
+						// The id will be in the format of name_version_arch (ie. hello-world_1.0.0_am64)
+						// We can't just split the agreementServiceID with "_" since the name can contain "_" characters too.
+						// Instead, look at the last index and grab the arch first, then the version, and then the name
 						tmpServiceId := serviceId
 						for i := 2; i > 0; i-- {
 							idx := strings.LastIndex(tmpServiceId, "_")
 							serviceNamePieces[i] = tmpServiceId[idx+1:]
-							// Strip off the last _ found 
+							// Strip off the last _ found
 							tmpServiceId = tmpServiceId[0:idx]
 						}
-						// What remains is the service name 
+						// What remains is the service name
 						serviceNamePieces[0] = tmpServiceId
 
 						objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])

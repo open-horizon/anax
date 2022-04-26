@@ -79,9 +79,9 @@ func UpdateManagementStatus(nmStatus exchangecommon.NodeManagementPolicyStatus, 
 	}
 
 	// Set the actual start time and completion time depending on new status
-	if nmStatus.AgentUpgrade.Status == exchangecommon.STATUS_INITIATED && managementStatus.AgentUpgrade.ActualStartTime == "" {
+	if nmStatus.AgentUpgrade.Status == exchangecommon.STATUS_INITIATED && (managementStatus.AgentUpgrade.ActualStartTime == "" || managementStatus.AgentUpgrade.ActualStartTime == "0") {
 		managementStatus.AgentUpgrade.ActualStartTime = time.Now().Format(time.RFC3339)
-	} else if nmStatus.AgentUpgrade.Status == exchangecommon.STATUS_SUCCESSFUL && managementStatus.AgentUpgrade.CompletionTime == "" {
+	} else if nmStatus.AgentUpgrade.Status == exchangecommon.STATUS_SUCCESSFUL && (managementStatus.AgentUpgrade.CompletionTime == "" || managementStatus.AgentUpgrade.CompletionTime == "0") {
 		managementStatus.AgentUpgrade.CompletionTime = time.Now().Format(time.RFC3339)
 	}
 	managementStatus.AgentUpgrade.ErrorMessage = nmStatus.AgentUpgrade.ErrorMessage

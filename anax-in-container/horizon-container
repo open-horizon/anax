@@ -139,11 +139,13 @@ copyHostOSInfo() {
         distroVersionNum=$(sw_vers | grep ProductVersion | awk '{ print$2 }')
     elif [[ -f /etc/os-release ]]; then
         . /etc/os-release
-		distro=$ID
+        os=$ID
+		distro=$os
         distroVersionNum=$VERSION_ID
     elif [[ -f /etc/lsb-release ]]; then
         . /etc/lsb-release
-        distro=$DISTRIB_ID
+        os=$DISTRIB_ID
+        distro=$os
         distroVersionNum=$DISTRIB_RELEASE
     else
         echo "Cannot detect OS version"
