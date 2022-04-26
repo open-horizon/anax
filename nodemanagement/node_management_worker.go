@@ -218,6 +218,8 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 		n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n))
 	case *NodePolChangeCommand:
 		n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n))
+	case *AgentFileVersionChangeCommand:
+		n.HandleAgentFilesVersionChange()
 	default:
 		return false
 	}
@@ -357,6 +359,8 @@ func (n *NodeManagementWorker) NewEvent(incoming events.Message) {
 			n.Commands <- NewNMPChangeCommand(msg)
 		case events.CHANGE_NODE_POLICY_TYPE:
 			n.Commands <- NewNodePolChangeCommand(msg)
+		case events.CHANGE_AGENT_FILE_VERSION:
+			n.Commands <- NewAgentFileVersionChangeCommand(msg)
 		}
 	}
 }
@@ -442,7 +446,7 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 		}
 
 		if err = n.UpdateStatus(policyName, dbStatus, exchange.GetPutNodeManagementPolicyStatusHandler(n)); err != nil {
-			// return err
+			return err
 		}
 		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, dbStatus), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 

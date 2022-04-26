@@ -20,7 +20,7 @@ import (
 const (
 	CSSSHAREDORG = "IBM"
 
-	LATESTVERSION = "current"
+	LATESTVERSION = "latest"
 
 	DEBPACKAGETYPE  = "deb"
 	RHELPACKAGETYPE = "rpm"
