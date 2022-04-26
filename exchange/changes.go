@@ -53,6 +53,7 @@ const RESOURCE_AGBOT_SERVICE_POLICY = "servicepolicies"  // A service policy cha
 const RESOURCE_AGBOT_AGREEMENTS = "agbotagreements"      // A change was made to one of the agreements on the agbot
 const RESOURCE_ORG = "org"                               // A change was made to the org
 const RESOURCE_NMP = "mgmtpolicy"                        // A change was made to a node management policy
+const RESOURCE_AGENT_FILE_VERSION = "agentfileversion"   // A change was made to the agent file versions
 
 // constants for operation values
 const CHANGE_OPERATION_CREATED = "created"
@@ -163,6 +164,10 @@ func (e ExchangeChange) IsDeploymentPolicy() bool {
 
 func (e ExchangeChange) IsServicePolicy() bool {
 	return e.Resource == RESOURCE_AGBOT_SERVICE_POLICY
+}
+
+func (e ExchangeChange) IsAgentFileVersion() bool {
+	return e.Resource == RESOURCE_AGENT_FILE_VERSION
 }
 
 // This is the struct we get back from the exchange API call.

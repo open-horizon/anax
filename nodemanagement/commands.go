@@ -88,3 +88,21 @@ func NewNodePolChangeCommand(msg *events.ExchangeChangeMessage) *NodePolChangeCo
 		Msg: msg,
 	}
 }
+
+type AgentFileVersionChangeCommand struct {
+	Msg *events.ExchangeChangeMessage
+}
+
+func (a AgentFileVersionChangeCommand) String() string {
+	return fmt.Sprintf("Msg: %v", a.Msg)
+}
+
+func (a AgentFileVersionChangeCommand) ShortString() string {
+	return a.String()
+}
+
+func NewAgentFileVersionChangeCommand(msg *events.ExchangeChangeMessage) *AgentFileVersionChangeCommand {
+	return &AgentFileVersionChangeCommand{
+		Msg: msg,
+	}
+}
