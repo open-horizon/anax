@@ -2189,6 +2189,7 @@ func NewNMPDownloadCompleteMessage(id EventId, status string, name string, vers 
 
 type NMStatusChangedMessage struct {
 	event  Event
+	NmpID  string // org/nmp_name
 	Status string
 }
 
@@ -2197,18 +2198,19 @@ func (n *NMStatusChangedMessage) Event() Event {
 }
 
 func (n *NMStatusChangedMessage) String() string {
-	return fmt.Sprintf("event: %v, Status: %v", n.event, n.Status)
+	return fmt.Sprintf("event: %v, NmpID: %v, Status: %v", n.event, n.NmpID, n.Status)
 }
 
 func (n *NMStatusChangedMessage) ShortString() string {
 	return n.String()
 }
 
-func NewNMStatusChangedMessage(id EventId, status string) *NMStatusChangedMessage {
+func NewNMStatusChangedMessage(id EventId, nmpID string, nmStatus string) *NMStatusChangedMessage {
 	return &NMStatusChangedMessage{
 		event: Event{
 			Id: id,
 		},
-		Status: status,
+		NmpID:  nmpID,
+		Status: nmStatus,
 	}
 }

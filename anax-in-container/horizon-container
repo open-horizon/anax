@@ -140,7 +140,7 @@ copyHostOSInfo() {
     elif [[ -f /etc/os-release ]]; then
         . /etc/os-release
         os=$ID
-		distro=$os
+        distro=$os
         distroVersionNum=$VERSION_ID
     elif [[ -f /etc/lsb-release ]]; then
         . /etc/lsb-release

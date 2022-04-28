@@ -174,11 +174,6 @@ function set_nodemanagement_status() {
         log_debug "Set node management status for nmp $nmp to \"$status\"."
     fi
 
-    # save the status to the status file
-    if [ -n "$status_file_name" ]; then
-        write_status_file "$status_file_name" "$status" "$err_msg"
-    fi
-
     # call agent API to save the status
     read -d '' nm_status <<EOF
  {
@@ -191,6 +186,12 @@ EOF
     local output=$(echo "$nm_status" | curl -sS -X PUT -w %{http_code} -H "Content-Type: application/json" --data @- "${HORIZON_URL}/nodemanagement/status/$nmp")
     if [ "${output: -3}" != "201" ]; then
         log_error "Failed to set node management status for nmp $nmp to \"$status\". $output"
+
+        # save the status to the status file
+        if [ -n "$status_file_name" ]; then
+            write_status_file "$status_file_name" "$status" "$err_msg"
+        fi
+
         return 2
     fi
 

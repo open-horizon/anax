@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
@@ -420,41 +421,34 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 			return fmt.Errorf("Failed to decode status file %v for management job %v. Error was %v.", filePath, policyName, err)
 		}
 
-		dbStatus.SetActualStartTime(contents.AgentUpgrade.ActualStartTime)
-		dbStatus.SetCompletionTime(contents.AgentUpgrade.CompletionTime)
-		dbStatus.SetStatus(contents.AgentUpgrade.Status)
-		dbStatus.SetErrorMessage(contents.AgentUpgrade.ErrorMessage)
-		pattern := ""
-		configState := ""
 		exchDev, err := persistence.FindExchangeDevice(n.db)
 		if err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Error getting device from database: %v", err)))
-		} else if exchDev != nil {
-			pattern = exchDev.Pattern
-			configState = exchDev.Config.State
-		}
-		if dbStatus.Status() == "" {
-			dbStatus.SetStatus(exchangecommon.STATUS_UNKNOWN)
+		} else {
+			exchDev = nil
 		}
 
-		// Use the versions in the status to set the device versions
-		if dbStatus.AgentUpgrade.UpgradedVersions.ConfigVersion != "" {
-			exchDev.SetConfigVersion(n.db, exchDev.Id, dbStatus.AgentUpgrade.UpgradedVersions.ConfigVersion)
-		}
-		if dbStatus.AgentUpgrade.UpgradedVersions.CertVersion != "" {
-			exchDev.SetCertVersion(n.db, exchDev.Id, dbStatus.AgentUpgrade.UpgradedVersions.CertVersion)
-		}
-
-		if err = n.UpdateStatus(policyName, dbStatus, exchange.GetPutNodeManagementPolicyStatusHandler(n)); err != nil {
+		status_changed, err := common.SetNodeManagementPolicyStatus(n.db, exchDev, policyName, &contents, dbStatus, exchange.GetPutNodeManagementPolicyStatusHandler(n))
+		if err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf("Error saving nmp status for %v: %v", policyName, err)))
 			return err
-		}
-		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, dbStatus), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
-
-		if dbStatus.AgentUpgrade.Status == exchangecommon.STATUS_SUCCESSFUL {
-			// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
-			err = os.RemoveAll(path.Join(workingFolderPath, policyName))
-			if err != nil {
-				return fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", policyName, err)
+		} else {
+			// log the event
+			if status_changed {
+				pattern := ""
+				configState := ""
+				if exchDev != nil {
+					pattern = exchDev.Pattern
+					configState = exchDev.Config.State
+				}
+				status_string := contents.AgentUpgrade.Status
+				if status_string == "" {
+					status_string = exchangecommon.STATUS_UNKNOWN
+				}
+				if contents.AgentUpgrade.ErrorMessage != "" {
+					status_string += fmt.Sprintf(", ErrorMessage: %v", contents.AgentUpgrade.ErrorMessage)
+				}
+				eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, status_string), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 			}
 		}
 	}
