@@ -6,7 +6,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/eventlog"
-	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
@@ -77,9 +76,6 @@ func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 		for _, msg := range msgs {
 			a.Messages() <- msg
 		}
-
-		// Send out the config complete message that enables the device for agreements
-		a.Messages() <- events.NewEdgeConfigCompleteMessage(events.NM_STATUS_CHANGED)
 
 		writeResponse(w, out, http.StatusCreated)
 

@@ -108,7 +108,7 @@ Options/Flags:
     -f                  Install older version of the horizon agent and CLI packages. (This flag is equivalent to AGENT_OVERWRITE)
     -b                  Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
     -C                  Install only the horizon-cli package, not the full agent (This flag is equivalent to AGENT_ONLY_CLI)
-    -G                  A comma separated list of upgrade types. Supported types are 'software', 'cert' and 'config'. The default is 'software,cert,config'. It is used to perform partial agent upgrade. (This flag is equivalent to AGENT_UPGRADE_TYPES)
+    -G                  A comma separated list of upgrade types. Supported types are 'software', 'cert' and 'config'. The default is 'software,cert,config'. It is used togetther with --auto-upgrade flag to perform partial agent upgrade. (This flag is equivalent to AGENT_UPGRADE_TYPES)
         --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to AGENT_IN_CONTAINER)
     -N                  The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
