@@ -148,6 +148,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	if err != nil {
 		return err
 	}
+	glog.V(3).Infof("Upgrade package names: %v", objIds)
 
 	// If org is specified in the manifest id, use that org. Otherwise use the user org
 	manOrg, manId := cutil.SplitOrgSpecUrl(nmpStatus.AgentUpgradeInternal.Manifest)
@@ -166,12 +167,14 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	if err != nil {
 		return err
 	}
+
 	upgradeVersions, err := w.ResolveUpgradeVersions(manifestUpgradeVersions, nmpName, nmpStatus)
 	if err != nil {
 		return err
 	}
 
 	swType, configType, certType := getUpgradeCSSType(upgradeVersions)
+	glog.V(3).Infof("Upgrade versions: swType: %v, configType: %v, certType: %v", swType, configType, certType)
 
 	if swType != "" {
 		if objIds != nil {

@@ -527,7 +527,7 @@ function rollback_agent_and_cli_container() {
     # start the container
     ${DOCKER_ENGINE} cp $backup_dir/container/var/horizon/anax.db horizon${horizon_num}:/var/horizon/anax.db
     ${DOCKER_ENGINE} cp $backup_dir/container/etc/horizon/anax.json horizon${horizon_num}:/etc/horizon/anax.json
-    HC_DOCKER_IMAGE=${image%:*} HC_DOCKER_TAG=${image##*:} horizon-container update $horizon_num
+    HC_DONT_PULL=1 HC_DOCKER_IMAGE=${image%:*} HC_DOCKER_TAG=${image##*:} horizon-container update $horizon_num
     log_debug "Rollback: horizon container restored."
 
     log_debug "End rolling back container agent, cli binaries and configuration."
