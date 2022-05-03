@@ -5,6 +5,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
 	"sync"
@@ -67,10 +68,27 @@ func NodeInitalSetup(db *bolt.DB, getDevice exchange.DeviceHandler, patchDevice 
 	// get exchange node user input
 	if _, err = SyncNodeWithExchange(db, pDevice, getDevice); err == nil {
 
-		// set agent version in exchange
-		if exchNode.SoftwareVersions["horizon"] != version.HORIZON_VERSION {
+		// set agent version, cert version and config version in exchange
+		cert_version := ""
+		config_version := ""
+		sw_version := pDevice.SoftwareVersions
+		if sw_version != nil {
+			cert_version, _ = sw_version[persistence.CERT_VERSION]
+			config_version, _ = sw_version[persistence.CONFIG_VERSION]
+		}
+
+		if exchNode.SoftwareVersions == nil {
+			exchNode.SoftwareVersions = make(map[string]string, 0)
+		}
+
+		if exchNode.SoftwareVersions[exchangecommon.HORIZON_VERSION] != version.HORIZON_VERSION ||
+			exchNode.SoftwareVersions[exchangecommon.CERT_VERSION] != cert_version ||
+			exchNode.SoftwareVersions[exchangecommon.CONFIG_VERSION] != config_version {
 			versions := exchNode.SoftwareVersions
-			versions["horizon"] = version.HORIZON_VERSION
+			versions[exchangecommon.HORIZON_VERSION] = version.HORIZON_VERSION
+			versions[exchangecommon.CERT_VERSION] = cert_version
+			versions[exchangecommon.CONFIG_VERSION] = config_version
+
 			if err = patchDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, &exchange.PatchDeviceRequest{SoftwareVersions: versions}); err != nil {
 				return fmt.Errorf("Unable to update the Exchange with correct node version. %v", err)
 			}

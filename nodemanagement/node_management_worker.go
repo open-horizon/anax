@@ -424,11 +424,13 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 		exchDev, err := persistence.FindExchangeDevice(n.db)
 		if err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Error getting device from database: %v", err)))
-		} else {
 			exchDev = nil
 		}
 
-		status_changed, err := common.SetNodeManagementPolicyStatus(n.db, exchDev, policyName, &contents, dbStatus, exchange.GetPutNodeManagementPolicyStatusHandler(n))
+		status_changed, err := common.SetNodeManagementPolicyStatus(n.db, exchDev, policyName, &contents, dbStatus,
+			exchange.GetPutNodeManagementPolicyStatusHandler(n),
+			exchange.GetHTTPDeviceHandler(n),
+			exchange.GetHTTPPatchDeviceHandler(n))
 		if err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Error saving nmp status for %v: %v", policyName, err)))
 			return err

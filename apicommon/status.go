@@ -20,6 +20,8 @@ type Configuration struct {
 	AgbotAPI        string `json:"agbot_api,omitempty"`
 	Arch            string `json:"architecture"`
 	HorizonVersion  string `json:"horizon_version"`
+	CertVersion     string `json:"cert_file_version,omitempty"`   // the certificate file version from the agent file
+	ConfigVersion   string `json:"config_file_version,omitempty"` // the config file version from the agent file
 }
 
 // These fields are filled in by the API specific code, not the common code.
@@ -34,7 +36,8 @@ type Info struct {
 	LiveHealth    *HealthTimestamps `json:"liveHealth"`
 }
 
-func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mmsUrl string, id string, token string) *Info {
+func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mmsUrl string,
+	id string, token string, cert_version string, config_version string) *Info {
 
 	customHTTPClientFactory := &config.HTTPClientFactory{
 		NewHTTPClient: httpClientFactory.NewHTTPClient,
@@ -56,12 +59,14 @@ func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mm
 			MMSAPI:          mmsUrl,
 			Arch:            runtime.GOARCH,
 			HorizonVersion:  version.HORIZON_VERSION,
+			CertVersion:     cert_version,
+			ConfigVersion:   config_version,
 		},
 	}
 }
 
 // NewLocalInfo is like NewInfo, except this does not attempt to get the exchange version
-func NewLocalInfo(exchangeUrl string, mmsUrl string, id string, token string) *Info {
+func NewLocalInfo(exchangeUrl string, mmsUrl string, id string, token string, cert_version string, config_version string) *Info {
 	return &Info{
 		Configuration: &Configuration{
 			ExchangeAPI:     exchangeUrl,
@@ -70,6 +75,8 @@ func NewLocalInfo(exchangeUrl string, mmsUrl string, id string, token string) *I
 			MMSAPI:          mmsUrl,
 			Arch:            runtime.GOARCH,
 			HorizonVersion:  version.HORIZON_VERSION,
+			CertVersion:     cert_version,
+			ConfigVersion:   config_version,
 		},
 	}
 }

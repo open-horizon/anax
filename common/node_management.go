@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/version"
 	"os"
 	"path"
 	"time"
@@ -20,12 +21,14 @@ import (
 // 2. put the status to the exchange
 // 3. update the node software, config and cert versions locally and exchange.
 // 4. remove the working directory if the status is 'successful'
-
 // nmp_id is "org/nmp_name".
+// It returns true if the status is changed. False if the status stays the same.
 func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDevice, nmp_id string,
 	newStatus *exchangecommon.NodeManagementPolicyStatus,
 	dbStatus *exchangecommon.NodeManagementPolicyStatus,
-	putStatusHandler exchange.PutNodeManagementPolicyStatusHandler) (bool, error) {
+	putStatusHandler exchange.PutNodeManagementPolicyStatusHandler,
+	getDeviceHandler exchange.DeviceHandler,
+	patchDeviceHandler exchange.PatchDeviceHandler) (bool, error) {
 
 	if newStatus.AgentUpgrade == nil {
 		return false, nil
@@ -67,13 +70,40 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 
 		if statusString == exchangecommon.STATUS_SUCCESSFUL {
 			if pDevice != nil {
+				cert_version := ""
+				config_version := ""
+				sw_version := pDevice.SoftwareVersions
+				if sw_version != nil {
+					cert_version, _ = sw_version[persistence.CERT_VERSION]
+					config_version, _ = sw_version[persistence.CONFIG_VERSION]
+				}
+
 				// Use the versions in the status to set the device versions
-				if dbStatus.AgentUpgrade.UpgradedVersions.ConfigVersion != "" {
-					pDevice.SetConfigVersion(db, pDevice.Id, dbStatus.AgentUpgrade.UpgradedVersions.ConfigVersion)
+				updateExch := false
+				newCertVer := dbStatus.AgentUpgrade.UpgradedVersions.CertVersion
+				newConfigVer := dbStatus.AgentUpgrade.UpgradedVersions.ConfigVersion
+				if newCertVer != "" {
+					pDevice.SetCertVersion(db, pDevice.Id, newCertVer)
+					if newCertVer != cert_version {
+						updateExch = true
+					}
 				}
-				if dbStatus.AgentUpgrade.UpgradedVersions.CertVersion != "" {
-					pDevice.SetCertVersion(db, pDevice.Id, dbStatus.AgentUpgrade.UpgradedVersions.CertVersion)
+				if newConfigVer != "" {
+					pDevice.SetConfigVersion(db, pDevice.Id, newConfigVer)
+					if newConfigVer != config_version {
+						updateExch = true
+					}
 				}
+
+				// path the node with new cert and config versions
+				if updateExch {
+					if err := UpdateExchNodeSoftwareVersions(newCertVer, newConfigVer,
+						fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token,
+						getDeviceHandler, patchDeviceHandler); err != nil {
+						return true, fmt.Errorf("Failed to update the node SoftwareVersion attribute in the Exchange. %v", err)
+					}
+				}
+
 			}
 
 			// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
@@ -84,4 +114,33 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 		return true, nil
 	}
 	return false, nil
+}
+
+// update the node.SoftwareVersion with the given certficate and config versions.
+func UpdateExchNodeSoftwareVersions(newCertVer string, newConfigVer string,
+	id_with_org string, token string,
+	getDeviceHandler exchange.DeviceHandler,
+	patchDeviceHandler exchange.PatchDeviceHandler) error {
+
+	exchNode, err := getDeviceHandler(id_with_org, token)
+	if err != nil {
+		return fmt.Errorf("Failed to get the node %v from the exchange. %v", id_with_org, err)
+	}
+
+	if exchNode != nil {
+		// patch the device with new software versions
+		versions := exchNode.SoftwareVersions
+		if versions == nil {
+			versions = make(map[string]string, 0)
+		}
+		versions[exchangecommon.HORIZON_VERSION] = version.HORIZON_VERSION
+		versions[exchangecommon.CERT_VERSION] = newCertVer
+		versions[exchangecommon.CONFIG_VERSION] = newConfigVer
+
+		if err = patchDeviceHandler(id_with_org, token, &exchange.PatchDeviceRequest{SoftwareVersions: versions}); err != nil {
+			return fmt.Errorf("Failed to patch the exchange node %v with correct software versions. %v", id_with_org, err)
+		}
+	}
+
+	return nil
 }

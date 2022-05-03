@@ -33,9 +33,9 @@ func (c Configstate) String() string {
 
 type SoftwareVersion map[string]string
 
-const AGENT_VERSION = "agent_version"
-const CERT_VERSION = "cert_version"
-const CONFIG_VERSION = "config_version"
+const AGENT_VERSION = "horizon"
+const CERT_VERSION = "certificate"
+const CONFIG_VERSION = "config"
 
 // This function returns the pattern org, pattern name and formatted pattern string 'pattern org/pattern name'.
 // If the input pattern does not contain the org name, the device org name will be used as the pattern org name.

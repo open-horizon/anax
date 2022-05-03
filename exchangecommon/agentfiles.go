@@ -11,6 +11,11 @@ const (
 	AU_MANIFEST_TYPE           = "agent_upgrade_manifests"
 )
 
+// These are used in the SoftwareVersion attribute for the exchange node resource.
+const HORIZON_VERSION = "horizon"
+const CERT_VERSION = "certificate"
+const CONFIG_VERSION = "config"
+
 type ValidAgentFileTypes []string
 
 var (
