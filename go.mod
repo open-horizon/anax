@@ -22,10 +22,9 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	golang.org/x/mod v0.5.1 // indirect
+	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d
 	golang.org/x/text v0.3.7
-	golang.org/x/tools v0.1.8 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.2
