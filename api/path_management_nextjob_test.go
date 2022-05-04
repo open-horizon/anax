@@ -138,7 +138,7 @@ func create_test_status(status, dir string) *exchangecommon.NodeManagementPolicy
 	case exchangecommon.STATUS_DOWNLOADED:
 		return &exchangecommon.NodeManagementPolicyStatus{
 			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
-				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ScheduledTime:        time.Now().Format(time.RFC3339Nano),
 				ActualStartTime:      "",
 				CompletionTime:       "",
 				Status:               exchangecommon.STATUS_DOWNLOADED,
@@ -149,7 +149,7 @@ func create_test_status(status, dir string) *exchangecommon.NodeManagementPolicy
 	case exchangecommon.STATUS_NEW:
 		return &exchangecommon.NodeManagementPolicyStatus{
 			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
-				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ScheduledTime:        time.Now().Format(time.RFC3339Nano),
 				ActualStartTime:      "",
 				CompletionTime:       "",
 				Status:               exchangecommon.STATUS_NEW,
@@ -160,8 +160,8 @@ func create_test_status(status, dir string) *exchangecommon.NodeManagementPolicy
 	case exchangecommon.STATUS_INITIATED:
 		return &exchangecommon.NodeManagementPolicyStatus{
 			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
-				ScheduledTime:        time.Now().Format(time.RFC3339),
-				ActualStartTime:      time.Now().Format(time.RFC3339),
+				ScheduledTime:        time.Now().Format(time.RFC3339Nano),
+				ActualStartTime:      time.Now().Format(time.RFC3339Nano),
 				CompletionTime:       "",
 				Status:               exchangecommon.STATUS_INITIATED,
 				ErrorMessage:         "",
@@ -171,9 +171,9 @@ func create_test_status(status, dir string) *exchangecommon.NodeManagementPolicy
 	case exchangecommon.STATUS_SUCCESSFUL:
 		return &exchangecommon.NodeManagementPolicyStatus{
 			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
-				ScheduledTime:        time.Now().Format(time.RFC3339),
-				ActualStartTime:      time.Now().Format(time.RFC3339),
-				CompletionTime:       time.Now().Format(time.RFC3339),
+				ScheduledTime:        time.Now().Format(time.RFC3339Nano),
+				ActualStartTime:      time.Now().Format(time.RFC3339Nano),
+				CompletionTime:       time.Now().Format(time.RFC3339Nano),
 				Status:               exchangecommon.STATUS_SUCCESSFUL,
 				ErrorMessage:         "",
 				BaseWorkingDirectory: dir,
@@ -182,8 +182,8 @@ func create_test_status(status, dir string) *exchangecommon.NodeManagementPolicy
 	case exchangecommon.STATUS_DOWNLOAD_FAILED:
 		return &exchangecommon.NodeManagementPolicyStatus{
 			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
-				ScheduledTime:        time.Now().Format(time.RFC3339),
-				ActualStartTime:      time.Now().Format(time.RFC3339),
+				ScheduledTime:        time.Now().Format(time.RFC3339Nano),
+				ActualStartTime:      time.Now().Format(time.RFC3339Nano),
 				CompletionTime:       "",
 				Status:               exchangecommon.STATUS_DOWNLOAD_FAILED,
 				ErrorMessage:         "Download failed.",
@@ -193,8 +193,8 @@ func create_test_status(status, dir string) *exchangecommon.NodeManagementPolicy
 	case exchangecommon.STATUS_FAILED_JOB:
 		return &exchangecommon.NodeManagementPolicyStatus{
 			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
-				ScheduledTime:        time.Now().Format(time.RFC3339),
-				ActualStartTime:      time.Now().Format(time.RFC3339),
+				ScheduledTime:        time.Now().Format(time.RFC3339Nano),
+				ActualStartTime:      time.Now().Format(time.RFC3339Nano),
 				CompletionTime:       "",
 				Status:               exchangecommon.STATUS_FAILED_JOB,
 				ErrorMessage:         "Failed job.",
@@ -204,7 +204,7 @@ func create_test_status(status, dir string) *exchangecommon.NodeManagementPolicy
 	case exchangecommon.STATUS_UNKNOWN:
 		return &exchangecommon.NodeManagementPolicyStatus{
 			AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{
-				ScheduledTime:        time.Now().Format(time.RFC3339),
+				ScheduledTime:        time.Now().Format(time.RFC3339Nano),
 				ActualStartTime:      "",
 				CompletionTime:       "",
 				Status:               exchangecommon.STATUS_UNKNOWN,

@@ -90,6 +90,13 @@ else
     constraint2="$constraint2 || NOK8S == false"
 fi
 
+constraint3=""
+if [ "$NOAGENTAUTO" == "1" ]; then 
+    constraint3="NOAGENTAUTO==true"
+else
+    constraint3="NOAGENTAUTO==false"
+fi
+
 read -d '' newhznpolicy <<EOF
 {
   "deployment": {
@@ -104,6 +111,20 @@ read -d '' newhznpolicy <<EOF
     "constraints": [
       "iame2edev == true",
       "$constraint2"
+    ]
+  },
+  "management": {
+    "properties": [
+      {
+        "name":"purpose","value":"nmp-testing"
+      },
+      {
+        "name":"group","value":"bluenode"
+      }
+    ],
+    "constraints": [
+      "iame2edev == true",
+      "$constraint3"
     ]
   }
 }

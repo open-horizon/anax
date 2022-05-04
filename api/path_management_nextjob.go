@@ -30,8 +30,7 @@ func FindManagementNextJobForOutput(jobType, ready string, errorHandler ErrorHan
 			}
 			// Get all statuses
 		} else if ready == "" {
-			var errHandled bool
-			if errHandled, managementStatuses = FindManagementStatusForOutput("", "", errorHandler, db); errHandled {
+			if managementStatuses, err = persistence.FindAllNMPStatus(db); err != nil {
 				return false, nil
 			}
 		} else {
