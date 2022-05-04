@@ -628,7 +628,7 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 
-		info := apicommon.NewInfo(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetCSSURL(), a.GetExchangeId(), a.GetExchangeToken())
+		info := apicommon.NewInfo(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetCSSURL(), a.GetExchangeId(), a.GetExchangeToken(), "", "")
 
 		// Augment the common status with agbot specific stuff
 		health := &apicommon.HealthTimestamps{}
@@ -650,7 +650,7 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 func (a *API) health(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		info := apicommon.NewLocalInfo(a.GetExchangeURL(), a.GetCSSURL(), a.GetExchangeId(), a.GetExchangeToken())
+		info := apicommon.NewLocalInfo(a.GetExchangeURL(), a.GetCSSURL(), a.GetExchangeId(), a.GetExchangeToken(), "", "")
 
 		// Augment the common status with agbot specific stuff
 		health := &apicommon.HealthTimestamps{}

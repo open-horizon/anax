@@ -51,7 +51,11 @@ func FindManagementStatusForOutput(nmpName, orgName string, errorHandler ErrorHa
 	return false, managementStatuses
 }
 
-func UpdateManagementStatus(nmStatus exchangecommon.NodeManagementPolicyStatus, errorHandler ErrorHandler, statusHandler exchange.PutNodeManagementPolicyStatusHandler, nmpName string, db *bolt.DB) (bool, string, []*events.NMStatusChangedMessage) {
+func UpdateManagementStatus(nmStatus exchangecommon.NodeManagementPolicyStatus, errorHandler ErrorHandler,
+	statusHandler exchange.PutNodeManagementPolicyStatusHandler,
+	getDeviceHandler exchange.DeviceHandler,
+	patchDeviceHandler exchange.PatchDeviceHandler,
+	nmpName string, db *bolt.DB) (bool, string, []*events.NMStatusChangedMessage) {
 	// Slice to store events
 	msgs := make([]*events.NMStatusChangedMessage, 0, 10)
 
@@ -74,7 +78,7 @@ func UpdateManagementStatus(nmStatus exchangecommon.NodeManagementPolicyStatus, 
 	}
 
 	// save the new status to local db and the exchange
-	status_changed, err := common.SetNodeManagementPolicyStatus(db, pDevice, fullName, &nmStatus, managementStatus, statusHandler)
+	status_changed, err := common.SetNodeManagementPolicyStatus(db, pDevice, fullName, &nmStatus, managementStatus, statusHandler, getDeviceHandler, patchDeviceHandler)
 	if err != nil {
 		return errorHandler(NewSystemError(fmt.Sprintf("Error saving nmp status for %v: %v", fullName, err))), "", nil
 	}

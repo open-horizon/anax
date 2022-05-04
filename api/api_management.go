@@ -65,9 +65,11 @@ func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 
 		// Create handler for putting updated NMP status in the exchange
 		statusHandler := exchange.GetPutNodeManagementPolicyStatusHandler(a)
+		getDevice := exchange.GetHTTPDeviceHandler(a)
+		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
 
 		// Update the NMP Status
-		errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, nmpName, a.db)
+		errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, getDevice, patchDevice, nmpName, a.db)
 		if errHandled {
 			return
 		}
