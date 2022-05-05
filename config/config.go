@@ -230,7 +230,10 @@ func (c *HorizonConfig) GetAgbotPolicyOrder() bool {
 }
 
 func (c *HorizonConfig) GetK8sCRInstallTimeouts() int64 {
-	return c.Edge.K8sCRInstallTimeoutS
+	if c.Edge.K8sCRInstallTimeoutS > 0 {
+		return c.Edge.K8sCRInstallTimeoutS
+	}
+	return K8sCRInstallTimeoutS_DEFAULT
 }
 
 func (a *AGConfig) GetProtocolTimeout(maxHeartbeatInterval int) uint64 {
