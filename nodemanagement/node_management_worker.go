@@ -50,10 +50,14 @@ func (w *NodeManagementWorker) Initialize() bool {
 		if err := w.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(w), exchange.GetDeleteNodeManagementPolicyStatusHandler(w), exchange.GetPutNodeManagementPolicyStatusHandler(w)); err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
 		}
-		// Check if a nmp process completed
-		if err := w.CheckNMPStatus(workingDir, STATUS_FILE_NAME); err != nil {
-			glog.Errorf(nmwlog(fmt.Sprintf("Failed to collect status. error: %v", err)))
+
+		if dev.IsEdgeCluster() {
+			// Check if a nmp process completed
+			if err := w.CheckNMPStatus(workingDir, STATUS_FILE_NAME); err != nil {
+				glog.Errorf(nmwlog(fmt.Sprintf("Failed to collect status. error: %v", err)))
+			}
 		}
+
 		// Set any statuses in "download started" status back to waiting so the download will be retried
 		if err := w.ResetDownloadStartedStatuses(); err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Failed to reset nmp statuses in \"download started\" status back to \"waiting\".")))
@@ -201,6 +205,11 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 	err = n.UpdateStatus(cmd.Msg.NMPName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n))
 	if err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Failed to update nmp status %v: %v", cmd.Msg.NMPName, err)))
+	}
+
+	if cmd.Msg.Status == exchangecommon.STATUS_DOWNLOADED {
+		glog.Info("DownloadComplete sending out AgentPackageDownloadedMessaage with event: %v, for npm: %v", events.AGENT_PACKAGE_DOWNLOADED, cmd.Msg.NMPName)
+		n.Messages() <- events.NewAgentPackageDownloadedMessage(events.AGENT_PACKAGE_DOWNLOADED, events.StartDownloadMessage{NMPStatus: status, NMPName: cmd.Msg.NMPName})
 	}
 }
 

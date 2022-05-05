@@ -110,6 +110,8 @@ func (w *DownloadWorker) DownloadCSSObject(org string, objType string, objId str
 	objMeta, err := exchange.GetObject(w, org, objId, objType)
 	if err != nil {
 		return fmt.Errorf("Failed to get metadata for css object %v/%v/%v. Error was: %v", org, objType, objId, err)
+	} else if objMeta == nil || int(objMeta.ObjectSize) == 0 {
+		return fmt.Errorf("Failed to get nil metadata or objectSize is 0  for css object %v/%v/%v", org, objType, objId)
 	}
 
 	filePath = path.Join(filePath, nmpName)

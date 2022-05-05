@@ -3223,6 +3223,11 @@ function prepare_k8s_deployment_file() {
             image_full_path_on_edge_cluster_registry_internal_url=$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY/$EDGE_CLUSTER_REGISTRY_PROJECT_NAME/$EDGE_CLUSTER_AGENT_IMAGE_AND_TAG
         fi
         sed -i -e "s#__ImagePath__#${image_full_path_on_edge_cluster_registry_internal_url}#g" deployment.yml
+
+	# fill out __ImageRegistryHost__ with value of EDGE_CLUSTER_REGISTRY_HOST
+	# k3s: 10.43.100.65:5000
+	# ocp: default-route-openshift-image-registry.apps.prowler.cp.fyre.ibm.com
+	sed -i -e "s#__ImageRegistryHost__#${EDGE_CLUSTER_REGISTRY_HOST}#g" deployment.yml
     else
         log_fatal 1 "Agent install on edge cluster requires using an edge cluster registry"
         #sed -i -e "s#__ImagePath__#${AGENT_IMAGE}#g" deployment.yml
@@ -3659,11 +3664,12 @@ function update_secret_for_image_reigstry_cert() {
 # Cluster only: to patch the agent deploiyment to use the secret contains image registry
 function patch_deployment_with_image_registry_volume() {
     log_debug "patch_deployment_with_image_registry_volume() begin"
-    
+
     $KUBECTL patch deployment agent -p "{\"spec\":{\"template\":{\"spec\":{\"volumes\":[{\"name\": \
     \"agent-docker-cert-volume\",\"secret\":{\"secretName\":\"openhorizon-agent-secrets-docker-cert\"}}], \
     \"containers\":[{\"name\":\"anax\",\"volumeMounts\":[{\"mountPath\":\"/etc/docker/certs.d/${EDGE_CLUSTER_REGISTRY_HOST}\" \
-    ,\"name\":\"agent-docker-cert-volume\"}]}]}}}}"
+    ,\"name\":\"agent-docker-cert-volume\"},{\"mountPath\":\"/etc/docker/certs.d/${DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY}\" \
+    ,\"name\":\"agent-docker-cert-volume\"}],\"env\":[{\"name\":\"SSL_CERT_FILE\",\"value\":\"/etc/docker/certs.d/${EDGE_CLUSTER_REGISTRY_HOST}/ca.crt\"}]}]}}}}"
 
     log_debug "patch_deployment_with_image_registry_volume() end"
 }

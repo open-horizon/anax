@@ -14,6 +14,7 @@ import (
 	_ "github.com/open-horizon/anax/agreementbot/secrets/vault"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/changes"
+	"github.com/open-horizon/anax/clusterupgrade"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/download"
@@ -193,6 +194,11 @@ func main() {
 		workers.Add(changes.NewChangesWorker("ExchangeChanges", cfg, db))
 		workers.Add(nodemanagement.NewNodeManagementWorker("NodeManagement", cfg, db))
 		workers.Add(download.NewDownloadWorker("Download", cfg, db))
+
+		// add cluster upgrade worker only when it is edge cluster
+		if cfg.Edge.DockerEndpoint == "" {
+			workers.Add(clusterupgrade.NewClusterUpgradeWorker("ClusterUpgrade", cfg, db))
+		}
 	}
 
 	// Get into the event processing loop until anax shuts itself down.
