@@ -116,7 +116,7 @@ func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstru
 					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object must have a name in its metadata section.")))
 				}
 			} else if typedCRD, ok := obj.Object.(*crdv1.CustomResourceDefinition); ok {
-				objMap[K8S_CRD_TYPE] = append(objMap[K8S_CRD_TYPE], CustomResourceV1{CustomResourceDefinitionObject: typedCRD, CustomResourceObject: customResource})
+				objMap[K8S_CRD_TYPE] = append(objMap[K8S_CRD_TYPE], CustomResourceV1{CustomResourceDefinitionObject: typedCRD, CustomResourceObject: customResource, InstallTimeout: crInstallTimeout})
 			} else {
 				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
