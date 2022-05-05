@@ -1704,6 +1704,39 @@
             "fuzzy": true
         },
         {
+            "id": [
+                "EL_API_NMP_STATUS_CHANGE",
+                "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+            ],
+            "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+            "translation": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                },
+                {
+                    "id": "Arg_3",
+                    "string": "%[3]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 3
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Error converting the selections into Selectors: {Err}",
             "message": "Error converting the selections into Selectors: {Err}",
             "translation": "Error converting the selections into Selectors: {Err}",
@@ -3079,9 +3112,16 @@
             "fuzzy": true
         },
         {
-            "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-            "message": "Show the entire contents of each node management policy status object, instead of just the status.",
-            "translation": "Show the entire contents of each node management policy status object, instead of just the status.",
+            "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+            "message": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+            "translation": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Show the entire contents of each node management policy status object.",
+            "message": "Show the entire contents of each node management policy status object.",
+            "translation": "Show the entire contents of each node management policy status object.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3254,6 +3294,13 @@
             "fuzzy": true
         },
         {
+            "id": "List and manage node management resources in the Horizon Exchange",
+            "message": "List and manage node management resources in the Horizon Exchange",
+            "translation": "List and manage node management resources in the Horizon Exchange",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
             "message": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
             "translation": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
@@ -3292,6 +3339,13 @@
             "id": "List node management policy statuses for this node.",
             "message": "List node management policy statuses for this node.",
             "translation": "List node management policy statuses for this node.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+            "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+            "translation": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -12451,6 +12505,31 @@
             "fuzzy": true
         },
         {
+            "id": "unable to get list of containers in network {NwName}, error {Err}",
+            "message": "unable to get list of containers in network {NwName}, error {Err}",
+            "translation": "unable to get list of containers in network {NwName}, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NwName",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "nwName"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
             "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
             "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
@@ -14336,6 +14415,31 @@
             "fuzzy": true
         },
         {
+            "id": "Node {NodeName} not found in org {NmpOrg}",
+            "message": "Node {NodeName} not found in org {NmpOrg}",
+            "translation": "Node {NodeName} not found in org {NmpOrg}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NodeName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "nodeName"
+                },
+                {
+                    "id": "NmpOrg",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "nmpOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
             "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
             "translation": "Status for NMP {NmpName} not found in org {NmpOrg}",
@@ -14355,6 +14459,39 @@
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 2,
+                    "expr": "nmpOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+            "message": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+            "translation": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NmpName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "nmpName"
+                },
+                {
+                    "id": "NodeName",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "nodeName"
+                },
+                {
+                    "id": "NmpOrg",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
                     "expr": "nmpOrg"
                 }
             ],
@@ -15304,20 +15441,6 @@
             "fuzzy": true
         },
         {
-            "id": "enabled",
-            "message": "enabled",
-            "translation": "enabled",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "disabled",
-            "message": "disabled",
-            "translation": "disabled",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
             "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
             "translation": "Statuses for node {NodeName} not found in org {NodeOrg}",
@@ -15337,6 +15460,39 @@
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 2,
+                    "expr": "nodeOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+            "message": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+            "translation": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NodeName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "nodeName"
+                },
+                {
+                    "id": "NmpName",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "nmpName"
+                },
+                {
+                    "id": "NodeOrg",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
                     "expr": "nodeOrg"
                 }
             ],
@@ -17357,6 +17513,40 @@
             "fuzzy": true
         },
         {
+            "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+            "message": "The current exchange version {ExchangeVersion} is not a valid version string.",
+            "translation": "The current exchange version {ExchangeVersion} is not a valid version string.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ExchangeVersion",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "exchangeVersion"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to compare the versions. {Err}",
+            "message": "Failed to compare the versions. {Err}",
+            "translation": "Failed to compare the versions. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "failed to marshal 'key list' output: {Err}",
             "message": "failed to marshal 'key list' output: {Err}",
             "translation": "failed to marshal 'key list' output: {Err}",
@@ -18918,6 +19108,13 @@
             "fuzzy": true
         },
         {
+            "id": "stopping test mode is not supported for this project",
+            "message": "stopping test mode is not supported for this project",
+            "translation": "stopping test mode is not supported for this project",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "failed to marshal 'hzn policy list' output: {Err}",
             "message": "failed to marshal 'hzn policy list' output: {Err}",
             "translation": "failed to marshal 'hzn policy list' output: {Err}",
@@ -19781,6 +19978,23 @@
             "fuzzy": true
         },
         {
+            "id": "Bad HTTP code {HttpCode} returned from node.",
+            "message": "Bad HTTP code {HttpCode} returned from node.",
+            "translation": "Bad HTTP code {HttpCode} returned from node.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "HttpCode",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "httpCode"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Call to anax to create node timed out.",
             "message": "Call to anax to create node timed out.",
             "translation": "Call to anax to create node timed out.",
@@ -19877,6 +20091,34 @@
                     "expr": "matches[2]"
                 }
             ],
+            "fuzzy": true
+        },
+        {
+            "id": "Call to node to change state to configured executed successfully.",
+            "message": "Call to node to change state to configured executed successfully.",
+            "translation": "Call to node to change state to configured executed successfully.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Timeout on the call to update node config state. Checking if it is updated.",
+            "message": "Timeout on the call to update node config state. Checking if it is updated.",
+            "translation": "Timeout on the call to update node config state. Checking if it is updated.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Node state is unconfigured.",
+            "message": "Node state is unconfigured.",
+            "translation": "Node state is unconfigured.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Timeout waiting for node config state call to return.",
+            "message": "Timeout waiting for node config state call to return.",
+            "translation": "Timeout waiting for node config state call to return.",
+            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
@@ -20675,6 +20917,23 @@
             "fuzzy": true
         },
         {
+            "id": "unable to convert eventlog source, error: {Err}",
+            "message": "unable to convert eventlog source, error: {Err}",
+            "translation": "unable to convert eventlog source, error: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "{Format2006_01_02_150405}: {Message}",
             "message": "{Format2006_01_02_150405}: {Message}",
             "translation": "{Format2006_01_02_150405}: {Message}",
@@ -21251,6 +21510,92 @@
             "fuzzy": true
         },
         {
+            "id": "field \"key_name\" is missing",
+            "message": "field \"key_name\" is missing",
+            "translation": "field \"key_name\" is missing",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "field \"{Field}\" is missing",
+            "message": "field \"{Field}\" is missing",
+            "translation": "field \"{Field}\" is missing",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Field",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "field"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Please fill these and try again.",
+            "message": "Please fill these and try again.",
+            "translation": "Please fill these and try again.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+            "message": "Key name can only contain lowercase characters, numbers, and hyphens",
+            "translation": "Key name can only contain lowercase characters, numbers, and hyphens",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Country name must be a 2 Letter Country Code",
+            "message": "Country name must be a 2 Letter Country Code",
+            "translation": "Country name must be a 2 Letter Country Code",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Inspecting voucher file name: {Name}",
+            "message": "Inspecting voucher file name: {Name}",
+            "translation": "Inspecting voucher file name: {Name}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "voucherFile.Name()"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+            "message": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+            "translation": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "parsing json: {Error}",
+            "message": "parsing json: {Error}",
+            "translation": "parsing json: {Error}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Error",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "err.Error()"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "base64 decoding {T4}: {Err}",
             "message": "base64 decoding {T4}: {Err}",
             "translation": "base64 decoding {T4}: {Err}",
@@ -21271,6 +21616,55 @@
                     "underlyingType": "interface{Error() string}",
                     "argNum": 2,
                     "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "decoding {T4} yielded {N} bytes",
+            "message": "decoding {T4} yielded {N} bytes",
+            "translation": "decoding {T4} yielded {N} bytes",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "T4",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "t4"
+                },
+                {
+                    "id": "N",
+                    "string": "%[2]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 2,
+                    "expr": "n"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "did not find any rendezvous server URLs in the voucher",
+            "message": "did not find any rendezvous server URLs in the voucher",
+            "translation": "did not find any rendezvous server URLs in the voucher",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "decoding UUID: {Error}",
+            "message": "decoding UUID: {Error}",
+            "translation": "decoding UUID: {Error}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Error",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "err.Error()"
                 }
             ],
             "fuzzy": true
@@ -21383,6 +21777,38 @@
             "fuzzy": true
         },
         {
+            "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+            "message": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+            "translation": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+            "message": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+            "translation": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Device",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "device"
+                },
+                {
+                    "id": "FileName",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "fileName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Importing voucher file name: {Name}",
             "message": "Importing voucher file name: {Name}",
             "translation": "Importing voucher file name: {Name}",
@@ -21471,6 +21897,13 @@
                     "expr": "voucherFile.Name()"
                 }
             ],
+            "fuzzy": true
+        },
+        {
+            "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+            "message": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+            "translation": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
@@ -21744,6 +22177,13 @@
                     "expr": "jerr"
                 }
             ],
+            "fuzzy": true
+        },
+        {
+            "id": "Vault component not found in the management hub. Retrying...",
+            "message": "Vault component not found in the management hub. Retrying...",
+            "translation": "Vault component not found in the management hub. Retrying...",
+            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
@@ -24644,6 +25084,13 @@
                     "expr": "output"
                 }
             ],
+            "fuzzy": true
+        },
+        {
+            "id": "Timeout unregistering the node.",
+            "message": "Timeout unregistering the node.",
+            "translation": "Timeout unregistering the node.",
+            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
@@ -28755,6 +29202,79 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "expr"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "No intersection found.",
+            "message": "No intersection found.",
+            "translation": "No intersection found.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The input string is not a version string, it is an empty string.",
+            "message": "The input string is not a version string, it is an empty string.",
+            "translation": "The input string is not a version string, it is an empty string.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The input string {Ceilingversion} is not a version string.",
+            "message": "The input string {Ceilingversion} is not a version string.",
+            "translation": "The input string {Ceilingversion} is not a version string.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Ceilingversion",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ceiling_version"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+            "message": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+            "translation": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Ceilingversion",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ceiling_version"
+                },
+                {
+                    "id": "Start",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "self.start"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+            "message": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+            "translation": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Ceilingversion",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ceiling_version"
                 }
             ],
             "fuzzy": true
