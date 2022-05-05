@@ -29,9 +29,6 @@ spec:
             - mountPath: /var/horizon
               name: agent-pvc-storage
               subPath: horizon
-            - mountPath: /var/horizon/cronjobs
-              name: agent-pvc-storage
-              subPath: cronjobs
             env:
             - name: CRONJOB_POD_NAME
               valueFrom:
