@@ -364,6 +364,10 @@
     "translation": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "Error converting the selections into Selectors: {Err}"
   },
@@ -1104,8 +1108,12 @@
     "translation": "The name of the node management policy status to check."
   },
   {
-    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-    "translation": "Show the entire contents of each node management policy status object, instead of just the status."
+    "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object."
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object.",
+    "translation": "Show the entire contents of each node management policy status object."
   },
   {
     "id": "List and manage nodes in the Horizon Exchange",
@@ -1204,6 +1212,10 @@
     "translation": "List policy for this node."
   },
   {
+    "id": "List and manage node management resources in the Horizon Exchange",
+    "translation": "List and manage node management resources in the Horizon Exchange"
+  },
+  {
     "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
     "translation": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified."
   },
@@ -1226,6 +1238,10 @@
   {
     "id": "List node management policy statuses for this node.",
     "translation": "List node management policy statuses for this node."
+  },
+  {
+    "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object."
   },
   {
     "id": "List the run-time status of the node.",
@@ -3904,6 +3920,10 @@
     "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}"
   },
   {
+    "id": "unable to get list of containers in network {NwName}, error {Err}",
+    "translation": "unable to get list of containers in network {NwName}, error {Err}"
+  },
+  {
     "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
     "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}"
   },
@@ -4340,8 +4360,16 @@
     "translation": "Node management policy {NmpOrg}/{NmpName} removed"
   },
   {
+    "id": "Node {NodeName} not found in org {NmpOrg}",
+    "translation": "Node {NodeName} not found in org {NmpOrg}"
+  },
+  {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
     "translation": "Status for NMP {NmpName} not found in org {NmpOrg}"
+  },
+  {
+    "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+    "translation": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}"
   },
   {
     "id": "failed to marshal 'exchange node list' output: {Err}",
@@ -4548,16 +4576,12 @@
     "translation": "Node policy for {NodeName} not found in org {NodeOrg}"
   },
   {
-    "id": "enabled",
-    "translation": "enabled"
-  },
-  {
-    "id": "disabled",
-    "translation": "disabled"
-  },
-  {
     "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
     "translation": "Statuses for node {NodeName} not found in org {NodeOrg}"
+  },
+  {
+    "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+    "translation": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5032,6 +5056,14 @@
     "translation": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?"
   },
   {
+    "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+    "translation": "The current exchange version {ExchangeVersion} is not a valid version string."
+  },
+  {
+    "id": "Failed to compare the versions. {Err}",
+    "translation": "Failed to compare the versions. {Err}"
+  },
+  {
     "id": "failed to marshal 'key list' output: {Err}",
     "translation": "failed to marshal 'key list' output: {Err}"
   },
@@ -5396,6 +5428,10 @@
     "translation": "starting test mode is not supported for this project"
   },
   {
+    "id": "stopping test mode is not supported for this project",
+    "translation": "stopping test mode is not supported for this project"
+  },
+  {
     "id": "failed to marshal 'hzn policy list' output: {Err}",
     "translation": "failed to marshal 'hzn policy list' output: {Err}"
   },
@@ -5664,6 +5700,10 @@
     "translation": "Registration failed. Node successfully returned to unregistered state."
   },
   {
+    "id": "Bad HTTP code {HttpCode} returned from node.",
+    "translation": "Bad HTTP code {HttpCode} returned from node."
+  },
+  {
     "id": "Call to anax to create node timed out.",
     "translation": "Call to anax to create node timed out."
   },
@@ -5682,6 +5722,22 @@
   {
     "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
     "translation": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file."
+  },
+  {
+    "id": "Call to node to change state to configured executed successfully.",
+    "translation": "Call to node to change state to configured executed successfully."
+  },
+  {
+    "id": "Timeout on the call to update node config state. Checking if it is updated.",
+    "translation": "Timeout on the call to update node config state. Checking if it is updated."
+  },
+  {
+    "id": "Node state is unconfigured.",
+    "translation": "Node state is unconfigured."
+  },
+  {
+    "id": "Timeout waiting for node config state call to return.",
+    "translation": "Timeout waiting for node config state call to return."
   },
   {
     "id": "Waiting for node config state update call to return. {TotalWait} seconds until timeout.",
@@ -5888,6 +5944,10 @@
     "translation": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify."
   },
   {
+    "id": "unable to convert eventlog source, error: {Err}",
+    "translation": "unable to convert eventlog source, error: {Err}"
+  },
+  {
     "id": "{Format2006_01_02_150405}: {Message}",
     "translation": "{Format2006_01_02_150405}: {Message}"
   },
@@ -6000,8 +6060,52 @@
     "translation": "JSON Body:{StringkeyBytes}"
   },
   {
+    "id": "field \"key_name\" is missing",
+    "translation": "field \"key_name\" is missing"
+  },
+  {
+    "id": "field \"{Field}\" is missing",
+    "translation": "field \"{Field}\" is missing"
+  },
+  {
+    "id": "Please fill these and try again.",
+    "translation": "Please fill these and try again."
+  },
+  {
+    "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+    "translation": "Key name can only contain lowercase characters, numbers, and hyphens"
+  },
+  {
+    "id": "Country name must be a 2 Letter Country Code",
+    "translation": "Country name must be a 2 Letter Country Code"
+  },
+  {
+    "id": "Inspecting voucher file name: {Name}",
+    "translation": "Inspecting voucher file name: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+    "translation": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead."
+  },
+  {
+    "id": "parsing json: {Error}",
+    "translation": "parsing json: {Error}"
+  },
+  {
     "id": "base64 decoding {T4}: {Err}",
     "translation": "base64 decoding {T4}: {Err}"
+  },
+  {
+    "id": "decoding {T4} yielded {N} bytes",
+    "translation": "decoding {T4} yielded {N} bytes"
+  },
+  {
+    "id": "did not find any rendezvous server URLs in the voucher",
+    "translation": "did not find any rendezvous server URLs in the voucher"
+  },
+  {
+    "id": "decoding UUID: {Error}",
+    "translation": "decoding UUID: {Error}"
   },
   {
     "id": "Listing imported SDO vouchers.",
@@ -6024,6 +6128,14 @@
     "translation": "failed to marshal 'hzn sdo voucher list' output: {Err}"
   },
   {
+    "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+    "translation": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead."
+  },
+  {
+    "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+    "translation": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services."
+  },
+  {
     "id": "Importing voucher file name: {Name}",
     "translation": "Importing voucher file name: {Name}"
   },
@@ -6042,6 +6154,10 @@
   {
     "id": "unsupported voucher file type extension: {Name}",
     "translation": "unsupported voucher file type extension: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+    "translation": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead."
   },
   {
     "id": "creating zip reader for {Name}: {Err}",
@@ -6094,6 +6210,10 @@
   {
     "id": "failed to marshal 'agbot API' output: {Jerr}",
     "translation": "failed to marshal 'agbot API' output: {Jerr}"
+  },
+  {
+    "id": "Vault component not found in the management hub. Retrying...",
+    "translation": "Vault component not found in the management hub. Retrying..."
   },
   {
     "id": "-f is mutually exclusive with --secretDetail.",
@@ -6790,6 +6910,10 @@
   {
     "id": "Horizon node delete call successful with return code: {Output}",
     "translation": "Horizon node delete call successful with return code: {Output}"
+  },
+  {
+    "id": "Timeout unregistering the node.",
+    "translation": "Timeout unregistering the node."
   },
   {
     "id": "Timeout in {TotalWait} seconds ...",
@@ -7714,6 +7838,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}."
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "No intersection found."
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "The input string is not a version string, it is an empty string."
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "The input string {Ceilingversion} is not a version string."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "The input ceiling version {Ceilingversion} is lower than the start version {Start}."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive."
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",
