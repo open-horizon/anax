@@ -40,12 +40,12 @@ func NewKubeClient() (*KubeClient, error) {
 	====
 	horizon:
 	----
-	HZN_EXCHANGE_URL=https://cp-console.roks-stg-local-70ea81cdef68a2eb78ece6d890b7dad3-0000.us-south.containers.appdomain.cloud/edge-exchange/v1
-	HZN_FSS_CSSURL=https://cp-console.roks-stg-local-70ea81cdef68a2eb78ece6d890b7dad3-0000.us-south.containers.appdomain.cloud/edge-css
-	HZN_AGBOT_URL=https://cp-console.roks-stg-local-70ea81cdef68a2eb78ece6d890b7dad3-0000.us-south.containers.appdomain.cloud/edge-agbot/
-	HZN_SDO_SVC_URL=https://cp-console.roks-stg-local-70ea81cdef68a2eb78ece6d890b7dad3-0000.us-south.containers.appdomain.cloud/edge-sdo-ocs/api
-	HZN_DEVICE_ID=jeff-ocp
-	HZN_NODE_ID=jeff-ocp
+	HZN_EXCHANGE_URL=https://host-url/edge-exchange/v1
+	HZN_FSS_CSSURL=https://host-url/edge-css
+	HZN_AGBOT_URL=https://host-url/edge-agbot/
+	HZN_SDO_SVC_URL=https://host-url/edge-sdo-ocs/api
+	HZN_DEVICE_ID=my-node-id
+	HZN_NODE_ID=my-node-id
 	HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/agent-install.crt
 	HZN_AGENT_PORT=8510
 */
@@ -77,12 +77,12 @@ func parseAgentConfigMap(configMap *v1.ConfigMap) (map[string]string, error) {
 
 	/*
 		valuesInConfigMap is a string:
-		"HZN_EXCHANGE_URL=https://cp-console.roks-stg-local-70ea81cdef68a2eb78ece6d890b7dad3-0000.us-south.containers.appdomain.cloud/edge-exchange/v1
-		HZN_FSS_CSSURL=https://cp-console.roks-stg-local-70ea81cdef68a2eb78ece6d890b7dad3-0000.us-south.containers.appdomain.cloud/edge-css
-		HZN_AGBOT_URL=https://cp-console.roks-stg-local-70ea81cdef68a2eb78ece6d890b7dad3-0000.us-south.containers.appdomain.cloud/edge-agbot/
-		HZN_SDO_SVC_URL=https://cp-console.roks-stg-local-70ea81cdef68a2eb78ece6d890b7dad3-0000.us-south.containers.appdomain.cloud/edge-sdo-ocs/api
-		HZN_DEVICE_ID=jeff-ocp
-		HZN_NODE_ID=jeff-ocp
+		"HZN_EXCHANGE_URL=https://host-url/edge-exchange/v1
+		HZN_FSS_CSSURL=https://host-url/edge-css
+		HZN_AGBOT_URL=https://host-url/edge-agbot/
+		HZN_SDO_SVC_URL=https://host-url/edge-sdo-ocs/api
+		HZN_DEVICE_ID=my-node-id
+		HZN_NODE_ID=my-node-id
 		HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/agent-install.crt
 		HZN_AGENT_PORT=8510"
 	*/
@@ -90,12 +90,10 @@ func parseAgentConfigMap(configMap *v1.ConfigMap) (map[string]string, error) {
 	configValueInMap := make(map[string]string)
 	mapEntries := strings.Split(valuesInConfigMap, "\n")
 	for _, entry := range mapEntries {
-		// entry: HZN_EXCHANGE_URL=https://cp-console.roks-stg-local-70ea81cdef68a2eb78ece6d890b7dad3-0000.us-south.containers.appdomain.cloud/edge-exchange/v1
-		glog.V(3).Infof(cuwlog(fmt.Sprintf("In configmap %v, entry is: %v", configMap.Name, entry)))
+		// entry: HZN_EXCHANGE_URL=https://host-url/edge-exchange/v1
 		if strings.Contains(entry, "=") {
 			kvOfEntry := strings.Split(entry, "=")
 			if len(kvOfEntry) == 2 {
-				//return nil, fmt.Errorf(fmt.Sprintf("failed to parse content in existing agent configmap."))
 				configValueInMap[kvOfEntry[0]] = kvOfEntry[1]
 				glog.V(3).Infof(cuwlog(fmt.Sprintf("In configmap %v find %v=%v", configMap.Name, kvOfEntry[0], kvOfEntry[1])))
 			}
@@ -215,14 +213,14 @@ metadata:
 type: Opaque
 */
 func (c KubeClient) GetSecret(namespace string, secretName string) (*v1.Secret, error) {
-	glog.V(3).Infof(cuwlog(fmt.Sprintf("Lily - Get secret %v under agent namespace %v", secretName, namespace)))
+	glog.V(3).Infof(cuwlog(fmt.Sprintf("Get secret %v under agent namespace %v", secretName, namespace)))
 
 	rawSecret := c.Client.CoreV1().Secrets(namespace)
 	return rawSecret.Get(context.Background(), secretName, metav1.GetOptions{})
 }
 
 func (c KubeClient) ReadSecret(namespace string, secretName string) ([]byte, error) {
-	glog.V(3).Infof(cuwlog(fmt.Sprintf("Lily - read secret value %v under agent namespace %v", secretName, namespace)))
+	glog.V(3).Infof(cuwlog(fmt.Sprintf("Read secret value %v under agent namespace %v", secretName, namespace)))
 
 	if secret, err := c.GetSecret(namespace, secretName); err != nil {
 		return make([]byte, 0), err
@@ -230,19 +228,14 @@ func (c KubeClient) ReadSecret(namespace string, secretName string) ([]byte, err
 		return make([]byte, 0), fmt.Errorf("secret %v is nil", secretName)
 	} else {
 		certValueBytes := parseAgentSecret(secret)
-		glog.V(3).Infof(cuwlog(fmt.Sprintf("Lily - secret value is: %v", string(certValueBytes))))
+		glog.V(3).Infof(cuwlog(fmt.Sprintf("Secret value is: %v", string(certValueBytes))))
 		return certValueBytes, nil
 	}
 
 }
 
-// returns secret value []byte of agent-install.crt in base64 encoded format
 func parseAgentSecret(secret *v1.Secret) []byte {
 	secretData := secret.Data
-	glog.V(3).Infof(cuwlog(fmt.Sprintln("Checking secret")))
-	for k, v := range secretData {
-		glog.V(3).Infof(cuwlog(fmt.Sprintf("Secret key: %v, secret value: %v", k, string(v))))
-	}
 	certValue := secretData[AGENT_CERT_FILE]
 	return certValue
 }
@@ -286,7 +279,7 @@ func (c KubeClient) CreateBackupSecret(namespace string, secretName string) erro
 }
 
 func (c KubeClient) UpdateAgentSecret(namespace string, secretName string, newSecretValue []byte) error {
-	glog.V(3).Infof(cuwlog(fmt.Sprintf("Update secret %v under agent namespace %v to use new cert value %v", secretName, namespace, newSecretValue)))
+	glog.V(3).Infof(cuwlog(fmt.Sprintf("Update secret %v under agent namespace %v to use new cert value", secretName, namespace)))
 	currentSecret, err := c.GetSecret(namespace, secretName)
 	if err != nil && !errors.IsNotFound(err) {
 		return err
@@ -419,7 +412,6 @@ func (c KubeClient) UpdateAgentDeploymentImageVersion(namespace string, deployme
 	glog.V(3).Infof(cuwlog(fmt.Sprintf("Update image version to %v in %v deployment under agent namespace %v", newImageVersion, deploymentName, namespace)))
 	currentDeployment, err := c.GetDeployment(namespace, deploymentName)
 	if err != nil {
-		// err cannot be notfound,
 		return err
 	} else if currentDeployment == nil {
 		return fmt.Errorf("get nil agent deployment")
