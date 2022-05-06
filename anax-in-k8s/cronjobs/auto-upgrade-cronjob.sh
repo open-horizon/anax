@@ -43,7 +43,7 @@ function now() {
     echo $(date '+%Y-%m-%d %H:%M:%S')
 }
 
-# Default logginf level
+# Default logging level
 AGENT_VERBOSITY=4
 
 # Get script flags (should never really run unless testing script manually)
@@ -107,6 +107,11 @@ function log() {
     fi
 }
 
+# Utility function for running commands on agent pod
+function agent_cmd() {
+    $KUBECTL exec -i ${POD_ID} -n ${AGENT_NAMESPACE} -c anax -- bash -c "$@"
+}
+
 # Writes cronjob pod logs to /var/horizon/cronjob.log
 # Only last 1 million lines of /var/horizon/cronjob.log is kept 
 #  - (~100 days worth if schedule is every 15 minutes)
@@ -123,7 +128,7 @@ function write_logs() {
 function rollback_failed() {
     local msg="$1"
     log_verbose "Setting status to \"$STATUS_ROLLBACK_FAILED\""
-    sed -i 's/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_FAILED\",/g' $STATUS_PATH 
+    sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_FAILED\"/g" $STATUS_PATH 
     write_logs
     log_fatal 1 "$msg"
 }
@@ -241,13 +246,11 @@ function rollback_agent_image() {
     local rc
 
     # Determine what version the agent attempted to upgrade from
-    log_verbose "Checking agent image version change..."
     local old_image_version
-    old_image_version=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.image.from')
+    local current_version
+    old_image_version=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.imageVersion.from' | sed 's/\"//g')
     log_debug "Old image version: $old_image_version"
-    local new_image_version
-    new_image_version=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.image.to')
-    log_debug "New image version: $new_image_version"
+    current_version=$($KUBECTL get deployment -n ${AGENT_NAMESPACE} agent -o=jsonpath='{..image}' | sed 's/.*://')
 
     # Download the agent deployment to a yaml file
     log_verbose "Dowloading agent deployment to yaml file..."
@@ -258,8 +261,10 @@ function rollback_agent_image() {
     fi
 
     # Replace the agent version in the yaml file to the version the agent attempted to upgrade from
-    log_verbose "Updating version from $new_image_version to $old_image_version..."
-    sed -i "s/amd64_anax_k8s:$new_image_version/amd64_anax_k8s:$old_image_version/g" deployment.yaml
+    log_verbose "Downgrading version from $current_version to $old_image_version..."
+    sed -i "s/$current_version/$old_image_version/g" /tmp/deployment.yaml
+
+    log_debug "New deployment.yaml file: $(cat /tmp/deployment.yaml)"
     
     # Delete the current agent deployment
     log_verbose "Deleting current agent deployment..."
@@ -271,7 +276,8 @@ function rollback_agent_image() {
     
     # Redeploy the agent using the yaml file
     log_verbose "Creating new agent deployment from backup yaml file..."
-    cmd_output=$( { $KUBECTL apply -n ${AGENT_NAMESPACE} -f deployment.yaml; } 2>&1 )
+    cmd_output=$( { $KUBECTL apply -n ${AGENT_NAMESPACE} -f /tmp/deployment.yaml; } 2>&1 )
+    log_debug "Output from apply command: $cmd_output"
     rc=$?
     if [[ $rc != 0 ]]; then
         rollback_failed "Agent deployment could not be retrieved. Error: $cmd_output"
@@ -357,6 +363,7 @@ function get_status_path() {
                 if [ "$status" = "$STATUS_FAILED" ] || [ "$status" = "$STATUS_INITIATED" ] || [ "$status" = "$STATUS_ROLLBACK_STARTED" ]; then
                     latest=$seconds
                     STATUS_PATH=$filepath/$nmp_name/status.json
+                    CURRENT_STATUS=$status
                 fi
             fi
         fi
@@ -402,6 +409,8 @@ dep_status=$($KUBECTL rollout status deployment/agent -n ${AGENT_NAMESPACE} | aw
 log_debug "Deployment status: $dep_status"
 json_status=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.status' | sed 's/\"//g')
 log_debug "Cron Job status: $json_status"
+CURRENT_STATUS=$json_status
+panic_rollback=false
 
 # Check deployment/pod status
 log_info "Checking if agent is running and deployment is successful..."
@@ -417,35 +426,81 @@ if [[ "$pod_status" != "Running" || "$dep_status" != "Running" ]]; then
         if [[ ! -z "$dep_status" ]]; then
             log_info "Agent pod is running successfully"
             log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
-            sed -i "s/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_SUCCESSFUL\",/g" $STATUS_PATH
+            sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_SUCCESSFUL\"/g" $STATUS_PATH
             write_logs
             exit 0
         else
-            rollback_failed "Rollback was already initiated, but it failed. Deployment status: $dep_status"
+            rollback_failed "Rollback was already attempted, but it failed. Deployment status: $dep_status"
         fi
     fi
 
     # If k8s deployment status is "error" and status.json is "initiated" status, wait to see if pod is just waiting to spin back up
-    log_debug "Checking if agent upgrade was $STATUS_INITIATED..."
+    log_debug "Checking if agent upgrade was initiated..."
     if [[ "$json_status" == "$STATUS_INITIATED" ]]; then
         log_info "Waiting up to $AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS seconds for the agent deployment to complete..."
         dep_status=$($KUBECTL rollout status --timeout=${AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS}s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out")
         
         # Agent is running, exit and let agent upgrade worker determine if agent upgrade was successful
         if [[ ! -z "$dep_status" ]]; then
-            log_info "agent is up-to-date"
+            log_info "Agent is running. Keeping status as \"$CURRENT_STATUS\" and exiting."
             write_logs
             exit 0
         fi
     fi
+    panic_rollback=true
 
-# Should never happen, but if status is initiated, or rollback started, and pod is running, agent is up-to-date
-elif [[ "$json_status" == "$STATUS_INITIATED" || "$json_status" == "$STATUS_ROLLBACK_STARTED" ]]; then
-    log_info "Agent pod is running successfully"
-    log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
-    sed -i "s/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_SUCCESSFUL\",/g" $STATUS_PATH
-    write_logs
-    exit 0
+# Should never happen, but if status is "rollback started" and agent is running properly, check agent pod for panic"
+elif [[ "$json_status" == "$STATUS_ROLLBACK_STARTED" ]]; then
+    log_info "Deployment is successful and rollback was already attempted. Checking agent pod for panic..."
+    cmd_output=$(agent_cmd "hzn node list" | grep "nodeType")
+    rc=$?
+
+    # If the pod is reachable from hzn node list, just exit.
+    if [[ $rc -eq 0 && "$cmd_output" == *"nodeType"*"cluster"* ]]; then
+        log_info "Agent pod is running successfully."
+        log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
+        sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_SUCCESSFUL\"/g" $STATUS_PATH
+        write_logs
+        exit 0
+    fi
+
+    # If there is a panic on the agent pod, set status to "rollback failed"
+    cmd_output=$(agent_cmd "hzn node list")
+    rollback_failed "Rollback was already attempted, but the agent pod is in panic. Output of \"hzn node list\": $cmd_output"
+
+# If status is initiated and agent pod is running, check for panic
+elif [[ "$json_status" == "$STATUS_INITIATED" ]]; then
+    
+    log_info "Deployment is successful but status is still in $CURRENT_STATUS state. Checking agent pod for panic..."
+
+    current_version=$($KUBECTL get deployment -n ${AGENT_NAMESPACE} agent -o=jsonpath='{..image}' | sed 's/.*://')
+    old_image_version=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.imageVersion.from' | sed 's/\"//g')
+
+    # Status is initiated and agent pod is running successfully, just exit.
+    cmd_output=$(agent_cmd "hzn node list" | grep "nodeType")
+    rc=$?
+    if [[ $rc -eq 0 && "$cmd_output" != *"nodeType"*"cluster"* ]]; then
+        log_info "Deployment is successful and pod is not in panic state. Keeping status as \"$CURRENT_STATUS\" and exiting."
+        write_logs
+        exit 0
+
+    # Status is initiated but agent pod is in panic state, despite not being upgraded yet
+    elif [[ "$current_version" == "$old_image_version" ]]; then
+        # set status to "failed"
+        log_info "Agent pod is in panic state and the image version was not updated. Setting status to \"$ROLLBACK_FAILED\" and exiting."
+        sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$ROLLBACK_FAILED\"/g" $STATUS_PATH
+        log_debug "Output of \"hzn node list\": $cmd_output"
+        write_logs
+        log_fatal 1 "Agent pod is in panic state and the image version was not updated."
+
+    # Status is initiated and agent pod is in panic state. Rollback needs to be performed.
+    else
+        cmd_output=$(agent_cmd "hzn node list")
+        log_info "Agent pod is in panic state. Rollback will be performed."
+        log_debug "Output of \"hzn node list\": $cmd_output"
+    fi
+
+    panic_rollback=true
 fi
 
 # Rollback
@@ -453,7 +508,8 @@ log_info "Starting rollback process..."
     
 # Set the status to "rollback started" in status.json
 log_verbose "Setting the status to \"$STATUS_ROLLBACK_STARTED\"..."
-sed -i "s/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_STARTED\",/g" $STATUS_PATH
+sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_STARTED\"/g" $STATUS_PATH
+CURRENT_STATUS=$STATUS_ROLLBACK_STARTED
 
 # Configmap:
 log_info "Checking config map status..."
@@ -498,7 +554,7 @@ log_debug "Agent image needs change: $image_change"
 log_debug "Agent image was updated: $image_updated"
 
 # If the status.json set image_change to true, perform a rollback of the secret
-if [[ $image_updated == "true" ]]; then
+if [[ $image_updated == "true" || $panic_rollback == "true" ]]; then
     if [[ "$image_change" == "false" ]]; then
         log_error "The agent image was updated, but there was no image change request. Attempting rollback anyway..."
     fi
@@ -511,9 +567,16 @@ elif [[ "$pod_status" != "Running" || "$dep_status" != "Running" ]]; then
     check_deployment_status
 fi
 
+if [[ $image_updated == "false" && $secret_updated == "false" && $config_updated == "false" && $panic_rollback == "false" ]]; then
+    log_info "The agent image, config and secret were not updated. Keeping status as \"$CURRENT_STATUS\" and exiting."
+    write_logs
+    exit 0
+fi
+
 # If the rollback ran successfully, update status to "rollback successful". 
 log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
-sed -i "s/\"status\":.*/\"status\": \"$STATUS_ROLLBACK_SUCCESSFUL\",/g" $STATUS_PATH
+sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_SUCCESSFUL\"/g" $STATUS_PATH
+CURRENT_STATUS=$STATUS_ROLLBACK_SUCCESSFUL
 
 # Delete backup configmap
 if [[ "$config_updated" == "true" ]]; then
