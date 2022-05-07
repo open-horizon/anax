@@ -390,7 +390,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 	}
 
 	if configIsSame && certIsSame && imageVersionIsSame {
-		glog.Info("agent config, cert and image version are same, set status to %v for nmp: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName)
+		glog.Infof("agent config, cert and image version are same, set status to %v for nmp: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName)
 		// set nmp status to successful in db and status.json
 		if err = w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_SUCCESSFUL, ""); err != nil {
 			errMessage = fmt.Sprintf("Failed to update status to %v in db and status file for nmp: %v, error: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName, err)
@@ -398,13 +398,13 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
 			return
 		}
-		glog.Info(cuwlog(fmt.Sprintf("NMP sataus is set to to %v for nmp: %v and return", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
+		glog.Infof(cuwlog(fmt.Sprintf("NMP sataus is set to to %v for nmp: %v and return", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
 		return
 	}
 
 	// backup process, update current configmap, set k8s.configMap.updated = true in status.json
 	if !configIsSame {
-		glog.Info("agent config is different for nmp %v, starting configmap backup and update process...", nmpName)
+		glog.Infof("agent config is different for nmp %v, starting configmap backup and update process...", nmpName)
 		// backup configmap
 		if err = w.kubeClient.CreateBackupConfigmap(AGENT_NAMESPACE, AGENT_CONFIGMAP); err != nil {
 			errMessage = fmt.Sprintf("Failed to backup configmap for nmp: %v, error: %v", nmpName, err)
@@ -427,11 +427,11 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
 			return
 		}
-		glog.Info("agent configmap is handled for nmp: %v", nmpName)
+		glog.Infof("agent configmap is handled for nmp: %v", nmpName)
 	}
 
 	if !certIsSame {
-		glog.Info("agent cert is different for nmp %v, starting secret (cert) backup and update process...", nmpName)
+		glog.Infof("agent cert is different for nmp %v, starting secret (cert) backup and update process...", nmpName)
 		if err = w.kubeClient.CreateBackupSecret(AGENT_NAMESPACE, AGENT_SECRET); err != nil {
 			errMessage = fmt.Sprintf("Failed to backup secret for nmp: %v, error: %v", nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
@@ -453,11 +453,11 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
 			return
 		}
-		glog.Info("agent secret is handled for nmp: %v", nmpName)
+		glog.Infof("agent secret is handled for nmp: %v", nmpName)
 	}
 
 	if !imageVersionIsSame {
-		glog.Info("agent image version is different for nmp %v, setting agent image version to %v in agent deployment...", nmpName, newImageVersion)
+		glog.Infof("agent image version is different for nmp %v, setting agent image version to %v in agent deployment...", nmpName, newImageVersion)
 		// update the deployment will restart agent
 		if err = w.kubeClient.UpdateAgentDeploymentImageVersion(AGENT_NAMESPACE, AGENT_DEPLOYMENT, newImageVersion); err != nil {
 			errMessage = fmt.Sprintf("Failed to update image version in agent deployment for nmp: %v, error: %v", nmpName, err)
@@ -467,7 +467,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 		}
 		// agent restarting
 
-		glog.Info("agent image update is handled for nmp: %v", nmpName)
+		glog.Infof("agent image update is handled for nmp: %v", nmpName)
 	}
 }
 
@@ -632,4 +632,3 @@ func checkAgentImageAgainstStatusFile(workDir string) (bool, error) {
 		return true, nil
 	}
 }
-

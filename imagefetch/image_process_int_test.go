@@ -1,3 +1,4 @@
+//go:build ci
 // +build ci
 
 // N.B. !! In order for a test in this suite to succeed you must do the following config:

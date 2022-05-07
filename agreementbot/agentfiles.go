@@ -24,12 +24,14 @@ func (w *AgreementBotWorker) updateAgentFileVersions() int {
 		return 0
 	}
 
-	afVersions := map[string]map[string]bool{}
+	afVersions := map[string]map[string]int{}
+	totalAfVersions := map[string]map[string]int
 
 	if agentFileMeta != nil {
 		for _, agentFile := range *agentFileMeta {
 			// Determine if there is an underscore signifying a version string (can't be first or last character)
 			agentFileType := agentFile.ObjectType
+			agentFileID := agentFile.ObjectID
 			splitIdx := strings.Index(agentFileType, "-")
 			if splitIdx > 0 && splitIdx < len(agentFileType)-1 {
 
@@ -42,9 +44,17 @@ func (w *AgreementBotWorker) updateAgentFileVersions() int {
 					continue
 				}
 				if afVersions[fileType] == nil {
-					afVersions[fileType] = map[string]bool{}
+					afVersions[fileType] = map[string]int{}
 				}
-				afVersions[fileType][fileVersion] = true
+				if totalAfVersions[fileType] == nil {
+					totalAfVersions[fileType] = map[string]int{}
+				}
+				if agentFileID == "total" {
+					// red the total number of agents from the file
+					totalAfVersions[fileType][fileVersion]=10
+				} else {
+					afVersions[fileType][fileVersion] += 1
+				}
 			}
 		}
 	}

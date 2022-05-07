@@ -347,6 +347,42 @@ function putOneFileInCss() {
     chk $rc "publishing $filename in CSS as a public object. Ensure HZN_EXCHANGE_USER_AUTH is set to credentials that can publish to the IBM org."
 }
 
+# Put total in CSS for agent_software_files-<version> 
+function getAgentFileTotal() {
+    # get exchange root creds, if necessary
+    local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
+    if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
+        echo "Getting exchange root credentials to use to publish to CSS..."
+        export HZN_EXCHANGE_USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        chk $? 'getting exchange root creds'
+    fi
+
+    echo "Listing CSS object with id 'total' for agent_software_files_${SOFTWARE_PACKAGE_VERSION}"
+    hzn mms -o IBM object list -i total -t agent_software_files_${SOFTWARE_PACKAGE_VERSION} 2>&1
+    if [ $rc -eq 0 ]; then
+        echo "Removing CSS object with id 'total' for agent_software_files_${SOFTWARE_PACKAGE_VERSION}"
+        hzn mms -o IBM object delete -i total -t agent_software_files_${SOFTWARE_PACKAGE_VERSION}
+        chk $rc "Removing CSS object with id 'total' for agent_software_files_${SOFTWARE_PACKAGE_VERSION}"
+    fi
+
+    echo "Getting all the objects with type agent_software_files_${SOFTWARE_PACKAGE_VERSION} from CSS ..."
+    output=$(hzn mms -o IBM object list -t agent_software_files_${SOFTWARE_PACKAGE_VERSION} 2>&1)
+    if [ $rc -ne 0 ]; then
+        echo "$output"
+        num=0
+    else 
+        num=$(echo "$output" | grep agent_software_files_${SOFTWARE_PACKAGE_VERSION} | wc)
+    fi
+
+    if [ "$num" != "0" ]; then
+        if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+            echo $num > /tmp/total
+            putOneFileInCss "/tmp/total" "agent_software_files-${SOFTWARE_PACKAGE_VERSION}" true $SOFTWARE_PACKAGE_VERSION
+        fi
+    fi
+    echo
+}
+
 # Utility file to see if the objectType and objectID already exist in CSS
 function test_IsFileInCss() {
 	local org=$1 objectType=$2 objectID=$3 
@@ -996,6 +1032,8 @@ main() {
     # Publish manifest if artifacts were pushed to CSS which populated the upgradeManifest variable
     if [[ ! "${upgradeManifest}" == "{}" ]]; then
 	    publishUpgradeManifest "${upgradeManifest}" "${SOFTWARE_PACKAGE_VERSION}"
+        # add a 'total' object so that agbot knows how many agent files are there before updating AgentFileVersion object
+        getAgentFileTotal
     fi
 
     echo "edgeNodeFiles.sh completed successfully."

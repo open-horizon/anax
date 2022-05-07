@@ -36,7 +36,7 @@ func NewNodeManagementWorker(name string, config *config.HorizonConfig, db *bolt
 		db:         db,
 	}
 
-	glog.Info(nmwlog(fmt.Sprintf("Starting Node Management Worker %v", worker.EC)))
+	glog.Infof(nmwlog(fmt.Sprintf("Starting Node Management Worker %v", worker.EC)))
 	worker.Start(worker, 0)
 	return worker
 }
@@ -208,7 +208,7 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 	}
 
 	if cmd.Msg.Status == exchangecommon.STATUS_DOWNLOADED {
-		glog.Info("DownloadComplete sending out AgentPackageDownloadedMessaage with event: %v, for npm: %v", events.AGENT_PACKAGE_DOWNLOADED, cmd.Msg.NMPName)
+		glog.Infof("DownloadComplete sending out AgentPackageDownloadedMessaage with event: %v, for npm: %v", events.AGENT_PACKAGE_DOWNLOADED, cmd.Msg.NMPName)
 		n.Messages() <- events.NewAgentPackageDownloadedMessage(events.AGENT_PACKAGE_DOWNLOADED, events.StartDownloadMessage{NMPStatus: status, NMPName: cmd.Msg.NMPName})
 	}
 }
