@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/semanticversion"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -25,7 +26,7 @@ func (w *AgreementBotWorker) updateAgentFileVersions() int {
 	}
 
 	afVersions := map[string]map[string]int{}
-	totalAfVersions := map[string]map[string]int
+	totalAfs := map[string]map[string]int{}
 
 	if agentFileMeta != nil {
 		for _, agentFile := range *agentFileMeta {
@@ -43,25 +44,29 @@ func (w *AgreementBotWorker) updateAgentFileVersions() int {
 				if !exchangecommon.ValidFileTypes.Contains(fileType) {
 					continue
 				}
-				if afVersions[fileType] == nil {
-					afVersions[fileType] = map[string]int{}
-				}
-				if totalAfVersions[fileType] == nil {
-					totalAfVersions[fileType] = map[string]int{}
-				}
 				if agentFileID == "total" {
-					// red the total number of agents from the file
-					totalAfVersions[fileType][fileVersion]=10
+					// read the total number of agents from the description part of the metadata.
+					if t, err := strconv.Atoi(agentFile.Description); err != nil {
+						glog.Errorf(AWlogString(fmt.Sprintf("The 'description' field for %v is not a number. Please update it with the total number of agent files. %v", agentFile, err)))
+					} else {
+						if totalAfs[fileType] == nil {
+							totalAfs[fileType] = map[string]int{}
+						}
+						totalAfs[fileType][fileVersion] = t
+					}
 				} else {
+					if afVersions[fileType] == nil {
+						afVersions[fileType] = map[string]int{}
+					}
 					afVersions[fileType][fileVersion] += 1
 				}
 			}
 		}
 	}
 
-	sw_versions := getVersions(afVersions, exchangecommon.AU_AGENTFILE_TYPE_SOFTWARE)
-	config_versions := getVersions(afVersions, exchangecommon.AU_AGENTFILE_TYPE_CONFIG)
-	cert_versions := getVersions(afVersions, exchangecommon.AU_AGENTFILE_TYPE_CERT)
+	sw_versions := getVersions(afVersions, totalAfs, exchangecommon.AU_AGENTFILE_TYPE_SOFTWARE)
+	config_versions := getVersions(afVersions, totalAfs, exchangecommon.AU_AGENTFILE_TYPE_CONFIG)
+	cert_versions := getVersions(afVersions, totalAfs, exchangecommon.AU_AGENTFILE_TYPE_CERT)
 
 	sortVersions(sw_versions)
 	sortVersions(config_versions)
@@ -100,15 +105,40 @@ func (w *AgreementBotWorker) updateAgentFileVersions() int {
 }
 
 // It returns the an array of versions for a given key.
-func getVersions(afVersions map[string]map[string]bool, key string) []string {
+func getVersions(afVersions map[string]map[string]int, afTotals map[string]map[string]int, key string) []string {
 	ret := []string{}
-	if vMap, ok := afVersions[key]; ok {
-		if vMap != nil {
-			for k, _ := range vMap {
-				ret = append(ret, k)
-			}
+	var vMapFileVersion map[string]int
+	var vMapTotalSW map[string]int
+
+	if afVersions == nil {
+		return ret
+	}
+
+	if vMapFileVersion = afVersions[key]; vMapFileVersion == nil || len(vMapFileVersion) == 0 {
+		return ret
+	}
+
+	if key == exchangecommon.AU_AGENTFILE_TYPE_SOFTWARE {
+		if afTotals == nil {
+			return ret
+		}
+		if vMapTotalSW = afTotals[key]; vMapTotalSW == nil || len(vMapTotalSW) == 0 {
+			return ret
 		}
 	}
+
+	for k, t := range vMapFileVersion {
+		if key == exchangecommon.AU_AGENTFILE_TYPE_SOFTWARE {
+			if t1, ok := vMapTotalSW[k]; ok {
+				if t == t1 {
+					ret = append(ret, k)
+				}
+			}
+		} else {
+			ret = append(ret, k)
+		}
+	}
+
 	return ret
 }
 

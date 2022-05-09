@@ -319,25 +319,10 @@ function putOneFileInCss() {
     fi 
 
     if [[ $addExpiration == true ]]; then 
-	    # Only add if caller passed it a value representing the days before deleting
-	    if [ ! -z $AGENT_FILES_EXPIRATION ]; then 
-
-		    local EXP_TIME="0"
-		    if [[ $OSTYPE == darwin* ]]; then 
-			    local EXPIRATION_TIME=$( date -ju -v +"${AGENT_FILES_EXPIRATION}"d +%Y-%m-%dT%H:%M:%S.00Z )
-			    if [[ ${#EXPIRATION_TIME} -gt 0  ]]; then 
-				    EXP_TIME="${EXPIRATION_TIME}"
-			    fi
-		    else   # linux (deb or rpm) 
-			    local EXPIRATION_TIME=$( date -u -d "+${AGENT_FILES_EXPIRATION} days" +"%Y-%m-%dT%H:%M:%S.00Z" ) 
-			    if [[ ${#EXPIRATION_TIME} -gt 0  ]]; then 
-				    EXP_TIME="${EXPIRATION_TIME}"
-			    fi
-		    fi
-
-		    if [[ ! "${EXP_TIME}" == "0" ]]; then 
-			    META_DATA=$( echo "${META_DATA}" | jq --arg EXPIRATION ${EXPIRATION_TIME} '. + {expiration: $EXPIRATION}' ) 
-		    fi
+        local exp_time=''
+        getExpirationTime exp_time
+		if [[ ! "${EXP_TIME}" == "0" ]]; then 
+            META_DATA=$( echo "${META_DATA}" | jq --arg EXPIRATION ${exp_time} '. + {expiration: $EXPIRATION}' ) 
 	    fi 
     fi
 
@@ -347,38 +332,75 @@ function putOneFileInCss() {
     chk $rc "publishing $filename in CSS as a public object. Ensure HZN_EXCHANGE_USER_AUTH is set to credentials that can publish to the IBM org."
 }
 
-# Put total in CSS for agent_software_files-<version> 
+# it returns the agent file expiration time beased on $AGENT_FILES_EXPIRATION.
+#    return 0 if $AGENT_FILES_EXPIRATION is not set.
+function getExpirationTime() {
+    local __resultvar=$1
+
+    # Only add if caller passed it a value representing the days before deleting
+    local EXP_TIME="0"
+    if [ ! -z $AGENT_FILES_EXPIRATION ]; then 
+
+        if [[ $OSTYPE == darwin* ]]; then 
+            local EXPIRATION_TIME=$( date -ju -v +"${AGENT_FILES_EXPIRATION}"d +%Y-%m-%dT%H:%M:%S.00Z )
+            if [[ ${#EXPIRATION_TIME} -gt 0  ]]; then 
+                EXP_TIME="${EXPIRATION_TIME}"
+            fi
+        else   # linux (deb or rpm) 
+            local EXPIRATION_TIME=$( date -u -d "+${AGENT_FILES_EXPIRATION} days" +"%Y-%m-%dT%H:%M:%S.00Z" ) 
+            if [[ ${#EXPIRATION_TIME} -gt 0  ]]; then 
+                EXP_TIME="${EXPIRATION_TIME}"
+            fi
+        fi
+    fi
+    
+    eval $__resultvar="'$EXP_TIME'"
+}
+
+# Put "total" in CSS for agent_software_files-<version> type
 function getAgentFileTotal() {
+    ver_in=$1
+
     # get exchange root creds, if necessary
-    local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
         echo "Getting exchange root credentials to use to publish to CSS..."
+        local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
         export HZN_EXCHANGE_USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
     fi
 
-    echo "Listing CSS object with id 'total' for agent_software_files_${SOFTWARE_PACKAGE_VERSION}"
-    hzn mms -o IBM object list -i total -t agent_software_files_${SOFTWARE_PACKAGE_VERSION} 2>&1
-    if [ $rc -eq 0 ]; then
-        echo "Removing CSS object with id 'total' for agent_software_files_${SOFTWARE_PACKAGE_VERSION}"
-        hzn mms -o IBM object delete -i total -t agent_software_files_${SOFTWARE_PACKAGE_VERSION}
-        chk $rc "Removing CSS object with id 'total' for agent_software_files_${SOFTWARE_PACKAGE_VERSION}"
-    fi
-
-    echo "Getting all the objects with type agent_software_files_${SOFTWARE_PACKAGE_VERSION} from CSS ..."
-    output=$(hzn mms -o IBM object list -t agent_software_files_${SOFTWARE_PACKAGE_VERSION} 2>&1)
-    if [ $rc -ne 0 ]; then
+    objectType="agent_software_files-${ver_in}"
+    echo "Getting all the objects with type $objectType from CSS ..."
+    output=$(hzn mms -o IBM object list -t $objectType 2>&1)
+    if [ $? -ne 0 ]; then
         echo "$output"
         num=0
-    else 
-        num=$(echo "$output" | grep agent_software_files_${SOFTWARE_PACKAGE_VERSION} | wc)
+    else
+        # check if the id "total" is already in the list
+        echo "$output" | grep '"objectID": "total"' 2>&1 > /dev/null
+        has_total=$?
+
+        # get the total number of agents
+        num=$(echo "$output" | grep $objectType | wc -l)
+        if [ $has_total -eq 0 ]; then
+            num=`expr $num - 1`
+        fi
     fi
 
     if [ "$num" != "0" ]; then
         if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-            echo $num > /tmp/total
-            putOneFileInCss "/tmp/total" "agent_software_files-${SOFTWARE_PACKAGE_VERSION}" true $SOFTWARE_PACKAGE_VERSION
-        fi
+            local META_DATA=$(jq --null-input --arg org IBM --arg ID total --arg TYPE $objectType --arg VERSION ${ver_in} --arg TOTAL $num '{objectID: $ID, objectType: $TYPE, destinationOrgID: $org, version: $VERSION, description: $TOTAL}' | jq --argjson SET_TRUE true '. + {public: $SET_TRUE, noData: $SET_TRUE}') 
+            local exp_time=''
+            getExpirationTime exp_time
+            if [[ ! "${exp_time}" == "0" ]]; then 
+                META_DATA=$( echo "${META_DATA}" | jq --arg EXPIRATION ${exp_time} '. + {expiration: $EXPIRATION}' ) 
+            fi
+
+
+            echo "${META_DATA}" | hzn mms -o IBM object publish -m-
+            local rc=$?
+            chk $rc "publishing 'total' in CSS as a public object. Ensure HZN_EXCHANGE_USER_AUTH is set to credentials that can publish to the IBM org."
+        fi 
     fi
     echo
 }
@@ -562,13 +584,13 @@ EndOfContent
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
     	if [[ ${doUploadConfig} == 'true'  ]]; then 
-		putOneFileInCss agent-install.cfg agent_files false
-	fi
+            putOneFileInCss agent-install.cfg agent_files false
+	    fi
 
     	if [[ ${doUploadConfig_versioned} == 'true'  ]]; then 
-		putOneFileInCss agent-install.cfg  "agent_config_files-1.0.0" false "1.0.0"
-		addElementToArray $upgradeFiles  "agent-install.cfg"
-	fi
+            putOneFileInCss agent-install.cfg  "agent_config_files-1.0.0" false "1.0.0"
+            addElementToArray $upgradeFiles  "agent-install.cfg"
+	   fi
     fi
 
     echo ""
@@ -587,24 +609,24 @@ function getClusterCert () {
     local doUploadCert_versioned='true' 
     # Only upload cert if it doesn't exist in CSS.. ie. fresh install
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-            if test_IsFileInCss "IBM"  "agent_files" "agent-install.crt"; then 
-	           doUploadCert='false' 
-            fi
+        if test_IsFileInCss "IBM"  "agent_files" "agent-install.crt"; then 
+            doUploadCert='false' 
+        fi
 
-            if  test_IsFileInCss "IBM"  "agent_cert_files-1.0.0" "agent-install.crt"; then
-	           doUploadCert_versioned='false'
-            fi
+        if  test_IsFileInCss "IBM"  "agent_cert_files-1.0.0" "agent-install.crt"; then
+            doUploadCert_versioned='false'
+        fi
     fi
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-    	if [[ ${doUploadCert} == 'true' ]]; then 
-		putOneFileInCss agent-install.crt agent_files false
-	fi
+        if [[ ${doUploadCert} == 'true' ]]; then 
+            putOneFileInCss agent-install.crt agent_files false
+        fi
 
-    	if [[ ${doUploadCert_versioned} == 'true' ]]; then 
-		putOneFileInCss agent-install.crt  "agent_cert_files-1.0.0" false  "1.0.0"
-		addElementToArray $upgradeFiles  "agent-install.crt"
-	fi
+        if [[ ${doUploadCert_versioned} == 'true' ]]; then 
+            putOneFileInCss agent-install.crt  "agent_cert_files-1.0.0" false  "1.0.0"
+            addElementToArray $upgradeFiles  "agent-install.crt"
+        fi
     fi
     echo ""
 }
@@ -648,16 +670,16 @@ function putHorizonPkgsInCss() {
 
     # Put the tar file in CSS in the IBM org as a public object
     if [[ ${doUploadPkgs} == 'true' ]]; then 
-	    putOneFileInCss $tarFile "agent_files" false $pkgVersion
+        putOneFileInCss $tarFile "agent_files" false $pkgVersion
     fi
     if [[ ${doUploadPkgs_versioned} == 'true' ]]; then 
-	    putOneFileInCss $tarFile "agent_software_files-${pkgVersion}" true $pkgVersion
+        putOneFileInCss $tarFile "agent_software_files-${pkgVersion}" true $pkgVersion
 
-	    # Add the tarFile name array for the manifest
-            addElementToArray $horizonSoftwareFiles $tarFile 
+        # Add the tarFile name array for the manifest
+        addElementToArray $horizonSoftwareFiles $tarFile 
 
-	    # Will set the software package version if not set yet
-	    setSoftwarePackageVersion ${pkgVersion}
+        # Will set the software package version if not set yet
+        setSoftwarePackageVersion ${pkgVersion}
     fi
 
     # Remove the tar file (it was only needed to put into CSS)
@@ -1033,7 +1055,7 @@ main() {
     if [[ ! "${upgradeManifest}" == "{}" ]]; then
 	    publishUpgradeManifest "${upgradeManifest}" "${SOFTWARE_PACKAGE_VERSION}"
         # add a 'total' object so that agbot knows how many agent files are there before updating AgentFileVersion object
-        getAgentFileTotal
+        getAgentFileTotal "${SOFTWARE_PACKAGE_VERSION}"
     fi
 
     echo "edgeNodeFiles.sh completed successfully."
