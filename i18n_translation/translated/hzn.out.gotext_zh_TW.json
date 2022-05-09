@@ -364,6 +364,10 @@
     "translation": "完成將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "{Arg_1}/{Arg_2} 的節點管理狀態已變更為 {Arg_3}"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
   },
@@ -1104,8 +1108,12 @@
     "translation": "要檢查的節點管理原則狀態名稱。"
   },
   {
-    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-    "translation": "顯示每一個節點管理原則狀態物件的整個內容，而不只是狀態。"
+    "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "過濾輸出以僅包括這一個節點。 與 -- long 旗標搭配使用，以顯示單一節點管理原則狀態物件的整個內容。"
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object.",
+    "translation": "顯示每一個節點管理原則狀態物件的整個內容。"
   },
   {
     "id": "List and manage nodes in the Horizon Exchange",
@@ -1204,6 +1212,10 @@
     "translation": "列出此節點的原則。"
   },
   {
+    "id": "List and manage node management resources in the Horizon Exchange",
+    "translation": "列出並管理 Horizon Exchange 中的節點管理資源"
+  },
+  {
     "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
     "translation": "列出節點的相容節點管理原則。 除非指定 -a 旗標，否則只會顯示已啟用的原則。"
   },
@@ -1226,6 +1238,10 @@
   {
     "id": "List node management policy statuses for this node.",
     "translation": "列出此節點的節點管理原則狀態。"
+  },
+  {
+    "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "過濾輸出以僅包括這一個節點管理原則。 與 -- long 旗標搭配使用，以顯示單一節點管理原則狀態物件的整個內容。"
   },
   {
     "id": "List the run-time status of the node.",
@@ -3904,6 +3920,10 @@
     "translation": "相依關係 {URL} 的 '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr}"
   },
   {
+    "id": "unable to get list of containers in network {NwName}, error {Err}",
+    "translation": "無法取得網路 {NwName} 中的容器清單，錯誤為 {Err}"
+  },
+  {
     "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
     "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法列出現有儲存器：{Err}"
   },
@@ -4340,8 +4360,16 @@
     "translation": "已移除節點管理原則 {NmpOrg}/{NmpName}"
   },
   {
+    "id": "Node {NodeName} not found in org {NmpOrg}",
+    "translation": "在組織 {NmpOrg} 中找不到節點 {NodeName}"
+  },
+  {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
     "translation": "在組織 {NmpOrg} 中找不到 NMP {NmpName} 的狀態"
+  },
+  {
+    "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+    "translation": "在組織 {NmpOrg} 中找不到節點 {NodeName} 的 NMP {NmpName} 狀態"
   },
   {
     "id": "failed to marshal 'exchange node list' output: {Err}",
@@ -4548,16 +4576,12 @@
     "translation": "在組織 {NodeOrg} 中找不到 {NodeName} 的節點原則"
   },
   {
-    "id": "enabled",
-    "translation": "enabled"
-  },
-  {
-    "id": "disabled",
-    "translation": "已停用"
-  },
-  {
     "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
     "translation": "在組織 {NodeOrg} 中找不到節點 {NodeName} 的狀態"
+  },
+  {
+    "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+    "translation": "節點 {NodeName} 未包含組織 {NodeOrg} 中 {NmpName} 的狀態"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5032,6 +5056,14 @@
     "translation": "警告：這樣做還會刪除此使用者擁有的所有 Exchange 資源（節點、服務、型樣等）。 確定要從 Horizon Exchange 中移除使用者 {Org}/{User} 嗎？"
   },
   {
+    "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+    "translation": "現行 Exchange 版本 {ExchangeVersion} 不是有效的版本字串。"
+  },
+  {
+    "id": "Failed to compare the versions. {Err}",
+    "translation": "無法比較版本。{Err}"
+  },
+  {
     "id": "failed to marshal 'key list' output: {Err}",
     "translation": "無法配置 'key list' 輸出：{Err}"
   },
@@ -5396,6 +5428,10 @@
     "translation": "此專案不支援啟動測試模式"
   },
   {
+    "id": "stopping test mode is not supported for this project",
+    "translation": "此專案不支援停止測試模式"
+  },
+  {
     "id": "failed to marshal 'hzn policy list' output: {Err}",
     "translation": "無法配置 'hzn policy list' 輸出：{Err}"
   },
@@ -5664,6 +5700,10 @@
     "translation": "登錄失敗。 節點已順利回到未登錄狀態。"
   },
   {
+    "id": "Bad HTTP code {HttpCode} returned from node.",
+    "translation": "從節點傳回不正確的 HTTP 代碼 {HttpCode}。"
+  },
+  {
     "id": "Call to anax to create node timed out.",
     "translation": "呼叫 anax 以建立節點時發生逾時。"
   },
@@ -5682,6 +5722,22 @@
   {
     "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
     "translation": "{Errstring}。 請建立輸入檔，為服務 {Matches2} 定義變數。 執行 'hzn unregister'，然後使用 -f 旗標再次執行 'hzn register...' 以指定輸入檔。"
+  },
+  {
+    "id": "Call to node to change state to configured executed successfully.",
+    "translation": "呼叫節點以將狀態變更為已配置已順利執行。"
+  },
+  {
+    "id": "Timeout on the call to update node config state. Checking if it is updated.",
+    "translation": "呼叫更新節點配置狀態時發生逾時。 正在檢查它是否已更新。"
+  },
+  {
+    "id": "Node state is unconfigured.",
+    "translation": "節點狀態未配置。"
+  },
+  {
+    "id": "Timeout waiting for node config state call to return.",
+    "translation": "等待節點配置狀態呼叫傳回逾時。"
   },
   {
     "id": "Waiting for node config state update call to return. {TotalWait} seconds until timeout.",
@@ -5888,6 +5944,10 @@
     "translation": "無法驗證密碼連結相容性，因為未提供使用者認證。 請使用 'hzn deploycheck secretbinding -p' 指令來驗證。"
   },
   {
+    "id": "unable to convert eventlog source, error: {Err}",
+    "translation": "無法轉換事件日誌來源，錯誤為：{Err}"
+  },
+  {
     "id": "{Format2006_01_02_150405}: {Message}",
     "translation": "{Format2006_01_02_150405}：{Message}"
   },
@@ -6000,8 +6060,52 @@
     "translation": "JSON 內文：{StringkeyBytes}"
   },
   {
+    "id": "field \"key_name\" is missing",
+    "translation": "遺漏欄位 \"key_name\""
+  },
+  {
+    "id": "field \"{Field}\" is missing",
+    "translation": "遺漏欄位 \"{Field}\""
+  },
+  {
+    "id": "Please fill these and try again.",
+    "translation": "請填入這些項目，然後再試一次。"
+  },
+  {
+    "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+    "translation": "金鑰名稱只能包含小寫字元、數字及連字號"
+  },
+  {
+    "id": "Country name must be a 2 Letter Country Code",
+    "translation": "國家/地區名稱必須是 2 個字母的國碼"
+  },
+  {
+    "id": "Inspecting voucher file name: {Name}",
+    "translation": "正在檢查憑單檔名：{Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+    "translation": "警告：\"hzn poucher inspect\" 已淘汰，將在未來版本中移除。 請改用 \"hzn sdo poucher inspect\"。"
+  },
+  {
+    "id": "parsing json: {Error}",
+    "translation": "正在剖析 json：{Error}"
+  },
+  {
     "id": "base64 decoding {T4}: {Err}",
     "translation": "base64 解碼 {T4}：{Err}"
+  },
+  {
+    "id": "decoding {T4} yielded {N} bytes",
+    "translation": "解碼 {T4} 已產生 {N} 個位元組"
+  },
+  {
+    "id": "did not find any rendezvous server URLs in the voucher",
+    "translation": "在憑單中找不到任何會合伺服器 URL"
+  },
+  {
+    "id": "decoding UUID: {Error}",
+    "translation": "解碼 UUID：{Error}"
   },
   {
     "id": "Listing imported SDO vouchers.",
@@ -6024,6 +6128,14 @@
     "translation": "無法配置 'hzn sdo voucher list' 輸出：{Err}"
   },
   {
+    "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+    "translation": "警告：\"hzn voucher list\" 已淘汰，將在未來版本中移除。 請改用 \"hzn sdo poucher list\"。"
+  },
+  {
+    "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+    "translation": "憑單 \"{Device}\" 已順利從 SDO 擁有者服務下載至 {FileName}。"
+  },
+  {
     "id": "Importing voucher file name: {Name}",
     "translation": "匯入憑證檔名：{Name}"
   },
@@ -6042,6 +6154,10 @@
   {
     "id": "unsupported voucher file type extension: {Name}",
     "translation": "不受支援的憑證檔案類型副檔名：{Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+    "translation": "警告：\"hzn voucher import\" 已淘汰，將在未來版本中移除。 請改用 \"hzn sdo voucher import\"。"
   },
   {
     "id": "creating zip reader for {Name}: {Err}",
@@ -6094,6 +6210,10 @@
   {
     "id": "failed to marshal 'agbot API' output: {Jerr}",
     "translation": "無法解除配置 'agbot API' 輸出：{Jerr}"
+  },
+  {
+    "id": "Vault component not found in the management hub. Retrying...",
+    "translation": "在管理中心中找不到儲存庫元件。 重試中..."
   },
   {
     "id": "-f is mutually exclusive with --secretDetail.",
@@ -6790,6 +6910,10 @@
   {
     "id": "Horizon node delete call successful with return code: {Output}",
     "translation": "Horizon 節點刪除呼叫成功，回覆碼為：{Output}"
+  },
+  {
+    "id": "Timeout unregistering the node.",
+    "translation": "取消登錄節點逾時。"
   },
   {
     "id": "Timeout in {TotalWait} seconds ...",
@@ -7714,6 +7838,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression：表示式 {Expr} 中的版本號碼不正確。"
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "找不到交集。"
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "輸入字串不是版本字串，它是空字串。"
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "輸入字串 {Ceilingversion} 不是版本字串。"
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "輸入最高版本 {Ceilingversion} 低於開始版本 {Start}。"
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "輸入最高版本 {Ceilingversion} 與開始版本相同，但開始或結束未包含在內。"
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",

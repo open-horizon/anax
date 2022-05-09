@@ -1613,6 +1613,38 @@
       "fuzzy": true
     },
     {
+      "id": [
+        "EL_API_NMP_STATUS_CHANGE",
+        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2} のノード管理状況が {Arg_3} に変更されました",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error converting the selections into Selectors: {Err}",
       "message": "Error converting the selections into Selectors: {Err}",
       "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}",
@@ -2803,9 +2835,15 @@
       "fuzzy": true
     },
     {
-      "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-      "message": "Show the entire contents of each node management policy status object, instead of just the status.",
-      "translation": "各ノード管理ポリシーの状況だけではなく、状況オブジェクトの内容全体を表示します。",
+      "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+      "message": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+      "translation": "この 1 つのノードのみを含めるように出力をフィルタリングします。 単一ノード管理ポリシー状況オブジェクトの内容全体を表示するには、-- long フラグと一緒に使用します。",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the entire contents of each node management policy status object.",
+      "message": "Show the entire contents of each node management policy status object.",
+      "translation": "各ノード管理ポリシー状況オブジェクトの内容全体を表示します。",
       "fuzzy": true
     },
     {
@@ -2953,6 +2991,12 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage node management resources in the Horizon Exchange",
+      "message": "List and manage node management resources in the Horizon Exchange",
+      "translation": "Horizon Exchange 内のノード管理リソースをリストおよび管理します",
+      "fuzzy": true
+    },
+    {
       "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
       "message": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
       "translation": "ノードの互換性のあるノード管理ポリシーをリストします。 -a フラグが指定されていない限り、有効になっているポリシーのみが表示されます。",
@@ -2986,6 +3030,12 @@
       "id": "List node management policy statuses for this node.",
       "message": "List node management policy statuses for this node.",
       "translation": "このノードのノード管理ポリシーの状況をリストします。",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+      "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+      "translation": "この 1 つのノード管理ポリシーのみを含めるように出力をフィルタリングします。 単一ノード管理ポリシー状況オブジェクトの内容全体を表示するには、-- long フラグと一緒に使用します。",
       "fuzzy": true
     },
     {
@@ -11475,6 +11525,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to get list of containers in network {NwName}, error {Err}",
+      "message": "unable to get list of containers in network {NwName}, error {Err}",
+      "translation": "ネットワーク {NwName} 内のコンテナーのリストを取得できません。エラー {Err}",
+      "placeholders": [
+        {
+          "id": "NwName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nwName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
       "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」は既存のコンテナーをリストできません: {Err}",
@@ -13251,6 +13325,30 @@
       "fuzzy": true
     },
     {
+      "id": "Node {NodeName} not found in org {NmpOrg}",
+      "message": "Node {NodeName} not found in org {NmpOrg}",
+      "translation": "ノード {NodeName} が組織 {NmpOrg} に見つかりません",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "translation": "組織 {NmpOrg} 内に NMP {NmpName} の状況が見つかりません",
@@ -13269,6 +13367,38 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+      "message": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+      "translation": "組織 {NmpOrg} 内のノード {NodeName} の NMP {NmpName} の状況が見つかりません",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
           "expr": "nmpOrg"
         }
       ],
@@ -14167,18 +14297,6 @@
       "fuzzy": true
     },
     {
-      "id": "enabled",
-      "message": "enabled",
-      "translation": "enabled",
-      "fuzzy": true
-    },
-    {
-      "id": "disabled",
-      "message": "disabled",
-      "translation": "無効",
-      "fuzzy": true
-    },
-    {
       "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "translation": "組織 {NodeOrg} 内にノード {NodeName} の状況が見つかりません",
@@ -14197,6 +14315,38 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+      "message": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+      "translation": "ノード {NodeName} に組織 {NodeOrg} 内の {NmpName} の状況が含まれていません",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
           "expr": "nodeOrg"
         }
       ],
@@ -16099,6 +16249,38 @@
       "fuzzy": true
     },
     {
+      "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+      "message": "The current exchange version {ExchangeVersion} is not a valid version string.",
+      "translation": "現在の Exchange バージョン {ExchangeVersion} は有効なバージョン・ストリングではありません。",
+      "placeholders": [
+        {
+          "id": "ExchangeVersion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchangeVersion"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to compare the versions. {Err}",
+      "message": "Failed to compare the versions. {Err}",
+      "translation": "バージョンを比較できませんでした。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'key list' output: {Err}",
       "message": "failed to marshal 'key list' output: {Err}",
       "translation": "「key list」の出力のマーシャルに失敗しました: {Err}",
@@ -17569,6 +17751,12 @@
       "fuzzy": true
     },
     {
+      "id": "stopping test mode is not supported for this project",
+      "message": "stopping test mode is not supported for this project",
+      "translation": "このプロジェクトではテスト・モードの停止はサポートされていません",
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'hzn policy list' output: {Err}",
       "message": "failed to marshal 'hzn policy list' output: {Err}",
       "translation": "「hzn policy list」の出力のマーシャルに失敗しました: {Err}",
@@ -18365,6 +18553,22 @@
       "fuzzy": true
     },
     {
+      "id": "Bad HTTP code {HttpCode} returned from node.",
+      "message": "Bad HTTP code {HttpCode} returned from node.",
+      "translation": "正しくない HTTP コード {HttpCode} がノードから返されました。",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Call to anax to create node timed out.",
       "message": "Call to anax to create node timed out.",
       "translation": "ノードを作成するための anax の呼び出しがタイムアウトになりました。",
@@ -18456,6 +18660,30 @@
           "expr": "matches[2]"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Call to node to change state to configured executed successfully.",
+      "message": "Call to node to change state to configured executed successfully.",
+      "translation": "状態を構成済みに変更するためのノードの呼び出しが正常に実行されました。",
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout on the call to update node config state. Checking if it is updated.",
+      "message": "Timeout on the call to update node config state. Checking if it is updated.",
+      "translation": "ノード構成状態を更新するための呼び出しでタイムアウトになりました。 更新されているかどうかを確認しています。",
+      "fuzzy": true
+    },
+    {
+      "id": "Node state is unconfigured.",
+      "message": "Node state is unconfigured.",
+      "translation": "ノードの状態が未構成です。",
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout waiting for node config state call to return.",
+      "message": "Timeout waiting for node config state call to return.",
+      "translation": "ノード構成状態呼び出しが戻るのを待機中にタイムアウトになりました。",
       "fuzzy": true
     },
     {
@@ -19203,6 +19431,22 @@
       "fuzzy": true
     },
     {
+      "id": "unable to convert eventlog source, error: {Err}",
+      "message": "unable to convert eventlog source, error: {Err}",
+      "translation": "イベント・ログ・ソースを変換できません。エラー: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "{Format2006_01_02_150405}: {Message}",
       "message": "{Format2006_01_02_150405}: {Message}",
       "translation": "{Format2006_01_02_150405}: {Message}",
@@ -19751,6 +19995,84 @@
       "fuzzy": true
     },
     {
+      "id": "field \"key_name\" is missing",
+      "message": "field \"key_name\" is missing",
+      "translation": "フィールド \"key_name\" がありません",
+      "fuzzy": true
+    },
+    {
+      "id": "field \"{Field}\" is missing",
+      "message": "field \"{Field}\" is missing",
+      "translation": "フィールド \"{Field}\" がありません",
+      "placeholders": [
+        {
+          "id": "Field",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "field"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Please fill these and try again.",
+      "message": "Please fill these and try again.",
+      "translation": "これらを入力して、再試行してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+      "message": "Key name can only contain lowercase characters, numbers, and hyphens",
+      "translation": "キー名には小文字、数字、およびハイフンのみを使用できます",
+      "fuzzy": true
+    },
+    {
+      "id": "Country name must be a 2 Letter Country Code",
+      "message": "Country name must be a 2 Letter Country Code",
+      "translation": "国名は 2 文字の国別コードでなければなりません",
+      "fuzzy": true
+    },
+    {
+      "id": "Inspecting voucher file name: {Name}",
+      "message": "Inspecting voucher file name: {Name}",
+      "translation": "検査中のバウチャー・ファイル名: {Name}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "voucherFile.Name()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+      "message": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+      "translation": "警告: \"hzn voucher inspect\" は推奨されておらず、将来のリリースで削除される予定です。 代わりに \"hzn sdo voucher inspect\" を使用してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "parsing json: {Error}",
+      "message": "parsing json: {Error}",
+      "translation": "JSON の構文解析: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "base64 decoding {T4}: {Err}",
       "message": "base64 decoding {T4}: {Err}",
       "translation": "base64 でデコーディング中 {T4}: {Err}",
@@ -19770,6 +20092,52 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "decoding {T4} yielded {N} bytes",
+      "message": "decoding {T4} yielded {N} bytes",
+      "translation": "{T4} のデコードは {N} バイトになりました",
+      "placeholders": [
+        {
+          "id": "T4",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "t4"
+        },
+        {
+          "id": "N",
+          "string": "%[2]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "n"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "did not find any rendezvous server URLs in the voucher",
+      "message": "did not find any rendezvous server URLs in the voucher",
+      "translation": "ランデブー・サーバー URL がバウチャーに見つかりませんでした",
+      "fuzzy": true
+    },
+    {
+      "id": "decoding UUID: {Error}",
+      "message": "decoding UUID: {Error}",
+      "translation": "UUID のデコード: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
         }
       ],
       "fuzzy": true
@@ -19877,6 +20245,36 @@
       "fuzzy": true
     },
     {
+      "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+      "message": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+      "translation": "警告: \"hzn voucher list\" は推奨されておらず、将来のリリースで削除される予定です。 代わりに \"hzn sdo voucher list\" を使用してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "message": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "translation": "バウチャー \"{Device}\" が SDO 所有者サービスから {FileName} に正常にダウンロードされました。",
+      "placeholders": [
+        {
+          "id": "Device",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "device"
+        },
+        {
+          "id": "FileName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Importing voucher file name: {Name}",
       "message": "Importing voucher file name: {Name}",
       "translation": "証明書ファイル名のインポート: {Name}",
@@ -19960,6 +20358,12 @@
           "expr": "voucherFile.Name()"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+      "message": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+      "translation": "警告: \"hzn voucher import\" は推奨されておらず、将来のリリースで削除される予定です。 代わりに \"hzn sdo voucher import\" を使用してください。",
       "fuzzy": true
     },
     {
@@ -20220,6 +20624,12 @@
           "expr": "jerr"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Vault component not found in the management hub. Retrying...",
+      "message": "Vault component not found in the management hub. Retrying...",
+      "translation": "ボールト・コンポーネントが管理ハブに見つかりません。 再試行しています...",
       "fuzzy": true
     },
     {
@@ -22946,6 +23356,12 @@
           "expr": "output"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout unregistering the node.",
+      "message": "Timeout unregistering the node.",
+      "translation": "ノードの登録解除がタイムアウトになりました。",
       "fuzzy": true
     },
     {
@@ -26826,6 +27242,74 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No intersection found.",
+      "message": "No intersection found.",
+      "translation": "交差が見つかりません。",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string is not a version string, it is an empty string.",
+      "message": "The input string is not a version string, it is an empty string.",
+      "translation": "入力ストリングはバージョン・ストリングではなく、空ストリングです。",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string {Ceilingversion} is not a version string.",
+      "message": "The input string {Ceilingversion} is not a version string.",
+      "translation": "入力ストリング {Ceilingversion} はバージョン・ストリングではありません。",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "message": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "translation": "入力上限バージョン {Ceilingversion} が開始バージョン {Start}より低くなっています。",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        },
+        {
+          "id": "Start",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "self.start"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "message": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "translation": "入力上限バージョン {Ceilingversion} は開始バージョンと同じですが、開始または終了のいずれかが含まれていません。",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
         }
       ],
       "fuzzy": true

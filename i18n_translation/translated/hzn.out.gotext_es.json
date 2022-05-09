@@ -364,6 +364,10 @@
     "translation": "Completar el cambio de estado de configuración de servicio a {Arg_1} para {Arg_2} para el nodo."
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "El estado de gestión de nodos para {Arg_1}/{Arg_2} ha cambiado a {Arg_3}"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "Se ha producido un error al convertir las seleccione en selectores: {Err}"
   },
@@ -1104,8 +1108,12 @@
     "translation": "El nombre del estado de la política de gestión de nodos que se debe comprobar."
   },
   {
-    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-    "translation": "Muestre todo el contenido de cada objeto de estado de política de gestión de nodos, en lugar de solo el estado."
+    "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "Filtre la salida para incluir solo este nodo. Utilice el distintivo --long para visualizar el contenido completo de un único objeto de estado de política de gestión de nodos."
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object.",
+    "translation": "Mostrar todo el contenido de cada objeto de estado de política de gestión de nodos."
   },
   {
     "id": "List and manage nodes in the Horizon Exchange",
@@ -1204,6 +1212,10 @@
     "translation": "Listar política para este nodo."
   },
   {
+    "id": "List and manage node management resources in the Horizon Exchange",
+    "translation": "Listar y gestionar recursos de gestión de nodos en Horizonte Exchange"
+  },
+  {
     "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
     "translation": "Listar las políticas de gestión de nodos compatibles para el nodo. Sólo se visualizarán las políticas que estén habilitadas a menos que se especifique el distintivo -a."
   },
@@ -1226,6 +1238,10 @@
   {
     "id": "List node management policy statuses for this node.",
     "translation": "Liste los estados de política de gestión de nodos para este nodo."
+  },
+  {
+    "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "Filtre la salida para incluir solo esta política de gestión de nodos. Utilice el distintivo --long para visualizar el contenido completo de un único objeto de estado de política de gestión de nodos."
   },
   {
     "id": "List the run-time status of the node.",
@@ -3904,6 +3920,10 @@
     "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} para la dependencia {URL}"
   },
   {
+    "id": "unable to get list of containers in network {NwName}, error {Err}",
+    "translation": "no se puede obtener la lista de contenedores en la red {NwName}, error {Err}"
+  },
+  {
     "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
     "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' no ha podido enumerar los contenedores existentes: {Err}"
   },
@@ -4340,8 +4360,16 @@
     "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha eliminado"
   },
   {
+    "id": "Node {NodeName} not found in org {NmpOrg}",
+    "translation": "No se ha encontrado el nodo {NodeName} en la organización {NmpOrg}"
+  },
+  {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
     "translation": "No se ha encontrado el estado de NMP {NmpName} en la org organización {NmpOrg}"
+  },
+  {
+    "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+    "translation": "No se ha encontrado el estado para NMP {NmpName} para el nodo {NodeName} en la organización {NmpOrg}"
   },
   {
     "id": "failed to marshal 'exchange node list' output: {Err}",
@@ -4548,16 +4576,12 @@
     "translation": "No se ha encontrado la política de nodo para {NodeName} en la organización {NodeOrg}"
   },
   {
-    "id": "enabled",
-    "translation": "habilitado"
-  },
-  {
-    "id": "disabled",
-    "translation": "inhabilitado"
-  },
-  {
     "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
     "translation": "No se han encontrado los estados para el nodo {NodeName} en la organización {NodeOrg}"
+  },
+  {
+    "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+    "translation": "El nodo {NodeName} no contiene un estado para {NmpName} en la organización {NodeOrg}"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5032,6 +5056,14 @@
     "translation": "Aviso: también se suprimirán todos los recursos de Exchange que son propiedad de este usuario (nodos, servicios, patrones, etc). ¿Está seguro de que desea eliminar el usuario {Org}/{User} de Horizon Exchange?"
   },
   {
+    "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+    "translation": "La versión de Exchange actual {ExchangeVersion} no es una serie de versión válida."
+  },
+  {
+    "id": "Failed to compare the versions. {Err}",
+    "translation": "No se han podido comparar las versiones. {Err}"
+  },
+  {
     "id": "failed to marshal 'key list' output: {Err}",
     "translation": "No se ha podido ordenar la salida de 'key list': {Err}"
   },
@@ -5396,6 +5428,10 @@
     "translation": "El inicio de la modalidad de prueba no está soportado para este proyecto"
   },
   {
+    "id": "stopping test mode is not supported for this project",
+    "translation": "la detención de la modalidad de prueba no recibe soporte para este proyecto"
+  },
+  {
     "id": "failed to marshal 'hzn policy list' output: {Err}",
     "translation": "No se ha podido ordenar la salida de 'hzn policy list': {Err}"
   },
@@ -5664,6 +5700,10 @@
     "translation": "El registro ha fallado. El nodo ha vuelto correctamente a un estado no registrado."
   },
   {
+    "id": "Bad HTTP code {HttpCode} returned from node.",
+    "translation": "Se ha devuelto un código HTTP incorrecto {HttpCode} desde el nodo."
+  },
+  {
     "id": "Call to anax to create node timed out.",
     "translation": "Llamar a anax para crear el nodo que ha excedido el tiempo de espera."
   },
@@ -5682,6 +5722,22 @@
   {
     "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
     "translation": "{Errstring}. Cree un archivo de entrada, defina variables para el servicio {Matches2}. Ejecute 'hzn unregister' y después 'hzn register...' de nuevo con el distintivo -f para especificar el archivo de entrada."
+  },
+  {
+    "id": "Call to node to change state to configured executed successfully.",
+    "translation": "La llamada al nodo para cambiar el estado a configurado se ha ejecutado correctamente."
+  },
+  {
+    "id": "Timeout on the call to update node config state. Checking if it is updated.",
+    "translation": "Se ha excedido el tiempo de espera en la llamada para actualizar el estado de configuración del nodo. Comprobando si se ha actualizado."
+  },
+  {
+    "id": "Node state is unconfigured.",
+    "translation": "El estado del nodo no está configurado."
+  },
+  {
+    "id": "Timeout waiting for node config state call to return.",
+    "translation": "Se ha excedido el tiempo de espera del retorno de la llamada de estado de configuración del nodo"
   },
   {
     "id": "Waiting for node config state update call to return. {TotalWait} seconds until timeout.",
@@ -5888,6 +5944,10 @@
     "translation": "La compatibilidad del enlace del secreto no se puede verificar porque no se proporciona la credencial de usuario. Utilice el mandato 'hzn deploycheck secretbinding -p' para verificar."
   },
   {
+    "id": "unable to convert eventlog source, error: {Err}",
+    "translation": "no se puede convertir el origen de eventlog, error: {Err}"
+  },
+  {
     "id": "{Format2006_01_02_150405}: {Message}",
     "translation": "{Format2006_01_02_150405}: {Message}"
   },
@@ -6000,8 +6060,52 @@
     "translation": "Cuerpo de JSON:{StringkeyBytes}"
   },
   {
+    "id": "field \"key_name\" is missing",
+    "translation": "falta el campo \"key_name\""
+  },
+  {
+    "id": "field \"{Field}\" is missing",
+    "translation": "falta el campo \"{Field}\""
+  },
+  {
+    "id": "Please fill these and try again.",
+    "translation": "Especifique estos valores y vuelva a intentarlo."
+  },
+  {
+    "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+    "translation": "El nombre de clave solo puede contener caracteres en minúsculas, números y guiones"
+  },
+  {
+    "id": "Country name must be a 2 Letter Country Code",
+    "translation": "El nombre de país debe ser un código de país de 2 letras"
+  },
+  {
+    "id": "Inspecting voucher file name: {Name}",
+    "translation": "Inspeccionando nombre de archivo de comprobante: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+    "translation": "AVISO: \"hzn voucher inspect\" está en desuso y se eliminará en un release futuro. Utilice en su lugar \"hzn sdo voucher inspect\"."
+  },
+  {
+    "id": "parsing json: {Error}",
+    "translation": "analizando json: {Error}"
+  },
+  {
     "id": "base64 decoding {T4}: {Err}",
     "translation": "decodificación de base64 de {T4}: {Err}"
+  },
+  {
+    "id": "decoding {T4} yielded {N} bytes",
+    "translation": "la decodificación de {T4} ha generado {N} bytes"
+  },
+  {
+    "id": "did not find any rendezvous server URLs in the voucher",
+    "translation": "no ha encontrado ningún URL de servidor rendezvous en el comprobante"
+  },
+  {
+    "id": "decoding UUID: {Error}",
+    "translation": "decodificando UUID: {Error}"
   },
   {
     "id": "Listing imported SDO vouchers.",
@@ -6024,6 +6128,14 @@
     "translation": "no se ha podido ordenar la salida de 'hzn sdo voucher list': {Err}"
   },
   {
+    "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+    "translation": "AVISO: \"hzn voucher list\" está en desuso y se eliminará en un release futuro. Utilice en su lugar \"hzn sdo voucher list\"."
+  },
+  {
+    "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+    "translation": "El comprobante \"{Device}\" se ha descargado correctamente en {FileName} desde los servicios del propietario de SDO."
+  },
+  {
     "id": "Importing voucher file name: {Name}",
     "translation": "Importando el nombre de archivo de cupón: {Name}"
   },
@@ -6042,6 +6154,10 @@
   {
     "id": "unsupported voucher file type extension: {Name}",
     "translation": "extensión de tipo de archivo de cupón no soportada: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+    "translation": "AVISO: \"hzn voucher import\" está en desuso y se eliminará en un release futuro. Utilice en su lugar \"hzn sdo voucher import\"."
   },
   {
     "id": "creating zip reader for {Name}: {Err}",
@@ -6094,6 +6210,10 @@
   {
     "id": "failed to marshal 'agbot API' output: {Jerr}",
     "translation": "no se ha podido ordenar la salida de 'agbot API': {Jerr}"
+  },
+  {
+    "id": "Vault component not found in the management hub. Retrying...",
+    "translation": "No se ha encontrado el componente de caja fuerte en el centro de gestión. Reintentando..."
   },
   {
     "id": "-f is mutually exclusive with --secretDetail.",
@@ -6790,6 +6910,10 @@
   {
     "id": "Horizon node delete call successful with return code: {Output}",
     "translation": "La llamada de supresión de nodo Horizon ha sido satisfactoria con el código de retorno: {Output}"
+  },
+  {
+    "id": "Timeout unregistering the node.",
+    "translation": "Se ha excedido el tiempo de espera al anular el registro del nodo."
   },
   {
     "id": "Timeout in {TotalWait} seconds ...",
@@ -7714,6 +7838,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression: Número incorrecto de versiones en la expresión: {Expr}."
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "No se ha encontrado ninguna intersección."
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "La serie de entrada no es una serie de versión, es una serie vacía."
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "La serie de entrada {Ceilingversion} no es una serie de versión."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "La versión del techo de entrada {Ceilingversion} es inferior a la versión de inicio {Start}."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "La versión del techo de entrada {Ceilingversion} es la misma que la versión de inicio, pero el inicio o el final no son inclusivos."
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",

@@ -432,6 +432,10 @@
     "translation": "Änderung des Servicekonfigurationsstatus in {Arg_1} für {Arg_2} für den Knoten abgeschlossen."
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "Der Knotenmanagementstatus für {Arg_1}/{Arg_2} wurde in {Arg_3} geändert"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "Fehler beim Umwandeln der Auswahlen in Selektoren: {Err}."
   },
@@ -2026,6 +2030,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression: Falsche Anzahl der Versionen in Ausdruck: {Expr}."
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "Keine Schnittmenge gefunden."
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "Die Eingabezeichenfolge ist keine Versionszeichenfolge, sondern eine leere Zeichenfolge."
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "Die Eingabezeichenfolge {Ceilingversion} ist keine Versionszeichenfolge."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "Die Eingabeobergrenze {Ceilingversion} ist niedriger als die Startversion {Start}."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "Die Eingabedeckenversion {Ceilingversion} ist mit der Startversion identisch, aber entweder der Anfang oder das Ende ist nicht eingeschlossen."
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",

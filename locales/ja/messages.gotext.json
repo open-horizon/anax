@@ -1957,6 +1957,38 @@
       "fuzzy": true
     },
     {
+      "id": [
+        "EL_API_NMP_STATUS_CHANGE",
+        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2} のノード管理状況が {Arg_3} に変更されました",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error converting the selections into Selectors: {Err}",
       "message": "Error converting the selections into Selectors: {Err}",
       "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}",
@@ -10110,6 +10142,74 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No intersection found.",
+      "message": "No intersection found.",
+      "translation": "交差が見つかりません。",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string is not a version string, it is an empty string.",
+      "message": "The input string is not a version string, it is an empty string.",
+      "translation": "入力ストリングはバージョン・ストリングではなく、空ストリングです。",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string {Ceilingversion} is not a version string.",
+      "message": "The input string {Ceilingversion} is not a version string.",
+      "translation": "入力ストリング {Ceilingversion} はバージョン・ストリングではありません。",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "message": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "translation": "入力上限バージョン {Ceilingversion} が開始バージョン {Start}より低くなっています。",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        },
+        {
+          "id": "Start",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "self.start"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "message": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "translation": "入力上限バージョン {Ceilingversion} は開始バージョンと同じですが、開始または終了のいずれかが含まれていません。",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
         }
       ],
       "fuzzy": true

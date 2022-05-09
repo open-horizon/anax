@@ -432,6 +432,10 @@
     "translation": "完成將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "{Arg_1}/{Arg_2} 的節點管理狀態已變更為 {Arg_3}"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
   },
@@ -2026,6 +2030,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression：表示式 {Expr} 中的版本號碼不正確。"
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "找不到交集。"
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "輸入字串不是版本字串，它是空字串。"
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "輸入字串 {Ceilingversion} 不是版本字串。"
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "輸入最高版本 {Ceilingversion} 低於開始版本 {Start}。"
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "輸入最高版本 {Ceilingversion} 與開始版本相同，但開始或結束未包含在內。"
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",

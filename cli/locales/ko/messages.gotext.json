@@ -1613,6 +1613,38 @@
       "fuzzy": true
     },
     {
+      "id": [
+        "EL_API_NMP_STATUS_CHANGE",
+        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2}에 대한 노드 관리 상태가 {Arg_3}(으)로 변경됨",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error converting the selections into Selectors: {Err}",
       "message": "Error converting the selections into Selectors: {Err}",
       "translation": "선택사항을 선택기로 변환하는 중에 오류 발생: {Err}",
@@ -2803,9 +2835,15 @@
       "fuzzy": true
     },
     {
-      "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-      "message": "Show the entire contents of each node management policy status object, instead of just the status.",
-      "translation": "상태만이 아니라 각 노드 관리 정책 상태 오브젝트의 전체 내용을 표시합니다.",
+      "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+      "message": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+      "translation": "이 하나의 노드만 포함하도록 출력을 필터링합니다. --long 플래그와 함께 사용하여 단일 노드 관리 정책 상태 오브젝트의 전체 컨텐츠를 표시합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the entire contents of each node management policy status object.",
+      "message": "Show the entire contents of each node management policy status object.",
+      "translation": "각 노드 관리 정책 상태 오브젝트의 전체 컨텐츠를 표시합니다.",
       "fuzzy": true
     },
     {
@@ -2953,6 +2991,12 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage node management resources in the Horizon Exchange",
+      "message": "List and manage node management resources in the Horizon Exchange",
+      "translation": "Horizon Exchange에서 노드 관리 자원 나열 및 관리",
+      "fuzzy": true
+    },
+    {
       "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
       "message": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
       "translation": "노드에 대한 호환 가능한 노드 관리 정책을 나열합니다. -a 플래그가 지정되지 않으면 사용 가능한 정책만 표시됩니다.",
@@ -2986,6 +3030,12 @@
       "id": "List node management policy statuses for this node.",
       "message": "List node management policy statuses for this node.",
       "translation": "이 노드의 노드 관리 정책 상태를 나열합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+      "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+      "translation": "이 하나의 노드 관리 정책만 포함하도록 출력을 필터링합니다. --long 플래그와 함께 사용하여 단일 노드 관리 정책 상태 오브젝트의 전체 컨텐츠를 표시합니다.",
       "fuzzy": true
     },
     {
@@ -11475,6 +11525,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to get list of containers in network {NwName}, error {Err}",
+      "message": "unable to get list of containers in network {NwName}, error {Err}",
+      "translation": "네트워크 {NwName}에서 컨테이너 목록을 가져올 수 없음, 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "NwName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nwName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}'에서 기존 컨테이너를 나열할 수 없음: {Err}",
@@ -13251,6 +13325,30 @@
       "fuzzy": true
     },
     {
+      "id": "Node {NodeName} not found in org {NmpOrg}",
+      "message": "Node {NodeName} not found in org {NmpOrg}",
+      "translation": "노드 {NodeName}을(를) {NmpOrg} 조직에서 찾을 수 없음",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "translation": "NMP {NmpName}의 상태를 {NmpOrg} 조직에서 찾을 수 없음",
@@ -13269,6 +13367,38 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+      "message": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+      "translation": "{NmpOrg} 조직의 노드 {NodeName}에 대해 NMP {NmpName}의 상태를 찾을 수 없음",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
           "expr": "nmpOrg"
         }
       ],
@@ -14167,18 +14297,6 @@
       "fuzzy": true
     },
     {
-      "id": "enabled",
-      "message": "enabled",
-      "translation": "사용 가능",
-      "fuzzy": true
-    },
-    {
-      "id": "disabled",
-      "message": "disabled",
-      "translation": "사용 안함",
-      "fuzzy": true
-    },
-    {
       "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "translation": "노드 {NodeName}의 상태를 {NodeOrg} 조직에서 찾을 수 없음",
@@ -14197,6 +14315,38 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+      "message": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+      "translation": "{NodeName} 노드에 {NodeOrg} 조직의 {NmpName}에 대한 상태가 포함되지 않음",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
           "expr": "nodeOrg"
         }
       ],
@@ -16099,6 +16249,38 @@
       "fuzzy": true
     },
     {
+      "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+      "message": "The current exchange version {ExchangeVersion} is not a valid version string.",
+      "translation": "현재 Exchange 버전 {ExchangeVersion}은(는) 유효한 버전 문자열이 아닙니다.",
+      "placeholders": [
+        {
+          "id": "ExchangeVersion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchangeVersion"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to compare the versions. {Err}",
+      "message": "Failed to compare the versions. {Err}",
+      "translation": "버전을 비교하는 데 실패했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'key list' output: {Err}",
       "message": "failed to marshal 'key list' output: {Err}",
       "translation": "'key list' 출력을 마샬링하는 데 실패함: {Err}",
@@ -17569,6 +17751,12 @@
       "fuzzy": true
     },
     {
+      "id": "stopping test mode is not supported for this project",
+      "message": "stopping test mode is not supported for this project",
+      "translation": "이 프로젝트에서는 테스트 모드 중지가 지원되지 않습니다.",
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'hzn policy list' output: {Err}",
       "message": "failed to marshal 'hzn policy list' output: {Err}",
       "translation": "'hzn policy list' 출력을 마샬링하는 데 실패함: {Err}",
@@ -18365,6 +18553,22 @@
       "fuzzy": true
     },
     {
+      "id": "Bad HTTP code {HttpCode} returned from node.",
+      "message": "Bad HTTP code {HttpCode} returned from node.",
+      "translation": "잘못된 HTTP 코드 {HttpCode}이(가) 노드에서 리턴되었습니다.",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Call to anax to create node timed out.",
       "message": "Call to anax to create node timed out.",
       "translation": "노드를 작성하기 위한 anax에 대한 호출이 제한시간 초과되었습니다.",
@@ -18456,6 +18660,30 @@
           "expr": "matches[2]"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Call to node to change state to configured executed successfully.",
+      "message": "Call to node to change state to configured executed successfully.",
+      "translation": "상태를 구성됨으로 변경하기 위해 노드에 대한 호출이 실행되었습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout on the call to update node config state. Checking if it is updated.",
+      "message": "Timeout on the call to update node config state. Checking if it is updated.",
+      "translation": "노드 구성 상태를 업데이트하기 위한 호출의 제한시간입니다. 업데이트 여부를 확인합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Node state is unconfigured.",
+      "message": "Node state is unconfigured.",
+      "translation": "노드 상태가 구성되지 않았습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout waiting for node config state call to return.",
+      "message": "Timeout waiting for node config state call to return.",
+      "translation": "노드 구성 상태 호출이 리턴되기를 기다리는 중에 제한시간이 초과되었습니다.",
       "fuzzy": true
     },
     {
@@ -19203,6 +19431,22 @@
       "fuzzy": true
     },
     {
+      "id": "unable to convert eventlog source, error: {Err}",
+      "message": "unable to convert eventlog source, error: {Err}",
+      "translation": "eventlog 소스를 변환할 수 없습니다. 오류: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "{Format2006_01_02_150405}: {Message}",
       "message": "{Format2006_01_02_150405}: {Message}",
       "translation": "{Format2006_01_02_150405}: {Message}",
@@ -19751,6 +19995,84 @@
       "fuzzy": true
     },
     {
+      "id": "field \"key_name\" is missing",
+      "message": "field \"key_name\" is missing",
+      "translation": "\"key_name\" 필드가 누락되었습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "field \"{Field}\" is missing",
+      "message": "field \"{Field}\" is missing",
+      "translation": "\"{Field}\" 필드가 누락되었습니다.",
+      "placeholders": [
+        {
+          "id": "Field",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "field"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Please fill these and try again.",
+      "message": "Please fill these and try again.",
+      "translation": "이 항목을 채우고 다시 시도하십시오.",
+      "fuzzy": true
+    },
+    {
+      "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+      "message": "Key name can only contain lowercase characters, numbers, and hyphens",
+      "translation": "키 이름은 소문자, 숫자 및 하이픈만 포함할 수 있습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Country name must be a 2 Letter Country Code",
+      "message": "Country name must be a 2 Letter Country Code",
+      "translation": "국가 이름은 2자리 국가 코드여야 합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Inspecting voucher file name: {Name}",
+      "message": "Inspecting voucher file name: {Name}",
+      "translation": "바우처 파일 이름 검사: {Name}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "voucherFile.Name()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+      "message": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+      "translation": "경고: \"hzn voucher inspect\"는 더 이상 사용되지 않으며 향후 릴리스에서 제거됩니다. 대신 \"hzn sdo voucher inspect\"를 사용하십시오.",
+      "fuzzy": true
+    },
+    {
+      "id": "parsing json: {Error}",
+      "message": "parsing json: {Error}",
+      "translation": "json 구문 분석: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "base64 decoding {T4}: {Err}",
       "message": "base64 decoding {T4}: {Err}",
       "translation": "{T4} base64 디코딩 중: {Err}",
@@ -19770,6 +20092,52 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "decoding {T4} yielded {N} bytes",
+      "message": "decoding {T4} yielded {N} bytes",
+      "translation": "{T4} 디코딩에서 {N}바이트 생성",
+      "placeholders": [
+        {
+          "id": "T4",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "t4"
+        },
+        {
+          "id": "N",
+          "string": "%[2]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "n"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "did not find any rendezvous server URLs in the voucher",
+      "message": "did not find any rendezvous server URLs in the voucher",
+      "translation": "바우처에서 랑데부 서버 URL을 찾을 수 없음",
+      "fuzzy": true
+    },
+    {
+      "id": "decoding UUID: {Error}",
+      "message": "decoding UUID: {Error}",
+      "translation": "UUID 디코딩: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
         }
       ],
       "fuzzy": true
@@ -19877,6 +20245,36 @@
       "fuzzy": true
     },
     {
+      "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+      "message": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+      "translation": "경고: \"hzn voucher list\"는 더 이상 사용되지 않으며 향후 릴리스에서 제거됩니다. 대신 \"hzn sdo voucher list\"를 사용하십시오.",
+      "fuzzy": true
+    },
+    {
+      "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "message": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "translation": "바우처 \"{Device}\"이(가) SDO 소유자 서비스에서 {FileName}(으)로 다운로드되었습니다.",
+      "placeholders": [
+        {
+          "id": "Device",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "device"
+        },
+        {
+          "id": "FileName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Importing voucher file name: {Name}",
       "message": "Importing voucher file name: {Name}",
       "translation": "바우처 파일 이름을 가져오는 중: {Name}",
@@ -19960,6 +20358,12 @@
           "expr": "voucherFile.Name()"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+      "message": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+      "translation": "경고: \"hzn voucher import\"는 더 이상 사용되지 않으며 향후 릴리스에서 제거됩니다. 대신 \"hzn sdo voucher import\"를 사용하십시오.",
       "fuzzy": true
     },
     {
@@ -20220,6 +20624,12 @@
           "expr": "jerr"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Vault component not found in the management hub. Retrying...",
+      "message": "Vault component not found in the management hub. Retrying...",
+      "translation": "관리 허브에서 저장소 구성요소를 찾을 수 없습니다. 재시도 중...",
       "fuzzy": true
     },
     {
@@ -22946,6 +23356,12 @@
           "expr": "output"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout unregistering the node.",
+      "message": "Timeout unregistering the node.",
+      "translation": "제한시간이 초과되면 노드를 등록 해제합니다.",
       "fuzzy": true
     },
     {
@@ -26826,6 +27242,74 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No intersection found.",
+      "message": "No intersection found.",
+      "translation": "교차가 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string is not a version string, it is an empty string.",
+      "message": "The input string is not a version string, it is an empty string.",
+      "translation": "입력 문자열은 버전 문자열이 아니며 비어 있는 문자열입니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string {Ceilingversion} is not a version string.",
+      "message": "The input string {Ceilingversion} is not a version string.",
+      "translation": "입력 문자열 {Ceilingversion}은(는) 버전 문자열이 아닙니다.",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "message": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "translation": "입력 상한 버전 {Ceilingversion}이(가) 시작 버전 {Start}보다 낮습니다.",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        },
+        {
+          "id": "Start",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "self.start"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "message": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "translation": "입력 상한 버전 {Ceilingversion}이(가) 시작 버전과 동일하지만 시작 또는 종료가 포함되지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
         }
       ],
       "fuzzy": true
