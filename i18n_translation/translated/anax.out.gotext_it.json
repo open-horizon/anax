@@ -432,6 +432,10 @@
     "translation": "Completamento della modifica dello stato di configurazione del servizio in {Arg_1} per {Arg_2} per il nodo."
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "Lo stato di gestione del nodo per {Arg_1}/{Arg_2} è stato modificato in {Arg_3}"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "Errore durante la conversione delle selezioni in selettori: {Err}"
   },
@@ -2026,6 +2030,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression: numero di versioni errato nell'espressione: {Expr}."
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "Nessuna intersezione trovata."
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "La stringa di input non è una stringa di versione, è una stringa vuota."
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "La stringa di input {Ceilingversion} non è una stringa di versione."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "La versione di ceiling in input {Ceilingversion} è inferiore alla versione iniziale {Start}."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "La versione di ceiling di input {Ceilingversion} è uguale alla versione iniziale, ma l'inizio o la fine non sono inclusivi."
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",

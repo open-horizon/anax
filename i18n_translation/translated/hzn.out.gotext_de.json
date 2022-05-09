@@ -364,6 +364,10 @@
     "translation": "Änderung des Servicekonfigurationsstatus in {Arg_1} für {Arg_2} für den Knoten abgeschlossen."
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "Der Knotenmanagementstatus für {Arg_1}/{Arg_2} wurde in {Arg_3} geändert"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "Fehler beim Umwandeln der Auswahlen in Selektoren: {Err}."
   },
@@ -1104,8 +1108,12 @@
     "translation": "Der Name der zu überprüfenden Knotenmanagementrichtlinie."
   },
   {
-    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-    "translation": "Zeigen Sie den gesamten Inhalt jedes Richtlinienstatusobjekts für das Knotenmanagement anstelle des Status an."
+    "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "Filtern Sie die Ausgabe, um nur diesen einen Knoten einzuschließen. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen."
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object.",
+    "translation": "Den gesamten Inhalt jedes Maßnahmenstatusobjekts für die Knotenverwaltung anzeigen."
   },
   {
     "id": "List and manage nodes in the Horizon Exchange",
@@ -1204,6 +1212,10 @@
     "translation": "Listet die Richtlinie für diesen Knoten auf."
   },
   {
+    "id": "List and manage node management resources in the Horizon Exchange",
+    "translation": "Knotenmanagementressourcen in Horizon Exchange auflisten und verwalten"
+  },
+  {
     "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
     "translation": "Die kompatiblen Knotenmanagementrichtlinien für den Knoten auflisten. Es werden nur aktivierte Richtlinien angezeigt, sofern das Flag -a nicht angegeben ist."
   },
@@ -1226,6 +1238,10 @@
   {
     "id": "List node management policy statuses for this node.",
     "translation": "Listen Sie den Richtlinienstatus für das Knotenmanagement für diesen Knoten auf."
+  },
+  {
+    "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "Filtern Sie die Ausgabe so, dass nur diese eine Knotenverwaltungsrichtlinie eingeschlossen wird. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen."
   },
   {
     "id": "List the run-time status of the node.",
@@ -3904,6 +3920,10 @@
     "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} für Abhängigkeit {URL}"
   },
   {
+    "id": "unable to get list of containers in network {NwName}, error {Err}",
+    "translation": "Liste der Container im Netz {NwName} kann nicht abgerufen werden; Fehler {Err}"
+  },
+  {
     "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
     "translation": "Auflisten der vorhandenen Container durch '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' nicht möglich: {Err}"
   },
@@ -4340,8 +4360,16 @@
     "translation": "Knotenmanagementrichtlinie {NmpOrg}/{NmpName} entfernt"
   },
   {
+    "id": "Node {NodeName} not found in org {NmpOrg}",
+    "translation": "Knoten {NodeName} nicht in org gefunden {NmpOrg}"
+  },
+  {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
     "translation": "Status für NMP {NmpName} nicht gefunden in Organisation {NmpOrg}"
+  },
+  {
+    "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+    "translation": "Status für NMP {NmpName} nicht gefunden für Knoten {NodeName} in org {NmpOrg}"
   },
   {
     "id": "failed to marshal 'exchange node list' output: {Err}",
@@ -4548,16 +4576,12 @@
     "translation": "Knotenrichtlinie für {NodeName} in Organisation {NodeOrg} nicht gefunden"
   },
   {
-    "id": "enabled",
-    "translation": "aktiviert"
-  },
-  {
-    "id": "disabled",
-    "translation": "inaktiviert"
-  },
-  {
     "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
     "translation": "Status für Knoten {NodeName} nicht in Organisation gefunden {NodeOrg}"
+  },
+  {
+    "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+    "translation": "Knoten {NodeName} enthält keinen Status für {NmpName} in org {NodeOrg}"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5032,6 +5056,14 @@
     "translation": "Warnung: Hierdurch werden auch alle Exchange-Ressourcen gelöscht, deren Eigner dieser Benutzer ist (Knoten, Services, Muster, etc). Soll der Benutzer {Org}/{User} aus Horizon Exchange entfernt werden?"
   },
   {
+    "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+    "translation": "Die aktuelle Exchange-Version {ExchangeVersion} ist keine gültige Versionszeichenfolge."
+  },
+  {
+    "id": "Failed to compare the versions. {Err}",
+    "translation": "Die Versionen konnten nicht verglichen werden. {Err}"
+  },
+  {
     "id": "failed to marshal 'key list' output: {Err}",
     "translation": "Marshalling der Ausgabe von 'key list' ist fehlgeschlagen: {Err}"
   },
@@ -5396,6 +5428,10 @@
     "translation": "Start des Testmodus wird für diese Projekt nicht unterstützt."
   },
   {
+    "id": "stopping test mode is not supported for this project",
+    "translation": "Stoppen des Testmodus wird für dieses Projekt nicht unterstützt"
+  },
+  {
     "id": "failed to marshal 'hzn policy list' output: {Err}",
     "translation": "Marshalling der Ausgabe von 'hzn policy list' ist fehlgeschlagen: {Err}"
   },
@@ -5664,6 +5700,10 @@
     "translation": "Die Registrierung ist fehlgeschlagen. Der Knoten wurde erfolgreich in den nicht registrierten Status zurückgesetzt."
   },
   {
+    "id": "Bad HTTP code {HttpCode} returned from node.",
+    "translation": "Fehlerhafter HTTP-Code {HttpCode} vom Knoten zurückgegeben."
+  },
+  {
     "id": "Call to anax to create node timed out.",
     "translation": "Der Aufruf von Anax zum Erstellen des Knotens hat das zulässige Zeitlimit überschritten."
   },
@@ -5682,6 +5722,22 @@
   {
     "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
     "translation": "{Errstring}. Erstellen Sie eine Eingabedatei und definieren Sie Variablen für Service {Matches2}. Führen Sie 'hzn unregister' und anschließend wieder 'hzn register...' mit dem Flag -f aus, um die Eingabedatei anzugeben."
+  },
+  {
+    "id": "Call to node to change state to configured executed successfully.",
+    "translation": "Aufruf an Knoten zum Ändern des Status in 'Konfiguriert' wurde erfolgreich ausgeführt."
+  },
+  {
+    "id": "Timeout on the call to update node config state. Checking if it is updated.",
+    "translation": "Zeitlimitüberschreitung beim Aufruf zum Aktualisieren des Knotenkonfigurationsstatus. Es wird geprüft, ob sie aktualisiert wurde."
+  },
+  {
+    "id": "Node state is unconfigured.",
+    "translation": "Der Knotenstatus ist nicht konfiguriert."
+  },
+  {
+    "id": "Timeout waiting for node config state call to return.",
+    "translation": "Zeitlimitüberschreitung beim Warten auf die Rückgabe des Knotenkonfigurationsstatusaufrufs."
   },
   {
     "id": "Waiting for node config state update call to return. {TotalWait} seconds until timeout.",
@@ -5888,6 +5944,10 @@
     "translation": "Die Kompatibilität der Bindungen des geheimen Schlüssels kann nicht verifiziert werden, da keine Benutzerberechtigungsnachweise bereitgestellt wurden. Verwenden Sie den Befehl 'hzn deploycheck secretbinding -p' zum Verifizieren."
   },
   {
+    "id": "unable to convert eventlog source, error: {Err}",
+    "translation": "Ereignisprotokollquelle kann nicht konvertiert werden, Fehler: {Err}"
+  },
+  {
     "id": "{Format2006_01_02_150405}: {Message}",
     "translation": "{Format2006_01_02_150405}: {Message}"
   },
@@ -6000,8 +6060,52 @@
     "translation": "JSON-Hauptteil: {StringkeyBytes}"
   },
   {
+    "id": "field \"key_name\" is missing",
+    "translation": "Feld \"key_name\" fehlt"
+  },
+  {
+    "id": "field \"{Field}\" is missing",
+    "translation": "Feld \"{Field}\" fehlt"
+  },
+  {
+    "id": "Please fill these and try again.",
+    "translation": "Füllen Sie diese aus und versuchen Sie es erneut."
+  },
+  {
+    "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+    "translation": "Der Schlüsselname darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten"
+  },
+  {
+    "id": "Country name must be a 2 Letter Country Code",
+    "translation": "Der Landesname muss aus zwei Buchstaben bestehen"
+  },
+  {
+    "id": "Inspecting voucher file name: {Name}",
+    "translation": "Name der Prüfgutscheindatei: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+    "translation": "WARNUNG: \"hzn voucher inspect\" ist veraltet und wird in einem zukünftigen Release entfernt. Verwenden Sie stattdessen \"hzn sdo voucher inspect\"."
+  },
+  {
+    "id": "parsing json: {Error}",
+    "translation": "JSON-Syntaxanalyse: {Error}"
+  },
+  {
     "id": "base64 decoding {T4}: {Err}",
     "translation": "Base64-Decodierung {T4}: {Err}"
+  },
+  {
+    "id": "decoding {T4} yielded {N} bytes",
+    "translation": "Decodierung {T4} ergab {N} Byte"
+  },
+  {
+    "id": "did not find any rendezvous server URLs in the voucher",
+    "translation": "keine Rendezvous-Server-URLs im Gutschein gefunden"
+  },
+  {
+    "id": "decoding UUID: {Error}",
+    "translation": "Decodierungs-UUID: {Error}"
   },
   {
     "id": "Listing imported SDO vouchers.",
@@ -6024,6 +6128,14 @@
     "translation": "Marshalling der Ausgabe von 'hzn sdo voucher list' ist fehlgeschlagen: {Err}"
   },
   {
+    "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+    "translation": "WARNUNG: \"hzn-Gutscheinliste\" ist veraltet und wird in einem zukünftigen Release entfernt. Verwenden Sie stattdessen \"hzn sdo voucher list\"."
+  },
+  {
+    "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+    "translation": "Der Gutschein \"{Device}\" wurde erfolgreich von den SDO-Eignerservices in {FileName} heruntergeladen."
+  },
+  {
     "id": "Importing voucher file name: {Name}",
     "translation": "Import der Voucherdatei mit dem Namen: {Name}"
   },
@@ -6042,6 +6154,10 @@
   {
     "id": "unsupported voucher file type extension: {Name}",
     "translation": "Nicht unterstützte Typerweiterung der Voucherdatei: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+    "translation": "WARNUNG: \"hzn voucher import\" ist veraltet und wird in einem zukünftigen Release entfernt. Verwenden Sie stattdessen \"hzn sdo voucher import\"."
   },
   {
     "id": "creating zip reader for {Name}: {Err}",
@@ -6094,6 +6210,10 @@
   {
     "id": "failed to marshal 'agbot API' output: {Jerr}",
     "translation": "Marshalling der Ausgabe von 'agbot API' ist fehlgeschlagen: {Jerr}"
+  },
+  {
+    "id": "Vault component not found in the management hub. Retrying...",
+    "translation": "Vault-Komponente nicht im Management-Hub gefunden. Wird wiederholt..."
   },
   {
     "id": "-f is mutually exclusive with --secretDetail.",
@@ -6790,6 +6910,10 @@
   {
     "id": "Horizon node delete call successful with return code: {Output}",
     "translation": "Löschaufruf für Horizon-Konten erfolgreich mit Rückgabecode: {Output}"
+  },
+  {
+    "id": "Timeout unregistering the node.",
+    "translation": "Zeitlimitüberschreitung beim Aufheben der Registrierung des Knotens."
   },
   {
     "id": "Timeout in {TotalWait} seconds ...",
@@ -7714,6 +7838,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression: Falsche Anzahl der Versionen in Ausdruck: {Expr}."
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "Keine Schnittmenge gefunden."
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "Die Eingabezeichenfolge ist keine Versionszeichenfolge, sondern eine leere Zeichenfolge."
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "Die Eingabezeichenfolge {Ceilingversion} ist keine Versionszeichenfolge."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "Die Eingabeobergrenze {Ceilingversion} ist niedriger als die Startversion {Start}."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "Die Eingabedeckenversion {Ceilingversion} ist mit der Startversion identisch, aber entweder der Anfang oder das Ende ist nicht eingeschlossen."
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",

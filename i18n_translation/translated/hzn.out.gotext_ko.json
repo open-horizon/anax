@@ -364,6 +364,10 @@
     "translation": "노드의 {Arg_2}에 대해 {Arg_1}(으)로의 서비스 구성 상태 변경을 완료합니다."
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "{Arg_1}/{Arg_2}에 대한 노드 관리 상태가 {Arg_3}(으)로 변경됨"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "선택사항을 선택기로 변환하는 중에 오류 발생: {Err}"
   },
@@ -1104,8 +1108,12 @@
     "translation": "확인할 노드 관리 정책 상태의 이름입니다."
   },
   {
-    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-    "translation": "상태만이 아니라 각 노드 관리 정책 상태 오브젝트의 전체 내용을 표시합니다."
+    "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "이 하나의 노드만 포함하도록 출력을 필터링합니다. --long 플래그와 함께 사용하여 단일 노드 관리 정책 상태 오브젝트의 전체 컨텐츠를 표시합니다."
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object.",
+    "translation": "각 노드 관리 정책 상태 오브젝트의 전체 컨텐츠를 표시합니다."
   },
   {
     "id": "List and manage nodes in the Horizon Exchange",
@@ -1204,6 +1212,10 @@
     "translation": "이 노드의 정책을 나열합니다."
   },
   {
+    "id": "List and manage node management resources in the Horizon Exchange",
+    "translation": "Horizon Exchange에서 노드 관리 자원 나열 및 관리"
+  },
+  {
     "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
     "translation": "노드에 대한 호환 가능한 노드 관리 정책을 나열합니다. -a 플래그가 지정되지 않으면 사용 가능한 정책만 표시됩니다."
   },
@@ -1226,6 +1238,10 @@
   {
     "id": "List node management policy statuses for this node.",
     "translation": "이 노드의 노드 관리 정책 상태를 나열합니다."
+  },
+  {
+    "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "이 하나의 노드 관리 정책만 포함하도록 출력을 필터링합니다. --long 플래그와 함께 사용하여 단일 노드 관리 정책 상태 오브젝트의 전체 컨텐츠를 표시합니다."
   },
   {
     "id": "List the run-time status of the node.",
@@ -3904,6 +3920,10 @@
     "translation": "종속성 {URL}의 '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr}"
   },
   {
+    "id": "unable to get list of containers in network {NwName}, error {Err}",
+    "translation": "네트워크 {NwName}에서 컨테이너 목록을 가져올 수 없음, 오류 {Err}"
+  },
+  {
     "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
     "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}'에서 기존 컨테이너를 나열할 수 없음: {Err}"
   },
@@ -4340,8 +4360,16 @@
     "translation": "노드 관리 정책 {NmpOrg}/{NmpName}이(가) 제거됨"
   },
   {
+    "id": "Node {NodeName} not found in org {NmpOrg}",
+    "translation": "노드 {NodeName}을(를) {NmpOrg} 조직에서 찾을 수 없음"
+  },
+  {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
     "translation": "NMP {NmpName}의 상태를 {NmpOrg} 조직에서 찾을 수 없음"
+  },
+  {
+    "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+    "translation": "{NmpOrg} 조직의 노드 {NodeName}에 대해 NMP {NmpName}의 상태를 찾을 수 없음"
   },
   {
     "id": "failed to marshal 'exchange node list' output: {Err}",
@@ -4548,16 +4576,12 @@
     "translation": "{NodeName}에 대한 노드 정책을 {NodeOrg} 조직에서 찾을 수 없습니다."
   },
   {
-    "id": "enabled",
-    "translation": "사용 가능"
-  },
-  {
-    "id": "disabled",
-    "translation": "사용 안함"
-  },
-  {
     "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
     "translation": "노드 {NodeName}의 상태를 {NodeOrg} 조직에서 찾을 수 없음"
+  },
+  {
+    "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+    "translation": "{NodeName} 노드에 {NodeOrg} 조직의 {NmpName}에 대한 상태가 포함되지 않음"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5032,6 +5056,14 @@
     "translation": "경고: 이렇게 하면 이 사용자가 소유한 모든 Exchange 리소스(노드, 서비스, 패턴 등)도 삭제됩니다. Horizon Exchange에서 {Org}/{User} 사용자를 제거하시겠습니까?"
   },
   {
+    "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+    "translation": "현재 Exchange 버전 {ExchangeVersion}은(는) 유효한 버전 문자열이 아닙니다."
+  },
+  {
+    "id": "Failed to compare the versions. {Err}",
+    "translation": "버전을 비교하는 데 실패했습니다. {Err}"
+  },
+  {
     "id": "failed to marshal 'key list' output: {Err}",
     "translation": "'key list' 출력을 마샬링하는 데 실패함: {Err}"
   },
@@ -5396,6 +5428,10 @@
     "translation": "이 프로젝트에 대한 테스트 모드 시작이 지원되지 않음"
   },
   {
+    "id": "stopping test mode is not supported for this project",
+    "translation": "이 프로젝트에서는 테스트 모드 중지가 지원되지 않습니다."
+  },
+  {
     "id": "failed to marshal 'hzn policy list' output: {Err}",
     "translation": "'hzn policy list' 출력을 마샬링하는 데 실패함: {Err}"
   },
@@ -5664,6 +5700,10 @@
     "translation": "등록에 실패했습니다. 노드가 미등록 상태로 돌아왔습니다."
   },
   {
+    "id": "Bad HTTP code {HttpCode} returned from node.",
+    "translation": "잘못된 HTTP 코드 {HttpCode}이(가) 노드에서 리턴되었습니다."
+  },
+  {
     "id": "Call to anax to create node timed out.",
     "translation": "노드를 작성하기 위한 anax에 대한 호출이 제한시간 초과되었습니다."
   },
@@ -5682,6 +5722,22 @@
   {
     "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
     "translation": "{Errstring}. 입력 파일을 작성하고 {Matches2} 서비스의 변수를 정의하십시오. 'hzn unregister'를 실행한 다음 -f 플래그와 함께 다시 'hzn register...'를 실행하여 입력 파일을 지정하십시오."
+  },
+  {
+    "id": "Call to node to change state to configured executed successfully.",
+    "translation": "상태를 구성됨으로 변경하기 위해 노드에 대한 호출이 실행되었습니다."
+  },
+  {
+    "id": "Timeout on the call to update node config state. Checking if it is updated.",
+    "translation": "노드 구성 상태를 업데이트하기 위한 호출의 제한시간입니다. 업데이트 여부를 확인합니다."
+  },
+  {
+    "id": "Node state is unconfigured.",
+    "translation": "노드 상태가 구성되지 않았습니다."
+  },
+  {
+    "id": "Timeout waiting for node config state call to return.",
+    "translation": "노드 구성 상태 호출이 리턴되기를 기다리는 중에 제한시간이 초과되었습니다."
   },
   {
     "id": "Waiting for node config state update call to return. {TotalWait} seconds until timeout.",
@@ -5888,6 +5944,10 @@
     "translation": "사용자 인증 정보가 제공되지 않았기 때문에 시크릿 바인딩 호환성을 확인할 수 없습니다. 'hzn deploycheck secretbinding -p' 명령을 사용하여 확인하십시오."
   },
   {
+    "id": "unable to convert eventlog source, error: {Err}",
+    "translation": "eventlog 소스를 변환할 수 없습니다. 오류: {Err}"
+  },
+  {
     "id": "{Format2006_01_02_150405}: {Message}",
     "translation": "{Format2006_01_02_150405}: {Message}"
   },
@@ -6000,8 +6060,52 @@
     "translation": "JSON 본문:{StringkeyBytes}"
   },
   {
+    "id": "field \"key_name\" is missing",
+    "translation": "\"key_name\" 필드가 누락되었습니다."
+  },
+  {
+    "id": "field \"{Field}\" is missing",
+    "translation": "\"{Field}\" 필드가 누락되었습니다."
+  },
+  {
+    "id": "Please fill these and try again.",
+    "translation": "이 항목을 채우고 다시 시도하십시오."
+  },
+  {
+    "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+    "translation": "키 이름은 소문자, 숫자 및 하이픈만 포함할 수 있습니다."
+  },
+  {
+    "id": "Country name must be a 2 Letter Country Code",
+    "translation": "국가 이름은 2자리 국가 코드여야 합니다."
+  },
+  {
+    "id": "Inspecting voucher file name: {Name}",
+    "translation": "바우처 파일 이름 검사: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+    "translation": "경고: \"hzn voucher inspect\"는 더 이상 사용되지 않으며 향후 릴리스에서 제거됩니다. 대신 \"hzn sdo voucher inspect\"를 사용하십시오."
+  },
+  {
+    "id": "parsing json: {Error}",
+    "translation": "json 구문 분석: {Error}"
+  },
+  {
     "id": "base64 decoding {T4}: {Err}",
     "translation": "{T4} base64 디코딩 중: {Err}"
+  },
+  {
+    "id": "decoding {T4} yielded {N} bytes",
+    "translation": "{T4} 디코딩에서 {N}바이트 생성"
+  },
+  {
+    "id": "did not find any rendezvous server URLs in the voucher",
+    "translation": "바우처에서 랑데부 서버 URL을 찾을 수 없음"
+  },
+  {
+    "id": "decoding UUID: {Error}",
+    "translation": "UUID 디코딩: {Error}"
   },
   {
     "id": "Listing imported SDO vouchers.",
@@ -6024,6 +6128,14 @@
     "translation": "'hzn sdo voucher list' 출력을 마샬링하는 데 실패함: {Err}"
   },
   {
+    "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+    "translation": "경고: \"hzn voucher list\"는 더 이상 사용되지 않으며 향후 릴리스에서 제거됩니다. 대신 \"hzn sdo voucher list\"를 사용하십시오."
+  },
+  {
+    "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+    "translation": "바우처 \"{Device}\"이(가) SDO 소유자 서비스에서 {FileName}(으)로 다운로드되었습니다."
+  },
+  {
     "id": "Importing voucher file name: {Name}",
     "translation": "바우처 파일 이름을 가져오는 중: {Name}"
   },
@@ -6042,6 +6154,10 @@
   {
     "id": "unsupported voucher file type extension: {Name}",
     "translation": "지원되지 않는 바우처 파일 유형 확장자: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+    "translation": "경고: \"hzn voucher import\"는 더 이상 사용되지 않으며 향후 릴리스에서 제거됩니다. 대신 \"hzn sdo voucher import\"를 사용하십시오."
   },
   {
     "id": "creating zip reader for {Name}: {Err}",
@@ -6094,6 +6210,10 @@
   {
     "id": "failed to marshal 'agbot API' output: {Jerr}",
     "translation": "'agbot API' 출력을 마샬링하는 데 실패함: {Jerr}"
+  },
+  {
+    "id": "Vault component not found in the management hub. Retrying...",
+    "translation": "관리 허브에서 저장소 구성요소를 찾을 수 없습니다. 재시도 중..."
   },
   {
     "id": "-f is mutually exclusive with --secretDetail.",
@@ -6790,6 +6910,10 @@
   {
     "id": "Horizon node delete call successful with return code: {Output}",
     "translation": "Horizon 노드 삭제 호출에 성공했으며 리턴 코드는 {Output}임"
+  },
+  {
+    "id": "Timeout unregistering the node.",
+    "translation": "제한시간이 초과되면 노드를 등록 해제합니다."
   },
   {
     "id": "Timeout in {TotalWait} seconds ...",
@@ -7714,6 +7838,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression: 표현식 {Expr}에서 버전 번호가 올바르지 않습니다."
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "교차가 없습니다."
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "입력 문자열은 버전 문자열이 아니며 비어 있는 문자열입니다."
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "입력 문자열 {Ceilingversion}은(는) 버전 문자열이 아닙니다."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "입력 상한 버전 {Ceilingversion}이(가) 시작 버전 {Start}보다 낮습니다."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "입력 상한 버전 {Ceilingversion}이(가) 시작 버전과 동일하지만 시작 또는 종료가 포함되지 않습니다."
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",

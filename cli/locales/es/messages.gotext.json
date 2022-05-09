@@ -1613,6 +1613,38 @@
       "fuzzy": true
     },
     {
+      "id": [
+        "EL_API_NMP_STATUS_CHANGE",
+        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+      "translation": "El estado de gestión de nodos para {Arg_1}/{Arg_2} ha cambiado a {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error converting the selections into Selectors: {Err}",
       "message": "Error converting the selections into Selectors: {Err}",
       "translation": "Se ha producido un error al convertir las seleccione en selectores: {Err}",
@@ -2803,9 +2835,15 @@
       "fuzzy": true
     },
     {
-      "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-      "message": "Show the entire contents of each node management policy status object, instead of just the status.",
-      "translation": "Muestre todo el contenido de cada objeto de estado de política de gestión de nodos, en lugar de solo el estado.",
+      "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+      "message": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+      "translation": "Filtre la salida para incluir solo este nodo. Utilice el distintivo --long para visualizar el contenido completo de un único objeto de estado de política de gestión de nodos.",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the entire contents of each node management policy status object.",
+      "message": "Show the entire contents of each node management policy status object.",
+      "translation": "Mostrar todo el contenido de cada objeto de estado de política de gestión de nodos.",
       "fuzzy": true
     },
     {
@@ -2953,6 +2991,12 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage node management resources in the Horizon Exchange",
+      "message": "List and manage node management resources in the Horizon Exchange",
+      "translation": "Listar y gestionar recursos de gestión de nodos en Horizonte Exchange",
+      "fuzzy": true
+    },
+    {
       "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
       "message": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
       "translation": "Listar las políticas de gestión de nodos compatibles para el nodo. Sólo se visualizarán las políticas que estén habilitadas a menos que se especifique el distintivo -a.",
@@ -2986,6 +3030,12 @@
       "id": "List node management policy statuses for this node.",
       "message": "List node management policy statuses for this node.",
       "translation": "Liste los estados de política de gestión de nodos para este nodo.",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+      "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+      "translation": "Filtre la salida para incluir solo esta política de gestión de nodos. Utilice el distintivo --long para visualizar el contenido completo de un único objeto de estado de política de gestión de nodos.",
       "fuzzy": true
     },
     {
@@ -11475,6 +11525,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to get list of containers in network {NwName}, error {Err}",
+      "message": "unable to get list of containers in network {NwName}, error {Err}",
+      "translation": "no se puede obtener la lista de contenedores en la red {NwName}, error {Err}",
+      "placeholders": [
+        {
+          "id": "NwName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nwName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' no ha podido enumerar los contenedores existentes: {Err}",
@@ -13251,6 +13325,30 @@
       "fuzzy": true
     },
     {
+      "id": "Node {NodeName} not found in org {NmpOrg}",
+      "message": "Node {NodeName} not found in org {NmpOrg}",
+      "translation": "No se ha encontrado el nodo {NodeName} en la organización {NmpOrg}",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "translation": "No se ha encontrado el estado de NMP {NmpName} en la org organización {NmpOrg}",
@@ -13269,6 +13367,38 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+      "message": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+      "translation": "No se ha encontrado el estado para NMP {NmpName} para el nodo {NodeName} en la organización {NmpOrg}",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
           "expr": "nmpOrg"
         }
       ],
@@ -14167,18 +14297,6 @@
       "fuzzy": true
     },
     {
-      "id": "enabled",
-      "message": "enabled",
-      "translation": "habilitado",
-      "fuzzy": true
-    },
-    {
-      "id": "disabled",
-      "message": "disabled",
-      "translation": "inhabilitado",
-      "fuzzy": true
-    },
-    {
       "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "translation": "No se han encontrado los estados para el nodo {NodeName} en la organización {NodeOrg}",
@@ -14197,6 +14315,38 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+      "message": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+      "translation": "El nodo {NodeName} no contiene un estado para {NmpName} en la organización {NodeOrg}",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
           "expr": "nodeOrg"
         }
       ],
@@ -16099,6 +16249,38 @@
       "fuzzy": true
     },
     {
+      "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+      "message": "The current exchange version {ExchangeVersion} is not a valid version string.",
+      "translation": "La versión de Exchange actual {ExchangeVersion} no es una serie de versión válida.",
+      "placeholders": [
+        {
+          "id": "ExchangeVersion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchangeVersion"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to compare the versions. {Err}",
+      "message": "Failed to compare the versions. {Err}",
+      "translation": "No se han podido comparar las versiones. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'key list' output: {Err}",
       "message": "failed to marshal 'key list' output: {Err}",
       "translation": "No se ha podido ordenar la salida de 'key list': {Err}",
@@ -17569,6 +17751,12 @@
       "fuzzy": true
     },
     {
+      "id": "stopping test mode is not supported for this project",
+      "message": "stopping test mode is not supported for this project",
+      "translation": "la detención de la modalidad de prueba no recibe soporte para este proyecto",
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'hzn policy list' output: {Err}",
       "message": "failed to marshal 'hzn policy list' output: {Err}",
       "translation": "No se ha podido ordenar la salida de 'hzn policy list': {Err}",
@@ -18365,6 +18553,22 @@
       "fuzzy": true
     },
     {
+      "id": "Bad HTTP code {HttpCode} returned from node.",
+      "message": "Bad HTTP code {HttpCode} returned from node.",
+      "translation": "Se ha devuelto un código HTTP incorrecto {HttpCode} desde el nodo.",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Call to anax to create node timed out.",
       "message": "Call to anax to create node timed out.",
       "translation": "Llamar a anax para crear el nodo que ha excedido el tiempo de espera.",
@@ -18456,6 +18660,30 @@
           "expr": "matches[2]"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Call to node to change state to configured executed successfully.",
+      "message": "Call to node to change state to configured executed successfully.",
+      "translation": "La llamada al nodo para cambiar el estado a configurado se ha ejecutado correctamente.",
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout on the call to update node config state. Checking if it is updated.",
+      "message": "Timeout on the call to update node config state. Checking if it is updated.",
+      "translation": "Se ha excedido el tiempo de espera en la llamada para actualizar el estado de configuración del nodo. Comprobando si se ha actualizado.",
+      "fuzzy": true
+    },
+    {
+      "id": "Node state is unconfigured.",
+      "message": "Node state is unconfigured.",
+      "translation": "El estado del nodo no está configurado.",
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout waiting for node config state call to return.",
+      "message": "Timeout waiting for node config state call to return.",
+      "translation": "Se ha excedido el tiempo de espera del retorno de la llamada de estado de configuración del nodo",
       "fuzzy": true
     },
     {
@@ -19203,6 +19431,22 @@
       "fuzzy": true
     },
     {
+      "id": "unable to convert eventlog source, error: {Err}",
+      "message": "unable to convert eventlog source, error: {Err}",
+      "translation": "no se puede convertir el origen de eventlog, error: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "{Format2006_01_02_150405}: {Message}",
       "message": "{Format2006_01_02_150405}: {Message}",
       "translation": "{Format2006_01_02_150405}: {Message}",
@@ -19751,6 +19995,84 @@
       "fuzzy": true
     },
     {
+      "id": "field \"key_name\" is missing",
+      "message": "field \"key_name\" is missing",
+      "translation": "falta el campo \"key_name\"",
+      "fuzzy": true
+    },
+    {
+      "id": "field \"{Field}\" is missing",
+      "message": "field \"{Field}\" is missing",
+      "translation": "falta el campo \"{Field}\"",
+      "placeholders": [
+        {
+          "id": "Field",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "field"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Please fill these and try again.",
+      "message": "Please fill these and try again.",
+      "translation": "Especifique estos valores y vuelva a intentarlo.",
+      "fuzzy": true
+    },
+    {
+      "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+      "message": "Key name can only contain lowercase characters, numbers, and hyphens",
+      "translation": "El nombre de clave solo puede contener caracteres en minúsculas, números y guiones",
+      "fuzzy": true
+    },
+    {
+      "id": "Country name must be a 2 Letter Country Code",
+      "message": "Country name must be a 2 Letter Country Code",
+      "translation": "El nombre de país debe ser un código de país de 2 letras",
+      "fuzzy": true
+    },
+    {
+      "id": "Inspecting voucher file name: {Name}",
+      "message": "Inspecting voucher file name: {Name}",
+      "translation": "Inspeccionando nombre de archivo de comprobante: {Name}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "voucherFile.Name()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+      "message": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+      "translation": "AVISO: \"hzn voucher inspect\" está en desuso y se eliminará en un release futuro. Utilice en su lugar \"hzn sdo voucher inspect\".",
+      "fuzzy": true
+    },
+    {
+      "id": "parsing json: {Error}",
+      "message": "parsing json: {Error}",
+      "translation": "analizando json: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "base64 decoding {T4}: {Err}",
       "message": "base64 decoding {T4}: {Err}",
       "translation": "decodificación de base64 de {T4}: {Err}",
@@ -19770,6 +20092,52 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "decoding {T4} yielded {N} bytes",
+      "message": "decoding {T4} yielded {N} bytes",
+      "translation": "la decodificación de {T4} ha generado {N} bytes",
+      "placeholders": [
+        {
+          "id": "T4",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "t4"
+        },
+        {
+          "id": "N",
+          "string": "%[2]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "n"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "did not find any rendezvous server URLs in the voucher",
+      "message": "did not find any rendezvous server URLs in the voucher",
+      "translation": "no ha encontrado ningún URL de servidor rendezvous en el comprobante",
+      "fuzzy": true
+    },
+    {
+      "id": "decoding UUID: {Error}",
+      "message": "decoding UUID: {Error}",
+      "translation": "decodificando UUID: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
         }
       ],
       "fuzzy": true
@@ -19877,6 +20245,36 @@
       "fuzzy": true
     },
     {
+      "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+      "message": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+      "translation": "AVISO: \"hzn voucher list\" está en desuso y se eliminará en un release futuro. Utilice en su lugar \"hzn sdo voucher list\".",
+      "fuzzy": true
+    },
+    {
+      "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "message": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "translation": "El comprobante \"{Device}\" se ha descargado correctamente en {FileName} desde los servicios del propietario de SDO.",
+      "placeholders": [
+        {
+          "id": "Device",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "device"
+        },
+        {
+          "id": "FileName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Importing voucher file name: {Name}",
       "message": "Importing voucher file name: {Name}",
       "translation": "Importando el nombre de archivo de cupón: {Name}",
@@ -19960,6 +20358,12 @@
           "expr": "voucherFile.Name()"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+      "message": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+      "translation": "AVISO: \"hzn voucher import\" está en desuso y se eliminará en un release futuro. Utilice en su lugar \"hzn sdo voucher import\".",
       "fuzzy": true
     },
     {
@@ -20220,6 +20624,12 @@
           "expr": "jerr"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Vault component not found in the management hub. Retrying...",
+      "message": "Vault component not found in the management hub. Retrying...",
+      "translation": "No se ha encontrado el componente de caja fuerte en el centro de gestión. Reintentando...",
       "fuzzy": true
     },
     {
@@ -22946,6 +23356,12 @@
           "expr": "output"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout unregistering the node.",
+      "message": "Timeout unregistering the node.",
+      "translation": "Se ha excedido el tiempo de espera al anular el registro del nodo.",
       "fuzzy": true
     },
     {
@@ -26826,6 +27242,74 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No intersection found.",
+      "message": "No intersection found.",
+      "translation": "No se ha encontrado ninguna intersección.",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string is not a version string, it is an empty string.",
+      "message": "The input string is not a version string, it is an empty string.",
+      "translation": "La serie de entrada no es una serie de versión, es una serie vacía.",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string {Ceilingversion} is not a version string.",
+      "message": "The input string {Ceilingversion} is not a version string.",
+      "translation": "La serie de entrada {Ceilingversion} no es una serie de versión.",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "message": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "translation": "La versión del techo de entrada {Ceilingversion} es inferior a la versión de inicio {Start}.",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        },
+        {
+          "id": "Start",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "self.start"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "message": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "translation": "La versión del techo de entrada {Ceilingversion} es la misma que la versión de inicio, pero el inicio o el final no son inclusivos.",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
         }
       ],
       "fuzzy": true

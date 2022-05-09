@@ -1613,6 +1613,38 @@
       "fuzzy": true
     },
     {
+      "id": [
+        "EL_API_NMP_STATUS_CHANGE",
+        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2} 的节点管理状态已更改为 {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error converting the selections into Selectors: {Err}",
       "message": "Error converting the selections into Selectors: {Err}",
       "translation": "将选定项目转换为选择器出错：{Err}",
@@ -2803,9 +2835,15 @@
       "fuzzy": true
     },
     {
-      "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-      "message": "Show the entire contents of each node management policy status object, instead of just the status.",
-      "translation": "显示每个节点管理策略状态对象的整个内容，而不仅仅显示状态。",
+      "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+      "message": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+      "translation": "仅包含此一个节点的过滤器输出。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的整个内容。",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the entire contents of each node management policy status object.",
+      "message": "Show the entire contents of each node management policy status object.",
+      "translation": "显示每个节点管理策略状态对象的完整内容。",
       "fuzzy": true
     },
     {
@@ -2953,6 +2991,12 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage node management resources in the Horizon Exchange",
+      "message": "List and manage node management resources in the Horizon Exchange",
+      "translation": "在 Horizon Exchange 中列出和管理节点管理资源",
+      "fuzzy": true
+    },
+    {
       "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
       "message": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
       "translation": "列出该节点的兼容节点管理策略。 除非指定 -a 标志，否则将仅显示已启用的策略。",
@@ -2986,6 +3030,12 @@
       "id": "List node management policy statuses for this node.",
       "message": "List node management policy statuses for this node.",
       "translation": "列出此节点的节点管理策略状态。",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+      "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+      "translation": "过滤输出以仅包含此一个节点管理策略。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的整个内容。",
       "fuzzy": true
     },
     {
@@ -11475,6 +11525,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to get list of containers in network {NwName}, error {Err}",
+      "message": "unable to get list of containers in network {NwName}, error {Err}",
+      "translation": "无法获取网络{NwName}中的容器列表，错误 {Err}",
+      "placeholders": [
+        {
+          "id": "NwName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nwName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
       "translation": "“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”无法列出现有容器：{Err}",
@@ -13251,6 +13325,30 @@
       "fuzzy": true
     },
     {
+      "id": "Node {NodeName} not found in org {NmpOrg}",
+      "message": "Node {NodeName} not found in org {NmpOrg}",
+      "translation": "在组织 {NmpOrg} 中找不到节点 {NodeName}",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "translation": "在组织 {NmpOrg} 中找不到 NMP {NmpName} 的状态",
@@ -13269,6 +13367,38 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
+          "expr": "nmpOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+      "message": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+      "translation": "对于组织 {NmpOrg} 中的节点{NodeName}，找不到 NMP {NmpName} 的状态",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpOrg",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
           "expr": "nmpOrg"
         }
       ],
@@ -14167,18 +14297,6 @@
       "fuzzy": true
     },
     {
-      "id": "enabled",
-      "message": "enabled",
-      "translation": "已启用",
-      "fuzzy": true
-    },
-    {
-      "id": "disabled",
-      "message": "disabled",
-      "translation": "已禁用",
-      "fuzzy": true
-    },
-    {
       "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "translation": "在组织 {NodeOrg} 中找不到节点 {NodeName} 的状态",
@@ -14197,6 +14315,38 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+      "message": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+      "translation": "节点 {NodeName} 不包含组织 {NodeOrg} 中的 {NmpName} 的状态",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NmpName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nmpName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
           "expr": "nodeOrg"
         }
       ],
@@ -16099,6 +16249,38 @@
       "fuzzy": true
     },
     {
+      "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+      "message": "The current exchange version {ExchangeVersion} is not a valid version string.",
+      "translation": "当前的交换版本 {ExchangeVersion} 不是有效的版本字符串。",
+      "placeholders": [
+        {
+          "id": "ExchangeVersion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchangeVersion"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to compare the versions. {Err}",
+      "message": "Failed to compare the versions. {Err}",
+      "translation": "无法对版本进行比较。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'key list' output: {Err}",
       "message": "failed to marshal 'key list' output: {Err}",
       "translation": "对“key list”输出进行序列化失败：{Err}",
@@ -17569,6 +17751,12 @@
       "fuzzy": true
     },
     {
+      "id": "stopping test mode is not supported for this project",
+      "message": "stopping test mode is not supported for this project",
+      "translation": "此项目不支持停止测试方式",
+      "fuzzy": true
+    },
+    {
       "id": "failed to marshal 'hzn policy list' output: {Err}",
       "message": "failed to marshal 'hzn policy list' output: {Err}",
       "translation": "对“hzn policy list”输出进行序列化失败：{Err}",
@@ -18365,6 +18553,22 @@
       "fuzzy": true
     },
     {
+      "id": "Bad HTTP code {HttpCode} returned from node.",
+      "message": "Bad HTTP code {HttpCode} returned from node.",
+      "translation": "从节点返回了错误的 HTTP 代码 {HttpCode}。",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Call to anax to create node timed out.",
       "message": "Call to anax to create node timed out.",
       "translation": "调用 anax 创建节点已超时。",
@@ -18456,6 +18660,30 @@
           "expr": "matches[2]"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Call to node to change state to configured executed successfully.",
+      "message": "Call to node to change state to configured executed successfully.",
+      "translation": "已成功调用节点以将状态更改为已配置执行。",
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout on the call to update node config state. Checking if it is updated.",
+      "message": "Timeout on the call to update node config state. Checking if it is updated.",
+      "translation": "用于更新节点配置状态的调用超时。 正在检查是否已更新。",
+      "fuzzy": true
+    },
+    {
+      "id": "Node state is unconfigured.",
+      "message": "Node state is unconfigured.",
+      "translation": "节点状态已取消配置。",
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout waiting for node config state call to return.",
+      "message": "Timeout waiting for node config state call to return.",
+      "translation": "等待节点配置状态调用返回时超时。",
       "fuzzy": true
     },
     {
@@ -19203,6 +19431,22 @@
       "fuzzy": true
     },
     {
+      "id": "unable to convert eventlog source, error: {Err}",
+      "message": "unable to convert eventlog source, error: {Err}",
+      "translation": "无法转换事件日志源，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "{Format2006_01_02_150405}: {Message}",
       "message": "{Format2006_01_02_150405}: {Message}",
       "translation": "{Format2006_01_02_150405}：{Message}",
@@ -19751,6 +19995,84 @@
       "fuzzy": true
     },
     {
+      "id": "field \"key_name\" is missing",
+      "message": "field \"key_name\" is missing",
+      "translation": "缺少字段“key_name”",
+      "fuzzy": true
+    },
+    {
+      "id": "field \"{Field}\" is missing",
+      "message": "field \"{Field}\" is missing",
+      "translation": "缺少字段“{Field}”",
+      "placeholders": [
+        {
+          "id": "Field",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "field"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Please fill these and try again.",
+      "message": "Please fill these and try again.",
+      "translation": "请填写这些信息并重试。",
+      "fuzzy": true
+    },
+    {
+      "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+      "message": "Key name can only contain lowercase characters, numbers, and hyphens",
+      "translation": "密钥名称仅可包含小写字符、数字和连字符",
+      "fuzzy": true
+    },
+    {
+      "id": "Country name must be a 2 Letter Country Code",
+      "message": "Country name must be a 2 Letter Country Code",
+      "translation": "国家或地区名称必须为 2 个字母的国家或地区代码",
+      "fuzzy": true
+    },
+    {
+      "id": "Inspecting voucher file name: {Name}",
+      "message": "Inspecting voucher file name: {Name}",
+      "translation": "正在检查凭单文件名：{Name}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "voucherFile.Name()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+      "message": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+      "translation": "警告：不推荐使用“hzn 凭单检查”，在将来的发行版中将移除此功能。 请改为使用“hzn sdo 凭单检查”。",
+      "fuzzy": true
+    },
+    {
+      "id": "parsing json: {Error}",
+      "message": "parsing json: {Error}",
+      "translation": "正在解析 JSON：{Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "base64 decoding {T4}: {Err}",
       "message": "base64 decoding {T4}: {Err}",
       "translation": "正在使用 Base64 对 {T4} 进行解码：{Err}",
@@ -19770,6 +20092,52 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "decoding {T4} yielded {N} bytes",
+      "message": "decoding {T4} yielded {N} bytes",
+      "translation": "对 {T4} 个生成的 {N} 字节进行解码",
+      "placeholders": [
+        {
+          "id": "T4",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "t4"
+        },
+        {
+          "id": "N",
+          "string": "%[2]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "n"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "did not find any rendezvous server URLs in the voucher",
+      "message": "did not find any rendezvous server URLs in the voucher",
+      "translation": "在凭单中找不到任何 rendezvous 服务器 URL",
+      "fuzzy": true
+    },
+    {
+      "id": "decoding UUID: {Error}",
+      "message": "decoding UUID: {Error}",
+      "translation": "解码 UUID：{Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
         }
       ],
       "fuzzy": true
@@ -19877,6 +20245,36 @@
       "fuzzy": true
     },
     {
+      "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+      "message": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+      "translation": "警告：不推荐使用“hzn 凭单列表”，在将来的发行版中将移除此列表。 请改为使用“hzn sdo 凭单列表”。",
+      "fuzzy": true
+    },
+    {
+      "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "message": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+      "translation": "凭单“{Device}”已成功从 SDO 所有者服务下载到{FileName}。",
+      "placeholders": [
+        {
+          "id": "Device",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "device"
+        },
+        {
+          "id": "FileName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "fileName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Importing voucher file name: {Name}",
       "message": "Importing voucher file name: {Name}",
       "translation": "正在导入凭单文件名：{Name}",
@@ -19960,6 +20358,12 @@
           "expr": "voucherFile.Name()"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+      "message": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+      "translation": "警告：不推荐使用“hzn 凭单导入”，在将来的发行版中将移除此内容。 请改为使用“hzn sdo 凭单导入”。",
       "fuzzy": true
     },
     {
@@ -20220,6 +20624,12 @@
           "expr": "jerr"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Vault component not found in the management hub. Retrying...",
+      "message": "Vault component not found in the management hub. Retrying...",
+      "translation": "在管理中心中找不到保险库文件组件。 正在重试...",
       "fuzzy": true
     },
     {
@@ -22946,6 +23356,12 @@
           "expr": "output"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Timeout unregistering the node.",
+      "message": "Timeout unregistering the node.",
+      "translation": "注销节点时超时。",
       "fuzzy": true
     },
     {
@@ -26826,6 +27242,74 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No intersection found.",
+      "message": "No intersection found.",
+      "translation": "找不到交集。",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string is not a version string, it is an empty string.",
+      "message": "The input string is not a version string, it is an empty string.",
+      "translation": "输入字符串不是一个版本字符串，它是一个空字符串。",
+      "fuzzy": true
+    },
+    {
+      "id": "The input string {Ceilingversion} is not a version string.",
+      "message": "The input string {Ceilingversion} is not a version string.",
+      "translation": "输入字符串 {Ceilingversion} 并不是版本字符串。",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "message": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+      "translation": "输入的上限版本 {Ceilingversion} 低于开始版本 {Start}。",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
+        },
+        {
+          "id": "Start",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "self.start"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "message": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+      "translation": "输入上限版本 {Ceilingversion} 与开始版本相同，但开始版本或结束版本都不包含在内。",
+      "placeholders": [
+        {
+          "id": "Ceilingversion",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ceiling_version"
         }
       ],
       "fuzzy": true

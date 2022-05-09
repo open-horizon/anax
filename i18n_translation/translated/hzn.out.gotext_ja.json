@@ -364,6 +364,10 @@
     "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を完了します。"
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "{Arg_1}/{Arg_2} のノード管理状況が {Arg_3} に変更されました"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
   },
@@ -1104,8 +1108,12 @@
     "translation": "検査するノード管理ポリシーの状況の名前。"
   },
   {
-    "id": "Show the entire contents of each node management policy status object, instead of just the status.",
-    "translation": "各ノード管理ポリシーの状況だけではなく、状況オブジェクトの内容全体を表示します。"
+    "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "この 1 つのノードのみを含めるように出力をフィルタリングします。 単一ノード管理ポリシー状況オブジェクトの内容全体を表示するには、-- long フラグと一緒に使用します。"
+  },
+  {
+    "id": "Show the entire contents of each node management policy status object.",
+    "translation": "各ノード管理ポリシー状況オブジェクトの内容全体を表示します。"
   },
   {
     "id": "List and manage nodes in the Horizon Exchange",
@@ -1204,6 +1212,10 @@
     "translation": "このノードのポリシーをリストします。"
   },
   {
+    "id": "List and manage node management resources in the Horizon Exchange",
+    "translation": "Horizon Exchange 内のノード管理リソースをリストおよび管理します"
+  },
+  {
     "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
     "translation": "ノードの互換性のあるノード管理ポリシーをリストします。 -a フラグが指定されていない限り、有効になっているポリシーのみが表示されます。"
   },
@@ -1226,6 +1238,10 @@
   {
     "id": "List node management policy statuses for this node.",
     "translation": "このノードのノード管理ポリシーの状況をリストします。"
+  },
+  {
+    "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
+    "translation": "この 1 つのノード管理ポリシーのみを含めるように出力をフィルタリングします。 単一ノード管理ポリシー状況オブジェクトの内容全体を表示するには、-- long フラグと一緒に使用します。"
   },
   {
     "id": "List the run-time status of the node.",
@@ -3904,6 +3920,10 @@
     "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」依存関係 {URL} の {StartErr}"
   },
   {
+    "id": "unable to get list of containers in network {NwName}, error {Err}",
+    "translation": "ネットワーク {NwName} 内のコンテナーのリストを取得できません。エラー {Err}"
+  },
+  {
     "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
     "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」は既存のコンテナーをリストできません: {Err}"
   },
@@ -4340,8 +4360,16 @@
     "translation": "ノード管理ポリシー {NmpOrg}/{NmpName} が削除されました"
   },
   {
+    "id": "Node {NodeName} not found in org {NmpOrg}",
+    "translation": "ノード {NodeName} が組織 {NmpOrg} に見つかりません"
+  },
+  {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
     "translation": "組織 {NmpOrg} 内に NMP {NmpName} の状況が見つかりません"
+  },
+  {
+    "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
+    "translation": "組織 {NmpOrg} 内のノード {NodeName} の NMP {NmpName} の状況が見つかりません"
   },
   {
     "id": "failed to marshal 'exchange node list' output: {Err}",
@@ -4548,16 +4576,12 @@
     "translation": "{NodeName} のノード・ポリシーが組織 {NodeOrg} に見つかりません"
   },
   {
-    "id": "enabled",
-    "translation": "enabled"
-  },
-  {
-    "id": "disabled",
-    "translation": "無効"
-  },
-  {
     "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
     "translation": "組織 {NodeOrg} 内にノード {NodeName} の状況が見つかりません"
+  },
+  {
+    "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
+    "translation": "ノード {NodeName} に組織 {NodeOrg} 内の {NmpName} の状況が含まれていません"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5032,6 +5056,14 @@
     "translation": "警告: このユーザーが所有するすべての Exchange リソース (ノード、サービス、パターン、その他) も削除されます。 Horizon Exchange からユーザー {Org}/{User} を削除しますか?"
   },
   {
+    "id": "The current exchange version {ExchangeVersion} is not a valid version string.",
+    "translation": "現在の Exchange バージョン {ExchangeVersion} は有効なバージョン・ストリングではありません。"
+  },
+  {
+    "id": "Failed to compare the versions. {Err}",
+    "translation": "バージョンを比較できませんでした。{Err}"
+  },
+  {
     "id": "failed to marshal 'key list' output: {Err}",
     "translation": "「key list」の出力のマーシャルに失敗しました: {Err}"
   },
@@ -5396,6 +5428,10 @@
     "translation": "このプロジェクトではテスト・モードの開始はサポートされていません"
   },
   {
+    "id": "stopping test mode is not supported for this project",
+    "translation": "このプロジェクトではテスト・モードの停止はサポートされていません"
+  },
+  {
     "id": "failed to marshal 'hzn policy list' output: {Err}",
     "translation": "「hzn policy list」の出力のマーシャルに失敗しました: {Err}"
   },
@@ -5664,6 +5700,10 @@
     "translation": "登録に失敗しました。 ノードが正常に登録抹消状態に戻りました。"
   },
   {
+    "id": "Bad HTTP code {HttpCode} returned from node.",
+    "translation": "正しくない HTTP コード {HttpCode} がノードから返されました。"
+  },
+  {
     "id": "Call to anax to create node timed out.",
     "translation": "ノードを作成するための anax の呼び出しがタイムアウトになりました。"
   },
@@ -5682,6 +5722,22 @@
   {
     "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
     "translation": "{Errstring}。 入力ファイルを作成し、サービス {Matches2} 用の変数を定義してください。 「hzn unregister」を実行してから、-f フラグを使用して入力ファイルを指定し、「hzn register...」を再度実行してください。"
+  },
+  {
+    "id": "Call to node to change state to configured executed successfully.",
+    "translation": "状態を構成済みに変更するためのノードの呼び出しが正常に実行されました。"
+  },
+  {
+    "id": "Timeout on the call to update node config state. Checking if it is updated.",
+    "translation": "ノード構成状態を更新するための呼び出しでタイムアウトになりました。 更新されているかどうかを確認しています。"
+  },
+  {
+    "id": "Node state is unconfigured.",
+    "translation": "ノードの状態が未構成です。"
+  },
+  {
+    "id": "Timeout waiting for node config state call to return.",
+    "translation": "ノード構成状態呼び出しが戻るのを待機中にタイムアウトになりました。"
   },
   {
     "id": "Waiting for node config state update call to return. {TotalWait} seconds until timeout.",
@@ -5888,6 +5944,10 @@
     "translation": "ユーザー資格情報が指定されていないため、秘密バインディング互換性を検証できません。 検証するには、「hzn deploycheck secretbinding -p」コマンドを使用してください。"
   },
   {
+    "id": "unable to convert eventlog source, error: {Err}",
+    "translation": "イベント・ログ・ソースを変換できません。エラー: {Err}"
+  },
+  {
     "id": "{Format2006_01_02_150405}: {Message}",
     "translation": "{Format2006_01_02_150405}: {Message}"
   },
@@ -6000,8 +6060,52 @@
     "translation": "JSON 本体:{StringkeyBytes}"
   },
   {
+    "id": "field \"key_name\" is missing",
+    "translation": "フィールド \"key_name\" がありません"
+  },
+  {
+    "id": "field \"{Field}\" is missing",
+    "translation": "フィールド \"{Field}\" がありません"
+  },
+  {
+    "id": "Please fill these and try again.",
+    "translation": "これらを入力して、再試行してください。"
+  },
+  {
+    "id": "Key name can only contain lowercase characters, numbers, and hyphens",
+    "translation": "キー名には小文字、数字、およびハイフンのみを使用できます"
+  },
+  {
+    "id": "Country name must be a 2 Letter Country Code",
+    "translation": "国名は 2 文字の国別コードでなければなりません"
+  },
+  {
+    "id": "Inspecting voucher file name: {Name}",
+    "translation": "検査中のバウチャー・ファイル名: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
+    "translation": "警告: \"hzn voucher inspect\" は推奨されておらず、将来のリリースで削除される予定です。 代わりに \"hzn sdo voucher inspect\" を使用してください。"
+  },
+  {
+    "id": "parsing json: {Error}",
+    "translation": "JSON の構文解析: {Error}"
+  },
+  {
     "id": "base64 decoding {T4}: {Err}",
     "translation": "base64 でデコーディング中 {T4}: {Err}"
+  },
+  {
+    "id": "decoding {T4} yielded {N} bytes",
+    "translation": "{T4} のデコードは {N} バイトになりました"
+  },
+  {
+    "id": "did not find any rendezvous server URLs in the voucher",
+    "translation": "ランデブー・サーバー URL がバウチャーに見つかりませんでした"
+  },
+  {
+    "id": "decoding UUID: {Error}",
+    "translation": "UUID のデコード: {Error}"
   },
   {
     "id": "Listing imported SDO vouchers.",
@@ -6024,6 +6128,14 @@
     "translation": "「hzn sdo voucher list」の出力のマーシャルに失敗しました。{Err}"
   },
   {
+    "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
+    "translation": "警告: \"hzn voucher list\" は推奨されておらず、将来のリリースで削除される予定です。 代わりに \"hzn sdo voucher list\" を使用してください。"
+  },
+  {
+    "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
+    "translation": "バウチャー \"{Device}\" が SDO 所有者サービスから {FileName} に正常にダウンロードされました。"
+  },
+  {
     "id": "Importing voucher file name: {Name}",
     "translation": "証明書ファイル名のインポート: {Name}"
   },
@@ -6042,6 +6154,10 @@
   {
     "id": "unsupported voucher file type extension: {Name}",
     "translation": "サポートされない証明書ファイル・タイプ拡張子: {Name}"
+  },
+  {
+    "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
+    "translation": "警告: \"hzn voucher import\" は推奨されておらず、将来のリリースで削除される予定です。 代わりに \"hzn sdo voucher import\" を使用してください。"
   },
   {
     "id": "creating zip reader for {Name}: {Err}",
@@ -6094,6 +6210,10 @@
   {
     "id": "failed to marshal 'agbot API' output: {Jerr}",
     "translation": "「agbot API」出力のマーシャルに失敗しました: {Jerr}"
+  },
+  {
+    "id": "Vault component not found in the management hub. Retrying...",
+    "translation": "ボールト・コンポーネントが管理ハブに見つかりません。 再試行しています..."
   },
   {
     "id": "-f is mutually exclusive with --secretDetail.",
@@ -6790,6 +6910,10 @@
   {
     "id": "Horizon node delete call successful with return code: {Output}",
     "translation": "Horizon ノードの削除コールが成功しました。戻りコード: {Output}"
+  },
+  {
+    "id": "Timeout unregistering the node.",
+    "translation": "ノードの登録解除がタイムアウトになりました。"
   },
   {
     "id": "Timeout in {TotalWait} seconds ...",
@@ -7714,6 +7838,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "交差が見つかりません。"
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "入力ストリングはバージョン・ストリングではなく、空ストリングです。"
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "入力ストリング {Ceilingversion} はバージョン・ストリングではありません。"
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "入力上限バージョン {Ceilingversion} が開始バージョン {Start}より低くなっています。"
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "入力上限バージョン {Ceilingversion} は開始バージョンと同じですが、開始または終了のいずれかが含まれていません。"
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",

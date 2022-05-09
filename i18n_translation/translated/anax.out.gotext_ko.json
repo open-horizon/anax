@@ -432,6 +432,10 @@
     "translation": "노드의 {Arg_2}에 대해 {Arg_1}(으)로의 서비스 구성 상태 변경을 완료합니다."
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "{Arg_1}/{Arg_2}에 대한 노드 관리 상태가 {Arg_3}(으)로 변경됨"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "선택사항을 선택기로 변환하는 중에 오류 발생: {Err}"
   },
@@ -2026,6 +2030,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression: 표현식 {Expr}에서 버전 번호가 올바르지 않습니다."
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "교차가 없습니다."
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "입력 문자열은 버전 문자열이 아니며 비어 있는 문자열입니다."
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "입력 문자열 {Ceilingversion}은(는) 버전 문자열이 아닙니다."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "입력 상한 버전 {Ceilingversion}이(가) 시작 버전 {Start}보다 낮습니다."
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "입력 상한 버전 {Ceilingversion}이(가) 시작 버전과 동일하지만 시작 또는 종료가 포함되지 않습니다."
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",

@@ -432,6 +432,10 @@
     "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を完了します。"
   },
   {
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
+    "translation": "{Arg_1}/{Arg_2} のノード管理状況が {Arg_3} に変更されました"
+  },
+  {
     "id": "Error converting the selections into Selectors: {Err}",
     "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
   },
@@ -2026,6 +2030,26 @@
   {
     "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
     "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
+  },
+  {
+    "id": "No intersection found.",
+    "translation": "交差が見つかりません。"
+  },
+  {
+    "id": "The input string is not a version string, it is an empty string.",
+    "translation": "入力ストリングはバージョン・ストリングではなく、空ストリングです。"
+  },
+  {
+    "id": "The input string {Ceilingversion} is not a version string.",
+    "translation": "入力ストリング {Ceilingversion} はバージョン・ストリングではありません。"
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is lower than the start version {Start}.",
+    "translation": "入力上限バージョン {Ceilingversion} が開始バージョン {Start}より低くなっています。"
+  },
+  {
+    "id": "The input ceiling version {Ceilingversion} is the same as the start version, but either the start or the end is not inclusive.",
+    "translation": "入力上限バージョン {Ceilingversion} は開始バージョンと同じですが、開始または終了のいずれかが含まれていません。"
   },
   {
     "id": "Input version string {V1} or {V2} is not a valid single version string.",
