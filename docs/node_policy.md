@@ -1,0 +1,43 @@
+# Node Policy
+Every registered node has a node policy. It consists of [built-in node properties](./built_in_policy.md) which are read-only as well as properties and constraints which can be set by the node owner. Node policies have several sections with repeated fields. This is due to the dual function served by node policies. Firstly, the deployment and top-level sections of node policies are used by agbots to determine service deployment on the nodes. For more on this use of node policy see [here](./policy.md). Secondly, the management and top-level node policy sections are used by the nodes to determine what node management policies they should execute. For more on that application see [here](./node_management.md). The command `hzn policy new` will return an empty node policy with comments on how to fill it out.
+
+The node policies have three pairs of properties and constraints. If they are not empty, the deployment and management properties and constraints will used in determining compatibility. The deployment properties or management properties are merged with the top-level properties to be used for determinig eligibility for deployment or management policies respectively. If a property in the deployment or management section shares the name with a property in the top-level section, the value in deployment or management property will be used. The constraints from the deployment or management section will be used for determinig eligibility for deployment or management policies respectively. If the relevant section is empty, the top-level constraints will be used. Node policies in the older format that had only one pair of properties and constraints will be interpreted as equivalent to the deployment section of the new policy format. 
+
+The following is an example of a node policy.
+
+
+```
+{
+  "properties": [      
+    {
+       "name": "openhorizon.arch",
+       "value": "amd64"
+    }
+  ],
+  "constraints": [     
+       "station > 15" 
+  ], 
+  "deployment": {     
+      "properties": [  
+        {
+           "name": "application-version",
+           "value": "1.2.3"
+        }
+      ],
+      "constraints": [ 
+         "equipment == camera" 
+      ] 
+  },
+  "management": {     
+      "properties": [  
+        {
+           "name": "latest-version",
+           "value": true
+        }
+      ],
+      "constraints": [ 
+         "node1 == true" 
+      ] 
+  }
+}
+```

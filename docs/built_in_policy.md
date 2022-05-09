@@ -17,6 +17,8 @@ openhorizon.arch| The hardware architecture of the node (will be fetched from GO
 openhorizon.hardwareId| The device serial number if it can be found (will be fetched from /proc/cpuinfo). A generated Id otherwise. | `string`
 openhorizon.allowPrivileged| Property set to determine if privileged services may be run on this device. Can be set by user, default is false. This is the only writable node property| `boolean` 
 openhorizon.kubernetesVersion| Kubernetes version of the cluster the agent is running in| `string` e.g. 1.18
+openhorizon.operatingSystem | The operating system the agent is running on. If the agent is containerized, this will be the host os | `string` e.g. ubuntu
+openhorizon.containerized | This indicates if the agent is running in a container or natively | `boolean`
 
 **Note:Provided properties (except for allowPrivileged) are read-only, the system will ignore updating of the node policy and changing any of the built-in properties*    
 
