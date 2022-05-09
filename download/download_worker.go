@@ -382,12 +382,7 @@ func findBestMatchingVersion(availibleVers []string, preferredVers string) (stri
 	if preferredVers == LATESTVERSION {
 		return availibleVers[0], nil
 	} else if semanticversion.IsVersionString(preferredVers) {
-		for _, vers := range availibleVers {
-			if res, err := semanticversion.CompareVersions(preferredVers, vers); res == 0 && err == nil {
-				return vers, nil
-			}
-		}
-		return "", fmt.Errorf("No version matching %v found in availible versions %v.", preferredVers, availibleVers)
+		return preferredVers, nil
 	} else if prefVers, err := semanticversion.Version_Expression_Factory(preferredVers); err == nil {
 		for _, vers := range availibleVers {
 			if match, err := prefVers.Is_within_range(vers); err == nil && match {
