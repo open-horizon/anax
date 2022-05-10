@@ -14232,9 +14232,9 @@
             "fuzzy": true
         },
         {
-            "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-            "message": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-            "translation": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+            "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+            "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+            "translation": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -14290,9 +14290,9 @@
             "fuzzy": true
         },
         {
-            "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-            "message": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-            "translation": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
+            "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+            "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+            "translation": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -14365,34 +14365,9 @@
             "fuzzy": true
         },
         {
-            "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-            "message": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-            "translation": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "NmpOrg",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "nmpOrg"
-                },
-                {
-                    "id": "NmpName",
-                    "string": "%[2]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "nmpName"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Node management policy {NmpOrg}/{NmpName} removed",
-            "message": "Node management policy {NmpOrg}/{NmpName} removed",
-            "translation": "Node management policy {NmpOrg}/{NmpName} removed",
+            "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+            "message": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+            "translation": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {

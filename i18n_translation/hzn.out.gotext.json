@@ -4332,16 +4332,16 @@
     "translation": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable."
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange"
+    "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+    "translation": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
     "translation": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange"
+    "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+    "translation": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4352,12 +4352,8 @@
     "translation": "Node management policy {NmpName} not found in org {NmpOrg}"
   },
   {
-    "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "Removing node management policy {NmpOrg}/{NmpName} from the exchange."
-  },
-  {
-    "id": "Node management policy {NmpOrg}/{NmpName} removed",
-    "translation": "Node management policy {NmpOrg}/{NmpName} removed"
+    "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+    "translation": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange."
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",
