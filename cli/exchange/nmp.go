@@ -129,21 +129,22 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 		//try to update the existing policy
 		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+nmpOrg+"/managementpolicies"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, nmpFile, nil)
 		if httpCode == 201 {
-			msgPrinter.Printf("Node management policy: %v/%v updated in the Horizon Exchange", nmpOrg, nmpName)
+			msgPrinter.Printf("Node management policy %v/%v updated in the Horizon Exchange", nmpOrg, nmpName)
 			msgPrinter.Println()
 		} else if httpCode == 404 {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot create node management policy %v/%v: %v", nmpOrg, nmpName, resp.Msg))
 		}
 	} else if !cliutils.IsDryRun() {
-		msgPrinter.Printf("Node management policy: %v/%v added in the Horizon Exchange", nmpOrg, nmpName)
+		msgPrinter.Printf("Node management policy %v/%v added in the Horizon Exchange", nmpOrg, nmpName)
 		msgPrinter.Println()
 	}
 	if appliesTo {
 		nodes := determineCompatibleNodes(org, credToUse, nmpName, nmpFile)
+		output := "[]"
 		if nodes != nil && len(nodes) > 0 {
-			output := cliutils.MarshalIndent(nodes, "exchange nmp add")
-			fmt.Printf(output)
+			output = cliutils.MarshalIndent(nodes, "exchange nmp add")
 		}
+		fmt.Printf(output)
 		msgPrinter.Println()
 	}
 }
@@ -165,9 +166,7 @@ func NMPRemove(org, credToUse, nmpName string, force bool) {
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node management policy %s not found in org %s", nmpName, nmpOrg))
 	} else if httpCode == 204 {
-		msgPrinter.Printf("Removing node management policy %v/%v from the exchange.", nmpOrg, nmpName)
-		msgPrinter.Println()
-		msgPrinter.Printf("Node management policy %v/%v removed", nmpOrg, nmpName)
+		msgPrinter.Printf("Node management policy %v/%v removed from the Horizon Exchange.", nmpOrg, nmpName)
 		msgPrinter.Println()
 	}
 }
