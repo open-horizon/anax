@@ -468,7 +468,8 @@ function get_agent_file_versions() {
 
     if [[ -n $exch_output ]]; then
         local http_code="${exch_output: -3}"
-        local output="${exch_output::-3}"
+        local len=${#exch_output}
+        local output=${exch_output:0: len - 3}
         if [[ $http_code -eq 200 ]]; then
             # The outpit of AgentFileVersion has the following format:
             # {
