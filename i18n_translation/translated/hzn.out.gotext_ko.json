@@ -3673,7 +3673,7 @@
   },
   {
     "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
-    "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' 배치에서 컨테이너가 두 개 이상 발견됨: {JoincontainerNames__}. -c 플래그를 사용하여 서비스 이름을 지정하십시오. "
+    "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' 배치에서 컨테이너가 두 개 이상 발견됨: {JoincontainerNames__}. -c 플래그를 사용하여 서비스 이름을 지정하십시오."
   },
   {
     "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
@@ -6285,7 +6285,7 @@
   },
   {
     "id": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
-    "translation": "서비스 정의 {ServiceName}이(가) 둘 이상의 컨테이너로 구성됩니다. {JoincNames__}. -c 플래그를 사용하여 서비스 이름을 지정하십시오. "
+    "translation": "서비스 정의 {ServiceName}이(가) 둘 이상의 컨테이너로 구성됩니다. {JoincNames__}. -c 플래그를 사용하여 서비스 이름을 지정하십시오."
   },
   {
     "id": "Service logs are unavailable: {Err}",

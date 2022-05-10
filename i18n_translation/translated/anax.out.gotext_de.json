@@ -113,7 +113,7 @@
   },
   {
     "id": "Wrong organization id, user id or password.",
-    "translation": "Falsche Organisations-ID, falsche Benutzer-ID oder falsches Kennwort. "
+    "translation": "Falsche Organisations-ID, falsche Benutzer-ID oder falsches Kennwort."
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
@@ -125,7 +125,7 @@
   },
   {
     "id": "There is no secrets provider configured, secrets are unavailable.",
-    "translation": "Es ist kein Provider für geheime Schlüssel konfiguriert; geheime Schlüssel sind nicht verfügbar. "
+    "translation": "Es ist kein Provider für geheime Schlüssel konfiguriert; geheime Schlüssel sind nicht verfügbar."
   },
   {
     "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
@@ -289,11 +289,11 @@
   },
   {
     "id": "Start node configuration/registration for node {Arg_1}.",
-    "translation": "Start der Knotenkonfiguration/-registrierung für Knoten {Arg_1}. "
+    "translation": "Start der Knotenkonfiguration/-registrierung für Knoten {Arg_1}."
   },
   {
     "id": "Start updating node {Arg_1}.",
-    "translation": "Start der Aktualisierung von Knoten {Arg_1}. "
+    "translation": "Start der Aktualisierung von Knoten {Arg_1}."
   },
   {
     "id": "Complete node update for {Arg_1}.",
@@ -537,7 +537,7 @@
   },
   {
     "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
-    "translation": "Das Image-Digest konnte in der Docker-Ausgabe nicht gefunden werden; es wird direkt aus dem Image abgerufen. "
+    "translation": "Das Image-Digest konnte in der Docker-Ausgabe nicht gefunden werden; es wird direkt aus dem Image abgerufen."
   },
   {
     "id": "could not inspect image {ImageName}: {Err}.",
@@ -861,7 +861,7 @@
   },
   {
     "id": "HTTP request timeout set to {RequestTimeout} seconds",
-    "translation": "Das HTTP-Anforderungszeitlimit wurde auf {RequestTimeout} Sekunden festgelegt. "
+    "translation": "Das HTTP-Anforderungszeitlimit wurde auf {RequestTimeout} Sekunden festgelegt."
   },
   {
     "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
@@ -873,7 +873,7 @@
   },
   {
     "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-    "translation": "Die Datei {FileName} ist bereits vorhanden. Geben Sie einen anderen Dateipfad oder Dateinamen an. Verwenden Sie das Flag '-- overwrite', wenn Sie die vorhandene Datei überschreiben wollen. "
+    "translation": "Die Datei {FileName} ist bereits vorhanden. Geben Sie einen anderen Dateipfad oder Dateinamen an. Verwenden Sie das Flag '-- overwrite', wenn Sie die vorhandene Datei überschreiben wollen."
   },
   {
     "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
@@ -981,7 +981,7 @@
   },
   {
     "id": "Neither deployment policy nor pattern is specified.",
-    "translation": "Weder die Bereitstellungsrichtlinie noch das Muster ist angegeben. "
+    "translation": "Weder die Bereitstellungsrichtlinie noch das Muster ist angegeben."
   },
   {
     "id": "Incompatible",
@@ -997,7 +997,7 @@
   },
   {
     "id": "Organization is not specified in the given node id: {NodeId}.",
-    "translation": "Die Organisation ist in der angegebenen  Knoten-ID {NodeId} nicht angegeben. "
+    "translation": "Die Organisation ist in der angegebenen  Knoten-ID {NodeId} nicht angegeben."
   },
   {
     "id": "Error getting node {NodeId} from the Exchange. {Err}",
@@ -1005,7 +1005,7 @@
   },
   {
     "id": "No node found for this node id {NodeId}.",
-    "translation": "Für diese Knoten-ID {NodeId} wurde kein Knoten gefunden. "
+    "translation": "Für diese Knoten-ID {NodeId} wurde kein Knoten gefunden."
   },
   {
     "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
@@ -1037,7 +1037,7 @@
   },
   {
     "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-    "translation": "Für die abhängigen Services von {TopId} konnte keine Definition gefunden werden. Die Kompatibilität von {PROPNODEPRIVILEGED} kann erst vollständig bewertet werden, wenn sich alle Services im Exchange befinden. "
+    "translation": "Für die abhängigen Services von {TopId} konnte keine Definition gefunden werden. Die Kompatibilität von {PROPNODEPRIVILEGED} kann erst vollständig bewertet werden, wenn sich alle Services im Exchange befinden."
   },
   {
     "id": "The PolicyCheck input cannot be null",
@@ -1045,7 +1045,7 @@
   },
   {
     "id": "The input node architecture {NodeArch} does not match the Exchange node architecture {Arch} for node {NodeId}.",
-    "translation": "Die eingegebene Knotenarchitektur {NodeArch} stimmt nicht mit der Architektur des Exchange-Knotens {Arch} für den Knoten {NodeId} überein. "
+    "translation": "Die eingegebene Knotenarchitektur {NodeArch} stimmt nicht mit der Architektur des Exchange-Knotens {Arch} für den Knoten {NodeId} überein."
   },
   {
     "id": "Policy Incompatible",
@@ -1065,23 +1065,23 @@
   },
   {
     "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
-    "translation": "Der Service mit 'arch' {NodeArch} kann in der Bereitstellungsrichtlinie nicht gefunden werden. "
+    "translation": "Der Service mit 'arch' {NodeArch} kann in der Bereitstellungsrichtlinie nicht gefunden werden."
   },
   {
     "id": "No services found in the deployment policy.",
-    "translation": "In der Bereitstellungsrichtlinie wurden keine Services gefunden. "
+    "translation": "In der Bereitstellungsrichtlinie wurden keine Services gefunden."
   },
   {
     "id": "Node policy cannot be null.",
-    "translation": "Die Knotenrichtlinie darf nicht leer sein. "
+    "translation": "Die Knotenrichtlinie darf nicht leer sein."
   },
   {
     "id": "Deployment policy cannot be null.",
-    "translation": "Die Bereitstellungsrichtlinie darf nicht leer sein. "
+    "translation": "Die Bereitstellungsrichtlinie darf nicht leer sein."
   },
   {
     "id": "Merged service policy cannot be null.",
-    "translation": "Die zusammengeführte Servicerichtlinie darf nicht leer sein. "
+    "translation": "Die zusammengeführte Servicerichtlinie darf nicht leer sein."
   },
   {
     "id": "Error merging node policy with arch property. {Err}",
@@ -1101,7 +1101,7 @@
   },
   {
     "id": "Neither node policy nor node id is specified.",
-    "translation": "Weder die Knotenrichtlinie noch die Knoten-ID ist angegeben. "
+    "translation": "Weder die Knotenrichtlinie noch die Knoten-ID ist angegeben."
   },
   {
     "id": "Node id is empty.",
@@ -1133,19 +1133,19 @@
   },
   {
     "id": "No services specified in the given deployment policy {BpId}.",
-    "translation": "In der angegebenen Bereitstellungsrichtlinie {BpId} wurden keine Services angegeben. "
+    "translation": "In der angegebenen Bereitstellungsrichtlinie {BpId} wurden keine Services angegeben."
   },
   {
     "id": "No services specified in the deployment policy {Name}.",
-    "translation": "In der Bereitstellungsrichtlinie {Name} wurden keine Services angegeben. "
+    "translation": "In der Bereitstellungsrichtlinie {Name} wurden keine Services angegeben."
   },
   {
     "id": "Neither deployment policy nor deployment policy id is specified.",
-    "translation": "Weder die Bereitstellungsrichtlinie noch die Bereitstellungsrichtlinien-ID ist angegeben. "
+    "translation": "Weder die Bereitstellungsrichtlinie noch die Bereitstellungsrichtlinien-ID ist angegeben."
   },
   {
     "id": "Deployment policy id is empty.",
-    "translation": "Die Bereitstellungsrichtlinien-ID ist leer. "
+    "translation": "Die Bereitstellungsrichtlinien-ID ist leer."
   },
   {
     "id": "Organization is not specified in the deployment policy id: {BpId}.",
@@ -1197,7 +1197,7 @@
   },
   {
     "id": "The given deployment policy should not be null.",
-    "translation": "Die angegebene Bereitstellungsrichtlinie darf nicht leer sein. "
+    "translation": "Die angegebene Bereitstellungsrichtlinie darf nicht leer sein."
   },
   {
     "id": "Error merging deployment policy with service policy. {Err}",
@@ -1217,11 +1217,11 @@
   },
   {
     "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
-    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Serviceversionen mit der Architektur {NodeArch} angegeben. "
+    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Serviceversionen mit der Architektur {NodeArch} angegeben."
   },
   {
     "id": "No service versions specified in the deployment policy or pattern.",
-    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Serviceversionen angegeben. "
+    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Serviceversionen angegeben."
   },
   {
     "id": "Secret Binding Incompatible",
@@ -1245,11 +1245,11 @@
   },
   {
     "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-    "translation": "Der Service mit 'arch' {NodeArch} kann in der Bereitstellungsrichtlinie oder dem Muster nicht gefunden werden. "
+    "translation": "Der Service mit 'arch' {NodeArch} kann in der Bereitstellungsrichtlinie oder dem Muster nicht gefunden werden."
   },
   {
     "id": "No services found in the deployment policy or pattern.",
-    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Services gefunden. "
+    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Services gefunden."
   },
   {
     "id": "The input service definition object cannot be null.",
@@ -1313,7 +1313,7 @@
   },
   {
     "id": "Neither node user input nor node id is specified.",
-    "translation": "Weder die Knotenbenutzereingabe noch die Knoten-ID ist angegeben. "
+    "translation": "Weder die Knotenbenutzereingabe noch die Knoten-ID ist angegeben."
   },
   {
     "id": "User Input Incompatible",
@@ -1373,31 +1373,31 @@
   },
   {
     "id": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
-    "translation": "Die Service-URL {URL} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Service-URL {Name} überein. "
+    "translation": "Die Service-URL {URL} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Service-URL {Name} überein."
   },
   {
     "id": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
-    "translation": "Die Serviceorganisation {Org} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Serviceorganisation {Org_1} überein. "
+    "translation": "Die Serviceorganisation {Org} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Serviceorganisation {Org_1} überein."
   },
   {
     "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
-    "translation": "Die Servicearchitektur {Arch} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Servicearchitektur {Arch_1} überein. "
+    "translation": "Die Servicearchitektur {Arch} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Servicearchitektur {Arch_1} überein."
   },
   {
     "id": "Service version {Version} does not match any service versions specified in the deployment policy.",
-    "translation": "Die Serviceversion {Version} stimmt mit keiner der in der Bereitstellungsrichtlinie angegebenen Serviceversionen überein. "
+    "translation": "Die Serviceversion {Version} stimmt mit keiner der in der Bereitstellungsrichtlinie angegebenen Serviceversionen überein."
   },
   {
     "id": "The service does not match any services in the pattern.",
-    "translation": "Der Service stimmt mit keinem Service in dem Muster überein. "
+    "translation": "Der Service stimmt mit keinem Service in dem Muster überein."
   },
   {
     "id": "Pattern {PatId} cannot be found on the Exchange.",
-    "translation": "Das Muster {PatId} kann in keinem Exchange gefunden werden. "
+    "translation": "Das Muster {PatId} kann in keinem Exchange gefunden werden."
   },
   {
     "id": "Neither pattern nor pattern id is specified.",
-    "translation": "Weder das Muster noch die Muster-ID ist angegeben. "
+    "translation": "Weder das Muster noch die Muster-ID ist angegeben."
   },
   {
     "id": "Pattern id is empty.",
@@ -1413,11 +1413,11 @@
   },
   {
     "id": "No pattern found for this id {PatId}.",
-    "translation": "Für die ID {PatId} wurde kein Muster gefunden. "
+    "translation": "Für die ID {PatId} wurde kein Muster gefunden."
   },
   {
     "id": "URL must be specified in the service definition.",
-    "translation": "Die URL muss in der Servicedefinition angegeben werden. "
+    "translation": "Die URL muss in der Servicedefinition angegeben werden."
   },
   {
     "id": "Version must be specified in the service definition for service {URL}.",
@@ -1425,7 +1425,7 @@
   },
   {
     "id": "Invalid version format {Version} for service {URL}.",
-    "translation": "Ungültiges Versionsformat {Version} für den Service {URL}. "
+    "translation": "Ungültiges Versionsformat {Version} für den Service {URL}."
   },
   {
     "id": "Arch must be specified in the service definition for service {URL}.",
@@ -1441,7 +1441,7 @@
   },
   {
     "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
-    "translation": "Der in der Benutzereingabe angegebene Service {ServiceOrgid}/{ServiceUrl}, Version {ServiceVersionRange}, Architektur {ServiceArch} wird vom Muster oder der Bereitstellungsrichtlinie nicht referenziert. Stellen Sie sicher, dass serviceOrgid, serviceUrl, serviceArch und serviceVersionRange korrekt sind. "
+    "translation": "Der in der Benutzereingabe angegebene Service {ServiceOrgid}/{ServiceUrl}, Version {ServiceVersionRange}, Architektur {ServiceArch} wird vom Muster oder der Bereitstellungsrichtlinie nicht referenziert. Stellen Sie sicher, dass serviceOrgid, serviceUrl, serviceArch und serviceVersionRange korrekt sind."
   },
   {
     "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
@@ -1769,7 +1769,7 @@
   },
   {
     "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-    "translation": "Fehler beim Starten des Service {Arg_1}/{Arg_2}, Version {Arg_3}; Fehler: {Arg_4}. "
+    "translation": "Fehler beim Starten des Service {Arg_1}/{Arg_2}, Version {Arg_3}; Fehler: {Arg_4}."
   },
   {
     "id": "Error getting all the services from agreements: {Arg_1}",
@@ -1873,11 +1873,11 @@
   },
   {
     "id": "Start re-registering node after pattern changed to {Arg_1}.",
-    "translation": "Das erneute Registrieren des Knotens nach der Änderung des Musters in {Arg_1} wurde gestartet. "
+    "translation": "Das erneute Registrieren des Knotens nach der Änderung des Musters in {Arg_1} wurde gestartet."
   },
   {
     "id": "Complete re-registering node after pattern changed to {Arg_1}.",
-    "translation": "Das erneute Registrieren des Knotens nach der Änderung des Musters in {Arg_1} wurde abgeschlossen. "
+    "translation": "Das erneute Registrieren des Knotens nach der Änderung des Musters in {Arg_1} wurde abgeschlossen."
   },
   {
     "id": "Node pattern changed again on the Exchange. Will register the node with the new pattern: {Arg_1}",
@@ -1893,7 +1893,7 @@
   },
   {
     "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
-    "translation": "Das neue Muster {Arg_1} wurde verifiziert. Die Vereinbarungen werden storniert und der Knoten wird mit dem neuen Muster erneut registriert. "
+    "translation": "Das neue Muster {Arg_1} wurde verifiziert. Die Vereinbarungen werden storniert und der Knoten wird mit dem neuen Muster erneut registriert."
   },
   {
     "id": "New node management policy status created for policy {Arg_1}.",

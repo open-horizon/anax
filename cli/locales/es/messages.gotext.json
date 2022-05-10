@@ -2699,7 +2699,7 @@
     {
       "id": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
       "message": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
-      "translation": "Liste sólo esta política de despliegue. Utilice <org>/<policy> para especificar una política pública en otra organización o <org>/para listar todas las políticas públicas de otra organización.",
+      "translation": "Liste sólo esta política de despliegue. Utilice <org>/<policy> para especificar una política pública en otra organización o <org>/  para listar todas las políticas públicas de otra organización.",
       "fuzzy": true
     },
     {
@@ -2759,7 +2759,7 @@
     {
       "id": "List just this one node management policy.",
       "message": "List just this one node management policy.",
-      "translation": "Listar sólo esta política de gestión de nodos.",
+      "translation": "Lista sólo esta política de gestión de nodos.",
       "fuzzy": true
     },
     {
@@ -2825,7 +2825,7 @@
     {
       "id": "List the status of a given node management policy across all nodes in given org.",
       "message": "List the status of a given node management policy across all nodes in given org.",
-      "translation": "Liste el estado de una política de gestión de nodos determinada en todos los nodos de una organización determinada.",
+      "translation": "Lista el estado de una política de gestión de nodos determinada en todos los nodos de una organización determinada.",
       "fuzzy": true
     },
     {
@@ -4137,7 +4137,7 @@
     {
       "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.",
       "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.",
-      "translation": "La definición del objeto a publicar. Se puede obtener una plantilla en blanco del mandato 'hzn mms object new'. Especifique -m- para leer de stdin.",
+      "translation": "La definición del objeto a publicar. Se puede obtener una plantilla en blanco con el mandato 'hzn mms object new'. Especifique -m- para leer de stdin.",
       "fuzzy": true
     },
     {
@@ -4215,13 +4215,13 @@
     {
       "id": "List and manage manifest files stored in the management hub.",
       "message": "List and manage manifest files stored in the management hub.",
-      "translation": "Listar y gestionar archivos de manifiesto almacenados en el concentrador de gestión.",
+      "translation": "Listar y gestionar archivos de manifiesto almacenados en el centro de gestión.",
       "fuzzy": true
     },
     {
       "id": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
       "message": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
-      "translation": "Añadir o sustituir un archivo de manifiesto en el concentrador de gestión. Utilice 'hzn nodemanagement manifest new' para una plantilla de manifiesto vacía.",
+      "translation": "Añadir o sustituir un archivo de manifiesto en el centro de gestión. Utilice 'hzn nodemanagement manifest new' para una plantilla de manifiesto vacía.",
       "fuzzy": true
     },
     {
@@ -4245,7 +4245,7 @@
     {
       "id": "Display a list of manifest files stored in the management hub.",
       "message": "Display a list of manifest files stored in the management hub.",
-      "translation": "Visualizar una lista de archivos de manifiesto almacenados en el concentrador de gestión.",
+      "translation": "Visualizar una lista de archivos de manifiesto almacenados en el centro de gestión.",
       "fuzzy": true
     },
     {
@@ -4275,7 +4275,7 @@
     {
       "id": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
       "message": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
-      "translation": "Eliminar un archivo de manifiesto del concentrador de gestión. Utilice 'hzn nodemanagement manifest new' para una plantilla de manifiesto vacía.",
+      "translation": "Eliminar un archivo de manifiesto del centro de gestión. Utilice 'hzn nodemanagement manifest new' para una plantilla de manifiesto vacía.",
       "fuzzy": true
     },
     {
@@ -4293,13 +4293,13 @@
     {
       "id": "List agent files and types stored in the management hub.",
       "message": "List agent files and types stored in the management hub.",
-      "translation": "Listar archivos y tipos de agente almacenados en el concentrador de gestión.",
+      "translation": "Listar archivos y tipos de agente almacenados en el centro de gestión.",
       "fuzzy": true
     },
     {
       "id": "Display a list of agent files stored in the management hub.",
       "message": "Display a list of agent files stored in the management hub.",
-      "translation": "Visualizar una lista de los archivos de agente almacenados en el concentrador de gestión.",
+      "translation": "Visualizar una lista de los archivos de agente almacenados en el Centro de gestión.",
       "fuzzy": true
     },
     {
@@ -13091,7 +13091,7 @@
     {
       "id": "When to start an upgrade, default \"now\".",
       "message": "When to start an upgrade, default \"now\".",
-      "translation": "Cuándo iniciar una actualización, el valor predeterminado  es \"now\".",
+      "translation": "Cuándo iniciar una actualización, el valor predeterminado es \"now\".",
       "fuzzy": true
     },
     {
@@ -13121,7 +13121,7 @@
     {
       "id": "Incorrect node management policy format in file {JsonFilePath}: {Err}",
       "message": "Incorrect node management policy format in file {JsonFilePath}: {Err}",
-      "translation": "Formato de política de gestión de nodos incorrecto en el archivo {JsonFilePath}: {Err}",
+      "translation": "Formato de política de gestión de nodos incorrecta en el archivo {JsonFilePath}: {Err}",
       "placeholders": [
         {
           "id": "JsonFilePath",
@@ -13151,7 +13151,7 @@
     {
       "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
       "message": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} actualizado en Horizon Exchange",
+      "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} se ha actualizado en en Horizon Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13207,7 +13207,7 @@
     {
       "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
       "message": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} añadido en Horizon Exchange",
+      "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} se ha añadido en Horizon Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -17399,7 +17399,7 @@
     {
       "id": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
       "message": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
-      "translation": "Se ha actualizado el manifiesto {ManOrg}/{ObjectID} en el concentrador de gestión",
+      "translation": "Se ha actualizado el manifiesto {ManOrg}/{ObjectID} en el centro de gestión",
       "placeholders": [
         {
           "id": "ManOrg",
@@ -17423,7 +17423,7 @@
     {
       "id": "Manifest {ManOrg}/{ObjectID} added to the Management Hub",
       "message": "Manifest {ManOrg}/{ObjectID} added to the Management Hub",
-      "translation": "Se ha añadido el manifiesto {ManOrg}/{ObjectID} al concentrador de gestión",
+      "translation": "Se ha añadido el manifiesto {ManOrg}/{ObjectID} al Centro de gestión",
       "placeholders": [
         {
           "id": "ManOrg",
@@ -17447,7 +17447,7 @@
     {
       "id": "The following files were specified in the manifest file but do not exist in the Management Hub:",
       "message": "The following files were specified in the manifest file but do not exist in the Management Hub:",
-      "translation": "Los archivos siguientes se han especificado en el archivo de manifiesto pero no existen en el concentrador de gestión:",
+      "translation": "Los archivos siguientes se han especificado en el archivo de manifiesto pero no existen en el Centro de gestión:",
       "fuzzy": true
     },
     {
@@ -17579,7 +17579,7 @@
     {
       "id": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
       "message": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
-      "translation": "¿Está seguro de que desea eliminar el manifiesto {ManOrg}/{ManifestId} del concentrador de gestión?",
+      "translation": "¿Está seguro de que desea eliminar el manifiesto {ManOrg}/{ManifestId} del Centro de gestión?",
       "placeholders": [
         {
           "id": "ManOrg",
@@ -17603,7 +17603,7 @@
     {
       "id": "Manifest '{ManOrg}/{ManifestId}' of type '{ManifestType}' not found in the Management Hub",
       "message": "Manifest '{ManOrg}/{ManifestId}' of type '{ManifestType}' not found in the Management Hub",
-      "translation": "No se ha encontrado el manifiesto '{ManOrg}/{ManifestId}' de tipo '{ManifestType}' en el concentrador de gestión",
+      "translation": "No se ha encontrado el manifiesto '{ManOrg}/{ManifestId}' de tipo '{ManifestType}' en el Centro de gestión",
       "placeholders": [
         {
           "id": "ManOrg",
@@ -17635,7 +17635,7 @@
     {
       "id": "Manifest {ManOrg}/{ManifestId} deleted from the Management Hub",
       "message": "Manifest {ManOrg}/{ManifestId} deleted from the Management Hub",
-      "translation": "Se ha suprimido el manifiesto {ManOrg}/{ManifestId} del concentrador de gestión",
+      "translation": "Se ha suprimido el manifiesto {ManOrg}/{ManifestId} del Centro gestión",
       "placeholders": [
         {
           "id": "ManOrg",
@@ -17665,7 +17665,7 @@
     {
       "id": "A list of agent software files stored in the Management Hub.",
       "message": "A list of agent software files stored in the Management Hub.",
-      "translation": "Lista de archivos de software de agente almacenados en el concentrador de gestión.",
+      "translation": "Lista de archivos de software de agente almacenados en el Centro de gestión.",
       "fuzzy": true
     },
     {
@@ -17689,7 +17689,7 @@
     {
       "id": "The name of a certificate file stored in the Management Hub. Default is \"agent-install.crt\".",
       "message": "The name of a certificate file stored in the Management Hub. Default is \"agent-install.crt\".",
-      "translation": "El nombre de un archivo de certificado almacenado en el concentrador de gestión. El valor predeterminado es \"agent-install.crt\".",
+      "translation": "El nombre de un archivo de certificado almacenado en el Centro de gestión. El valor predeterminado es \"agent-install.crt\".",
       "fuzzy": true
     },
     {
@@ -17713,7 +17713,7 @@
     {
       "id": "The name of a config file stored in the Management Hub. Default is \"agent-install.crt\".",
       "message": "The name of a config file stored in the Management Hub. Default is \"agent-install.crt\".",
-      "translation": "El nombre de un archivo de configuración almacenado en el concentrador de gestión. El valor predeterminado es \"agent-install.crt\".",
+      "translation": "El nombre de un archivo de configuración almacenado en el Centro de gestión. El valor predeterminado es \"agent-install.crt\".",
       "fuzzy": true
     },
     {

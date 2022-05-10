@@ -1017,7 +1017,7 @@
   },
   {
     "id": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
-    "translation": "Liste sólo esta política de despliegue. Utilice <org>/<policy> para especificar una política pública en otra organización o <org>/para listar todas las políticas públicas de otra organización."
+    "translation": "Liste sólo esta política de despliegue. Utilice <org>/<policy> para especificar una política pública en otra organización o <org>/  para listar todas las políticas públicas de otra organización."
   },
   {
     "id": "Display an empty deployment policy template that can be filled in.",
@@ -1057,7 +1057,7 @@
   },
   {
     "id": "List just this one node management policy.",
-    "translation": "Listar sólo esta política de gestión de nodos."
+    "translation": "Lista sólo esta política de gestión de nodos."
   },
   {
     "id": "Display detailed output about the node management policies.",
@@ -1101,7 +1101,7 @@
   },
   {
     "id": "List the status of a given node management policy across all nodes in given org.",
-    "translation": "Liste el estado de una política de gestión de nodos determinada en todos los nodos de una organización determinada."
+    "translation": "Lista el estado de una política de gestión de nodos determinada en todos los nodos de una organización determinada."
   },
   {
     "id": "The name of the node management policy status to check.",
@@ -1957,7 +1957,7 @@
   },
   {
     "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.",
-    "translation": "La definición del objeto a publicar. Se puede obtener una plantilla en blanco del mandato 'hzn mms object new'. Especifique -m- para leer de stdin."
+    "translation": "La definición del objeto a publicar. Se puede obtener una plantilla en blanco con el mandato 'hzn mms object new'. Especifique -m- para leer de stdin."
   },
   {
     "id": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
@@ -2009,11 +2009,11 @@
   },
   {
     "id": "List and manage manifest files stored in the management hub.",
-    "translation": "Listar y gestionar archivos de manifiesto almacenados en el concentrador de gestión."
+    "translation": "Listar y gestionar archivos de manifiesto almacenados en el centro de gestión."
   },
   {
     "id": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
-    "translation": "Añadir o sustituir un archivo de manifiesto en el concentrador de gestión. Utilice 'hzn nodemanagement manifest new' para una plantilla de manifiesto vacía."
+    "translation": "Añadir o sustituir un archivo de manifiesto en el centro de gestión. Utilice 'hzn nodemanagement manifest new' para una plantilla de manifiesto vacía."
   },
   {
     "id": "The type of manifest to add. Valid values include 'agent_upgrade_manifests'.",
@@ -2029,7 +2029,7 @@
   },
   {
     "id": "Display a list of manifest files stored in the management hub.",
-    "translation": "Visualizar una lista de archivos de manifiesto almacenados en el concentrador de gestión."
+    "translation": "Visualizar una lista de archivos de manifiesto almacenados en el centro de gestión."
   },
   {
     "id": "The type of manifest to list. Valid values include 'agent_upgrade_manifests'.",
@@ -2049,7 +2049,7 @@
   },
   {
     "id": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
-    "translation": "Eliminar un archivo de manifiesto del concentrador de gestión. Utilice 'hzn nodemanagement manifest new' para una plantilla de manifiesto vacía."
+    "translation": "Eliminar un archivo de manifiesto del centro de gestión. Utilice 'hzn nodemanagement manifest new' para una plantilla de manifiesto vacía."
   },
   {
     "id": "The type of manifest to remove. Valid values include 'agent_upgrade_manifests'.",
@@ -2061,11 +2061,11 @@
   },
   {
     "id": "List agent files and types stored in the management hub.",
-    "translation": "Listar archivos y tipos de agente almacenados en el concentrador de gestión."
+    "translation": "Listar archivos y tipos de agente almacenados en el centro de gestión."
   },
   {
     "id": "Display a list of agent files stored in the management hub.",
-    "translation": "Visualizar una lista de los archivos de agente almacenados en el concentrador de gestión."
+    "translation": "Visualizar una lista de los archivos de agente almacenados en el Centro de gestión."
   },
   {
     "id": "Filter the list of agent upgrade files by the specified type. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
@@ -4305,7 +4305,7 @@
   },
   {
     "id": "When to start an upgrade, default \"now\".",
-    "translation": "Cuándo iniciar una actualización, el valor predeterminado  es \"now\"."
+    "translation": "Cuándo iniciar una actualización, el valor predeterminado es \"now\"."
   },
   {
     "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
@@ -4325,7 +4325,7 @@
   },
   {
     "id": "Incorrect node management policy format in file {JsonFilePath}: {Err}",
-    "translation": "Formato de política de gestión de nodos incorrecto en el archivo {JsonFilePath}: {Err}"
+    "translation": "Formato de política de gestión de nodos incorrecta en el archivo {JsonFilePath}: {Err}"
   },
   {
     "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
@@ -4333,7 +4333,7 @@
   },
   {
     "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} actualizado en Horizon Exchange"
+    "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} se ha actualizado en en Horizon Exchange"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
@@ -4341,7 +4341,7 @@
   },
   {
     "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} añadido en Horizon Exchange"
+    "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} se ha añadido en Horizon Exchange"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -5321,15 +5321,15 @@
   },
   {
     "id": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
-    "translation": "Se ha actualizado el manifiesto {ManOrg}/{ObjectID} en el concentrador de gestión"
+    "translation": "Se ha actualizado el manifiesto {ManOrg}/{ObjectID} en el centro de gestión"
   },
   {
     "id": "Manifest {ManOrg}/{ObjectID} added to the Management Hub",
-    "translation": "Se ha añadido el manifiesto {ManOrg}/{ObjectID} al concentrador de gestión"
+    "translation": "Se ha añadido el manifiesto {ManOrg}/{ObjectID} al Centro de gestión"
   },
   {
     "id": "The following files were specified in the manifest file but do not exist in the Management Hub:",
-    "translation": "Los archivos siguientes se han especificado en el archivo de manifiesto pero no existen en el concentrador de gestión:"
+    "translation": "Los archivos siguientes se han especificado en el archivo de manifiesto pero no existen en el Centro de gestión:"
   },
   {
     "id": "The version specified in SoftwareUpgrade is not a valid version string or \"latest\": {Version}",
@@ -5361,15 +5361,15 @@
   },
   {
     "id": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
-    "translation": "¿Está seguro de que desea eliminar el manifiesto {ManOrg}/{ManifestId} del concentrador de gestión?"
+    "translation": "¿Está seguro de que desea eliminar el manifiesto {ManOrg}/{ManifestId} del Centro de gestión?"
   },
   {
     "id": "Manifest '{ManOrg}/{ManifestId}' of type '{ManifestType}' not found in the Management Hub",
-    "translation": "No se ha encontrado el manifiesto '{ManOrg}/{ManifestId}' de tipo '{ManifestType}' en el concentrador de gestión"
+    "translation": "No se ha encontrado el manifiesto '{ManOrg}/{ManifestId}' de tipo '{ManifestType}' en el Centro de gestión"
   },
   {
     "id": "Manifest {ManOrg}/{ManifestId} deleted from the Management Hub",
-    "translation": "Se ha suprimido el manifiesto {ManOrg}/{ManifestId} del concentrador de gestión"
+    "translation": "Se ha suprimido el manifiesto {ManOrg}/{ManifestId} del Centro gestión"
   },
   {
     "id": "Fill in this section to perform a software upgrade of the agent. Remove this section to prevent software upgrade.",
@@ -5377,7 +5377,7 @@
   },
   {
     "id": "A list of agent software files stored in the Management Hub.",
-    "translation": "Lista de archivos de software de agente almacenados en el concentrador de gestión."
+    "translation": "Lista de archivos de software de agente almacenados en el Centro de gestión."
   },
   {
     "id": "Run 'hzn nm agentfiles list -t agent_software_files' to get a list of available files.",
@@ -5393,7 +5393,7 @@
   },
   {
     "id": "The name of a certificate file stored in the Management Hub. Default is \"agent-install.crt\".",
-    "translation": "El nombre de un archivo de certificado almacenado en el concentrador de gestión. El valor predeterminado es \"agent-install.crt\"."
+    "translation": "El nombre de un archivo de certificado almacenado en el Centro de gestión. El valor predeterminado es \"agent-install.crt\"."
   },
   {
     "id": "Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.",
@@ -5409,7 +5409,7 @@
   },
   {
     "id": "The name of a config file stored in the Management Hub. Default is \"agent-install.crt\".",
-    "translation": "El nombre de un archivo de configuración almacenado en el concentrador de gestión. El valor predeterminado es \"agent-install.crt\"."
+    "translation": "El nombre de un archivo de configuración almacenado en el Centro de gestión. El valor predeterminado es \"agent-install.crt\"."
   },
   {
     "id": "Run 'hzn nm agentfiles list -t agent_config_files' to get a list of available files.",

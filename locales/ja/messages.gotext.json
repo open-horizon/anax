@@ -7089,7 +7089,7 @@
     {
       "id": "Label, or Enabled is empty.",
       "message": "Label, or Enabled is empty.",
-      "translation": "「ラベル」または「有効」が空です。",
+      "translation": "Label または Enabled が空です。",
       "fuzzy": true
     },
     {
@@ -9441,7 +9441,7 @@
         "New node management policy status created for policy {Arg_1}."
       ],
       "message": "New node management policy status created for policy {Arg_1}.",
-      "translation": "ポリシー {Arg_1}の新規ノード管理ポリシー状況が作成されました。",
+      "translation": "ポリシー {Arg_1} の新規ノード管理ポリシー状況が作成されました。",
       "placeholders": [
         {
           "id": "Arg_1",

@@ -45,7 +45,7 @@
   },
   {
     "id": "Wrong organization id, user id or password.",
-    "translation": "Falsche Organisations-ID, falsche Benutzer-ID oder falsches Kennwort. "
+    "translation": "Falsche Organisations-ID, falsche Benutzer-ID oder falsches Kennwort."
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
@@ -57,7 +57,7 @@
   },
   {
     "id": "There is no secrets provider configured, secrets are unavailable.",
-    "translation": "Es ist kein Provider für geheime Schlüssel konfiguriert; geheime Schlüssel sind nicht verfügbar. "
+    "translation": "Es ist kein Provider für geheime Schlüssel konfiguriert; geheime Schlüssel sind nicht verfügbar."
   },
   {
     "id": "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable.",
@@ -333,7 +333,7 @@
   },
   {
     "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-    "translation": "Start der automatischen Konfiguration des Service für {Arg_1}/{Arg_2}. "
+    "translation": "Start der automatischen Konfiguration des Service für {Arg_1}/{Arg_2}."
   },
   {
     "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
@@ -409,7 +409,7 @@
   },
   {
     "id": "Cancel 1 or all of the active agreements this Horizon agreement bot has with edge nodes. Usually an agbot will immediately negotiated a new agreement.",
-    "translation": "Beendet eine oder alle aktiven Vereinbarungen, die zwischen diesem Horizon-Vereinbarungs-Bot und Edge-Knoten bestehen. In der Regel wird von einem Agbot sofort eine neue Vereinbarung ausgehandelt. "
+    "translation": "Beendet eine oder alle aktiven Vereinbarungen, die zwischen diesem Horizon-Vereinbarungs-Bot und Edge-Knoten bestehen. In der Regel wird von einem Agbot sofort eine neue Vereinbarung ausgehandelt."
   },
   {
     "id": "Cancel all of the current agreements.",
@@ -541,11 +541,11 @@
   },
   {
     "id": "Horizon exchange user credential to query exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH will be used as a default. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Horizon Exchange-Benutzerberechtigung zum Abfragen der Exchange-Ressourcen. Werden keine angegeben, wird standardmäßig HZN_EXCHANGE_USER_AUTH oder HZN_EXCHANGE_NODE_AUTH verwendet. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt. "
+    "translation": "Horizon Exchange-Benutzerberechtigung zum Abfragen der Exchange-Ressourcen. Werden keine angegeben, wird standardmäßig HZN_EXCHANGE_USER_AUTH oder HZN_EXCHANGE_NODE_AUTH verwendet. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "Show the compatibility status of all the service versions referenced in the deployment policy.",
-    "translation": "Zeigt den Kompatibilitätsstatus aller in der Bereitstellungsrichtlinie referenzierten Serviceversionen an. "
+    "translation": "Zeigt den Kompatibilitätsstatus aller in der Bereitstellungsrichtlinie referenzierten Serviceversionen an."
   },
   {
     "id": "Show policies and userinput used for the compatibility checking.",
@@ -557,51 +557,51 @@
   },
   {
     "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.",
-    "translation": "Die Architektur des Knotens. Diese Angabe ist erforderlich, wenn -n nicht angegeben wird. Wird diese Option nicht angegeben, wird der Service aller in der Bereitstellungsrichtlinie oder dem Muster referenzierten Architekturen auf Kompatibilität überprüft. "
+    "translation": "Die Architektur des Knotens. Diese Angabe ist erforderlich, wenn -n nicht angegeben wird. Wird diese Option nicht angegeben, wird der Service aller in der Bereitstellungsrichtlinie oder dem Muster referenzierten Architekturen auf Kompatibilität überprüft."
   },
   {
     "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
-    "translation": "Der Knotentyp. Gültige Werte sind 'device' und 'cluster'. Der Standardwert ist der durch '-n' angegebene Knotentyp oder der Typ der momentan registrierten Einheit, falls keine Angabe gemacht wurde. "
+    "translation": "Der Knotentyp. Gültige Werte sind 'device' und 'cluster'. Der Standardwert ist der durch '-n' angegebene Knotentyp oder der Typ der momentan registrierten Einheit, falls keine Angabe gemacht wurde."
   },
   {
     "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
-    "translation": "Die Organisation des Knotens. Der Standardwert ist der durch '-n' angegebene Typ der Organisation oder der Typ der momentan registrierten Einheit, falls keine Angabe gemacht wurde. "
+    "translation": "Die Organisation des Knotens. Der Standardwert ist der durch '-n' angegebene Typ der Organisation oder der Typ der momentan registrierten Einheit, falls keine Angabe gemacht wurde."
   },
   {
     "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Die Knoten-ID von Horizon Exchange. Diese Angabe und --node-pol sowie --node-ui schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt. "
+    "translation": "Die Knoten-ID von Horizon Exchange. Diese Angabe und --node-pol sowie --node-ui schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-    "translation": "Der Name der JSON-Eingabedatei, in der die Knotenrichtlinie enthalten ist. Diese Angabe und -n, -p und -P schließen sich gegenseitig aus. "
+    "translation": "Der Name der JSON-Eingabedatei, in der die Knotenrichtlinie enthalten ist. Diese Angabe und -n, -p und -P schließen sich gegenseitig aus."
   },
   {
     "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-    "translation": "Der Name der JSON-Eingabedatei, in der die Eingabe des Knotenbenutzers enthalten ist. Diese Angabe und -n schließen sich gegenseitig aus. "
+    "translation": "Der Name der JSON-Eingabedatei, in der die Eingabe des Knotenbenutzers enthalten ist. Diese Angabe und -n schließen sich gegenseitig aus."
   },
   {
     "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-    "translation": "Die Bereitstellungsrichtlinien-ID von Horizon Exchange. Diese Angabe und -B, -p und -P schließen sich gegenseitig aus. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch die Organisations-ID des Knotens vorangestellt. "
+    "translation": "Die Bereitstellungsrichtlinien-ID von Horizon Exchange. Diese Angabe und -B, -p und -P schließen sich gegenseitig aus. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch die Organisations-ID des Knotens vorangestellt."
   },
   {
     "id": "The JSON input file name containing the deployment policy. Mutually exclusive with -b, -p and -P.",
-    "translation": "Der Name der JSON-Eingabedatei, in der die Bereitstellungsrichtlinie enthalten ist. Diese Angabe und -b, -p und -P schließen sich gegenseitig aus. "
+    "translation": "Der Name der JSON-Eingabedatei, in der die Bereitstellungsrichtlinie enthalten ist. Diese Angabe und -b, -p und -P schließen sich gegenseitig aus."
   },
   {
     "id": "(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the Exchange for the service defined in the deployment policy.",
-    "translation": "(Optional) Der Name der JSON-Eingabedatei, in der die Servicerichtlinie enthalten ist. Diese Angabe und -p und -P schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Servicerichtlinie aus dem Exchange für den in der Bereitstellungsrichtlinie definierten Service abgerufen. "
+    "translation": "(Optional) Der Name der JSON-Eingabedatei, in der die Servicerichtlinie enthalten ist. Diese Angabe und -p und -P schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Servicerichtlinie aus dem Exchange für den in der Bereitstellungsrichtlinie definierten Service abgerufen."
   },
   {
     "id": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the deployment policy or pattern will be retrieved from the Exchange. This flag can be repeated to specify different versions of the service.",
-    "translation": "(Optional) Der Name der JSON-Eingabedatei, in der die Servicedefinition enthalten ist. Wird diese Option nicht angegeben, wird der in der Bereitstellungsrichtlinie oder dem Muster definierte Service aus dem Exchange abgerufen. Dieses Flag kann mehrmals angegeben werden, um verschiedene Versionen des Service anzugeben. "
+    "translation": "(Optional) Der Name der JSON-Eingabedatei, in der die Servicedefinition enthalten ist. Wird diese Option nicht angegeben, wird der in der Bereitstellungsrichtlinie oder dem Muster definierte Service aus dem Exchange abgerufen. Dieses Flag kann mehrmals angegeben werden, um verschiedene Versionen des Service anzugeben."
   },
   {
     "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b, -B --node-pol and --service-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-    "translation": "Die Muster-ID von Horizon Exchange. Diese Angabe und -P, -b, -B --node-pol und --service-pol schließen sich gegenseitig aus. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch die Organisations-ID des Knotens vorangestellt. "
+    "translation": "Die Muster-ID von Horizon Exchange. Diese Angabe und -P, -b, -B --node-pol und --service-pol schließen sich gegenseitig aus. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch die Organisations-ID des Knotens vorangestellt."
   },
   {
     "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B, --node-pol and --service-pol.",
-    "translation": "Der Name der JSON-Eingabedatei, in der das Muster enthalten ist. Diese Angabe und -p, -b and -B, --node-pol und --service-pol schließen sich gegenseitig aus. "
+    "translation": "Der Name der JSON-Eingabedatei, in der das Muster enthalten ist. Diese Angabe und -p, -b and -B, --node-pol und --service-pol schließen sich gegenseitig aus."
   },
   {
     "id": "Check policy compatibility.",
@@ -609,31 +609,31 @@
   },
   {
     "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility.",
-    "translation": "Die Architektur des Knotens. Diese Angabe ist erforderlich, wenn -n nicht angegeben wird. Wird diese Option nicht angegeben, wird der Service aller in der Bereitstellungsrichtlinie referenzierten Architekturen auf Kompatibilität überprüft. "
+    "translation": "Die Architektur des Knotens. Diese Angabe ist erforderlich, wenn -n nicht angegeben wird. Wird diese Option nicht angegeben, wird der Service aller in der Bereitstellungsrichtlinie referenzierten Architekturen auf Kompatibilität überprüft."
   },
   {
     "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Die Knoten-ID von Horizon Exchange. Diese Angabe und --node-pol schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt. "
+    "translation": "Die Knoten-ID von Horizon Exchange. Diese Angabe und --node-pol schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-    "translation": "Der Name der JSON-Eingabedatei, in der die Knotenrichtlinie enthalten ist. Diese Angabe und -n schließen sich gegenseitig aus. "
+    "translation": "Der Name der JSON-Eingabedatei, in der die Knotenrichtlinie enthalten ist. Diese Angabe und -n schließen sich gegenseitig aus."
   },
   {
     "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-    "translation": "Die Bereitstellungsrichtlinien-ID von Horizon Exchange. Diese Angabe und -B schließen sich gegenseitig aus. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch die Organisations-ID des Knotens vorangestellt. "
+    "translation": "Die Bereitstellungsrichtlinien-ID von Horizon Exchange. Diese Angabe und -B schließen sich gegenseitig aus. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch die Organisations-ID des Knotens vorangestellt."
   },
   {
     "id": "The JSON input file name containing the Deployment policy. Mutually exclusive with -b.",
-    "translation": "Der Name der JSON-Eingabedatei, in der die Bereitstellungsrichtlinie enthalten ist. Diese Angabe und -b schließen sich gegenseitig aus. "
+    "translation": "Der Name der JSON-Eingabedatei, in der die Bereitstellungsrichtlinie enthalten ist. Diese Angabe und -b schließen sich gegenseitig aus."
   },
   {
     "id": "(optional) The JSON input file name containing the service policy. If omitted, the service policy will be retrieved from the Exchange for the service defined in the deployment policy.",
-    "translation": "(Optional) Der Name der JSON-Eingabedatei, in der die Servicerichtlinie enthalten ist. Wird diese Option nicht angegeben, wird die Servicerichtlinie aus dem Exchange für den in der Bereitstellungsrichtlinie definierten Service abgerufen. "
+    "translation": "(Optional) Der Name der JSON-Eingabedatei, in der die Servicerichtlinie enthalten ist. Wird diese Option nicht angegeben, wird die Servicerichtlinie aus dem Exchange für den in der Bereitstellungsrichtlinie definierten Service abgerufen."
   },
   {
     "id": "(optional) The JSON input file name containing the service definition. Mutually exclusive with -b. If omitted, the service referenced in the deployment policy is retrieved from the Exchange. This flag can be repeated to specify different versions of the service.",
-    "translation": "(Optional) Der Name der JSON-Eingabedatei, in der die Servicedefinition enthalten ist. Diese Angabe und -b schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird der in der Bereitstellungsrichtlinie referenzierte Service aus dem Exchange abgerufen. Dieses Flag kann mehrmals angegeben werden, um verschiedene Versionen des Service anzugeben. "
+    "translation": "(Optional) Der Name der JSON-Eingabedatei, in der die Servicedefinition enthalten ist. Diese Angabe und -b schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird der in der Bereitstellungsrichtlinie referenzierte Service aus dem Exchange abgerufen. Dieses Flag kann mehrmals angegeben werden, um verschiedene Versionen des Service anzugeben."
   },
   {
     "id": "Check secret bindings.",
@@ -641,15 +641,15 @@
   },
   {
     "id": "The Horizon exchange node ID. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Die Knoten-ID von Horizon Exchange. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt. "
+    "translation": "Die Knoten-ID von Horizon Exchange. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b and -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-    "translation": "Die Muster-ID von Horizon Exchange. Diese Angabe und -P, -b und -B schließen sich gegenseitig aus. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch die Organisations-ID des Knotens vorangestellt. "
+    "translation": "Die Muster-ID von Horizon Exchange. Diese Angabe und -P, -b und -B schließen sich gegenseitig aus. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch die Organisations-ID des Knotens vorangestellt."
   },
   {
     "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B.",
-    "translation": "Der Name der JSON-Eingabedatei, in der das Muster enthalten ist. Diese Angabe und -p, -b und -B schließen sich gegenseitig aus. "
+    "translation": "Der Name der JSON-Eingabedatei, in der das Muster enthalten ist. Diese Angabe und -p, -b und -B schließen sich gegenseitig aus."
   },
   {
     "id": "Check user input compatibility.",
@@ -657,7 +657,7 @@
   },
   {
     "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Die Knoten-ID von Horizon Exchange. Diese Angabe und --node-ui schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt. "
+    "translation": "Die Knoten-ID von Horizon Exchange. Diese Angabe und --node-ui schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "Development tools for creation of services.",
@@ -673,11 +673,11 @@
   },
   {
     "id": "The URL of the service dependency in the Exchange. Mutually exclusive with -p and --url.",
-    "translation": "Die URL der Serviceabhängigkeit im Exchange. Diese Angabe und -p und --url schließen sich gegenseitig aus. "
+    "translation": "Die URL der Serviceabhängigkeit im Exchange. Diese Angabe und -p und --url schließen sich gegenseitig aus."
   },
   {
     "id": "The URL of the service dependency in the Exchange. Mutually exclusive with -p and --specRef.",
-    "translation": "Die URL der Serviceabhängigkeit im Exchange. Diese Angabe und -p und --specRef schließen sich gegenseitig aus. "
+    "translation": "Die URL der Serviceabhängigkeit im Exchange. Diese Angabe und -p und --specRef schließen sich gegenseitig aus."
   },
   {
     "id": "The Org of the service dependency in the Exchange. Mutually exclusive with -p.",
@@ -701,7 +701,7 @@
   },
   {
     "id": "Horizon Exchange user credentials to query exchange resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-    "translation": "Horizon Exchange-Benutzerberechtigungen zum Abfragen der Exchange-Ressourcen. Die Standardeinstellung ist die Umgebungsvariable HZN_EXCHANGE_USER_AUTH. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert der Umgebungsvariablen HZN_ORG_ID vorangestellt. "
+    "translation": "Horizon Exchange-Benutzerberechtigungen zum Abfragen der Exchange-Ressourcen. Die Standardeinstellung ist die Umgebungsvariable HZN_EXCHANGE_USER_AUTH. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert der Umgebungsvariablen HZN_ORG_ID vorangestellt."
   },
   {
     "id": "File containing user input values for configuring the new dependency. If omitted, the userinput file in the dependency project will be used.",
@@ -725,7 +725,7 @@
   },
   {
     "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
-    "translation": "Der Name des Service, dessen Protokollsätze angezeigt werden sollen. Der Servicename ist mit dem URL-Feld einer Servicedefinition identisch. "
+    "translation": "Der Name des Service, dessen Protokollsätze angezeigt werden sollen. Der Servicename ist mit dem URL-Feld einer Servicedefinition identisch."
   },
   {
     "id": "(DEPRECATED) This flag is deprecated and is replaced by -c.",
@@ -737,7 +737,7 @@
   },
   {
     "id": "Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.",
-    "translation": "Fragt die Protokolle des Service fortlaufend ab und zeigt die neuesten Datensätze an. Das Verhalten ist ähnlich wie das des Befehls 'tail -F'. "
+    "translation": "Fragt die Protokolle des Service fortlaufend ab und zeigt die neuesten Datensätze an. Das Verhalten ist ähnlich wie das des Befehls 'tail -F'."
   },
   {
     "id": "Create a new service project.",
@@ -797,11 +797,11 @@
   },
   {
     "id": "Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the Exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-    "translation": "Horizon Exchange-Benutzerberechtigungen zum Abfragen der Exchange-Ressourcen. Geben Sie sie an, wenn die fehlenden abhängigen Services automatisch von Exchange abgerufen werden sollen. Die Standardeinstellung ist die Umgebungsvariable HZN_EXCHANGE_USER_AUTH. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert der Umgebungsvariablen HZN_ORG_ID vorangestellt. "
+    "translation": "Horizon Exchange-Benutzerberechtigungen zum Abfragen der Exchange-Ressourcen. Geben Sie sie an, wenn die fehlenden abhängigen Services automatisch von Exchange abgerufen werden sollen. Die Standardeinstellung ist die Umgebungsvariable HZN_EXCHANGE_USER_AUTH. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert der Umgebungsvariablen HZN_ORG_ID vorangestellt."
   },
   {
     "id": "Filepath of a file containing a secret that is required by the service or one of its dependent services. The filename must match a secret name in the service definition. The file is encoded in JSON as an object containing two keys both typed as a string; \"key\" is used to indicate the kind of secret, and \"value\" is the string form of the secret. This flag can be repeated.",
-    "translation": "Der Dateipfad einer Datei mit einem geheimen Schlüssel, der für den Service oder einen seiner abhängigen Services erforderlich ist. Der Dateiname muss mit dem Namen eines geheimen Schlüssels in der Servicedefinition übereinstimmen. Die Datei ist in JSON als Objekt codiert das zwei Schlüssel mit dem Datentyp 'String' enthält; \"schlüssel\" wird zur Angabe des Typs des geheimen Schlüssels verwendet und \"wert\" ist die Zeichenfolgeform des geheimen Schlüssels. Dieses Flag kann mehrmals angegeben werden. "
+    "translation": "Der Dateipfad einer Datei mit einem geheimen Schlüssel, der für den Service oder einen seiner abhängigen Services erforderlich ist. Der Dateiname muss mit dem Namen eines geheimen Schlüssels in der Servicedefinition übereinstimmen. Die Datei ist in JSON als Objekt codiert das zwei Schlüssel mit dem Datentyp 'String' enthält; \"schlüssel\" wird zur Angabe des Typs des geheimen Schlüssels verwendet und \"wert\" ist die Zeichenfolgeform des geheimen Schlüssels. Dieses Flag kann mehrmals angegeben werden."
   },
   {
     "id": "Stop a service that is running in a mocked Horizon Agent environment. This command is not supported for services using the {KUBEDEPLOYMENTCONFIGTYPE} deployment configuration.",
@@ -825,7 +825,7 @@
   },
   {
     "id": "Continuously polls the event log to display the most recent records, similar to tail -F behavior.",
-    "translation": "Fragt die Ereignisprotokollle fortlaufend ab und zeigt die neuesten Datensätze an. Das Verhalten ist ähnlich wie das des Befehls 'tail -F'. "
+    "translation": "Fragt die Ereignisprotokollle fortlaufend ab und zeigt die neuesten Datensätze an. Das Verhalten ist ähnlich wie das des Befehls 'tail -F'."
   },
   {
     "id": "List all the event logs including the previous registrations.",
@@ -841,11 +841,11 @@
   },
   {
     "id": "List all the active errors that will be shared with the Exchange if the node is online.",
-    "translation": "Listet alle aktiven Fehler auf, die mit dem Exchange geteilt werden, wenn der Knoten online ist. "
+    "translation": "Listet alle aktiven Fehler auf, die mit dem Exchange geteilt werden, wenn der Knoten online ist."
   },
   {
     "id": "List the full event logs of the surface errors.",
-    "translation": "Listet die vollständigen Ereignisprotokolle der aufgetretenen Fehler auf. "
+    "translation": "Listet die vollständigen Ereignisprotokolle der aufgetretenen Fehler auf."
   },
   {
     "id": "List and manage Horizon Exchange resources.",
@@ -893,7 +893,7 @@
   },
   {
     "id": "Display the agbot resources from the Horizon Exchange.",
-    "translation": "Zeigt die Agbot-Ressourcen in Horizon Exchange an. "
+    "translation": "Zeigt die Agbot-Ressourcen in Horizon Exchange an."
   },
   {
     "id": "List just this one agbot.",
@@ -933,7 +933,7 @@
   },
   {
     "id": "The agbot to remove the deployment policy from.",
-    "translation": "Der Agbot, aus dem die Bereitstellungsrichtlinie entfernt werden soll. "
+    "translation": "Der Agbot, aus dem die Bereitstellungsrichtlinie entfernt werden soll."
   },
   {
     "id": "The organization of the deployment policy to remove.",
@@ -1125,7 +1125,7 @@
   },
   {
     "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-    "translation": "Die Knoten-ID und das Token von Horizon Exchange, die als Berechtigungsnachweise zum Abfragen und Ändern der Knotenressourcen verwendet werden sollen, wenn das Flag -u nicht angegeben ist. Als Standardwert für -n wird HZN_EXCHANGE_NODE_AUTH verwendet. Wenn Sie nicht die Organisation des Knotens als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt. "
+    "translation": "Die Knoten-ID und das Token von Horizon Exchange, die als Berechtigungsnachweise zum Abfragen und Ändern der Knotenressourcen verwendet werden sollen, wenn das Flag -u nicht angegeben ist. Als Standardwert für -n wird HZN_EXCHANGE_NODE_AUTH verwendet. Wenn Sie nicht die Organisation des Knotens als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "Add or replace policy for this node.",
@@ -1141,7 +1141,7 @@
   },
   {
     "id": "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.",
-    "translation": "Die Knoten-ID und das Token für Horizon Exchange, die erstellt werden sollen. Die Knoten-ID muss innerhalb der Organisation eindeutig sein. "
+    "translation": "Die Knoten-ID und das Token für Horizon Exchange, die erstellt werden sollen. Die Knoten-ID muss innerhalb der Organisation eindeutig sein."
   },
   {
     "id": "Your node architecture. If not specified, architecture will be left blank.",
@@ -1181,7 +1181,7 @@
   },
   {
     "id": "Display the node resources from the Horizon Exchange.",
-    "translation": "Zeigt die Knotenressourcen in Horizon Exchange an. "
+    "translation": "Zeigt die Knotenressourcen in Horizon Exchange an."
   },
   {
     "id": "List just this one node.",
@@ -1193,7 +1193,7 @@
   },
   {
     "id": "List the node errors currently surfaced to the Exchange.",
-    "translation": "Listet die Knotenfehler auf, die momentan gegenüber dem Exchange aufgetreten sind. "
+    "translation": "Listet die Knotenfehler auf, die momentan gegenüber dem Exchange aufgetreten sind."
   },
   {
     "id": "List surfaced errors for this node.",
@@ -1201,7 +1201,7 @@
   },
   {
     "id": "Show the full eventlog object of the errors currently surfaced to the Exchange.",
-    "translation": "Zeigt das vollständige Ereignisprotokollobjekt der momentan gegenüber dem Exchange aufgetretenen Fehler an. "
+    "translation": "Zeigt das vollständige Ereignisprotokollobjekt der momentan gegenüber dem Exchange aufgetretenen Fehler an."
   },
   {
     "id": "Display the node policy from the Horizon Exchange.",
@@ -1225,7 +1225,7 @@
   },
   {
     "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-    "translation": "Die Knoten-ID und das Token für Horizon Exchange, die als Berechtigungsnachweise zum Abfragen und Ändern der Knotenressourcen verwendet werden sollen, wenn das Flag -u nicht angegeben ist. Als Standardwert für -n wird HZN_EXCHANGE_NODE_AUTH verwendet. Wenn Sie nicht die Organisation des Knotens als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt. "
+    "translation": "Die Knoten-ID und das Token für Horizon Exchange, die als Berechtigungsnachweise zum Abfragen und Ändern der Knotenressourcen verwendet werden sollen, wenn das Flag -u nicht angegeben ist. Als Standardwert für -n wird HZN_EXCHANGE_NODE_AUTH verwendet. Wenn Sie nicht die Organisation des Knotens als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "Include disabled NMP's.",
@@ -1325,7 +1325,7 @@
   },
   {
     "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
-    "translation": "Tag für die neue Organisation. Das Format lautet 'mein_tag1=mein_wert1'. Dieses Flag kann mehrmals angegeben werden, um mehrere Tags anzugeben. "
+    "translation": "Tag für die neue Organisation. Das Format lautet 'mein_tag1=mein_wert1'. Dieses Flag kann mehrmals angegeben werden, um mehrere Tags anzugeben."
   },
   {
     "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -1341,11 +1341,11 @@
   },
   {
     "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
-    "translation": "Die maximale Anzahl an Knoten, über die diese Organisation verfügen kann. Der Wert darf das globale Limit für Exchange nicht überschreiten. Der Standardwert ist 0, was bedeutet, dass für die Organisation keine Begrenzung besteht. "
+    "translation": "Die maximale Anzahl an Knoten, über die diese Organisation verfügen kann. Der Wert darf das globale Limit für Exchange nicht überschreiten. Der Standardwert ist 0, was bedeutet, dass für die Organisation keine Begrenzung besteht."
   },
   {
     "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
-    "translation": "Fügt die Organisation zu diesem Agbot hinzu, sodass der Agbot für das Bereitstellen von Services in der Organisation verantwortlich ist. Der Agbot stellt Services auf Knoten in der Organisation bereit, und verwendet dafür die Muster und Richtlinien der Organisation. Wird diese Angabe übergangen, wird der erste im Exchange gefundene Agbot für diese Organisation verantwortlich. Das Format lautet 'agbot_org/agbot_id'. "
+    "translation": "Fügt die Organisation zu diesem Agbot hinzu, sodass der Agbot für das Bereitstellen von Services in der Organisation verantwortlich ist. Der Agbot stellt Services auf Knoten in der Organisation bereit, und verwendet dafür die Muster und Richtlinien der Organisation. Wird diese Angabe übergangen, wird der erste im Exchange gefundene Agbot für diese Organisation verantwortlich. Das Format lautet 'agbot_org/agbot_id'."
   },
   {
     "id": "Display the organization resource from the Horizon Exchange. (Normally you can only display your own organiztion. If the org does not exist, you will get an invalid credentials error.)",
@@ -1353,7 +1353,7 @@
   },
   {
     "id": "List this one organization.",
-    "translation": "Listet diese eine Organisation auf. "
+    "translation": "Listet diese eine Organisation auf."
   },
   {
     "id": "Display detailed info of orgs",
@@ -1369,7 +1369,7 @@
   },
   {
     "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
-    "translation": "Der Agbot, aus dem die Bereitstellungsrichtlinie entfernt werden soll. Wird keine Angabe gemacht, wird der erste im Exchange gefundene Agbot verwendet. Das Format lautet 'agbot_organisation/agbot_id'. "
+    "translation": "Der Agbot, aus dem die Bereitstellungsrichtlinie entfernt werden soll. Wird keine Angabe gemacht, wird der erste im Exchange gefundene Agbot verwendet. Das Format lautet 'agbot_organisation/agbot_id'."
   },
   {
     "id": "Update the organization resource in the Horizon Exchange.",
@@ -1389,23 +1389,23 @@
   },
   {
     "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-    "translation": "Neuer Tag für die Organisation. Das Format lautet 'mein_tag1=mein_wert1'. Dieses Flag kann mehrmals angegeben werden, um mehrere Tags anzugeben. Verwenden Sie '-t \"\"' einmalig, um alle Tags zu entfernen. "
+    "translation": "Neuer Tag für die Organisation. Das Format lautet 'mein_tag1=mein_wert1'. Dieses Flag kann mehrmals angegeben werden, um mehrere Tags anzugeben. Verwenden Sie '-t \"\"' einmalig, um alle Tags zu entfernen."
   },
   {
     "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-    "translation": "Neue minimale Anzahl Sekunden zwischen Agenten-Heartbeats an den Exchange. Der Standardwert -1 bedeutet, dass das Attribut nicht geändert wird. "
+    "translation": "Neue minimale Anzahl Sekunden zwischen Agenten-Heartbeats an den Exchange. Der Standardwert -1 bedeutet, dass das Attribut nicht geändert wird."
   },
   {
     "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-    "translation": "Neue maximale Anzahl Sekunden zwischen Agenten-Heartbeats an den Exchange. Der Standardwert -1 bedeutet, dass das Attribut nicht geändert wird. "
+    "translation": "Neue maximale Anzahl Sekunden zwischen Agenten-Heartbeats an den Exchange. Der Standardwert -1 bedeutet, dass das Attribut nicht geändert wird."
   },
   {
     "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
-    "translation": "Neuer Wert für die Anzahl der Sekunden, um die das Heartbeatintervall des Agenten erhöht wird. Der Standardwert -1 bedeutet, dass das Attribut nicht geändert wird. "
+    "translation": "Neuer Wert für die Anzahl der Sekunden, um die das Heartbeatintervall des Agenten erhöht wird. Der Standardwert -1 bedeutet, dass das Attribut nicht geändert wird."
   },
   {
     "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
-    "translation": "Die neue maximale Anzahl an Knoten, über die diese Organisation verfügen kann. Der Wert darf das globale Limit für Exchange nicht überschreiten. Der Standardwert -1 bedeutet, dass keine Änderung vorgenommen wird. "
+    "translation": "Die neue maximale Anzahl an Knoten, über die diese Organisation verfügen kann. Der Wert darf das globale Limit für Exchange nicht überschreiten. Der Standardwert -1 bedeutet, dass keine Änderung vorgenommen wird."
   },
   {
     "id": "List and manage patterns in the Horizon Exchange",
@@ -1449,7 +1449,7 @@
   },
   {
     "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
-    "translation": "(VERALTET) Der Pfad der öffentlichen Schlüsseldatei (der dem privaten Schlüssel entspricht), der zusammen mit dem Muster gespeichert werden muss, damit er vom Horizon-Agenten zum Überprüfen der Signatur verwendet werden kann. Ist dieses Flag nicht angegeben, wird der öffentliche Schlüssel aus dem privaten Schlüssel berechnet. "
+    "translation": "(VERALTET) Der Pfad der öffentlichen Schlüsseldatei (der dem privaten Schlüssel entspricht), der zusammen mit dem Muster gespeichert werden muss, damit er vom Horizon-Agenten zum Überprüfen der Signatur verwendet werden kann. Ist dieses Flag nicht angegeben, wird der öffentliche Schlüssel aus dem privaten Schlüssel berechnet."
   },
   {
     "id": "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.",
@@ -1529,7 +1529,7 @@
   },
   {
     "id": "The name of the file where the cluster deployment operator yaml archive will be saved. This flag is only used when listing a specific service. This flag is ignored when the service does not have a clusterDeployment attribute.",
-    "translation": "Der Name der Datei, in der das YAML-Archiv des Clusterbereitstellungsoperators gespeichert wird. Dieses Flag wird nur verwendet, wenn ein bestimmter Service aufgelistet wird. Dieses Flag wird ignoriert, wenn der Service nicht über das Attribut 'clusterDeployment' verfügt. "
+    "translation": "Der Name der Datei, in der das YAML-Archiv des Clusterbereitstellungsoperators gespeichert wird. Dieses Flag wird nur verwendet, wenn ein bestimmter Service aufgelistet wird. Dieses Flag wird ignoriert, wenn der Service nicht über das Attribut 'clusterDeployment' verfügt."
   },
   {
     "id": "Skip the 'do you want to overwrite?' prompt when -f is specified and the file exists.",
@@ -1597,7 +1597,7 @@
   },
   {
     "id": "(DEPRECATED) The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If this flag is not specified, the public key will be calculated from the private key.",
-    "translation": "(VERALTET) Der Pfad der öffentlichen Schlüsseldatei (der dem privaten Schlüssel entspricht), der zusammen mit dem Service gespeichert werden muss, damit er vom Horizon-Agenten zum Überprüfen der Signatur verwendet werden kann. Ist dieses Flag nicht angegeben, wird der öffentliche Schlüssel aus dem privaten Schlüssel berechnet. "
+    "translation": "(VERALTET) Der Pfad der öffentlichen Schlüsseldatei (der dem privaten Schlüssel entspricht), der zusammen mit dem Service gespeichert werden muss, damit er vom Horizon-Agenten zum Überprüfen der Signatur verwendet werden kann. Ist dieses Flag nicht angegeben, wird der öffentliche Schlüssel aus dem privaten Schlüssel berechnet."
   },
   {
     "id": "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.",
@@ -1621,11 +1621,11 @@
   },
   {
     "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
-    "translation": "Gibt an, ob der Service für Benutzer außerhalb der Organisation sichtbar ist. Dieses Flag ist optional. Wird das Flag nicht angegeben, verwendet der Service standardmäßig die in den Metadaten festgelegte Angabe. Ist das Feld 'public' auch in der Servicedefinition nicht festgelegt, ist der Service standardmäßig nicht öffentlich. "
+    "translation": "Gibt an, ob der Service für Benutzer außerhalb der Organisation sichtbar ist. Dieses Flag ist optional. Wird das Flag nicht angegeben, verwendet der Service standardmäßig die in den Metadaten festgelegte Angabe. Ist das Feld 'public' auch in der Servicedefinition nicht festgelegt, ist der Service standardmäßig nicht öffentlich."
   },
   {
     "id": "Remove a service resource from the Horizon Exchange.",
-    "translation": "Entfernt eine Serviceressource aus Horizon Exchange. "
+    "translation": "Entfernt eine Serviceressource aus Horizon Exchange."
   },
   {
     "id": "The service to remove.",
@@ -1693,7 +1693,7 @@
   },
   {
     "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
-    "translation": "Die E-Mail-Adresse, die diesem Benutzerkonto zugeordnet werden soll, wenn es in Horizon Exchange erstellt wird. Dieses Argument ist optional. "
+    "translation": "Die E-Mail-Adresse, die diesem Benutzerkonto zugeordnet werden soll, wenn es in Horizon Exchange erstellt wird. Dieses Argument ist optional."
   },
   {
     "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
@@ -1837,7 +1837,7 @@
   },
   {
     "id": "Horizon user credentials to query and create Model Management Service resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
-    "translation": "Horizon-Benutzerberechtigungen zum Abfragen und Erstellen der Model Management Service-Ressourcen. Werden keine angegeben, wird standardmäßig HZN_EXCHANGE_USER_AUTH verwendet. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt. "
+    "translation": "Horizon-Benutzerberechtigungen zum Abfragen und Erstellen der Model Management Service-Ressourcen. Werden keine angegeben, wird standardmäßig HZN_EXCHANGE_USER_AUTH verwendet. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "List and manage objects in the Horizon Model Management Service.",
@@ -1861,15 +1861,15 @@
   },
   {
     "id": "The type of the object to download data. This flag must be used with -i.",
-    "translation": "Der Typ des Objekts für das Herunterladen von Daten. Dieses Flag muss mit -i verwendet werden. "
+    "translation": "Der Typ des Objekts für das Herunterladen von Daten. Dieses Flag muss mit -i verwendet werden."
   },
   {
     "id": "The id of the object to download data. This flag must be used with -t.",
-    "translation": "Die ID des Objekts für das Herunterladen von Daten. Dieses Flag muss mit -t verwendet werden. "
+    "translation": "Die ID des Objekts für das Herunterladen von Daten. Dieses Flag muss mit -t verwendet werden."
   },
   {
     "id": "The file that the data of downloaded object is written to. This flag must be used with -f. If omit, will use default file name in format of objectType_objectID and save in current directory",
-    "translation": "Die Datei, in die die Daten des heruntergeladenen Objekts geschrieben werden. Dieses Flag muss mit -f verwendet werden. Wird es nicht angegeben, wird der Standarddateiname im Format objekttyp__objekt-id verwendet und die Datei wird im aktuellen Verzeichnis gespeichert. "
+    "translation": "Die Datei, in die die Daten des heruntergeladenen Objekts geschrieben werden. Dieses Flag muss mit -f verwendet werden. Wird es nicht angegeben, wird der Standarddateiname im Format objekttyp__objekt-id verwendet und die Datei wird im aktuellen Verzeichnis gespeichert."
   },
   {
     "id": "Overwrite the existing file if it exists in the file system.",
@@ -1893,7 +1893,7 @@
   },
   {
     "id": "Specify true to show only objects using policy. Specify false to show only objects not using policy. If this flag is omitted, both kinds of objects are shown.",
-    "translation": "Geben Sie 'true' an, um nur Objekte anzuzeigen, die Richtlinien verwenden. Geben Sie 'false' an, um nur Objekte anzuzeigen, die keine Richtlinien verwenden. Wird dieses Flag nicht angegeben, werden beide Arten von Objekten angezeigt. "
+    "translation": "Geben Sie 'true' an, um nur Objekte anzuzeigen, die Richtlinien verwenden. Geben Sie 'false' an, um nur Objekte anzuzeigen, die keine Richtlinien verwenden. Wird dieses Flag nicht angegeben, werden beide Arten von Objekten angezeigt."
   },
   {
     "id": "List mms objects using policy that are targetted for the given service. Service specified in the format service-org/service-name.",
@@ -1901,7 +1901,7 @@
   },
   {
     "id": "List mms objects using policy that reference the given property name.",
-    "translation": "Listet MMS-Objekte auf, die Richtlinien verwenden, die den angegebenen Eigenschaftsnamen referenzieren. "
+    "translation": "Listet MMS-Objekte auf, die Richtlinien verwenden, die den angegebenen Eigenschaftsnamen referenzieren."
   },
   {
     "id": "List mms objects using policy that has been updated since the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. The time of day may be omitted.",
@@ -1913,15 +1913,15 @@
   },
   {
     "id": "List mms objects with given destination id. Must specify --destinationType to use this flag",
-    "translation": "Listet MMS-Objekte mit der angegebenen Ziel-ID auf. Um dieses Flag zu verwenden, muss --destinationType angegeben werden. "
+    "translation": "Listet MMS-Objekte mit der angegebenen Ziel-ID auf. Um dieses Flag zu verwenden, muss --destinationType angegeben werden."
   },
   {
     "id": "Specify true to show objects that have data. Specify false to show objects that have no data. If this flag is omitted, both kinds of objects are shown.",
-    "translation": "Geben Sie 'true' an, um Objekte mit Daten anzuzeigen. Geben Sie 'false' an, um Objekte ohne Daten anzuzeigen. Wird dieses Flag nicht angegeben, werden beide Arten von Objekten angezeigt. "
+    "translation": "Geben Sie 'true' an, um Objekte mit Daten anzuzeigen. Geben Sie 'false' an, um Objekte ohne Daten anzuzeigen. Wird dieses Flag nicht angegeben, werden beide Arten von Objekten angezeigt."
   },
   {
     "id": "List mms objects that expired before the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. Specify now to show objects that are currently expired.",
-    "translation": "Listet MMS-Objekte auf, die vor der angegebenen Zeit abgelaufen sind. Der Wert für die Zeit wird im RFC3339-Format angegeben: jjjj-MM-ttTHH:mm:ssZ. Geben Sie 'now' an, um Objekte anzuzeigen, die momentan abgelaufen sind. "
+    "translation": "Listet MMS-Objekte auf, die vor der angegebenen Zeit abgelaufen sind. Der Wert für die Zeit wird im RFC3339-Format angegeben: jjjj-MM-ttTHH:mm:ssZ. Geben Sie 'now' an, um Objekte anzuzeigen, die momentan abgelaufen sind."
   },
   {
     "id": "Specify true to show objects that are marked deleted. Specify false to show objects that are not marked deleted. If this flag is omitted, both kinds of objects are shown. Object will be marked deleted if object is deleted in CSS but it doesn't receive notifications from all the destinations",
@@ -1929,11 +1929,11 @@
   },
   {
     "id": "Show detailed object metadata information",
-    "translation": "Zeigt detaillierte Informationen zu den Objektmetadaten an. "
+    "translation": "Zeigt detaillierte Informationen zu den Objektmetadaten an."
   },
   {
     "id": "Provides additional detail about the deployment of the object on edge nodes.",
-    "translation": "Stellt zusätzliche Details zur Bereitstellung des Objekts auf den Edge-Knoten bereit. "
+    "translation": "Stellt zusätzliche Details zur Bereitstellung des Objekts auf den Edge-Knoten bereit."
   },
   {
     "id": "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.",
@@ -2109,7 +2109,7 @@
   },
   {
     "id": "Remove the node's policy.",
-    "translation": "Entfernt die Richtlinie des Knotens. "
+    "translation": "Entfernt die Richtlinie des Knotens."
   },
   {
     "id": "Create or replace the node's policy. The node's built-in properties cannot be modified or deleted by this command, with the exception of openhorizon.allowPrivileged.",
@@ -2157,7 +2157,7 @@
   },
   {
     "id": "User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.",
-    "translation": "Die Benutzerberechtigungsnachweise zum Erstellen der Knotenressource in Horizon Exchange, falls diese noch nicht vorhanden ist. Werden keine angegeben, wird standardmäßig HZN_EXCHANGE_USER_AUTH verwendet. "
+    "translation": "Die Benutzerberechtigungsnachweise zum Erstellen der Knotenressource in Horizon Exchange, falls diese noch nicht vorhanden ist. Werden keine angegeben, wird standardmäßig HZN_EXCHANGE_USER_AUTH verwendet."
   },
   {
     "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
@@ -2185,7 +2185,7 @@
   },
   {
     "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
-    "translation": "Warten, bis die Ausführung des benannten Service auf diesem Knoten gestartet wird. Verwenden Sie bei der Registrierung mit einem Muster die Angabe '*' , um alle Services im Muster zu beobachten. Bei der Registrierung mit einer Richtlinie ist '*' kein gültiger Wert für '-s'. Dieses Flag wird für Edge-Clusterknoten nicht unterstützt. "
+    "translation": "Warten, bis die Ausführung des benannten Service auf diesem Knoten gestartet wird. Verwenden Sie bei der Registrierung mit einem Muster die Angabe '*' , um alle Services im Muster zu beobachten. Bei der Registrierung mit einer Richtlinie ist '*' kein gültiger Wert für '-s'. Dieses Flag wird für Edge-Clusterknoten nicht unterstützt."
   },
   {
     "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
@@ -2193,7 +2193,7 @@
   },
   {
     "id": "The number of seconds for the --service to start. The default is 60 seconds, beginning when registration is successful. Ignored if --service is not specified.",
-    "translation": "Die Anzahl der Sekunden für den Start des Service (--service). Der Standardwert ist 60 Sekunden ab dem Zeitpunkt der erfolgreichen Registrierung. Diese Angabe wird ignoriert, wenn '--service' nicht angegeben ist. "
+    "translation": "Die Anzahl der Sekunden für den Start des Service (--service). Der Standardwert ist 60 Sekunden ab dem Zeitpunkt der erfolgreichen Registrierung. Diese Angabe wird ignoriert, wenn '--service' nicht angegeben ist."
   },
   {
     "id": "List or manage the services that are currently registered on this Horizon edge node.",
@@ -2253,19 +2253,19 @@
   },
   {
     "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .",
-    "translation": "Der Name des Service, dessen Protokollsätze angezeigt werden sollen. Der Servicename ist mit dem URL-Feld einer Servicedefinition identisch. Zeigt Protokollsätze ähnlich an wie der Befehl 'tail'. "
+    "translation": "Der Name des Service, dessen Protokollsätze angezeigt werden sollen. Der Servicename ist mit dem URL-Feld einer Servicedefinition identisch. Zeigt Protokollsätze ähnlich an wie der Befehl 'tail'."
   },
   {
     "id": "The version of the service.",
-    "translation": "Die Version des Service. "
+    "translation": "Die Version des Service."
   },
   {
     "id": "The name of the container within the service whose log records should be displayed.",
-    "translation": "Der Name des Containers im Service, dessen Protokollsätze angezeigt werden sollen. "
+    "translation": "Der Name des Containers im Service, dessen Protokollsätze angezeigt werden sollen."
   },
   {
     "id": "List the services variable configuration that has been done on this Horizon edge node.",
-    "translation": "Listet die Konfiguration für die Servicevariablen auf, die auf diesem Horizon-Edge-Knoten festgelegt wurde. "
+    "translation": "Listet die Konfiguration für die Servicevariablen auf, die auf diesem Horizon-Edge-Knoten festgelegt wurde."
   },
   {
     "id": "List the services that are currently registered on this Horizon edge node.",
@@ -2369,11 +2369,11 @@
   },
   {
     "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-    "translation": "Horizon Exchange-Berechtigungen zum Abfragen der Ressourcen des Managers für geheime Schlüssel. Die Standardeinstellung ist die Umgebungsvariable HZN_EXCHANGE_USER_AUTH. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert der Umgebungsvariablen HZN_ORG_ID vorangestellt. "
+    "translation": "Horizon Exchange-Berechtigungen zum Abfragen der Ressourcen des Managers für geheime Schlüssel. Die Standardeinstellung ist die Umgebungsvariable HZN_EXCHANGE_USER_AUTH. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert der Umgebungsvariablen HZN_ORG_ID vorangestellt."
   },
   {
     "id": "List and manage secrets in the secrets manager.",
-    "translation": "Listet die geheimen Schlüssel im Manager für geheime Schlüssel auf und verwaltet sie. "
+    "translation": "Listet die geheimen Schlüssel im Manager für geheime Schlüssel auf und verwaltet sie."
   },
   {
     "id": "Display the names of the secrets in the secrets manager.",
@@ -2381,7 +2381,7 @@
   },
   {
     "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
-    "translation": "Listet nur diesen einen geheimen Schlüssel auf. Gibt einen booleschen Wert zurück, der angibt, ob der geheime Schlüssel vorhanden ist. Dies ist der Name des im Manager für geheime Schlüssel verwendeten geheimen Schlüssels. Ist der geheime Schlüssel nicht vorhanden, wird der Exit-Code 1 zurückgegeben. "
+    "translation": "Listet nur diesen einen geheimen Schlüssel auf. Gibt einen booleschen Wert zurück, der angibt, ob der geheime Schlüssel vorhanden ist. Dies ist der Name des im Manager für geheime Schlüssel verwendeten geheimen Schlüssels. Ist der geheime Schlüssel nicht vorhanden, wird der Exit-Code 1 zurückgegeben."
   },
   {
     "id": "Add a secret to the secrets manager.",
@@ -2401,7 +2401,7 @@
   },
   {
     "id": "The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.",
-    "translation": "Die Details des geheimen Schlüssels als Zeichenfolge. Die Details des geheimen Schlüssels bestehen aus dem geheimen Schlüssel selbst und nicht aus dem Namen des geheimen Schlüssels. Beispiel: ein Kennwort, ein privater Schlüssel und ähnliche Angaben sind Details des geheimen Schlüssels. Diese Angabe und --secretFile schließen sich gegenseitig aus. "
+    "translation": "Die Details des geheimen Schlüssels als Zeichenfolge. Die Details des geheimen Schlüssels bestehen aus dem geheimen Schlüssel selbst und nicht aus dem Namen des geheimen Schlüssels. Beispiel: ein Kennwort, ein privater Schlüssel und ähnliche Angaben sind Details des geheimen Schlüssels. Diese Angabe und --secretFile schließen sich gegenseitig aus."
   },
   {
     "id": "Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.",
@@ -2437,7 +2437,7 @@
   },
   {
     "id": "List the SDO ownership keys stored in SDO owner services.",
-    "translation": "Listet die in den SDO-Eignerservices gespeicherten SDO-Eignerschlüssel auf. "
+    "translation": "Listet die in den SDO-Eignerservices gespeicherten SDO-Eignerschlüssel auf."
   },
   {
     "id": "List the full details of this SDO ownership key.",
@@ -2449,15 +2449,15 @@
   },
   {
     "id": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
-    "translation": "Die Datei, die Metadaten für den in den SDO-Eignerservices zu erstellenden Schlüssel enthält. Die Datei muss den Typ und die Erweiterung JSON haben. "
+    "translation": "Die Datei, die Metadaten für den in den SDO-Eignerservices zu erstellenden Schlüssel enthält. Die Datei muss den Typ und die Erweiterung JSON haben."
   },
   {
     "id": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
-    "translation": "Die Datei, in die der zurückgegebene öffentliche Schlüssel geschrieben wird. Wird keine Angabe gemacht, wird der Schlüssel in die Konsole ausgegeben. "
+    "translation": "Die Datei, in die der zurückgegebene öffentliche Schlüssel geschrieben wird. Wird keine Angabe gemacht, wird der Schlüssel in die Konsole ausgegeben."
   },
   {
     "id": "Overwrite the existing output public key file if it exists.",
-    "translation": "Ausgegebenen öffentlichen Schlüssel überschreiben, wenn er bereits vorhanden ist. "
+    "translation": "Ausgegebenen öffentlichen Schlüssel überschreiben, wenn er bereits vorhanden ist."
   },
   {
     "id": "Download the specified key from SDO owner services.",
@@ -2469,11 +2469,11 @@
   },
   {
     "id": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
-    "translation": "Die Datei, in die die Daten des heruntergeladenen Schlüssels geschrieben werden. Wird keine Angabe gemacht, wird der Schlüssel in die Konsole ausgegeben. "
+    "translation": "Die Datei, in die die Daten des heruntergeladenen Schlüssels geschrieben werden. Wird keine Angabe gemacht, wird der Schlüssel in die Konsole ausgegeben."
   },
   {
     "id": "Overwrite the existing file if it exists.",
-    "translation": "Datei überschreiben, wenn sie bereits vorhanden ist. "
+    "translation": "Datei überschreiben, wenn sie bereits vorhanden ist."
   },
   {
     "id": "Remove a key from SDO owner services.",
@@ -2485,11 +2485,11 @@
   },
   {
     "id": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
-    "translation": "Neue Vorlagendatei für Metadaten des SDO-Schlüssels erstellen. Alle Felder müssen ausgefüllt werden, bevor sie zu den SDO-Eignerservices hinzugefügt wird. "
+    "translation": "Neue Vorlagendatei für Metadaten des SDO-Schlüssels erstellen. Alle Felder müssen ausgefüllt werden, bevor sie zu den SDO-Eignerservices hinzugefügt wird."
   },
   {
     "id": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
-    "translation": "Die Datei, in die die SDO-Schlüsselvorlage geschrieben wird, im JSON-Format. Wird keine Angabe gemacht, werden die Schlüsselmetadaten in die Konsole ausgegeben. "
+    "translation": "Die Datei, in die die SDO-Schlüsselvorlage geschrieben wird, im JSON-Format. Wird keine Angabe gemacht, werden die Schlüsselmetadaten in die Konsole ausgegeben."
   },
   {
     "id": "List and manage Horizon SDO ownership vouchers.",
@@ -2505,7 +2505,7 @@
   },
   {
     "id": "When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.",
-    "translation": "Wird eine Voucher-UUID angegeben, wird der vollständige Inhalt des Vouchers aufgelistet; andernfalls wird der vollständige Inhalt aller importierten Vouchers aufgelistet. "
+    "translation": "Wird eine Voucher-UUID angegeben, wird der vollständige Inhalt des Vouchers aufgelistet; andernfalls wird der vollständige Inhalt aller importierten Vouchers aufgelistet."
   },
   {
     "id": "Display properties of the SDO ownership voucher.",
@@ -2517,7 +2517,7 @@
   },
   {
     "id": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
-    "translation": "Importiert den SDO-Ownership Voucher, damit die zugehörige Einheit gebootet, konfiguriert und registriert werden kann. "
+    "translation": "Importiert den SDO-Ownership Voucher, damit die zugehörige Einheit gebootet, konfiguriert und registriert werden kann."
   },
   {
     "id": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).",
@@ -2545,7 +2545,7 @@
   },
   {
     "id": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
-    "translation": "Die Datei, in die die Daten des heruntergeladenen Voucher geschrieben werden, im JSON-Format. Dieses Flag muss mit -f verwendet werden. Wird es nicht angegeben, wird der Standarddateiname im Format <Eineihten-ID>.json verwendet und die Datei wird im aktuellen Verzeichnis gespeichert. "
+    "translation": "Die Datei, in die die Daten des heruntergeladenen Voucher geschrieben werden, im JSON-Format. Dieses Flag muss mit -f verwendet werden. Wird es nicht angegeben, wird der Standarddateiname im Format <Eineihten-ID>.json verwendet und die Datei wird im aktuellen Verzeichnis gespeichert."
   },
   {
     "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
@@ -2565,7 +2565,7 @@
   },
   {
     "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
-    "translation": "Horizon-Benutzerberechtigungsnachweise zum Importieren eines Vouchers. Werden keine angegeben, wird standardmäßig HZN_EXCHANGE_USER_AUTH verwendet. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt. "
+    "translation": "Horizon-Benutzerberechtigungsnachweise zum Importieren eines Vouchers. Werden keine angegeben, wird standardmäßig HZN_EXCHANGE_USER_AUTH verwendet. Wenn Sie nicht die Organisation des Benutzers als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
@@ -2601,7 +2601,7 @@
   },
   {
     "id": "No active agreements to cancel.",
-    "translation": "Keine aktiven Vereinbarungen zum Abbrechen vorhanden. "
+    "translation": "Keine aktiven Vereinbarungen zum Abbrechen vorhanden."
   },
   {
     "id": "either an agreement ID or -a must be specified.",
@@ -2813,7 +2813,7 @@
   },
   {
     "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
-    "translation": "Das Image-Digest konnte in der Docker-Ausgabe nicht gefunden werden; es wird direkt aus dem Image abgerufen. "
+    "translation": "Das Image-Digest konnte in der Docker-Ausgabe nicht gefunden werden; es wird direkt aus dem Image abgerufen."
   },
   {
     "id": "could not inspect image {ImageName}: {Err}.",
@@ -3041,7 +3041,7 @@
   },
   {
     "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
-    "translation": "HTTP-Fehler aufgetreten: {Err} beim Aufrufen von {ApiMsg} für REST-API {Service}. HTTP-Status: {Httpstatus}. "
+    "translation": "HTTP-Fehler aufgetreten: {Err} beim Aufrufen von {ApiMsg} für REST-API {Service}. HTTP-Status: {Httpstatus}."
   },
   {
     "id": "failed to read exchange body response from {ApiMsg}: {Err}",
@@ -3137,7 +3137,7 @@
   },
   {
     "id": "HTTP request timeout set to {RequestTimeout} seconds",
-    "translation": "Das HTTP-Anforderungszeitlimit wurde auf {RequestTimeout} Sekunden festgelegt. "
+    "translation": "Das HTTP-Anforderungszeitlimit wurde auf {RequestTimeout} Sekunden festgelegt."
   },
   {
     "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
@@ -3149,7 +3149,7 @@
   },
   {
     "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-    "translation": "Die Datei {FileName} ist bereits vorhanden. Geben Sie einen anderen Dateipfad oder Dateinamen an. Verwenden Sie das Flag '-- overwrite', wenn Sie die vorhandene Datei überschreiben wollen. "
+    "translation": "Die Datei {FileName} ist bereits vorhanden. Geben Sie einen anderen Dateipfad oder Dateinamen an. Verwenden Sie das Flag '-- overwrite', wenn Sie die vorhandene Datei überschreiben wollen."
   },
   {
     "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
@@ -3201,11 +3201,11 @@
   },
   {
     "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
-    "translation": "Weder die Knoten-ID noch die Knotenrichtlinie ist angegeben. Die Knotenrichtlinie wird vom lokalen Knoten abgerufen. "
+    "translation": "Weder die Knoten-ID noch die Knotenrichtlinie ist angegeben. Die Knotenrichtlinie wird vom lokalen Knoten abgerufen."
   },
   {
     "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
-    "translation": "Weder die Knoten-ID noch die Datei für die Knotenbenutzereingabe ist angegeben. Die Knotenbenutzereingabe wird vom lokalen Knoten abgerufen. "
+    "translation": "Weder die Knoten-ID noch die Datei für die Knotenbenutzereingabe ist angegeben. Die Knotenbenutzereingabe wird vom lokalen Knoten abgerufen."
   },
   {
     "id": "No node type has been provided: node type of '{NodeId}' node will be used",
@@ -3245,7 +3245,7 @@
   },
   {
     "id": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-    "translation": "Geben Sie den Exchange-Berechtigungsnachweis mit -u an, um den Knoten, die Bereitstellungsrichtlinie und die Servicerichtlinie abzufragen. "
+    "translation": "Geben Sie den Exchange-Berechtigungsnachweis mit -u an, um den Knoten, die Bereitstellungsrichtlinie und die Servicerichtlinie abzufragen."
   },
   {
     "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
@@ -3257,7 +3257,7 @@
   },
   {
     "id": "The node architecture {InputArch} specified by -a does not match the architecture of the local node {Arch}.",
-    "translation": "Die durch -a angegebene Knotenarchitektur {InputArch} stimmt nicht mit der Architektur des lokalen Knotens {Arch} überein. "
+    "translation": "Die durch -a angegebene Knotenarchitektur {InputArch} stimmt nicht mit der Architektur des lokalen Knotens {Arch} überein."
   },
   {
     "id": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
@@ -3297,7 +3297,7 @@
   },
   {
     "id": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
-    "translation": "Geben Sie den Exchange-Berechtigungsnachweis mit -u an, um den Knoten, die Bereitstellungsrichtlinie, den Service und die Servicerichtlinie abzufragen. "
+    "translation": "Geben Sie den Exchange-Berechtigungsnachweis mit -u an, um den Knoten, die Bereitstellungsrichtlinie, den Service und die Servicerichtlinie abzufragen."
   },
   {
     "id": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
@@ -3321,11 +3321,11 @@
   },
   {
     "id": "URL must be specified in the service definition.",
-    "translation": "Die URL muss in der Servicedefinition angegeben werden. "
+    "translation": "Die URL muss in der Servicedefinition angegeben werden."
   },
   {
     "id": "Version must be specified in the service definition.",
-    "translation": "Die Version muss in der Servicedefinition angegeben werden. "
+    "translation": "Die Version muss in der Servicedefinition angegeben werden."
   },
   {
     "id": "Invalid version format: {Version}.",
@@ -3333,7 +3333,7 @@
   },
   {
     "id": "Arch must be specified in the service definition.",
-    "translation": "Die Architektur muss in der Servicedefinition angegeben werden. "
+    "translation": "Die Architektur muss in der Servicedefinition angegeben werden."
   },
   {
     "id": "Error in service file {Sfile}. {Err}",
@@ -3673,7 +3673,7 @@
   },
   {
     "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one container has been found for deployment: {JoincontainerNames__}. Please specify the service name by -c flag",
-    "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Für die Bereitstellung wurden mehrere Container gefunden: {JoincontainerNames__}. Geben Sie den Servicenamen mit dem Flag -c an. "
+    "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Für die Bereitstellung wurden mehrere Container gefunden: {JoincontainerNames__}. Geben Sie den Servicenamen mit dem Flag -c an."
   },
   {
     "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}': container {ContainerName} not found in service {ServiceName}",
@@ -4045,7 +4045,7 @@
   },
   {
     "id": "agbot '{Agbot}' not found in org {AgbotOrg}",
-    "translation": "Agbot '{Agbot}' nicht in Organisation {AgbotOrg} gefunden "
+    "translation": "Agbot '{Agbot}' nicht in Organisation {AgbotOrg} gefunden"
   },
   {
     "id": "both patternorg and pattern must be specified (or neither)",
@@ -4181,7 +4181,7 @@
   },
   {
     "id": "The name of the service.",
-    "translation": "Der Name des Service. "
+    "translation": "Der Name des Service."
   },
   {
     "id": "The org of the service.",
@@ -4401,7 +4401,7 @@
   },
   {
     "id": "The node arch and node type will be ignored if they are specified.",
-    "translation": "Die Knotenarchitektur und der Knotentyp werden ignoriert, wenn sie angegeben werden. "
+    "translation": "Die Knotenarchitektur und der Knotentyp werden ignoriert, wenn sie angegeben werden."
   },
   {
     "id": "key '{OrgAndCredsorg_nodeId}' not found in exchange nodes output",
@@ -4413,11 +4413,11 @@
   },
   {
     "id": "Node {NodeId} updated.",
-    "translation": "Der Knoten {NodeId} wurde aktualisiert. "
+    "translation": "Der Knoten {NodeId} wurde aktualisiert."
   },
   {
     "id": "Node {NodeId} created.",
-    "translation": "Der Knoten {NodeId} wurde erstellt. "
+    "translation": "Der Knoten {NodeId} wurde erstellt."
   },
   {
     "id": "Node {NodeOrg}/{Node} not found in the Horizon Exchange.",
@@ -4437,7 +4437,7 @@
   },
   {
     "id": "Expecting 1 exchange node, but get {Lennodes} nodes",
-    "translation": "1 Exchange-Knoten wurde erwartet; {Lennodes} Knoten wurden abgerufen. "
+    "translation": "1 Exchange-Knoten wurde erwartet; {Lennodes} Knoten wurden abgerufen."
   },
   {
     "id": "failed to unmarshal pattern attribute input {V}: {Err}",
@@ -4453,7 +4453,7 @@
   },
   {
     "id": "Attribute {K} updated.",
-    "translation": "Das Attribut {K} wurde aktualisiert. "
+    "translation": "Das Attribut {K} wurde aktualisiert."
   },
   {
     "id": "failed to unmarshal exchange node {Device}: {Err}",
@@ -4505,7 +4505,7 @@
   },
   {
     "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
-    "translation": "Warnung: Dieser Befehl ist veraltet. Er wird bis zum nächsten Hauptrelease weiterhin unterstützt. Verwenden Sie 'hzn exchange node addpolicy', um die Knotenrichtlinie zu aktualisieren. "
+    "translation": "Warnung: Dieser Befehl ist veraltet. Er wird bis zum nächsten Hauptrelease weiterhin unterstützt. Verwenden Sie 'hzn exchange node addpolicy', um die Knotenrichtlinie zu aktualisieren."
   },
   {
     "id": "Node policy not found for node {NodeOrg}/{Node}",
@@ -4585,7 +4585,7 @@
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
-    "translation": "Die Benutzereingaben ('userInputs') werden mit dem Knotenmuster {Pattern} verifiziert. "
+    "translation": "Die Benutzereingaben ('userInputs') werden mit dem Knotenmuster {Pattern} verifiziert."
   },
   {
     "id": "Error varifying the given user input with the node pattern {Pattern}:",
@@ -4637,7 +4637,7 @@
   },
   {
     "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
-    "translation": "Ungültige Eingabe für {Negatives}. Negative Zahlen sind nicht zulässig. "
+    "translation": "Ungültige Eingabe für {Negatives}. Negative Zahlen sind nicht zulässig."
   },
   {
     "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
@@ -4645,7 +4645,7 @@
   },
   {
     "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
-    "translation": "Ungültige Eingabe für '--max-nodes'. Negative Zahlen sind nicht zulässig. "
+    "translation": "Ungültige Eingabe für '--max-nodes'. Negative Zahlen sind nicht zulässig."
   },
   {
     "id": "Organization {TheOrg} is successfully added to the Exchange.",
@@ -4665,7 +4665,7 @@
   },
   {
     "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
-    "translation": "Ungültige Eingabe für '--max-nodes'. Nur -1, 0 und positive ganze Zahlen sind zulässig. "
+    "translation": "Ungültige Eingabe für '--max-nodes'. Nur -1, 0 und positive ganze Zahlen sind zulässig."
   },
   {
     "id": "Organization {TheOrg} is successfully updated.",
@@ -4713,7 +4713,7 @@
   },
   {
     "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
-    "translation": "Ungültige Eingabe für {JoinnegFlags_}. Nur -1, 0 und positive ganze Zahlen sind zulässig. "
+    "translation": "Ungültige Eingabe für {JoinnegFlags_}. Nur -1, 0 und positive ganze Zahlen sind zulässig."
   },
   {
     "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
@@ -4721,11 +4721,11 @@
   },
   {
     "id": "Empty string is specified with -t, all tags will be removed.",
-    "translation": "Mit dem Flag '-t' wird eine leere Zeichenfolge angegeben. Alle Tags werden entfernt. "
+    "translation": "Mit dem Flag '-t' wird eine leere Zeichenfolge angegeben. Alle Tags werden entfernt."
   },
   {
     "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
-    "translation": "Ungültige Eingabe für das Flag -t oder --tag: {Tag}. Das gültige Format lautet '-t mein_tag=mein_wert' oder '--tag mein_tag=mein_wert'. "
+    "translation": "Ungültige Eingabe für das Flag -t oder --tag: {Tag}. Das gültige Format lautet '-t mein_tag=mein_wert' oder '--tag mein_tag=mein_wert'."
   },
   {
     "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
@@ -4829,7 +4829,7 @@
   },
   {
     "id": "Note: The fully qualified binding secret name is 'openhorizon/<node_org>/<secret_binding_name>'. The binding secret cannot be verified in the secret manager for a public pattern because the node organization can be different from the pattern organization.",
-    "translation": "Hinweis: Der vollständig qualifizierte Name des geheimen Schlüssels für die Bindung lautet 'openhorizon/<node_org>/<secret_binding_name>'. Der Name des geheimen Schlüssels für die Bindung kann im Manager für geheime Schlüssel nicht für ein öffentliches Muster verifiziert werden, da die Knotenorganisation möglicherweise nicht mit der Musterorganisation übereinstimmt. "
+    "translation": "Hinweis: Der vollständig qualifizierte Name des geheimen Schlüssels für die Bindung lautet 'openhorizon/<node_org>/<secret_binding_name>'. Der Name des geheimen Schlüssels für die Bindung kann im Manager für geheime Schlüssel nicht für ein öffentliches Muster verifiziert werden, da die Knotenorganisation möglicherweise nicht mit der Musterorganisation übereinstimmt."
   },
   {
     "id": "No secret is defined for any of the services. The secret binding is not needed: {SecretBinding}.",
@@ -5073,7 +5073,7 @@
   },
   {
     "id": "Creating RSA PSS private and public keys, and an x509 certificate for distribution. This is a CPU-intensive operation and, depending on key length and platform, may take a while. Key generation on an amd64 or ppc64 system using the default key length will complete in less than 1 minute.",
-    "translation": "Private und öffentliche RSA PSS-Schlüssel sowie ein x509-Zertifikat zur Verteilung werden erstellt. Dies ist eine CPU-intensive Operation, die abhängig von der Länge des Schlüssels und der Plattform längere Zeit dauern kann. Die Schlüsselerstellung auf einem amd64- oder ppc64-System und mit der standardmäßigen Schlüssellänge dauert weniger als 1 Minute. "
+    "translation": "Private und öffentliche RSA PSS-Schlüssel sowie ein x509-Zertifikat zur Verteilung werden erstellt. Dies ist eine CPU-intensive Operation, die abhängig von der Länge des Schlüssels und der Plattform längere Zeit dauern kann. Die Schlüsselerstellung auf einem amd64- oder ppc64-System und mit der standardmäßigen Schlüssellänge dauert weniger als 1 Minute."
   },
   {
     "id": "failed to create a new key pair: {Err}",
@@ -5201,11 +5201,11 @@
   },
   {
     "id": "service '{SvcName}' defined under 'deployment.services' has a malformed ports value {DepSvck}, error {Err}",
-    "translation": "Der unter 'deployment.services' definierte Service '{SvcName}' enthält den fehlerhaften Portwert {DepSvck}. Fehler: {Err}. "
+    "translation": "Der unter 'deployment.services' definierte Service '{SvcName}' enthält den fehlerhaften Portwert {DepSvck}. Fehler: {Err}."
   },
   {
     "id": "service '{SvcName}' defined under 'deployment.services' is mapping a port {PortBinding} to the default Horizon API port {AnaxAPIPortDefault}. This service will fail when deployed on a node which has not changed the default Horizon API port.",
-    "translation": "Der unter 'deployment.services' definierte Service '{SvcName}' ordnet einen Port {PortBinding} dem standardmäßigen Horizon-API-Port {AnaxAPIPortDefault} zu. Dieser Service schlägt fehl, wenn er auf einem Knoten bereitgestellt wird, auf dem der standardmäßige Horizon-API-Port nicht geändert wurde. "
+    "translation": "Der unter 'deployment.services' definierte Service '{SvcName}' ordnet einen Port {PortBinding} dem standardmäßigen Horizon-API-Port {AnaxAPIPortDefault} zu. Dieser Service schlägt fehl, wenn er auf einem Knoten bereitgestellt wird, auf dem der standardmäßige Horizon-API-Port nicht geändert wurde."
   },
   {
     "id": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
@@ -5261,7 +5261,7 @@
   },
   {
     "id": "Horizon Agent version: failed to get.",
-    "translation": "Version des Horizon-Agenten: Konnte nicht abgerufen werden. "
+    "translation": "Version des Horizon-Agenten: Konnte nicht abgerufen werden."
   },
   {
     "id": "Horizon Agent HZN Environment Variables are:",
@@ -5305,7 +5305,7 @@
   },
   {
     "id": "must specify --type with --version-only",
-    "translation": "muss --type mit --version-only angeben"
+    "translation": "--type muss zusammen mit --version-only angeben werden"
   },
   {
     "id": "Invalid manifest type specified. Valid types include: {String}",
@@ -5317,7 +5317,7 @@
   },
   {
     "id": "must specify --type and --id with --long",
-    "translation": "muss --type und --id mit --long angeben"
+    "translation": "--type und --id müssen zusammen mit --long angeben werden"
   },
   {
     "id": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
@@ -5445,7 +5445,7 @@
   },
   {
     "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn policy update' to update the node policy.",
-    "translation": "Warnung: Dieser Befehl ist veraltet. Er wird bis zum nächsten Hauptrelease weiterhin unterstützt. Verwenden Sie 'hzn policy update', um die Knotenrichtlinie zu aktualisieren. "
+    "translation": "Warnung: Dieser Befehl ist veraltet. Er wird bis zum nächsten Hauptrelease weiterhin unterstützt. Verwenden Sie 'hzn policy update', um die Knotenrichtlinie zu aktualisieren."
   },
   {
     "id": "Horizon node policy updated.",
@@ -5549,15 +5549,15 @@
   },
   {
     "id": "Unable to read machine serial number, error: {MsErr}. Continuing device registration.",
-    "translation": "Die Seriennummer der Maschine kann nicht gelesen werden. Fehler {MsErr}. Die Einheitenregistrierung wird fortgesetzt. "
+    "translation": "Die Seriennummer der Maschine kann nicht gelesen werden. Fehler {MsErr}. Die Einheitenregistrierung wird fortgesetzt."
   },
   {
     "id": "Node ID not specified, using machine serial number {NodeId} as node ID.",
-    "translation": "Die Knoten-ID wurde nicht angegeben. Die Seriennummer der Maschine {NodeId} wird als Knoten-ID verwendet. "
+    "translation": "Die Knoten-ID wurde nicht angegeben. Die Seriennummer der Maschine {NodeId} wird als Knoten-ID verwendet."
   },
   {
     "id": "Node ID not specified, and machine serial number not found, generating random node ID.",
-    "translation": "Die Knoten-ID wurde nicht angegeben und Seriennummer der Maschine wurde nicht gefunden. Eine zufällige Knoten-ID wird generiert. "
+    "translation": "Die Knoten-ID wurde nicht angegeben und Seriennummer der Maschine wurde nicht gefunden. Eine zufällige Knoten-ID wird generiert."
   },
   {
     "id": "Unable to generate random node id, error: {Err}",
@@ -5613,7 +5613,7 @@
   },
   {
     "id": "Pattern {ExchangePattern} defined for the node on the Exchange.",
-    "translation": "Für den Knoten im Exchange ist das Muster {ExchangePattern} definiert. "
+    "translation": "Für den Knoten im Exchange ist das Muster {ExchangePattern} definiert."
   },
   {
     "id": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the Exchange.\nTo correct the problem, please do one of the following: \n\t- Remove the node from the Exchange \n\t- Remove the pattern from the node in the Exchange \n\t- Register without a pattern (the pattern defined on the node in the Exchange will be used)",
@@ -5621,11 +5621,11 @@
   },
   {
     "id": "pattern '{Patorg}/{Patname}' not found from the Exchange.",
-    "translation": "Muster '{Patorg}/{Patname}' wurde nicht im Exchange gefunden. "
+    "translation": "Muster '{Patorg}/{Patname}' wurde nicht im Exchange gefunden."
   },
   {
     "id": "Cannot proceed with the given pattern {Pattern} because it does not include any services.",
-    "translation": "Die Fortsetzung mit dem angegebenen Muster {Pattern} ist nicht möglich, da es keine Services enthält. "
+    "translation": "Die Fortsetzung mit dem angegebenen Muster {Pattern} ist nicht möglich, da es keine Services enthält."
   },
   {
     "id": "Will proceed with the given pattern {Pattern}.",
@@ -5653,7 +5653,7 @@
   },
   {
     "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
-    "translation": "Hinweis: Keine Eingabedatei angegeben. Dies ist nur gültig, wenn für keinen der Services Variablen festgelegt werden müssen. "
+    "translation": "Hinweis: Keine Eingabedatei angegeben. Dies ist nur gültig, wenn für keinen der Services Variablen festgelegt werden müssen."
   },
   {
     "id": "However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.",
@@ -5669,15 +5669,15 @@
   },
   {
     "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
-    "translation": "HINWEIS: Das Flag '-s' wird momentan für den Knotentyp '{NodeType}' nicht unterstützt. Die Knotenregistrierung wird ausgeführt, ohne dass auf den Start des Service gewartet wird. "
+    "translation": "HINWEIS: Das Flag '-s' wird momentan für den Knotentyp '{NodeType}' nicht unterstützt. Die Knotenregistrierung wird ausgeführt, ohne dass auf den Start des Service gewartet wird."
   },
   {
     "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
-    "translation": "Der Horizon-Knoten wurde registriert. Die Aushandlung der Workloadvereinbarung beginnt in Kürze. Führen Sie 'hzn agreement list' aus, um die Vereinbarung anzuzeigen. "
+    "translation": "Der Horizon-Knoten wurde registriert. Die Aushandlung der Workloadvereinbarung beginnt in Kürze. Führen Sie 'hzn agreement list' aus, um die Vereinbarung anzuzeigen."
   },
   {
     "id": "Horizon node is registered. Workload services should begin executing shortly.",
-    "translation": "Der Horizon-Knoten wurde registriert. Die Ausführung der Workload-Services beginnt in Kürze. "
+    "translation": "Der Horizon-Knoten wurde registriert. Die Ausführung der Workload-Services beginnt in Kürze."
   },
   {
     "id": "Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.",
@@ -5917,7 +5917,7 @@
   },
   {
     "id": "Currently, there are no active agreements on this node.",
-    "translation": "Momentan sind keine Vereinbarungen auf dem Knoten aktiv. "
+    "translation": "Momentan sind keine Vereinbarungen auf dem Knoten aktiv."
   },
   {
     "id": "Currently, there are no errors recorded in the node's event log.",
@@ -5953,7 +5953,7 @@
   },
   {
     "id": "The following errors were found in the node's event log and are related to {Org}/{Name}. Use 'hzn eventlog list -s severity=error -l' to see the full detail of the errors.",
-    "translation": "Im Ereignisprotokoll des Knotens wurden die folgenden Fehler gefunden. Sie beziehen sich auf {Org}/{Name}. Verwenden Sie den Befehl 'hzn eventlog list -s severity=error -l', um die vollständigen Details der Fehler anzuzeigen. "
+    "translation": "Im Ereignisprotokoll des Knotens wurden die folgenden Fehler gefunden. Sie beziehen sich auf {Org}/{Name}. Verwenden Sie den Befehl 'hzn eventlog list -s severity=error -l', um die vollständigen Details der Fehler anzuzeigen."
   },
   {
     "id": "Analysis complete.",
@@ -6265,7 +6265,7 @@
   },
   {
     "id": "The node is not registered.",
-    "translation": "Der Knoten ist nicht registriert. "
+    "translation": "Der Knoten ist nicht registriert."
   },
   {
     "id": "Found service {SpecRef} with service id {InstanceId}.",
@@ -6285,7 +6285,7 @@
   },
   {
     "id": "Service definition {ServiceName} consists of more than one container: {JoincNames__}. Please specify the service name by -c flag",
-    "translation": "Die Servicedefinition {ServiceName} besteht aus mehreren Containern: {JoincNames__}. Geben Sie den Servicenamen mit dem Flag -c an. "
+    "translation": "Die Servicedefinition {ServiceName} besteht aus mehreren Containern: {JoincNames__}. Geben Sie den Servicenamen mit dem Flag -c an."
   },
   {
     "id": "Service logs are unavailable: {Err}",
@@ -6353,7 +6353,7 @@
   },
   {
     "id": "Service suspending request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
-    "translation": "Die Anforderung zum Aussetzen des Service wurde erfolgreich gesendet. Verwenden Sie 'hzn agreement' und 'docker ps', um sicherzustellen, dass die zugehörigen Vereinbarungen und Service-Container entfernt werden. Dieser Vorgang kann einige Minuten dauern. "
+    "translation": "Die Anforderung zum Aussetzen des Service wurde erfolgreich gesendet. Verwenden Sie 'hzn agreement' und 'docker ps', um sicherzustellen, dass die zugehörigen Vereinbarungen und Service-Container entfernt werden. Dieser Vorgang kann einige Minuten dauern."
   },
   {
     "id": "Error returned suspending the service: {RespBody}",
@@ -6369,7 +6369,7 @@
   },
   {
     "id": "Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
-    "translation": "Die Anforderung zum Wiederaufnehmen des Service wurde erfolgreich gesendet. Verwenden Sie 'hzn agreement' und 'docker ps', um sicherzustellen, dass die zugehörigen Vereinbarungen und Service-Container gestartet werden. Dieser Vorgang kann einige Minuten dauern. "
+    "translation": "Die Anforderung zum Wiederaufnehmen des Service wurde erfolgreich gesendet. Verwenden Sie 'hzn agreement' und 'docker ps', um sicherzustellen, dass die zugehörigen Vereinbarungen und Service-Container gestartet werden. Dieser Vorgang kann einige Minuten dauern."
   },
   {
     "id": "Error returned resuming the service: {RespBody}",
@@ -6417,11 +6417,11 @@
   },
   {
     "id": "Invalid --policy/-p value: {DestPolicy}, --policy/-p should be true or false",
-    "translation": "Ungültiger Wert für --policy/-p: {DestPolicy}. --policy/-p muss 'true' oder 'false' sein. "
+    "translation": "Ungültiger Wert für --policy/-p: {DestPolicy}. --policy/-p muss 'true' oder 'false' sein."
   },
   {
     "id": "Invalid --data value: {WithData}, --data should be true or false",
-    "translation": "Ungültiger Wert für --data: {WithData}, --data muss 'true' oder 'false' sein. "
+    "translation": "Ungültiger Wert für --data: {WithData}, --data muss 'true' oder 'false' sein."
   },
   {
     "id": "must omit --policy or set it to true when filtering by --service, --property, or --updateTime",
@@ -6897,11 +6897,11 @@
   },
   {
     "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
-    "translation": "Die Registrierung des Horizon-Knotens wurde aufgehoben. Sie können nun 'hzn register ...' erneut ausführen, falls gewünscht. "
+    "translation": "Die Registrierung des Horizon-Knotens wurde aufgehoben. Sie können nun 'hzn register ...' erneut ausführen, falls gewünscht."
   },
   {
     "id": "WARNING: The node is unregistered, but an error occurred during unregistration.",
-    "translation": "WARNUNG: Die Rücknahme der Registrierung des Knotens wurde ausgeführt; bei diesem Vorgang ist jedoch ein Fehler aufgetreten. "
+    "translation": "WARNUNG: Die Rücknahme der Registrierung des Knotens wurde ausgeführt; bei diesem Vorgang ist jedoch ein Fehler aufgetreten."
   },
   {
     "id": "The error was: {Err}",
@@ -7017,7 +7017,7 @@
   },
   {
     "id": "cannot marshal eventlogs from local anax DB, eventlogs will not be saved",
-    "translation": "Marshalling der Ereignisprotokolle (eventlogs) aus der lokalen Anax-Datenbank kann nicht durchgeführt werden. Die Ereignisprotokolle werden nicht gespeichert. "
+    "translation": "Marshalling der Ereignisprotokolle (eventlogs) aus der lokalen Anax-Datenbank kann nicht durchgeführt werden. Die Ereignisprotokolle werden nicht gespeichert."
   },
   {
     "id": "failed to backup eventlogs file {FileName}. {Err}",
@@ -7029,7 +7029,7 @@
   },
   {
     "id": "Saved eventlog into file {FileName}",
-    "translation": "Das Ereignisprotokoll wurde in der Datei {FileName} gespeichert "
+    "translation": "Das Ereignisprotokoll wurde in der Datei {FileName} gespeichert"
   },
   {
     "id": "Unable to marshal userinput object: {Err}",
@@ -7153,7 +7153,7 @@
   },
   {
     "id": "Neither deployment policy nor pattern is specified.",
-    "translation": "Weder die Bereitstellungsrichtlinie noch das Muster ist angegeben. "
+    "translation": "Weder die Bereitstellungsrichtlinie noch das Muster ist angegeben."
   },
   {
     "id": "Incompatible",
@@ -7165,7 +7165,7 @@
   },
   {
     "id": "Organization is not specified in the given node id: {NodeId}.",
-    "translation": "Die Organisation ist in der angegebenen  Knoten-ID {NodeId} nicht angegeben. "
+    "translation": "Die Organisation ist in der angegebenen  Knoten-ID {NodeId} nicht angegeben."
   },
   {
     "id": "Error getting node {NodeId} from the Exchange. {Err}",
@@ -7173,7 +7173,7 @@
   },
   {
     "id": "No node found for this node id {NodeId}.",
-    "translation": "Für diese Knoten-ID {NodeId} wurde kein Knoten gefunden. "
+    "translation": "Für diese Knoten-ID {NodeId} wurde kein Knoten gefunden."
   },
   {
     "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
@@ -7205,7 +7205,7 @@
   },
   {
     "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-    "translation": "Für die abhängigen Services von {TopId} konnte keine Definition gefunden werden. Die Kompatibilität von {PROPNODEPRIVILEGED} kann erst vollständig bewertet werden, wenn sich alle Services im Exchange befinden. "
+    "translation": "Für die abhängigen Services von {TopId} konnte keine Definition gefunden werden. Die Kompatibilität von {PROPNODEPRIVILEGED} kann erst vollständig bewertet werden, wenn sich alle Services im Exchange befinden."
   },
   {
     "id": "The PolicyCheck input cannot be null",
@@ -7213,7 +7213,7 @@
   },
   {
     "id": "The input node architecture {NodeArch} does not match the Exchange node architecture {Arch} for node {NodeId}.",
-    "translation": "Die eingegebene Knotenarchitektur {NodeArch} stimmt nicht mit der Architektur des Exchange-Knotens {Arch} für den Knoten {NodeId} überein. "
+    "translation": "Die eingegebene Knotenarchitektur {NodeArch} stimmt nicht mit der Architektur des Exchange-Knotens {Arch} für den Knoten {NodeId} überein."
   },
   {
     "id": "Policy Incompatible",
@@ -7233,23 +7233,23 @@
   },
   {
     "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
-    "translation": "Der Service mit 'arch' {NodeArch} kann in der Bereitstellungsrichtlinie nicht gefunden werden. "
+    "translation": "Der Service mit 'arch' {NodeArch} kann in der Bereitstellungsrichtlinie nicht gefunden werden."
   },
   {
     "id": "No services found in the deployment policy.",
-    "translation": "In der Bereitstellungsrichtlinie wurden keine Services gefunden. "
+    "translation": "In der Bereitstellungsrichtlinie wurden keine Services gefunden."
   },
   {
     "id": "Node policy cannot be null.",
-    "translation": "Die Knotenrichtlinie darf nicht leer sein. "
+    "translation": "Die Knotenrichtlinie darf nicht leer sein."
   },
   {
     "id": "Deployment policy cannot be null.",
-    "translation": "Die Bereitstellungsrichtlinie darf nicht leer sein. "
+    "translation": "Die Bereitstellungsrichtlinie darf nicht leer sein."
   },
   {
     "id": "Merged service policy cannot be null.",
-    "translation": "Die zusammengeführte Servicerichtlinie darf nicht leer sein. "
+    "translation": "Die zusammengeführte Servicerichtlinie darf nicht leer sein."
   },
   {
     "id": "Error merging node policy with arch property. {Err}",
@@ -7269,7 +7269,7 @@
   },
   {
     "id": "Neither node policy nor node id is specified.",
-    "translation": "Weder die Knotenrichtlinie noch die Knoten-ID ist angegeben. "
+    "translation": "Weder die Knotenrichtlinie noch die Knoten-ID ist angegeben."
   },
   {
     "id": "Node id is empty.",
@@ -7301,19 +7301,19 @@
   },
   {
     "id": "No services specified in the given deployment policy {BpId}.",
-    "translation": "In der angegebenen Bereitstellungsrichtlinie {BpId} wurden keine Services angegeben. "
+    "translation": "In der angegebenen Bereitstellungsrichtlinie {BpId} wurden keine Services angegeben."
   },
   {
     "id": "No services specified in the deployment policy {Name}.",
-    "translation": "In der Bereitstellungsrichtlinie {Name} wurden keine Services angegeben. "
+    "translation": "In der Bereitstellungsrichtlinie {Name} wurden keine Services angegeben."
   },
   {
     "id": "Neither deployment policy nor deployment policy id is specified.",
-    "translation": "Weder die Bereitstellungsrichtlinie noch die Bereitstellungsrichtlinien-ID ist angegeben. "
+    "translation": "Weder die Bereitstellungsrichtlinie noch die Bereitstellungsrichtlinien-ID ist angegeben."
   },
   {
     "id": "Deployment policy id is empty.",
-    "translation": "Die Bereitstellungsrichtlinien-ID ist leer. "
+    "translation": "Die Bereitstellungsrichtlinien-ID ist leer."
   },
   {
     "id": "Organization is not specified in the deployment policy id: {BpId}.",
@@ -7365,7 +7365,7 @@
   },
   {
     "id": "The given deployment policy should not be null.",
-    "translation": "Die angegebene Bereitstellungsrichtlinie darf nicht leer sein. "
+    "translation": "Die angegebene Bereitstellungsrichtlinie darf nicht leer sein."
   },
   {
     "id": "Error merging deployment policy with service policy. {Err}",
@@ -7385,11 +7385,11 @@
   },
   {
     "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
-    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Serviceversionen mit der Architektur {NodeArch} angegeben. "
+    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Serviceversionen mit der Architektur {NodeArch} angegeben."
   },
   {
     "id": "No service versions specified in the deployment policy or pattern.",
-    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Serviceversionen angegeben. "
+    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Serviceversionen angegeben."
   },
   {
     "id": "Secret Binding Incompatible",
@@ -7413,11 +7413,11 @@
   },
   {
     "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-    "translation": "Der Service mit 'arch' {NodeArch} kann in der Bereitstellungsrichtlinie oder dem Muster nicht gefunden werden. "
+    "translation": "Der Service mit 'arch' {NodeArch} kann in der Bereitstellungsrichtlinie oder dem Muster nicht gefunden werden."
   },
   {
     "id": "No services found in the deployment policy or pattern.",
-    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Services gefunden. "
+    "translation": "In der Bereitstellungsrichtlinie oder dem Muster wurden keine Services gefunden."
   },
   {
     "id": "The input service definition object cannot be null.",
@@ -7481,7 +7481,7 @@
   },
   {
     "id": "Neither node user input nor node id is specified.",
-    "translation": "Weder die Knotenbenutzereingabe noch die Knoten-ID ist angegeben. "
+    "translation": "Weder die Knotenbenutzereingabe noch die Knoten-ID ist angegeben."
   },
   {
     "id": "User Input Incompatible",
@@ -7541,31 +7541,31 @@
   },
   {
     "id": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
-    "translation": "Die Service-URL {URL} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Service-URL {Name} überein. "
+    "translation": "Die Service-URL {URL} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Service-URL {Name} überein."
   },
   {
     "id": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
-    "translation": "Die Serviceorganisation {Org} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Serviceorganisation {Org_1} überein. "
+    "translation": "Die Serviceorganisation {Org} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Serviceorganisation {Org_1} überein."
   },
   {
     "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
-    "translation": "Die Servicearchitektur {Arch} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Servicearchitektur {Arch_1} überein. "
+    "translation": "Die Servicearchitektur {Arch} stimmt nicht mit der in der Bereitstellungsrichtlinie angegebenen Servicearchitektur {Arch_1} überein."
   },
   {
     "id": "Service version {Version} does not match any service versions specified in the deployment policy.",
-    "translation": "Die Serviceversion {Version} stimmt mit keiner der in der Bereitstellungsrichtlinie angegebenen Serviceversionen überein. "
+    "translation": "Die Serviceversion {Version} stimmt mit keiner der in der Bereitstellungsrichtlinie angegebenen Serviceversionen überein."
   },
   {
     "id": "The service does not match any services in the pattern.",
-    "translation": "Der Service stimmt mit keinem Service in dem Muster überein. "
+    "translation": "Der Service stimmt mit keinem Service in dem Muster überein."
   },
   {
     "id": "Pattern {PatId} cannot be found on the Exchange.",
-    "translation": "Das Muster {PatId} kann in keinem Exchange gefunden werden. "
+    "translation": "Das Muster {PatId} kann in keinem Exchange gefunden werden."
   },
   {
     "id": "Neither pattern nor pattern id is specified.",
-    "translation": "Weder das Muster noch die Muster-ID ist angegeben. "
+    "translation": "Weder das Muster noch die Muster-ID ist angegeben."
   },
   {
     "id": "Pattern id is empty.",
@@ -7581,7 +7581,7 @@
   },
   {
     "id": "No pattern found for this id {PatId}.",
-    "translation": "Für die ID {PatId} wurde kein Muster gefunden. "
+    "translation": "Für die ID {PatId} wurde kein Muster gefunden."
   },
   {
     "id": "Version must be specified in the service definition for service {URL}.",
@@ -7589,7 +7589,7 @@
   },
   {
     "id": "Invalid version format {Version} for service {URL}.",
-    "translation": "Ungültiges Versionsformat {Version} für den Service {URL}. "
+    "translation": "Ungültiges Versionsformat {Version} für den Service {URL}."
   },
   {
     "id": "Arch must be specified in the service definition for service {URL}.",
@@ -7605,7 +7605,7 @@
   },
   {
     "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
-    "translation": "Der in der Benutzereingabe angegebene Service {ServiceOrgid}/{ServiceUrl}, Version {ServiceVersionRange}, Architektur {ServiceArch} wird vom Muster oder der Bereitstellungsrichtlinie nicht referenziert. Stellen Sie sicher, dass serviceOrgid, serviceUrl, serviceArch und serviceVersionRange korrekt sind. "
+    "translation": "Der in der Benutzereingabe angegebene Service {ServiceOrgid}/{ServiceUrl}, Version {ServiceVersionRange}, Architektur {ServiceArch} wird vom Muster oder der Bereitstellungsrichtlinie nicht referenziert. Stellen Sie sicher, dass serviceOrgid, serviceUrl, serviceArch und serviceVersionRange korrekt sind."
   },
   {
     "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",

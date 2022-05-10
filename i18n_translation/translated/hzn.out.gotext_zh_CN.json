@@ -389,7 +389,7 @@
   },
   {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Horizon 代理程序的命令行界面。 大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅 '环境变量' 一节以覆盖该位置）。\n\n子命令描述：\n  agbot：列示和管理 Horizon 协议 bot 资源。\n  agreement：列示或管理此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。\n  architecture：显示此机器的体系结构（由 Horizon 和 golang 定义）。 \n  attribute：列示或管理当前在此 Horizon 边缘节点上注册的全局属性。\n  deploycheck：检查部署兼容性。\n  dev：用于创建服务的开发工具。\n  env：显示 Horizon 环境变量。\n  eventlog：列示当前注册或所有注册的事件日志。\n  exchange：列示和管理 Horizon Exchange 资源。\n  key：列示和管理用于签署和验证服务的密钥。 \n  metering：列示或管理活动协议或存档协议的测量（付款）信息。\n  mms：列示和管理 Horizon 模型管理服务资源。\n  node：列示和管理有关此 Horizon 边缘节点的常规信息。\n  policy：列示和管理此 Horizon 边缘节点的策略。 \n  reginput：为此模式创建输入文件模板，该模板填写后即可用于“hzn register”命令。 \n            这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。 \n  register：向管理中心注册此边缘节点。\n  service：列示或管理当前在此 Horizon 边缘节点上注册的服务。\n  status：显示节点的当前 Horizon 内部状态。\n  unregister：注销并重置此 Horizon 边缘节点，以使其可以再次注册。\n  userinput：列示或管理当前在此 Horizon 边缘节点上注册的服务用户输入。\n  util：实用程序命令。\n  version：显示 Horizon 版本。\n  sdo：列示并管理 Horizon SDO 所有权凭单和密钥。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n      这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供 'hzn exchange' 子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID： 'hzn exchange -o' 标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH： 'hzn exchange -u' 或 'hzn\n\t  register -u' 标志的缺省值，其格式为 '[org/]user:pw'。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供 'hzn mms' 子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_SDO_SVC_URL：覆盖“hzn sdo”子命令用来\n\t与 SDO 所有者服务通信的 URL。 （缺省情况下，hzn 将向\n\t\tHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}"
+    "translation": "Horizon 代理程序的命令行界面。大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅 '环境变量' 一节以覆盖该位置）。\n\n子命令描述：\n  agbot：列出和管理 Horizon 协议 bot 资源。\n  agreement：列出或管理此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。\n  architecture：显示此机器的体系结构（由 Horizon 和 golang 定义）。\n  attribute：列出或管理当前在此 Horizon 边缘节点上注册的全局属性。\n  deploycheck：检查部署兼容性。\n  dev：用于创建服务的开发工具。\n  env：显示 Horizon 环境变量。\n  eventlog：列示当前注册或所有注册的事件日志。\n  exchange：列出和管理 Horizon Exchange 资源。\n  key：列出和管理用于签署和验证服务的密钥。 \n  metering：列出或管理活动协议或存档协议的测量（付款）信息。\n  mms：列出和管理 Horizon 模型管理服务资源。\n  node：列出和管理有关此 Horizon 边缘节点的常规信息。\n  policy：列出和管理此 Horizon 边缘节点的策略。\n  reginput：为此模式创建输入文件模板，该模板填写后即可用于“hzn register”命令。\n  这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。\n  register：向管理中心注册此边缘节点。\n  service：列出或管理当前在此 Horizon 边缘节点上注册的服务。\n  status：显示节点的当前 Horizon 内部状态。\n  unregister：注销并重置此 Horizon 边缘节点，以使其可以再次注册。\n  userinput：列出或管理当前在此 Horizon 边缘节点上注册的服务用户输入。\n  util：实用程序命令。\n  version：显示 Horizon 版本。\n  sdo：列出并管理 Horizon SDO 所有权凭单和密钥。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n  这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供 'hzn exchange' 子命令用来与 Horizon Exchange\n通信的 URL，例如，\n https://exchange.bluehorizon.network/api/v1。（缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID：'hzn exchange -o' 标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH：'hzn exchange -u' 或 'hzn\n  register -u' 标志的缺省值，其格式为 '[org/]user:pw'。请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供 'hzn mms' 子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n  https://exchange.bluehorizon.network/css/。（缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_SDO_SVC_URL：覆盖“hzn sdo”子命令用来\n与 SDO 所有者服务通信的 URL。（缺省情况下，hzn 将向\n Horizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -401,7 +401,7 @@
   },
   {
     "id": "List and manage Horizon agreement bot resources.",
-    "translation": "列示和管理 Horizon 协议 bot 资源。"
+    "translation": "列出和管理 Horizon 协议 bot 资源。"
   },
   {
     "id": "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.",
@@ -849,7 +849,7 @@
   },
   {
     "id": "List and manage Horizon Exchange resources.",
-    "translation": "列示和管理 Horizon Exchange 资源。"
+    "translation": "列出和管理 Horizon Exchange 资源。"
   },
   {
     "id": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
@@ -857,7 +857,7 @@
   },
   {
     "id": "List and manage agbots in the Horizon Exchange",
-    "translation": "列示和管理 Horizon Exchange 中的 agbot"
+    "translation": "列出和管理 Horizon Exchange 中的 agbot"
   },
   {
     "id": "Add this deployment policy to the list of policies this agbot is serving. Currently only support adding all the deployment policies from an organization.",
@@ -897,7 +897,7 @@
   },
   {
     "id": "List just this one agbot.",
-    "translation": "仅列示这一 agbot。"
+    "translation": "仅列出这一个 agbot。"
   },
   {
     "id": "When listing all of the agbots, show the entire resource of each agbots, instead of just the name.",
@@ -985,7 +985,7 @@
   },
   {
     "id": "List and manage deployment policies in the Horizon Exchange.",
-    "translation": "列示和管理 Horizon Exchange 中的部署策略。"
+    "translation": "列出和管理 Horizon Exchange 中的部署策略。"
   },
   {
     "id": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
@@ -1017,7 +1017,7 @@
   },
   {
     "id": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
-    "translation": "仅列出此部署策略。 使用 <org>/<policy> 指定另一个组织中的公共策略，或者使用 <org>/ 列出另一个组织中的所有公共策略。"
+    "translation": "仅列出这一个部署策略。 使用 <org>/<policy> 指定另一个组织中的公共策略，或者使用 <org>/ 列出另一个组织中的所有公共策略。"
   },
   {
     "id": "Display an empty deployment policy template that can be filled in.",
@@ -1057,7 +1057,7 @@
   },
   {
     "id": "List just this one node management policy.",
-    "translation": "仅列出此节点管理策略。"
+    "translation": "仅列出这一个节点管理策略。"
   },
   {
     "id": "Display detailed output about the node management policies.",
@@ -1085,7 +1085,7 @@
   },
   {
     "id": "Allow this node management policy to be published even though it does not have any constraints.",
-    "translation": "即使此节点管理策略没有任何约束，也允许发布此节点管理策略。"
+    "translation": "即使此节点管理策略没有任何约束，也允许将其发布。"
   },
   {
     "id": "Display an empty node management policy template that can be filled in.",
@@ -1093,11 +1093,11 @@
   },
   {
     "id": "Remove the node management policy in the Horizon Exchange.",
-    "translation": "在 Horizon Exchange 中除去节点管理策略。"
+    "translation": "在 Horizon Exchange 中移除该节点管理策略。"
   },
   {
     "id": "The name of the node management policy to be removed.",
-    "translation": "这是要除去的节点管理策略的名称。"
+    "translation": "要移除的节点管理策略的名称。"
   },
   {
     "id": "List the status of a given node management policy across all nodes in given org.",
@@ -1117,7 +1117,7 @@
   },
   {
     "id": "List and manage nodes in the Horizon Exchange",
-    "translation": "列示和管理 Horizon Exchange 中的节点"
+    "translation": "列出和管理 Horizon Exchange 中的节点"
   },
   {
     "id": "Add or replace the node policy in the Horizon Exchange.",
@@ -1185,7 +1185,7 @@
   },
   {
     "id": "List just this one node.",
-    "translation": "仅列示这一节点。"
+    "translation": "仅列出这一个节点。"
   },
   {
     "id": "When listing all of the nodes, show the entire resource of each node, instead of just the name.",
@@ -1305,7 +1305,7 @@
   },
   {
     "id": "List and manage organizations in the Horizon Exchange.",
-    "translation": "列示和管理 Horizon Exchange 中的组织。"
+    "translation": "列出和管理 Horizon Exchange 中的组织。"
   },
   {
     "id": "Create the organization resource in the Horizon Exchange.",
@@ -1409,7 +1409,7 @@
   },
   {
     "id": "List and manage patterns in the Horizon Exchange",
-    "translation": "列示和管理 Horizon Exchange 中的模式"
+    "translation": "列出和管理 Horizon Exchange 中的模式"
   },
   {
     "id": "Display the pattern resources from the Horizon Exchange.",
@@ -1417,7 +1417,7 @@
   },
   {
     "id": "List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.",
-    "translation": "仅列示这一模式。 使用 <org>/<pat> 可指定另一组织中的一个公用模式，使用 <org>/ 可列示另一组织中的所有公用模式。"
+    "translation": "仅列出这一个模式。使用 <org>/<pat> 可指定另一组织中的一个公用模式，使用 <org>/ 可列出另一组织中的所有公用模式。"
   },
   {
     "id": "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.",
@@ -1501,7 +1501,7 @@
   },
   {
     "id": "List and manage services in the Horizon Exchange",
-    "translation": "列示和管理 Horizon Exchange 中的服务"
+    "translation": "列出和管理 Horizon Exchange 中的服务"
   },
   {
     "id": "Add or replace the service policy in the Horizon Exchange.",
@@ -1521,7 +1521,7 @@
   },
   {
     "id": "List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.",
-    "translation": "仅列示这一服务。 使用 <org>/<svc> 可指定另一组织中的一个公用服务，使用 <org>/ 可列示另一组织中的所有公用服务。"
+    "translation": "仅列出这一个服务。使用 <org>/<svc> 可指定另一组织中的一个公用服务，使用 <org>/ 可列出另一组织中的所有公用服务。"
   },
   {
     "id": "When listing all of the services, show the entire service definition, instead of just the name. When listing a specific service, show more details.",
@@ -1677,7 +1677,7 @@
   },
   {
     "id": "List and manage users in the Horizon Exchange.",
-    "translation": "列示和管理 Horizon Exchange 中的用户。"
+    "translation": "列出和管理 Horizon Exchange 中的用户。"
   },
   {
     "id": "Create the user resource in the Horizon Exchange.",
@@ -1745,7 +1745,7 @@
   },
   {
     "id": "List and manage keys for signing and verifying services.",
-    "translation": "列示和管理用于签署和验证服务的密钥。"
+    "translation": "列出和管理用于签署和验证服务的密钥。"
   },
   {
     "id": "Generate a signing key pair.",
@@ -1829,7 +1829,7 @@
   },
   {
     "id": "List and manage Horizon Model Management Service resources.",
-    "translation": "列示和管理 Horizon 模型管理服务资源。"
+    "translation": "列出和管理 Horizon 模型管理服务资源。"
   },
   {
     "id": "The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.",
@@ -1841,7 +1841,7 @@
   },
   {
     "id": "List and manage objects in the Horizon Model Management Service.",
-    "translation": "列示和管理 Horizon 模型管理服务中的对象。"
+    "translation": "列出和管理 Horizon 模型管理服务中的对象。"
   },
   {
     "id": "Delete an object in the Horizon Model Management Service, making it unavailable for services deployed on nodes.",
@@ -1969,7 +1969,7 @@
   },
   {
     "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
-    "translation": "将与之一起发布的数据块的大小。 如果指定 --disableChunkUpload ，那么忽略。"
+    "translation": "将与之一起发布的数据区块的大小。 如果指定 --disableChunkUpload ，那么忽略。"
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
@@ -1997,7 +1997,7 @@
   },
   {
     "id": "List and manage general information about this Horizon edge node.",
-    "translation": "列示和管理这个 Horizon 边缘节点的常规信息。"
+    "translation": "列出和管理这个 Horizon 边缘节点的常规信息。"
   },
   {
     "id": "Display general information about this Horizon edge node.",
@@ -2009,7 +2009,7 @@
   },
   {
     "id": "List and manage manifest files stored in the management hub.",
-    "translation": "列示和管理管理中心中存储的清单文件。"
+    "translation": "列出和管理在管理中心中存储的清单文件。"
   },
   {
     "id": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
@@ -2033,11 +2033,11 @@
   },
   {
     "id": "The type of manifest to list. Valid values include 'agent_upgrade_manifests'.",
-    "translation": "要列示的清单的类型。 有效值包括“agent_upgrade_manifests”。"
+    "translation": "要列出的清单的类型。 有效值包括“agent_upgrade_manifests”。"
   },
   {
     "id": "The id of the manifest to list. Must specify --type flag.",
-    "translation": "要列示的清单的标识。 必须指定 --type 标志。"
+    "translation": "要列出的清单的标识。 必须指定 --type 标志。"
   },
   {
     "id": "Display the contents of the manifest file. Must specify --type and --id flags.",
@@ -2049,15 +2049,15 @@
   },
   {
     "id": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
-    "translation": "请从管理中心中除去清单文件。 对空清单模板使用“hzn nodemanagement manifest new”。"
+    "translation": "从管理中心中移除清单文件。 对空清单模板使用“hzn nodemanagement manifest new”。"
   },
   {
     "id": "The type of manifest to remove. Valid values include 'agent_upgrade_manifests'.",
-    "translation": "要除去的清单的类型。 有效值包括“agent_upgrade_manifests”。"
+    "translation": "要移除的清单的类型。 有效值包括“agent_upgrade_manifests”。"
   },
   {
     "id": "The id of the manifest to remove.",
-    "translation": "要除去的清单的标识。"
+    "translation": "要移除的清单的标识。"
   },
   {
     "id": "List agent files and types stored in the management hub.",
@@ -2081,7 +2081,7 @@
   },
   {
     "id": "The type of agent files to list versions for. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
-    "translation": "要列示其版本的代理程序文件的类型。 有效值包括“agent_software_files”、“agent_cert_files”和“agent_config_files”。"
+    "translation": "要列出其版本的代理程序文件的类型。 有效值包括“agent_software_files”、“agent_cert_files”和“agent_config_files”。"
   },
   {
     "id": "Show only a list of versions for a given file type. Must also specify a file type with the --type flag.",
@@ -2089,7 +2089,7 @@
   },
   {
     "id": "List and manage policy for this Horizon edge node.",
-    "translation": "列示和管理这个 Horizon 边缘节点的策略。"
+    "translation": "列出和管理这个 Horizon 边缘节点的策略。"
   },
   {
     "id": "Display this edge node's policy.",
@@ -2365,7 +2365,7 @@
   },
   {
     "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-    "translation": "列示和管理私钥管理器中的私钥。 注：您必须认证为管理员才能列示可供整个组织使用的私钥。"
+    "translation": "列出和管理私钥管理器中的私钥。注：您必须认证为管理员才能列示可供整个组织使用的私钥。"
   },
   {
     "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
@@ -2373,7 +2373,7 @@
   },
   {
     "id": "List and manage secrets in the secrets manager.",
-    "translation": "列示和管理私钥管理器中的私钥。"
+    "translation": "列出和管理私钥管理器中的私钥。"
   },
   {
     "id": "Display the names of the secrets in the secrets manager.",
@@ -2381,7 +2381,7 @@
   },
   {
     "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
-    "translation": "仅列示这一私钥。 返回指示私钥存在的布尔值。 这是私钥管理器中使用的私钥的名称。 如果该私钥不存在，那么使用退出代码 1 返回。"
+    "translation": "仅列出这一个私钥。返回指示私钥存在的布尔值。这是私钥管理器中使用的私钥的名称。如果该私钥不存在，那么使用退出代码 1 返回。"
   },
   {
     "id": "Add a secret to the secrets manager.",
@@ -2429,15 +2429,15 @@
   },
   {
     "id": "List and manage resources in SDO owner services",
-    "translation": "列示和管理 SDO 所有者服务中的资源"
+    "translation": "列出和管理 SDO 所有者服务中的资源"
   },
   {
     "id": "List and manage Horizon SDO ownership keys.",
-    "translation": "列示和管理 Horizon SDO 所有权密钥。"
+    "translation": "列出和管理 Horizon SDO 所有权密钥。"
   },
   {
     "id": "List the SDO ownership keys stored in SDO owner services.",
-    "translation": "列示 SDO 所有者服务中存储的 SDO 所有权密钥。"
+    "translation": "列出和管理 SDO 所有者服务中存储的 SDO 所有权密钥。"
   },
   {
     "id": "List the full details of this SDO ownership key.",
@@ -2549,19 +2549,19 @@
   },
   {
     "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
-    "translation": "（不推荐）不推荐使用此命令。 请使用“hzn sdo voucher”以列示并管理 Horizon SDO 所有权凭单。"
+    "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher”来列出和管理 Horizon SDO 所有权凭单。"
   },
   {
     "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
-    "translation": "（不推荐）不推荐使用此命令。 请使用“hzn sdo voucher list”以列出导入的 SDO 所有权凭单。"
+    "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher list”来列出导入的 SDO 所有权凭单。"
   },
   {
     "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
-    "translation": "（不推荐）不推荐使用此命令。 请使用“hzn sdo voucher inspect”以显示 SDO 所有权凭单的属性。"
+    "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher inspect”来显示 SDO 所有权凭单的属性。"
   },
   {
     "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
-    "translation": "（不推荐）不推荐使用此命令。 请使用“hzn sdo voucher import”以导入 SDO 所有权凭单。"
+    "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher import”以导入 SDO 所有权凭单。"
   },
   {
     "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
@@ -4085,7 +4085,7 @@
   },
   {
     "id": "The deployment policy has no constraints which might result in the service being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
-    "translation": "部署策略没有任何约束，不会生成将部署到所有节点的服务。 请指定 --no-constraints 确认此策略可接受。"
+    "translation": "该部署策略没有任何约束，这可能导致将该服务部署到所有节点。请指定 --no-constraints 以确认这是可接受的。"
   },
   {
     "id": "Deployment policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
@@ -4201,7 +4201,7 @@
   },
   {
     "id": "A list of constraint expressions of the form <property name> <operator> <property value>,",
-    "translation": "一列格式为 <property name> <operator> <property value> 的约束表达式，"
+    "translation": "格式为 <property name> <operator> <property value> 的约束表达式列表，这些表达式"
   },
   {
     "id": "separated by boolean operators AND (&&) or OR (||).",
@@ -4289,7 +4289,7 @@
   },
   {
     "id": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
-    "translation": "（可选）格式为 <property name> <operator> <property value> 的约束表达式的列表。"
+    "translation": "（可选）格式为 <property name> <operator> <property value> 的约束表达式列表，这些表达式"
   },
   {
     "id": "(Optional) A list of policy properties that describe this policy.",
@@ -4305,7 +4305,7 @@
   },
   {
     "id": "When to start an upgrade, default \"now\".",
-    "translation": "何时启动升级，缺省值为“现在”。"
+    "translation": "何时开始升级，缺省值为“现在”。"
   },
   {
     "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
@@ -4321,7 +4321,7 @@
   },
   {
     "id": "Is this policy allowed to perform a downgrade to a previous version.",
-    "translation": "是否允许此策略执行对先前版本的降级。"
+    "translation": "是否允许此策略执行降级到前一版操作。"
   },
   {
     "id": "Incorrect node management policy format in file {JsonFilePath}: {Err}",
@@ -4329,7 +4329,7 @@
   },
   {
     "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
-    "translation": "节点管理策略没有任何约束，这些约束可能导致将管理策略部署到所有节点。 请指定 --no-constraints 以确认这是可接受的。"
+    "translation": "该节点管理策略没有任何约束，这可能导致将该管理策略部署到所有节点。 请指定 --no-constraints 以确认这是可接受的。"
   },
   {
     "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
@@ -4353,7 +4353,7 @@
   },
   {
     "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "正在从 Exchange 中除去节点管理策略 {NmpOrg}/{NmpName}。"
+    "translation": "正在从 Exchange 中移除节点管理策略 {NmpOrg}/{NmpName}。"
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} removed",
@@ -4493,7 +4493,7 @@
   },
   {
     "id": "Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.",
-    "translation": "注：在“部署”属性下未指定任何属性和约束。 将使用最高级别的属性和约束。"
+    "translation": "注：在“部署”属性下未指定任何属性和约束。 将使用顶级属性和约束。"
   },
   {
     "id": "Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
@@ -5337,7 +5337,7 @@
   },
   {
     "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_software_files\".",
-    "translation": "类型为“agent_software_files”的文件“{ManFile}”版本“{Version}”。"
+    "translation": "类型为“agent_software_files”的文件“{ManFile}”，版本为“{Version}”。"
   },
   {
     "id": "The version specified in CertificateUpgrade is not a valid version string or \"latest\": {Version}",
@@ -5345,7 +5345,7 @@
   },
   {
     "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_cert_files\".",
-    "translation": "类型为“agent_cert_files”的文件“{ManFile}”版本“{Version}”。"
+    "translation": "类型为“agent_cert_files”的文件“{ManFile}”，版本为“{Version}”。"
   },
   {
     "id": "The version specified in ConfigurationUpgrade is not a valid version string or \"latest\": {Version}",
@@ -5353,15 +5353,15 @@
   },
   {
     "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_config_files\".",
-    "translation": "类型为“agent_config_files”的文件“{ManFile}”版本“{Version}”。"
+    "translation": "类型为“agent_config_files”的文件“{ManFile}”，版本为“{Version}”。"
   },
   {
     "id": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
-    "translation": "请运行“hzn nodemanagement agentfiles list”以获取有效文件的列表。"
+    "translation": "运行“hzn nodemanagement agentfiles list”以获取有效文件的列表。"
   },
   {
     "id": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
-    "translation": "确定要从 Management Hub 中除去清单 {ManOrg}/{ManifestId} 吗？"
+    "translation": "确定要从 Management Hub 中移除清单 {ManOrg}/{ManifestId} 吗？"
   },
   {
     "id": "Manifest '{ManOrg}/{ManifestId}' of type '{ManifestType}' not found in the Management Hub",
@@ -5373,7 +5373,7 @@
   },
   {
     "id": "Fill in this section to perform a software upgrade of the agent. Remove this section to prevent software upgrade.",
-    "translation": "请填写此部分以执行代理程序的软件升级。 除去此部分以阻止软件升级。"
+    "translation": "填写此部分以执行代理程序的软件升级。 移除此部分以阻止软件升级。"
   },
   {
     "id": "A list of agent software files stored in the Management Hub.",
@@ -5385,11 +5385,11 @@
   },
   {
     "id": "The agent software version this manifest applies to. Specify \"latest\" to get the most recent version.",
-    "translation": "此清单适用于的代理程序软件版本。 指定“最新”以获取最新版本。"
+    "translation": "应用此清单的代理程序软件的版本。 指定“最新”以获取最新版本。"
   },
   {
     "id": "Fill in this section to upgrade the agent certificate. Remove this section to prevent certificate upgrade.",
-    "translation": "填写此部分以升级代理程序证书。 除去此部分以阻止证书升级。"
+    "translation": "填写此部分以升级代理程序证书。 移除此部分以阻止证书升级。"
   },
   {
     "id": "The name of a certificate file stored in the Management Hub. Default is \"agent-install.crt\".",
@@ -5397,15 +5397,15 @@
   },
   {
     "id": "Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.",
-    "translation": "请运行“hzn nm agentfiles list -t agent_cert_files”以获取可用文件的列表。"
+    "translation": "运行“hzn nm agentfiles list -t agent_cert_files”以获取可用文件的列表。"
   },
   {
     "id": "The agent certificate version this manifest applies to. Specify \"latest\" to get the most recent version.",
-    "translation": "此清单适用于的代理程序证书版本。 指定“最新”以获取最新版本。"
+    "translation": "应用此清单的代理程序证书的版本。 指定“最新”以获取最新版本。"
   },
   {
     "id": "Fill in this section to upgrade the agent config. Remove this section to prevent config upgrade.",
-    "translation": "填写此部分以升级代理程序配置。 除去此部分以阻止配置升级。"
+    "translation": "填写此部分以升级代理程序配置。 移除此部分以阻止配置升级。"
   },
   {
     "id": "The name of a config file stored in the Management Hub. Default is \"agent-install.crt\".",
@@ -5417,7 +5417,7 @@
   },
   {
     "id": "The agent config version this manifest applies to. Specify \"latest\" to get the most recent version.",
-    "translation": "此清单所应用于的代理程序配置版本。 指定“最新”以获取最新版本。"
+    "translation": "应用此清单的代理程序配置的版本。 指定“最新”以获取最新版本。"
   },
   {
     "id": "deployment config {Dep} is not supported",
@@ -5469,7 +5469,7 @@
   },
   {
     "id": "It usually containts the built-in node properties.",
-    "translation": "通常，它包含内置节点属性。"
+    "translation": "它通常包含内置节点属性。"
   },
   {
     "id": "It should be empty unless deployment and managment have the same constraint expressions.",
@@ -5485,7 +5485,7 @@
   },
   {
     "id": "It overwrites the properties with the same name on the top level.",
-    "translation": "它会覆盖顶级上具有相同名称的属性。"
+    "translation": "它会覆盖在顶层的同名属性。"
   },
   {
     "id": "A list of constraints for deployment.",
@@ -5493,7 +5493,7 @@
   },
   {
     "id": "It overwrites all the constraints on the top level if not empty.",
-    "translation": "如果不为空，它将覆盖顶级上的所有约束。"
+    "translation": "如果不为空，它将覆盖在顶层的所有约束。"
   },
   {
     "id": "Policies that are used for node management only.",
@@ -5525,7 +5525,7 @@
   },
   {
     "id": "Note: No properties and constraints are specified under 'deployment' attribute in the node policy file {NodepolicyFlag}. The top level properties and constraints will be used.",
-    "translation": "注：在节点策略文件 {NodepolicyFlag} 中的“deployment”属性下未指定任何属性和约束。 将使用最高级别的属性和约束。"
+    "translation": "注：在节点策略文件 {NodepolicyFlag} 中的“deployment”属性下未指定任何属性和约束。 将使用顶级属性和约束。"
   },
   {
     "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
@@ -5617,7 +5617,7 @@
   },
   {
     "id": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the Exchange.\nTo correct the problem, please do one of the following: \n\t- Remove the node from the Exchange \n\t- Remove the pattern from the node in the Exchange \n\t- Register without a pattern (the pattern defined on the node in the Exchange will be used)",
-    "translation": "无法继续使用给定的模式 {Pattern}，因为其与 Exchange 中的节点所定义的模式 {ExchangePattern} 不同。\n要改正此问题，请执行以下某项操作：\n\t- 从 Exchange 中除去此节点 \n\t- 从 Exchange 中的节点中除去模式 \n\t- 不使用模式注册（将使用在 Exchange 中的节点上定义的模式）"
+    "translation": "无法继续使用给定的模式 {Pattern}，因为其与 Exchange 中的节点所定义的模式 {ExchangePattern} 不同。\n要改正此问题，请执行以下某项操作：\n- 从 Exchange 中移除此节点 \n- 从 Exchange 中的节点中移除模式 \n- 不使用模式注册（将使用在 Exchange 中的节点上定义的模式）"
   },
   {
     "id": "pattern '{Patorg}/{Patname}' not found from the Exchange.",
@@ -5717,11 +5717,11 @@
   },
   {
     "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-    "translation": "{Errstring}。 请在输入文件 {InputFile} 中定义用于服务 {Matches2} 的变量。 请运行 'hzn unregister'，然后再次运行 'hzn register...'"
+    "translation": "{Errstring}。请在输入文件 {InputFile} 中定义用于服务 {Matches2} 的变量。请运行 'hzn unregister'，然后再次运行 'hzn register...'"
   },
   {
     "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
-    "translation": "{Errstring}。 请创建输入文件，并定义用于服务 {Matches2} 的变量。 请运行 'hzn unregister'，然后再次运行 'hzn register...' 并使用 -f 标志指定输入文件。"
+    "translation": "{Errstring}。请创建输入文件，并定义用于服务 {Matches2} 的变量。请运行 'hzn unregister'，然后再次运行 'hzn register...' 并使用 -f 标志指定输入文件。"
   },
   {
     "id": "Call to node to change state to configured executed successfully.",
@@ -5841,7 +5841,7 @@
   },
   {
     "id": "Failed",
-    "translation": "已失败"
+    "translation": "失败"
   },
   {
     "id": "Progress so far: no agreements formed yet",
@@ -6113,7 +6113,7 @@
   },
   {
     "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
-    "translation": "凭单名称无效。 凭单“{Voucher}”在组织“{Org}”中不存在。"
+    "translation": "凭单名称无效。凭单“{Voucher}”在组织“{Org}”中不存在。"
   },
   {
     "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
@@ -6121,7 +6121,7 @@
   },
   {
     "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
-    "translation": "凭证无效。 用户“{User}”无法使用给定的凭证访问组织“{Org}”中的凭单“{Voucher}”。"
+    "translation": "凭证无效。用户“{User}”无法使用给定的凭证访问组织“{Org}”中的凭单“{Voucher}”。"
   },
   {
     "id": "failed to marshal 'hzn sdo voucher list' output: {Err}",
@@ -6525,7 +6525,7 @@
   },
   {
     "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
-    "translation": "一列格式为 <property name> <operator> <property value> 的约束表达式，以布尔运算符 AND (&&) 或 OR (||) 分隔。"
+    "translation": "格式为 <property name> <operator> <property value> 的约束表达式列表，这些表达式以布尔运算符 AND (&&) 或 OR (||) 分隔。"
   },
   {
     "id": "The service(s) that will use this object.",
