@@ -456,7 +456,7 @@ function get_agent_file_versions() {
 
     if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
         cert_flag="--cacert $AGENT_CERT_FILE"
-    elif [[ -f $PERMANENT_CERT_PATH ]]; then
+    elif [[ -z $AGENT_CERT_FILE && -f $PERMANENT_CERT_PATH ]]; then
         # using cert from a previous install, see if that works
         cert_flag="--cacert $PERMANENT_CERT_PATH"
     else
@@ -2662,7 +2662,8 @@ function registration() {
         if [[ -n $policy ]]; then
             # Since hzn might be in the edge cluster container, need to pass the policy file's contents in via stdin
             reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag --policy=-"
-            echo "$reg_cmd"
+            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n ******** $wait_service_flag $wait_org_flag $timeout_flag --policy=-"
+            echo "$reg_cmd_mask"
             cat $policy | agent_exec "$reg_cmd"
         else  # register w/o policy or with pattern
             reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag"
