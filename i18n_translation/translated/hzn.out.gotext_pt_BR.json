@@ -1029,7 +1029,7 @@
   },
   {
     "id": "Skip the 'are you sure?' prompt.",
-    "translation": "Ignorar a parte 'Tem certeza?' ."
+    "translation": "Ignorar o prompt 'Tem certeza?'."
   },
   {
     "id": "The name of the deployment policy to be removed.",
@@ -1133,7 +1133,7 @@
   },
   {
     "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-    "translation": "O caminho de um arquivo JSON contendo os metadados necessários para criar/atualizar a política de nó no Horizon Exchange. Especifique -f- para ler por meio de stdin. Uma política de nó contém os atributos 'deployment' e 'management '. Use 'hzn policy new' para ver o formato da política de nó."
+    "translation": "O caminho de um arquivo JSON contendo os metadados necessários para criar/atualizar a política de nó no Horizon Exchange. Especifique -f- para ler por meio de stdin. Uma política de nó contém os atributos 'deployment' e 'management'. Use 'hzn policy new' para ver o formato da política de nó."
   },
   {
     "id": "Create the node resource in the Horizon Exchange.",
@@ -2073,7 +2073,7 @@
   },
   {
     "id": "Filter the list of agent upgrade files by the specified version range or version string. Version can be a version range, a single version string or 'latest'.",
-    "translation": "Filtrar a lista de arquivos de upgrade do agente pelo intervalo de versão ou pela sequência de versões especificada. Versão pode ser um intervalo de versão, uma única sequência de versões ou 'mais recente'."
+    "translation": "Filtrar a lista de arquivos de upgrade do agente pelo intervalo de versão ou pela sequência de versões especificada. Versão pode ser um intervalo de versão, uma única sequência de versões ou 'latest'."
   },
   {
     "id": "Display a list of agent file types with their corresponding versions.",
@@ -2117,7 +2117,7 @@
   },
   {
     "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-    "translation": "O nome do arquivo de entrada JSON contendo a política de nó. Especifique -f- para ler por meio de stdin. Uma política de nó contém os atributos 'deployment' e 'management '. Use 'hzn policy new' para ver o formato da política de nó."
+    "translation": "O nome do arquivo de entrada JSON contendo a política de nó. Especifique -f- para ler por meio de stdin. Uma política de nó contém os atributos 'deployment' e 'management'. Use 'hzn policy new' para ver o formato da política de nó."
   },
   {
     "id": "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.",
@@ -2173,7 +2173,7 @@
   },
   {
     "id": "A JSON file that sets or overrides the node policy for this node. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-    "translation": "Um arquivo JSON que configura ou substitui a política de nó para este nó. Uma política de nó contém os atributos 'deployment' e 'management '. Use 'hzn policy new' para ver o formato da política de nó."
+    "translation": "Um arquivo JSON que configura ou substitui a política de nó para este nó. Uma política de nó contém os atributos 'deployment' e 'management'. Use 'hzn policy new' para ver o formato da política de nó."
   },
   {
     "id": "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.",
@@ -2321,7 +2321,7 @@
   },
   {
     "id": "Skip the 'Are you sure?' prompt.",
-    "translation": "Ignorar a parte 'Tem certeza?' ."
+    "translation": "Ignorar o prompt 'Tem certeza?'."
   },
   {
     "id": "Update an existing user input object for this Horizon edge node.",
@@ -2437,15 +2437,15 @@
   },
   {
     "id": "List the SDO ownership keys stored in SDO owner services.",
-    "translation": "Liste as chaves de propriedade SDO armazenadas nos serviços de proprietário SDO."
+    "translation": "Listar as chaves de propriedade SDO armazenadas nos serviços de proprietário SDO."
   },
   {
     "id": "List the full details of this SDO ownership key.",
-    "translation": "Liste os detalhes completos desta chave de propriedade SDO."
+    "translation": "Listar os detalhes completos desta chave de propriedade SDO."
   },
   {
     "id": "Create a new key in SDO owner services.",
-    "translation": "Crie uma nova chave nos serviços de proprietário SDO."
+    "translation": "Criar uma nova chave nos serviços de proprietário SDO."
   },
   {
     "id": "The file containing metadata for the key to be created in SDO owner services. Must be JSON file type extension.",
@@ -2461,7 +2461,7 @@
   },
   {
     "id": "Download the specified key from SDO owner services.",
-    "translation": "Faça download da chave especificada dos serviços de proprietário SDO."
+    "translation": "Fazer download da chave especificada dos serviços de proprietário SDO."
   },
   {
     "id": "The name of the key to be downloaded from SDO owner services.",
@@ -2473,11 +2473,11 @@
   },
   {
     "id": "Overwrite the existing file if it exists.",
-    "translation": "Sobrescreva o arquivo existente se ele existir."
+    "translation": "Sobrescrever o arquivo existente se ele existir."
   },
   {
     "id": "Remove a key from SDO owner services.",
-    "translation": "Remova uma chave dos serviços de proprietário SDO."
+    "translation": "Remover uma chave dos serviços de proprietário SDO."
   },
   {
     "id": "The name of the key to be removed from SDO owner services.",
@@ -2529,7 +2529,7 @@
   },
   {
     "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-    "translation": "O arquivo de políticas de nó a ser usado para o dispositivo de borda associado a este voucher. É mutuamente exclusivo com -e e -p. Uma política de nó contém os atributos 'deployment' e 'management '. Use 'hzn policy new' para ver o formato da política de nó."
+    "translation": "O arquivo de políticas de nó a ser usado para o dispositivo de borda associado a este voucher. É mutuamente exclusivo com -e e -p. Uma política de nó contém os atributos 'deployment' e 'management'. Use 'hzn policy new' para ver o formato da política de nó."
   },
   {
     "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
@@ -2537,7 +2537,7 @@
   },
   {
     "id": "Download the specified SDO ownership voucher from SDO owner services.",
-    "translation": "Faça download do voucher de propriedade SDO especificado de serviços de proprietário SDO."
+    "translation": "Fazer download do voucher de propriedade SDO especificado de serviços de proprietário SDO."
   },
   {
     "id": "The SDO ownership voucher to download.",
@@ -4305,7 +4305,7 @@
   },
   {
     "id": "When to start an upgrade, default \"now\".",
-    "translation": "Ao iniciar um upgrade, padrão \"agora\"."
+    "translation": "Quando iniciar um upgrade, padrão \"agora\"."
   },
   {
     "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
@@ -4541,11 +4541,11 @@
   },
   {
     "id": "Updating Node policy {AttribName} attribute for node {Node} in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-    "translation": "Atualizando a política de Nó {AttribName} atributo para o nó {Node} no Horizon Exchange e reavaliando todos os contratos com base nessa política. Os contratos existentes podem ser cancelados e renegociados."
+    "translation": "Atualizando o atributo {AttribName} da política de nó para o nó {Node} no Horizon Exchange e reavaliando todos os contratos com base nessa política. Os contratos existentes podem ser cancelados e renegociados."
   },
   {
     "id": "Node policy {AttribName} attribute updated for node {Node} in the horizon exchange.",
-    "translation": "Política de nó {AttribName} atributo atualizado para o nó {Node} no Horizon Exchange."
+    "translation": "Atributo {AttribName} da política de nó atualizado para o nó {Node} no Horizon Exchange."
   },
   {
     "id": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
@@ -5289,11 +5289,11 @@
   },
   {
     "id": "Invalid agent file type specified. Valid types include: {String}",
-    "translation": "Tipo de arquivo de agente inválido especificado. Os tipos válidos incluem: {String}"
+    "translation": "Tipo de arquivo de agente especificado inválido. Os tipos válidos incluem: {String}"
   },
   {
     "id": "--version must specify a valid version range, a valid version string or \"latest\"",
-    "translation": "--version deve especificar um intervalo de versão válido, uma sequência de versões válida ou \"mais recente\""
+    "translation": "--version deve especificar um intervalo de versão válido, uma sequência de versões válida ou \"latest\""
   },
   {
     "id": "failed to check version range {FileVersion}: {Err}",
@@ -5333,7 +5333,7 @@
   },
   {
     "id": "The version specified in SoftwareUpgrade is not a valid version string or \"latest\": {Version}",
-    "translation": "A versão especificada em SoftwareUpgrade não é uma sequência de versões válida ou \"mais recente\": {Version}"
+    "translation": "A versão especificada em SoftwareUpgrade não é uma sequência de versões válida ou \"latest\": {Version}"
   },
   {
     "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_software_files\".",
@@ -5341,7 +5341,7 @@
   },
   {
     "id": "The version specified in CertificateUpgrade is not a valid version string or \"latest\": {Version}",
-    "translation": "A versão especificada em CertificateUpgrade não é uma sequência de versões válida ou \"mais recente\": {Version}"
+    "translation": "A versão especificada em CertificateUpgrade não é uma sequência de versões válida ou \"latest\": {Version}"
   },
   {
     "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_cert_files\".",
@@ -5349,7 +5349,7 @@
   },
   {
     "id": "The version specified in ConfigurationUpgrade is not a valid version string or \"latest\": {Version}",
-    "translation": "A versão especificada em ConfigurationUpgrade não é uma sequência de versões válida ou \"mais recente\": {Version}"
+    "translation": "A versão especificada em ConfigurationUpgrade não é uma sequência de versões válida ou \"latest\": {Version}"
   },
   {
     "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_config_files\".",
@@ -5385,7 +5385,7 @@
   },
   {
     "id": "The agent software version this manifest applies to. Specify \"latest\" to get the most recent version.",
-    "translation": "A versão de software do agente à qual este manifest se aplica. Especifique \"mais recente\" para obter a versão mais recente."
+    "translation": "A versão de software do agente à qual este manifest se aplica. Especifique \"latest\" para obter a versão mais recente."
   },
   {
     "id": "Fill in this section to upgrade the agent certificate. Remove this section to prevent certificate upgrade.",
@@ -5401,7 +5401,7 @@
   },
   {
     "id": "The agent certificate version this manifest applies to. Specify \"latest\" to get the most recent version.",
-    "translation": "A versão do certificado de agente à qual este manifesto se aplica. Especifique \"mais recente\" para obter a versão mais recente."
+    "translation": "A versão do certificado de agente à qual este manifesto se aplica. Especifique \"latest\" para obter a versão mais recente."
   },
   {
     "id": "Fill in this section to upgrade the agent config. Remove this section to prevent config upgrade.",
@@ -5417,7 +5417,7 @@
   },
   {
     "id": "The agent config version this manifest applies to. Specify \"latest\" to get the most recent version.",
-    "translation": "A versão de config do agente a qual este manifesto se aplica. Especifique \"mais recente\" para obter a versão mais recente."
+    "translation": "A versão de config do agente a qual este manifesto se aplica. Especifique \"latest\" para obter a versão mais recente."
   },
   {
     "id": "deployment config {Dep} is not supported",
@@ -5465,15 +5465,15 @@
   },
   {
     "id": "It applies to both deployment and node management.",
-    "translation": "Ele se aplica à implementação e ao gerenciamento de nó."
+    "translation": "Se aplica à implementação e ao gerenciamento de nó."
   },
   {
     "id": "It usually containts the built-in node properties.",
-    "translation": "Ele geralmente contém as propriedades do nó integrado."
+    "translation": "Geralmente contém as propriedades do nó integrado."
   },
   {
     "id": "It should be empty unless deployment and managment have the same constraint expressions.",
-    "translation": "Ele deve ficar vazio, a menos que a implementação e o gerenciamento tenham as mesmas expressões de restrição."
+    "translation": "Deve ficar vazio, a menos que a implementação e o gerenciamento tenham as mesmas expressões de restrição."
   },
   {
     "id": "Policies that are used for deployment only.",
@@ -5485,7 +5485,7 @@
   },
   {
     "id": "It overwrites the properties with the same name on the top level.",
-    "translation": "Ele sobrescreve as propriedades com o mesmo nome no nível superior."
+    "translation": "Sobrescreve as propriedades com o mesmo nome no nível superior."
   },
   {
     "id": "A list of constraints for deployment.",
@@ -5493,7 +5493,7 @@
   },
   {
     "id": "It overwrites all the constraints on the top level if not empty.",
-    "translation": "Ele sobrescreverá todas as restrições no nível superior, se não vazio."
+    "translation": "Sobrescreverá todas as restrições no nível superior, se não vazio."
   },
   {
     "id": "Policies that are used for node management only.",
@@ -6021,11 +6021,11 @@
   },
   {
     "id": "Invalid metadata file. Key \"{Name}\" already exists in SDO owner services for org \"{Org}\".",
-    "translation": "Arquivo de metadados inválido. Chave \"{Name}\" já existe nos serviços de proprietário do SDO para organização \"{Org}\"."
+    "translation": "Arquivo de metadados inválido. Chave \"{Name}\" já existe nos serviços de proprietário do SDO para a organização \"{Org}\"."
   },
   {
     "id": "Invalid metadata file. Key already exists in SDO owner services for org \"{Org}\".",
-    "translation": "Arquivo de metadados inválido. Chave já existe nos serviços de proprietário do SDO para organização \"{Org}\"."
+    "translation": "Arquivo de metadados inválido. Chave já existe nos serviços de proprietário do SDO para a organização \"{Org}\"."
   },
   {
     "id": "Invalid credentials. User \"{User}\" cannot access keys in org \"{Org}\" with given credentials.",

@@ -1729,19 +1729,19 @@
     {
       "id": "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.",
       "message": "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.",
-      "translation": "Quando si richiama l'API Horizon o Exchange, eseguire GET, ma non PUT, POST o DELETE.",
+      "translation": "Durante il richiamo dell'API Horizon o Exchange, eseguire GET, ma non PUT, POST o DELETE.",
       "fuzzy": true
     },
     {
       "id": "List and manage Horizon agreement bot resources.",
       "message": "List and manage Horizon agreement bot resources.",
-      "translation": "Elenca e gestisce le risorse di agbot Horizon.",
+      "translation": "Elencare e gestire le risorse di agbot Horizon.",
       "fuzzy": true
     },
     {
       "id": "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.",
       "message": "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.",
-      "translation": "Elenca o gestisce gli accordi attivi o archiviati che questo agbot Horizon ha con i nodi edge.",
+      "translation": "Elencare o gestire gli accordi attivi o archiviati che questo agbot Horizon ha con i nodi edge.",
       "fuzzy": true
     },
     {
@@ -1789,19 +1789,19 @@
     {
       "id": "List served deployment policies cached in the agbot.",
       "message": "List served deployment policies cached in the agbot.",
-      "translation": "Elenca le politiche di distribuzione memorizzate nella cache in agbot.",
+      "translation": "Elencare le politiche di distribuzione memorizzate nella cache in agbot.",
       "fuzzy": true
     },
     {
       "id": "Display served deployment policies cached in the agbot.",
       "message": "Display served deployment policies cached in the agbot.",
-      "translation": "Visualizza le politiche di distribuzione memorizzate nella cache in agbot.",
+      "translation": "Visualizzare le politiche di distribuzione memorizzate nella cache in agbot.",
       "fuzzy": true
     },
     {
       "id": "Display policies under this org.",
       "message": "Display policies under this org.",
-      "translation": "Visualizza le politiche in questa organizzazione.",
+      "translation": "Visualizzare le politiche in questa organizzazione.",
       "fuzzy": true
     },
     {
@@ -1843,7 +1843,7 @@
     {
       "id": "List served pattern orgs and deployment policy orgs.",
       "message": "List served pattern orgs and deployment policy orgs.",
-      "translation": "Elenca le org di modello e le org di politica della distribuzione",
+      "translation": "Elencare le org di modello e le org di politica della distribuzione.",
       "fuzzy": true
     },
     {
@@ -1861,13 +1861,13 @@
     {
       "id": "List the policies this Horizon agreement bot hosts.",
       "message": "List the policies this Horizon agreement bot hosts.",
-      "translation": "Elenca le politiche presenti su questo agbot Horizon.",
+      "translation": "Elencare le politiche presenti su questo agbot Horizon.",
       "fuzzy": true
     },
     {
       "id": "List policies this Horizon agreement bot hosts.",
       "message": "List policies this Horizon agreement bot hosts.",
-      "translation": "Elenca le politiche presenti su questo agbot Horizon.",
+      "translation": "Elencare le politiche presenti su questo agbot Horizon.",
       "fuzzy": true
     },
     {
@@ -1897,7 +1897,7 @@
     {
       "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
       "message": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
-      "translation": "Elenca o gestisce gli accordi attivi o archiviati stabiliti da questo nodo edge con un agbot Horizon.",
+      "translation": "Elencare o gestire gli accordi attivi o archiviati stabiliti da questo nodo edge con un agbot Horizon.",
       "fuzzy": true
     },
     {
@@ -1921,7 +1921,7 @@
     {
       "id": "List or manage the global attributes that are currently registered on this Horizon edge node.",
       "message": "List or manage the global attributes that are currently registered on this Horizon edge node.",
-      "translation": "Elenca o gestisce gli attributi globali attualmente registrati su questo nodo edge Horizon.",
+      "translation": "Elencare o gestire gli attributi globali attualmente registrati su questo nodo edge Horizon.",
       "fuzzy": true
     },
     {
@@ -2447,7 +2447,7 @@
     {
       "id": "List and manage Horizon Exchange resources.",
       "message": "List and manage Horizon Exchange resources.",
-      "translation": "Elenca e gestisce le risorse di Horizon Exchange.",
+      "translation": "Elencare e gestire le risorse di Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -2459,7 +2459,7 @@
     {
       "id": "List and manage agbots in the Horizon Exchange",
       "message": "List and manage agbots in the Horizon Exchange",
-      "translation": "Elenca e gestisce gli agbot in Horizon Exchange",
+      "translation": "Elencare e gestire gli agbot in Horizon Exchange",
       "fuzzy": true
     },
     {
@@ -2519,7 +2519,7 @@
     {
       "id": "List just this one agbot.",
       "message": "List just this one agbot.",
-      "translation": "Elenca solo questo agbot.",
+      "translation": "Elencare solo questo agbot.",
       "fuzzy": true
     },
     {
@@ -2531,7 +2531,7 @@
     {
       "id": "Display the deployment policies that this agbot is serving.",
       "message": "Display the deployment policies that this agbot is serving.",
-      "translation": "Visualizza le politiche di distribuzione sui quali opera questo agbot.",
+      "translation": "Visualizzare le politiche di distribuzione sui quali opera questo agbot.",
       "fuzzy": true
     },
     {
@@ -2627,7 +2627,7 @@
     {
       "id": "Display detailed output about public patterns in all orgs that have orgType: IBM.",
       "message": "Display detailed output about public patterns in all orgs that have orgType: IBM.",
-      "translation": "Visualizza l'output dettagliato dei modelli pubblici in tutte le organizzazioni con tipo di organizzazione: IBM.",
+      "translation": "Visualizzare l'output dettagliato dei modelli pubblici in tutte le organizzazioni con tipo di organizzazione: IBM.",
       "fuzzy": true
     },
     {
@@ -2645,19 +2645,19 @@
     {
       "id": "Display detailed output about public services in all orgs that have orgType: IBM.",
       "message": "Display detailed output about public services in all orgs that have orgType: IBM.",
-      "translation": "Visualizza l'output dettagliato dei servizi pubblici in tutte le organizzazioni con tipo di organizzazione: IBM.",
+      "translation": "Visualizzare l'output dettagliato dei servizi pubblici in tutte le organizzazioni con tipo di organizzazione: IBM.",
       "fuzzy": true
     },
     {
       "id": "List and manage deployment policies in the Horizon Exchange.",
       "message": "List and manage deployment policies in the Horizon Exchange.",
-      "translation": "Elenca e gestisce le politiche di distribuzione in Horizon Exchange.",
+      "translation": "Elencare e gestire le politiche di distribuzione in Horizon Exchange.",
       "fuzzy": true
     },
     {
       "id": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
       "message": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
-      "translation": "Aggiunge o sostituisce la politica di distribuzione in Horizon Exchange. Utilizzare 'hzn exchange deployment new' per un modello di politica di distribuzione vuoto.",
+      "translation": "Aggiungere o sostituire la politica di distribuzione in Horizon Exchange. Utilizzare 'hzn exchange deployment new' per un modello di politica di distribuzione vuoto.",
       "fuzzy": true
     },
     {
@@ -2681,19 +2681,19 @@
     {
       "id": "Allow this deployment policy to be published even though it does not have any constraints.",
       "message": "Allow this deployment policy to be published even though it does not have any constraints.",
-      "translation": "Consente la pubblicazione di questa politica di distribuzione anche se non dispone di alcun vincolo.",
+      "translation": "Consentire la pubblicazione di questa politica di distribuzione anche se non dispone di alcun vincolo.",
       "fuzzy": true
     },
     {
       "id": "Display the deployment policies from the Horizon Exchange.",
       "message": "Display the deployment policies from the Horizon Exchange.",
-      "translation": "Visualizza le politiche di distribuzione da Horizon Exchange.",
+      "translation": "Visualizzare le politiche di distribuzione da Horizon Exchange.",
       "fuzzy": true
     },
     {
       "id": "Display detailed output about the deployment policies.",
       "message": "Display detailed output about the deployment policies.",
-      "translation": "Visualizza l'output dettagliato delle politiche di distribuzione.",
+      "translation": "Visualizzare l'output dettagliato delle politiche di distribuzione.",
       "fuzzy": true
     },
     {
@@ -2705,13 +2705,13 @@
     {
       "id": "Display an empty deployment policy template that can be filled in.",
       "message": "Display an empty deployment policy template that can be filled in.",
-      "translation": "Visualizza un modello di politica di distribuzione vuoto che può essere compilato.",
+      "translation": "Visualizzare un modello di politica di distribuzione vuoto che può essere compilato.",
       "fuzzy": true
     },
     {
       "id": "Remove the deployment policy in the Horizon Exchange.",
       "message": "Remove the deployment policy in the Horizon Exchange.",
-      "translation": "Rimuove la politica di distribuzione da Horizon Exchange.",
+      "translation": "Rimuovere la politica di distribuzione da Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -2807,7 +2807,7 @@
     {
       "id": "Display an empty node management policy template that can be filled in.",
       "message": "Display an empty node management policy template that can be filled in.",
-      "translation": "Visualizzare un modello di politica di gestione del nodo vuoto che è possibile riempire.",
+      "translation": "Visualizzare un modello della politica di gestione del nodo vuoto che è possibile compilare.",
       "fuzzy": true
     },
     {
@@ -2849,13 +2849,13 @@
     {
       "id": "List and manage nodes in the Horizon Exchange",
       "message": "List and manage nodes in the Horizon Exchange",
-      "translation": "Elenca e gestisce i nodi di Horizon Exchange.",
+      "translation": "Elencare e gestire i nodi di Horizon Exchange",
       "fuzzy": true
     },
     {
       "id": "Add or replace the node policy in the Horizon Exchange.",
       "message": "Add or replace the node policy in the Horizon Exchange.",
-      "translation": "Aggiunge o sostituisce la politica del nodo in Horizon Exchange.",
+      "translation": "Aggiungere o sostituire la politica del nodo in Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -2867,7 +2867,7 @@
     {
       "id": "Add or replace policy for this node.",
       "message": "Add or replace policy for this node.",
-      "translation": "Aggiunge o sostituisce la politica per questo nodo.",
+      "translation": "Aggiungere o sostituire la politica per questo nodo.",
       "fuzzy": true
     },
     {
@@ -2951,7 +2951,7 @@
     {
       "id": "List just this one node.",
       "message": "List just this one node.",
-      "translation": "Elenca solo questo nodo.",
+      "translation": "Elencare solo questo nodo.",
       "fuzzy": true
     },
     {
@@ -3065,13 +3065,13 @@
     {
       "id": "Remove the node policy in the Horizon Exchange.",
       "message": "Remove the node policy in the Horizon Exchange.",
-      "translation": "Rimuove la politica del nodo da Horizon Exchange.",
+      "translation": "Rimuovere la politica del nodo da Horizon Exchange.",
       "fuzzy": true
     },
     {
       "id": "Remove policy for this node.",
       "message": "Remove policy for this node.",
-      "translation": "Rimuove la politica per questo nodo.",
+      "translation": "Rimuovere la politica per questo nodo.",
       "fuzzy": true
     },
     {
@@ -3131,7 +3131,7 @@
     {
       "id": "List and manage organizations in the Horizon Exchange.",
       "message": "List and manage organizations in the Horizon Exchange.",
-      "translation": "Elenca e gestisce le organizzazioni di Horizon Exchange.",
+      "translation": "Elencare e gestire le organizzazioni di Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -3287,7 +3287,7 @@
     {
       "id": "List and manage patterns in the Horizon Exchange",
       "message": "List and manage patterns in the Horizon Exchange",
-      "translation": "Elenca e gestisce i modelli in Horizon Exchange",
+      "translation": "Elencare e gestire i modelli in Horizon Exchange",
       "fuzzy": true
     },
     {
@@ -3299,7 +3299,7 @@
     {
       "id": "List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.",
       "message": "List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.",
-      "translation": "Elenca solo questo modello. Utilizzare <org>/<pat> per specificare un modello pubblico in un'altra organizzazione o <org>/ per elencare tutti i modelli pubblici in un'altra organizzazione.",
+      "translation": "Elencare solo questo modello. Utilizzare <org>/<pat> per specificare un modello pubblico in un'altra organizzazione o <org>/ per elencare tutti i modelli pubblici in un'altra organizzazione.",
       "fuzzy": true
     },
     {
@@ -3311,7 +3311,7 @@
     {
       "id": "List the signing public keys/certs for this pattern resource in the Horizon Exchange.",
       "message": "List the signing public keys/certs for this pattern resource in the Horizon Exchange.",
-      "translation": "Elenca le chiavi pubbliche/certificati di firma per questa risorsa del modello in Horizon Exchange.",
+      "translation": "Elencare le chiavi pubbliche/certificati di firma per questa risorsa del modello in Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -3381,7 +3381,7 @@
     {
       "id": "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.",
       "message": "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.",
-      "translation": "Rimuove una chiave pubblica/certificato di firma per questa risorsa del modello in Horizon Exchange.",
+      "translation": "Rimuovere una chiave pubblica/certificato di firma per questa risorsa del modello in Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -3435,13 +3435,13 @@
     {
       "id": "List and manage services in the Horizon Exchange",
       "message": "List and manage services in the Horizon Exchange",
-      "translation": "Elenca e gestisce i servizi in Horizon Exchange",
+      "translation": "Elencare e gestire i servizi in Horizon Exchange",
       "fuzzy": true
     },
     {
       "id": "Add or replace the service policy in the Horizon Exchange.",
       "message": "Add or replace the service policy in the Horizon Exchange.",
-      "translation": "Aggiunge o sostituisce la politica del servizio in Horizon Exchange.",
+      "translation": "Aggiungere o sostituire la politica del servizio in Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -3453,7 +3453,7 @@
     {
       "id": "Add or replace policy for this service.",
       "message": "Add or replace policy for this service.",
-      "translation": "Aggiunge o sostituisce la politica per questo servizio.",
+      "translation": "Aggiungere o sostituire la politica per questo servizio.",
       "fuzzy": true
     },
     {
@@ -3465,7 +3465,7 @@
     {
       "id": "List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.",
       "message": "List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.",
-      "translation": "Elenca solo questo servizio. Utilizzare <org>/<svc> per specificare un servizio pubblico in un'altra organizzazione o <org>/ per elencare tutti i servizi pubblici in un'altra organizzazione.",
+      "translation": "Elencare solo questo servizio. Utilizzare <org>/<svc> per specificare un servizio pubblico in un'altra organizzazione o <org>/ per elencare tutti i servizi pubblici in un'altra organizzazione.",
       "fuzzy": true
     },
     {
@@ -3507,7 +3507,7 @@
     {
       "id": "List the signing public keys/certs for this service resource in the Horizon Exchange.",
       "message": "List the signing public keys/certs for this service resource in the Horizon Exchange.",
-      "translation": "Elenca le chiavi pubbliche/certificati di firma per questa risorsa del servizio in Horizon Exchange.",
+      "translation": "Elencare le chiavi pubbliche/certificati di firma per questa risorsa del servizio in Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -3555,7 +3555,7 @@
     {
       "id": "Display an empty service policy template that can be filled in.",
       "message": "Display an empty service policy template that can be filled in.",
-      "translation": "Visualizza un modello di politica del servizio vuoto che può essere compilato.",
+      "translation": "Visualizzare un modello di politica del servizio vuoto che può essere compilato.",
       "fuzzy": true
     },
     {
@@ -3669,7 +3669,7 @@
     {
       "id": "Remove a signing public key/cert for this service resource in the Horizon Exchange.",
       "message": "Remove a signing public key/cert for this service resource in the Horizon Exchange.",
-      "translation": "Rimuove una chiave pubblica/certificato di firma per questa risorsa del servizio in Horizon Exchange.",
+      "translation": "Rimuovere una chiave pubblica/certificato di firma per questa risorsa del servizio in Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -3681,13 +3681,13 @@
     {
       "id": "Remove the service policy in the Horizon Exchange.",
       "message": "Remove the service policy in the Horizon Exchange.",
-      "translation": "Rimuove la politica del servizio da Horizon Exchange.",
+      "translation": "Rimuovere la politica del servizio da Horizon Exchange.",
       "fuzzy": true
     },
     {
       "id": "Remove policy for this service.",
       "message": "Remove policy for this service.",
-      "translation": "Rimuove la politica per questo servizio.",
+      "translation": "Rimuovere la politica per questo servizio.",
       "fuzzy": true
     },
     {
@@ -3717,7 +3717,7 @@
     {
       "id": "List and manage users in the Horizon Exchange.",
       "message": "List and manage users in the Horizon Exchange.",
-      "translation": "Elenca e gestisce gli utenti di Horizon Exchange.",
+      "translation": "Elencare e gestire gli utenti di Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -3819,7 +3819,7 @@
     {
       "id": "List and manage keys for signing and verifying services.",
       "message": "List and manage keys for signing and verifying services.",
-      "translation": "Elenca e gestisce le chiavi per la firma e la verifica dei servizi.",
+      "translation": "Elencare e gestire le chiavi per la firma e la verifica dei servizi.",
       "fuzzy": true
     },
     {
@@ -3861,7 +3861,7 @@
     {
       "id": "Overwrite the existing files. It will skip the 'do you want to overwrite' prompt.",
       "message": "Overwrite the existing files. It will skip the 'do you want to overwrite' prompt.",
-      "translation": "Sovrascrive i file esistenti. Il prompt 'si desidera sovrascrivere' verrà ignorato.",
+      "translation": "Sovrascrivere i file esistenti. Il prompt 'si desidera sovrascrivere' verrà ignorato.",
       "fuzzy": true
     },
     {
@@ -3897,7 +3897,7 @@
     {
       "id": "List the signing keys that have been imported into this Horizon agent.",
       "message": "List the signing keys that have been imported into this Horizon agent.",
-      "translation": "Elenca le chiavi di firma che sono state importate in questo agent Horizon.",
+      "translation": "Elencare le chiavi di firma che sono state importate in questo agent Horizon.",
       "fuzzy": true
     },
     {
@@ -3927,25 +3927,25 @@
     {
       "id": "List or manage the metering (payment) information for the active or archived agreements.",
       "message": "List or manage the metering (payment) information for the active or archived agreements.",
-      "translation": "Elenca o gestisce le informazioni di misurazione (pagamento) per gli accordi attivi o archiviati.",
+      "translation": "Elencare o gestire le informazioni di misurazione (pagamento) per gli accordi attivi o archiviati.",
       "fuzzy": true
     },
     {
       "id": "List the metering (payment) information for the active or archived agreements.",
       "message": "List the metering (payment) information for the active or archived agreements.",
-      "translation": "Elenca le informazioni di misurazione (pagamento) per gli accordi attivi o archiviati.",
+      "translation": "Elencare le informazioni di misurazione (pagamento) per gli accordi attivi o archiviati.",
       "fuzzy": true
     },
     {
       "id": "List archived agreement metering information instead of metering for the active agreements.",
       "message": "List archived agreement metering information instead of metering for the active agreements.",
-      "translation": "Elenca le informazioni di misurazione degli accordi archiviati invece della misurazione per gli accordi attivi.",
+      "translation": "Elencare le informazioni di misurazione degli accordi archiviati invece della misurazione per gli accordi attivi.",
       "fuzzy": true
     },
     {
       "id": "List and manage Horizon Model Management Service resources.",
       "message": "List and manage Horizon Model Management Service resources.",
-      "translation": "Elenca e gestisce le risorse del servizio di gestione modelli Horizon.",
+      "translation": "Elencare e gestire le risorse del servizio di gestione modelli Horizon.",
       "fuzzy": true
     },
     {
@@ -3963,7 +3963,7 @@
     {
       "id": "List and manage objects in the Horizon Model Management Service.",
       "message": "List and manage objects in the Horizon Model Management Service.",
-      "translation": "Elenca e gestisce gli oggetti nel servizio di gestione modelli Horizon.",
+      "translation": "Elencare e gestire gli oggetti nel servizio di gestione modelli Horizon.",
       "fuzzy": true
     },
     {
@@ -4023,7 +4023,7 @@
     {
       "id": "List objects in the Horizon Model Management Service.",
       "message": "List objects in the Horizon Model Management Service.",
-      "translation": "Elenca gli oggetti nel servizio di gestione modelli Horizon.",
+      "translation": "Elencare gli oggetti nel servizio di gestione modelli Horizon.",
       "fuzzy": true
     },
     {
@@ -4047,31 +4047,31 @@
     {
       "id": "List mms objects using policy that are targetted for the given service. Service specified in the format service-org/service-name.",
       "message": "List mms objects using policy that are targetted for the given service. Service specified in the format service-org/service-name.",
-      "translation": "Elenca gli oggetti mms che utilizzano la politica di destinazione per il servizio fornito. Il servizio è specificato nel formato org-servizio/nome-servizio.",
+      "translation": "Elencare gli oggetti mms che utilizzano la politica di destinazione per il servizio fornito. Il servizio è specificato nel formato org-servizio/nome-servizio.",
       "fuzzy": true
     },
     {
       "id": "List mms objects using policy that reference the given property name.",
       "message": "List mms objects using policy that reference the given property name.",
-      "translation": "Elenca gli oggetti mms che utilizzano la politica che fa riferimento al nome proprietà fornito.",
+      "translation": "Elencare gli oggetti mms che utilizzano la politica che fa riferimento al nome proprietà fornito.",
       "fuzzy": true
     },
     {
       "id": "List mms objects using policy that has been updated since the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. The time of day may be omitted.",
       "message": "List mms objects using policy that has been updated since the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. The time of day may be omitted.",
-      "translation": "Elenca gli oggetti mms che utilizzano la politica che è stata aggiornata dopo l'orario indicato. Il valore di orario viene specificato nel formato RFC3339: aaaa-MM-ggTHH:mm:ssZ. L'ora del giorno può essere omessa.",
+      "translation": "Elencare gli oggetti mms che utilizzano la politica che è stata aggiornata dopo l'orario indicato. Il valore di orario viene specificato nel formato RFC3339: aaaa-MM-ggTHH:mm:ssZ. L'ora del giorno può essere omessa.",
       "fuzzy": true
     },
     {
       "id": "List mms objects with given destination type",
       "message": "List mms objects with given destination type",
-      "translation": "Elenca gli oggetti mms con il tipo di destinazione fornito",
+      "translation": "Elencare gli oggetti mms con il tipo di destinazione fornito",
       "fuzzy": true
     },
     {
       "id": "List mms objects with given destination id. Must specify --destinationType to use this flag",
       "message": "List mms objects with given destination id. Must specify --destinationType to use this flag",
-      "translation": "Elenca gli oggetti mms con l'id destinazione fornito. È necessario specificare --destinationType per utilizzare questo indicatore",
+      "translation": "Elencare gli oggetti mms con l'id destinazione fornito. È necessario specificare --destinationType per utilizzare questo indicatore",
       "fuzzy": true
     },
     {
@@ -4083,7 +4083,7 @@
     {
       "id": "List mms objects that expired before the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. Specify now to show objects that are currently expired.",
       "message": "List mms objects that expired before the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. Specify now to show objects that are currently expired.",
-      "translation": "Elenca gli oggetti mms scaduti prima dell'orario indicato. Il valore di orario viene specificato nel formato RFC3339: aaaa-MM-ggTHH:mm:ssZ. Specificare 'now' per mostrare gli oggetti attualmente scaduti.",
+      "translation": "Elencare gli oggetti mms scaduti prima dell'orario indicato. Il valore di orario viene specificato nel formato RFC3339: aaaa-MM-ggTHH:mm:ssZ. Specificare 'now' per mostrare gli oggetti attualmente scaduti.",
       "fuzzy": true
     },
     {
@@ -4095,7 +4095,7 @@
     {
       "id": "Show detailed object metadata information",
       "message": "Show detailed object metadata information",
-      "translation": "Mostra informazioni dettagliate sui metadati dell'oggetto",
+      "translation": "Mostrare informazioni dettagliate sui metadati dell'oggetto",
       "fuzzy": true
     },
     {
@@ -4107,13 +4107,13 @@
     {
       "id": "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.",
       "message": "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.",
-      "translation": "Visualizza un modello di metadati dell'oggetto vuoto che può essere compilato e passato come opzione -m al comando 'hzn mms object publish'.",
+      "translation": "Visualizzare un modello di metadati dell'oggetto vuoto che può essere compilato e passato come opzione -m al comando 'hzn mms object publish'.",
       "fuzzy": true
     },
     {
       "id": "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.",
       "message": "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.",
-      "translation": "Pubblica un oggetto nel servizio di gestione modelli Horizon, rendendolo disponibile per i servizi distribuiti sui nodi.",
+      "translation": "Pubblicare un oggetto nel servizio di gestione modelli Horizon, rendendolo disponibile per i servizi distribuiti sui nodi.",
       "fuzzy": true
     },
     {
@@ -4197,7 +4197,7 @@
     {
       "id": "List and manage general information about this Horizon edge node.",
       "message": "List and manage general information about this Horizon edge node.",
-      "translation": "Elenca e gestisce le informazioni generali su questo nodo edge Horizon.",
+      "translation": "Elencare e gestire le informazioni generali su questo nodo edge Horizon.",
       "fuzzy": true
     },
     {
@@ -4269,7 +4269,7 @@
     {
       "id": "Display an empty manifest template that can be filled in.",
       "message": "Display an empty manifest template that can be filled in.",
-      "translation": "Visualizzare un modello di manifest vuoto che è possibile riempire.",
+      "translation": "Visualizzare un modello di manifest vuoto che è possibile compilare.",
       "fuzzy": true
     },
     {
@@ -4317,7 +4317,7 @@
     {
       "id": "Display a list of agent file types with their corresponding versions.",
       "message": "Display a list of agent file types with their corresponding versions.",
-      "translation": "Visualizza un elenco di tipi di file dell'agent con le loro versioni corrispondenti.",
+      "translation": "Visualizzare un elenco di tipi di file dell'agent con le loro versioni corrispondenti.",
       "fuzzy": true
     },
     {
@@ -4335,7 +4335,7 @@
     {
       "id": "List and manage policy for this Horizon edge node.",
       "message": "List and manage policy for this Horizon edge node.",
-      "translation": "Elenca e gestisce la politica per questo nodo edge Horizon.",
+      "translation": "Elencare e gestire la politica per questo nodo edge Horizon.",
       "fuzzy": true
     },
     {
@@ -4347,7 +4347,7 @@
     {
       "id": "Display an empty policy template that can be filled in.",
       "message": "Display an empty policy template that can be filled in.",
-      "translation": "Visualizza un modello di politica vuoto che può essere compilato.",
+      "translation": "Visualizzare un modello di politica vuoto che può essere compilato.",
       "fuzzy": true
     },
     {
@@ -4383,7 +4383,7 @@
     {
       "id": "Remove the node's policy.",
       "message": "Remove the node's policy.",
-      "translation": "Rimuove la politica del nodo.",
+      "translation": "Rimuovere la politica del nodo.",
       "fuzzy": true
     },
     {
@@ -4525,13 +4525,13 @@
     {
       "id": "List or manage the services that are currently registered on this Horizon edge node.",
       "message": "List or manage the services that are currently registered on this Horizon edge node.",
-      "translation": "Elenca o gestisce i servizi attualmente registrati su questo nodo edge Horizon.",
+      "translation": "Elencare o gestire i servizi attualmente registrati su questo nodo edge Horizon.",
       "fuzzy": true
     },
     {
       "id": "List or manage the configuration state for the services that are currently registered on this Horizon edge node.",
       "message": "List or manage the configuration state for the services that are currently registered on this Horizon edge node.",
-      "translation": "Elenca o gestisce lo stato di configurazione dei servizi attualmente registrati su questo nodo edge Horizon.",
+      "translation": "Elencare o gestire lo stato di configurazione dei servizi attualmente registrati su questo nodo edge Horizon.",
       "fuzzy": true
     },
     {
@@ -4675,7 +4675,7 @@
     {
       "id": "List or manage the service user inputs that are currently registered on this Horizon edge node.",
       "message": "List or manage the service user inputs that are currently registered on this Horizon edge node.",
-      "translation": "Elenca o gestisce gli input utente del servizio attualmente registrati su questo nodo edge Horizon.",
+      "translation": "Elencare o gestire gli input utente del servizio attualmente registrati su questo nodo edge Horizon.",
       "fuzzy": true
     },
     {
@@ -4699,7 +4699,7 @@
     {
       "id": "Display an empty userinput template.",
       "message": "Display an empty userinput template.",
-      "translation": "Visualizza un modello di input utente vuoto.",
+      "translation": "Visualizzare un modello di input utente vuoto.",
       "fuzzy": true
     },
     {
@@ -4801,7 +4801,7 @@
     {
       "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
       "message": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
-      "translation": "Elenca solo questo segreto. Restituisce un valore booleano che indica l'esistenza del segreto. Questo è il nome del segreto utilizzato nel gestore dei segreti. Se il segreto non esiste, viene restituito il codice 1.",
+      "translation": "Elencare solo questo segreto. Restituisce un valore booleano che indica l'esistenza del segreto. Questo è il nome del segreto utilizzato nel gestore dei segreti. Se il segreto non esiste, viene restituito il codice 1.",
       "fuzzy": true
     },
     {
@@ -4873,31 +4873,31 @@
     {
       "id": "List and manage resources in SDO owner services",
       "message": "List and manage resources in SDO owner services",
-      "translation": "Elenca e gestisce le risorse nei servizi del proprietario SDO",
+      "translation": "Elencare e gestire le risorse nei servizi del proprietario SDO",
       "fuzzy": true
     },
     {
       "id": "List and manage Horizon SDO ownership keys.",
       "message": "List and manage Horizon SDO ownership keys.",
-      "translation": "Elenca e gestisce le chiavi del proprietario di Horizon SDO.",
+      "translation": "Elencare e gestire le chiavi del proprietario di Horizon SDO.",
       "fuzzy": true
     },
     {
       "id": "List the SDO ownership keys stored in SDO owner services.",
       "message": "List the SDO ownership keys stored in SDO owner services.",
-      "translation": "Elenca le chiavi di proprietà SDO archiviate nei servizi del proprietario SDO.",
+      "translation": "Elencare le chiavi di proprietà SDO archiviate nei servizi del proprietario SDO.",
       "fuzzy": true
     },
     {
       "id": "List the full details of this SDO ownership key.",
       "message": "List the full details of this SDO ownership key.",
-      "translation": "Elenca i dettagli completi di questa chiave del proprietario SDO.",
+      "translation": "Elencare i dettagli completi di questa chiave del proprietario SDO.",
       "fuzzy": true
     },
     {
       "id": "Create a new key in SDO owner services.",
       "message": "Create a new key in SDO owner services.",
-      "translation": "Crea una nuova chiave nei servizi del proprietario SDO.",
+      "translation": "Creare una nuova chiave nei servizi del proprietario SDO.",
       "fuzzy": true
     },
     {
@@ -4921,7 +4921,7 @@
     {
       "id": "Download the specified key from SDO owner services.",
       "message": "Download the specified key from SDO owner services.",
-      "translation": "Scarica la chiave specificata dai servizi del proprietario SDO.",
+      "translation": "Scaricare la chiave specificata dai servizi del proprietario SDO.",
       "fuzzy": true
     },
     {
@@ -4939,13 +4939,13 @@
     {
       "id": "Overwrite the existing file if it exists.",
       "message": "Overwrite the existing file if it exists.",
-      "translation": "Sovrascrive i file esistenti, se presenti.",
+      "translation": "Sovrascrivere i file esistenti, se presenti.",
       "fuzzy": true
     },
     {
       "id": "Remove a key from SDO owner services.",
       "message": "Remove a key from SDO owner services.",
-      "translation": "Rimuove una chiave dai servizi del proprietario SDO.",
+      "translation": "Rimuovere una chiave dai servizi del proprietario SDO.",
       "fuzzy": true
     },
     {
@@ -4957,19 +4957,19 @@
     {
       "id": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
       "message": "Create a new SDO key metadata template file. All fields must be filled before adding to SDO owner services.",
-      "translation": "Crea un nuovo file di modello dei metadati della chiave SDO. È necessario compilare tutti i campi prima di aggiungere ai servizi del proprietario SDO.",
+      "translation": "Creare un nuovo file di modello dei metadati della chiave SDO. È necessario compilare tutti i campi prima dell'aggiunta ai servizi del proprietario SDO.",
       "fuzzy": true
     },
     {
       "id": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
       "message": "The file that the SDO key template will be written to in JSON format. If omit, the key metadata will be printed to the console.",
-      "translation": "Il file in cui verrà scritto il modello di chiave SDO in formato JSON. Se omessa, i metadati della chiave verrà emessa sulla console.",
+      "translation": "Il file in cui verrà scritto il modello di chiave SDO in formato JSON. Se omessa, i metadati della chiave verranno emessi sulla console.",
       "fuzzy": true
     },
     {
       "id": "List and manage Horizon SDO ownership vouchers.",
       "message": "List and manage Horizon SDO ownership vouchers.",
-      "translation": "Elenca e gestisce i voucher di proprietà di Horizon SDO.",
+      "translation": "Elencare e gestire i voucher di proprietà di Horizon SDO.",
       "fuzzy": true
     },
     {
@@ -4981,7 +4981,7 @@
     {
       "id": "List the full details of this SDO ownership voucher.",
       "message": "List the full details of this SDO ownership voucher.",
-      "translation": "Elenca i dettagli completi di questo voucher di proprietà SDO.",
+      "translation": "Elencare i dettagli completi di questo voucher di proprietà SDO.",
       "fuzzy": true
     },
     {
@@ -5035,7 +5035,7 @@
     {
       "id": "Download the specified SDO ownership voucher from SDO owner services.",
       "message": "Download the specified SDO ownership voucher from SDO owner services.",
-      "translation": "Scarica il voucher del proprietario SDO specificato dai servizi del proprietario SDO.",
+      "translation": "Scaricare il voucher del proprietario SDO specificato dai servizi del proprietario SDO.",
       "fuzzy": true
     },
     {
@@ -13091,7 +13091,7 @@
     {
       "id": "When to start an upgrade, default \"now\".",
       "message": "When to start an upgrade, default \"now\".",
-      "translation": "Quando avviare un aggiornamento, il valore predefinito è \"now\".",
+      "translation": "Quando si avvia un aggiornamento, il valore predefinito è \"now\".",
       "fuzzy": true
     },
     {
@@ -13103,19 +13103,19 @@
     {
       "id": "(Optional) Assertions on how the agent should update itself.",
       "message": "(Optional) Assertions on how the agent should update itself.",
-      "translation": "(Facoltativo) Asserzioni sul modo in cui l'agent deve aggiornarsi autonomamente.",
+      "translation": "(Facoltativo) Asserzioni sulla modalità di aggiornamento automatico dell'agent.",
       "fuzzy": true
     },
     {
       "id": "The manifest file containing the software, config and cert files to upgrade.",
       "message": "The manifest file containing the software, config and cert files to upgrade.",
-      "translation": "Il file manifest che contiene il software, i file di configurazione e certificato da aggiornare.",
+      "translation": "Il file manifest che include il software, i file di configurazione e il certificato da aggiornare.",
       "fuzzy": true
     },
     {
       "id": "Is this policy allowed to perform a downgrade to a previous version.",
       "message": "Is this policy allowed to perform a downgrade to a previous version.",
-      "translation": "A questa politica è consentito o meno eseguire il downgrade a una versione precedente.",
+      "translation": "Questa politica è autorizzata o meno a eseguire il downgrade a una versione precedente.",
       "fuzzy": true
     },
     {
@@ -13145,7 +13145,7 @@
     {
       "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
       "message": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
-      "translation": "La politica di gestione del nodo non contiene vincoli, il che potrebbe risultare nella distribuzione della politica di gestione a tutti i nodi. Specificare --no-constraints per confermare che questo è accettabile.",
+      "translation": "La politica di gestione del nodo non contiene vincoli, il che può risultare nella distribuzione della politica di gestione a tutti i nodi. Specificare --no-constraints per confermare che ciò sia accettabile.",
       "fuzzy": true
     },
     {
@@ -14647,7 +14647,7 @@
     {
       "id": "Organization {TheOrg} is successfully added to MMS.",
       "message": "Organization {TheOrg} is successfully added to MMS.",
-      "translation": "Organizzazione {TheOrg} correttamente aggiunta a MMS.",
+      "translation": "Organizzazione {TheOrg} aggiunta correttamente a MMS.",
       "placeholders": [
         {
           "id": "TheOrg",
@@ -17365,7 +17365,7 @@
     {
       "id": "must specify --type with --version-only",
       "message": "must specify --type with --version-only",
-      "translation": "deve specificare --type con --version-only",
+      "translation": "è necessario specificare --type con --version-only",
       "fuzzy": true
     },
     {
@@ -17393,7 +17393,7 @@
     {
       "id": "must specify --type and --id with --long",
       "message": "must specify --type and --id with --long",
-      "translation": "deve specificare --type e --id con --long",
+      "translation": "è necessario specificare --type e --id con --long",
       "fuzzy": true
     },
     {
@@ -17469,7 +17469,7 @@
     {
       "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_software_files\".",
       "message": "File \"{ManFile}\" version \"{Version}\" of type \"agent_software_files\".",
-      "translation": "File \"{ManFile}\" version \"{Version}\" di tipo \"agent_software_files\".",
+      "translation": "File \"{ManFile}\" versione \"{Version}\" di tipo \"agent_software_files\".",
       "placeholders": [
         {
           "id": "ManFile",
@@ -17509,7 +17509,7 @@
     {
       "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_cert_files\".",
       "message": "File \"{ManFile}\" version \"{Version}\" of type \"agent_cert_files\".",
-      "translation": "File \"{ManFile}\" version \"{Version}\" di tipo \"agent_cert_files\".",
+      "translation": "File \"{ManFile}\" versione \"{Version}\" di tipo \"agent_cert_files\".",
       "placeholders": [
         {
           "id": "ManFile",
@@ -17549,7 +17549,7 @@
     {
       "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_config_files\".",
       "message": "File \"{ManFile}\" version \"{Version}\" of type \"agent_config_files\".",
-      "translation": "File \"{ManFile}\" version \"{Version}\" di tipo \"agent_config_files\".",
+      "translation": "File \"{ManFile}\" versione \"{Version}\" di tipo \"agent_config_files\".",
       "placeholders": [
         {
           "id": "ManFile",
@@ -19535,7 +19535,7 @@
     {
       "id": "Key \"{Name}\" successfully added to the SDO owner services.",
       "message": "Key \"{Name}\" successfully added to the SDO owner services.",
-      "translation": "Chiave \"{Name}\" correttamente aggiunta ai servizi del proprietario SDO.",
+      "translation": "Chiave \"{Name}\" aggiunta correttamente ai servizi del proprietario SDO.",
       "placeholders": [
         {
           "id": "Name",
@@ -21779,7 +21779,7 @@
     {
       "id": "cannot specify --id and --type with --def",
       "message": "cannot specify --id and --type with --def",
-      "translation": "non è possibile specificare --id e --type con --def",
+      "translation": "impossibile specificare --id e --type con --def",
       "fuzzy": true
     },
     {
@@ -21791,19 +21791,19 @@
     {
       "id": "cannot specify --pattern with --def",
       "message": "cannot specify --pattern with --def",
-      "translation": "non è possibile specificare --pattern con --def",
+      "translation": "impossibile specificare --pattern con --def",
       "fuzzy": true
     },
     {
       "id": "cannot specify --skipDigitalSig with --hash",
       "message": "cannot specify --skipDigitalSig with --hash",
-      "translation": "non è possibile specificare --skipDigitalSig con --hash",
+      "translation": "impossibile specificare --skipDigitalSig con --hash",
       "fuzzy": true
     },
     {
       "id": "cannot specify --skipDigitalSig with --hashAlgo",
       "message": "cannot specify --skipDigitalSig with --hashAlgo",
-      "translation": "non è possibile specificare --skipDigitalSig con --hashAlgo",
+      "translation": "impossibile specificare --skipDigitalSig con --hashAlgo",
       "fuzzy": true
     },
     {
@@ -26515,7 +26515,7 @@
     {
       "id": "Label, or Enabled is empty.",
       "message": "Label, or Enabled is empty.",
-      "translation": "Etichetta o Abilitato sono vuoti.",
+      "translation": "I campi Etichetta o Abilitato sono vuoti.",
       "fuzzy": true
     },
     {

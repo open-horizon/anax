@@ -53,7 +53,7 @@
   },
   {
     "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
-    "translation": "Impossible de récupérer pattern Exchange de noeud sauvegardé à partir de la base de données locale. {Arg_1}"
+    "translation": "Impossible de récupérer le pattern Exchange de noeud sauvegardé à partir de la base de données locale. {Arg_1}"
   },
   {
     "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
@@ -173,7 +173,7 @@
   },
   {
     "id": "Secrets provider received a bad request, please check all the provided inputs.",
-    "translation": "Le fournisseur de secrets a reçu une demande incorrecte, veuillez cocher toutes les entrées fournies."
+    "translation": "Le fournisseur de secrets a reçu une demande incorrecte, vérifiez toutes les entrées fournies."
   },
   {
     "id": "Response: {Response}",
@@ -801,7 +801,7 @@
   },
   {
     "id": "{Err}. Please create the signing key.",
-    "translation": "{Err}. Veuillez créer la clé de signature."
+    "translation": "{Err}. Créez la clé de signature."
   },
   {
     "id": "private key could not be generated; error: {Err}",
@@ -873,7 +873,7 @@
   },
   {
     "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-    "translation": "Le fichier {FileName} existe déjà. Veuillez indiquer un nom ou un chemin d'accès au fichier différent. Pour remplacer le fichier existant, utilisez l'indicateur '--overwrite'."
+    "translation": "Le fichier {FileName} existe déjà. Indiquez un nom ou un chemin d'accès au fichier différent. Pour remplacer le fichier existant, utilisez l'indicateur '--overwrite'."
   },
   {
     "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
@@ -1553,7 +1553,7 @@
   },
   {
     "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-    "translation": "La valeur {Value} de la propriété {Name} n'est pas une chaîne valide. Veuillez définir le type ou modifier la valeur en chaîne."
+    "translation": "La valeur {Value} de la propriété {Name} n'est pas une chaîne valide. Définissez le type ou modifiez la valeur en chaîne."
   },
   {
     "id": "Property {Name} with value {Value} is not a valid verion string",

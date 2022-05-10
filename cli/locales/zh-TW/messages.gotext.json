@@ -17573,7 +17573,7 @@
     {
       "id": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
       "message": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
-      "translation": "請執行 'hzn nodemanagentfiles list' 以取得有效檔案的清單。",
+      "translation": "執行 'hzn nodemanagement agentfiles list' 以取得有效檔案的清單。",
       "fuzzy": true
     },
     {

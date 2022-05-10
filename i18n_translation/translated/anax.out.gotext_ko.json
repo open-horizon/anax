@@ -809,7 +809,7 @@
   },
   {
     "id": "{Arg_1}. Public key could not be generated.",
-    "translation": "{Arg_1}. 공개 키를 생성할 수 없습니다. "
+    "translation": "{Arg_1}. 공개 키를 생성할 수 없습니다."
   },
   {
     "id": "running: {CmdStr}",

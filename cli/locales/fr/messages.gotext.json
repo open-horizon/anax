@@ -385,7 +385,7 @@
     {
       "id": "Secrets provider received a bad request, please check all the provided inputs.",
       "message": "Secrets provider received a bad request, please check all the provided inputs.",
-      "translation": "Le fournisseur de secrets a reçu une demande incorrecte, veuillez cocher toutes les entrées fournies.",
+      "translation": "Le fournisseur de secrets a reçu une demande incorrecte, vérifiez toutes les entrées fournies.",
       "fuzzy": true
     },
     {
@@ -2651,7 +2651,7 @@
     {
       "id": "List and manage deployment policies in the Horizon Exchange.",
       "message": "List and manage deployment policies in the Horizon Exchange.",
-      "translation": "Lister et gérer les règles de déploiement dans Horizon Exchange.",
+      "translation": "Répertorier et gérer les règles de déploiement dans Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -2675,7 +2675,7 @@
     {
       "id": "The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès à un fichier JSON qui contient les métadonnées nécessaires à la création/mise à jour de la règle de service dans Horizon Exchange. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès à un fichier JSON qui contient les métadonnées nécessaires à la création/mise à jour de la règle de service dans Horizon Exchange. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -2699,7 +2699,7 @@
     {
       "id": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
       "message": "List just this one deployment policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
-      "translation": "Listez uniquement cette règle de déploiement. Utilisez <org>/<policy> pour spécifier une politique publique dans une autre organisation, ou <org>/ pour répertorier toutes les politiques publiques d'une autre organisation.",
+      "translation": "Répertorier uniquement cette règle de déploiement. Utiliser <org>/<policy> pour spécifier une règle publique dans une autre organisation, ou <org>/ pour répertorier toutes les règles publiques d'une autre organisation.",
       "fuzzy": true
     },
     {
@@ -2741,49 +2741,49 @@
     {
       "id": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès au fichier json contenant l'attribut de règle de déploiement mis à jour à modifier dans Horizon Exchange. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès au fichier json contenant l'attribut de règle de déploiement mis à jour à modifier dans Horizon Exchange. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
       "id": "List and manage node management policies in the Horizon Exchange.",
       "message": "List and manage node management policies in the Horizon Exchange.",
-      "translation": "Répertoriez et gérez les règles de gestion des nœuds dans Horizon Exchange.",
+      "translation": "Répertorier et gérer les règles de gestion des nœuds dans Horizon Exchange.",
       "fuzzy": true
     },
     {
       "id": "Display the node management policies from the Horizon Exchange.",
       "message": "Display the node management policies from the Horizon Exchange.",
-      "translation": "Affichez les règles de gestion des nœuds à partir de Horizon Exchange.",
+      "translation": "Afficher les règles de gestion des nœuds depuis Horizon Exchange.",
       "fuzzy": true
     },
     {
       "id": "List just this one node management policy.",
       "message": "List just this one node management policy.",
-      "translation": "Répertoriez uniquement cette règle de gestion des nœuds.",
+      "translation": "Répertorier uniquement cette règle de gestion des nœuds.",
       "fuzzy": true
     },
     {
       "id": "Display detailed output about the node management policies.",
       "message": "Display detailed output about the node management policies.",
-      "translation": "Affichez la sortie détaillée des règles de gestion des nœuds.",
+      "translation": "Afficher la sortie détaillée des règles de gestion des nœuds.",
       "fuzzy": true
     },
     {
       "id": "List all the nodes that apply for the given node management policy.",
       "message": "List all the nodes that apply for the given node management policy.",
-      "translation": "Répertoriez tous les nœuds qui s'appliquent à la règle de gestion des nœuds donnée.",
+      "translation": "Répertorier tous les nœuds qui s'appliquent à la règle de gestion des nœuds donnée.",
       "fuzzy": true
     },
     {
       "id": "Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template.",
       "message": "Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template.",
-      "translation": "Ajoutez ou remplacez une règle de gestion des nœuds dans Horizon Exchange. Utilisez 'hzn exchange nmp new' pour un modèle de règle de gestion des nœuds vide.",
+      "translation": "Ajouter ou remplacer une règle de gestion des nœuds dans Horizon Exchange. Utiliser 'hzn exchange nmp new' pour un modèle de règle de gestion des nœuds vide.",
       "fuzzy": true
     },
     {
       "id": "List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.",
       "message": "List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.",
-      "translation": "Répertoriez tous les nœuds qui seront compatibles avec cette règle de gestion des nœuds. Utilisez cet indicateur avec --dry-run pour répertorier les nœuds sans publier la règle sur Exchange.",
+      "translation": "Répertorier tous les nœuds qui seront compatibles avec cette règle de gestion des nœuds. Utilisez cet indicateur avec --dry-run pour répertorier les nœuds sans publier la règle sur Exchange.",
       "fuzzy": true
     },
     {
@@ -2795,31 +2795,31 @@
     {
       "id": "The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "Chemin d'un fichier JSON contenant les métadonnées nécessaires à la création/mise à jour de la règle de gestion des nœuds dans Horizon Exchange. Spécifiez -f- pour lire à partir de l'entrée standard (stdin).",
+      "translation": "Chemin d'un fichier JSON contenant les métadonnées nécessaires à la création/mise à jour de la règle de gestion des nœuds dans Horizon Exchange. Spécifier -f- pour lire à partir de l'entrée standard (stdin).",
       "fuzzy": true
     },
     {
       "id": "Allow this node management policy to be published even though it does not have any constraints.",
       "message": "Allow this node management policy to be published even though it does not have any constraints.",
-      "translation": "Autorisez la publication de cette règle de gestion des nœuds même si elle n'a aucune contrainte.",
+      "translation": "Autoriser la publication de cette règle de gestion des nœuds même si elle n'a aucune contrainte.",
       "fuzzy": true
     },
     {
       "id": "Display an empty node management policy template that can be filled in.",
       "message": "Display an empty node management policy template that can be filled in.",
-      "translation": "Affichez un modèle de règle de gestion des nœuds vide qui peut être défini.",
+      "translation": "Afficher un modèle de règle de gestion des nœuds vide qui peut être renseigné.",
       "fuzzy": true
     },
     {
       "id": "Remove the node management policy in the Horizon Exchange.",
       "message": "Remove the node management policy in the Horizon Exchange.",
-      "translation": "Supprimez la règle de gestion des nœuds dans Horizon Exchange.",
+      "translation": "Retirer la règle de gestion des nœuds dans Horizon Exchange.",
       "fuzzy": true
     },
     {
       "id": "The name of the node management policy to be removed.",
       "message": "The name of the node management policy to be removed.",
-      "translation": "Nom de la règle de gestion des nœuds à supprimer.",
+      "translation": "Nom de la règle de gestion des nœuds à retirer.",
       "fuzzy": true
     },
     {
@@ -2873,7 +2873,7 @@
     {
       "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
       "message": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-      "translation": "Chemin d'un fichier JSON contenant les métadonnées nécessaires à la création/mise à jour de la règle de nœud dans Horizon Exchange. Spécifiez -f- pour lire à partir de l'entrée standard (stdin). Une règle de nœud contient les attributs 'deployment' et 'management'. Utilisez 'hzn policy new' pour afficher le format de la règle de nœud.",
+      "translation": "Chemin d'un fichier JSON contenant les métadonnées nécessaires à la création/mise à jour de la règle de nœud dans Horizon Exchange. Spécifier -f- pour lire à partir de l'entrée standard (stdin). Une règle de nœud contient les attributs 'deployment' et 'management'. Utiliser 'hzn policy new' pour afficher le format de la règle de nœud.",
       "fuzzy": true
     },
     {
@@ -2999,13 +2999,13 @@
     {
       "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
       "message": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
-      "translation": "Répertoriez les règles de gestion des nœuds compatibles pour le nœud. Seules les règles activées seront affichées sauf si l'option -a est spécifiée.",
+      "translation": "Répertorier les règles de gestion des nœuds compatibles pour le nœud. Seules les règles activées seront affichées sauf si l'option -a est spécifiée.",
       "fuzzy": true
     },
     {
       "id": "List node management policies for this node",
       "message": "List node management policies for this node",
-      "translation": "Répertoriez les règles de gestion des nœuds pour ce nœud",
+      "translation": "Répertorier les règles de gestion des nœuds pour ce nœud",
       "fuzzy": true
     },
     {
@@ -3023,13 +3023,13 @@
     {
       "id": "List the node management policy statuses for this node.",
       "message": "List the node management policy statuses for this node.",
-      "translation": "Répertoriez les statuts de la règle de gestion des nœuds pour ce noeud.",
+      "translation": "Répertorier les statuts de la règle de gestion des nœuds pour ce noeud.",
       "fuzzy": true
     },
     {
       "id": "List node management policy statuses for this node.",
       "message": "List node management policy statuses for this node.",
-      "translation": "Répertoriez les statuts des règles de gestion des nœuds pour ce noeud.",
+      "translation": "Répertorier les statuts des règles de gestion des nœuds pour ce noeud.",
       "fuzzy": true
     },
     {
@@ -3107,7 +3107,7 @@
     {
       "id": "The path to a json file containing the changed attribute to be updated in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path to a json file containing the changed attribute to be updated in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "Le chemin d'accès à un fichier json qui contient l'attribut modifié devant être mis à jour dans Horizon Exchange. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Le chemin d'accès à un fichier json qui contient l'attribut modifié devant être mis à jour dans Horizon Exchange. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -3125,7 +3125,7 @@
     {
       "id": "The path of a JSON file containing the new constraints or properties (not both) for the node policy in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the new constraints or properties (not both) for the node policy in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès à un fichier JSON qui contient les nouvelles contraintes ou propriétés (pas les deux) pour la règle de noeud dans Horizon Exchange. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès à un fichier JSON qui contient les nouvelles contraintes ou propriétés (pas les deux) pour la règle de noeud dans Horizon Exchange. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -3335,7 +3335,7 @@
     {
       "id": "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See {Sampledir}/pattern.json. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See {Sampledir}/pattern.json. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès à un fichier JSON qui contient les métadonnées nécessaires à la création/mise à jour du pattern dans Horizon Exchange. Voir {Sampledir}/pattern.json. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès à un fichier JSON qui contient les métadonnées nécessaires à la création/mise à jour du pattern dans Horizon Exchange. Voir {Sampledir}/pattern.json. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "placeholders": [
         {
           "id": "Sampledir",
@@ -3411,7 +3411,7 @@
     {
       "id": "The path to a json file containing the updated attribute of the pattern to be put in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path to a json file containing the updated attribute of the pattern to be put in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès à un fichier json qui contient l'attribut mis à jour du pattern à placer dans Horizon Exchange. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès à un fichier json qui contient l'attribut mis à jour du pattern à placer dans Horizon Exchange. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -3567,7 +3567,7 @@
     {
       "id": "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See {Sampledir}/service.json and {Sampledir_1}/service_cluster.json. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See {Sampledir}/service.json and {Sampledir_1}/service_cluster.json. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès à un fichier JSON qui contient les métadonnées nécessaires à la création/mise à jour du service dans Horizon Exchange. Voir {Sampledir}/service.json et {Sampledir_1}/service_cluster.json. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès à un fichier JSON qui contient les métadonnées nécessaires à la création/mise à jour du service dans Horizon Exchange. Voir {Sampledir}/service.json et {Sampledir_1}/service_cluster.json. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "placeholders": [
         {
           "id": "Sampledir",
@@ -3963,7 +3963,7 @@
     {
       "id": "List and manage objects in the Horizon Model Management Service.",
       "message": "List and manage objects in the Horizon Model Management Service.",
-      "translation": "Affiche et gère les objets dans le service de gestion des modèles Horizon.",
+      "translation": "Répertorier et gérer les objets dans le service de gestion des modèles Horizon.",
       "fuzzy": true
     },
     {
@@ -4137,7 +4137,7 @@
     {
       "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.",
       "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mms object new' command. Specify -m- to read from stdin.",
-      "translation": "Définition de l'objet à publier. Il est possible d'obtenir un modèle vierge à partir de la commande 'hzn mms object new'. Spécifiez -m- pour lire à partir de l'entrée standard (stdin).",
+      "translation": "Définition de l'objet à publier. Il est possible d'obtenir un modèle vierge à partir de la commande 'hzn mms object new'. Spécifier -m- pour lire à partir de l'entrée standard (stdin).",
       "fuzzy": true
     },
     {
@@ -4155,7 +4155,7 @@
     {
       "id": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
       "message": "The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.",
-      "translation": "La taille du bloc de données qui sera publié avec. Ignoré si --disableChunkUpload est spécifié.",
+      "translation": "Taille du bloc de données qui sera publié avec. Ignoré si --disableChunkUpload est spécifié.",
       "fuzzy": true
     },
     {
@@ -4185,13 +4185,13 @@
     {
       "id": "Display a list of object types stored in the Horizon Model Management Service.",
       "message": "Display a list of object types stored in the Horizon Model Management Service.",
-      "translation": "Affichez la liste des types d'objet stockés dans le service de gestion des modèles Horizon.",
+      "translation": "Afficher la liste des types d'objet stockés dans le service de gestion des modèles Horizon.",
       "fuzzy": true
     },
     {
       "id": "Display the status of the Horizon Model Management Service.",
       "message": "Display the status of the Horizon Model Management Service.",
-      "translation": "Affiche le statut du service de gestion des modèles Horizon.",
+      "translation": "Afficher le statut du service de gestion des modèles Horizon.",
       "fuzzy": true
     },
     {
@@ -4215,13 +4215,13 @@
     {
       "id": "List and manage manifest files stored in the management hub.",
       "message": "List and manage manifest files stored in the management hub.",
-      "translation": "Répertoriez et gérez les fichiers manifeste stockés dans le concentrateur de gestion.",
+      "translation": "Répertorier et gérer les fichiers manifeste stockés dans le concentrateur de gestion.",
       "fuzzy": true
     },
     {
       "id": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
       "message": "Add or replace a manifest file in the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
-      "translation": "Ajoutez ou remplacez un fichier manifeste dans le concentrateur de gestion. Utilisez 'hzn nodemanagement manifest new' pour ajouter un modèle de manifeste vide.",
+      "translation": "Ajouter ou remplacer un fichier manifeste dans le concentrateur de gestion. Utiliser 'hzn nodemanagement manifest new' pour ajouter un modèle de manifeste vide.",
       "fuzzy": true
     },
     {
@@ -4239,13 +4239,13 @@
     {
       "id": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
-      "translation": "Chemin d'un fichier JSON contenant les données du manifeste. Spécifiez -f- pour lire à partir de l'entrée standard (stdin).",
+      "translation": "Chemin d'un fichier JSON contenant les données du manifeste. Spécifier -f- pour lire à partir de l'entrée standard (stdin).",
       "fuzzy": true
     },
     {
       "id": "Display a list of manifest files stored in the management hub.",
       "message": "Display a list of manifest files stored in the management hub.",
-      "translation": "Affichez la liste des fichiers manifeste stockés dans le concentrateur de gestion.",
+      "translation": "Afficher la liste des fichiers manifeste stockés dans le concentrateur de gestion.",
       "fuzzy": true
     },
     {
@@ -4263,19 +4263,19 @@
     {
       "id": "Display the contents of the manifest file. Must specify --type and --id flags.",
       "message": "Display the contents of the manifest file. Must specify --type and --id flags.",
-      "translation": "Affichez le contenu du fichier manifeste. Vous devez indiquer les indicateurs -- type et -- id.",
+      "translation": "Afficher le contenu du fichier manifeste. Vous devez indiquer les indicateurs -- type et -- id.",
       "fuzzy": true
     },
     {
       "id": "Display an empty manifest template that can be filled in.",
       "message": "Display an empty manifest template that can be filled in.",
-      "translation": "Affichez un modèle de manifeste vide qui peut être rempli.",
+      "translation": "Afficher un modèle de manifeste vide qui peut être renseigné.",
       "fuzzy": true
     },
     {
       "id": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
       "message": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
-      "translation": "Supprimez un fichier manifeste du concentrateur de gestion. Utilisez 'hzn nodemanagement manifest new' pour ajouter un modèle de manifeste vide.",
+      "translation": "Supprimez un fichier manifeste du concentrateur de gestion. Utiliser 'hzn nodemanagement manifest new' pour ajouter un modèle de manifeste vide.",
       "fuzzy": true
     },
     {
@@ -4293,13 +4293,13 @@
     {
       "id": "List agent files and types stored in the management hub.",
       "message": "List agent files and types stored in the management hub.",
-      "translation": "Répertoriez les fichiers et les types d'agent stockés dans le concentrateur de gestion.",
+      "translation": "Répertorier les fichiers et les types d'agent stockés dans le concentrateur de gestion.",
       "fuzzy": true
     },
     {
       "id": "Display a list of agent files stored in the management hub.",
       "message": "Display a list of agent files stored in the management hub.",
-      "translation": "Affichez la liste des fichiers d'agent stockés dans le concentrateur de gestion.",
+      "translation": "Afficher la liste des fichiers d'agent stockés dans le concentrateur de gestion.",
       "fuzzy": true
     },
     {
@@ -4395,7 +4395,7 @@
     {
       "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
       "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-      "translation": "Nom du fichier d'entrée JSON contenant la règle de nœud. Spécifiez -f- pour lire à partir de l'entrée standard (stdin). Une règle de nœud contient les attributs 'deployment' et 'management'. Utilisez 'hzn policy new' pour afficher le format de la règle de nœud.",
+      "translation": "Nom du fichier d'entrée JSON contenant la règle de nœud. Spécifier -f- pour lire à partir de l'entrée standard (stdin). Une règle de nœud contient les attributs 'deployment' et 'management'. Utiliser 'hzn policy new' pour afficher le format de la règle de nœud.",
       "fuzzy": true
     },
     {
@@ -4461,7 +4461,7 @@
     {
       "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
       "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
-      "translation": "Fichier JSON qui définit ou substitue les variables d'entrée utilisateur requises par les services qui seront déployés sur ce noeud. Voir {Sampledir}/user_input.json. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Fichier JSON qui définit ou substitue les variables d'entrée utilisateur requises par les services qui seront déployés sur ce noeud. Voir {Sampledir}/user_input.json. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "placeholders": [
         {
           "id": "Sampledir",
@@ -4489,7 +4489,7 @@
     {
       "id": "A JSON file that sets or overrides the node policy for this node. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
       "message": "A JSON file that sets or overrides the node policy for this node. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-      "translation": "Fichier JSON qui définit ou remplace la règle de nœud pour ce nœud. Une règle de nœud contient les attributs 'deployment' et 'management'. Utilisez 'hzn policy new' pour afficher le format de la règle de nœud.",
+      "translation": "Fichier JSON qui définit ou remplace la règle de nœud pour ce nœud. Une règle de nœud contient les attributs 'deployment' et 'management'. Utiliser 'hzn policy new' pour afficher le format de la règle de nœud.",
       "fuzzy": true
     },
     {
@@ -4687,7 +4687,7 @@
     {
       "id": "The file path to the json file with the user input object. Specify -f- to read from stdin.",
       "message": "The file path to the json file with the user input object. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès au fichier json avec l'objet d'entrée utilisateur. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès au fichier json avec l'objet d'entrée utilisateur. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -4723,7 +4723,7 @@
     {
       "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
       "message": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès au fichier json avec l'objet d'entrée utilisateur mis à jour. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès au fichier json avec l'objet d'entrée utilisateur mis à jour. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -4819,7 +4819,7 @@
     {
       "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
       "message": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
-      "translation": "Chemin d'accès à un fichier contenant les détails du secret. Mutuellement exclusif avec --secretDetail. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès à un fichier contenant les détails du secret. Mutuellement exclusif avec --secretDetail. Spécifier -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -4909,7 +4909,7 @@
     {
       "id": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
       "message": "The file that the returned public key is written to. If omit, the key will be printed to the console.",
-      "translation": "Fichier dans lequel la clé publique renvoyée est écrite. Si ce n'est pas le cas, la clé sera imprimée sur la console.",
+      "translation": "Fichier dans lequel est écrite la clé publique renvoyée. Si omis, la clé sera affichée sur la console.",
       "fuzzy": true
     },
     {
@@ -4921,7 +4921,7 @@
     {
       "id": "Download the specified key from SDO owner services.",
       "message": "Download the specified key from SDO owner services.",
-      "translation": "Télécharger la clé indiquée à depuis les services de propriétaire SDO.",
+      "translation": "Télécharger la clé indiquée depuis les services de propriétaire SDO.",
       "fuzzy": true
     },
     {
@@ -4933,7 +4933,7 @@
     {
       "id": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
       "message": "The file that the data of downloaded key is written to. If omit, the key will be printed to the console.",
-      "translation": "Fichier dans lequel sont écrites les données de la clé téléchargée. Si ce n'est pas le cas, la clé sera imprimée sur la console.",
+      "translation": "Fichier dans lequel sont écrites les données de la clé téléchargée. Si omis, la clé sera affichée sur la console.",
       "fuzzy": true
     },
     {
@@ -4945,7 +4945,7 @@
     {
       "id": "Remove a key from SDO owner services.",
       "message": "Remove a key from SDO owner services.",
-      "translation": "Supprimer une clé des services de propriétaire SDO.",
+      "translation": "Retirer une clé des services de propriétaire SDO.",
       "fuzzy": true
     },
     {
@@ -5023,7 +5023,7 @@
     {
       "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
       "message": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-      "translation": "Fichier de règles de nœud à utiliser pour l'unité de périphérie associée à ce récépissé. Cet attribut est mutuellement exclusif avec -e et -p. Une règle de nœud contient les attributs 'deployment' et 'management'. Utilisez 'hzn policy new' pour afficher le format de la règle de nœud.",
+      "translation": "Fichier de règles de nœud à utiliser pour l'unité de périphérie associée à ce récépissé. Cet attribut est mutuellement exclusif avec -e et -p. Une règle de nœud contient les attributs 'deployment' et 'management'. Utiliser 'hzn policy new' pour afficher le format de la règle de nœud.",
       "fuzzy": true
     },
     {
@@ -5047,13 +5047,13 @@
     {
       "id": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
       "message": "The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.",
-      "translation": "Fichier dans lequel les données du bon téléchargé sont écrites au format JSON. Cet indicateur doit être utilisé avec -f. Si ce n'est pas le cas, utilisez le nom de fichier par défaut au format <deviceID>.json et sauvegardez dans le répertoire de travail.",
+      "translation": "Fichier dans lequel les données du bon téléchargé sont écrites au format JSON. Cet indicateur doit être utilisé avec -f. Si ce n'est pas le cas, utiliser le nom de fichier par défaut au format <deviceID>.json et sauvegardez dans le répertoire de travail.",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
-      "translation": "(OBSOLETE) Cette commande est obsolète. Utilisez 'hzn sdo voucher' pour répertorier et gérer les bons de propriété Horizon SDO.",
+      "translation": "(OBSOLETE) Cette commande est obsolète. Utiliser 'hzn sdo voucher' pour répertorier et gérer les bons de propriété Horizon SDO.",
       "fuzzy": true
     },
     {
@@ -7810,7 +7810,7 @@
     {
       "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
       "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "Le fichier {FileName} existe déjà. Veuillez indiquer un nom ou un chemin d'accès au fichier différent. Pour remplacer le fichier existant, utilisez l'indicateur '--overwrite'.",
+      "translation": "Le fichier {FileName} existe déjà. Indiquez un nom ou un chemin d'accès au fichier différent. Pour remplacer le fichier existant, utilisez l'indicateur '--overwrite'.",
       "placeholders": [
         {
           "id": "FileName",
@@ -9226,7 +9226,7 @@
     {
       "id": "To ensure that the dependency operates correctly, please add variable values to the userinput.json file if this service needs any.",
       "message": "To ensure that the dependency operates correctly, please add variable values to the userinput.json file if this service needs any.",
-      "translation": "Pour vérifier que la dépendance fonctionne correctement, veuillez ajouter des valeurs de variable au fichier userinput.json si le service en a besoin.",
+      "translation": "Pour vérifier que la dépendance fonctionne correctement, ajoutez des valeurs de variable au fichier userinput.json si le service en a besoin.",
       "fuzzy": true
     },
     {
@@ -10731,7 +10731,7 @@
     {
       "id": "please provide a user input file for service {URL}. Error: {Err}",
       "message": "please provide a user input file for service {URL}. Error: {Err}",
-      "translation": "Veuillez fournir un fichier d'entrée utilisateur pour le service {URL}. Erreur : {Err}",
+      "translation": "Indiquez un fichier d'entrée utilisateur pour le service {URL}. Erreur : {Err}",
       "placeholders": [
         {
           "id": "URL",
@@ -10755,13 +10755,13 @@
     {
       "id": "has empty org, must be set to the name of the organization that owns the service.",
       "message": "has empty org, must be set to the name of the organization that owns the service.",
-      "translation": "L'organisation est vide. Veuillez indiquez le nom de l'organisation qui possède le service.",
+      "translation": "L'organisation est vide. Indiquez le nom de l'organisation qui possède le service.",
       "fuzzy": true
     },
     {
       "id": "has empty url. Must be set to this service's url or a dependency's url.",
       "message": "has empty url. Must be set to this service's url or a dependency's url.",
-      "translation": "L'adresse URL est vide. Veuillez indiquer l'adresse URL de ce service ou d'une dépendance.",
+      "translation": "L'adresse URL est vide. Indiquez l'adresse URL de ce service ou d'une dépendance.",
       "fuzzy": true
     },
     {
@@ -12341,7 +12341,7 @@
     {
       "id": "The deployment policy has no constraints which might result in the service being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
       "message": "The deployment policy has no constraints which might result in the service being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
-      "translation": "La règle de déploiement n'a pas de contrainte susceptible d'entraîner le déploiement du service sur tous les noeuds. Veuillez indiquer --no-constraints pour confirmer son caractère acceptable.",
+      "translation": "La règle de déploiement n'a pas de contrainte, ce qui pourrait entraîner le déploiement du service sur tous les noeuds. Indiquez --no-constraints pour confirmer son caractère acceptable.",
       "fuzzy": true
     },
     {
@@ -13015,7 +13015,7 @@
     {
       "id": "NMP {NmpName} not found in org {NmpOrg}",
       "message": "NMP {NmpName} not found in org {NmpOrg}",
-      "translation": "NMP {NmpName} introuvable dans org {NmpOrg}",
+      "translation": "NMP {NmpName} introuvable dans l'organisation {NmpOrg}",
       "placeholders": [
         {
           "id": "NmpName",
@@ -13079,7 +13079,7 @@
     {
       "id": "(Optional) This policy applies to nodes using one of these patterns.",
       "message": "(Optional) This policy applies to nodes using one of these patterns.",
-      "translation": "(Facultatif) Cette règle s'applique aux nœuds utilisant l'un de ces modèles.",
+      "translation": "(Facultatif) Cette règle s'applique aux nœuds utilisant l'un de ces patterns.",
       "fuzzy": true
     },
     {
@@ -13145,7 +13145,7 @@
     {
       "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
       "message": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
-      "translation": "La règle de gestion des nœuds n'a pas de contraintes pouvant entraîner son déploiement sur tous les nœuds. Veuillez spécifier --no-constraints pour confirmer que cela est acceptable.",
+      "translation": "La règle de gestion des nœuds n'a pas de contrainte, ce qui pourrait entraîner son déploiement sur tous les nœuds. Indiquez --no-constraints pour confirmer que cela est acceptable.",
       "fuzzy": true
     },
     {
@@ -13231,7 +13231,7 @@
     {
       "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
       "message": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
-      "translation": "Êtes-vous sûr de vouloir supprimer la règle de gestion des nœuds {NmpName} pour l'organisation {NmpOrg} dans Horizon Exchange ?",
+      "translation": "Voulez-vous vraiment retirer la règle de gestion des nœuds {NmpName} pour l'organisation {NmpOrg} dans Horizon Exchange ?",
       "placeholders": [
         {
           "id": "NmpName",
@@ -13303,7 +13303,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} removed",
       "message": "Node management policy {NmpOrg}/{NmpName} removed",
-      "translation": "La règle de gestion des nœuds {NmpOrg}/{NmpName} a été supprimée",
+      "translation": "La règle de gestion des nœuds {NmpOrg}/{NmpName} a été retirée",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13351,7 +13351,7 @@
     {
       "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
-      "translation": "État de NMP {NmpName} introuvable dans org {NmpOrg}",
+      "translation": "Statut de NMP {NmpName} introuvable dans l'organisation {NmpOrg}",
       "placeholders": [
         {
           "id": "NmpName",
@@ -13903,7 +13903,7 @@
     {
       "id": "Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.",
       "message": "Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.",
-      "translation": "Remarque : Aucune propriété ni contrainte n'est spécifiée sous l'attribut 'deployment'. Les propriétés et contraintes de niveau supérieur sont utilisées.",
+      "translation": "Remarque : Aucune propriété ni contrainte n'est spécifiée sous l'attribut 'deployment'. Les propriétés et contraintes de niveau supérieur seront utilisées.",
       "fuzzy": true
     },
     {
@@ -14299,7 +14299,7 @@
     {
       "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
-      "translation": "Statuts de nœuds {NodeName}introuvables dans org {NodeOrg}",
+      "translation": "Statuts de nœuds {NodeName}introuvables dans l'organisation {NodeOrg}",
       "placeholders": [
         {
           "id": "NodeName",
@@ -17833,7 +17833,7 @@
     {
       "id": "It usually containts the built-in node properties.",
       "message": "It usually containts the built-in node properties.",
-      "translation": "Ce paramètre contient généralement les propriétés du nœud intégré.",
+      "translation": "Ce paramètre contient généralement les propriétés de nœud intégré.",
       "fuzzy": true
     },
     {
@@ -17981,7 +17981,7 @@
     {
       "id": "Note: No properties and constraints are specified under 'deployment' attribute in the node policy file {NodepolicyFlag}. The top level properties and constraints will be used.",
       "message": "Note: No properties and constraints are specified under 'deployment' attribute in the node policy file {NodepolicyFlag}. The top level properties and constraints will be used.",
-      "translation": "Remarque : Aucune propriété ni contrainte n'est spécifiée sous l'attribut 'deployment' dans le fichier de règles de nœud {NodepolicyFlag}. Les propriétés et contraintes de niveau supérieur sont utilisées.",
+      "translation": "Remarque : Aucune propriété ni contrainte n'est spécifiée sous l'attribut 'deployment' dans le fichier de règles de nœud {NodepolicyFlag}. Les propriétés et contraintes de niveau supérieur seront utilisées.",
       "placeholders": [
         {
           "id": "NodepolicyFlag",
@@ -18609,7 +18609,7 @@
     {
       "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "message": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "{Errstring}. Veuillez définir les variables du service {Matches2} dans le fichier d'entrée {InputFile}. Exécutez 'hzn unregister', puis 'hzn register...' à nouveau",
+      "translation": "{Errstring}. Définissez les variables du service {Matches2} dans le fichier d'entrée {InputFile}. Exécutez 'hzn unregister', puis 'hzn register...' à nouveau",
       "placeholders": [
         {
           "id": "Errstring",
@@ -18641,7 +18641,7 @@
     {
       "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
       "message": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
-      "translation": "{Errstring}. Veuillez créer un fichier d'entrée, et définir les variables du service {Matches2}. Exécutez 'hzn unregister', puis 'hzn register...' à nouveau avec l'indicateur -f pour spécifier le fichier d'entrée.",
+      "translation": "{Errstring}. Créez un fichier d'entrée, et définissez les variables du service {Matches2}. Exécutez 'hzn unregister', puis 'hzn register...' à nouveau avec l'indicateur -f pour spécifier le fichier d'entrée.",
       "placeholders": [
         {
           "id": "Errstring",
@@ -19427,7 +19427,7 @@
     {
       "id": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.",
       "message": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.",
-      "translation": "La compatibilité de la liaison secrète ne peut pas être vérifiée car les données d'identification de l'utilisateur ne sont pas fournies. Veuillez utiliser la commande'hzn deploycheck secretbinding -p' pour vérifier.",
+      "translation": "La compatibilité de la liaison secrète ne peut pas être vérifiée car les données d'identification de l'utilisateur ne sont pas fournies. Utilisez la commande'hzn deploycheck secretbinding -p' pour vérifier.",
       "fuzzy": true
     },
     {
@@ -19535,7 +19535,7 @@
     {
       "id": "Key \"{Name}\" successfully added to the SDO owner services.",
       "message": "Key \"{Name}\" successfully added to the SDO owner services.",
-      "translation": "La clé \"{Name}\" a été ajoutée avec succès aux services du propriétaire d'objets SDO.",
+      "translation": "La clé \"{Name}\" a été ajoutée aux services du propriétaire d'objets SDO.",
       "placeholders": [
         {
           "id": "Name",
@@ -19551,7 +19551,7 @@
     {
       "id": "Key \"{Name}\" successfully downloaded to {FileName} from the SDO owner services.",
       "message": "Key \"{Name}\" successfully downloaded to {FileName} from the SDO owner services.",
-      "translation": "La clé \"{Name}\" a été téléchargée avec succès dans {FileName} à partir des services du propriétaire d'objets SDO.",
+      "translation": "La clé \"{Name}\" a été téléchargée dans {FileName} à partir des services du propriétaire SDO.",
       "placeholders": [
         {
           "id": "Name",
@@ -19725,7 +19725,7 @@
     {
       "id": "Key template successfully written to {FileName}.",
       "message": "Key template successfully written to {FileName}.",
-      "translation": "Le modèle de clé a été écrit avec succès dans {FileName}.",
+      "translation": "Le modèle de clé a été écrit dans {FileName}.",
       "placeholders": [
         {
           "id": "FileName",
@@ -21233,7 +21233,7 @@
     {
       "id": "Service suspending request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
       "message": "Service suspending request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
-      "translation": "La demande d'interruption de service a été envoyée, veuillez utiliser 'hzn agreement' et 'docker ps' pour vérifier que les accords et les conteneurs de services connexes sont retirés. Cela peut prendre quelques minutes.",
+      "translation": "La demande d'interruption de service a été envoyée, utilisez 'hzn agreement' et 'docker ps' pour vérifier que les accords et les conteneurs de services connexes sont retirés. Cela peut prendre quelques minutes.",
       "fuzzy": true
     },
     {
@@ -21287,7 +21287,7 @@
     {
       "id": "Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
       "message": "Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
-      "translation": "La demande de reprise de service a été envoyée, veuillez utiliser 'hzn agreement' et 'docker ps' pour vérifier que les accords et les conteneurs de services connexes sont démarrés. Cela peut prendre quelques minutes.",
+      "translation": "La demande de reprise de service a été envoyée, utilisez 'hzn agreement' et 'docker ps' pour vérifier que les accords et les conteneurs de services connexes sont démarrés. Cela peut prendre quelques minutes.",
       "fuzzy": true
     },
     {
@@ -23345,7 +23345,7 @@
     {
       "id": "Horizon node delete call successful with return code: {Output}",
       "message": "Horizon node delete call successful with return code: {Output}",
-      "translation": "Le noeud Horizon a supprimé avec succès l'appel avec le code retour : {Output}",
+      "translation": "Le noeud Horizon a supprimé l'appel avec le code retour : {Output}",
       "placeholders": [
         {
           "id": "Output",
@@ -23881,7 +23881,7 @@
     {
       "id": "Please use the -f flag to specify a configuration file.",
       "message": "Please use the -f flag to specify a configuration file.",
-      "translation": "Veuillez utiliser l'indicateur -f pour spécifier un fichier de configuration.",
+      "translation": "Utilisez l'indicateur -f pour spécifier un fichier de configuration.",
       "fuzzy": true
     },
     {
@@ -26625,7 +26625,7 @@
     {
       "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
       "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "La valeur {Value} de la propriété {Name} n'est pas une chaîne valide. Veuillez définir le type ou modifier la valeur en chaîne.",
+      "translation": "La valeur {Value} de la propriété {Name} n'est pas une chaîne valide. Définissez le type ou modifiez la valeur en chaîne.",
       "placeholders": [
         {
           "id": "Value",
