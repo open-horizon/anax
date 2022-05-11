@@ -1287,6 +1287,9 @@ func IsTransportError(pResp *http.Response, err error) bool {
 		} else if pResp.StatusCode == http.StatusServiceUnavailable {
 			//503: service unavailable
 			return true
+		} else if pResp.StatusCode == http.StatusRequestTimeout {
+			// 408: request time out
+			return true
 		} else if pResp.StatusCode == http.StatusTooManyRequests {
 			// 429: too many requests
 			return true
