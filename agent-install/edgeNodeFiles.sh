@@ -265,6 +265,8 @@ function getAgentK8sImageTarFile() {
 
 # Pull the edge cluster agent-auto-upgrade cronjob image from the package tar file or from a docker registry
 function getAutoUpgradeCronjobK8sImageTarFile() {
+    local upgradeFiles=$1
+
     if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
         local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
         echo "Extracting $pkgBaseName/docker/$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
@@ -293,6 +295,9 @@ function getAutoUpgradeCronjobK8sImageTarFile() {
         version=${version##*:}   # strip the path and image name from the front
         echo "Version/tag of $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE is: $version"
         putOneFileInCss "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" agent_files false $version
+        putOneFileInCss "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" "agent_software_files-${version}"  true  ${version}
+
+        addElementToArray $upgradeFiles $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE
     fi
     echo
 }
@@ -823,7 +828,7 @@ all_main() {
     local upgradeSoftwareFiles=()    # define this here since we need to capture device and cluster filenames and agent-install.sh
 
     getAgentK8sImageTarFile upgradeSoftwareFiles
-    getAutoUpgradeCronjobK8sImageTarFile
+    getAutoUpgradeCronjobK8sImageTarFile upgradeSoftwareFiles
 
     local upgradeConfigFiles=()    
     createAgentInstallConfig upgradeConfigFiles
@@ -878,6 +883,7 @@ cluster_main() {
     local upgradeSoftwareFiles=()    # define this here since we need to capture device and cluster filenames and agent-install.sh
 
     getAgentK8sImageTarFile upgradeSoftwareFiles
+    getAutoUpgradeCronjobK8sImageTarFile upgradeSoftwareFiles
 
     local upgradeConfigFiles=()    
     createAgentInstallConfig upgradeConfigFiles
