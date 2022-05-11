@@ -15,6 +15,7 @@ type agentFileInfo struct {
 	AgentFileName    string `json:"fileName"`
 	AgentFileType    string `json:"fileType"`
 	AgentFileVersion string `json:"fileVersion"`
+	Description      string `json:"description,omitempty"`
 }
 
 type agentFileType struct {
@@ -112,6 +113,7 @@ func getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter string) []a
 						AgentFileName:    agentFile.ObjectID,
 						AgentFileType:    fileType,
 						AgentFileVersion: fileVersion,
+						Description:      agentFile.Description,
 					}
 					agentFileObjects = append(agentFileObjects, agentFileInfo)
 				}
