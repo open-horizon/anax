@@ -2635,6 +2635,7 @@ function registration() {
         # Register the node. First get some variables ready
         local user_auth wait_service_flag wait_org_flag timeout_flag node_name pattern_flag
         if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then
+            user_auth_mask="-u ********"
             user_auth="-u '$HZN_EXCHANGE_USER_AUTH'"
         fi
         if [[ -n $AGENT_WAIT_FOR_SERVICE ]]; then
@@ -2659,15 +2660,17 @@ function registration() {
         # Now actually do the registration
         log_info "Registering the edge node..."
         local reg_cmd
+        local reg_cmd_mask
         if [[ -n $policy ]]; then
             # Since hzn might be in the edge cluster container, need to pass the policy file's contents in via stdin
             reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag --policy=-"
-            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n ******** $wait_service_flag $wait_org_flag $timeout_flag --policy=-"
+            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth_mask -n ******** $wait_service_flag $wait_org_flag $timeout_flag --policy=$policy"
             echo "$reg_cmd_mask"
             cat $policy | agent_exec "$reg_cmd"
         else  # register w/o policy or with pattern
             reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag"
-            echo "$reg_cmd"
+            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth_mask -n ******** $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag"
+            echo "$reg_cmd_mask"
             agent_exec  "$reg_cmd"
         fi
     fi
