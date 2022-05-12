@@ -69,7 +69,7 @@ func NewClusterUpgradeWorker(name string, config *config.HorizonConfig, db *bolt
 		kubeClient: kubeClient,
 	}
 
-	glog.Info(cuwlog(fmt.Sprintf("Starting Cluster Upgrade Worker %v", worker.EC)))
+	glog.Infof(cuwlog(fmt.Sprintf("Starting Cluster Upgrade Worker %v", worker.EC)))
 	worker.Start(worker, 0)
 	return worker
 }
@@ -145,7 +145,7 @@ func checkDeploymentStatus(kubeClient *KubeClient, baseWorkingDir string, nmpNam
 		} else if !configIsSame {
 			return "", fmt.Errorf(fmt.Sprintf("agent configmap content doesn't match agent config for nmp %v", nmpName))
 		}
-		glog.Info(cuwlog(fmt.Sprintf("Agent configmap matches agent config for nmp %v", nmpName)))
+		glog.Infof(cuwlog(fmt.Sprintf("Agent configmap matches agent config for nmp %v", nmpName)))
 	}
 
 	if secretNeedChange {
@@ -155,7 +155,7 @@ func checkDeploymentStatus(kubeClient *KubeClient, baseWorkingDir string, nmpNam
 		} else if !secretIsSame {
 			return "", fmt.Errorf(fmt.Sprintf("agent secret content doesn't match agent cert for nmp %v", nmpName))
 		}
-		glog.Info(cuwlog(fmt.Sprintf("Agent secret matches agent cert for nmp %v", nmpName)))
+		glog.Infof(cuwlog(fmt.Sprintf("Agent secret matches agent cert for nmp %v", nmpName)))
 	}
 
 	if imageVerNeedChange {
@@ -165,13 +165,13 @@ func checkDeploymentStatus(kubeClient *KubeClient, baseWorkingDir string, nmpNam
 		} else if !imageVersionIsSame {
 			return "", fmt.Errorf(fmt.Sprintf("agent version doesn't match agent version in status file for nmp %v", nmpName))
 		} else {
-			glog.Info(cuwlog(fmt.Sprintf("Agent version matches agent version in status file for nmp %v", nmpName)))
-			glog.Info(cuwlog(fmt.Sprintf("Mark agentVersion is updated in status file for nmp %v", nmpName)))
+			glog.Infof(cuwlog(fmt.Sprintf("Agent version matches agent version in status file for nmp %v", nmpName)))
+			glog.Infof(cuwlog(fmt.Sprintf("Mark agentVersion is updated in status file for nmp %v", nmpName)))
 			// update status.json, set k8s.imageVersion.updated = true
 			if err = setResourceUpdatedInStatusFile(workDir, RESOURCE_IMAGE_VERSION, true); err != nil {
 				return "", fmt.Errorf(fmt.Sprintf("failed to set updated to true for imageVersion for nmp: %v, error: %v", nmpName, err))
 			}
-			glog.Info(cuwlog(fmt.Sprintf("Set updated to true for imageVersion for nmp %v", nmpName)))
+			glog.Infof(cuwlog(fmt.Sprintf("Set updated to true for imageVersion for nmp %v", nmpName)))
 
 		}
 	}
@@ -235,7 +235,7 @@ func (w *ClusterUpgradeWorker) collectStatus(workingFolderPath string, policyNam
 
 // This function will set status in status file, in local db and in exchang
 func (w *ClusterUpgradeWorker) setStatusInDBAndFile(baseWorkingDir string, nmpName string, statusToSet string, errorMessage string) error {
-	glog.Info(cuwlog(fmt.Sprintf("Set status to %v in db and status file for nmp %v", statusToSet, nmpName)))
+	glog.Infof(cuwlog(fmt.Sprintf("Set status to %v in db and status file for nmp %v", statusToSet, nmpName)))
 
 	workDir := path.Join(baseWorkingDir, nmpName)
 	if statusToSet == exchangecommon.STATUS_FAILED_JOB {
@@ -308,7 +308,7 @@ func (w *ClusterUpgradeWorker) CommandHandler(command worker.Command) bool {
 func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir string, nmpName string) {
 	// nmpName: {org}/{nmpName}
 	// baseWorkingDir: /var/horizon/nmp/
-	glog.Info(cuwlog(fmt.Sprintf("Start handling edge cluster upgrade for nmp: %v", nmpName)))
+	glog.Infof(cuwlog(fmt.Sprintf("Start handling edge cluster upgrade for nmp: %v", nmpName)))
 	status, err := persistence.FindNMPStatus(w.db, nmpName)
 	if err != nil {
 		glog.Errorf(cuwlog(fmt.Sprintf("Failed to get nmp status %v from the database: %v", nmpName, err)))
@@ -372,7 +372,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 		w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
 		return
 	}
-	glog.Info(cuwlog(fmt.Sprintf("current image version: %v, image version to update: %v", currentImageVersion, newImageVersion)))
+	glog.Infof(cuwlog(fmt.Sprintf("current image version: %v, image version to update: %v", currentImageVersion, newImageVersion)))
 
 	if !imageVersionIsSame {
 		if err = setResourceNeedChangeInStatusFile(workDir, RESOURCE_IMAGE_VERSION, true); err != nil {
@@ -390,7 +390,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 	}
 
 	if configIsSame && certIsSame && imageVersionIsSame {
-		glog.Info("agent config, cert and image version are same, set status to %v for nmp: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName)
+		glog.Infof("agent config, cert and image version are same, set status to %v for nmp: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName)
 		// set nmp status to successful in db and status.json
 		if err = w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_SUCCESSFUL, ""); err != nil {
 			errMessage = fmt.Sprintf("Failed to update status to %v in db and status file for nmp: %v, error: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName, err)
@@ -398,13 +398,13 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
 			return
 		}
-		glog.Info(cuwlog(fmt.Sprintf("NMP sataus is set to to %v for nmp: %v and return", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
+		glog.Infof(cuwlog(fmt.Sprintf("NMP sataus is set to to %v for nmp: %v and return", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
 		return
 	}
 
 	// backup process, update current configmap, set k8s.configMap.updated = true in status.json
 	if !configIsSame {
-		glog.Info("agent config is different for nmp %v, starting configmap backup and update process...", nmpName)
+		glog.Infof("agent config is different for nmp %v, starting configmap backup and update process...", nmpName)
 		// backup configmap
 		if err = w.kubeClient.CreateBackupConfigmap(AGENT_NAMESPACE, AGENT_CONFIGMAP); err != nil {
 			errMessage = fmt.Sprintf("Failed to backup configmap for nmp: %v, error: %v", nmpName, err)
@@ -427,11 +427,11 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
 			return
 		}
-		glog.Info("agent configmap is handled for nmp: %v", nmpName)
+		glog.Infof("agent configmap is handled for nmp: %v", nmpName)
 	}
 
 	if !certIsSame {
-		glog.Info("agent cert is different for nmp %v, starting secret (cert) backup and update process...", nmpName)
+		glog.Infof("agent cert is different for nmp %v, starting secret (cert) backup and update process...", nmpName)
 		if err = w.kubeClient.CreateBackupSecret(AGENT_NAMESPACE, AGENT_SECRET); err != nil {
 			errMessage = fmt.Sprintf("Failed to backup secret for nmp: %v, error: %v", nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
@@ -453,11 +453,11 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
 			return
 		}
-		glog.Info("agent secret is handled for nmp: %v", nmpName)
+		glog.Infof("agent secret is handled for nmp: %v", nmpName)
 	}
 
 	if !imageVersionIsSame {
-		glog.Info("agent image version is different for nmp %v, setting agent image version to %v in agent deployment...", nmpName, newImageVersion)
+		glog.Infof("agent image version is different for nmp %v, setting agent image version to %v in agent deployment...", nmpName, newImageVersion)
 		// update the deployment will restart agent
 		if err = w.kubeClient.UpdateAgentDeploymentImageVersion(AGENT_NAMESPACE, AGENT_DEPLOYMENT, newImageVersion); err != nil {
 			errMessage = fmt.Sprintf("Failed to update image version in agent deployment for nmp: %v, error: %v", nmpName, err)
@@ -467,7 +467,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 		}
 		// agent restarting
 
-		glog.Info("agent image update is handled for nmp: %v", nmpName)
+		glog.Infof("agent image update is handled for nmp: %v", nmpName)
 	}
 }
 
@@ -632,4 +632,3 @@ func checkAgentImageAgainstStatusFile(workDir string) (bool, error) {
 		return true, nil
 	}
 }
-

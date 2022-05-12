@@ -682,6 +682,9 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 	}
 	nodePol_nm := nodePol.GetManagementPolicy()
 
+	// Get pattern
+	nodePattern := node.Pattern
+
 	// Get a list of applicable NMP's
 	var output string
 	var nmpList exchange.ExchangeNodeManagementPolicyResponse
@@ -692,16 +695,22 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 		compatibleNMPs := make(map[string]string, 0)
 		for nmpName, nmp := range nmpList.Policies {
 			if nmp.Enabled || all {
-				if err := nodePol_nm.Constraints.IsSatisfiedBy(nmp.Properties); err != nil {
-					continue
-				} else if err := nmp.Constraints.IsSatisfiedBy(nodePol_nm.Properties); err != nil {
-					continue
-				} else {
-					if nmp.Enabled {
-						compatibleNMPs[nmpName] = "enabled"
-					} else {
-						compatibleNMPs[nmpName] = "disabled"
+				if nodePattern != "" {
+					if !PatternCompatible(nodeOrg, nodePattern, nmp.Patterns) {
+						continue
 					}
+				} else {
+					if err := nodePol_nm.Constraints.IsSatisfiedBy(nmp.Properties); err != nil {
+						continue
+					} else if err := nmp.Constraints.IsSatisfiedBy(nodePol_nm.Properties); err != nil {
+						continue
+					}
+				}
+
+				if nmp.Enabled {
+					compatibleNMPs[nmpName] = "enabled"
+				} else {
+					compatibleNMPs[nmpName] = "disabled"
 				}
 			}
 		}
@@ -753,6 +762,30 @@ func NodeManagementStatus(org, credToUse, nodeName, nmpName string, long bool) {
 	} else {
 		fmt.Println(cliutils.MarshalIndent(nmpStatuses, "node management status"))
 	}
+}
+
+// Check if the given node pattern is in the pattern List.
+// nodePattern is a non-empty string.
+func PatternCompatible(nodeOrg string, nodePattern string, patternList []string) bool {
+	if patternList == nil || len(patternList) == 0 {
+		return false
+	}
+
+	nodePatternOrg, nodePatternName := cliutils.TrimOrg(nodeOrg, nodePattern)
+
+	for _, p := range patternList {
+		if p == nodePattern {
+			return true
+		} else {
+			// one may have org preceeded and the other does not
+			o, p_name := cliutils.TrimOrg(nodeOrg, p)
+			if nodePatternOrg == o && nodePatternName == p_name {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // Verify the node user input for the pattern case. Make sure that the given

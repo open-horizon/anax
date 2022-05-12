@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
@@ -282,7 +281,7 @@ func determineCompatibleNodes(org, credToUse, nmpName string, nmpPolicy exchange
 			continue
 		}
 		if node.Pattern != "" {
-			if cutil.SliceContains(nmpPolicy.Patterns, node.Pattern) {
+			if PatternCompatible(nmpOrg, node.Pattern, nmpPolicy.Patterns) {
 				compatibleNodes = append(compatibleNodes, nodeNameEx)
 			}
 		} else {
