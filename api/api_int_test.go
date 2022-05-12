@@ -1,5 +1,5 @@
-// +build integration
-// +build go1.17
+//go:build integration && go1.17
+// +build integration,go1.17
 
 package api
 

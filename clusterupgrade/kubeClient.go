@@ -388,7 +388,6 @@ func (c KubeClient) GetServiceAccountToken(namespace string, serviceAccountName 
 	return make([]byte, 0), fmt.Errorf("agent service account token not found in %v", serviceAccountName)
 }
 
-
 func (c KubeClient) GetKeyChain(namespace string, serviceAccountName string) (authn.Keychain, error) {
 	kc, err := k8schain.NewInCluster(context.Background(), k8schain.Options{
 		Namespace:          namespace,
