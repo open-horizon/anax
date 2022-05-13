@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const TIME_NOW_KEYWORD = "now"
+
 type ExchangeNMPStatus struct {
 	ManagementStatus map[string]*NodeManagementPolicyStatus `json:"managementStatus"`
 }
@@ -155,11 +157,14 @@ func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string)
 	}
 	if policy.AgentAutoUpgradePolicy != nil {
 		startTime, _ := time.Parse(time.RFC3339, policy.PolicyUpgradeTime)
+		if policy.PolicyUpgradeTime == TIME_NOW_KEYWORD {
+			startTime = time.Now()
+		}
 		realStartTime := startTime.Unix()
 		if policy.UpgradeWindowDuration > 0 {
 			realStartTime = realStartTime + int64(rand.Intn(policy.UpgradeWindowDuration))
 		}
-		newStatus.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).Format(time.RFC3339)
+		newStatus.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).UTC().Format(time.RFC3339)
 		newStatus.AgentUpgradeInternal.ScheduledUnixTime = time.Unix(realStartTime, 0)
 		newStatus.AgentUpgrade.BaseWorkingDirectory = workingDir
 		newStatus.AgentUpgradeInternal.AllowDowngrade = policy.AgentAutoUpgradePolicy.AllowDowngrade
