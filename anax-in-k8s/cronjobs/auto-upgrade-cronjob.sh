@@ -479,7 +479,7 @@ elif [[ "$json_status" == "$STATUS_INITIATED" ]]; then
     # Status is initiated and agent pod is running successfully, just exit.
     cmd_output=$(agent_cmd "hzn node list" | grep "nodeType")
     rc=$?
-    if [[ $rc -eq 0 && "$cmd_output" != *"nodeType"*"cluster"* ]]; then
+    if [[ $rc -eq 0 && "$cmd_output" == *"nodeType"*"cluster"* ]]; then
         log_info "Deployment is successful and pod is not in panic state. Keeping status as \"$CURRENT_STATUS\" and exiting."
         write_logs
         exit 0
