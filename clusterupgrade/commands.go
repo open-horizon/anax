@@ -2,7 +2,6 @@ package clusterupgrade
 
 import (
 	"fmt"
-
 	"github.com/open-horizon/anax/events"
 )
 
@@ -20,4 +19,22 @@ func (s ClusterUpgradeCommand) String() string {
 
 func (s ClusterUpgradeCommand) ShortString() string {
 	return s.String()
+}
+
+type NodeRegisteredCommand struct {
+	Msg *events.EdgeRegisteredExchangeMessage
+}
+
+func (d NodeRegisteredCommand) ShortString() string {
+	return fmt.Sprintf("Msg: %v", d.Msg)
+}
+
+func (d NodeRegisteredCommand) String() string {
+	return d.ShortString()
+}
+
+func NewNodeRegisteredCommand(msg *events.EdgeRegisteredExchangeMessage) *NodeRegisteredCommand {
+	return &NodeRegisteredCommand{
+		Msg: msg,
+	}
 }
