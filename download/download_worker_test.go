@@ -105,8 +105,14 @@ func Test_findAgentUpgradePackageVersions(t *testing.T) {
 	}
 
 	vers, err = findAgentUpgradePackageVersions("3.0.5", "3.0.5", "", getAvailibleVersionsHandler(&availVers))
-	if err == nil {
-		t.Errorf("No matching software version availible. Expected error but got none. Versions returned were: %v", vers)
+	if err != nil {
+		t.Errorf("No error expected but got %v.", err)
+	} else if vers.SoftwareVersion != "3.0.5" {
+		t.Errorf("Expected software version \"3.0.5\". Got \"%v\".", vers.SoftwareVersion)
+	} else if vers.ConfigVersion != "3.0.5" {
+		t.Errorf("Expected config version \"3.0.5\". Got \"%v\".", vers.ConfigVersion)
+	} else if vers.CertVersion != "" {
+		t.Errorf("Expected cert version \"\". Got \"%v\".", vers.CertVersion)
 	}
 
 	vers, err = findAgentUpgradePackageVersions("1.0.1", LATESTVERSION, "", getAvailibleVersionsHandler(&availVers))
@@ -131,10 +137,10 @@ func Test_findBestMatchingVersion(t *testing.T) {
 	availVers := []string{"1.0.0", "1.0.2", "3.5.12", "4.23.1"}
 
 	vers, err := findBestMatchingVersion(availVers, "1.0.1")
-	if vers != "" {
-		t.Errorf("No matching version expected but got \"%v\".", vers)
-	} else if err == nil {
-		t.Errorf("Expected error for no matching version but did not get an error.")
+	if err != nil {
+		t.Errorf("No error expected but got %v.", err)
+	} else if vers != "1.0.1" {
+		t.Errorf("Expected latest availible version \"1.0.1\" but got \"%v\"", vers)
 	}
 
 	vers, err = findBestMatchingVersion(availVers, LATESTVERSION)
