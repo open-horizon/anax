@@ -1109,7 +1109,7 @@
   },
   {
     "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "仅包含此一个节点的过滤器输出。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的整个内容。"
+    "translation": "过滤输出以仅包含这一个节点。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的完整内容。"
   },
   {
     "id": "Show the entire contents of each node management policy status object.",
@@ -1213,7 +1213,7 @@
   },
   {
     "id": "List and manage node management resources in the Horizon Exchange",
-    "translation": "在 Horizon Exchange 中列出和管理节点管理资源"
+    "translation": "列出和管理 Horizon Exchange 中的节点管理资源"
   },
   {
     "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
@@ -1241,7 +1241,7 @@
   },
   {
     "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "过滤输出以仅包含此一个节点管理策略。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的整个内容。"
+    "translation": "过滤输出以仅包含这一个节点管理策略。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的完整内容。"
   },
   {
     "id": "List the run-time status of the node.",
@@ -2437,7 +2437,7 @@
   },
   {
     "id": "List the SDO ownership keys stored in SDO owner services.",
-    "translation": "列出和管理 SDO 所有者服务中存储的 SDO 所有权密钥。"
+    "translation": "列出 SDO 所有者服务中存储的 SDO 所有权密钥。"
   },
   {
     "id": "List the full details of this SDO ownership key.",
@@ -2549,19 +2549,19 @@
   },
   {
     "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
-    "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher”来列出和管理 Horizon SDO 所有权凭单。"
+    "translation": "（不推荐）不推荐使用此命令。请使用\"hzn sdo voucher\"来列出和管理 Horizon SDO 所有权凭单。"
   },
   {
     "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
-    "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher list”来列出导入的 SDO 所有权凭单。"
+    "translation": "（不推荐）不推荐使用此命令。请使用\"hzn sdo voucher list\"来列出导入的 SDO 所有权凭单。"
   },
   {
     "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
-    "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher inspect”来显示 SDO 所有权凭单的属性。"
+    "translation": "（不推荐）不推荐使用此命令。请使用\"hzn sdo voucher inspect\"来显示 SDO 所有权凭单的属性。"
   },
   {
     "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
-    "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher import”以导入 SDO 所有权凭单。"
+    "translation": "（不推荐）不推荐使用此命令。请使用\"hzn sdo voucher import\"以导入 SDO 所有权凭单。"
   },
   {
     "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
@@ -4332,7 +4332,7 @@
     "translation": "该节点管理策略没有任何约束，这可能导致将该管理策略部署到所有节点。 请指定 --no-constraints 以确认这是可接受的。"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+    "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
     "translation": "已在 Horizon Exchange 中更新节点管理策略 {NmpOrg}/{NmpName}"
   },
   {
@@ -4340,7 +4340,7 @@
     "translation": "无法创建节点管理策略 {NmpOrg}/{NmpName}：{Msg}"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
+    "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
     "translation": "已在 Horizon Exchange 中添加节点管理策略 {NmpOrg}/{NmpName}"
   },
   {
@@ -4352,12 +4352,8 @@
     "translation": "在组织 {NmpOrg} 中找不到节点管理策略 {NmpName}"
   },
   {
-    "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "正在从 Exchange 中移除节点管理策略 {NmpOrg}/{NmpName}。"
-  },
-  {
-    "id": "Node management policy {NmpOrg}/{NmpName} removed",
-    "translation": "已移除节点管理策略 {NmpOrg}/{NmpName}"
+    "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+    "translation": "已从 Horizon Exchange 中移除节点管理策略 {NmpOrg}/{NmpName} 。"
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",
@@ -5337,7 +5333,7 @@
   },
   {
     "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_software_files\".",
-    "translation": "类型为“agent_software_files”的文件“{ManFile}”，版本为“{Version}”。"
+    "translation": "类型为\"agent_software_files\"的文件\"{ManFile}\"，版本为\"{Version}\"。"
   },
   {
     "id": "The version specified in CertificateUpgrade is not a valid version string or \"latest\": {Version}",
@@ -5345,7 +5341,7 @@
   },
   {
     "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_cert_files\".",
-    "translation": "类型为“agent_cert_files”的文件“{ManFile}”，版本为“{Version}”。"
+    "translation": "类型为\"agent_cert_files\"的文件\"{ManFile}\"，版本为\"{Version}\"。"
   },
   {
     "id": "The version specified in ConfigurationUpgrade is not a valid version string or \"latest\": {Version}",
@@ -5353,11 +5349,11 @@
   },
   {
     "id": "File \"{ManFile}\" version \"{Version}\" of type \"agent_config_files\".",
-    "translation": "类型为“agent_config_files”的文件“{ManFile}”，版本为“{Version}”。"
+    "translation": "类型为\"agent_config_files\"的文件\"{ManFile}\"，版本为\"{Version}\"。"
   },
   {
     "id": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
-    "translation": "运行“hzn nodemanagement agentfiles list”以获取有效文件的列表。"
+    "translation": "运行\"hzn nodemanagement agentfiles list\"以获取有效文件的列表。"
   },
   {
     "id": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
@@ -5397,7 +5393,7 @@
   },
   {
     "id": "Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.",
-    "translation": "运行“hzn nm agentfiles list -t agent_cert_files”以获取可用文件的列表。"
+    "translation": "运行\"hzn nm agentfiles list -t agent_cert_files\"以获取可用文件的列表。"
   },
   {
     "id": "The agent certificate version this manifest applies to. Specify \"latest\" to get the most recent version.",
@@ -5989,7 +5985,7 @@
   },
   {
     "id": "failed to marshal 'hzn sdo keys list' output: {Err}",
-    "translation": "对“hzn sdo keys list”输出进行序列化失败：{Err}"
+    "translation": "对\"hzn sdo keys list\"输出进行序列化失败：{Err}"
   },
   {
     "id": "Downloading SDO key \"{KeyName}\".",
@@ -6085,7 +6081,7 @@
   },
   {
     "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
-    "translation": "警告：不推荐使用“hzn 凭单检查”，在将来的发行版中将移除此功能。 请改为使用“hzn sdo 凭单检查”。"
+    "translation": "警告：不推荐使用\"hzn voucher inspect\"，会在将来的发行版中移除。 请改为使用\"hzn sdo voucher inspect\"。"
   },
   {
     "id": "parsing json: {Error}",
@@ -6125,11 +6121,11 @@
   },
   {
     "id": "failed to marshal 'hzn sdo voucher list' output: {Err}",
-    "translation": "对“hzn sdo voucher list”输出进行序列化失败：{Err}"
+    "translation": "对\"hzn sdo voucher list\"输出进行序列化失败：{Err}"
   },
   {
     "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
-    "translation": "警告：不推荐使用“hzn 凭单列表”，在将来的发行版中将移除此列表。 请改为使用“hzn sdo 凭单列表”。"
+    "translation": "警告：不推荐使用\"hzn voucher list\"，会在将来的发行版中移除。 请改为使用\"hzn sdo voucher list\"。"
   },
   {
     "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
@@ -6157,7 +6153,7 @@
   },
   {
     "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
-    "translation": "警告：不推荐使用“hzn 凭单导入”，在将来的发行版中将移除此内容。 请改为使用“hzn sdo 凭单导入”。"
+    "translation": "警告：不推荐使用\"hzn voucher import\"，会在将来的发行版中移除。 请改为使用\"hzn sdo voucher import\"。"
   },
   {
     "id": "creating zip reader for {Name}: {Err}",

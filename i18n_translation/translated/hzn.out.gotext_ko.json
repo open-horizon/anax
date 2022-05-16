@@ -4332,16 +4332,16 @@
     "translation": "노드 관리 정책에는 관리 정책이 모든 노드에 배치될 수 있는 제한조건이 없습니다. --no-constraints를 지정하여 이것이 허용되는지 확인하십시오."
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "노드 관리 정책: {NmpOrg}/{NmpName}이(가) Horizon Exchange에서 업데이트되었습니다."
+    "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+    "translation": "Horizon Exchange에서 노드 관리 정책 {NmpOrg}/{NmpName} 이 (가) 업데이트되었습니다."
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
     "translation": "노드 관리 정책을 생성할 수 없음 {NmpOrg}/{NmpName}: {Msg}"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "노드 관리 정책: {NmpOrg}/{NmpName}이(가) Horizon Exchange에 추가되었습니다."
+    "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+    "translation": "노드 관리 정책 {NmpOrg}/{NmpName} 이 (가) Horizon Exchange에 추가되었습니다."
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4352,12 +4352,8 @@
     "translation": "노드 관리 정책 {NmpName}을(를) {NmpOrg} 조직에서 찾을 수 없습니다."
   },
   {
-    "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "Exchange에서 노드 관리 정책 {NmpOrg}/{NmpName}을(를) 제거하는 중입니다."
-  },
-  {
-    "id": "Node management policy {NmpOrg}/{NmpName} removed",
-    "translation": "노드 관리 정책 {NmpOrg}/{NmpName}이(가) 제거됨"
+    "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+    "translation": "노드 관리 정책 {NmpOrg}/{NmpName} 이 (가) Horizon Exchange에서 제거되었습니다."
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",

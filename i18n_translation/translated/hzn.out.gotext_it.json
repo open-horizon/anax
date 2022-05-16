@@ -1105,11 +1105,11 @@
   },
   {
     "id": "The name of the node management policy status to check.",
-    "translation": "Il nome dello stato della politica di gestione nodi da controllare."
+    "translation": "Il nome dello stato della politica di gestione del nodo da controllare."
   },
   {
     "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "Filtrare l'output per includere solo questo nodo. Utilizzare con il flag --long per visualizzare l'intero contenuto di un oggetto di stato della politica di gestione del nodo singolo."
+    "translation": "Filtrare l'output per includere solo questo nodo. Utilizzare con l'indicatore --long per visualizzare l'intero contenuto di un oggetto di stato della politica di gestione del nodo singolo."
   },
   {
     "id": "Show the entire contents of each node management policy status object.",
@@ -1241,7 +1241,7 @@
   },
   {
     "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "Filtrare l'output per includere solo questa politica di gestione del nodo. Utilizzare con il flag --long per visualizzare l'intero contenuto di un oggetto di stato della politica di gestione del nodo singolo."
+    "translation": "Filtrare l'output per includere solo questa politica di gestione del nodo. Utilizzare con l'indicatore --long per visualizzare l'intero contenuto di un oggetto di stato della politica di gestione del nodo singolo."
   },
   {
     "id": "List the run-time status of the node.",
@@ -4332,16 +4332,16 @@
     "translation": "La politica di gestione del nodo non contiene vincoli, il che può risultare nella distribuzione della politica di gestione a tutti i nodi. Specificare --no-constraints per confermare che ciò sia accettabile."
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "Politica di gestione del nodo: {NmpOrg}/{NmpName} aggiornata in Horizon Exchange"
+    "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+    "translation": "Politica di gestione nodi {NmpOrg}/{NmpName} aggiornata in Exchange Exchange"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
     "translation": "Impossibile creare la politica di gestione del nodo {NmpOrg}/{NmpName}: {Msg}"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "Politica di gestione del nodo: {NmpOrg}/{NmpName} aggiunta in Horizon Exchange"
+    "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+    "translation": "Policy di gestione del nodo {NmpOrg}/{NmpName} aggiunto in Exchange Horizon"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4352,12 +4352,8 @@
     "translation": "Politica di gestione del nodo {NmpName} non trovata nell'organizzazione {NmpOrg}"
   },
   {
-    "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "Rimozione della politica di gestione del nodo {NmpOrg}/{NmpName} da Exchange."
-  },
-  {
-    "id": "Node management policy {NmpOrg}/{NmpName} removed",
-    "translation": "Politica di gestione del nodo {NmpOrg}/{NmpName} rimossa"
+    "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+    "translation": "Politica di gestione nodi {NmpOrg}/{NmpName} rimossa dalla Exchange Horizon."
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",
@@ -4365,11 +4361,11 @@
   },
   {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
-    "translation": "Stato per NMP {NmpName} non trovato nell'organizzazione {NmpOrg}"
+    "translation": "Stato di NMP {NmpName} non trovato nell'organizzazione {NmpOrg}"
   },
   {
     "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
-    "translation": "Stato per NMP {NmpName} non trovato per il nodo {NodeName} nell'organizzazione {NmpOrg}"
+    "translation": "Stato di NMP {NmpName} non trovato per il nodo {NodeName} nell'organizzazione {NmpOrg}"
   },
   {
     "id": "failed to marshal 'exchange node list' output: {Err}",
@@ -6053,7 +6049,7 @@
   },
   {
     "id": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
-    "translation": "nome del paese non supportato nel file di metadati fornito {KeyFileName}.\n{Err}"
+    "translation": "nome paese non supportato nel file di metadati fornito {KeyFileName}.\n{Err}"
   },
   {
     "id": "JSON Body:{StringkeyBytes}",
@@ -6061,7 +6057,7 @@
   },
   {
     "id": "field \"key_name\" is missing",
-    "translation": "il campo \"key_name\" è mancante"
+    "translation": "campo \"key_name\" mancante"
   },
   {
     "id": "field \"{Field}\" is missing",
@@ -6077,7 +6073,7 @@
   },
   {
     "id": "Country name must be a 2 Letter Country Code",
-    "translation": "Il nome paese deve essere un codice di paese di 2 lettere"
+    "translation": "Il nome paese deve essere un codice paese di 2 lettere"
   },
   {
     "id": "Inspecting voucher file name: {Name}",
@@ -6085,7 +6081,7 @@
   },
   {
     "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
-    "translation": "AVVERTENZA: \"hzn voucher inspect\" è obsoleto e verrà rimosso in una release futura. Utilizzare invece \"hzn sdo voucher inspect\"."
+    "translation": "AVVERTENZA: \"hzn voucher inspect\" è obsoleto e verrà rimosso in una release futura. Utilizzare \"hzn sdo voucher inspect\"."
   },
   {
     "id": "parsing json: {Error}",
@@ -6129,7 +6125,7 @@
   },
   {
     "id": "WARNING: \"hzn voucher list\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher list\" instead.",
-    "translation": "AVVERTENZA: \"hzn voucher list\" è obsoleto e verrà rimosso in una release futura. Utilizzare invece \"hzn sdo voucher list\"."
+    "translation": "AVVERTENZA: \"hzn voucher list\" è obsoleto e verrà rimosso in una release futura. Utilizzare \"hzn sdo voucher list\"."
   },
   {
     "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
@@ -6157,7 +6153,7 @@
   },
   {
     "id": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
-    "translation": "AVVERTENZA: \"hzn voucher import\" è obsoleto e verrà rimosso in una release futura. Utilizzare invece \"hzn sdo voucher import\"."
+    "translation": "AVVERTENZA: \"hzn voucher import\" è obsoleto e verrà rimosso in una release futura. Utilizzare \"hzn sdo voucher import\"."
   },
   {
     "id": "creating zip reader for {Name}: {Err}",

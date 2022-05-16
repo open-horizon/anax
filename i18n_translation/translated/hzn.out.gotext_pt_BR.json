@@ -1101,7 +1101,7 @@
   },
   {
     "id": "List the status of a given node management policy across all nodes in given org.",
-    "translation": "Liste o status de uma determinada política de gerenciamento de nós em todos os nós de uma organização."
+    "translation": "Listar o status de uma determinada política de gerenciamento de nós em todos os nós de uma organização."
   },
   {
     "id": "The name of the node management policy status to check.",
@@ -4332,16 +4332,16 @@
     "translation": "A política de gerenciamento de nó não tem restrições que possam resultar na implementação da política de gerenciamento em todos os nós. Especifique --no-constraints para confirmar que isso é aceitável."
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "Política de gerenciamento de nó: {NmpOrg}/{NmpName} atualizado no Horizon Exchange"
+    "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+    "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} atualizado na Bolsa de Horizonte"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
     "translation": "Não é possível criar a política de gerenciamento de nó {NmpOrg}/{NmpName}: {Msg}"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "Política de gerenciamento de nó: {NmpOrg}/{NmpName} incluído no Horizon Exchange"
+    "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+    "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} adicionada na Bolsa Horizonte"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4352,12 +4352,8 @@
     "translation": "Política de gerenciamento de nó {NmpName} não localizada na organização {NmpOrg}"
   },
   {
-    "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "Removendo a política de gerenciamento de nó {NmpOrg}/{NmpName} do Exchange."
-  },
-  {
-    "id": "Node management policy {NmpOrg}/{NmpName} removed",
-    "translation": "Política de gerenciamento de nó {NmpOrg}/{NmpName} removida"
+    "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+    "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} removido da Bolsa Horizon."
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",
@@ -6045,15 +6041,15 @@
   },
   {
     "id": "given metadata file {KeyFileName} has missing fields:\n{Err}",
-    "translation": "arquivo de metadados dado {KeyFileName} tem campos ausentes:\n{Err}"
+    "translation": "o arquivo de metadados fornecido {KeyFileName} tem campos ausentes:\n{Err}"
   },
   {
     "id": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
-    "translation": "arquivo de metadados dado {KeyFileName} tem nome de chave não suportado.\n{Err}"
+    "translation": "o arquivo de metadados fornecido {KeyFileName} tem um nome de chave não suportado.\n{Err}"
   },
   {
     "id": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
-    "translation": "arquivo de metadados dado {KeyFileName} tem nome de país não suportado.\n{Err}"
+    "translation": "o arquivo de metadados fornecido {KeyFileName} tem um nome de país não suportado.\n{Err}"
   },
   {
     "id": "JSON Body:{StringkeyBytes}",

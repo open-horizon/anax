@@ -2825,7 +2825,7 @@
     {
       "id": "List the status of a given node management policy across all nodes in given org.",
       "message": "List the status of a given node management policy across all nodes in given org.",
-      "translation": "Listen Sie den Status einer bestimmten Knotenmanagementrichtlinie für alle Knoten in der angegebenen Organisation auf.",
+      "translation": "Status einer bestimmten Knotenmanagementrichtlinie für alle Knoten in der angegebenen Organisation auflisten.",
       "fuzzy": true
     },
     {
@@ -2837,7 +2837,7 @@
     {
       "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
       "message": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
-      "translation": "Filtern Sie die Ausgabe, um nur diesen einen Knoten einzuschließen. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen.",
+      "translation": "Ausgabe filtern, um nur diesen einen Knoten einzuschließen. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen.",
       "fuzzy": true
     },
     {
@@ -3023,19 +3023,19 @@
     {
       "id": "List the node management policy statuses for this node.",
       "message": "List the node management policy statuses for this node.",
-      "translation": "Listen Sie den Richtlinienstatus für das Knotenmanagement für diesen Knoten auf.",
+      "translation": "Richtlinienstatus für das Knotenmanagement für diesen Knoten auflisten.",
       "fuzzy": true
     },
     {
       "id": "List node management policy statuses for this node.",
       "message": "List node management policy statuses for this node.",
-      "translation": "Listen Sie den Richtlinienstatus für das Knotenmanagement für diesen Knoten auf.",
+      "translation": "Richtlinienstatus für das Knotenmanagement für diesen Knoten auflisten.",
       "fuzzy": true
     },
     {
       "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
       "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
-      "translation": "Filtern Sie die Ausgabe so, dass nur diese eine Knotenverwaltungsrichtlinie eingeschlossen wird. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen.",
+      "translation": "Ausgabe so filtern, dass nur diese eine Knotenverwaltungsrichtlinie eingeschlossen wird. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen.",
       "fuzzy": true
     },
     {
@@ -13149,9 +13149,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "Knotenmanagementrichtlinie: {NmpOrg}/{NmpName} in Horizon Exchange aktualisiert",
+      "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} in Horizon Exchange aktualisiert",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13205,9 +13205,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Knotenmanagementrichtlinie: {NmpOrg}/{NmpName} in Horizon Exchange hinzugefügt",
+      "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} in Horizon Exchange hinzugefügt",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13277,33 +13277,9 @@
       "fuzzy": true
     },
     {
-      "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "message": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "translation": "Die Knotenmanagementrichtlinie {NmpOrg}/{NmpName} wird aus Exchange entfernt.",
-      "placeholders": [
-        {
-          "id": "NmpOrg",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nmpOrg"
-        },
-        {
-          "id": "NmpName",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "nmpName"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Node management policy {NmpOrg}/{NmpName} removed",
-      "message": "Node management policy {NmpOrg}/{NmpName} removed",
-      "translation": "Knotenmanagementrichtlinie {NmpOrg}/{NmpName} entfernt",
+      "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "message": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "translation": "Die Knotenmanagementrichtlinie {NmpOrg}/{NmpName} wurde aus Horizon Exchange entfernt.",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13327,7 +13303,7 @@
     {
       "id": "Node {NodeName} not found in org {NmpOrg}",
       "message": "Node {NodeName} not found in org {NmpOrg}",
-      "translation": "Knoten {NodeName} nicht in org gefunden {NmpOrg}",
+      "translation": "Knoten {NodeName} nicht in Organisation {NmpOrg} gefunden",
       "placeholders": [
         {
           "id": "NodeName",
@@ -13351,7 +13327,7 @@
     {
       "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
-      "translation": "Status für NMP {NmpName} nicht gefunden in Organisation {NmpOrg}",
+      "translation": "Status für NMP {NmpName} nicht in Organisation {NmpOrg} gefunden",
       "placeholders": [
         {
           "id": "NmpName",
@@ -13375,7 +13351,7 @@
     {
       "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
       "message": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
-      "translation": "Status für NMP {NmpName} nicht gefunden für Knoten {NodeName} in org {NmpOrg}",
+      "translation": "Status für NMP {NmpName} wurde nicht für Knoten {NodeName} in Organisation {NmpOrg} gefunden",
       "placeholders": [
         {
           "id": "NmpName",
@@ -14299,7 +14275,7 @@
     {
       "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
-      "translation": "Status für Knoten {NodeName} nicht in Organisation gefunden {NodeOrg}",
+      "translation": "Status für Knoten {NodeName} nicht in Organisation {NodeOrg} gefunden",
       "placeholders": [
         {
           "id": "NodeName",
@@ -14323,7 +14299,7 @@
     {
       "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
       "message": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
-      "translation": "Knoten {NodeName} enthält keinen Status für {NmpName} in org {NodeOrg}",
+      "translation": "Knoten {NodeName} enthält keinen Status für {NmpName} in Organisation {NodeOrg}",
       "placeholders": [
         {
           "id": "NodeName",
@@ -20031,7 +20007,7 @@
     {
       "id": "Country name must be a 2 Letter Country Code",
       "message": "Country name must be a 2 Letter Country Code",
-      "translation": "Der Landesname muss aus zwei Buchstaben bestehen",
+      "translation": "Der Landesname muss aus einem zwei Buchstaben umfassenden Ländercode bestehen",
       "fuzzy": true
     },
     {

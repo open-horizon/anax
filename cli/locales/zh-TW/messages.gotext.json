@@ -13149,9 +13149,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "已在 Horizon Exchange 中更新節點管理原則：{NmpOrg}/{NmpName}",
+      "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中更新節點管理原則 {NmpOrg}/{NmpName}",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13205,9 +13205,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "已在 Horizon Exchange 中新增節點管理原則：{NmpOrg}/{NmpName}",
+      "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "translation": "在 Horizon Exchange 中新增了節點管理原則 {NmpOrg}/{NmpName}",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13277,33 +13277,9 @@
       "fuzzy": true
     },
     {
-      "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "message": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "translation": "正在從 Exchange 中移除節點管理原則 {NmpOrg}/{NmpName}。",
-      "placeholders": [
-        {
-          "id": "NmpOrg",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nmpOrg"
-        },
-        {
-          "id": "NmpName",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "nmpName"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Node management policy {NmpOrg}/{NmpName} removed",
-      "message": "Node management policy {NmpOrg}/{NmpName} removed",
-      "translation": "已移除節點管理原則 {NmpOrg}/{NmpName}",
+      "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "message": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "translation": "已從 Horizon Exchange 中移除節點管理原則 {NmpOrg}/{NmpName} 。",
       "placeholders": [
         {
           "id": "NmpOrg",

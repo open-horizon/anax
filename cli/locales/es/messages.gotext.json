@@ -2993,7 +2993,7 @@
     {
       "id": "List and manage node management resources in the Horizon Exchange",
       "message": "List and manage node management resources in the Horizon Exchange",
-      "translation": "Listar y gestionar recursos de gestión de nodos en Horizonte Exchange",
+      "translation": "Listar y gestionar recursos de gestión de nodos en Horizont Exchange",
       "fuzzy": true
     },
     {
@@ -13149,9 +13149,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} se ha actualizado en en Horizon Exchange",
+      "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha actualizado en Horizon Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13205,9 +13205,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} se ha añadido en Horizon Exchange",
+      "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "translation": "Política de gestión de nodos {NmpOrg}/{NmpName} añadida en Horizonte Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13277,33 +13277,9 @@
       "fuzzy": true
     },
     {
-      "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "message": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "translation": "Eliminando la política de gestión de nodos {NmpOrg}/{NmpName} de Exchange.",
-      "placeholders": [
-        {
-          "id": "NmpOrg",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nmpOrg"
-        },
-        {
-          "id": "NmpName",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "nmpName"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Node management policy {NmpOrg}/{NmpName} removed",
-      "message": "Node management policy {NmpOrg}/{NmpName} removed",
-      "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha eliminado",
+      "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "message": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha eliminado de Horizon Exchange.",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13351,7 +13327,7 @@
     {
       "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
       "message": "Status for NMP {NmpName} not found in org {NmpOrg}",
-      "translation": "No se ha encontrado el estado de NMP {NmpName} en la org organización {NmpOrg}",
+      "translation": "No se ha encontrado el estado de NMP {NmpName} en la organización {NmpOrg}",
       "placeholders": [
         {
           "id": "NmpName",

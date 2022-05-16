@@ -2717,7 +2717,7 @@
     {
       "id": "Skip the 'are you sure?' prompt.",
       "message": "Skip the 'are you sure?' prompt.",
-      "translation": "Ignorer l'invite \"Etes-vous sûr ?\".",
+      "translation": "Ignorer l'invite \"Voulez-vous vraiment ?\".",
       "fuzzy": true
     },
     {
@@ -2825,25 +2825,25 @@
     {
       "id": "List the status of a given node management policy across all nodes in given org.",
       "message": "List the status of a given node management policy across all nodes in given org.",
-      "translation": "Répertorez l'état d'une règle de gestion de noeud donnée sur tous les noeuds d'une organisation donnée.",
+      "translation": "Répertorier l'état d'une règle de gestion des noeuds donnée sur tous les noeuds d'une organisation donnée.",
       "fuzzy": true
     },
     {
       "id": "The name of the node management policy status to check.",
       "message": "The name of the node management policy status to check.",
-      "translation": "Nom de l'état de la règle de gestion des nœuds à vérifier.",
+      "translation": "Nom du statut de la règle de gestion des nœuds à vérifier.",
       "fuzzy": true
     },
     {
       "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
       "message": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
-      "translation": "Filtrez la sortie pour inclure uniquement ce noeud. Utilisez l'option --long pour afficher le contenu complet d'un objet de statut de règle de gestion de noeud unique.",
+      "translation": "Filtrer la sortie pour inclure uniquement ce noeud. Utiliser l'option --long pour afficher le contenu complet d'un objet de statut de règle de gestion de noeud unique.",
       "fuzzy": true
     },
     {
       "id": "Show the entire contents of each node management policy status object.",
       "message": "Show the entire contents of each node management policy status object.",
-      "translation": "Affichez tout le contenu de chaque objet de statut de règle de gestion de noeud.",
+      "translation": "Afficher tout le contenu de chaque objet de statut de règle de gestion de noeud.",
       "fuzzy": true
     },
     {
@@ -3035,7 +3035,7 @@
     {
       "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
       "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
-      "translation": "Filtrez la sortie pour inclure uniquement cette règle de gestion de noeud. Utilisez l'option --long pour afficher le contenu complet d'un objet de statut de règle de gestion de noeud unique.",
+      "translation": "Filtrer la sortie pour inclure uniquement cette règle de gestion des noeuds. Utiliser l'option --long pour afficher le contenu complet d'un objet de statut de règle de gestion de noeud unique.",
       "fuzzy": true
     },
     {
@@ -4209,7 +4209,7 @@
     {
       "id": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
       "message": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
-      "translation": "Données d'identification de l'utilisateur Horizon permettant d'interroger et de créer des ressources de gestion de nœud. Si cet attribut n'est pas défini, HZN_EXCHANGE_USER_AUTH est utilisé comme valeur par défaut. Si vous n'ajoutez pas en préfixe l'organisation de l'utilisateur, cet attribut sera automatiquement précédé de valeur -o.",
+      "translation": "Données d'identification de l'utilisateur Horizon permettant d'interroger et de créer des ressources de gestion de nœud. Si cet attribut n'est pas défini, HZN_EXCHANGE_USER_AUTH est utilisé comme valeur par défaut. Si vous n'ajoutez pas en préfixe l'organisation de l'utilisateur, cet attribut sera automatiquement précédé de la valeur -o.",
       "fuzzy": true
     },
     {
@@ -4275,19 +4275,19 @@
     {
       "id": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
       "message": "Remove a manifest file from the management hub. Use 'hzn nodemanagement manifest new' for an empty manifest template.",
-      "translation": "Supprimez un fichier manifeste du concentrateur de gestion. Utiliser 'hzn nodemanagement manifest new' pour ajouter un modèle de manifeste vide.",
+      "translation": "Retirer un fichier manifeste du concentrateur de gestion. Utiliser 'hzn nodemanagement manifest new' pour ajouter un modèle de manifeste vide.",
       "fuzzy": true
     },
     {
       "id": "The type of manifest to remove. Valid values include 'agent_upgrade_manifests'.",
       "message": "The type of manifest to remove. Valid values include 'agent_upgrade_manifests'.",
-      "translation": "Type de manifeste à supprimer. Les valeurs valides sont 'agent_upgrade_manifests'.",
+      "translation": "Type de manifeste à retirer. Les valeurs valides sont 'agent_upgrade_manifests'.",
       "fuzzy": true
     },
     {
       "id": "The id of the manifest to remove.",
       "message": "The id of the manifest to remove.",
-      "translation": "ID du manifeste à supprimer.",
+      "translation": "ID du manifeste à retirer.",
       "fuzzy": true
     },
     {
@@ -4305,19 +4305,19 @@
     {
       "id": "Filter the list of agent upgrade files by the specified type. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
       "message": "Filter the list of agent upgrade files by the specified type. Valid values include 'agent_software_files', 'agent_cert_files' and 'agent_config_files'.",
-      "translation": "Filtrez la liste des fichiers de mise à niveau de l'agent en fonction du type indiqué. Les valeurs valides sont 'agent_software_files', 'agent_cert_files' et 'agent_config_files'.",
+      "translation": "Filtrer la liste des fichiers de mise à niveau de l'agent en fonction du type indiqué. Les valeurs valides sont 'agent_software_files', 'agent_cert_files' et 'agent_config_files'.",
       "fuzzy": true
     },
     {
       "id": "Filter the list of agent upgrade files by the specified version range or version string. Version can be a version range, a single version string or 'latest'.",
       "message": "Filter the list of agent upgrade files by the specified version range or version string. Version can be a version range, a single version string or 'latest'.",
-      "translation": "Filtrez la liste des fichiers de mise à niveau de l'agent en fonction de la plage de versions ou de la chaîne de version spécifiée. La version peut être une plage de versions, une chaîne de version unique ou la valeur 'latest'.",
+      "translation": "Filtrer la liste des fichiers de mise à niveau de l'agent en fonction de la plage de versions ou de la chaîne de version spécifiée. La version peut être une plage de versions, une chaîne de version unique ou la valeur 'latest'.",
       "fuzzy": true
     },
     {
       "id": "Display a list of agent file types with their corresponding versions.",
       "message": "Display a list of agent file types with their corresponding versions.",
-      "translation": "Affichez une liste des types de fichiers d'agent avec leurs versions correspondantes.",
+      "translation": "Afficher la liste des types de fichiers d'agent avec leurs versions correspondantes.",
       "fuzzy": true
     },
     {
@@ -4329,7 +4329,7 @@
     {
       "id": "Show only a list of versions for a given file type. Must also specify a file type with the --type flag.",
       "message": "Show only a list of versions for a given file type. Must also specify a file type with the --type flag.",
-      "translation": "Affichez uniquement une liste de versions pour un type de fichier donné. Vous devez également indiquer un type de fichier avec l'indicateur -- type.",
+      "translation": "Afficher uniquement la liste de versions pour un type de fichier donné. Vous devez également indiquer un type de fichier avec l'indicateur -- type.",
       "fuzzy": true
     },
     {
@@ -4711,7 +4711,7 @@
     {
       "id": "Skip the 'Are you sure?' prompt.",
       "message": "Skip the 'Are you sure?' prompt.",
-      "translation": "Ignorer l'invite \"Etes-vous sûr ?\".",
+      "translation": "Ignorer l'invite \"Voulez-vous vraiment ?\".",
       "fuzzy": true
     },
     {
@@ -13149,9 +13149,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "Règle de gestion des nœuds : {NmpOrg}/{NmpName} mis à jour dans Horizon Exchange",
+      "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "translation": "Politique de gestion des noeuds {NmpOrg}/{NmpName} mise à jour dans Horizon Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13205,9 +13205,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Règle de gestion des nœuds : {NmpOrg}/{NmpName} ajouté dans Horizon Exchange",
+      "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "translation": "Politique de gestion des noeuds {NmpOrg}/{NmpName} ajoutée dans Horizon Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13277,33 +13277,9 @@
       "fuzzy": true
     },
     {
-      "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "message": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "translation": "Suppression de la règle de gestion des nœuds {NmpOrg}/{NmpName} de la structure Exchange.",
-      "placeholders": [
-        {
-          "id": "NmpOrg",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nmpOrg"
-        },
-        {
-          "id": "NmpName",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "nmpName"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Node management policy {NmpOrg}/{NmpName} removed",
-      "message": "Node management policy {NmpOrg}/{NmpName} removed",
-      "translation": "La règle de gestion des nœuds {NmpOrg}/{NmpName} a été retirée",
+      "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "message": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "translation": "La stratégie de gestion des noeuds {NmpOrg}/{NmpName} a été supprimée de l'échange Horizon.",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -14299,7 +14275,7 @@
     {
       "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
       "message": "Statuses for node {NodeName} not found in org {NodeOrg}",
-      "translation": "Statuts de nœuds {NodeName}introuvables dans l'organisation {NodeOrg}",
+      "translation": "Statuts du nœud {NodeName} introuvables dans l'organisation {NodeOrg}",
       "placeholders": [
         {
           "id": "NodeName",
@@ -17365,7 +17341,7 @@
     {
       "id": "must specify --type with --version-only",
       "message": "must specify --type with --version-only",
-      "translation": "vous devez spécifier --type avec --version-only",
+      "translation": "Vous devez indiquer --type avec --version-only",
       "fuzzy": true
     },
     {
@@ -17393,7 +17369,7 @@
     {
       "id": "must specify --type and --id with --long",
       "message": "must specify --type and --id with --long",
-      "translation": "vous devez spécifier --type et --id avec --long",
+      "translation": "Vous devez indiquer --type et --id avec --long",
       "fuzzy": true
     },
     {
@@ -17579,7 +17555,7 @@
     {
       "id": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
       "message": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
-      "translation": "Voulez-vous vraiment supprimer le manifeste {ManOrg}/{ManifestId} du concentrateur de gestion ?",
+      "translation": "Voulez-vous vraiment retirer le manifeste {ManOrg}/{ManifestId} du concentrateur de gestion ?",
       "placeholders": [
         {
           "id": "ManOrg",
@@ -19909,7 +19885,7 @@
     {
       "id": "given metadata file {KeyFileName} has missing fields:\n{Err}",
       "message": "given metadata file {KeyFileName} has missing fields:\n{Err}",
-      "translation": "Le fichier de métadonnées donné {KeyFileName} comporte des zones manquantes : \n{Err}",
+      "translation": "Le fichier de métadonnées indiqué, {KeyFileName}, comporte des zones manquantes : \n{Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -19933,7 +19909,7 @@
     {
       "id": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
       "message": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
-      "translation": "Le nom de clé du fichier de métadonnées donné {KeyFileName} n'est pas pris en charge. \n{Err}",
+      "translation": "Le nom de clé du fichier de métadonnées indiqué, {KeyFileName}, n'est pas pris en charge. \n{Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -19957,7 +19933,7 @@
     {
       "id": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
       "message": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
-      "translation": "Le nom de pays du fichier de métadonnées donné {KeyFileName} n'est  pas pris en charge. \n{Err}",
+      "translation": "Le nom de pays du fichier de métadonnées indiqué, {KeyFileName}, n'est  pas pris en charge. \n{Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -20641,7 +20617,7 @@
     {
       "id": "Must specify either -f or --secretDetail.",
       "message": "Must specify either -f or --secretDetail.",
-      "translation": "Vous devez spécifier -f ou --secretDetail.",
+      "translation": "Vous devez indiquer -f ou --secretDetail.",
       "fuzzy": true
     },
     {
