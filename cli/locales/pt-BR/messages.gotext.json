@@ -2825,7 +2825,7 @@
     {
       "id": "List the status of a given node management policy across all nodes in given org.",
       "message": "List the status of a given node management policy across all nodes in given org.",
-      "translation": "Liste o status de uma determinada política de gerenciamento de nós em todos os nós de uma organização.",
+      "translation": "Listar o status de uma determinada política de gerenciamento de nós em todos os nós de uma organização.",
       "fuzzy": true
     },
     {
@@ -13149,9 +13149,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "Política de gerenciamento de nó: {NmpOrg}/{NmpName} atualizado no Horizon Exchange",
+      "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+      "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} atualizado na Bolsa de Horizonte",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13205,9 +13205,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "message": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Política de gerenciamento de nó: {NmpOrg}/{NmpName} incluído no Horizon Exchange",
+      "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+      "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} adicionada na Bolsa Horizonte",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13277,33 +13277,9 @@
       "fuzzy": true
     },
     {
-      "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "message": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-      "translation": "Removendo a política de gerenciamento de nó {NmpOrg}/{NmpName} do Exchange.",
-      "placeholders": [
-        {
-          "id": "NmpOrg",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nmpOrg"
-        },
-        {
-          "id": "NmpName",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "nmpName"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Node management policy {NmpOrg}/{NmpName} removed",
-      "message": "Node management policy {NmpOrg}/{NmpName} removed",
-      "translation": "Política de gerenciamento de nó {NmpOrg}/{NmpName} removida",
+      "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "message": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+      "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} removido da Bolsa Horizon.",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -19909,7 +19885,7 @@
     {
       "id": "given metadata file {KeyFileName} has missing fields:\n{Err}",
       "message": "given metadata file {KeyFileName} has missing fields:\n{Err}",
-      "translation": "arquivo de metadados dado {KeyFileName} tem campos ausentes:\n{Err}",
+      "translation": "o arquivo de metadados fornecido {KeyFileName} tem campos ausentes:\n{Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -19933,7 +19909,7 @@
     {
       "id": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
       "message": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
-      "translation": "arquivo de metadados dado {KeyFileName} tem nome de chave não suportado.\n{Err}",
+      "translation": "o arquivo de metadados fornecido {KeyFileName} tem um nome de chave não suportado.\n{Err}",
       "placeholders": [
         {
           "id": "KeyFileName",
@@ -19957,7 +19933,7 @@
     {
       "id": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
       "message": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
-      "translation": "arquivo de metadados dado {KeyFileName} tem nome de país não suportado.\n{Err}",
+      "translation": "o arquivo de metadados fornecido {KeyFileName} tem um nome de país não suportado.\n{Err}",
       "placeholders": [
         {
           "id": "KeyFileName",

@@ -1213,7 +1213,7 @@
   },
   {
     "id": "List and manage node management resources in the Horizon Exchange",
-    "translation": "Listar y gestionar recursos de gestión de nodos en Horizonte Exchange"
+    "translation": "Listar y gestionar recursos de gestión de nodos en Horizont Exchange"
   },
   {
     "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
@@ -4332,16 +4332,16 @@
     "translation": "La política de gestión de nodos no tiene restricciones que puedan dar lugar a que la política de gestión se despliegue en todos los nodos. Especifique --no-constraints para confirmar que esto es aceptable."
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} se ha actualizado en en Horizon Exchange"
+    "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+    "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha actualizado en Horizon Exchange"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
     "translation": "No se puede crear la política de gestión de nodos {NmpOrg}/{NmpName}: {Msg}"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "Política de gestión de nodos: {NmpOrg}/{NmpName} se ha añadido en Horizon Exchange"
+    "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+    "translation": "Política de gestión de nodos {NmpOrg}/{NmpName} añadida en Horizonte Exchange"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4352,12 +4352,8 @@
     "translation": "No se ha encontrado la política de gestión de nodos {NmpName} en la organización {NmpOrg}"
   },
   {
-    "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "Eliminando la política de gestión de nodos {NmpOrg}/{NmpName} de Exchange."
-  },
-  {
-    "id": "Node management policy {NmpOrg}/{NmpName} removed",
-    "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha eliminado"
+    "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+    "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha eliminado de Horizon Exchange."
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",
@@ -4365,7 +4361,7 @@
   },
   {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
-    "translation": "No se ha encontrado el estado de NMP {NmpName} en la org organización {NmpOrg}"
+    "translation": "No se ha encontrado el estado de NMP {NmpName} en la organización {NmpOrg}"
   },
   {
     "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",

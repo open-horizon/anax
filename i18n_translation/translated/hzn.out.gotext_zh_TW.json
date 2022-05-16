@@ -4332,16 +4332,16 @@
     "translation": "節點管理原則沒有任何限制，這可能導致管理原則部署至所有節點。 請指定 --no-constraints 以確認這是可接受的。"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "已在 Horizon Exchange 中更新節點管理原則：{NmpOrg}/{NmpName}"
+    "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+    "translation": "已在 Horizon Exchange 中更新節點管理原則 {NmpOrg}/{NmpName}"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
     "translation": "無法建立節點管理原則 {NmpOrg}/{NmpName}：{Msg}"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "已在 Horizon Exchange 中新增節點管理原則：{NmpOrg}/{NmpName}"
+    "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+    "translation": "在 Horizon Exchange 中新增了節點管理原則 {NmpOrg}/{NmpName}"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4352,12 +4352,8 @@
     "translation": "在組織 {NmpOrg} 中找不到節點管理原則 {NmpName}"
   },
   {
-    "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "正在從 Exchange 中移除節點管理原則 {NmpOrg}/{NmpName}。"
-  },
-  {
-    "id": "Node management policy {NmpOrg}/{NmpName} removed",
-    "translation": "已移除節點管理原則 {NmpOrg}/{NmpName}"
+    "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+    "translation": "已從 Horizon Exchange 中移除節點管理原則 {NmpOrg}/{NmpName} 。"
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",

@@ -233,15 +233,15 @@
   },
   {
     "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-    "translation": "ノード・ポリシー用の入力の構文解析中にエラーが発生しました。 入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
+    "translation": "ノード・ポリシーの入力を構文解析中にエラーが発生しました。入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
   },
   {
     "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-    "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}"
+    "translation": "ノード・ポリシー・パッチの入力を解析中にエラーが発生しました。入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}"
   },
   {
     "id": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
-    "translation": "ノード・ポリシー・パッチで入力されたエラー解析。 入力本文に 'properties'、'constraints '、'deployment'、または 'management' 属性が含まれていません: {Arg_1}"
+    "translation": "ノード・ポリシー・パッチの入力を解析中にエラーが発生しました。 入力本文に 'properties'、'constraints '、'deployment'、または 'management' 属性が含まれていません: {Arg_1}"
   },
   {
     "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",

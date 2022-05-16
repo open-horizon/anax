@@ -1101,7 +1101,7 @@
   },
   {
     "id": "List the status of a given node management policy across all nodes in given org.",
-    "translation": "Listen Sie den Status einer bestimmten Knotenmanagementrichtlinie für alle Knoten in der angegebenen Organisation auf."
+    "translation": "Status einer bestimmten Knotenmanagementrichtlinie für alle Knoten in der angegebenen Organisation auflisten."
   },
   {
     "id": "The name of the node management policy status to check.",
@@ -1109,7 +1109,7 @@
   },
   {
     "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "Filtern Sie die Ausgabe, um nur diesen einen Knoten einzuschließen. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen."
+    "translation": "Ausgabe filtern, um nur diesen einen Knoten einzuschließen. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen."
   },
   {
     "id": "Show the entire contents of each node management policy status object.",
@@ -1233,15 +1233,15 @@
   },
   {
     "id": "List the node management policy statuses for this node.",
-    "translation": "Listen Sie den Richtlinienstatus für das Knotenmanagement für diesen Knoten auf."
+    "translation": "Richtlinienstatus für das Knotenmanagement für diesen Knoten auflisten."
   },
   {
     "id": "List node management policy statuses for this node.",
-    "translation": "Listen Sie den Richtlinienstatus für das Knotenmanagement für diesen Knoten auf."
+    "translation": "Richtlinienstatus für das Knotenmanagement für diesen Knoten auflisten."
   },
   {
     "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "Filtern Sie die Ausgabe so, dass nur diese eine Knotenverwaltungsrichtlinie eingeschlossen wird. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen."
+    "translation": "Ausgabe so filtern, dass nur diese eine Knotenverwaltungsrichtlinie eingeschlossen wird. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen."
   },
   {
     "id": "List the run-time status of the node.",
@@ -4332,16 +4332,16 @@
     "translation": "Die Knotenmanagementrichtlinie hat keine Einschränkungen, die dazu führen können, dass die Managementrichtlinie auf allen Knoten implementiert wird. Geben Sie -- no-constraints an, um zu bestätigen, dass dies zulässig ist."
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "Knotenmanagementrichtlinie: {NmpOrg}/{NmpName} in Horizon Exchange aktualisiert"
+    "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+    "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} in Horizon Exchange aktualisiert"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
     "translation": "Die Knotenmanagementrichtlinie {NmpOrg}/{NmpName} kann nicht erstellt werden: {Msg}"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "Knotenmanagementrichtlinie: {NmpOrg}/{NmpName} in Horizon Exchange hinzugefügt"
+    "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+    "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} in Horizon Exchange hinzugefügt"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4352,24 +4352,20 @@
     "translation": "Knotenmanagementrichtlinie {NmpName} in Organisation {NmpOrg} nicht gefunden"
   },
   {
-    "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "Die Knotenmanagementrichtlinie {NmpOrg}/{NmpName} wird aus Exchange entfernt."
-  },
-  {
-    "id": "Node management policy {NmpOrg}/{NmpName} removed",
-    "translation": "Knotenmanagementrichtlinie {NmpOrg}/{NmpName} entfernt"
+    "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+    "translation": "Die Knotenmanagementrichtlinie {NmpOrg}/{NmpName} wurde aus Horizon Exchange entfernt."
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",
-    "translation": "Knoten {NodeName} nicht in org gefunden {NmpOrg}"
+    "translation": "Knoten {NodeName} nicht in Organisation {NmpOrg} gefunden"
   },
   {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
-    "translation": "Status für NMP {NmpName} nicht gefunden in Organisation {NmpOrg}"
+    "translation": "Status für NMP {NmpName} nicht in Organisation {NmpOrg} gefunden"
   },
   {
     "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
-    "translation": "Status für NMP {NmpName} nicht gefunden für Knoten {NodeName} in org {NmpOrg}"
+    "translation": "Status für NMP {NmpName} wurde nicht für Knoten {NodeName} in Organisation {NmpOrg} gefunden"
   },
   {
     "id": "failed to marshal 'exchange node list' output: {Err}",
@@ -4577,11 +4573,11 @@
   },
   {
     "id": "Statuses for node {NodeName} not found in org {NodeOrg}",
-    "translation": "Status für Knoten {NodeName} nicht in Organisation gefunden {NodeOrg}"
+    "translation": "Status für Knoten {NodeName} nicht in Organisation {NodeOrg} gefunden"
   },
   {
     "id": "Node {NodeName} does not contain a status for {NmpName} in org {NodeOrg}",
-    "translation": "Knoten {NodeName} enthält keinen Status für {NmpName} in org {NodeOrg}"
+    "translation": "Knoten {NodeName} enthält keinen Status für {NmpName} in Organisation {NodeOrg}"
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -6077,7 +6073,7 @@
   },
   {
     "id": "Country name must be a 2 Letter Country Code",
-    "translation": "Der Landesname muss aus zwei Buchstaben bestehen"
+    "translation": "Der Landesname muss aus einem zwei Buchstaben umfassenden Ländercode bestehen"
   },
   {
     "id": "Inspecting voucher file name: {Name}",

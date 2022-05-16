@@ -165,11 +165,11 @@
   },
   {
     "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-    "translation": "ノード・ポリシー用の入力の構文解析中にエラーが発生しました。 入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
+    "translation": "ノード・ポリシーの入力を構文解析中にエラーが発生しました。入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
   },
   {
     "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-    "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}"
+    "translation": "ノード・ポリシー・パッチの入力を解析中にエラーが発生しました。入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}"
   },
   {
     "id": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
@@ -1033,7 +1033,7 @@
   },
   {
     "id": "The name of the deployment policy to be removed.",
-    "translation": "削除するデプロイメント・ポリシーの名前。"
+    "translation": "削除されるデプロイメント・ポリシーの名前。"
   },
   {
     "id": "Update one attribute of an existing deployment policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'.",
@@ -1109,7 +1109,7 @@
   },
   {
     "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "この 1 つのノードのみを含めるように出力をフィルタリングします。 単一ノード管理ポリシー状況オブジェクトの内容全体を表示するには、-- long フラグと一緒に使用します。"
+    "translation": "この 1 つのノードのみを含めるように出力をフィルタリングします。 単一ノード管理ポリシー状況オブジェクトの内容全体を表示するには、--long フラグと一緒に使用してください。"
   },
   {
     "id": "Show the entire contents of each node management policy status object.",
@@ -1241,7 +1241,7 @@
   },
   {
     "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "この 1 つのノード管理ポリシーのみを含めるように出力をフィルタリングします。 単一ノード管理ポリシー状況オブジェクトの内容全体を表示するには、-- long フラグと一緒に使用します。"
+    "translation": "この 1 つのノード管理ポリシーのみを含めるように出力をフィルタリングします。 単一ノード管理ポリシー状況オブジェクトの内容全体を表示するには、--long フラグと一緒に使用してください。"
   },
   {
     "id": "List the run-time status of the node.",
@@ -4329,19 +4329,19 @@
   },
   {
     "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
-    "translation": "ノード管理ポリシーに制約がないため、管理ポリシーがすべてのノードにデプロイされる可能性があります。 -- no-constraint を指定して、これが受け入れ可能であることを確認してください。"
+    "translation": "ノード管理ポリシーに制約がないため、管理ポリシーがすべてのノードにデプロイされる可能性があります。 --no-constraint を指定して、これが受け入れ可能であることを確認してください。"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "ノード管理ポリシー: {NmpOrg}/{NmpName} が Horizon Exchange で更新されました"
+    "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
+    "translation": "Horizon Exchange 内のノード管理ポリシー {NmpOrg}/{NmpName} が更新されました。"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
     "translation": "ノード管理ポリシー {NmpOrg}/{NmpName}を作成できません: {Msg}"
   },
   {
-    "id": "Node management policy: {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "ノード管理ポリシー: {NmpOrg}/{NmpName} が Horizon Exchange で追加されました"
+    "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
+    "translation": "Horizon Exchange に追加されたノード管理ポリシー {NmpOrg}/{NmpName}"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4352,12 +4352,8 @@
     "translation": "ノード管理ポリシー {NmpName} が組織 {NmpOrg} に見つかりません"
   },
   {
-    "id": "Removing node management policy {NmpOrg}/{NmpName} from the exchange.",
-    "translation": "Exchange からノード管理ポリシー {NmpOrg}/{NmpName} を削除しています。"
-  },
-  {
-    "id": "Node management policy {NmpOrg}/{NmpName} removed",
-    "translation": "ノード管理ポリシー {NmpOrg}/{NmpName} が削除されました"
+    "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
+    "translation": "ノード管理ポリシー {NmpOrg}/{NmpName} が Horizon Exchange から削除されました。"
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",
@@ -6045,15 +6041,15 @@
   },
   {
     "id": "given metadata file {KeyFileName} has missing fields:\n{Err}",
-    "translation": "指定されたメタデータ・ファイル {KeyFileName} にフィールドがありません: \n{Err}"
+    "translation": "指定されたメタデータ・ファイル {KeyFileName} に以下のフィールドがありません: \n{Err}"
   },
   {
     "id": "given metadata file {KeyFileName} has unsupported key name.\n{Err}",
-    "translation": "指定されたメタデータ・ファイル {KeyFileName} にサポートされないキー名があります。\n{Err}"
+    "translation": "指定されたメタデータ・ファイル {KeyFileName} にサポート対象外の鍵名があります。\n{Err}"
   },
   {
     "id": "given metadata file {KeyFileName} has unsupported country name.\n{Err}",
-    "translation": "指定されたメタデータ・ファイル {KeyFileName} の国名はサポートされていません。\n{Err}"
+    "translation": "指定されたメタデータ・ファイル {KeyFileName} にサポート対象外の国名があります。\n{Err}"
   },
   {
     "id": "JSON Body:{StringkeyBytes}",
@@ -6073,7 +6069,7 @@
   },
   {
     "id": "Key name can only contain lowercase characters, numbers, and hyphens",
-    "translation": "キー名には小文字、数字、およびハイフンのみを使用できます"
+    "translation": "鍵名には小文字、数字、およびハイフンのみを使用できます"
   },
   {
     "id": "Country name must be a 2 Letter Country Code",
