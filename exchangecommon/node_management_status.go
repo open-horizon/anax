@@ -144,6 +144,7 @@ const (
 	STATUS_DOWNLOADED          = "downloaded"
 	STATUS_DOWNLOAD_FAILED     = "download failed"
 	STATUS_SUCCESSFUL          = "successful"
+	STATUS_NO_ACTION		   = "no action required"
 	STATUS_FAILED_JOB          = "failed"
 	STATUS_INITIATED           = "initiated"
 	STATUS_ROLLBACK_STARTED    = "rollback started"

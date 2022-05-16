@@ -158,8 +158,8 @@ func (n *NodeManagementWorker) HandleRegistration() {
 	workingDir := n.Config.Edge.GetNodeMgmtDirectory()
 	if err := n.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n)); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
-		// uncomment the return once nmp status is in the exchange-api
-		// return
+		
+		return
 	}
 	return
 }
@@ -187,10 +187,10 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 		glog.Infof(nmwlog(fmt.Sprintf("Sucessfully downloaded packages for nmp %v.", cmd.Msg.NMPName)))
 		status.SetStatus(exchangecommon.STATUS_DOWNLOADED)
 		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOADED), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
-	} else if cmd.Msg.Status == exchangecommon.STATUS_SUCCESSFUL {
+	} else if cmd.Msg.Status == exchangecommon.STATUS_NO_ACTION {
 		glog.Infof(nmwlog(fmt.Sprintf("Already in compliance with nmp %v. Download skipped.", cmd.Msg.NMPName)))
-		status.SetStatus(exchangecommon.STATUS_SUCCESSFUL)
-		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_SUCCESSFUL), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
+		status.SetStatus(exchangecommon.STATUS_NO_ACTION)
+		eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_NO_ACTION), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 	} else {
 		glog.Infof(nmwlog(fmt.Sprintf("Failed to download packages for nmp %v.", cmd.Msg.NMPName)))
 		status.SetStatus(cmd.Msg.Status)
@@ -208,7 +208,6 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 	}
 
 	if cmd.Msg.Status == exchangecommon.STATUS_DOWNLOADED {
-		glog.Infof("DownloadComplete sending out AgentPackageDownloadedMessaage with event: %v, for npm: %v", events.AGENT_PACKAGE_DOWNLOADED, cmd.Msg.NMPName)
 		n.Messages() <- events.NewAgentPackageDownloadedMessage(events.AGENT_PACKAGE_DOWNLOADED, events.StartDownloadMessage{NMPStatus: status, NMPName: cmd.Msg.NMPName})
 	}
 }
@@ -288,7 +287,6 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 			org, nodeId := cutil.SplitOrgSpecUrl(n.GetExchangeId())
 			glog.Infof(nmwlog(fmt.Sprintf("Found matching node management policy %v in the exchange.", name)))
 			if !policy.Enabled {
-				glog.Errorf("disabled policy %v", name)
 				existingStatus, err := persistence.DeleteNMPStatus(n.db, name)
 				if err != nil {
 					glog.Errorf(nmwlog(fmt.Sprintf("Failed to delete status for deactivated node policy %v from database. Error was %v", name, err)))
@@ -299,7 +297,6 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 					}
 				}
 			} else {
-				glog.Errorf("enabled policy %v", name)
 				if err = persistence.SaveOrUpdateNodeManagementPolicy(n.db, name, policy); err != nil {
 					return err
 				}
@@ -482,14 +479,14 @@ func (n *NodeManagementWorker) UpdateStatus(policyName string, status *exchangec
 // If there is no new version for whatever the status has "latest" for, it will be marked successful without executing
 func (n *NodeManagementWorker) HandleAgentFilesVersionChange() {
 	if latestStatuses, err := persistence.FindNMPWithLatestKeywordVersion(n.db); err != nil {
-		glog.Errorf("Error getting nmp statuses from db to change to \"waiting\". Error was: %v", err)
+		glog.Errorf(nmwlog(fmt.Sprintf("Error getting nmp statuses from db to change to \"waiting\". Error was: %v", err)))
 		return
 	} else {
 		for statusName, status := range latestStatuses {
 			status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
 			err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n))
 			if err != nil {
-				glog.Errorf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)
+				glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)))
 			}
 		}
 	}

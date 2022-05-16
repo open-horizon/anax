@@ -150,7 +150,9 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	if err != nil {
 		return err
 	}
-	glog.V(3).Infof("Upgrade package names: %v", objIds)
+	glog.V(3).Infof(dwlog(fmt.Sprintf("Upgrade package names: %v", objIds)))
+
+	anythingDownloaded := false 
 
 	// If org is specified in the manifest id, use that org. Otherwise use the user org
 	manOrg, manId := cutil.SplitOrgSpecUrl(nmpStatus.AgentUpgradeInternal.Manifest)
@@ -176,7 +178,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	}
 
 	swType, configType, certType := getUpgradeCSSType(upgradeVersions)
-	glog.V(3).Infof("Upgrade versions: swType: %v, configType: %v, certType: %v", swType, configType, certType)
+	glog.V(3).Infof(dwlog(fmt.Sprintf("Upgrade versions: swType: %v, configType: %v, certType: %v", swType, configType, certType)))
 
 	if swType != "" {
 		if objIds != nil {
@@ -185,8 +187,9 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 					if err = w.DownloadCSSObject(CSSSHAREDORG, swType, objId, filePath, nmpName); err != nil {
 						return fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, swType, objId, err)
 					}
+					anythingDownloaded = true
 				} else {
-					glog.Infof("No software upgrade object found of expected type %v found in manifest list.", objId)
+					glog.Infof(dwlog(fmt.Sprintf("No software upgrade object found of expected type %v found in manifest list.", objId)))
 				}
 			}
 		}
@@ -197,8 +200,9 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 			if err = w.DownloadCSSObject(CSSSHAREDORG, configType, HZN_CONFIG_FILE, filePath, nmpName); err != nil {
 				return fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, configType, HZN_CONFIG_FILE, err)
 			}
+			anythingDownloaded = true
 		} else {
-			glog.Infof("No config upgrade object found of expected type %v found in manifest list.", HZN_CONFIG_FILE)
+			glog.Infof(dwlog(fmt.Sprintf("No config upgrade object found of expected type %v found in manifest list.", HZN_CONFIG_FILE)))
 		}
 	}
 
@@ -207,8 +211,9 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 			if err = w.DownloadCSSObject(CSSSHAREDORG, certType, HZN_CERT_FILE, filePath, nmpName); err != nil {
 				return fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, certType, HZN_CERT_FILE, err)
 			}
+			anythingDownloaded = true
 		} else {
-			glog.Infof("No cert upgrade object found of expected type %v found in manifest list.", HZN_CERT_FILE)
+			glog.Infof(dwlog(fmt.Sprintf("No cert upgrade object found of expected type %v found in manifest list.", HZN_CERT_FILE)))
 		}
 	}
 
@@ -218,10 +223,10 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	// The config and cert versions should be the actual version downloaded so after the upgrade is executed, these versions can be used to set the device versions
 	versionsToSave := exchangecommon.AgentUpgradeVersions{SoftwareVersion: manifestUpgradeVersions.SoftwareVersion, ConfigVersion: upgradeVersions.ConfigVersion, CertVersion: upgradeVersions.CertVersion}
 
-	if swType != "" || configType != "" || certType != "" {
+	if anythingDownloaded {
 		w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_DOWNLOADED, nmpName, &versionsToSave, latestVersions)
 	} else {
-		w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_SUCCESSFUL, nmpName, &versionsToSave, latestVersions)
+		w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_NO_ACTION	, nmpName, &versionsToSave, latestVersions)
 	}
 
 	return nil
@@ -249,13 +254,13 @@ func (w *DownloadWorker) ResolveUpgradeVersions(upgradeVersions *exchangecommon.
 			// The software version from the nmp found is a downgrade or same as current level
 			if nmpStatus.AgentUpgradeInternal.AllowDowngrade {
 				if statuses, err := persistence.FindNodeUpgradeStatusesWithTypeAfterTime(w.db, nmpStatus.AgentUpgradeInternal.ScheduledUnixTime, "software"); err != nil {
-					glog.Errorf("Error finding node statuses in db: %v", err)
+					glog.Errorf(dwlog(fmt.Sprintf("Error finding node statuses in db: %v", err)))
 				} else if len(statuses) == 0 {
 					// No more recent node management policies that have a software upgrade. This downgrade should be executed
 					versToDownload.SoftwareVersion = upgradeVersions.SoftwareVersion
 				}
 			} else {
-				glog.Infof("Current node version %v is higher than or same as version %v from nmp %v. No need to download packages.", currentVers, upgradeVersions.SoftwareVersion, nmpName)
+				glog.Infof(dwlog(fmt.Sprintf("Current node version %v is higher than or same as version %v from nmp %v. No need to download packages.", currentVers, upgradeVersions.SoftwareVersion, nmpName)))
 			}
 		} else {
 			// The software version is an upgrade. Allow it
@@ -271,13 +276,13 @@ func (w *DownloadWorker) ResolveUpgradeVersions(upgradeVersions *exchangecommon.
 			// The config version from the nmp found is a downgrade or same as current level
 			if nmpStatus.AgentUpgradeInternal.AllowDowngrade {
 				if statuses, err := persistence.FindNodeUpgradeStatusesWithTypeAfterTime(w.db, nmpStatus.AgentUpgradeInternal.ScheduledUnixTime, "config"); err != nil {
-					glog.Errorf("Error finding node statuses in db: %v", err)
+					glog.Errorf(dwlog(fmt.Sprintf("Error finding node statuses in db: %v", err)))
 				} else if len(statuses) == 0 {
 					// No more recent node management policies that have a config upgrade. This downgrade should be executed
 					versToDownload.ConfigVersion = upgradeVersions.ConfigVersion
 				}
 			} else {
-				glog.Infof("Current config version %v is higher than or same as version %v from nmp %v. No need to download packages.", currentVers, upgradeVersions.ConfigVersion, nmpName)
+				glog.Infof(dwlog(fmt.Sprintf("Current config version %v is higher than or same as version %v from nmp %v. No need to download packages.", currentVers, upgradeVersions.ConfigVersion, nmpName)))
 			}
 		} else {
 			// The config version is an upgrade. Allow it
@@ -293,13 +298,13 @@ func (w *DownloadWorker) ResolveUpgradeVersions(upgradeVersions *exchangecommon.
 			// The cert version from the nmp found is a downgrade or same as current level
 			if nmpStatus.AgentUpgradeInternal.AllowDowngrade {
 				if statuses, err := persistence.FindNodeUpgradeStatusesWithTypeAfterTime(w.db, nmpStatus.AgentUpgradeInternal.ScheduledUnixTime, "cert"); err != nil {
-					glog.Errorf("Error finding node statuses in db: %v", err)
+					glog.Errorf(dwlog(fmt.Sprintf("Error finding node statuses in db: %v", err)))
 				} else if len(statuses) == 0 {
 					// No more recent node management policies that have a cert upgrade. This downgrade should be executed
 					versToDownload.CertVersion = upgradeVersions.CertVersion
 				}
 			} else {
-				glog.Infof("Current cert version %v is higher than or same as version %v from nmp %v. No need to download packages.", currentVers, upgradeVersions.CertVersion, nmpName)
+				glog.Infof(dwlog(fmt.Sprintf("Current cert version %v is higher than or same as version %v from nmp %v. No need to download packages.", currentVers, upgradeVersions.CertVersion, nmpName)))
 			}
 		} else {
 			// The cert version is an upgrade. Allow it
