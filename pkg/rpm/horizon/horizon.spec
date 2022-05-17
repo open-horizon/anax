@@ -114,11 +114,12 @@ echo "*/5 * * * * root /usr/horizon/bin/agent-auto-upgrade.sh 2>&1|/usr/bin/logg
 # and then the old rpm is removed (and any files whose reference count is 1), so we have to be able to tell the difference.
 # The $1 arg is set to the number of rpms that will be left when this rpm is removed, so 0 means this is a complete removal, not an update.
 
-# remove the agent auto-upgrade cron job
-rm -f /etc/cron.d/horizon_agent_upgrade
-
 if [ "$1" = "0" ]; then
   # Complete removal of the rpm
+
+  # remove the agent auto-upgrade cron job
+  rm -f /etc/cron.d/horizon_agent_upgrade
+
   # Save off container, agreements, etc. resources anax knows about for later removal
   IMAGES_OUT=/var/horizon/prerm.images
   BRIDGES_OUT=/var/horizon/prerm.bridges
