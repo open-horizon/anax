@@ -2906,7 +2906,7 @@ function check_existing_exch_node_is_correct_type() {
         if [[ "$exch_node_type" == "device" ]] && [[ "$expected_type" != "device" ]]; then
             log_fatal 2 "Node id ${NODE_ID} has already been created as nodeType device. Remove the node from the exchange and run this script again."
         elif [[ "$exch_node_type" == "cluster" ]] && [[ "$expected_type" != "cluster" ]]; then
-            log_fatal 2 "Node id ${NODE_ID} has already been created as nodeType clutser. Remove the node from the exchange and run this script again."
+            log_fatal 2 "Node id ${NODE_ID} has already been created as nodeType cluster. Remove the node from the exchange and run this script again."
         fi
     fi
 
