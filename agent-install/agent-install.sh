@@ -3229,13 +3229,18 @@ function prepare_k8s_deployment_file() {
         fi
         sed -i -e "s#__ImagePath__#${image_full_path_on_edge_cluster_registry_internal_url}#g" deployment.yml
 
-	# fill out __ImageRegistryHost__ with value of EDGE_CLUSTER_REGISTRY_HOST
-	# k3s: 10.43.100.65:5000
-	# ocp: default-route-openshift-image-registry.apps.prowler.cp.fyre.ibm.com
-	sed -i -e "s#__ImageRegistryHost__#${EDGE_CLUSTER_REGISTRY_HOST}#g" deployment.yml
+        # fill out __ImageRegistryHost__ with value of EDGE_CLUSTER_REGISTRY_HOST
+        # k3s/microk8s: xx.xx.xxx.xx:5000
+        # ocp: default-route-openshift-image-registry.apps.xxxx.xx.xx.xxx.com
+        if [[ $KUBECTL == "microk8s.kubectl" ]]; then
+            mirok8s_registry_endpoint=$($KUBECTL get service registry -n container-registry | grep registry | awk '{print $3;}'):5000
+            log_info "In microk8s cluster, update ImageRegistryHost to $mirok8s_registry_endpoint"
+            sed -i -e "s#__ImageRegistryHost__#${mirok8s_registry_endpoint}#g" deployment.yml
+        else
+            sed -i -e "s#__ImageRegistryHost__#${EDGE_CLUSTER_REGISTRY_HOST}#g" deployment.yml
+        fi
     else
         log_fatal 1 "Agent install on edge cluster requires using an edge cluster registry"
-        #sed -i -e "s#__ImagePath__#${AGENT_IMAGE}#g" deployment.yml
     fi
 
     log_debug "prepare_k8s_deployment_file() end"
