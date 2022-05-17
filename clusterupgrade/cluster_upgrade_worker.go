@@ -296,6 +296,12 @@ func (w ClusterUpgradeWorker) NewEvent(incoming events.Message) {
 			cmd := NewNodeRegisteredCommand(msg)
 			w.Commands <- cmd
 		}
+	case *events.NodeShutdownCompleteMessage:
+		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		}
 	}
 
 }
