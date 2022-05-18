@@ -236,7 +236,7 @@ function removeNodeFromLocalAndManagementHub() {
     else
         log_info "Node is not registered, skip unregister..."
 	if [[ "$DELETE_EX_NODE" == "true" ]]; then
-	    log_info "Remve node from the management hub..."
+	    log_info "Remove node from the management hub..."
 	    deleteNodeFromManagementHub $NODE_ID
 	fi
     fi
