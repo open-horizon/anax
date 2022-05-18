@@ -373,7 +373,7 @@ function get_status_path() {
     local no_active_jobs
     test -f $STATUS_PATH 2>&1
     no_active_jobs=$?
-    if [ "$no_active_jobs" -eq "1" ]; then
+    if [[ "$STATUS_PATH" == "" || "$no_active_jobs" -eq "1" ]]; then
         log_info "There are no active auto upgrade jobs."
         write_logs
         exit 0
