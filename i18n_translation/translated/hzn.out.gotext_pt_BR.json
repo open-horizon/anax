@@ -4333,7 +4333,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} atualizado na Bolsa de Horizonte"
+    "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} atualizado no Horizon Exchange"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
@@ -4341,7 +4341,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} adicionada na Bolsa Horizonte"
+    "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} incluído no Horizon Exchange"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4353,7 +4353,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
-    "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} removido da Bolsa Horizon."
+    "translation": "Política de gerenciamento de nós {NmpOrg}/{NmpName} removido da Horizon Exchange"
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",

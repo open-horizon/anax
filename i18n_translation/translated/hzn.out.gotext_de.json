@@ -4333,7 +4333,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} in Horizon Exchange aktualisiert"
+    "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} wurde in Horizon Exchange aktualisiert"
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
@@ -4341,7 +4341,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} in Horizon Exchange hinzugefügt"
+    "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} wurde in Horizon Exchange hinzugefügt"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4353,7 +4353,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
-    "translation": "Die Knotenmanagementrichtlinie {NmpOrg}/{NmpName} wurde aus Horizon Exchange entfernt."
+    "translation": "Knotenmanagementrichtlinie {NmpOrg}/{NmpName} wurde aus Horizon Exchange entfernt."
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",
