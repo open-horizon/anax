@@ -24,7 +24,7 @@ SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # comp
 SUPPORTED_REDHAT_VARIANTS=(rhel centos fedora $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: RHEL 8.3 is not officially supported yet, but is enabled only for testing and tech preview purposes
 # Note: version 8 is added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
-SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8 32 35 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8 32 35 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
 
 SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
@@ -72,7 +72,7 @@ UPGRADE_TYPE_CFG="config"
 DOCKER_ENGINE="docker"
 
 #0 - not initialized, 1 - supported, 2 - not supported
-AGENT_FILE_VERSIONS_STATUS=0 
+AGENT_FILE_VERSIONS_STATUS=0
 
 # Script usage info
 function usage() {
@@ -254,7 +254,7 @@ function log_error() {
         log $VERB_ERROR "ERROR: $1" | tee /dev/stderr
     else
          log $VERB_ERROR "ERROR: $1"
-    fi       
+    fi
 }
 
 function log_warning() {
@@ -351,7 +351,7 @@ function get_input_file_css_path() {
                 input_file_path="css:${CSS_OBJ_AGENT_SOFTWARE_BASE}-${part2}"
             fi
         else
-            # 'css:' case - need to use AgentFileVersion to decide if we can get the latest cert 
+            # 'css:' case - need to use AgentFileVersion to decide if we can get the latest cert
             get_agent_file_versions
             if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_SW_VERSIONS[@]} -gt 0 ]; then
                 # new way
@@ -429,7 +429,7 @@ function get_anax_release_version() {
     #else return empty string, meaning we couldn't find it (so they should probably just use latest)
 }
 
-# get the exchange AgentFileVersion object. 
+# get the exchange AgentFileVersion object.
 function get_agent_file_versions() {
     log_debug "get_agent_file_versions() begin"
 
@@ -474,7 +474,7 @@ function get_agent_file_versions() {
             # The outpit of AgentFileVersion has the following format:
             # {
             #      "agentSoftwareVersions": ["2.30.0", "2.25.4", "1.4.5-123"],
-            #      "agentConfigVersions": ["0.0.4", "0.0.3"],     
+            #      "agentConfigVersions": ["0.0.4", "0.0.3"],
             #      "agentCertVersions": ["0.0.15"],
             # }
             OLDIFS=${IFS}
@@ -486,7 +486,7 @@ function get_agent_file_versions() {
             tmp=$(echo $output |jq -r '.agentCertVersions[]' | sort -rV |tr '\n' ' ')
             read -a AGENT_CERT_VERSIONS <<< $tmp
             #0 - not initialized, 1 - supported, 2 - not supported
-            AGENT_FILE_VERSIONS_STATUS=1 
+            AGENT_FILE_VERSIONS_STATUS=1
             IFS=${OLDIFS}
         elif [[ $http_code -eq 404 ]]; then
             # exchange-api version 2.98.0 and older does not support AgentFileVersion API
@@ -540,7 +540,7 @@ function get_cert_file_css_path() {
                 css_path="css:${CSS_OBJ_AGENT_CERT_BASE}-${part2}"
             fi
         else
-            # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert 
+            # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert
             need_latest_cert=true
         fi
     elif [[ $INPUT_FILE_PATH == css:* ]]; then
@@ -548,7 +548,7 @@ function get_cert_file_css_path() {
             local part2=${INPUT_FILE_PATH#"css:"}
             if [[ -n $part2 ]]; then
                 if [[ $part2 == /* ]]; then
-                    if [[ "$INPUT_FILE_PATH" == "css:$CSS_OBJ_PATH_DEFAULT" ]]; then 
+                    if [[ "$INPUT_FILE_PATH" == "css:$CSS_OBJ_PATH_DEFAULT" ]]; then
                         # old way with css default path
                         css_path=$INPUT_FILE_PATH
                     else
@@ -560,13 +560,13 @@ function get_cert_file_css_path() {
                     need_latest_cert=true
                 fi
             else
-                # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert 
+                # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert
                 need_latest_cert=true
             fi
         fi
     fi
 
-    if [ $need_latest_cert == true ]; then 
+    if [ $need_latest_cert == true ]; then
         # get the latest cert versions from AgentFileVersion exchange API
         get_agent_file_versions
         if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_CERT_VERSIONS[@]} -gt 0 ]; then
@@ -634,7 +634,7 @@ function download_css_file() {
         rm -f "$AGENT_CERT_FILE"   # this probably has the error msg from the previous curl in it
 
         # get the cert file path
-        if [[ -z $remote_cert_path ]]; then 
+        if [[ -z $remote_cert_path ]]; then
             local css_cert_path
             get_cert_file_css_path css_cert_path
             remote_cert_path="${css_cert_path/#css:/${HZN_FSS_CSSURL%/}}/data"
@@ -671,8 +671,8 @@ function download_anax_release_file() {
 }
 
 # If necessary, download the cfg file from CSS.
-# The input_file_path is either AGENT_CFG_FILE or INPUT_FILE_PATH, the second 
-# parameter tells which one it is: 1 for AGENT_CFG_FILE, 0 for INPUT_FILE_PATH. 
+# The input_file_path is either AGENT_CFG_FILE or INPUT_FILE_PATH, the second
+# parameter tells which one it is: 1 for AGENT_CFG_FILE, 0 for INPUT_FILE_PATH.
 function download_config_file() {
     log_debug "download_config_file() begin"
     local input_file_path=$1   # normally the value of INPUT_FILE_PATH or AGENT_CFG_FILE
@@ -690,7 +690,7 @@ function download_config_file() {
                 else
                     # INPUT_FILE_PATH contains the path, only use it when it is the old default way
                     need_latest_cfg=true
-                    if [[ "$input_file_path" == "css:$CSS_OBJ_PATH_DEFAULT" ]]; then 
+                    if [[ "$input_file_path" == "css:$CSS_OBJ_PATH_DEFAULT" ]]; then
                         # old way with css default path
                         css_path=$input_file_path
                     else
@@ -708,11 +708,11 @@ function download_config_file() {
                 fi
             fi
         else
-            # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert 
+            # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert
             need_latest_cfg=true
         fi
 
-        if [ $need_latest_cfg == true ]; then 
+        if [ $need_latest_cfg == true ]; then
             # get the latest config versions from AgentFileVersion exchange API
             get_agent_file_versions
             if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_CONFIG_VERSIONS[@]} -gt 0 ]; then
@@ -722,7 +722,7 @@ function download_config_file() {
                 # fall back to old default way
                 css_path="css:$CSS_OBJ_PATH_DEFAULT"
             fi
-        fi           
+        fi
 
         # now do the downloading
         if [[ -n $css_path ]]; then
@@ -782,14 +782,14 @@ function read_config_file() {
 # if -G or AGENT_UPGRADE_TYPES are specified and 'config' or 'cert'
 # is not included.
 function varify_upgrade_types() {
-    log_debug "varify_upgrade_types() begin" 
+    log_debug "varify_upgrade_types() begin"
 
     # validate the input values
     for t in ${AGENT_UPGRADE_TYPES//,/ }
     do
         if [ "$t" != "$UPGRADE_TYPE_SW" ] && [ "$t" != "$UPGRADE_TYPE_CERT" ] && [ "$t" != "$UPGRADE_TYPE_CFG" ]; then
             log_fatal 1 "Invalid value in AGENT_UPGRADE_TYPES or -G flag: $AGENT_UPGRADE_TYPES"
-        fi   
+        fi
     done
 
     # use installed config file and certification file if they are not specified
@@ -815,7 +815,7 @@ function varify_upgrade_types() {
         fi
     fi
 
-    log_debug "varify_upgrade_types() end" 
+    log_debug "varify_upgrade_types() end"
 }
 
 # check if the upgrade type contains "software"
@@ -901,7 +901,7 @@ function get_all_variables() {
     get_variable AGENT_IN_CONTAINER 'false'
     get_variable AGENT_CONTAINER_NUMBER '1'
     get_variable AGENT_AUTO_UPGRADE 'false'
-    get_variable AGENT_UPGRADE_TYPES "$UPGRADE_TYPE_SW,$UPGRADE_TYPE_CERT,$UPGRADE_TYPE_CFG" 'false' 
+    get_variable AGENT_UPGRADE_TYPES "$UPGRADE_TYPE_SW,$UPGRADE_TYPE_CERT,$UPGRADE_TYPE_CFG" 'false'
     varify_upgrade_types
 
     # First unpack the zip file (if specified), because the config file could be in there
@@ -979,7 +979,7 @@ function get_all_variables() {
     detect_distro   # if linux, sets: DISTRO, DISTRO_VERSION_NUM, CODENAME
     ARCH=$(get_arch)
     log_info "OS: $OS, Distro: $DISTRO, Distro Release: $DISTRO_VERSION_NUM, Distro Code Name: $CODENAME, Architecture: $ARCH"
-    
+
     if is_cluster; then
         # check kubectl is available
         if [ "${KUBECTL}" != "" ]; then   # If user set KUBECTL env variable, check that it exists
@@ -988,16 +988,16 @@ function get_all_variables() {
             else
                 log_fatal 2 "$KUBECTL is not available. Please install $KUBECTL and ensure that it is found on your \$PATH"
             fi
-        else 
+        else
             # Nothing specified. Attempt to detect what should be used.
             if command -v k3s > /dev/null 2>&1; then    # k3s needs to be checked before kubectl since k3s creates a symbolic link to kubectl
-                KUBECTL="k3s kubectl" 
-            elif command -v microk8s.kubectl >/dev/null 2>&1; then 
-                KUBECTL=microk8s.kubectl 
-            elif command -v kubectl >/dev/null 2>&1; then 
-                KUBECTL=kubectl 
-            else 
-                log_fatal 2 "kubectl is not available. Please install kubectl and ensure that it is found on your \$PATH" 
+                KUBECTL="k3s kubectl"
+            elif command -v microk8s.kubectl >/dev/null 2>&1; then
+                KUBECTL=microk8s.kubectl
+            elif command -v kubectl >/dev/null 2>&1; then
+                KUBECTL=kubectl
+            else
+                log_fatal 2 "kubectl is not available. Please install kubectl and ensure that it is found on your \$PATH"
             fi
         fi
     fi
@@ -1068,9 +1068,9 @@ function get_all_variables() {
             else
                 # if HZN_NODE_ID is not set, look for HZN_DEVICE_ID
                 node_id=$(grep HZN_DEVICE_ID $INSTALLED_AGENT_CFG_FILE 2>/dev/null | cut -d'=' -f2)
-                if [[ -n $node_id ]]; then 
+                if [[ -n $node_id ]]; then
                     log_info "Using node id from HZN_DEVICE_ID in $INSTALLED_AGENT_CFG_FILE: $node_id"
-                else 
+                else
                     node_id=${HOSTNAME}   # default
                     log_info "use hostname as node id"
                 fi
@@ -1083,7 +1083,7 @@ function get_all_variables() {
                     log_info "Using node id from HZN_NODE_ID in configmap ${CONFIGMAP_NAME}: $node_id"
                 else
                     node_id=$($KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} -o jsonpath={.data.horizon}  | grep -E '^HZN_DEVICE_ID=' | cut -d '=' -f2)
-                    if [[ -n $node_id ]]; then 
+                    if [[ -n $node_id ]]; then
                         log_info "Using node id from HZN_DEVICE_ID in configmap ${CONFIGMAP_NAME}: $node_id"
                     fi
                 fi
@@ -1093,7 +1093,7 @@ function get_all_variables() {
             if [[ -z $node_id ]]; then
                 node_id=${HOSTNAME}   # default
                 log_info "node_id is not set, use host name as node id"
-            fi  
+            fi
         fi
     fi
     # check if they gave us conflicting values
@@ -1309,7 +1309,7 @@ function ensureWeAreRoot() {
     # or could check: [[ $(id -u) -ne 0 ]]
 }
 
-# compare versions. 
+# compare versions.
 # Return 0 if the 1st version is equal to the 2nd version
 #        1 if the 1st version is greater than the 2nd version
 #        2 if the 1st version is less than the 2nd version
@@ -1503,7 +1503,7 @@ function is_horizon_defaults_correct() {
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
     if ! urlEquals $horizon_defaults_value $HZN_FSS_CSSURL; then
         log_info "HZN_FSS_CSSURL value changed, return"
-        return 1 
+        return 1
     fi
 
     # even if HZN_AGBOT_URL is empty in this script, still verify the defaults file is the same
@@ -1531,7 +1531,7 @@ function is_horizon_defaults_correct() {
 
     horizon_defaults_value=$(grep -E '^HZN_NODE_ID=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $NODE_ID ]]; then 
+    if [[ $horizon_defaults_value != $NODE_ID ]]; then
         log_info "HZN_NODE_ID value changed, return"
         return 1
     fi
@@ -1548,7 +1548,7 @@ function is_horizon_defaults_correct() {
     if [[ -n $cert_file ]]; then
         horizon_defaults_value=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' $defaults_file || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-        if [[ -n $horizon_defaults_value ]] && ! diff -q "$horizon_defaults_value" "$cert_file" >/dev/null; then 
+        if [[ -n $horizon_defaults_value ]] && ! diff -q "$horizon_defaults_value" "$cert_file" >/dev/null; then
             log_info "cert file changed, return"
             MGMT_HUB_CERT_CHANGED='true'
             return 1
@@ -1558,9 +1558,9 @@ function is_horizon_defaults_correct() {
     if [[ -n $anax_port ]]; then
         horizon_defaults_value=$(grep -E '^HZN_AGENT_PORT=' $defaults_file || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-        if [[ $horizon_defaults_value != $anax_port ]]; then 
+        if [[ $horizon_defaults_value != $anax_port ]]; then
             log_info "HZN_AGENT_PORT changed, return"
-            return 1 
+            return 1
         fi
     fi
 
@@ -1675,7 +1675,7 @@ function mac_trust_cert() {
     # restore the old permission
     sudo security authorizationdb write com.apple.trust-settings.admin < $tmp_file
     rm -f $tmp_file
-    
+
     { set +x; } 2>/dev/null
 
     log_debug "mac_trust_cert() end"
@@ -1833,7 +1833,7 @@ function compare_deb_pkg() {
     log_info "Local agent version is: $local_agent_ver; local cli version is: $local_cli_ver."
 
     # if the local binary has been manually changed by user or by the agent auto upgrade rollback process
-    # and the binary version does not agree with the version in the repository 
+    # and the binary version does not agree with the version in the repository
     local local_ver_modified='false'
     if [[ -n "$local_version" && $local_version != $installed_deb_version ]]; then
         local_ver_modified='true'
@@ -2046,7 +2046,7 @@ function install_dnf() {
 function redhat_device_install_prereqs() {
     log_debug "redhat_device_install_prereqs() begin"
 
-    dnf install -yq jq 
+    dnf install -yq jq
     rc=$?
     if [[ $rc -ne 0 ]]; then
         # Need EPEL might be needed for jq
@@ -2096,7 +2096,7 @@ function compare_rpm_pkg() {
     local installed_rpm_version=$(rpm -q $pkg_name 2>/dev/null)  # will return like: horizon-2.28.0-338.x86_64
     installed_rpm_version=${installed_rpm_version#${pkg_name}-}   # remove the pkg name
     installed_rpm_version=${installed_rpm_version%.*}   # remove the arch, so left with only the version
- 
+
     # Get version from binary first if possible
     local local_version=""
     get_local_horizon_version local_agent_ver local_cli_ver
@@ -2108,7 +2108,7 @@ function compare_rpm_pkg() {
     log_info "Local agent version is: $local_agent_ver; local cli version is: $local_cli_ver."
 
     # if the local binary has been manually changed by user or by the agent auto upgrade rollback process
-    # and the binary version does not agree with the version in the repository 
+    # and the binary version does not agree with the version in the repository
     local local_ver_modified='false'
     if [[ -n "$local_version" && $local_version != $installed_rpm_version ]]; then
         local_ver_modified='true'
@@ -2153,7 +2153,7 @@ function install_redhat_device_horizon_pkgs() {
             latest_files="$latest_files $latest_horizon_file"
             new_pkg=$latest_horizon_file
         fi
-    
+
         local rc=0
         local local_modified=''
         compare_rpm_pkg local_modified $new_pkg || rc=$?
@@ -2480,9 +2480,9 @@ function start_device_agent_container() {
                 export HC_DONT_PULL=1
                 export HC_DOCKER_IMAGE=${image%:*}
                 export HC_DOCKER_TAG=${image##*:}
-            fi  
+            fi
         else
-            log_info "Failed to inspect the container horizon${container_name}: $container_info" 
+            log_info "Failed to inspect the container horizon${container_name}: $container_info"
             # take the default way
         fi
     fi
@@ -3777,7 +3777,7 @@ function update_cluster() {
         local isUpdate='true'
         setup_cluster_image_registry_cert $isUpdate
     fi
-    
+
     check_deployment_status
     get_pod_id
 
@@ -3811,7 +3811,7 @@ function get_docker_engine() {
                   major_version=$(expr "${podman_ver_num_array[0]}" + 0)
                   if [[ $major_version -ge 4 ]]; then
                      DOCKER_ENGINE="podman"
-                  fi 
+                  fi
                fi
                IFS=${OLDIFS}
             fi
@@ -3833,7 +3833,7 @@ find_node_id_in_mapping_file   # for bulk install. Sets NODE_ID if it finds it i
 
 log_info "Node type: ${AGENT_DEPLOY_TYPE}"
 
-get_docker_engine 
+get_docker_engine
 
 if is_device; then
     check_device_os   # sets: PACKAGES
