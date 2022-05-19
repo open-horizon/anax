@@ -325,6 +325,7 @@ func UpdateCacheNodePutWriteThru(nodeOrg string, nodeId string, cachedDevice *De
 	cachedDevice.PublicKey = string(pdr.PublicKey)
 	cachedDevice.Arch = pdr.Arch
 	cachedDevice.UserInput = pdr.UserInput
+	cachedDevice.SoftwareVersions = pdr.SoftwareVersions
 
 	pdr.Token = ""
 	pdr.Name = ""
@@ -336,6 +337,7 @@ func UpdateCacheNodePutWriteThru(nodeOrg string, nodeId string, cachedDevice *De
 	pdr.PublicKey = nil
 	pdr.Arch = ""
 	pdr.UserInput = nil
+	pdr.SoftwareVersions = SoftwareVersion{}
 
 	if !reflect.DeepEqual(*pdr, PutDeviceRequest{}) {
 		// If you see this error, most likely a new field has been added to the PutDeviceRequest struct and this function needs to be updated to accomadate it
@@ -367,6 +369,10 @@ func UpdateCacheNodePatchWriteThru(nodeOrg string, nodeId string, cachedDevice *
 		if pdr.RegisteredServices != nil {
 			cachedDevice.RegisteredServices = *pdr.RegisteredServices
 			pdr.RegisteredServices = nil
+		}
+		if len(pdr.SoftwareVersions) > 0 {
+			cachedDevice.SoftwareVersions = pdr.SoftwareVersions
+			pdr.SoftwareVersions = SoftwareVersion{}
 		}
 	}
 	if !reflect.DeepEqual(*pdr, PatchDeviceRequest{}) {
