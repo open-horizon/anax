@@ -4308,8 +4308,8 @@
     "translation": "When to start an upgrade, default \"now\"."
   },
   {
-    "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-    "translation": "Enable agents to randomize upgrade start time within start + startWindow, default 0."
+    "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+    "translation": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0."
   },
   {
     "id": "(Optional) Assertions on how the agent should update itself.",
