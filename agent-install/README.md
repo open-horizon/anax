@@ -1,4 +1,4 @@
-# Edge node agent-install 
+# Edge node agent-install
 
 ## Overview
 
@@ -20,7 +20,7 @@ Currently supported OS and architectures:
     * armhf
   * Debian buster, stretch
     * amd64
-  * RHEL 7.6, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5
+  * RHEL 7.6, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6
     * amd64, ppc64le, aarch64, riscv64
   * CentOS 7.6, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5
     * amd64, ppc64le, aarch64, riscv64
@@ -60,9 +60,9 @@ On Ubuntu, Debian and Raspbian Linux, if the user spcified an APT repo, the pack
 
 If the package(s) being installed are an older version than those currently installed, the script will prompt the user if they want to continue. If it is a batch install, the older version will not be installed unless `-f` was specified. If the package version is equal to the currently installed version, the script will show a warning and exit.
 
-On Linux container installs and MacOS installs, the `HORIZON_URL` variable is set to http://localhost:8081 so that the `hzn` CLI will be able to reach the agent running in the container. The container is then started and the script waits for the agent to start up. On all other Linux installs, the script checks if new packages were installed or if the horizon defaults in `/etc/default/horizon` were changed. If either is true, the agent is restarted before registration.
+On Linux container installs and MacOS installs, the `HORIZON_URL` variable is set to <http://localhost:8081> so that the `hzn` CLI will be able to reach the agent running in the container. The container is then started and the script waits for the agent to start up. On all other Linux installs, the script checks if new packages were installed or if the horizon defaults in `/etc/default/horizon` were changed. If either is true, the agent is restarted before registration.
 
-After installation and configuration is complete, a node is created in the Exchange, and is registered with the pattern or policy, if specified. If -w <service name> is specified, the script will wait until the specified service begins executing on the node.
+After installation and configuration is complete, a node is created in the Exchange, and is registered with the pattern or policy, if specified. If -w \<service name\> is specified, the script will wait until the specified service begins executing on the node.
 
 ## Usage
 
