@@ -13151,7 +13151,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "Politique de gestion des noeuds {NmpOrg}/{NmpName} mise à jour dans Horizon Exchange",
+      "translation": "Règle de gestion des noeuds {NmpOrg}/{NmpName} mise à jour dans Horizon Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13207,7 +13207,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Politique de gestion des noeuds {NmpOrg}/{NmpName} ajoutée dans Horizon Exchange",
+      "translation": "Règle de gestion des noeuds {NmpOrg}/{NmpName} ajoutée dans Horizon Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13279,7 +13279,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
       "message": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
-      "translation": "La stratégie de gestion des noeuds {NmpOrg}/{NmpName} a été supprimée de l'échange Horizon.",
+      "translation": "Règle de gestion des noeuds {NmpOrg}/{NmpName} retirée d'Horizon Exchange.",
       "placeholders": [
         {
           "id": "NmpOrg",

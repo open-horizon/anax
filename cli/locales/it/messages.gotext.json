@@ -13151,7 +13151,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "Politica di gestione nodi {NmpOrg}/{NmpName} aggiornata in Exchange Exchange",
+      "translation": "Politica di gestione dei nodi {NmpOrg}/{NmpName} aggiornata in Horizon Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13207,7 +13207,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Policy di gestione del nodo {NmpOrg}/{NmpName} aggiunto in Exchange Horizon",
+      "translation": "Politica di gestione dei nodi {NmpOrg}/{NmpName} aggiunta in Horizon Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13279,7 +13279,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
       "message": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
-      "translation": "Politica di gestione nodi {NmpOrg}/{NmpName} rimossa dalla Exchange Horizon.",
+      "translation": "Politica di gestione dei nodi {NmpOrg}/{NmpName} rimossa da Horizon Exchange.",
       "placeholders": [
         {
           "id": "NmpOrg",

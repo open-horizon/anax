@@ -4333,7 +4333,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-    "translation": "Horizon Exchange에서 노드 관리 정책 {NmpOrg}/{NmpName} 이 (가) 업데이트되었습니다."
+    "translation": "Horizon Exchange에서 노드 관리 정책 {NmpOrg}/{NmpName}이(가) 업데이트되었습니다."
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
@@ -4341,7 +4341,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "노드 관리 정책 {NmpOrg}/{NmpName} 이 (가) Horizon Exchange에 추가되었습니다."
+    "translation": "노드 관리 정책 {NmpOrg}/{NmpName}이(가) Horizon Exchange에 추가되었습니다."
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -4353,7 +4353,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
-    "translation": "노드 관리 정책 {NmpOrg}/{NmpName} 이 (가) Horizon Exchange에서 제거되었습니다."
+    "translation": "노드 관리 정책 {NmpOrg}/{NmpName}이(가) Horizon Exchange에서 제거되었습니다."
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",

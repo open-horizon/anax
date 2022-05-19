@@ -13151,7 +13151,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} in Horizon Exchange aktualisiert",
+      "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} wurde in Horizon Exchange aktualisiert",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13207,7 +13207,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} in Horizon Exchange hinzugefügt",
+      "translation": "Knotenverwaltungsrichtlinie {NmpOrg}/{NmpName} wurde in Horizon Exchange hinzugefügt",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -13279,7 +13279,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
       "message": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
-      "translation": "Die Knotenmanagementrichtlinie {NmpOrg}/{NmpName} wurde aus Horizon Exchange entfernt.",
+      "translation": "Knotenmanagementrichtlinie {NmpOrg}/{NmpName} wurde aus Horizon Exchange entfernt.",
       "placeholders": [
         {
           "id": "NmpOrg",

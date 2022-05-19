@@ -4353,7 +4353,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
-    "translation": "已從 Horizon Exchange 中移除節點管理原則 {NmpOrg}/{NmpName} 。"
+    "translation": "已從 Horizon Exchange 中移除節點管理原則 {NmpOrg}/{NmpName}。"
   },
   {
     "id": "Node {NodeName} not found in org {NmpOrg}",

@@ -2747,7 +2747,7 @@
     {
       "id": "List and manage node management policies in the Horizon Exchange.",
       "message": "List and manage node management policies in the Horizon Exchange.",
-      "translation": "Listar y gestionar políticas de gestión de nodos en Horizont Exchange.",
+      "translation": "Listar y gestionar políticas de gestión de nodos en Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -2777,7 +2777,7 @@
     {
       "id": "Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template.",
       "message": "Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template.",
-      "translation": "Añadir o sustituir una política de gestión de nodos en Horizont Exchange. Utilice 'hzn exchange nmp new' para una plantilla de política de gestión de nodos vacía.",
+      "translation": "Añadir o sustituir una política de gestión de nodos en Horizon Exchange. Utilice 'hzn exchange nmp new' para una plantilla de política de gestión de nodos vacía.",
       "fuzzy": true
     },
     {
@@ -13207,7 +13207,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Política de gestión de nodos {NmpOrg}/{NmpName} añadida en Horizonte Exchange",
+      "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha añadido en Horizonte Exchange",
       "placeholders": [
         {
           "id": "NmpOrg",
