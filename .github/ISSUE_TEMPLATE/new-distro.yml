@@ -20,15 +20,15 @@ body:
       label: Open a issue in the Documentation repo to update the docs for this new Linux distro release.
       description: 'Paste the issue number here'
   - type: checkboxes
-      attributes:
-        label: New Linux Distro Support Checklist
-        description: Follow this checklist to request support for a new Linux distro
-        options:
-          - label: Add new Linux distro release agent_install.sh
-            required: true
-          - label: Validate Examples on this new Linux distro release
-            required: true
-          - label: Documentation updates to support this new Linux distro release
-            required: true
-          - label: Test / Validate and modify existing tests for the x86_64 anax binary for this new Linux distro release
-            required: false
+    attributes:
+      label: New Linux Distro Support Checklist
+      description: Follow this checklist to request support for a new Linux distro
+      options:
+        - label: Add new Linux distro release agent_install.sh
+          required: true
+        - label: Validate Examples on this new Linux distro release
+          required: true
+        - label: Documentation updates to support this new Linux distro release
+          required: true
+        - label: Test / Validate and modify existing tests for the x86_64 anax binary for this new Linux distro release
+          required: false
