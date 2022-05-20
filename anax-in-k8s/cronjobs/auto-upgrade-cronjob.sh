@@ -485,7 +485,7 @@ elif [[ "$json_status" == "$STATUS_INITIATED" ]]; then
         exit 0
 
     # Status is initiated but agent pod is in panic state, despite not being upgraded yet
-    elif [[ "$current_version" == "$old_image_version" ]]; then
+    elif [[ "$old_image_version" == "null" || "$current_version" == "$old_image_version" ]]; then
         # set status to "failed"
         log_info "Agent pod is in panic state and the image version was not updated. Setting status to \"$ROLLBACK_FAILED\" and exiting."
         sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$ROLLBACK_FAILED\"/g" $STATUS_PATH
