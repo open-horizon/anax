@@ -32,24 +32,23 @@ body:
       label: Open a issue in the Documentation repo to update the docs for this new microprocessor architecture.
       description: 'Paste the issue number here'
   - type: checkboxes
-      id: terms
-      attributes:
-        label: New microprocessor architecture Support Checklist
-        description: Follow this checklist to request support for a new microprocessor architecture
-        options:
-          - label: Update the agent-install.sh
-            required: true
-          - label: Update the Makefiles
-            required: true
-          - label: Update the agent binaries
-            required: true
-          - label: Update the Dockerfiles
-            required: true
-          - label: Update the build pipelines
-            required: true
-          - label: Validate Examples on this new microprocessor architecture
-            required: true
-          - label: Documentation updates to support this new microprocessor architecture
-            required: true
-          - label: Test / Validate and modify existing tests for the anax binary on this microprocessor architecture
-            required: false
+    attributes:
+      label: New microprocessor architecture Support Checklist
+      description: Follow this checklist to request support for a new microprocessor architecture
+      options:
+        - label: Update the agent-install.sh
+          required: true
+        - label: Update the Makefiles
+          required: true
+        - label: Update the agent binaries
+          required: true
+        - label: Update the Dockerfiles
+          required: true
+        - label: Update the build pipelines
+          required: true
+        - label: Validate Examples on this new microprocessor architecture
+          required: true
+        - label: Documentation updates to support this new microprocessor architecture
+          required: true
+        - label: Test / Validate and modify existing tests for the anax binary on this microprocessor architecture
+          required: false
