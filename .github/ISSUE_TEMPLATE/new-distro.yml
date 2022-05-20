@@ -1,0 +1,35 @@
+name: New Linux Distro
+description: Add support for a new Linux distro release
+title: "Linux distro: "
+labels: [enhancement]
+
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for taking the time to request support for a new Linux distro release. This master issue will drive the work effort to add support.
+  - type: textarea
+    attributes:
+      label: Open a issue in the Anax repo to update the agent_install.sh with the new Linux distro release version.
+      description: 'Paste the issue number here'
+  - type: textarea
+    attributes:
+      label: Open a issue in the Examples repo to validate the examples on this new Linux distro release.
+      description: 'Paste the issue number here'
+  - type: textarea
+    attributes:
+      label: Open a issue in the Documentation repo to update the docs for this new Linux distro release.
+      description: 'Paste the issue number here'
+  - type: checkboxes
+      id: terms
+      attributes:
+        label: New Linux Distro Support Checklist
+        description: Follow this checklist to request support for a new Linux distro
+        options:
+          - label: Add new Linux distro release agent_install.sh
+            required: true
+          - label: Validate Examples on this new Linux distro release
+            required: true
+          - label: Documentation updates to support this new Linux distro release
+            required: true
+          - label: Test / Validate and modify existing tests for the x86_64 anax binary for this new Linux distro release
+            required: false
