@@ -73,6 +73,16 @@ func (w *NodeManagementWorker) Initialize() bool {
 // this is to ensure that a newly registered node will reach the same state as a node that has been registered as policies were added
 func (w *NodeManagementWorker) checkNMPTimeToRun() int {
 	glog.Infof(nmwlog("Starting run of node management policy monitoring subworker."))
+	exchDev, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
+		glog.Errorf(nmwlog(fmt.Sprintf("Error getting device from database: %v", err)))
+		return 60
+	}
+
+	if exchDev == nil || exchDev.Config.State != persistence.CONFIGSTATE_CONFIGURED {
+		glog.Infof(nmwlog(fmt.Sprintf("Node is not configured.")))
+		return 60
+	}
 	if downloadedInitiatedStatuses, err := persistence.FindNMPSWithStatuses(w.db, []string{exchangecommon.STATUS_DOWNLOADED, exchangecommon.STATUS_INITIATED, exchangecommon.STATUS_DOWNLOAD_STARTED}); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Failed to get nmp statuses from the database. Error was %v", err)))
 	} else if len(downloadedInitiatedStatuses) > 0 {
@@ -275,6 +285,11 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 	if err != nil {
 		return fmt.Errorf("Error getting device from database: %v", err)
 	}
+
+	if exchDev == nil || exchDev.Config.State != persistence.CONFIGSTATE_CONFIGURED {
+		return fmt.Errorf("Node is not configured.")
+	}
+
 	nodePattern := exchDev.Pattern
 	matchingNMPs := map[string]exchangecommon.ExchangeNodeManagementPolicy{}
 
@@ -379,7 +394,11 @@ func VerifyCompatible(nodePol *externalpolicy.ExternalPolicy, nodePattern string
 		if cutil.SliceContains(nmPol.Patterns, nodePattern) {
 			return true, nil
 		}
-		return cutil.SliceContains(nmPol.Patterns, strings.SplitN(nodePattern, "/", 2)[1]), nil
+		patternPieces := strings.SplitN(nodePattern, "/", 2)
+		if len(patternPieces) > 1 {
+			return cutil.SliceContains(nmPol.Patterns, strings.SplitN(nodePattern, "/", 2)[1]), nil
+		}
+		return false, nil
 	}
 	if err := nodePol.Constraints.IsSatisfiedBy(nmPol.Properties); err != nil {
 		return false, err
