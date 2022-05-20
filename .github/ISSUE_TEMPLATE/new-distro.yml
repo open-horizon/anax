@@ -20,7 +20,6 @@ body:
       label: Open a issue in the Documentation repo to update the docs for this new Linux distro release.
       description: 'Paste the issue number here'
   - type: checkboxes
-      id: terms
       attributes:
         label: New Linux Distro Support Checklist
         description: Follow this checklist to request support for a new Linux distro
