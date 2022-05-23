@@ -13095,9 +13095,9 @@
       "fuzzy": true
     },
     {
-      "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-      "message": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-      "translation": "讓代理程式在 start + startWindow 內隨機化升級開始時間，預設值為 0。",
+      "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+      "message": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+      "translation": "讓代理程式在start + startWindow 時間內隨機選擇升級開始時間，預設值為 0。",
       "fuzzy": true
     },
     {

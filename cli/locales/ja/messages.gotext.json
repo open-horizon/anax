@@ -13095,9 +13095,9 @@
       "fuzzy": true
     },
     {
-      "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-      "message": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-      "translation": "エージェントが start + startWindow (デフォルトは 0) 内でアップグレード開始時刻をランダム化できるようにします。",
+      "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+      "message": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+      "translation": "エージェントが start + startWindow 秒 (デフォルトは 0) 以内にアップグレード開始時刻をランダム化できるようにします。",
       "fuzzy": true
     },
     {

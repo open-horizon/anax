@@ -4308,8 +4308,8 @@
     "translation": "Quando si avvia un aggiornamento, il valore predefinito è \"now\"."
   },
   {
-    "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-    "translation": "Abilitare gli agent per rendere casuale l'ora di avvio dell'aggiornamento all'interno di start + startWindow, il valore predefinito è 0."
+    "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+    "translation": "Abilitare gli agent per rendere causale l'ora di avvio dell'aggiornamento entro start + startWindow secondi, valore predefinito 0."
   },
   {
     "id": "(Optional) Assertions on how the agent should update itself.",

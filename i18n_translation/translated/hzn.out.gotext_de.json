@@ -4308,8 +4308,8 @@
     "translation": "Wenn ein Upgrade gestartet werden soll, wird standardmäßig \"now\" verwendet."
   },
   {
-    "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-    "translation": "Agenten aktivieren, um die Startzeit des Upgrades innerhalb von start + startWindow zu randomisieren. Der Standardwert ist 0."
+    "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+    "translation": "Aktivieren Sie Agenten, um die Startzeit des Upgrades innerhalb von \"start + startWindow\"-Sekunden zu randomisieren. Der Standardwert ist 0."
   },
   {
     "id": "(Optional) Assertions on how the agent should update itself.",

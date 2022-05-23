@@ -4308,8 +4308,8 @@
     "translation": "Quando iniciar um upgrade, padrão \"agora\"."
   },
   {
-    "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-    "translation": "Ativar os agentes para escolher a esmo o horário de início do upgrade dentro de iniciar + startWindow, padrão 0."
+    "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+    "translation": "Ativar os agentes para escolher a esmo o horário de início do upgrade dentro do início + startWindow segundos, padrão 0."
   },
   {
     "id": "(Optional) Assertions on how the agent should update itself.",

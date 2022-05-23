@@ -4308,8 +4308,8 @@
     "translation": "何时开始升级，缺省值为“现在”。"
   },
   {
-    "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-    "translation": "使代理程序能够在 start + startWindow 中任意定义升级开始时间，缺省值为 0。"
+    "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+    "translation": "使代理程序能够在 start + startWindow 时间内随机选择升级开始时间，缺省值为 0。"
   },
   {
     "id": "(Optional) Assertions on how the agent should update itself.",
