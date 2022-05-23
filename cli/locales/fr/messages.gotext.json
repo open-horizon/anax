@@ -13095,9 +13095,9 @@
       "fuzzy": true
     },
     {
-      "id": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-      "message": "Enable agents to randomize upgrade start time within start + startWindow, default 0.",
-      "translation": "Permet aux agents de rendre aléatoire l'heure de début de la mise à niveau dans une procédure start + startWindow, valeur par défaut : 0.",
+      "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+      "message": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
+      "translation": "Permettre aux agents de rendre aléatoire l'heure de début de la mise à niveau dans un délai de start + startWindow secondes, par défaut 0.",
       "fuzzy": true
     },
     {
