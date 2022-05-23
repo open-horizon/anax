@@ -169,7 +169,7 @@ func (n *NodeManagementWorker) HandleRegistration() {
 	workingDir := n.Config.Edge.GetNodeMgmtDirectory()
 	if err := n.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n)); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
-		
+
 		return
 	}
 	return

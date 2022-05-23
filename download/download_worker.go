@@ -152,7 +152,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	}
 	glog.V(3).Infof(dwlog(fmt.Sprintf("Upgrade package names: %v", objIds)))
 
-	anythingDownloaded := false 
+	anythingDownloaded := false
 
 	// If org is specified in the manifest id, use that org. Otherwise use the user org
 	manOrg, manId := cutil.SplitOrgSpecUrl(nmpStatus.AgentUpgradeInternal.Manifest)
@@ -226,7 +226,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	if anythingDownloaded {
 		w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_DOWNLOADED, nmpName, &versionsToSave, latestVersions)
 	} else {
-		w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_NO_ACTION	, nmpName, &versionsToSave, latestVersions)
+		w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_NO_ACTION, nmpName, &versionsToSave, latestVersions)
 	}
 
 	return nil
