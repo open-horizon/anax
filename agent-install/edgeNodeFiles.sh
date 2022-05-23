@@ -326,9 +326,9 @@ function putOneFileInCss() {
     if [[ $addExpiration == true ]]; then 
         local exp_time=''
         getExpirationTime exp_time
-        if [[ ! "${EXP_TIME}" == "0" ]]; then
+        if [[ ! "${exp_time}" == "0" ]]; then
             META_DATA=$( echo "${META_DATA}" | jq --arg EXPIRATION ${exp_time} '. + {expiration: $EXPIRATION}' )
-	    fi
+        fi
     fi
 
     echo "${META_DATA}" | hzn mms -o IBM object publish -f $filename   -m-
