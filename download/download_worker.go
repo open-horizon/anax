@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/anax/worker"
+	"os"
 	"path"
 	"sort"
 )
@@ -152,7 +153,11 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	}
 	glog.V(3).Infof(dwlog(fmt.Sprintf("Upgrade package names: %v", objIds)))
 
-	anythingDownloaded := false
+	if err := os.RemoveAll(path.Join(filePath,nmpName)); err != nil {
+		return fmt.Errorf("Error removing existing working directory: %v", err)
+	}
+
+	anythingDownloaded := false 
 
 	// If org is specified in the manifest id, use that org. Otherwise use the user org
 	manOrg, manId := cutil.SplitOrgSpecUrl(nmpStatus.AgentUpgradeInternal.Manifest)
