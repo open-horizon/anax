@@ -96,7 +96,7 @@ func (w *ClusterUpgradeWorker) syncOnInit(db *bolt.DB, kubeClient *KubeClient, b
 				workDir := path.Join(baseWorkingDir, name)
 				if statusInStatusFile, err := checkDeploymentStatus(kubeClient, baseWorkingDir, name); err != nil {
 					errMessage := fmt.Sprintf("Failed to check deployment status duriing syncOnInit for nmp: %v, error: %v", name, err)
-					if err = setErrorMessageInStatusFile(workDir, errMessage); err != nil {
+					if err = setErrorMessageInStatusFile(workDir, exchangecommon.STATUS_FAILED_JOB, errMessage); err != nil {
 						glog.Errorf(fmt.Sprintf("Failed to set error message (%v) for nmp: %v in the status file, error: %v", errMessage, name, err))
 					}
 				} else if statusInStatusFile == exchangecommon.STATUS_ROLLBACK_STARTED {
@@ -238,9 +238,9 @@ func (w *ClusterUpgradeWorker) setStatusInDBAndFile(baseWorkingDir string, nmpNa
 	glog.Infof(cuwlog(fmt.Sprintf("Set status to %v in db and status file for nmp %v", statusToSet, nmpName)))
 
 	workDir := path.Join(baseWorkingDir, nmpName)
-	if statusToSet == exchangecommon.STATUS_FAILED_JOB {
-		if err := setErrorMessageInStatusFile(workDir, errorMessage); err != nil {
-			glog.Errorf(fmt.Sprintf("Failed to update NMP sataus to %v for nmp: %v in the status file, error: %v", exchangecommon.STATUS_FAILED_JOB, nmpName, err))
+	if statusToSet == exchangecommon.STATUS_FAILED_JOB || statusToSet == exchangecommon.STATUS_UPGRADE_ABORTED {
+		if err := setErrorMessageInStatusFile(workDir, statusToSet, errorMessage); err != nil {
+			glog.Errorf(fmt.Sprintf("Failed to update NMP sataus to %v for nmp: %v in the status file, error: %v", statusToSet, nmpName, err))
 			return err
 		}
 
@@ -339,6 +339,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 	// collect status from status file, update local db and exchange
 	if err := w.collectStatus(baseWorkingDir, nmpName, status); err != nil {
 		glog.Errorf(cuwlog(fmt.Sprintf("Failed to collect sataus from status file under %v for nmp: %v, error: %v", workDir, nmpName, err)))
+		return
 	}
 
 	// check resources:
@@ -352,14 +353,14 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 	if err != nil {
 		errMessage = fmt.Sprintf("Failed to compare config values for nmp: %v, error: %v", nmpName, err)
 		glog.Errorf(cuwlog(errMessage))
-		w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
+		w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_UPGRADE_ABORTED, errMessage)
 		return
 	}
 	if !configIsSame {
 		if err = setResourceNeedChangeInStatusFile(workDir, RESOURCE_CONFIGMAP, true); err != nil {
 			errMessage = fmt.Sprintf("Failed to update set needChange to true for configmap for nmp: %v, error: %v", nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
-			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
+			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_UPGRADE_ABORTED, errMessage)
 			return
 		}
 	}
@@ -368,14 +369,14 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 	if err != nil {
 		errMessage = fmt.Sprintf("Failed to compare cert values for nmp: %v, error: %v", nmpName, err)
 		glog.Errorf(cuwlog(errMessage))
-		w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
+		w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_UPGRADE_ABORTED, errMessage)
 		return
 	}
 	if !certIsSame {
 		if err = setResourceNeedChangeInStatusFile(workDir, RESOURCE_SECRET, true); err != nil {
 			errMessage = fmt.Sprintf("Failed to update set needChange to true for secret for nmp: %v, error: %v", nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
-			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
+			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_UPGRADE_ABORTED, errMessage)
 			return
 		}
 	}
@@ -384,7 +385,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 	if err != nil {
 		errMessage = fmt.Sprintf("Failed to compare agent image version for nmp: %v, error: %v", nmpName, err)
 		glog.Errorf(cuwlog(errMessage))
-		w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
+		w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_UPGRADE_ABORTED, errMessage)
 		return
 	}
 	glog.Infof(cuwlog(fmt.Sprintf("current image version: %v, image version to update: %v", currentImageVersion, newImageVersion)))
@@ -393,13 +394,13 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 		if err = setResourceNeedChangeInStatusFile(workDir, RESOURCE_IMAGE_VERSION, true); err != nil {
 			errMessage = fmt.Sprintf("Failed to update set needChange to true for image version for nmp: %v, error: %v", nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
-			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
+			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_UPGRADE_ABORTED, errMessage)
 			return
 		}
 		if err = setImageInfoInStatusFile(workDir, currentImageVersion, newImageVersion); err != nil {
 			errMessage = fmt.Sprintf("Failed to set image versions(from: %v, to: %v) for nmp: %v, error: %v", currentImageVersion, newImageVersion, nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
-			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
+			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_UPGRADE_ABORTED, errMessage)
 			return
 		}
 	}
@@ -410,7 +411,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 		if err = w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_SUCCESSFUL, ""); err != nil {
 			errMessage = fmt.Sprintf("Failed to update status to %v in db and status file for nmp: %v, error: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
-			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
+			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_UPGRADE_ABORTED, errMessage)
 			return
 		}
 		glog.Infof(cuwlog(fmt.Sprintf("NMP sataus is set to to %v for nmp: %v and return", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
@@ -484,7 +485,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 
 		glog.Infof(cuwlog(fmt.Sprintf("agent image update is handled for nmp: %v", nmpName)))
 	} else {
-		glog.Info(cuwlog(fmt.Sprintf("agent image version is same, config and/or secret are already updated, check status in status file for nmp: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
+		glog.Infof(cuwlog(fmt.Sprintf("agent image version is same, config and/or secret are already updated, check status in status file for nmp: %v", nmpName)))
 
 		// imageVersion is same, config is diff or/and cert is diff,
 		// if status is initiated, set it to successful
@@ -497,7 +498,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 		}
 
 		if statusFromFile.AgentUpgrade.Status == exchangecommon.STATUS_INITIATED {
-			glog.Info(cuwlog(fmt.Sprintf("agent image version is same, config and/or secret are already updated, set status to %v for nmp: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
+			glog.Infof(cuwlog(fmt.Sprintf("agent image version is same, config and/or secret are already updated, set status to %v for nmp: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
 			// set nmp status to successful in db and status.json
 			if err = w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_SUCCESSFUL, ""); err != nil {
 				errMessage = fmt.Sprintf("Failed to update status to %v in db and status file for nmp: %v, error: %v", exchangecommon.STATUS_SUCCESSFUL, nmpName, err)
@@ -505,11 +506,11 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 				w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
 				return
 			}
-			glog.Info(cuwlog(fmt.Sprintf("NMP sataus is set to to %v for nmp: %v and return", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
+			glog.Infof(cuwlog(fmt.Sprintf("NMP sataus is set to to %v for nmp: %v and return", exchangecommon.STATUS_SUCCESSFUL, nmpName)))
 			return
 		}
 
-		glog.Info(cuwlog(fmt.Sprintf("status (%v) in status file is not %v for nmp: %v, will not update status", statusFromFile.AgentUpgrade.Status, exchangecommon.STATUS_INITIATED, nmpName)))
+		glog.Infof(cuwlog(fmt.Sprintf("status (%v) in status file is not %v for nmp: %v, will not update status", statusFromFile.AgentUpgrade.Status, exchangecommon.STATUS_INITIATED, nmpName)))
 	}
 }
 

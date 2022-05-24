@@ -239,13 +239,13 @@ func checkResourceNeedChange(workDir string) (bool, bool, bool, error) {
 	}
 }
 
-func setErrorMessageInStatusFile(workDir string, errorMessage string) error {
+func setErrorMessageInStatusFile(workDir string, statusToSet string, errorMessage string) error {
 	statusFile, err := getStatusFromFile(workDir)
 	if err != nil {
 		return err
 	}
 	statusFile.AgentUpgrade.ErrorMessage = errorMessage
-	statusFile.AgentUpgrade.Status = exchangecommon.STATUS_FAILED_JOB
+	statusFile.AgentUpgrade.Status = statusToSet
 
 	updatedJsonByte, err := json.Marshal(statusFile)
 	if err != nil {
