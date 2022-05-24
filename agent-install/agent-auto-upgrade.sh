@@ -692,8 +692,8 @@ else
     log_info "Upgrade types are: $upgrade_types"
 fi
 
-# copy the local agent_install.sh file to the pkg_dir if it does not exist under pkg_dir.
-# agent_install.sh and this script are on the same directory installed by horizon-cli
+# copy the local agent-install.sh file to the pkg_dir if it does not exist under pkg_dir.
+# agent-install.sh and this script are on the same directory installed by horizon-cli
 if [ ! -f $pkg_dir/agent-install.sh ]; then
     log_debug "$pkg_dir/agent-install.sh does not exit. Copy $script_dir/agent-install.sh over."
     cp $script_dir/agent-install.sh $pkg_dir/agent-install.sh
@@ -758,10 +758,10 @@ if [ $rc -ne 0 ]; then
         errmsg=$(echo $Err_msg | cut -d' ' -f4-)
     fi
 
-	log_error "Agent automated upgrade failed. $errmsg"
-    set_nodemanagement_status "$nmp_id" "$status_file" "failed" "$errmsg"
-
     if [ $rc -ge 3 ]; then
+        log_error "Agent automated upgrade failed. $errmsg"
+        set_nodemanagement_status "$nmp_id" "$status_file" "failed" "$errmsg"
+
         if ! $backup_ok; then
             set_nodemanagement_status "$nmp_id" "$status_file" "rollback failed" "No backups available"
             exit 3
@@ -785,7 +785,9 @@ if [ $rc -ne 0 ]; then
             set_nodemanagement_status "$nmp_id" "$status_file" "rollback successful" ""
         fi
     else
-	    exit 2
+        log_error "Agent automated upgrade aborted. $errmsg"
+        set_nodemanagement_status "$nmp_id" "$status_file" "upgrade aborted" "$errmsg"
+        exit 2
     fi
 else
     # remove backups
