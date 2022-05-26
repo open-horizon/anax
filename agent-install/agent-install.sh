@@ -2407,25 +2407,40 @@ function wait_until_agent_ready() {
 # Load a docker system and return the full image path (including tag)
 # Note: does not remove the origin tar.gz file.
 function load_docker_image() {
-    local tar_file_name=${1:?}
+    log_debug "load_docker_image() begin"
+    local __resultvar=$1
+    local tar_file_name=${2:?}
     # Note: only fatal msgs allowed in this function, because it returns a string value
     if [[ ! -f $tar_file_name ]]; then
-        log_fatal 2 "Agent docker image tar file $tar_file_name does not exist"
+        log_fatal 3 "Agent docker image tar file $tar_file_name does not exist"
     fi
     if [[ -h $tar_file_name ]]; then
-        log_fatal 2 "Can not unpack $tar_file_name because gunzip does not support symbolic links"
+        log_fatal 3 "Can not unpack $tar_file_name because gunzip does not support symbolic links"
     fi
-    gunzip -k $tar_file_name   # keep the original file
-    chk $? "uncompressing $tar_file_name"
-    local loaded_image_message=$(${DOCKER_ENGINE} load --input ${tar_file_name%.gz})
-    chk $? "${DOCKER_ENGINE} loading ${tar_file_name%.gz}"
+
+    local rc=0
+    local gunzip_message
+    gunzip_message=$(gunzip -k ${tar_file_name}  2>&1) || rc=$? # keep the original file
+    if [ $rc -ne 0 ]; then
+        log_fatal 3 "Exit code $rc from uncompressing ${tar_file_name}. ${gunzip_message}"
+    fi
+
+    local loaded_image_message
+    loaded_image_message=$(${DOCKER_ENGINE} load --input ${tar_file_name%.gz}) || rc=$?
     rm ${tar_file_name%.gz}   # clean up this temporary file
+    if [ $rc -ne 0 ]; then
+        log_fatal 3 "Exit code $rc from ${DOCKER_ENGINE} loading ${tar_file_name%.gz}."
+    fi
+
     # loaded_image_message is like: Loaded image: {repo}/{image_name}:{version_number}
     local image_full_path=$(echo $loaded_image_message | awk -F': ' '{print $2}')
     if [[ -z $image_full_path ]]; then
         log_fatal 3 "Could not get agent image path from loaded $tar_file_name"
     fi
-    echo "$image_full_path"
+
+    eval $__resultvar="'${image_full_path}'"
+
+    log_debug "load_docker_image() end"
 }
 
 # Get the latest agent-in-container started on mac or linux
@@ -2447,7 +2462,9 @@ function start_device_agent_container() {
             get_input_file_css_path input_path
             download_css_file "$input_path/$AGENT_IMAGE_TAR_FILE"
             log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
-            local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
+            local agent_image_full_path
+            load_docker_image agent_image_full_path $AGENT_IMAGE_TAR_FILE
+
             #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
             export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
             export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
@@ -2457,7 +2474,9 @@ function start_device_agent_container() {
         elif [[ -f $AGENT_IMAGE_TAR_FILE ]]; then
             # They gave us the agent docker image tar file in the input path
             log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
-            local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
+            local agent_image_full_path
+            load_docker_image agent_image_full_path $AGENT_IMAGE_TAR_FILE
+
             #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
             export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
             export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
@@ -2970,7 +2989,9 @@ function loadClusterAgentImage() {
     fi
 
     log_info "Unpacking and docker loading $AGENT_K8S_IMAGE_TAR_FILE ..."
-    AGENT_IMAGE=$(load_docker_image $AGENT_K8S_IMAGE_TAR_FILE)
+    local agent_image_full_path
+    load_docker_image agent_image_full_path $AGENT_K8S_IMAGE_TAR_FILE
+    AGENT_IMAGE=$agent_image_full_path
     chk $? "docker loading $AGENT_K8S_IMAGE_TAR_FILE"
     # AGENT_IMAGE is like: {repo}/{image_name}:{version_number}
     #rm ${AGENT_K8S_IMAGE_TAR_FILE}   # do not remove the file they gave us
@@ -3046,7 +3067,9 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
     fi
 
     log_info "Unpacking and docker loading $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE ..."
-    CRONJOB_AUTO_UPGRADE_IMAGE=$(load_docker_image $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE)
+    local cj_image_full_path
+    load_docker_image cj_image_full_path $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE
+    CRONJOB_AUTO_UPGRADE_IMAGE=$cj_image_full_path
     chk $? "docker loading $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE"
     # CRONJOB_AUTO_UPGRADE_IMAGE is like: {repo}/{image_name}:{version_number}
 
