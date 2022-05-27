@@ -34,11 +34,6 @@ func (e *ExchangeNodeManagementPolicy) Validate() error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	// make sure required fields are not empty
-	if e.Label == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("Label, or Enabled is empty."))
-	}
-
 	// Validate the PropertyList.
 	if e != nil && len(e.Properties) != 0 {
 		if err := e.Properties.Validate(); err != nil {

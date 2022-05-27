@@ -2338,13 +2338,6 @@ body:
 **agentUpgradePolicyStatus**:  
 - The following fields describe the status of an agent auto upgrade job as defined by the NMP created by a user. This is the structure that stays synchronized with the Exchange during the upgrade process.
 
-<!-- | scheduledTime | | string | An RFC3339 timestamp designating when the upgrade job should start. This field can only be set once upon creation of the agentUpgradePolicyStatus structure. | 
-| upgradedVersions | | json | A json structure that defines the versions being upgraded/downgraded to. This field can only be set once upon creation of the agentUpgradePolicyStatus structure. | 
-| | softwareVersion | string | The version that the agent software packages are to be upgraded/downgraded to. |
-| | certVersion | string | The version of the certificate file to be upgraded/downgraded to. |
-| | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
-| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. This field can only be set once upon creation of the agentUpgradePolicyStatus structure. |  -->
-
 | name  | type | description |
 | ----  | ---- | ---------------- |
 | startTime | string | An RFC3339 timestamp designating when the upgrade job actually started. This field can only be set if it has not been previously set and the status field is also changed to "initiated". |

@@ -10,8 +10,8 @@ Use the `hzn exchange nmp new` command to generate an empty NMP.
 ## Definition
 Following are the fields in the JSON representation of an NMP:
 
-* `label`: A short description of the deployment policy suitable to be displayed in a UI. This field is required.
-* `description`: A longer description of the deployment policy. This field is not required.
+* `label`: A short description of the node management policy suitable to be displayed in a UI.
+* `description`: A longer description of the node management policy.
 * `constraints`: Policy constraints as described [here](./properties_and_constraints.md) which refer to node policy properties.
 * `properties`: Policy properties as described [here](./properties_and_constraints.md) which a node policy constraint can refer to.
 * `patterns`: A list of patterns that this policy is compatible with. This field is mutually exclusive with the properties and constraints fields.
@@ -40,7 +40,7 @@ The following is an example of a NMP json file. In this example, the properties 
   ],
   "enabled": true,
   "start": "now",
-  "startWindow": 0,
+  "startWindow": 300,
   "agentUpgradePolicy": {
     "manifest": "sample_manifest",
     "allowDowngrade": false
@@ -48,7 +48,7 @@ The following is an example of a NMP json file. In this example, the properties 
 }
 ```
 
-## Adding a manifest to the Exchange
+## Adding an NMP to the Exchange
 Adding an NMP to the Management Hub can only be performed by the admins of the system - both the **hub admin** and the **org admin** (as well as root).
 
 Once the json file obtained by running `hzn exchange nmp new` is filled out, adding the file to the Exchange can be performed by running the following command:
@@ -68,7 +68,7 @@ hzn exchange nmp add <nmp-name> --json-file <path-to-nmp>
 * `--appliesTo`: This flag will output a list of nodes that are compatible with this NMP. If the `--dry-run` flag is also specified, the NMP will not be added to the Exchange - this is useful when checking the compatiility of an NMP without the risk of deploying to unintended nodes.
 
 ## Listing NMP's currently stored in the Exchange
-To list all the NMPS that exist in the Exchange, use the following command:
+To list all the NMP's that exist in the Exchange, use the following command:
 ```
 hzn exchange nmp list [<nmp-name>]
 ```

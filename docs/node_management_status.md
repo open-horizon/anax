@@ -17,18 +17,6 @@ Following are the fields in the JSON representation of an NMP status:
         * `certVersion`: The version of the certificate to be installed.
         * `configVersion`: The version of the config to be installed.
     * `status`: The state, of the upgrade job. See the section **Status Values** below for more information.
-    * `k8s`: A JSON structure to further define the upgrade progress of a cluster agent.
-        * `configMap`: A JSON structure to track the upgrade progress of the config map.
-            * `needChange`: A boolean value that indicates if the config map needs to be updated.
-            * `updated`: A boolean value that indicates if the config map was already updated by the node management worker.
-        * `secret`: 
-            * `needChange`: A boolean value that indicates if the secret needs to be updated.
-            * `updated`: A boolean value that indicates if the secret was already updated by the node management worker.
-        * `imageVersion`: 
-            * `needChange`: A boolean value that indicates if the agent deployment needs to be upgraded or downgraded.
-            * `updated`: A boolean value that indicates if the agent deployment was already upgraded or downgraded by the node management worker.
-            * `from`: The version of the agent deployment before execution of the agent upgrade job.
-            * `to`: The version that the agent upgrade job will attempt to upgrade or downgrade the agent deployment to.
     * `errorMessage`: A short message that describes why an agent upgrade job has failed.
     * `workingDirectory`: The directory that the upgrade job will be reading and writing files to.
 
@@ -41,6 +29,7 @@ Following are the fields in the JSON representation of an NMP status:
     * `"initiated"`: The installation of the downloaded packages has started and is being performed by the AgentAutoUpgrade cron job script.
     * `"successful"`: The node management worker has successfully performed the upgrade job specified in the NMP.
     * `"no action required"`: The node management worker has determined that no actions need to be taken to upgrade or downgrade the agent. This typicaly means that all the files specified within the NMP's manifest are already installed, or they are a lower version than what is currently installed, and the NMP set the allowDowngrade field to false.
+    * `upgrade aborted`: There was a problem during the pre-check in the AgentAutoUpgrade cron job script, so the job was cancelled before the installation.
     * `"download failed"`: The download worker was unable to download all necessary packages from the Management Hub.
     * `"failed"`: There was a problem during the installation of the downloaded packages either in the node management worker or in the AgentAutoUpgrade cron job script.
     * `"rollback started"`: If the status was set to "failed", the next time the AgentAutoUpgrade cron job waked up, it will attempt to rollback the version to the previous version, and it will set the status to this value.
@@ -67,38 +56,6 @@ In this case, there is one upgrade job type - agent auto upgrade. The status for
           "configVersion": "1.0.0"
         },
         "status": "successful"
-      }
-    }
-  }
-}
-```
-
-Here is an example of a status object for an NMP performing a cluster agent upgrade. In this example, a config, secret and software upgrade was performed, and the upgrade ended in a failure. Since the upgrade failed, there is no endTime field and the errorMessage field is populated.
-```
-{
-  "org/sample-node": {
-    "org/sample-nmp": {
-      "agentUpgradePolicyStatus": {
-        "scheduledTime": "2022-05-24T12:00:00Z",
-        "startTime": "2022-05-24T12:01:00Z",
-        "status": "failed",
-        "k8s": {
-          "configMap": {
-            "needChange": true,
-            "updated": true
-          },
-          "secret": {
-            "needChange": true,
-            "updated": true
-          },
-          "imageVersion": {
-            "needChange": true,
-            "updated": true,
-            "from": 2.30.0,
-            "to": 2.31.0
-          }
-        },
-        "errorMessage": "sample error message"
       }
     }
   }
