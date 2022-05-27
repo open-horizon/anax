@@ -53,7 +53,7 @@ func Test_ProcessAllNMPS(t *testing.T) {
 
 	// matches mgmt policy
 	nmp1 := exchangecommon.ExchangeNodeManagementPolicy{
-		Patterns:               []string{"userdev/pattern1", "userdev/pattern2", "userdev/pattern3"},
+		Patterns:               []string{},
 		Enabled:                true,
 		PolicyUpgradeTime:      "now",
 		AgentAutoUpgradePolicy: &exchangecommon.ExchangeAgentUpgradePolicy{Manifest: "manifest", AllowDowngrade: false},
@@ -63,7 +63,7 @@ func Test_ProcessAllNMPS(t *testing.T) {
 
 	// matches dep policy
 	nmp2 := exchangecommon.ExchangeNodeManagementPolicy{
-		Patterns:               []string{"userdev/pattern1", "userdev/pattern2", "userdev/pattern3"},
+		Patterns:               []string{},
 		Enabled:                true,
 		PolicyUpgradeTime:      "now",
 		AgentAutoUpgradePolicy: &exchangecommon.ExchangeAgentUpgradePolicy{Manifest: "manifest", AllowDowngrade: false},
@@ -73,7 +73,7 @@ func Test_ProcessAllNMPS(t *testing.T) {
 
 	// matches mgmt policy  but disabled
 	nmp3 := exchangecommon.ExchangeNodeManagementPolicy{
-		Patterns:               []string{"userdev/pattern1", "userdev/pattern2", "userdev/pattern3"},
+		Patterns:               []string{},
 		Enabled:                false,
 		PolicyUpgradeTime:      "now",
 		AgentAutoUpgradePolicy: &exchangecommon.ExchangeAgentUpgradePolicy{Manifest: "manifest", AllowDowngrade: false},
@@ -125,26 +125,26 @@ func Test_getEarliest(t *testing.T) {
 	status3 := exchangecommon.NodeManagementPolicyStatus{AgentUpgradeInternal: &exchangecommon.AgentUpgradeInternalStatus{ScheduledUnixTime: time.Unix(1649112221, 0)}}
 	statusList := &map[string]*exchangecommon.NodeManagementPolicyStatus{"status1": &status1, "status2": &status2, "status3": &status3}
 
-	nextName, _ := getEarliest(statusList)
-	if nextName != "status3" {
-		t.Errorf("The next nmp to run should have been \"status3\": found %s instead.", nextName)
+	nextName, _ := getLatest(statusList)
+	if nextName != "status1" {
+		t.Errorf("The next nmp to run should have been \"status1\": found %s instead.", nextName)
 	} else if len(*statusList) != 2 {
 		t.Errorf("The status list should contain 2 remaining statuses. Found  %v.", statusList)
 	}
-	nextName, _ = getEarliest(statusList)
+	nextName, _ = getLatest(statusList)
 	if nextName != "status2" {
 		t.Errorf("The next nmp to run should have been \"status2\": found %s instead.", nextName)
 	} else if len(*statusList) != 1 {
 		t.Errorf("The status list should contain 1 remaining statuses. Found  %v.", statusList)
 	}
-	nextName, _ = getEarliest(statusList)
-	if nextName != "status1" {
-		t.Errorf("The next nmp to run should have been \"status1\": found %s instead.", nextName)
+	nextName, _ = getLatest(statusList)
+	if nextName != "status3" {
+		t.Errorf("The next nmp to run should have been \"status3\": found %s instead.", nextName)
 	} else if len(*statusList) != 0 {
 		t.Errorf("The status list should contain 0 remaining statuses. Found  %v.", statusList)
 	}
 
-	nextName, _ = getEarliest(statusList)
+	nextName, _ = getLatest(statusList)
 	if nextName != "" {
 		t.Errorf("The next nmp to run should have been \"\": found %s instead.", nextName)
 	} else if len(*statusList) != 0 {
@@ -152,7 +152,7 @@ func Test_getEarliest(t *testing.T) {
 	}
 
 	statusList = nil
-	nextName, _ = getEarliest(statusList)
+	nextName, _ = getLatest(statusList)
 	if nextName != "" {
 		t.Errorf("The next nmp to run should have been \"\": found %s instead.", nextName)
 	} else if statusList != nil {

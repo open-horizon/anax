@@ -390,7 +390,10 @@ func findBestMatchingVersion(availibleVers []string, preferredVers string) (stri
 	})
 
 	if preferredVers == LATESTVERSION {
-		return availibleVers[0], nil
+		if len(availibleVers) > 0 {
+			return availibleVers[0], nil
+		}
+		return "", fmt.Errorf("Version keyword \"%v\" specified but no availible versions found in exchange.", LATESTVERSION)
 	} else if semanticversion.IsVersionString(preferredVers) {
 		return preferredVers, nil
 	} else if prefVers, err := semanticversion.Version_Expression_Factory(preferredVers); err == nil {

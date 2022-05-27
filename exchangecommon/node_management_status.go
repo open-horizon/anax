@@ -160,7 +160,12 @@ func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string)
 	if policy.AgentAutoUpgradePolicy != nil {
 		startTime, _ := time.Parse(time.RFC3339, policy.PolicyUpgradeTime)
 		if policy.PolicyUpgradeTime == TIME_NOW_KEYWORD {
-			startTime = time.Now()
+			// This format string is the time format the exchange uses
+			if lastUpdatedTime, err := time.Parse("2006-01-02T15:04:05.000000Z[UTC]", policy.LastUpdated); err == nil {
+				startTime = lastUpdatedTime
+			} else {
+				startTime = time.Now()
+			}
 		}
 		realStartTime := startTime.Unix()
 		if policy.UpgradeWindowDuration > 0 {
