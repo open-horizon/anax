@@ -138,7 +138,12 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 		msgPrinter.Println()
 	}
 	if appliesTo {
-		nodes := determineCompatibleNodes(org, credToUse, nmpName, nmpFile)
+		// get node(s) name(s) from the Exchange
+		var resp ExchangeNodes
+		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+
+		// Check compatibility
+		nodes := determineCompatibleNodes(org, credToUse, nmpName, nmpFile, resp)
 		output := "[]"
 		if nodes != nil && len(nodes) > 0 {
 			output = cliutils.MarshalIndent(nodes, "exchange nmp add")
@@ -182,6 +187,7 @@ func NMPListNodes(org, credToUse, nmpName string) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+	
 
 	// store list of compatible nodes in map indexed by NMP's in the exchange
 	compatibleNodeMap := make(map[string][]string)
@@ -194,8 +200,13 @@ func NMPListNodes(org, credToUse, nmpName string) {
 	} else if httpCode == 404 {
 		output = "{}"
 	} else {
+		// get node(s) name(s) from the Exchange
+		var resp ExchangeNodes
+		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+		
+		// Check compatibility
 		for nmp, nmpPolicy := range nmpList.Policies {
-			nodes := determineCompatibleNodes(org, credToUse, nmpName, nmpPolicy)
+			nodes := determineCompatibleNodes(org, credToUse, nmpName, nmpPolicy, resp)
 			compatibleNodeMap[nmp] = nodes
 		}
 		output = cliutils.MarshalIndent(compatibleNodeMap, "exchange nmp list --nodes")
@@ -266,16 +277,12 @@ func NMPStatus(org, credToUse, nmpName, nodeName string, long bool) {
 	}
 }
 
-func determineCompatibleNodes(org, credToUse, nmpName string, nmpPolicy exchangecommon.ExchangeNodeManagementPolicy) []string {
+func determineCompatibleNodes(org, credToUse, nmpName string, nmpPolicy exchangecommon.ExchangeNodeManagementPolicy, exchangeNodes ExchangeNodes) []string {
 	var nmpOrg string
 	nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
 
-	// get node(s) name(s) from the Exchange
-	var resp ExchangeNodes
-	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
-
 	compatibleNodes := []string{}
-	for nodeNameEx, node := range resp.Nodes {
+	for nodeNameEx, node := range exchangeNodes.Nodes {
 		// Only check registered nodes
 		if node.PublicKey == "" {
 			continue

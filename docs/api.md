@@ -1774,7 +1774,7 @@ curl -s http://localhost:8510/node/userinput |jq
     ]
   }
 ]
-````
+```
 
 #### **API:** POST  /node/userinput
 ---
@@ -1955,7 +1955,7 @@ curl -s http://localhost:8510/node/policy |jq '.'
   ]
 }
 
-````
+```
 
 #### **API:** POST  /node/policy
 ---
@@ -2061,3 +2061,318 @@ curl -s -w "%{http_code}" -X DELETE "http://localhost:8510/node/policy" | jq '.'
 204
 ```
 
+### 10. Node Management
+#### **API:** GET  /nodemanagement/nextjob
+---
+
+Get the status object of the next scheduled node management job. A node management job has a status object once its node management policy is picked up by the node management worker and matched to a node. If there are multiple NMP's running on the node, the earliest scheduled NMP is returned. A guide to what each status value means can be found here: [node_management_status.md](./node_management_status.md)
+
+**Parameters:**
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| type | string | The type of job to query. Currently, the only type of job is "agentUpgrade" for agent auto upgrade jobs. If this filter is omitted, all statuses will be queried regardless of type. |
+| ready | boolean | If true, only statuses that are in the "downloaded" state (upgrade packages have been downloaded to the node) will be queried. If false, only statuses that are in the "waiting" state (upgrade packages have **not** been downloaded to the node) will be queried. If this filter is omitted, all statuses will be queried regardless of state. |
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+**agentUpgradePolicyStatus**:  
+- The following fields describe the status of an agent auto upgrade job as defined by the NMP created by a user. This is the structure that stays synchronized with the Exchange during the upgrade process.
+
+| name | subfield | type | description |
+| ---- | ---- | ---- | ---------------- |
+| scheduledTime | | string | An RFC3339 timestamp designating when the upgrade job should start. |
+| startTime | | string | An RFC3339 timestamp designating when the upgrade job actually started. This field is populated when the agent auto upgrade cronjob picks up this job and changes the status to "initiated". |
+| endTime | | string | An RFC3339 timestamp designating when the upgrade job completed successfully. This field is populated when the agent auto upgrade cronjob changes the status to "successful". |
+| upgradedVersions | | json | A json structure that defines the versions being upgraded/downgraded to. |
+| | softwareVersion | string | The version that the agent software packages are to be upgraded/downgraded to. |
+| | certVersion | string | The version of the certificate file to be upgraded/downgraded to. |
+| | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
+| status | | string | A string message that lists the current state of the upgrade job. |
+| errorMessage | | string | A string message containing any possible error messages that occur during the job. |
+| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |  
+
+
+**agentUpgradeInternal**:
+* The following fields describe the internal status object of an agent auto upgrade job used by the node management worker. This structure is an extension of the agentUpgradePolicyStatus structure that provides extra information to the node management worker needed to perform the upgrade.
+
+| name | subfield | type | description |
+| ---- | ---- | ---- | ---------------- |
+| allowDowngrade | | boolean | A boolean value that designates if a downgrade to a previous version is allowed to occur. |
+| manifest | | string | A string value that corresponds to an upgrade manifest in the Exchange. |
+| scheduledUnixTime | | string | An RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
+| latestMap | | json | A json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
+| | softwareLatest | boolean | A boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
+| | configLatest | boolean | A boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
+| | certLatest | boolean | A boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+
+**Example:**
+
+```
+curl -s http://localhost:8510/nodemanagement/nextjob?type=agentUpgrade&ready=true | jq '.'
+{
+  "e2edev/sample-nmp": {
+    "agentUpgradePolicyStatus": {
+      "scheduledTime": "2022-05-24T12:00:00Z",
+      "startTime": "2022-05-24T12:00:01-07:00",
+      "endTime": "2022-05-24T12:00:02-07:00",
+      "upgradedVersions": {
+        "softwareVersion": "2.30.0",
+        "certVersion": "",
+        "configVersion": ""
+      },
+      "status": "successful",
+      "workingDirectory": "/var/horizon/nmp"
+    },
+    "agentUpgradeInternal": {
+      "allowDowngrade": false,
+      "manifest": "sample_manifest",
+      "scheduledUnixTime": "2022-05-24T12:00:00-07:00",
+      "latestMap": {
+        "softwareLatest": true,
+        "configLatest": false,
+        "certLatest": false
+      }
+    }
+  }
+}
+
+```
+
+#### **API:** GET  /nodemanagement/status
+---
+
+Get a map of all status objects that apply to the node. Each status object corresponds to a node management policy that has been matched to the node and picked up by the node management worker. A guide to what each status value means can be found here: [node_management_status.md](node_management_status.md)
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+**agentUpgradePolicyStatus**:  
+- The following fields describe the status of an agent auto upgrade job as defined by the NMP created by a user. This is the structure that stays synchronized with the Exchange during the upgrade process.
+
+| name | subfield | type | description |
+| ---- | ---- | ---- | ---------------- |
+| scheduledTime | | string | An RFC3339 timestamp designating when the upgrade job should start. |
+| startTime | | string | An RFC3339 timestamp designating when the upgrade job actually started. This field is populated when the agent auto upgrade cronjob picks up this job and changes the status to "initiated". |
+| endTime | | string | An RFC3339 timestamp designating when the upgrade job completed successfully. This field is populated when the agent auto upgrade cronjob changes the status to "successful". |
+| upgradedVersions | | json | A json structure that defines the versions being upgraded/downgraded to. |
+| | softwareVersion | string | The version that the agent software packages are to be upgraded/downgraded to. |
+| | certVersion | string | The version of the certificate file to be upgraded/downgraded to. |
+| | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
+| status | | string | A string message that lists the current state of the upgrade job. |
+| errorMessage | | string | A string message containing any possible error messages that occur during the job. |
+| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |  
+
+
+**agentUpgradeInternal**:
+* The following fields describe the internal status object of an agent auto upgrade job used by the node management worker. This structure is an extension of the agentUpgradePolicyStatus structure that provides extra information to the node management worker needed to perform the upgrade.
+
+| name | subfield | type | description |
+| ---- | ---- | ---- | ---------------- |
+| allowDowngrade | | boolean | A boolean value that designates if a downgrade to a previous version is allowed to occur. |
+| manifest | | string | A string value that corresponds to an upgrade manifest in the Exchange. |
+| scheduledUnixTime | | string | An RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
+| latestMap | | json | A json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
+| | softwareLatest | boolean | A boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
+| | configLatest | boolean | A boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
+| | certLatest | boolean | A boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+
+**Example:**
+
+```
+curl -s http://localhost:8510/nodemanagement/status | jq '.'
+{
+  "e2edev/sample-nmp": {
+    "agentUpgradePolicyStatus": {
+      "scheduledTime": "2022-05-24T11:00:00Z",
+      "startTime": "2022-05-24T11:00:01-07:00",
+      "endTime": "2022-05-24T11:00:02-07:00",
+      "upgradedVersions": {
+        "softwareVersion": "2.30.0",
+        "certVersion": "1.0.0",
+        "configVersion": "1.0.0"
+      },
+      "status": "successful",
+      "workingDirectory": "/var/horizon/nmp"
+    },
+    "agentUpgradeInternal": {
+      "allowDowngrade": true,
+      "manifest": "sample_manifest",
+      "scheduledUnixTime": "2022-05-24T11:00:00-07:00",
+      "latestMap": {
+        "softwareLatest": true,
+        "configLatest": false,
+        "certLatest": false
+      }
+    }
+  },
+  "e2edev/sample-nmp-2": {
+    "agentUpgradePolicyStatus": {
+      "scheduledTime": "2022-05-24T12:00:00Z",
+      "startTime": "2022-05-24T12:00:01-07:00",
+      "upgradedVersions": {
+        "softwareVersion": "2.30.0",
+        "certVersion": "1.0.0",
+        "configVersion": "1.0.0"
+      },
+      "status": "failed",
+      "errorMessage": "sample error message",
+      "workingDirectory": "/var/horizon/nmp"
+    },
+    "agentUpgradeInternal": {
+      "allowDowngrade": false,
+      "manifest": "sample_manifest_2",
+      "scheduledUnixTime": "2022-05-24T12:00:00-07:00",
+      "latestMap": {
+        "softwareLatest": true,
+        "configLatest": true,
+        "certLatest": true
+      }
+    }
+  }
+}
+```
+
+#### **API:** GET  /nodemanagement/status/{nmpname}
+---
+
+Get the status objects that corresponds to the given node management policy name. The org that the NMP and node belong to can be optionally prepended (i.e. `/nodemanagement/status/nmp-name` and `/nodemanagement/status/org/nmp-name` refer to the same object, so long as the node is part of the given org) A guide to what each status value means can be found here: [node_management_status.md](node_management_status.md)
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+**agentUpgradePolicyStatus**:  
+- The following fields describe the status of an agent auto upgrade job as defined by the NMP created by a user. This is the structure that stays synchronized with the Exchange during the upgrade process.
+
+| name | subfield | type | description |
+| ---- | ---- | ---- | ---------------- |
+| scheduledTime | | string | An RFC3339 timestamp designating when the upgrade job should start. |
+| startTime | | string | An RFC3339 timestamp designating when the upgrade job actually started. This field is populated when the agent auto upgrade cronjob picks up this job and changes the status to "initiated". |
+| endTime | | string | An RFC3339 timestamp designating when the upgrade job completed successfully. This field is populated when the agent auto upgrade cronjob changes the status to "successful". |
+| upgradedVersions | | json | A json structure that defines the versions being upgraded/downgraded to. |
+| | softwareVersion | string | The version that the agent software packages are to be upgraded/downgraded to. |
+| | certVersion | string | The version of the certificate file to be upgraded/downgraded to. |
+| | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
+| status | | string | A string message that lists the current state of the upgrade job. |
+| errorMessage | | string | A string message containing any possible error messages that occur during the job. |
+| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |  
+
+
+**agentUpgradeInternal**:
+* The following fields describe the internal status object of an agent auto upgrade job used by the node management worker. This structure is an extension of the agentUpgradePolicyStatus structure that provides extra information to the node management worker needed to perform the upgrade.
+
+| name | subfield | type | description |
+| ---- | ---- | ---- | ---------------- |
+| allowDowngrade | | boolean | A boolean value that designates if a downgrade to a previous version is allowed to occur. |
+| manifest | | string | A string value that corresponds to an upgrade manifest in the Exchange. |
+| scheduledUnixTime | | string | An RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
+| latestMap | | json | A json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
+| | softwareLatest | boolean | A boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
+| | configLatest | boolean | A boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
+| | certLatest | boolean | A boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+
+**Example:**
+
+```
+curl -s http://localhost:8510/nodemanagement/status/sample-nmp | jq '.'
+{
+  "e2edev/sample-nmp": {
+    "agentUpgradePolicyStatus": {
+      "scheduledTime": "2022-05-24T11:00:00Z",
+      "startTime": "2022-05-24T11:00:01-07:00",
+      "endTime": "2022-05-24T11:00:02-07:00",
+      "upgradedVersions": {
+        "softwareVersion": "2.30.0",
+        "certVersion": "1.0.0",
+        "configVersion": "1.0.0"
+      },
+      "status": "successful",
+      "workingDirectory": "/var/horizon/nmp"
+    },
+    "agentUpgradeInternal": {
+      "allowDowngrade": true,
+      "manifest": "sample_manifest",
+      "scheduledUnixTime": "2022-05-24T11:00:00-07:00",
+      "latestMap": {
+        "softwareLatest": true,
+        "configLatest": false,
+        "certLatest": false
+      }
+    }
+  }
+}
+```
+
+#### **API:** PUT  /nodemanagement/status/{nmpname}
+---
+
+Update the status object that corresponds to the given node management policy name. The org that the NMP and node belong to can be optionally prepended (i.e. `/nodemanagement/status/nmp-name` and `/nodemanagement/status/org/nmp-name` refer to the same object, so long as the node is part of the given org) A guide to what each status value means can be found here: [node_management_status.md](node_management_status.md)
+
+Currently, the only supported update to the status object is the agentUpgradePolicyStatus structure. When the node management worker first picks up the status, it will create a local status object and fill in
+
+**Parameters:**
+
+body:
+
+**agentUpgradePolicyStatus**:  
+- The following fields describe the status of an agent auto upgrade job as defined by the NMP created by a user. This is the structure that stays synchronized with the Exchange during the upgrade process.
+
+| name  | type | description |
+| ----  | ---- | ---------------- |
+| startTime | string | An RFC3339 timestamp designating when the upgrade job actually started. This field can only be set if it has not been previously set and the status field is also changed to "initiated". |
+| endTime | string | An RFC3339 timestamp designating when the upgrade job actually started. This field can only be updated if it has not been previously set and the status field is also changed to "successful". |
+| status | string | A string message that lists the current state of the upgrade job. |
+| errorMessage | string | A string message containing any possible error messages that occur during the job. This field can only be updated if the status field is also changed. |
+
+**Response:**
+
+code:
+* 201 -- success
+
+**Examples:**
+
+```
+curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
+  "agentUpgradePolicyStatus": {
+    "startTime": "2022-05-24T12:00:01-07:00",
+    "status": "initiated"
+  }
+}'  http://localhost:8510/nodemanagement/status/sample-nmp
+```
+```
+curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
+  "agentUpgradePolicyStatus": {
+    "endTime": "2022-05-24T12:00:02-07:00",
+    "status": "successful"
+  }
+}'  http://localhost:8510/nodemanagement/status/sample-nmp
+```
+```
+curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
+  "agentUpgradePolicyStatus": {
+    "status": "failed",
+    "errorMessage": "Sample error message",
+  }
+}'  http://localhost:8510/nodemanagement/status/sample-nmp
+```
