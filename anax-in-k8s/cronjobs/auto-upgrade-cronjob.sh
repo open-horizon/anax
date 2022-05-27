@@ -123,12 +123,26 @@ function write_logs() {
     mv -f /var/horizon/cronjob.log.tmp /var/horizon/cronjob.log
 }
 
+# update the error message in status file
+function update_error_message() {
+    local msg="$1"
+    current_err_message=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.errorMessage' | sed 's/\"//g')
+    if [[ "$current_err_message" == "" ]]; then
+        # update error message in status.json
+        echo $(jq --arg updated_message "${msg}" '.agentUpgradePolicyStatus.errorMessage = $updated_message' $STATUS_PATH) > $STATUS_PATH
+    elif [[ "$current_err_message" == "null" ]]; then
+        # error message field is omitted, add errorMessage
+        echo $(jq --arg updated_message "${msg}" '.agentUpgradePolicyStatus += {"errorMessage": $updated_message}' $STATUS_PATH) > $STATUS_PATH
+    fi
+}
+
 # Sets the status to "rollback failed" and exits with a fatal error
 # Also pushes logs to /var/horizon/cronjob.log
 function rollback_failed() {
     local msg="$1"
     log_verbose "Setting status to \"$STATUS_ROLLBACK_FAILED\""
-    sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_FAILED\"/g" $STATUS_PATH 
+    echo $(jq --arg updated_status "$STATUS_ROLLBACK_FAILED" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
+    update_error_message "$msg"
     write_logs
     log_fatal 1 "$msg"
 }
@@ -426,7 +440,7 @@ if [[ "$pod_status" != "Running" || "$dep_status" != "Running" ]]; then
         if [[ ! -z "$dep_status" ]]; then
             log_info "Agent pod is running successfully"
             log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
-            sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_SUCCESSFUL\"/g" $STATUS_PATH
+	    echo $(jq --arg updated_status "$STATUS_ROLLBACK_SUCCESSFUL" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
             write_logs
             exit 0
         else
@@ -459,7 +473,7 @@ elif [[ "$json_status" == "$STATUS_ROLLBACK_STARTED" ]]; then
     if [[ $rc -eq 0 && "$cmd_output" == *"nodeType"*"cluster"* ]]; then
         log_info "Agent pod is running successfully."
         log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
-        sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_SUCCESSFUL\"/g" $STATUS_PATH
+	echo $(jq --arg updated_status "$STATUS_ROLLBACK_SUCCESSFUL" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
         write_logs
         exit 0
     fi
@@ -488,7 +502,7 @@ elif [[ "$json_status" == "$STATUS_INITIATED" ]]; then
     elif [[ "$old_image_version" == "null" || "$current_version" == "$old_image_version" ]]; then
         # set status to "failed"
         log_info "Agent pod is in panic state and the image version was not updated. Setting status to \"$ROLLBACK_FAILED\" and exiting."
-        sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$ROLLBACK_FAILED\"/g" $STATUS_PATH
+	echo $(jq --arg updated_status "$ROLLBACK_FAILED" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
         log_debug "Output of \"hzn node list\": $cmd_output"
         write_logs
         log_fatal 1 "Agent pod is in panic state and the image version was not updated."
@@ -498,6 +512,7 @@ elif [[ "$json_status" == "$STATUS_INITIATED" ]]; then
         cmd_output=$(agent_cmd "hzn node list")
         log_info "Agent pod is in panic state. Rollback will be performed."
         log_debug "Output of \"hzn node list\": $cmd_output"
+	update_error_message "Agent pod is in panic state"
     fi
 
     panic_rollback=true
@@ -508,7 +523,7 @@ log_info "Starting rollback process..."
     
 # Set the status to "rollback started" in status.json
 log_verbose "Setting the status to \"$STATUS_ROLLBACK_STARTED\"..."
-sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_STARTED\"/g" $STATUS_PATH
+echo $(jq --arg updated_status "$STATUS_ROLLBACK_STARTED" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
 CURRENT_STATUS=$STATUS_ROLLBACK_STARTED
 
 # Configmap:
@@ -575,7 +590,7 @@ fi
 
 # If the rollback ran successfully, update status to "rollback successful". 
 log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
-sed -i "s/\"status\":\"$CURRENT_STATUS\"/\"status\":\"$STATUS_ROLLBACK_SUCCESSFUL\"/g" $STATUS_PATH
+echo $(jq --arg updated_status "$STATUS_ROLLBACK_SUCCESSFUL" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
 CURRENT_STATUS=$STATUS_ROLLBACK_SUCCESSFUL
 
 # Delete backup configmap
