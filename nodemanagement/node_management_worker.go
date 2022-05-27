@@ -18,10 +18,13 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 )
 
 const STATUS_FILE_NAME = "status.json"
 const NMP_MONITOR = "NMPMonitor"
+
+var statusUpdateLock sync.Mutex 
 
 type NodeManagementWorker struct {
 	worker.BaseWorker
@@ -69,10 +72,14 @@ func (w *NodeManagementWorker) Initialize() bool {
 
 // this  is the function for a subworker that monitors the waiting nmps
 // when it finds an nmp status with a scheduled time that has passed it will send a start download message
-// if it finds multiple statuses that have passed, it will send start download messages in order of earliest to latest scheduled start time
+// if it finds multiple statuses that have passed, it will send start download messages in order of latest to earliest scheduled start time
 // this is to ensure that a newly registered node will reach the same state as a node that has been registered as policies were added
+// the node will only run one upgrade per type unless the most recent nmp was a downgrade from a previous nmp
 func (w *NodeManagementWorker) checkNMPTimeToRun() int {
 	glog.Infof(nmwlog("Starting run of node management policy monitoring subworker."))
+	statusUpdateLock.Lock()
+	defer statusUpdateLock.Unlock()
+
 	exchDev, err := persistence.FindExchangeDevice(w.db)
 	if err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Error getting device from database: %v", err)))
@@ -95,7 +102,7 @@ func (w *NodeManagementWorker) checkNMPTimeToRun() int {
 		earliestNmpName := "initial"
 		earliestNmpStatus := &exchangecommon.NodeManagementPolicyStatus{}
 		for earliestNmpName != "" {
-			earliestNmpName, earliestNmpStatus = getEarliest(&waitingNMPs)
+			earliestNmpName, earliestNmpStatus = getLatest(&waitingNMPs)
 			if earliestNmpName != "" {
 				glog.Infof(nmwlog(fmt.Sprintf("Time to start nmp %v", earliestNmpName)))
 				earliestNmpStatus.AgentUpgrade.Status = exchangecommon.STATUS_DOWNLOAD_STARTED
@@ -129,23 +136,23 @@ func (w *NodeManagementWorker) ResetDownloadStartedStatuses() error {
 }
 
 // this returns the name and status struct of the status with the eariest scheduled start time and deletes that earliest status from the map passed in
-func getEarliest(statusMap *map[string]*exchangecommon.NodeManagementPolicyStatus) (string, *exchangecommon.NodeManagementPolicyStatus) {
-	earliestNmpName := ""
-	earliestNmpStatus := &exchangecommon.NodeManagementPolicyStatus{}
+func getLatest(statusMap *map[string]*exchangecommon.NodeManagementPolicyStatus) (string, *exchangecommon.NodeManagementPolicyStatus) {
+	latestNmpName := ""
+	latestNmpStatus := &exchangecommon.NodeManagementPolicyStatus{}
 	if statusMap == nil {
 		return "", nil
 	}
 
 	for nmpName, nmpStatus := range *statusMap {
 		if nmpStatus != nil && nmpStatus.TimeToStart() {
-			if earliestNmpName == "" || nmpStatus.AgentUpgradeInternal.ScheduledUnixTime.Before(earliestNmpStatus.AgentUpgradeInternal.ScheduledUnixTime) {
-				earliestNmpStatus = nmpStatus
-				earliestNmpName = nmpName
+			if latestNmpName == "" || ! nmpStatus.AgentUpgradeInternal.ScheduledUnixTime.Before(latestNmpStatus.AgentUpgradeInternal.ScheduledUnixTime) {
+				latestNmpStatus = nmpStatus
+				latestNmpName = nmpName
 			}
 		}
 	}
-	delete(*statusMap, earliestNmpName)
-	return earliestNmpName, earliestNmpStatus
+	delete(*statusMap, latestNmpName)
+	return latestNmpName, latestNmpStatus
 }
 
 func getEC(config *config.HorizonConfig, db *bolt.DB) *worker.BaseExchangeContext {
@@ -270,6 +277,10 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 				delete status
 	*/
 	glog.Infof(nmwlog("Starting to process all nmps in the exchange and locally."))
+
+	statusUpdateLock.Lock()
+	defer statusUpdateLock.Unlock()
+
 	nodeOrg := exchange.GetOrg(n.GetExchangeId())
 	allNMPs, err := getAllNMPS(nodeOrg)
 	if err != nil {
