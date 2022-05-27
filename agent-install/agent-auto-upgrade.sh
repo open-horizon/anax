@@ -753,7 +753,7 @@ echo "$Std_msg"
 if [ $rc -ne 0 ]; then
     #remove the timestamp and word ERROR from err_msg
     if [ -z "$Err_msg" ]; then
-       errmsg="Unknown."
+        errmsg="Unknown."
     else   
         errmsg=$(echo $Err_msg | cut -d' ' -f4-)
     fi
@@ -763,16 +763,16 @@ if [ $rc -ne 0 ]; then
         set_nodemanagement_status "$nmp_id" "$status_file" "failed" "$errmsg"
 
         if ! $backup_ok; then
-            set_nodemanagement_status "$nmp_id" "$status_file" "rollback failed" "No backups available"
+            set_nodemanagement_status "$nmp_id" "$status_file" "rollback failed" "Rollback error: No backups available. Upgrade error: $errmsg"
             exit 3
         fi
 
         # rolling back
-        set_nodemanagement_status "$nmp_id" "$status_file" "rollback started" ""
+        set_nodemanagement_status "$nmp_id" "$status_file" "rollback started" "Upgrade error: $errmsg"
         rollback_agent_and_cli "$pkg_dir/$ROLLBACK_DIR_NAME"
         if [ $? -ne 0 ]; then
             log_error "Rollback failed. $FUNC_RET_MSG"
-            set_nodemanagement_status "$nmp_id" "$status_file" "rollback failed" "Filed rolling back. $FUNC_RET_MSG"
+            set_nodemanagement_status "$nmp_id" "$status_file" "rollback failed" "Rollback error: $FUNC_RET_MSG. Upgrade error: $errmsg"
             exit 3
         else
             # remove backups
@@ -782,11 +782,11 @@ if [ $rc -ne 0 ]; then
 
             # update the management status
             log_info "Rollback successful."
-            set_nodemanagement_status "$nmp_id" "$status_file" "rollback successful" ""
+            set_nodemanagement_status "$nmp_id" "$status_file" "rollback successful" "Upgrade error: $errmsg"
         fi
     else
         log_error "Agent automated upgrade aborted. $errmsg"
-        set_nodemanagement_status "$nmp_id" "$status_file" "upgrade aborted" "$errmsg"
+        set_nodemanagement_status "$nmp_id" "$status_file" "upgrade aborted" "Upgrade error: $errmsg"
         exit 2
     fi
 else
