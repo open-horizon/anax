@@ -142,7 +142,7 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 	// Call the MMS service over HTTP to get the basic object metadata.
 	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectsMeta)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("no objects found in org %s", org))
+		objectsMeta = make([]common.MetaData, 0)
 	}
 
 	output := ""

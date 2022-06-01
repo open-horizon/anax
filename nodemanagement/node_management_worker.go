@@ -24,7 +24,7 @@ import (
 const STATUS_FILE_NAME = "status.json"
 const NMP_MONITOR = "NMPMonitor"
 
-var statusUpdateLock sync.Mutex 
+var statusUpdateLock sync.Mutex
 
 type NodeManagementWorker struct {
 	worker.BaseWorker
@@ -145,7 +145,7 @@ func getLatest(statusMap *map[string]*exchangecommon.NodeManagementPolicyStatus)
 
 	for nmpName, nmpStatus := range *statusMap {
 		if nmpStatus != nil && nmpStatus.TimeToStart() {
-			if latestNmpName == "" || ! nmpStatus.AgentUpgradeInternal.ScheduledUnixTime.Before(latestNmpStatus.AgentUpgradeInternal.ScheduledUnixTime) {
+			if latestNmpName == "" || !nmpStatus.AgentUpgradeInternal.ScheduledUnixTime.Before(latestNmpStatus.AgentUpgradeInternal.ScheduledUnixTime) {
 				latestNmpStatus = nmpStatus
 				latestNmpName = nmpName
 			}

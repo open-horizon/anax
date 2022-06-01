@@ -187,7 +187,6 @@ func NMPListNodes(org, credToUse, nmpName string) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
-	
 
 	// store list of compatible nodes in map indexed by NMP's in the exchange
 	compatibleNodeMap := make(map[string][]string)
@@ -203,7 +202,7 @@ func NMPListNodes(org, credToUse, nmpName string) {
 		// get node(s) name(s) from the Exchange
 		var resp ExchangeNodes
 		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
-		
+
 		// Check compatibility
 		for nmp, nmpPolicy := range nmpList.Policies {
 			nodes := determineCompatibleNodes(org, credToUse, nmpName, nmpPolicy, resp)

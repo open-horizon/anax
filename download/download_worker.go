@@ -153,11 +153,11 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	}
 	glog.V(3).Infof(dwlog(fmt.Sprintf("Upgrade package names: %v", objIds)))
 
-	if err := os.RemoveAll(path.Join(filePath,nmpName)); err != nil {
+	if err := os.RemoveAll(path.Join(filePath, nmpName)); err != nil {
 		return fmt.Errorf("Error removing existing working directory: %v", err)
 	}
 
-	anythingDownloaded := false 
+	anythingDownloaded := false
 
 	// If org is specified in the manifest id, use that org. Otherwise use the user org
 	manOrg, manId := cutil.SplitOrgSpecUrl(nmpStatus.AgentUpgradeInternal.Manifest)
