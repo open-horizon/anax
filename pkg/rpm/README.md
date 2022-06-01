@@ -25,7 +25,13 @@ Note where it wrote the rpm files.
 
 ### Installing the RPMs on Fedora
 
-TBD
+- Copy the rpm files to Fedora host
+- Install podman `dnf install podman`
+- Verify podman is working: `podman ps`
+- Install the horizon agent and CLI: `dnf install horizon-*.x86_64.rpm`
+- Fill in variable values in `/etc/default/horizon`
+- Restart the agent: `systemctl restart horizon`
+- Verify the agent is working and the `configuration.exchange_version` field is filled in: `hzn node list`
 
 ## Using the Horizon RPMs
 

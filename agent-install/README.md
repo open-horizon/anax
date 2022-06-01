@@ -24,7 +24,7 @@ Currently supported OS and architectures:
     * amd64, ppc64le, aarch64, riscv64
   * CentOS 7.6, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5
     * amd64, ppc64le, aarch64, riscv64
-  * Fedora 32
+  * Fedora 32, 36
     * amd64, ppc64le, aarch64, riscv64
   * macOS
     * amd64
@@ -46,7 +46,7 @@ The script will first extract files from a given tar file specified with `-z`. T
 
 The script then detects the active operation system, version, and architecture, and begins the agent installation process. If there is a node id mapping file, the script will check for its node id using its hostname then ip address if its hostname is not found. If a node id mapping file is found this is assumed to be a batch install and there will be no user prompts.
 
-For container installs on Linux, the script checks for Docker and jq. On Ubuntu, Debian and Raspian installs, the script will install these if missing. On RHEL, CentOS and Fedora installs, the user must install these before running this script. On MacOS installs, which are always installed in a Docker container, the script checks for Docker, jq and socat, exiting if any are not installed.
+For container installs on Linux, the script checks for Docker or Podman and jq. On Ubuntu, Debian and Raspian installs, the script will install these if missing. On RHEL, CentOS and Fedora installs, the user must install these before running this script. On MacOS installs, which are always installed in a Docker container, the script checks for Docker, jq and socat, exiting if any are not installed.
 
 Before starting the installation, `agent-install.sh` checks if the node is already registered. In that case, it queries if a user wants to overwrite the current node configuration. If the response is `yes`, the node is unregistered, and the packages and configuration are updated. If it is a batch install, or the user responds `no` to the prompt, the script will install without overwriting the existing node configuration.
 
