@@ -256,7 +256,7 @@ fi
 
 # object has empty value in "hashAlgorithm", "publicKey" and "signature" fields
 echo "Testing object has empty values for hashAlgorithm, publicKey and signature fields"
-OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test-small1 -l | awk '{if(NR>1)print}')
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
 if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" != "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm')" != "" ]; then
   echo -e "publicKey or signature should not be set if publish with --noIntegrity flag"
   exit 1
@@ -590,8 +590,8 @@ fi
 # list with wrong objectId
 hzn mms object list --objectType=${OBJECT_TYPE} --objectId=${WRONG_OBJECT_ID}
 RC=$?
-if [ $RC -eq 0 ]; then
-  echo -e "Should return error message when list with wrong objectId"
+if [ $RC -ne 0 ]; then
+  echo -e "Should return an empty list when list with wrong objectId"
   exit 1
 fi
 
@@ -623,8 +623,8 @@ then
 
   # list with wrong destinationType
   hzn mms object list --destinationType=${WRONG_DEST_TYPE}
-  if [ $? -eq 0 ]; then
-    echo -e "Should return error message when list with wrong destinationType"
+  if [ $? -ne 0 ]; then
+    echo -e "Should return an empty list when list with wrong destinationType"
     exit 1
   fi
 
@@ -637,15 +637,15 @@ then
 
   # list with wrong destinationId
   hzn mms object list --destinationType=${DEST_TYPE} --destinationId=${WRONG_DEST_ID}
-  if [ $? -eq 0 ]; then
-    echo -e "Should return error message when list with wrong destinationId"
+  if [ $? -ne 0 ]; then
+    echo -e "Should return an empty list when list with wrong destinationId"
     exit 1
   fi
 
   # hzn mms object list --policy should not return any objects
   hzn mms object list --policy=true
-  if [ $? -eq 0 ]; then
-    echo -e "Should return error message when list with --policy when TEST_PATTERN is not empty"
+  if [ $? -ne 0 ]; then
+    echo -e "Should return an empty list when list with --policy when TEST_PATTERNS is not empty"
     exit 1
   fi
 
@@ -679,7 +679,7 @@ else
   # --service
   TARGET_NUM_OBJS=2
   SERV_NAME="${RESOURCE_ORG1}/my.company.com.services.usehello2"
-  WRONG_SERV_NAME=wrong_serve_name
+  WRONG_SERV_NAME="myorg/wrong_serve_name"
   WRONGFMT_SERV_NAME="my.company.com.services.usehello2"
 
   OBJS_CMD=$(hzn mms object list --service=${SERV_NAME} | awk '{if(NR>1)print}')
@@ -690,8 +690,8 @@ else
   fi
 
   hzn mms object list --service=${WRONG_SERV_NAME}
-  if [ $? -eq 0 ]; then
-    echo -e "Should return error message when list with wrong destination policy service"
+  if [ $? -ne 0 ]; then
+    echo -e "Should return an empty list when list with wrong destination policy service"
     exit -1
   fi
 
@@ -721,8 +721,8 @@ else
 
   UPDATE_TIME="2040-01-01T03:00:00Z"
   hzn mms object list --updateTime=${UPDATE_TIME}
-  if [ $? -eq 0 ]; then
-    echo -e "Should return error message when list with wrong updateTime"
+  if [ $? -ne 0 ]; then
+    echo -e "Should return an empty list when list with wrong updateTime"
     exit -1
   fi
 
