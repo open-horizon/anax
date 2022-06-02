@@ -61,6 +61,11 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		return
 	}
 
+	// Delete the node's management policy statuses from the exchange
+	if err := w.DeleteNodeManagementAllStatuses(); err != nil {
+		w.continueWithError(logString(err.Error()))
+	}
+
 	// Remove the node’s messaging public key from the node’s exchange resource and delete the node’s message key pair from the filesystem.
 	if err := w.patchNodeKey(w.limitedRetryEC.GetHTTPFactory()); err != nil {
 		w.continueWithError(logString(err.Error()))
@@ -69,11 +74,6 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 
 	// Clear out any node errors.
 	if err := w.deleteNodeError(); err != nil {
-		w.continueWithError(logString(err.Error()))
-	}
-
-	// Delete the node's management policy statuses from the exchange
-	if err := w.DeleteNodeManagementAllStatuses(); err != nil {
 		w.continueWithError(logString(err.Error()))
 	}
 
@@ -190,6 +190,11 @@ func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.Exchang
 	if err := w.terminateAllAgreements(producer.TERM_REASON_NODE_PATTERN_CHANGED); err != nil {
 		w.completedWithError(logString(err.Error()))
 		return
+	}
+
+	// Delete the node's management policy statuses from the exchange
+	if err := w.DeleteNodeManagementAllStatuses(); err != nil {
+		w.continueWithError(logString(err.Error()))
 	}
 
 	// Remove the node’s messaging public key from the node’s exchange resource and delete the node’s message key pair from the filesystem.

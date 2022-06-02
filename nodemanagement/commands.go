@@ -23,6 +23,24 @@ func NewNodeRegisteredCommand(msg *events.EdgeRegisteredExchangeMessage) *NodeRe
 	}
 }
 
+type NodeConfiguredCommand struct {
+	Msg *events.EdgeConfigCompleteMessage
+}
+
+func (d NodeConfiguredCommand) ShortString() string {
+	return fmt.Sprintf("Msg: %v", d.Msg)
+}
+
+func (d NodeConfiguredCommand) String() string {
+	return d.ShortString()
+}
+
+func NewNodeConfiguredCommand(msg *events.EdgeConfigCompleteMessage) *NodeConfiguredCommand {
+	return &NodeConfiguredCommand{
+		Msg: msg,
+	}
+}
+
 type NMPDownloadCompleteCommand struct {
 	Msg *events.NMPDownloadCompleteMessage
 }

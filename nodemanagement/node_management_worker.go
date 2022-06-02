@@ -50,7 +50,7 @@ func (w *NodeManagementWorker) Initialize() bool {
 	if dev, _ := persistence.FindExchangeDevice(w.db); dev != nil && dev.Config.State == persistence.CONFIGSTATE_CONFIGURED {
 		// Node is registered. Check nmp's in exchange, statuses in db
 		workingDir := w.Config.Edge.GetNodeMgmtDirectory()
-		if err := w.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(w), exchange.GetDeleteNodeManagementPolicyStatusHandler(w), exchange.GetPutNodeManagementPolicyStatusHandler(w)); err != nil {
+		if err := w.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(w), exchange.GetDeleteNodeManagementPolicyStatusHandler(w), exchange.GetPutNodeManagementPolicyStatusHandler(w), exchange.GetAllNodeManagementPolicyStatusHandler(w)); err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
 		}
 
@@ -174,7 +174,7 @@ func (n *NodeManagementWorker) HandleRegistration() {
 	n.EC = getEC(n.Config, n.db)
 	glog.Infof(nmwlog("Initializing"))
 	workingDir := n.Config.Edge.GetNodeMgmtDirectory()
-	if err := n.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n)); err != nil {
+	if err := n.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n),exchange.GetAllNodeManagementPolicyStatusHandler(n)); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
 
 		return
@@ -231,6 +231,11 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 	switch command.(type) {
 	case *NodeRegisteredCommand:
 		n.HandleRegistration()
+	case *NodeConfiguredCommand:
+		err := n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n), exchange.GetAllNodeManagementPolicyStatusHandler(n))
+		if err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf(err.Error())))
+		}
 	case *NMPDownloadCompleteCommand:
 		cmd := command.(*NMPDownloadCompleteCommand)
 		n.DownloadComplete(cmd)
@@ -238,9 +243,15 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 		n.TerminateSubworkers()
 		n.HandleUnregister()
 	case *NMPChangeCommand:
-		n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n))
+		err := n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n), exchange.GetAllNodeManagementPolicyStatusHandler(n))
+		if err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf(err.Error())))
+		}
 	case *NodePolChangeCommand:
-		n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n))
+		err := n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n), exchange.GetAllNodeManagementPolicyStatusHandler(n))
+		if err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf(err.Error())))
+		}
 	case *AgentFileVersionChangeCommand:
 		n.HandleAgentFilesVersionChange()
 	default:
@@ -261,7 +272,7 @@ func (n *NodeManagementWorker) NoWorkHandler() {
 
 // This process runs after a changes to the exchange NMPS or the node's policy, when the node is registered or starts up if it is already registered
 // The function will validate that there is a status for all nmp's the node matches and that an nmp exists in the exchange and matches this node for every status in the node's db
-func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS exchange.AllNodeManagementPoliciesHandler, deleteNMPStatus exchange.DeleteNodeManagementPolicyStatusHandler, putNMPStatus exchange.PutNodeManagementPolicyStatusHandler) error {
+func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS exchange.AllNodeManagementPoliciesHandler, deleteNMPStatus exchange.DeleteNodeManagementPolicyStatusHandler, putNMPStatus exchange.PutNodeManagementPolicyStatusHandler,  getNMPStatus exchange.AllNodeManagementPolicyStatusHandler) error {
 	/*
 		Get all the policies  from  the exchange
 		Check  compatibility
@@ -273,7 +284,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 				create status
 				update exchange status
 		for each status
-			if not in the exchange nmps
+			if not in the matching exchange nmps
 				delete status
 	*/
 	glog.Infof(nmwlog("Starting to process all nmps in the exchange and locally."))
@@ -290,8 +301,11 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 	if err != nil {
 		return fmt.Errorf("Error getting node's policy to check management policy compatibility: %v", err)
 	}
-	nodeMgmtPol := nodePol.GetManagementPolicy()
-
+	nodeMgmtPol := &externalpolicy.ExternalPolicy{}
+	if nodePol != nil {
+		nodeMgmtPol = nodePol.GetManagementPolicy()
+	}
+	
 	exchDev, err := persistence.FindExchangeDevice(n.db)
 	if err != nil {
 		return fmt.Errorf("Error getting device from database: %v", err)
@@ -336,6 +350,12 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 			}
 		}
 	}
+
+	// get all the statuses for this node from the exchange in case they were not removed correctly at unregister
+	org, nodeId := cutil.SplitOrgSpecUrl(n.GetExchangeId())
+	allExStatusesResp, _ := getNMPStatus(org, nodeId)
+	allExStatuses := allExStatusesResp.PolicyStatuses
+
 	if allStatuses, err := persistence.FindAllNMPStatus(n.db); err != nil {
 		return err
 	} else {
@@ -347,11 +367,17 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 				if err != nil {
 					glog.Errorf(nmwlog(fmt.Sprintf("Error removing status %v from database", statusName)))
 				} else if existingStatus != nil {
-					org, nodeId := cutil.SplitOrgSpecUrl(n.GetExchangeId())
 					if err := deleteNMPStatus(org, nodeId, statusName); err != nil {
 						glog.Errorf(nmwlog(fmt.Sprintf("Error removing status %v from exchange", statusName)))
 					}
 				}
+			}
+			delete(allExStatuses, statusName)
+		}
+		for statusName, _ := range allExStatuses {
+			// these statuses are in the exchange but not the local db. remove them from the exchange
+			if err := deleteNMPStatus(org, nodeId, statusName); err != nil {
+				glog.Errorf(nmwlog(fmt.Sprintf("Error removing status %v from exchange", statusName)))
 			}
 		}
 	}
@@ -367,6 +393,14 @@ func (n *NodeManagementWorker) NewEvent(incoming events.Message) {
 		switch msg.Event().Id {
 		case events.NEW_DEVICE_REG:
 			cmd := NewNodeRegisteredCommand(msg)
+			n.Commands <- cmd
+		}
+	case *events.EdgeConfigCompleteMessage:
+		msg, _ := incoming.(*events.EdgeConfigCompleteMessage)
+
+		switch msg.Event().Id {
+		case events.NEW_DEVICE_CONFIG_COMPLETE:
+			cmd := NewNodeConfiguredCommand(msg)
 			n.Commands <- cmd
 		}
 	case *events.NodeShutdownCompleteMessage:
@@ -409,6 +443,9 @@ func VerifyCompatible(nodePol *externalpolicy.ExternalPolicy, nodePattern string
 		if len(patternPieces) > 1 {
 			return cutil.SliceContains(nmPol.Patterns, strings.SplitN(nodePattern, "/", 2)[1]), nil
 		}
+		return false, nil
+	}
+	if nodePol == nil || nmPol == nil {
 		return false, nil
 	}
 	if err := nodePol.Constraints.IsSatisfiedBy(nmPol.Properties); err != nil {
