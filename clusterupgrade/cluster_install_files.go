@@ -292,12 +292,22 @@ var dockerManifestData []DockerManifestObject
 // getImageTagFromManifestFile returns Image full tag, version tag, error
 func getImageTagFromManifestFile(manifestFolder string) (string, string, error) {
 	fileName := path.Join(manifestFolder, DOCKER_MANIFEST_FILE)
+	f, err := os.Open(fileName)
+	if err != nil {
+		return "", "", err
+	}
+	fileInfo, err := f.Stat()
+	if err != nil {
+		return "", "", err
+	}
+
+	size := fileInfo.Size()
 	jsonByte, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return "", "", err
 	}
 
-	if err := json.Unmarshal(jsonByte, &dockerManifestData); err != nil {
+	if err := json.Unmarshal(jsonByte[:size], &dockerManifestData); err != nil {
 		return "", "", err
 	}
 
