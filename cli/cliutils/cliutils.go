@@ -1657,25 +1657,28 @@ func ConvertTime(unixSeconds uint64) string {
 
 // find correct credentials to use. Use -u or -n if one of them is not empty.
 // If both are empty, use HZN_EXCHANGE_USER_AUTH first, if it is not set use HZN_EXCHANGE_NODE_AUTH.
-func GetExchangeAuth(userPw string, nodeIdTok string) string {
+func GetExchangeAuth(userPw string, nodeIdTok string, adminOnly bool) string {
 	credToUse := ""
 
 	if userPw != "" {
 		credToUse = userPw
 	} else {
-		if nodeIdTok != "" {
+		if nodeIdTok != "" && !adminOnly {
 			credToUse = nodeIdTok
 		} else {
 			if tmpU := WithDefaultEnvVar(&userPw, "HZN_EXCHANGE_USER_AUTH"); *tmpU != "" {
 				credToUse = *tmpU
-			} else if tmpN := WithDefaultEnvVar(&nodeIdTok, "HZN_EXCHANGE_NODE_AUTH"); *tmpN != "" {
+			} else if tmpN := WithDefaultEnvVar(&nodeIdTok, "HZN_EXCHANGE_NODE_AUTH"); *tmpN != "" && !adminOnly {
 				credToUse = *tmpN
 			}
 		}
 	}
 
 	if credToUse == "" {
-		Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH"))
+		if !adminOnly {
+			Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH"))
+		}
+		Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH"))
 	}
 
 	return credToUse

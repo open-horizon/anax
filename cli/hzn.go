@@ -345,11 +345,10 @@ Environment Variables:
 	exNMPCmd := exchangeCmd.Command("nmp", msgPrinter.Sprintf("List and manage node management policies in the Horizon Exchange."))
 	exNMPListCmd := exNMPCmd.Command("list | ls", msgPrinter.Sprintf("Display the node management policies from the Horizon Exchange.")).Alias("ls").Alias("list")
 	exNMPListName := exNMPListCmd.Arg("nmp-name", msgPrinter.Sprintf("List just this one node management policy.")).String()
-	exNMPListIdTok := exNMPListCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNMPListIdTok := exNMPListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNMPListLong := exNMPListCmd.Flag("long", msgPrinter.Sprintf("Display detailed output about the node management policies.")).Short('l').Bool()
 	exNMPListNodes := exNMPListCmd.Flag("nodes", msgPrinter.Sprintf("List all the nodes that apply for the given node management policy.")).Bool()
 	exNMPAddCmd := exNMPCmd.Command("add", msgPrinter.Sprintf("Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template."))
-	exNMPAddIdTok := exNMPAddCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNMPAddAppliesTo := exNMPAddCmd.Flag("appliesTo", msgPrinter.Sprintf("List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.")).Bool()
 	exNMPAddName := exNMPAddCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to add or overwrite.")).Required().String()
 	exNMPAddJsonFile := exNMPAddCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
@@ -357,11 +356,10 @@ Environment Variables:
 	exNMPNewCmd := exNMPCmd.Command("new", msgPrinter.Sprintf("Display an empty node management policy template that can be filled in."))
 	exNMPRemoveCmd := exNMPCmd.Command("remove | rm", msgPrinter.Sprintf("Remove the node management policy in the Horizon Exchange.")).Alias("rm").Alias("remove")
 	exNMPRemoveName := exNMPRemoveCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to be removed.")).Required().String()
-	exNMPRemoveIdTok := exNMPRemoveCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNMPRemoveForce := exNMPRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	exNMPStatusCmd := exNMPCmd.Command("status", msgPrinter.Sprintf("List the status of a given node management policy across all nodes in given org."))
 	exNMPStatusName := exNMPStatusCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy status to check.")).Required().String()
-	exNMPStatusIdTok := exNMPStatusCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNMPStatusIdTok := exNMPStatusCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNMPStatusNode := exNMPStatusCmd.Flag("node", msgPrinter.Sprintf("Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.")).Short('N').String()
 	exNMPStatusLong := exNMPStatusCmd.Flag("long", msgPrinter.Sprintf("Show the entire contents of each node management policy status object.")).Short('l').Bool()
 	exNodeCmd := exchangeCmd.Command("node", msgPrinter.Sprintf("List and manage nodes in the Horizon Exchange"))
@@ -848,73 +846,73 @@ Environment Variables:
 		// some hzn exchange commands can take either -u user:pw or -n nodeid:token as credentials.
 		switch subCmd := strings.TrimPrefix(fullCmd, "exchange | ex "); subCmd {
 		case "nmp add":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPAddIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", true)
 		case "nmp list | ls":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPListIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPListIdTok, false)
 		case "nmp new":
 			// does not require exchange credentials
 		case "nmp remove | rm":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPRemoveIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", true)
 		case "nmp status":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPStatusIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPStatusIdTok, false)
 		case "node list | ls":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListNodeIdTok, false)
 		case "node update | up":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeUpdateIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeUpdateIdTok, false)
 		case "node settoken":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeSetTokNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeSetTokNodeIdTok, false)
 		case "node remove | rm":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeRemoveNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeRemoveNodeIdTok, false)
 		case "node confirm | con":
 			//do nothing because it uses the node id and token given in the argument as the credential
 		case "node listpolicy | lsp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListPolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListPolicyIdTok, false)
 		case "node addpolicy | addp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeAddPolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeAddPolicyIdTok, false)
 		case "node updatepolicy | upp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeUpdatePolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeUpdatePolicyIdTok, false)
 		case "node removepolicy | rmp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeRemovePolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeRemovePolicyIdTok, false)
 		case "node listerrors | lse":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeErrorsListIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeErrorsListIdTok, false)
 		case "node liststatus | lst":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeStatusIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeStatusIdTok, false)
 		case "node management | mgmt list | ls":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeManagementListNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeManagementListNodeIdTok, false)
 		case "node management | mgmt status":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeManagementStatusNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeManagementStatusNodeIdTok, false)
 		case "service | serv list | ls":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok, false)
 		case "service | serv verify | vf":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceVerifyNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceVerifyNodeIdTok, false)
 		case "service | serv listkey | lsk":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListKeyNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListKeyNodeIdTok, false)
 		case "service | serv listauth | lsau":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListAuthNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListAuthNodeIdTok, false)
 		case "pattern | pat list | ls":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternListNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternListNodeIdTok, false)
 		case "pattern | pat update | up":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatUpdateNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatUpdateNodeIdTok, false)
 		case "pattern | pat verify | vf":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternVerifyNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternVerifyNodeIdTok, false)
 		case "pattern | pat listkey | lsk":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternListKeyNodeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternListKeyNodeIdTok, false)
 		case "service | serv listpolicy | lsp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListPolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListPolicyIdTok, false)
 		case "service | serv addpolicy | addp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceAddPolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceAddPolicyIdTok, false)
 		case "service | serv removepolicy | rmp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceRemovePolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceRemovePolicyIdTok, false)
 		case "service | serv newpolicy | newp":
 			// does not require exchange credentials
 		case "deployment | dep listpolicy | ls":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessListPolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessListPolicyIdTok, false)
 		case "deployment | dep updatepolicy | upp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessUpdatePolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessUpdatePolicyIdTok, false)
 		case "deployment | dep addpolicy | addp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessAddPolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessAddPolicyIdTok, false)
 		case "deployment | dep removepolicy | rmp":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessRemovePolicyIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessRemovePolicyIdTok, false)
 		case "deployment | dep new":
 			// does not require exchange credentials
 		case "version":
