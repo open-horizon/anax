@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/edge-sync-service/common"
 	"net/http"
 )
 
@@ -116,6 +117,27 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 	// if the --no-constraints flag is not specified and the given nmp has no constraints, alert the user.
 	if !noConstraints && nmpFile.HasNoConstraints() && nmpFile.HasNoPatterns() {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable."))
+	}
+
+	// Validate the AgentAutoUpgrade job if it was defined
+	if nmpFile.AgentAutoUpgradePolicy != nil {
+
+		// Ensure that a manifest was specified
+		fullManifest := nmpFile.AgentAutoUpgradePolicy.Manifest
+		if fullManifest == ""{
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy."))
+		}
+
+		// Ensure the specified manifest exists in the CSS
+		manOrg, manifest := cliutils.TrimOrg(org, fullManifest)
+		urlPath := "api/v1/objects/" + manOrg + "?filters=true"
+		filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s", exchangecommon.AU_MANIFEST_TYPE, manifest)
+		fullPath := urlPath + filterURLPath
+		var manifestsMeta []common.MetaData
+		httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &manifestsMeta)
+		if httpCode == 404 {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("An AgentAutoUpgradePolicy was defined with manifest '%s' which does not exist in org %s.", fullManifest, manOrg))
+		}
 	}
 
 	var resp struct {
