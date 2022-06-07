@@ -16,6 +16,7 @@ import (
 	"os"
 )
 
+// verify the data in dataReader, the verification will save data to fileName.tmp and remove tmp file if verified
 func VerifyDataSig(dataReader io.Reader, publicKey string, signature string, hashAlgo string, fileName string) (bool, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -57,6 +58,60 @@ func VerifyDataSig(dataReader io.Reader, publicKey string, signature string, has
 
 			// rename the .tmp file
 			if err := os.Rename(tmpFileName, fileName); err != nil {
+				return false, err
+			}
+
+			return true, nil
+		}
+	}
+}
+
+// verify the data in fileNameToVerify, the verification process will save data to fileNameToSave and remove fileNameToVerify file if verified
+// fileNameToVerify usually is a tmp file
+func VerifyDataSigInFile(fileNameToVerify string, publicKey string, signature string, hashAlgo string, fileNameToSave string) (bool, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if hashAlgo == "" {
+		return false, errors.New(msgPrinter.Sprintf("Failed to verify digital signature because the hashAlgorithm is empty"))
+	} else if publicKey == "" {
+		return false, errors.New(msgPrinter.Sprintf("Failed to verify digital signature because the publicKey string is empty"))
+	} else if signature == "" {
+		return false, errors.New(msgPrinter.Sprintf("Failed to verify digital signature because the signature string is empty"))
+	}
+
+	if publicKeyBytes, err := base64.StdEncoding.DecodeString(publicKey); err != nil {
+		return false, err
+	} else if signatureBytes, err := base64.StdEncoding.DecodeString(signature); err != nil {
+		return false, err
+	} else {
+		if dataHash, err := GetHash(hashAlgo); err != nil {
+			return false, err
+		} else if pubKey, err := x509.ParsePKIXPublicKey(publicKeyBytes); err != nil {
+			return false, err
+		} else {
+			f, err := os.Open(fileNameToVerify)
+			if err != nil {
+				return false, err
+			}
+			dr2 := io.TeeReader(f, dataHash)
+
+			// write dr2 to destination file
+			if err := WriteDateStreamToFile(dr2, fileNameToSave); err != nil {
+				return false, err
+			}
+
+			// verify datahash
+			dataHashSum := dataHash.Sum(nil)
+			pubKeyToUse := pubKey.(*rsa.PublicKey)
+			if cryptoHashType, err := GetCryptoHashType(hashAlgo); err != nil {
+				return false, err
+			} else if err = rsa.VerifyPSS(pubKeyToUse, cryptoHashType, dataHashSum, signatureBytes, nil); err != nil {
+				return false, err
+			}
+
+			// rename the .tmp file
+			if err := os.Remove(fileNameToVerify); err != nil {
 				return false, err
 			}
 
