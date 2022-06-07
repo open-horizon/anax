@@ -339,24 +339,24 @@ else
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing '$CMD_PREFIX' --appliesTo"
-cmdOutput=$($CMD_PREFIX test-nmp-2 -f /tmp/nmp_example_2.json --appliesTo --dry-run -o $NMP_ORG_ID -u $NMP_EXCHANGE_USER_AUTH 2>&1)
+echo -e "${PREFIX} Testing '$CMD_PREFIX' --applies-to"
+cmdOutput=$($CMD_PREFIX test-nmp-2 -f /tmp/nmp_example_2.json --applies-to --dry-run -o $NMP_ORG_ID -u $NMP_EXCHANGE_USER_AUTH 2>&1)
 rc=$?
 if [[ $rc -eq 0 && "$cmdOutput" == *"["*"$NMP_ORG_ID/an12345"*"]"* ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' --appliesTo: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' --applies-to: exit code: $rc, output: $cmdOutput."
 	cleanup
 	exit 1
 fi
 
-echo -e "${PREFIX} Testing '$CMD_PREFIX' --appliesTo when NMP is not compatible with any nodes"
-cmdOutput=$($CMD_PREFIX test-nmp-3 -f /tmp/nmp_example_3.json --no-constraints --appliesTo --dry-run -o $NMP_ORG_ID -u $NMP_EXCHANGE_USER_AUTH 2>&1)
+echo -e "${PREFIX} Testing '$CMD_PREFIX' --applies-to when NMP is not compatible with any nodes"
+cmdOutput=$($CMD_PREFIX test-nmp-3 -f /tmp/nmp_example_3.json --no-constraints --applies-to --dry-run -o $NMP_ORG_ID -u $NMP_EXCHANGE_USER_AUTH 2>&1)
 rc=$?
 if [[ $rc -eq 0 && "$cmdOutput" == *"[]"* ]]; then
 	echo -e "${PREFIX} completed."
 else
-	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' --appliesTo when NMP is not compatible with any nodes: exit code: $rc, output: $cmdOutput."
+	echo -e "${PREFIX} Failed: Wrong error response from '$CMD_PREFIX' --applies-to when NMP is not compatible with any nodes: exit code: $rc, output: $cmdOutput."
 	cleanup
 	exit 1
 fi

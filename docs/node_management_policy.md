@@ -65,7 +65,7 @@ hzn exchange nmp add <nmp-name> --json-file <path-to-nmp>
 
 * `--no-constraints`: This flag must be specified if the patterns field is omitted and the constraints field is omitted. By specifying this flag, the user is verifying that this NMP should apply to all nodes that also omitted constraints in their node policy, as well as the nodes who have contraints that match this NMP's properties.
 
-* `--appliesTo`: This flag will output a list of nodes that are compatible with this NMP. If the `--dry-run` flag is also specified, the NMP will not be added to the Exchange - this is useful when checking the compatiility of an NMP without the risk of deploying to unintended nodes.
+* `--applies-to`: This flag will output a list of nodes that are compatible with this NMP. If the `--dry-run` flag is also specified, the NMP will not be added to the Exchange - this is useful when checking the compatiility of an NMP without the risk of deploying to unintended nodes.
 
 ## Listing NMP's currently stored in the Exchange
 To list all the NMP's that exist in the Exchange, use the following command:
