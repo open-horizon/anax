@@ -169,6 +169,7 @@ func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string)
 		}
 		realStartTime := startTime.Unix()
 		if policy.UpgradeWindowDuration > 0 {
+			rand.Seed(time.Now().UnixNano())
 			realStartTime = realStartTime + int64(rand.Intn(policy.UpgradeWindowDuration))
 		}
 		newStatus.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).UTC().Format(time.RFC3339)
