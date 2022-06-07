@@ -292,7 +292,7 @@ func GetCSSObjectsByType(ec ExchangeContext, org string, objType string) (*MetaD
 }
 
 // Get the object data
-func GetObjectData(ec ExchangeContext, org string, objType string, objId string, filePath string, fileName string, objectMeta *common.MetaData) error {
+func GetObjectData(ec ExchangeContext, org string, objType string, objId string, filePath string, fileName string, objectMeta *common.MetaData, saveToTempFile bool) error {
 	url := path.Join("/api/v1/objects", org, objType, objId, "data")
 	url = ec.GetCSSURL() + url
 
@@ -302,6 +302,10 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 	}
 
 	request.SetBasicAuth(ec.GetExchangeId(), ec.GetExchangeToken())
+
+	if saveToTempFile {
+		fileName = fileName + ".tmp"
+	}
 
 	retryCount := ec.GetHTTPFactory().RetryCount
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
@@ -347,7 +351,7 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 // set CloseRequest to true if this is the last chunk
 // return true, nil if response code is 200 -- get all the object data
 // return false, nil if response code is 206 -- get data in range of bytes {startOffset} - {endOffset}
-func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId string, startOffset int64, endOffset int64, closeRequest bool, filePath string, fileName string) (bool, error) {
+func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId string, startOffset int64, endOffset int64, closeRequest bool, filePath string, fileName string,  saveToTempFile bool) (bool, error) {
 	url := path.Join("/api/v1/objects", org, objType, objId, "data")
 	url = ec.GetCSSURL() + url
 
@@ -365,6 +369,10 @@ func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId 
 	err = os.MkdirAll(filePath, 0755)
 	if err != nil {
 		return false, fmt.Errorf("Failed to create folder %v for agent upgrade files: %s\n", filePath, err)
+	}
+
+	if saveToTempFile {
+		fileName = fileName + ".tmp"
 	}
 
 	file, err := os.OpenFile(path.Join(filePath, fileName), os.O_WRONLY|os.O_CREATE, 0600)

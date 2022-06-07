@@ -117,6 +117,11 @@ func (w *DownloadWorker) DownloadCSSObject(org string, objType string, objId str
 
 	filePath = path.Join(filePath, nmpName)
 
+	saveToTempFile := false
+	if objMeta.HashAlgorithm != "" && objMeta.PublicKey != "" && objMeta.Signature != "" {
+		saveToTempFile = true
+	}
+
 	if w.Config.IsDataChunkEnabled() && int(objMeta.ObjectSize) > w.Config.GetFileSyncServiceMaxDataChunkSize() {
 		offsetStep := w.Config.GetFileSyncServiceMaxDataChunkSize()
 		startOffest := 0
@@ -127,7 +132,7 @@ func (w *DownloadWorker) DownloadCSSObject(org string, objType string, objId str
 				lastChunk = true
 				endOffset = int(objMeta.ObjectSize)
 			}
-			_, err = exchange.GetObjectDataByChunk(w, org, objType, objId, int64(startOffest), int64(endOffset), lastChunk, filePath, objId)
+			_, err = exchange.GetObjectDataByChunk(w, org, objType, objId, int64(startOffest), int64(endOffset), lastChunk, filePath, objId, saveToTempFile)
 			if err != nil {
 				return fmt.Errorf("Failed to get object %v/%v/%v data chunk. Error was %v.", org, objType, objId, err)
 			}
@@ -135,11 +140,25 @@ func (w *DownloadWorker) DownloadCSSObject(org string, objType string, objId str
 			endOffset = endOffset + offsetStep
 		}
 	} else {
-		err = exchange.GetObjectData(w, org, objType, objId, filePath, objId, objMeta)
+		err = exchange.GetObjectData(w, org, objType, objId, filePath, objId, objMeta, saveToTempFile)
 		if err != nil {
 			w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_DOWNLOAD_FAILED, nmpName, nil, nil)
 			return fmt.Errorf("Failed to get data for object %v/%v/%v. Error was: %v", org, objType, objId, err)
 		}
+	}
+
+	// verify signature
+	// filePath/objId is the full path of the document
+	if objMeta.HashAlgorithm != "" && objMeta.PublicKey != "" && objMeta.Signature != "" {
+		fileName := path.Join(filePath, objId)
+		tmpFileName := fmt.Sprintf("%v.tmp", fileName)
+		if verified, err := cutil.VerifyDataSigInFile(tmpFileName, objMeta.PublicKey, objMeta.Signature, objMeta.HashAlgorithm, fileName); !verified {
+			os.Remove(fileName)
+			os.Remove(tmpFileName)
+			return fmt.Errorf("Failed to verify data signature for object %v/%v/%v. Error was: %v", org, objType, objId, err)
+		}
+		glog.Infof(dwlog(fmt.Sprintf("CSS file %v/%v/%v is verified and downloaded to file %v", org, objType, objId, fileName)))
+
 	}
 
 	return nil

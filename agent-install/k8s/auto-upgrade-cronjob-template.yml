@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: auto-upgrade-cronjob
 spec:
-  schedule: '*/15 * * * *'
+  schedule: '*/1 * * * *'
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 0
   successfulJobsHistoryLimit: 0
