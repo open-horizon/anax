@@ -29,7 +29,7 @@ Following are the fields in the JSON representation of an NMP status:
     * `"initiated"`: The installation of the downloaded packages has started and is being performed by the AgentAutoUpgrade cron job script.
     * `"successful"`: The node management worker has successfully performed the upgrade job specified in the NMP.
     * `"no action required"`: The node management worker has determined that no actions need to be taken to upgrade or downgrade the agent. This typicaly means that all the files specified within the NMP's manifest are already installed, or they are a lower version than what is currently installed, and the NMP set the allowDowngrade field to false.
-    * `upgrade aborted`: There was a problem during the pre-check in the AgentAutoUpgrade cron job script, so the job was cancelled before the installation.
+    * `precheck failed`: There was a problem during the pre-check in the AgentAutoUpgrade cron job script, so the job was cancelled before the installation.
     * `"download failed"`: The download worker was unable to download all necessary packages from the Management Hub.
     * `"failed"`: There was a problem during the installation of the downloaded packages either in the node management worker or in the AgentAutoUpgrade cron job script.
     * `"rollback started"`: If the status was set to "failed", the next time the AgentAutoUpgrade cron job waked up, it will attempt to rollback the version to the previous version, and it will set the status to this value.

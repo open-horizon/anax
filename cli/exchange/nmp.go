@@ -124,7 +124,7 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 
 		// Ensure that a manifest was specified
 		fullManifest := nmpFile.AgentAutoUpgradePolicy.Manifest
-		if fullManifest == ""{
+		if fullManifest == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy."))
 		}
 

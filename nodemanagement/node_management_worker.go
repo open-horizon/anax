@@ -174,7 +174,7 @@ func (n *NodeManagementWorker) HandleRegistration() {
 	n.EC = getEC(n.Config, n.db)
 	glog.Infof(nmwlog("Initializing"))
 	workingDir := n.Config.Edge.GetNodeMgmtDirectory()
-	if err := n.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n),exchange.GetAllNodeManagementPolicyStatusHandler(n)); err != nil {
+	if err := n.ProcessAllNMPS(workingDir, exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n), exchange.GetAllNodeManagementPolicyStatusHandler(n)); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Error processing all exchange policies: %v", err)))
 
 		return
@@ -272,7 +272,7 @@ func (n *NodeManagementWorker) NoWorkHandler() {
 
 // This process runs after a changes to the exchange NMPS or the node's policy, when the node is registered or starts up if it is already registered
 // The function will validate that there is a status for all nmp's the node matches and that an nmp exists in the exchange and matches this node for every status in the node's db
-func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS exchange.AllNodeManagementPoliciesHandler, deleteNMPStatus exchange.DeleteNodeManagementPolicyStatusHandler, putNMPStatus exchange.PutNodeManagementPolicyStatusHandler,  getNMPStatus exchange.AllNodeManagementPolicyStatusHandler) error {
+func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS exchange.AllNodeManagementPoliciesHandler, deleteNMPStatus exchange.DeleteNodeManagementPolicyStatusHandler, putNMPStatus exchange.PutNodeManagementPolicyStatusHandler, getNMPStatus exchange.AllNodeManagementPolicyStatusHandler) error {
 	/*
 		Get all the policies  from  the exchange
 		Check  compatibility
@@ -305,7 +305,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 	if nodePol != nil {
 		nodeMgmtPol = nodePol.GetManagementPolicy()
 	}
-	
+
 	exchDev, err := persistence.FindExchangeDevice(n.db)
 	if err != nil {
 		return fmt.Errorf("Error getting device from database: %v", err)

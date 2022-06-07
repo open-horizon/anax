@@ -703,7 +703,7 @@ fi
 unpack_packages $pkg_dir
 if [ $? -ne 0 ]; then
    log_error "Failed unpacking the packages. $FUNC_RET_MSG"
-   set_nodemanagement_status "$nmp_id" "$status_file" "failed" "Failed unpacking the packages. $FUNC_RET_MSG"
+   set_nodemanagement_status "$nmp_id" "$status_file" "precheck failed" "Failed unpacking the packages. $FUNC_RET_MSG"
    exit 1
 fi
 
@@ -785,8 +785,8 @@ if [ $rc -ne 0 ]; then
             set_nodemanagement_status "$nmp_id" "$status_file" "rollback successful" "Upgrade error: $errmsg"
         fi
     else
-        log_error "Agent automated upgrade aborted. $errmsg"
-        set_nodemanagement_status "$nmp_id" "$status_file" "upgrade aborted" "Upgrade error: $errmsg"
+        log_error "Agent automated upgrade precheck failed. $errmsg"
+        set_nodemanagement_status "$nmp_id" "$status_file" "precheck failed" "Upgrade error: $errmsg"
         exit 2
     fi
 else
