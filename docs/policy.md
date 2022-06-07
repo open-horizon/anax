@@ -16,16 +16,11 @@ When node policy is changed centrally, it is reflected to the node the next time
 When node policy is changed directly on the node, the changes are reflected immediately to the management hub so that service and model deployment can be reevaluated immediately.
 By default, a node has some [built-in properties](./built_in_policy.md) that reflect memory, architecture, and number of CPUs.
 It can optionally contain any arbitrary properties; for example, the product model, attached devices, software configuration, or anything else deemed relevant by the node owner.
-Node policy constraints can be used to restrict which services are permitted to run on this node.
+Node policy constraints can be used to restrict which services are permitted to run on this node and which node management policies apply to the node.
 Each node has only one policy that contains all the properties and constraints that are assigned to that node.
 
-The JSON representation of node policy contains properties and constraints as defined [here](./properties_and_constraints.md):
-```
-{
-	"properties": [],
-	"constraints": []
-}
-```
+The JSON representation of node policy and details of how it is used are elaborated [here](./node_policy.md):
+
 
 ## Service policy
 
