@@ -146,7 +146,7 @@ const (
 	STATUS_SUCCESSFUL          = "successful"
 	STATUS_NO_ACTION           = "no action required"
 	STATUS_FAILED_JOB          = "failed"
-	STATUS_UPGRADE_ABORTED     = "upgrade aborted"
+	STATUS_PRECHECK_FAILED     = "precheck failed"
 	STATUS_INITIATED           = "initiated"
 	STATUS_ROLLBACK_STARTED    = "rollback started"
 	STATUS_ROLLBACK_FAILED     = "rollback failed"
