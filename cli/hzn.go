@@ -349,7 +349,7 @@ Environment Variables:
 	exNMPListLong := exNMPListCmd.Flag("long", msgPrinter.Sprintf("Display detailed output about the node management policies.")).Short('l').Bool()
 	exNMPListNodes := exNMPListCmd.Flag("nodes", msgPrinter.Sprintf("List all the nodes that apply for the given node management policy.")).Bool()
 	exNMPAddCmd := exNMPCmd.Command("add", msgPrinter.Sprintf("Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template."))
-	exNMPAddAppliesTo := exNMPAddCmd.Flag("appliesTo", msgPrinter.Sprintf("List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.")).Bool()
+	exNMPAddAppliesTo := exNMPAddCmd.Flag("applies-to", msgPrinter.Sprintf("List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.")).Bool()
 	exNMPAddName := exNMPAddCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to add or overwrite.")).Required().String()
 	exNMPAddJsonFile := exNMPAddCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
 	exNMPAddNoConstraint := exNMPAddCmd.Flag("no-constraints", msgPrinter.Sprintf("Allow this node management policy to be published even though it does not have any constraints.")).Bool()
