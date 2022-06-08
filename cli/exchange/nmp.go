@@ -109,8 +109,7 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 	}
 
 	// validate the format of the nmp
-	err = nmpFile.Validate()
-	if err != nil {
+	if err = nmpFile.Validate(); err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect node management policy format in file %s: %v", jsonFilePath, err))
 	}
 
