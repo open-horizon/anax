@@ -6,7 +6,7 @@ metadata:
 spec:
   storageClassName: __StorageClass__
   accessModes:
-    - ReadWriteMany
+    - __PVCAccessMode__
   resources:
     requests:
       storage: 10Gi
