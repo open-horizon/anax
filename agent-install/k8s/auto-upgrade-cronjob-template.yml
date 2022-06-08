@@ -1,4 +1,4 @@
-apiVersion: batch/v1beta1
+apiVersion: __KubernetesApi__
 kind: CronJob
 metadata:
   name: auto-upgrade-cronjob

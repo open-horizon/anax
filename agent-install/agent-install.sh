@@ -1253,6 +1253,30 @@ function is_anax_in_container() {
     else return 1; fi
 }
 
+# return kubernetes server version in format of $major:$minor
+function get_kubernetes_version() {
+    local major_version
+    local minor_version
+    local full_version
+    major_version=$($KUBECTL version -o json | jq '.serverVersion.major' | sed s/\"//g)
+    minor_version=$($KUBECTL version -o json | jq '.serverVersion.minor' | sed s/\"//g)
+    if [ "${minor_version:0-1}" == "+" ]; then
+        minor_version=${minor_version::-1}
+    fi
+
+    full_version="$major_version.$minor_version"
+    echo $full_version
+}
+
+# compare versions. Return 0 (true) if the 1st version is greater than or equal to the 2nd version
+function version_gt_or_equal() {
+    local version1=$1
+    local version2=$2
+
+    # need the test above, because the test below returns >= because it sorts in ascending order
+    test "$(printf '%s\n' "$1" "$2" | sort -V | tail -n 1)" == "$version1"
+}
+
 function get_agent_container_number() {
     if [[ $AGENT_IN_CONTAINER == 'true' ]] || is_macos; then
         echo "$AGENT_CONTAINER_NUMBER"
@@ -3221,7 +3245,6 @@ function create_horizon_env() {
     echo "HZN_NODE_ID=${NODE_ID}" >> $HZN_ENV_FILE
     echo "HZN_MGMT_HUB_CERT_PATH=$cluster_cert_path/$cert_name" >>$HZN_ENV_FILE
     echo "HZN_AGENT_PORT=8510" >>$HZN_ENV_FILE
-    echo "AGENT_CLUSTER_IMAGE_REGISTRY_HOST=${EDGE_CLUSTER_REGISTRY_HOST}" >>$HZN_ENV_FILE
     log_debug "create_horizon_env() end"
 }
 
@@ -3274,7 +3297,16 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
     log_debug "prepare_k8s_auto_upgrade_cronjob_file() begin"
     # Note: get_edge_cluster_files() already downloaded auto-upgrade-cronjob-template.yml, if necessary
 
-    sed -e "s#__ServiceAccount__#\"${SERVICE_ACCOUNT_NAME}\"#g" auto-upgrade-cronjob-template.yml > auto-upgrade-cronjob.yml
+    # check kubernetes version, if >= 1.21, use batch/v1, else use batch/v1beta1
+    local kubernetes_api="batch/v1beta1"
+    local kubernetes_version_to_compare=1.21
+    local kubernetes_version=$(get_kubernetes_version)
+    log_debug "kubernetes version is $kubernete_version"
+    if version_gt_or_equal $kubernetes_version $kubernetes_version_to_compare; then
+        kubernetes_api="batch/v1"
+    fi
+
+    sed -e "s#__KubernetesApi__#${kubernetes_api}#g" -e "s#__ServiceAccount__#\"${SERVICE_ACCOUNT_NAME}\"#g" auto-upgrade-cronjob-template.yml > auto-upgrade-cronjob.yml
     chk $? 'creating auto-upgrade-cronjob.yml'
 
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
@@ -3307,8 +3339,12 @@ function prepare_k8s_pvc_file() {
     log_debug "prepare_k8s_pvc_file() begin"
 
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
+    local pvc_mode="ReadWriteMany"
+    if is_small_kube; then
+        pvc_mode="ReadWriteOnce"
+    fi
 
-    sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" persistentClaim-template.yml >persistentClaim.yml
+    sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" -e "s#__PVCAccessMode__#${pvc_mode}#g" persistentClaim-template.yml >persistentClaim.yml
     chk $? 'creating persistentClaim.yml'
 
     log_debug "prepare_k8s_pvc_file() end"
