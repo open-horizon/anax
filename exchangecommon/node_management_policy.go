@@ -5,6 +5,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"strings"
+	"time"
 )
 
 // Node management policy as represented in the exchange
@@ -33,6 +34,13 @@ func (e ExchangeNodeManagementPolicy) String() string {
 func (e *ExchangeNodeManagementPolicy) Validate() error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// Validate the timestamp
+	if e.PolicyUpgradeTime != "now" && e.PolicyUpgradeTime != "" {
+		if _, err := time.Parse(time.RFC3339, e.PolicyUpgradeTime); err != nil {
+			return fmt.Errorf(msgPrinter.Sprintf("The start time must be in RFC3339 format or set to \"now\"."))
+		}
+	}
 
 	// Validate the PropertyList.
 	if e != nil && len(e.Properties) != 0 {
