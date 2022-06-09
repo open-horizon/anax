@@ -12,6 +12,8 @@ import (
 	"net/http"
 )
 
+const BatchSize = 50
+
 func NMPList(org, credToUse, nmpName string, namesOnly, listNodes bool) {
 	// if user specifies --nodes flag, return list of applicable nodes for given nmp instead of the nmp itself.
 	if listNodes {
@@ -123,7 +125,7 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 
 		// Ensure that a manifest was specified
 		fullManifest := nmpFile.AgentAutoUpgradePolicy.Manifest
-		if fullManifest == "" {
+		if fullManifest == ""{
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy."))
 		}
 
@@ -256,35 +258,79 @@ func NMPStatus(org, credToUse, nmpName, nodeName string, long bool) {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node %s not found in org %s", nodeName, nmpOrg))
 	}
 
+	// Get the list of node names from the response
+	nodeList := make([]string, len(resp.Nodes))
+	i := 0
+	for k := range resp.Nodes {
+		nodeList[i] = k
+		i++
+	}
+
 	// Map to store NMP statuses across all nodes
 	allNMPStatuses := make(map[string]map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
 	allNMPStatusNames := make(map[string]string, 0)
 
-	// Loop over each node
-	for nodeNameWithOrg := range resp.Nodes {
+	// Process the nodes in batches of 50. For each batch, process the API call concurrently. Use batches strategy to 1) reduce the processing time, 2) avoid overwhelming API calls sent to CSS server at one time
+	batchSize := BatchSize
+	var batches [][]string
+	for batchSize < len(nodeList) {
+		nodeList, batches = nodeList[batchSize:], append(batches, nodeList[0:batchSize:batchSize])
+	}
+	batches = append(batches, nodeList)
 
-		// Get the list of NMP statuses, or try to find the given nmpName, if applicable
-		var nmpStatusList exchangecommon.ExchangeNMPStatus
-		_, nodeName := cliutils.TrimOrg(org, nodeNameWithOrg)
-		httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes/"+nodeName+"/managementStatus"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpStatusList)
-		if httpCode == 404 {
-			continue
+	// Create result object so that the status object can be associated back to the correct node when found on a thread
+	type nmpResult struct {
+		nodeName string
+		nmpStatus string
+		nmpStatusObjects map[string]*exchangecommon.NodeManagementPolicyStatus
+	}	
+
+	c := make(chan nmpResult)
+
+	// Loop over each batch of 50 nodes
+	for i := 0; i < len(batches); i++ {
+		// Create a thread to run API for each node in batch
+		for _, nodeNameWithOrg := range batches[i] {
+			go func(nodeNameWithOrg string) {
+				var statusField string
+				var nmpStatusList exchangecommon.ExchangeNMPStatus
+				_, nodeName := cliutils.TrimOrg(org, nodeNameWithOrg)
+				nmpStatuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
+
+				// Get the list of NMP statuses, if any
+				httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes/"+nodeName+"/managementStatus"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpStatusList)
+				if httpCode != 404 {
+
+					// Add the found status to the map (loops only once to get key, value pair)
+					for nmpStatusName, nmpStatus := range nmpStatusList.ManagementStatus {
+						nmpStatuses[nmpStatusName] = nmpStatus
+						statusField = nmpStatus.Status()
+					}
+				}
+
+				// Write the response data to channel
+				c <- nmpResult{nodeName: nodeNameWithOrg, nmpStatus: statusField, nmpStatusObjects: nmpStatuses}
+
+			}(nodeNameWithOrg)
 		}
 
-		// Add the found status to the map (loops only once to get key, value pair)
-		nmpStatuses := make(map[string]*exchangecommon.NodeManagementPolicyStatus, 0)
-		for nmpStatusName, nmpStatus := range nmpStatusList.ManagementStatus {
-			nmpStatuses[nmpStatusName] = nmpStatus
-			allNMPStatusNames[nodeNameWithOrg] = nmpStatus.Status()
-		}
-
-		if len(nmpStatuses) > 0 {
-			allNMPStatuses[nodeNameWithOrg] = nmpStatuses
+		// Collect data from channel as it comes in. Add to map only if there are entries for the given node
+		for range batches[i] {
+			select {
+			case result := <-c:
+				if len(result.nmpStatusObjects) > 0 {
+					if long {
+						allNMPStatusNames[result.nodeName] = result.nmpStatus
+					} else {
+						allNMPStatuses[result.nodeName] = result.nmpStatusObjects
+					}
+				}
+			}
 		}
 	}
 
 	// Format output and print
-	if len(allNMPStatuses) == 0 {
+	if len(allNMPStatuses) == 0 && len(allNMPStatusNames) == 0 {
 		if nodeName == "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Status for NMP %s not found in org %s", nmpName, nmpOrg))
 		} else {
@@ -301,29 +347,59 @@ func determineCompatibleNodes(org, credToUse, nmpName string, nmpPolicy exchange
 	var nmpOrg string
 	nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
 
-	compatibleNodes := []string{}
+	// Process the nodes in batches of 50. For each batch, process the API call concurrently. Use batches strategy to 1) reduce the processing time, 2) avoid overwhelming API calls sent to CSS server at one time
+	batchSize := BatchSize
+	var batches []map[string]exchange.Device
+	nodeMap := make(map[string]exchange.Device, 0)
+	batchNum := 1
 	for nodeNameEx, node := range exchangeNodes.Nodes {
-		// Only check registered nodes
-		if node.PublicKey == "" {
-			continue
+		if batchNum % batchSize == 0 {
+			batches = append(batches, nodeMap)
+			nodeMap = make(map[string]exchange.Device, 0)
 		}
-		if node.Pattern != "" {
-			if PatternCompatible(nmpOrg, node.Pattern, nmpPolicy.Patterns) {
-				compatibleNodes = append(compatibleNodes, nodeNameEx)
-			}
-		} else {
-			// list policy
-			var nodePolicy exchange.ExchangeNodePolicy
-			_, nodeName := cliutils.TrimOrg(org, nodeNameEx)
-			cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes"+cliutils.AddSlash(nodeName)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodePolicy)
-			nodeManagementPolicy := nodePolicy.GetManagementPolicy()
+		nodeMap[nodeNameEx] = node
+		batchNum++
+	}
+	batches = append(batches, nodeMap)
 
-			if err := nmpPolicy.Constraints.IsSatisfiedBy(nodeManagementPolicy.Properties); err != nil {
-				continue
-			} else if err = nodeManagementPolicy.Constraints.IsSatisfiedBy(nmpPolicy.Properties); err != nil {
-				continue
-			} else {
-				compatibleNodes = append(compatibleNodes, nodeNameEx)
+	c := make(chan string)
+
+	compatibleNodes := []string{}
+	for i := 0; i < len(batches); i++ {
+		for nodeNameEx, node := range batches[i] {
+			go func(nodeNameEx string, node exchange.Device) {
+
+				var name string
+				// Only check registered nodes
+				if node.PublicKey != "" {
+					if node.Pattern != "" {
+						if PatternCompatible(nmpOrg, node.Pattern, nmpPolicy.Patterns) {
+							name = nodeNameEx
+						}
+					} else {
+						// list policy
+						var nodePolicy exchange.ExchangeNodePolicy
+						_, nodeName := cliutils.TrimOrg(org, nodeNameEx)
+						cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes"+cliutils.AddSlash(nodeName)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodePolicy)
+						nodeManagementPolicy := nodePolicy.GetManagementPolicy()
+	
+						if err := nmpPolicy.Constraints.IsSatisfiedBy(nodeManagementPolicy.Properties); err == nil {
+							if err = nodeManagementPolicy.Constraints.IsSatisfiedBy(nmpPolicy.Properties); err == nil {
+								name = nodeNameEx
+							}
+						}
+					}
+				}
+				c <- name
+			}(nodeNameEx, node)
+		}
+
+		for range batches[i] {
+			select {
+			case result := <-c:
+				if result != "" {
+					compatibleNodes = append(compatibleNodes, result)
+				}
 			}
 		}
 	}
