@@ -311,9 +311,6 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		response, err := ec.GetHTTPFactory().NewHTTPClient(nil).Do(request)
-		if err != nil {
-			return fmt.Errorf("Failed to get object data : %v\n", err)
-		}
 
 		if response != nil && response.Body != nil {
 			defer response.Body.Close()
@@ -330,7 +327,7 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 				return fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, err)
 			}
 		} else if err != nil {
-			return fmt.Errorf("Received non-transport error: %v", err)
+			return fmt.Errorf("Failed to get object data : %v\n", err)
 		}
 
 		err = os.MkdirAll(filePath, 0755)
@@ -385,9 +382,6 @@ func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId 
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		response, err := ec.GetHTTPFactory().NewHTTPClient(nil).Do(request)
-		if err != nil {
-			return false, fmt.Errorf("Failed to get object data from %d-%d : %v\n", startOffset, endOffset, err)
-		}
 
 		if response != nil && response.Body != nil {
 			defer response.Body.Close()
@@ -405,7 +399,7 @@ func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId 
 			}
 
 		} else if err != nil {
-			return false, fmt.Errorf("Received non-transport error: %v", err)
+			return false, fmt.Errorf("Failed to get object data from %d-%d : %v\n", startOffset, endOffset, err)
 		}
 
 		if response != nil && response.StatusCode == http.StatusPartialContent {
