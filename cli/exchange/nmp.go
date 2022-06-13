@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/nodemanagement"
 	"github.com/open-horizon/edge-sync-service/common"
 	"net/http"
 )
@@ -368,28 +369,19 @@ func determineCompatibleNodes(org, credToUse, nmpName string, nmpPolicy exchange
 	for i := 0; i < len(batches); i++ {
 		for nodeNameEx, node := range batches[i] {
 			go func(nodeNameEx string, node exchange.Device) {
-
 				var name string
+
 				// Only check registered nodes
 				if node.PublicKey != "" {
-					if node.Pattern != "" {
-						if PatternCompatible(nmpOrg, node.Pattern, nmpPolicy.Patterns) {
-							name = nodeNameEx
-						}
-					} else {
-						// list policy
-						var nodePolicy exchange.ExchangeNodePolicy
-						_, nodeName := cliutils.TrimOrg(org, nodeNameEx)
-						cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes"+cliutils.AddSlash(nodeName)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodePolicy)
-						nodeManagementPolicy := nodePolicy.GetManagementPolicy()
-	
-						if err := nmpPolicy.Constraints.IsSatisfiedBy(nodeManagementPolicy.Properties); err == nil {
-							if err = nodeManagementPolicy.Constraints.IsSatisfiedBy(nmpPolicy.Properties); err == nil {
-								name = nodeNameEx
-							}
-						}
+					var nodePolicy exchange.ExchangeNodePolicy
+					_, nodeName := cliutils.TrimOrg(org, nodeNameEx)
+					cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes"+cliutils.AddSlash(nodeName)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodePolicy)
+					nodeManagementPolicy := nodePolicy.GetManagementPolicy()
+					if match, _ := nodemanagement.VerifyCompatible(nodeManagementPolicy, node.Pattern, &nmpPolicy); match {
+						name = nodeNameEx
 					}
 				}
+
 				c <- name
 			}(nodeNameEx, node)
 		}
