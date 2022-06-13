@@ -252,9 +252,16 @@ func NMPStatus(org, credToUse, nmpName, nodeName string, long bool) {
 	// Get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
+	// Check to make sure NMP actually exists
+	var nmpList exchange.ExchangeNodeManagementPolicyResponse
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/managementpolicies"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpList)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("NMP %s not found in org %s", nmpName, nmpOrg))
+	}
+
 	// Get names of nodes user can access from the Exchange
 	var resp ExchangeNodes
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes"+cliutils.AddSlash(nodeName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+	httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nmpOrg+"/nodes"+cliutils.AddSlash(nodeName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node %s not found in org %s", nodeName, nmpOrg))
 	}
