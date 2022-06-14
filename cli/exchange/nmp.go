@@ -111,6 +111,11 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", jsonFilePath, err))
 	}
 
+	// set default value for start field, if left blank
+	if nmpFile.PolicyUpgradeTime == "" {
+		nmpFile.PolicyUpgradeTime = "now"
+	}
+
 	// validate the format of the nmp
 	if err = nmpFile.Validate(); err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect node management policy format in file %s: %v", jsonFilePath, err))
@@ -126,7 +131,7 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 
 		// Ensure that a manifest was specified
 		fullManifest := nmpFile.AgentAutoUpgradePolicy.Manifest
-		if fullManifest == ""{
+		if fullManifest == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy."))
 		}
 
