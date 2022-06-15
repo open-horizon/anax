@@ -64,14 +64,11 @@ if [[ ! -f /etc/default/horizon ]]; then
 fi
 
 DOCKER_ENGINE="docker"
-command -v docker >/dev/null 2>&1
+# Check podman first since there is a podman-docker package that responds to docker
+command -v podman >/dev/null 2>&1
 rc=$?
-if [[ $rc -ne 0 ]]; then
-   command -v podman >/dev/null 2>&1
-   rc=$?
-   if [[ $rc -eq 0 ]]; then
-      DOCKER_ENGINE="podman"
-   fi
+if [[ $rc -eq 0 ]]; then
+   DOCKER_ENGINE="podman"
 fi
 
 #if podman, DockerEndpoint needs to change
