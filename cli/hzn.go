@@ -636,6 +636,10 @@ Environment Variables:
 	nmManifestAddType := nmManifestAddCmd.Flag("type", msgPrinter.Sprintf("The type of manifest to add. Valid values include 'agent_upgrade_manifests'.")).Required().Short('t').String()
 	nmManifestAddId := nmManifestAddCmd.Flag("id", msgPrinter.Sprintf("The id of the manifest to add.")).Required().Short('i').String()
 	nmManifestAddFile := nmManifestAddCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the manifest data. Specify -f- to read from stdin.")).Short('f').Required().String()
+	nmManifestAddDSHashAlgo := nmManifestAddCmd.Flag("hashAlgo", msgPrinter.Sprintf("The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag")).Short('a').String()
+	nmManifestAddDSHash := nmManifestAddCmd.Flag("hash", msgPrinter.Sprintf("The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.")).String()
+	nmManifestAddPrivKeyFile := nmManifestAddCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.")).Short('k').ExistingFile()
+	nmManifestAddSkipIntegrityCheck := nmManifestAddCmd.Flag("noIntegrity", msgPrinter.Sprintf("The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash")).Bool()
 	nmManifestListCmd := nmManifestCmd.Command("list | ls", msgPrinter.Sprintf("Display a list of manifest files stored in the management hub.")).Alias("ls").Alias("list")
 	nmManifestListType := nmManifestListCmd.Flag("type", msgPrinter.Sprintf("The type of manifest to list. Valid values include 'agent_upgrade_manifests'.")).Short('t').String()
 	nmManifestListId := nmManifestListCmd.Flag("id", msgPrinter.Sprintf("The id of the manifest to list. Must specify --type flag.")).Short('i').String()
@@ -1321,7 +1325,7 @@ Environment Variables:
 	case nmManifestListCmd.FullCommand():
 		node_management.ManifestList(*nmOrg, *nmUserPw, *nmManifestListId, *nmManifestListType, *nmManifestListLong)
 	case nmManifestAddCmd.FullCommand():
-		node_management.ManifestAdd(*nmOrg, *nmUserPw, *nmManifestAddFile, *nmManifestAddId, *nmManifestAddType)
+		node_management.ManifestAdd(*nmOrg, *nmUserPw, *nmManifestAddFile, *nmManifestAddId, *nmManifestAddType, *nmManifestAddDSHashAlgo, *nmManifestAddDSHash, *nmManifestAddPrivKeyFile, *nmManifestAddSkipIntegrityCheck)
 	case nmManifestNewCmd.FullCommand():
 		node_management.ManifestNew()
 	case nmManifestRemoveCmd.FullCommand():

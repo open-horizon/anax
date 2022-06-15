@@ -1,9 +1,11 @@
 package node_management
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/sync_service"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
@@ -150,7 +152,7 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 	fmt.Println(output)
 }
 
-func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) {
+func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType, dsHashAlgo, dsHash, privKeyFilePath string, skipDigitalSig bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	var manOrg string
 	manOrg, manifestId = cliutils.TrimOrg(org, manifestId)
@@ -161,6 +163,12 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 	// Ensure that specified type, if any, is a valid type
 	if manifestType != "" && !validManTypes.contains(manifestType) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid manifest type specified. Valid types include: %v", validManTypes.string()))
+	} else if skipDigitalSig && dsHash != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot specify --skipDigitalSig with --hash"))
+	} else if skipDigitalSig && dsHashAlgo != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot specify --skipDigitalSig with --hashAlgo"))
+	} else if dsHashAlgo != "" && dsHashAlgo != common.Sha1 && dsHashAlgo != common.Sha256 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid value for --hashAlgo, please use SHA1 or SHA256"))
 	}
 
 	// Create the metadata file used by manifests in the MMS
@@ -173,6 +181,7 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 	manifestBytes := cliconfig.ReadJsonFileWithLocalConfig(manifestFile)
 	cliutils.Unmarshal(manifestBytes, &manifestData, "nodemanagement manifest add")
 
+	// Check the validity of the manifest file
 	checkManifestFile(manOrg, credToUse, manifestData)
 
 	// Call the MMS service over HTTP to see if manifest exists.
@@ -184,6 +193,30 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &dummyManifestsMeta)
 	if httpCode != 404 {
 		updatedManifest = true
+	}
+
+	// Sign the manifest object for integrity during upload to CSS
+	if !skipDigitalSig {
+
+		hashAlgorithm := common.Sha1
+		if dsHashAlgo == common.Sha256 {
+			hashAlgorithm = common.Sha256
+		}
+
+		msgPrinter.Printf("Digital sign with %s will be performed for data integrity.\n", hashAlgorithm)
+
+		// Create public key. Sign data. Set "hashAlgorithm", "publicKey" and "signature" field
+		manifestReader := bytes.NewReader(manifestBytes)
+		if publicKey, signature, err := sync_service.SignObjData(manifestReader, hashAlgorithm, dsHash, privKeyFilePath); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to digital sign the manifest %v, Error: %v", manifestFile, err))
+		} else {
+			manifestsMeta.HashAlgorithm = hashAlgorithm
+			manifestsMeta.PublicKey = publicKey
+			manifestsMeta.Signature = signature
+		}
+
+		msgPrinter.Printf("Digital sign finished.")
+		msgPrinter.Println()
 	}
 
 	// Create an object wrapper to use as the input body to the PUT request
@@ -199,7 +232,7 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 
 	// Call the MMS service over HTTP to add the manifest's data to the MMS.
 	urlPath = path.Join("api/v1/objects/", manOrg, manifestsMeta.ObjectType, manifestsMeta.ObjectID, "data")
-	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, credToUse), []int{204}, manifestData, nil)
+	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, credToUse), []int{204}, manifestBytes, nil)
 
 	if updatedManifest {
 		msgPrinter.Printf("Manifest %v/%v updated in the Management Hub", manOrg, manifestsMeta.ObjectID)

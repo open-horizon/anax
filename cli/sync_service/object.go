@@ -353,7 +353,12 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		msgPrinter.Printf("Digital sign with %s will be performed for data integrity. It will delay the MMS object publish.\n", hashAlgorithm)
 
 		// Create public key. Sign data. Set "hashAlgorithm", "publicKey" and "signature" field
-		if publicKey, signature, err := signObjData(objFile, hashAlgorithm, dsHash, privKeyFilePath); err != nil {
+		file, err := os.Open(objFile)
+		defer file.Close()
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to open object file %v: %v", objFile, err))
+		}
+		if publicKey, signature, err := SignObjData(file, hashAlgorithm, dsHash, privKeyFilePath); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("failed to digital sign the file %v, Error: %v", objFile, err))
 		} else {
 			objectMeta.HashAlgorithm = hashAlgorithm
@@ -548,7 +553,7 @@ func timeIsValid(timestamp string) (bool, string) {
 	return true, ""
 }
 
-func signObjData(objFile string, dsHashAlgo string, dsHash string, privKeyFilePath string) (string, string, error) {
+func SignObjData(objData io.Reader, dsHashAlgo string, dsHash string, privKeyFilePath string) (string, string, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -565,18 +570,12 @@ func signObjData(objFile string, dsHashAlgo string, dsHash string, privKeyFilePa
 		msgPrinter.Printf("Hash value is loaded.")
 		msgPrinter.Println()
 	} else {
-		file, err := os.Open(objFile)
-		if err != nil {
-			return "", "", err
-		}
-		defer file.Close()
-
 		msgPrinter.Printf("Start hashing the file...")
 		msgPrinter.Println()
 
 		if fileHash, err = GetHash(dsHashAlgo); err != nil {
 			return "", "", err
-		} else if _, err = io.Copy(fileHash, file); err != nil {
+		} else if _, err = io.Copy(fileHash, objData); err != nil {
 			return "", "", err
 		}
 		fileHashSum = fileHash.Sum(nil)
