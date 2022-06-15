@@ -168,6 +168,10 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType string) 
 	manifestsMeta.ObjectID = manifestId
 	manifestsMeta.ObjectType = manifestType
 
+	// Set destinationPolicy to an empty object, to prevent the manifest file to be broadcast to every node under this org
+	destinationPolicy := &common.Policy{}
+	manifestsMeta.DestinationPolicy = destinationPolicy
+
 	// Read in the file from the host
 	var manifestData AgentUpgradeManifestData
 	manifestBytes := cliconfig.ReadJsonFileWithLocalConfig(manifestFile)
