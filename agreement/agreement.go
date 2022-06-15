@@ -310,11 +310,6 @@ func (w *AgreementWorker) Initialize() bool {
 		}
 	}
 
-	// Publish what we have for the world to see
-	if err := w.advertiseAllPolicies(); err != nil {
-		glog.Warningf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
-	}
-
 	glog.Info(logString(fmt.Sprintf("waiting for commands.")))
 
 	return true
