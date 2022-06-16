@@ -238,7 +238,7 @@ func IsServiceBuiltinPropertyName(propName string) bool {
 // options are: Mac, Ubuntu, Debian, RHEL, anax-in-container
 func ProfileEdgeOS() (string, bool, error) {
 	// check if we are in a docker container. if so check the release file set up by horizon-container to find out the host os
-	if _, err := os.Stat("/.dockerenv"); err == nil {
+	if os.Getenv("DOCKER_NAME") != "" {
 		if sysInfo, err := ini.Load("/etc/host-os-release"); err != nil {
 			// the host os is unknown
 			return "", true, nil
