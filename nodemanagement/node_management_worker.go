@@ -253,7 +253,8 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 			glog.Errorf(nmwlog(fmt.Sprintf(err.Error())))
 		}
 	case *AgentFileVersionChangeCommand:
-		n.HandleAgentFilesVersionChange()
+		cmd := command.(*AgentFileVersionChangeCommand)
+		n.HandleAgentFilesVersionChange(cmd)
 	default:
 		return false
 	}
@@ -554,19 +555,30 @@ func (n *NodeManagementWorker) UpdateStatus(policyName string, status *exchangec
 	return nil
 }
 
-// Change the statuses of all nmp statuses that specify "latest" for a version to waiting as there is a new version availible
+// Check all nmp statuses that specify "latest" for a version, if status is not "downloaded", "download started" or "initiated", then change to "waiting" as there is a new version availible
 // If there is no new version for whatever the status has "latest" for, it will be marked successful without executing
-func (n *NodeManagementWorker) HandleAgentFilesVersionChange() {
+func (n *NodeManagementWorker) HandleAgentFilesVersionChange(cmd *AgentFileVersionChangeCommand) {
 	if latestStatuses, err := persistence.FindNMPWithLatestKeywordVersion(n.db); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Error getting nmp statuses from db to change to \"waiting\". Error was: %v", err)))
 		return
 	} else {
+		needDeferCommand := false
 		for statusName, status := range latestStatuses {
-			status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
-			err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, statusName, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
-			if err != nil {
-				glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)))
+			if status.AgentUpgrade.Status == exchangecommon.STATUS_DOWNLOADED || status.AgentUpgrade.Status == exchangecommon.STATUS_DOWNLOAD_STARTED || status.AgentUpgrade.Status == exchangecommon.STATUS_INITIATED || status.AgentUpgrade.Status == exchangecommon.STATUS_ROLLBACK_STARTED {
+				glog.Infof(nmwlog(fmt.Sprintf("The nmp %v with latest keyword is currently being executed or downloaded (status is %v). Exiting without changing status to \"waiting\", checking this nmp later", statusName, status.AgentUpgrade.Status)))
+				needDeferCommand = true
+			} else {
+				glog.Infof(nmwlog(fmt.Sprintf("Change status to \"waiting\" for the nmp %v", statusName)))
+				status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
+				err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, statusName, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
+				if err != nil {
+					glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)))
+				}
 			}
+		}
+
+		if needDeferCommand {
+			n.AddDeferredCommand(cmd)
 		}
 	}
 }
