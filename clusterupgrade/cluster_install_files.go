@@ -4,13 +4,18 @@ import (
 	"archive/tar"
 	"bufio"
 	"compress/gzip"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/nodemanagement"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -60,6 +65,78 @@ func ReadAgentCertFile(filename string) ([]byte, error) {
 	}
 	glog.V(5).Infof(cuwlog(fmt.Sprintf("get cert content %v", string(certFile))))
 	return certFile, nil
+}
+
+//TrustNewCert adds the icp cert file to be trusted in calls made by the given http client
+func TrustNewCert(httpClient *http.Client, certPath string) error {
+	if certPath != "" {
+		icpCert, err := ioutil.ReadFile(certPath)
+		if err != nil {
+			return err
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(icpCert)
+
+		transport := httpClient.Transport.(*http.Transport)
+		transport.TLSClientConfig.RootCAs = caCertPool
+
+	}
+	return nil
+}
+
+func ValidateConfigAndCert(exchangeURL string, certPath string) error {
+	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
+
+	if err := TrustNewCert(httpClient, certPath); err != nil {
+		return err
+	}
+
+	// get retry count and retry interval from env
+	maxRetries, retryInterval, err := cliutils.GetHttpRetryParameters(5, 2)
+	if err != nil {
+		return err
+	}
+
+	retryCount := 0
+
+	// make a call to exchangeURL/admin/version
+	url := exchangeURL + "/admin/version"
+	glog.Infof(cuwlog(fmt.Sprintf("Making call to %v", url)))
+
+	for {
+		retryCount++
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			glog.Errorf(fmt.Sprintf("Failed to create request, error was %v", err))
+			return err
+		}
+		req.Close = true
+
+		resp, err := httpClient.Do(req)
+		if exchange.IsTransportError(resp, err) {
+			http_status := ""
+			if resp != nil {
+				http_status = resp.Status
+				if resp.Body != nil {
+					resp.Body.Close()
+				}
+			}
+			if retryCount <= maxRetries {
+				glog.Infof(cuwlog(fmt.Sprintf("Encountered HTTP error: %v calling exchange REST API %v. HTTP status: %v. Will retry.", err, url, http_status)))
+				// retry for network tranport errors
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else {
+				glog.Errorf(fmt.Sprintf("Out of retry when calling exchange REST API %v, error was %v", url, err))
+				return err
+			}
+		} else if err != nil {
+			return err
+		} else {
+			return nil
+		}
+	}
+
 }
 
 //----------------status.json file----------------
