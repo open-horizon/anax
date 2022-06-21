@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/eventlog"
@@ -43,6 +44,10 @@ const (
 	RESOURCE_CONFIGMAP     = "configmap"
 	RESOURCE_SECRET        = "secret"
 	RESOURCE_IMAGE_VERSION = "imageVersion"
+)
+
+const (
+	DEFAULT_CERT_PATH = "/etc/default/cert/"
 )
 
 var cuwlog = func(v interface{}) string {
@@ -379,6 +384,30 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_PRECHECK_FAILED, errMessage)
 			return
 		}
+	}
+
+	if !configIsSame || !certIsSame {
+		glog.Infof(cuwlog(fmt.Sprintf("configIsSame: %v, certIsSame: %v, will need to validate config and cert for nmp %v", configIsSame, certIsSame, nmpName)))
+		exchangeURL := cliutils.GetExchangeUrl()
+		if !configIsSame {
+			if newConfigInAgentFile["HZN_EXCHANGE_URL"] != "" {
+				exchangeURL = newConfigInAgentFile["HZN_EXCHANGE_URL"]
+			}
+		}
+
+		certPath := path.Join(DEFAULT_CERT_PATH, AGENT_CERT_FILE)
+		if !certIsSame {
+			certPath = path.Join(workDir, AGENT_CERT_FILE)
+		}
+
+		if err = ValidateConfigAndCert(exchangeURL, certPath); err != nil {
+			// precheck failed
+			errMessage = fmt.Sprintf("Failed to validate exchangeURL and/or cert for nmp: %v, error: %v", nmpName, err)
+			glog.Errorf(cuwlog(errMessage))
+			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_PRECHECK_FAILED, errMessage)
+			return
+		}
+		glog.Infof(cuwlog(fmt.Sprintf("exchangeURL and/or cert are validated for nmp %v", nmpName)))
 	}
 
 	imageVersionIsSame, newImageVersion, currentImageVersion, err := checkAgentImage(w.kubeClient, workDir)
