@@ -963,6 +963,7 @@ function get_all_variables() {
     get_variable NODE_ID   # deprecated
     get_variable HZN_DEVICE_ID
     get_variable HZN_NODE_ID
+    get_variable HZN_AGENT_PORT
     get_variable HZN_EXCHANGE_PATTERN
     get_variable HZN_NODE_POLICY
     get_variable AGENT_WAIT_FOR_SERVICE
@@ -1766,7 +1767,9 @@ function install_macos() {
 function check_and_set_anax_port() {
     log_debug "check_and_set_anax_port() begin"
     local anax_port=$ANAX_DEFAULT_PORT
-    if [[ -f $INSTALLED_AGENT_CFG_FILE ]]; then
+    if [[ -n $HZN_AGENT_PORT ]]; then
+        anax_port=$HZN_AGENT_PORT
+    elif [[ -f $INSTALLED_AGENT_CFG_FILE ]]; then
         log_verbose "Trying to get agent port from previous $INSTALLED_AGENT_CFG_FILE file..."
         local prevPort=$(grep HZN_AGENT_PORT $INSTALLED_AGENT_CFG_FILE | cut -d'=' -f2)
         if [[ -n $prevPort ]]; then
@@ -1994,6 +1997,8 @@ function install_debian() {
         # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
         install_debian_device_horizon_pkgs
     fi
+
+    set_horizon_url
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED != 'true' ]]; then
@@ -2249,6 +2254,7 @@ function install_redhat() {
         # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
         install_redhat_device_horizon_pkgs
     fi
+    set_horizon_url
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED != 'true' ]]; then
@@ -2392,38 +2398,60 @@ function wait_for() {
     done
     echo ''
     log_info "Done: $stateWaitingFor"
-    log_debug "wait_for() begin"
+    log_debug "wait_for() end"
     return 0
 }
 
-# Set the HORIZON_URL variable in /etc/horizon/hzn.json to use port 8081 when running in container
-# and unset HORIZON_URL when running on native linux (this does not apply to macOS installations)
+# Set the HORIZON_URL variable in /etc/horizon/hzn.json
 function set_horizon_url() {
-    # do not change HORIZON_URL if agent-install.sh is called to upgrade
-    # an agent container greater than horizon1.
-    local container_num=$(get_agent_container_number)
-    if [[ $container_num != "1" ]]; then
+    log_debug "set_horizon_url() begin"
+    # not support cluster case
+    if is_cluster; then
         return 0
     fi
 
-    if is_anax_in_container; then
-        if grep HORIZON_URL /etc/horizon/hzn.json; then
-            sed -i 's/\"HORIZON_URL\":.*/\"HORIZON_URL\": \"http:\/\/localhost:8081\"/g' /etc/horizon/hzn.json
-        else
-            cliCfg=$(cat /etc/horizon/hzn.json | jq --arg url http://localhost:8081 '. + {HORIZON_URL: $url}')
-            echo "$cliCfg" > /etc/horizon/hzn.json
-        fi
-    elif is_linux && ! is_cluster; then
-        sed -i 's/\"HORIZON_URL\":.*/\"HORIZON_URL\": \""/g' /etc/horizon/hzn.json
+    local anax_port=""
+    local container_num=$(get_agent_container_number)
+    if [[ $container_num == "0" ]]; then
+        anax_port=$ANAX_PORT
+    elif [[ $container_num == "1" ]]; then
+        anax_port=8081
+    else
+        # do not change HORIZON_URL if agent-install.sh is called to upgrade
+        # an agent container greater than horizon1.
+        return 0
     fi
+
+    if grep HORIZON_URL /etc/horizon/hzn.json; then
+        sed -i "s/\"HORIZON_URL\":.*/\"HORIZON_URL\": \"http:\/\/localhost:${anax_port}\"/g" /etc/horizon/hzn.json
+    else
+        cliCfg=$(cat /etc/horizon/hzn.json | jq --arg url http://localhost:${anax_port} '. + {HORIZON_URL: $url}')
+        echo "$cliCfg" > /etc/horizon/hzn.json
+    fi
+    log_debug "set_horizon_url() end"
 }
 
 # Wait until the agent is responding
 function wait_until_agent_ready() {
     log_debug "wait_until_agent_ready() begin"
 
-    if ! wait_for '[[ -n "$(hzn node list 2>/dev/null | jq -r .configuration.preferred_exchange_version 2>/dev/null)" ]]' 'Horizon agent ready' $AGENT_WAIT_MAX_SECONDS; then
-        log_fatal 3 "Horizon agent did not start successfully"
+    local agent_port=""
+    if is_linux && ! is_cluster && ! is_anax_in_container; then
+        # for the native device agent, honor the HZN_AGENT_PORT from /etc/default/horizon
+        # for other cases, HZN_AGENT_PORT change is not supported
+        if [[ -n $HZN_AGENT_PORT ]]; then
+            agent_port=$HZN_AGENT_PORT
+        fi
+    fi
+
+    if [[ -n $agent_port ]]; then
+        if ! wait_for '[[ -n "$(HORIZON_URL=http://localhost:${agent_port} hzn node list 2>/dev/null | jq -r .configuration.preferred_exchange_version 2>/dev/null)" ]]' 'Horizon agent ready' $AGENT_WAIT_MAX_SECONDS; then
+            log_fatal 3 "Horizon agent did not start successfully"
+        fi
+    else
+        if ! wait_for '[[ -n "$(hzn node list 2>/dev/null | jq -r .configuration.preferred_exchange_version 2>/dev/null)" ]]' 'Horizon agent ready' $AGENT_WAIT_MAX_SECONDS; then
+            log_fatal 3 "Horizon agent did not start successfully"
+        fi
     fi
     log_debug "wait_until_agent_ready() begin"
 }

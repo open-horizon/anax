@@ -597,6 +597,21 @@ function get_upgrade_types() {
     return 0
 }
 
+function set_horizon_url() {
+    let agentPort=$AGENT_PORT_DEFAULT
+    if [ -n "$1" ]; then
+        # container case
+        agentPort=$(expr $AGENT_CONTAINER_PORT_BASE + $1)
+    else
+        # native case
+        tmp_port=$(grep HZN_AGENT_PORT /etc/default/horizon | cut -d'=' -f2)
+        if [[ -n $tmp_port ]]; then
+            agentPort=$tmp_port
+        fi 
+    fi
+    export HORIZON_URL="http://localhost:${agentPort}"
+}
+
 #====================== Main  ======================
 
 # get the directory that this script is located
@@ -610,13 +625,13 @@ else
 fi
 
 # get agent port. 
+set_horizon_url "$1"
+
 # for anax in container, the agent port is given by the first cmd paremeter
-let agentPort=$AGENT_PORT_DEFAULT
 if [ -n "$1" ]; then
+    # container case
     CONTAINER_NUMBER=$1
-	agentPort=$(expr $AGENT_CONTAINER_PORT_BASE + $CONTAINER_NUMBER)
 fi
-export HORIZON_URL="http://localhost:${agentPort}"
 
 # check if the node is registered or not. It will not procceed if not.
 hzn_node_list=$(hzn node list 2>/dev/null || true)   # if hzn not installed, hzn_node_list will be empty
@@ -778,6 +793,7 @@ if [ $rc -ne 0 ]; then
             # remove backups
             rm -Rf $pkg_dir/$ROLLBACK_DIR_NAME
 
+            set_horizon_url "$1"
             wait_until_agent_ready
 
             # update the management status
@@ -793,6 +809,7 @@ else
     # remove backups
     rm -Rf $pkg_dir/$ROLLBACK_DIR_NAME
 
+    set_horizon_url "$1"
     wait_until_agent_ready
 
     # update the management status to 'successful'
