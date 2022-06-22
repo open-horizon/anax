@@ -22,9 +22,8 @@ SUPPORTED_DEBIAN_VARIANTS=(ubuntu raspbian debian $SUPPORTED_DEBIAN_VARIANTS_APP
 SUPPORTED_DEBIAN_VERSION=(bullseye jammy focal bionic buster xenial stretch $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
 SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel redhatenterprise centos fedora $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
-# Note: RHEL 8.3 is not officially supported yet, but is enabled only for testing and tech preview purposes
 # Note: version 8 is added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
-SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8 32 35 36 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 9.0 8 32 35 36 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
 
 SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
@@ -2832,7 +2831,7 @@ function detect_distro() {
         log_fatal 2 "Cannot detect Linux version"
     fi
 
-    log_verbose "Detected distribution: ${DISTRO}, verison: ${DISTRO_VERSION_NUM}, codename: ${CODENAME}"
+    log_verbose "Detected distribution: ${DISTRO}, version: ${DISTRO_VERSION_NUM}, codename: ${CODENAME}"
 
     log_debug "detect_distro() end"
 }
@@ -3901,6 +3900,14 @@ function get_docker_engine() {
                   fi
                fi
                IFS=${OLDIFS}
+
+               if [[ ${DOCKER_ENGINE} == "podman" ]]; then
+                  NetworkBackend=$(podman info -f json | jq '.host.networkBackend' | sed 's/"//g') 
+                  log_debug "podman network backend is set for ${NetworkBackend}"
+                  if [[ "${NetworkBackend}" != "netavark" ]]; then 
+                     log_warning "Change podman to use the Netavark network stack to support more complex horizon scenarios"
+                  fi
+               fi
             fi
         fi
     fi
