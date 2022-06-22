@@ -348,7 +348,7 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 // set CloseRequest to true if this is the last chunk
 // return true, nil if response code is 200 -- get all the object data
 // return false, nil if response code is 206 -- get data in range of bytes {startOffset} - {endOffset}
-func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId string, startOffset int64, endOffset int64, closeRequest bool, filePath string, fileName string,  saveToTempFile bool) (bool, error) {
+func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId string, startOffset int64, endOffset int64, closeRequest bool, filePath string, fileName string, saveToTempFile bool) (bool, error) {
 	url := path.Join("/api/v1/objects", org, objType, objId, "data")
 	url = ec.GetCSSURL() + url
 

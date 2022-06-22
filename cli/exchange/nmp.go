@@ -293,10 +293,10 @@ func NMPStatus(org, credToUse, nmpName, nodeName string, long bool) {
 
 	// Create result object so that the status object can be associated back to the correct node when found on a thread
 	type nmpResult struct {
-		nodeName string
-		nmpStatus string
+		nodeName         string
+		nmpStatus        string
 		nmpStatusObjects map[string]*exchangecommon.NodeManagementPolicyStatus
-	}	
+	}
 
 	c := make(chan nmpResult)
 
@@ -366,7 +366,7 @@ func determineCompatibleNodes(org, credToUse, nmpName string, nmpPolicy exchange
 	nodeMap := make(map[string]exchange.Device, 0)
 	batchNum := 1
 	for nodeNameEx, node := range exchangeNodes.Nodes {
-		if batchNum % batchSize == 0 {
+		if batchNum%batchSize == 0 {
 			batches = append(batches, nodeMap)
 			nodeMap = make(map[string]exchange.Device, 0)
 		}
