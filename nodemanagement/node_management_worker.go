@@ -570,6 +570,16 @@ func (n *NodeManagementWorker) HandleAgentFilesVersionChange(cmd *AgentFileVersi
 			} else {
 				glog.Infof(nmwlog(fmt.Sprintf("Change status to \"waiting\" for the nmp %v", statusName)))
 				status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
+				// Add startWindow to current time to randomize upgrade start times just like what occurs when an NMP first executes
+				if status.TimeToStart() {
+					nmp, err := persistence.FindNodeManagementPolicy(n.db, statusName)
+					if err != nil {
+						glog.Errorf(nmwlog(fmt.Sprintf("Error getting nmp from db to check the startWindow value. Error was: %v", err)))
+					}
+					if nmp != nil {
+						status.SetScheduledStartTime(exchangecommon.TIME_NOW_KEYWORD, nmp.LastUpdated, nmp.UpgradeWindowDuration)
+					}
+				}
 				err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, statusName, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
 				if err != nil {
 					glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)))

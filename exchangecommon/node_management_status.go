@@ -56,6 +56,25 @@ func (n NodeManagementPolicyStatus) SetActualStartTime(timeStr string) {
 	}
 }
 
+func (n NodeManagementPolicyStatus) SetScheduledStartTime(nmpStartTime, nmpLastUpdated string, upgradeWindow int) {
+	startTime, _ := time.Parse(time.RFC3339, nmpStartTime)
+	if nmpStartTime == TIME_NOW_KEYWORD {
+		// This format string is the time format the exchange uses
+		if lastUpdatedTime, err := time.Parse("2006-01-02T15:04:05.000000Z[UTC]", nmpLastUpdated); err == nil {
+			startTime = lastUpdatedTime
+		} else {
+			startTime = time.Now()
+		}
+	}
+	realStartTime := startTime.Unix()
+	if upgradeWindow > 0 {
+		rand.Seed(time.Now().UnixNano())
+		realStartTime = realStartTime + int64(rand.Intn(upgradeWindow))
+	}
+	n.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).UTC().Format(time.RFC3339)
+	n.AgentUpgradeInternal.ScheduledUnixTime = time.Unix(realStartTime, 0)
+}
+
 func (n NodeManagementPolicyStatus) IsAgentUpgradePolicy() bool {
 	return n.AgentUpgrade != nil
 }
@@ -158,22 +177,7 @@ func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string)
 		AgentUpgrade: &AgentUpgradePolicyStatus{Status: STATUS_NEW}, AgentUpgradeInternal: &AgentUpgradeInternalStatus{},
 	}
 	if policy.AgentAutoUpgradePolicy != nil {
-		startTime, _ := time.Parse(time.RFC3339, policy.PolicyUpgradeTime)
-		if policy.PolicyUpgradeTime == TIME_NOW_KEYWORD {
-			// This format string is the time format the exchange uses
-			if lastUpdatedTime, err := time.Parse("2006-01-02T15:04:05.000000Z[UTC]", policy.LastUpdated); err == nil {
-				startTime = lastUpdatedTime
-			} else {
-				startTime = time.Now()
-			}
-		}
-		realStartTime := startTime.Unix()
-		if policy.UpgradeWindowDuration > 0 {
-			rand.Seed(time.Now().UnixNano())
-			realStartTime = realStartTime + int64(rand.Intn(policy.UpgradeWindowDuration))
-		}
-		newStatus.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).UTC().Format(time.RFC3339)
-		newStatus.AgentUpgradeInternal.ScheduledUnixTime = time.Unix(realStartTime, 0)
+		newStatus.SetScheduledStartTime(policy.PolicyUpgradeTime, policy.LastUpdated, policy.UpgradeWindowDuration)
 		newStatus.AgentUpgrade.BaseWorkingDirectory = workingDir
 		newStatus.AgentUpgradeInternal.AllowDowngrade = policy.AgentAutoUpgradePolicy.AllowDowngrade
 		newStatus.AgentUpgradeInternal.Manifest = policy.AgentAutoUpgradePolicy.Manifest
