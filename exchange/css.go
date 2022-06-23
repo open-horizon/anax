@@ -307,10 +307,14 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 		fileName = fileName + ".tmp"
 	}
 
+	// When getting data out of CSS, sometimes it takes a while. We need a longer client timeout than the default 30 seconds. Setting to 0 so haproxy timeout will be longer than client timeout.
+	// If we get an haproxy timeout, that will be a transport error and we will retry.
+	timeoutS := uint(0)
+
 	retryCount := ec.GetHTTPFactory().RetryCount
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
-		response, err := ec.GetHTTPFactory().NewHTTPClient(nil).Do(request)
+		response, err := ec.GetHTTPFactory().NewHTTPClient(&timeoutS).Do(request)
 
 		if response != nil && response.Body != nil {
 			defer response.Body.Close()
@@ -318,6 +322,9 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 
 		if IsTransportError(response, err) {
 			if ec.GetHTTPFactory().RetryCount == 0 || retryCount > 0 {
+				if response != nil && response.Body != nil {
+					response.Body.Close()
+				}
 				if ec.GetHTTPFactory().RetryCount != 0 {
 					retryCount--
 				}
@@ -380,8 +387,13 @@ func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId 
 
 	retryCount := ec.GetHTTPFactory().RetryCount
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
+
+	// When getting data out of CSS, sometimes it takes a while. We need a longer client timeout than the default 30 seconds. Setting to 0 so haproxy timeout will be longer than client timeout.
+	// If we get an haproxy timeout, that will be a transport error and we will retry.
+	timeoutS := uint(0)
+
 	for {
-		response, err := ec.GetHTTPFactory().NewHTTPClient(nil).Do(request)
+		response, err := ec.GetHTTPFactory().NewHTTPClient(&timeoutS).Do(request)
 
 		if response != nil && response.Body != nil {
 			defer response.Body.Close()
@@ -389,6 +401,9 @@ func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId 
 
 		if IsTransportError(response, err) {
 			if ec.GetHTTPFactory().RetryCount == 0 || retryCount > 0 {
+				if response != nil && response.Body != nil {
+					response.Body.Close()
+				}
 				if ec.GetHTTPFactory().RetryCount != 0 {
 					retryCount--
 				}
