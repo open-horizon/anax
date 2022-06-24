@@ -48,6 +48,7 @@ const (
 	EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL = "node_management_status_download_success"
 	EC_NMP_STATUS_DOWNLOAD_FAILED     = "node_management_status_download_failed"
 	EC_NMP_STATUS_UPDATE_COMPLETE     = "node_management_status_update_complete"
+	EC_NMP_STATUS_CHANGED             = "node_management_status_changed"
 
 	// node pattern
 	EC_NODE_PATTERN_CHANGED            = "node_pattern_changed"

@@ -14,9 +14,12 @@ import (
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/semanticversion"
+	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
 	"os"
 	"path"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -65,6 +68,10 @@ func (w *NodeManagementWorker) Initialize() bool {
 		if err := w.ResetDownloadStartedStatuses(); err != nil {
 			glog.Errorf(nmwlog(fmt.Sprintf("Failed to reset nmp statuses in \"download started\" status back to \"waiting\".")))
 		}
+
+		// new versions of the agent files could be added while the node was down,
+		// need to catch the latest for manifests that specifies the 'latest' version.
+		w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGENT_FILE_VERSION)
 	}
 
 	return true
@@ -205,10 +212,11 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_NO_ACTION)
 		eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
 	} else {
-		glog.Infof(nmwlog(fmt.Sprintf("Failed to download packages for nmp %v.", cmd.Msg.NMPName)))
+		glog.Errorf(nmwlog(fmt.Sprintf("Failed to download packages for nmp %v. %v", cmd.Msg.NMPName, cmd.Msg.ErrorMessage)))
 		status.SetStatus(cmd.Msg.Status)
-		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOAD_FAILED)
-		eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_FAILED
+		status.SetErrorMessage(cmd.Msg.ErrorMessage)
+		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED_WITH_ERROR, cmd.Msg.NMPName, cmd.Msg.Status, cmd.Msg.ErrorMessage)
+		eventCode = persistence.EC_NMP_STATUS_CHANGED
 	}
 	if cmd.Msg.Versions != nil {
 		status.AgentUpgrade.UpgradedVersions = *cmd.Msg.Versions
@@ -479,7 +487,7 @@ func (n *NodeManagementWorker) CheckNMPStatus(baseWorkingFile string, statusFile
 	return nil
 }
 
-// Read and  persist the status out of the  file
+// Read and persist the status out of the file
 // Update status in the exchange
 // If everything is successful, delete the job working dir
 func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyName string, dbStatus *exchangecommon.NodeManagementPolicyStatus) error {
@@ -526,7 +534,7 @@ func (n *NodeManagementWorker) CollectStatus(workingFolderPath string, policyNam
 				if contents.AgentUpgrade.ErrorMessage != "" {
 					status_string += fmt.Sprintf(", ErrorMessage: %v", contents.AgentUpgrade.ErrorMessage)
 				}
-				eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, status_string), persistence.EC_NMP_STATUS_UPDATE_NEW, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
+				eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, policyName, status_string), persistence.EC_NMP_STATUS_CHANGED, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), pattern, configState)
 			}
 		}
 	}
@@ -555,39 +563,118 @@ func (n *NodeManagementWorker) UpdateStatus(policyName string, status *exchangec
 	return nil
 }
 
+// Check if the current agent versions are up to date for software, cert and config according to
+// the specification of the nmp. The NMP must have at least one 'latest' as the version string.
+func IsAgentUpToDate(status *exchangecommon.NodeManagementPolicyStatus, getUpgradeVers exchange.NodeUpgradeVersionsHandler, db *bolt.DB) (bool, error) {
+	// get agent file versions
+	exchAFVs, err := getUpgradeVers()
+	if err != nil {
+		return false, fmt.Errorf("Failed to get the AgentFileVersion from the exchange. %v", err)
+	}
+
+	dev, err := persistence.FindExchangeDevice(db)
+	if err != nil || dev == nil {
+		return false, fmt.Errorf("Failed to get device from the local db: %v", err)
+	}
+
+	if exchAFVs != nil {
+		// check software version
+		if status.AgentUpgradeInternal.LatestMap.SoftwareLatest {
+			versions := exchAFVs.SoftwareVersions
+			if !IsVersionLatest(versions, version.HORIZON_VERSION) {
+				return false, nil
+			}
+		}
+		// check config version
+		if status.AgentUpgradeInternal.LatestMap.ConfigLatest {
+			versions := exchAFVs.ConfigVersions
+			if dev.SoftwareVersions == nil {
+				return false, nil
+			}
+			devConfigVer, ok := dev.SoftwareVersions[persistence.CONFIG_VERSION]
+			if !ok {
+				return false, nil
+			}
+			if !IsVersionLatest(versions, devConfigVer) {
+				return false, nil
+			}
+		}
+		// check certificate version
+		if status.AgentUpgradeInternal.LatestMap.CertLatest {
+			versions := exchAFVs.CertVersions
+			if dev.SoftwareVersions == nil {
+				return false, nil
+			}
+			devCertVer, ok := dev.SoftwareVersions[persistence.CERT_VERSION]
+			if !ok {
+				return false, nil
+			}
+			if !IsVersionLatest(versions, devCertVer) {
+				return false, nil
+			}
+		}
+	}
+	return true, nil
+}
+
+// check if current version is the latest available version
+func IsVersionLatest(availibleVers []string, currentVersion string) bool {
+	if availibleVers != nil && len(availibleVers) != 0 {
+		sort.Slice(availibleVers, func(i, j int) bool {
+			comp, _ := semanticversion.CompareVersions(availibleVers[i], availibleVers[j])
+			return comp > 0
+		})
+
+		return currentVersion == availibleVers[0]
+	}
+	return true
+}
+
 // Check all nmp statuses that specify "latest" for a version, if status is not "downloaded", "download started" or "initiated", then change to "waiting" as there is a new version availible
 // If there is no new version for whatever the status has "latest" for, it will be marked successful without executing
 func (n *NodeManagementWorker) HandleAgentFilesVersionChange(cmd *AgentFileVersionChangeCommand) {
+	glog.V(3).Infof(nmwlog(fmt.Sprintf("HandleAgentFilesVersionChange re-evaluating NMPs that request the 'latest' versions.")))
 	if latestStatuses, err := persistence.FindNMPWithLatestKeywordVersion(n.db); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Error getting nmp statuses from db to change to \"waiting\". Error was: %v", err)))
 		return
 	} else {
 		needDeferCommand := false
 		for statusName, status := range latestStatuses {
-			if status.AgentUpgrade.Status == exchangecommon.STATUS_DOWNLOADED || status.AgentUpgrade.Status == exchangecommon.STATUS_DOWNLOAD_STARTED || status.AgentUpgrade.Status == exchangecommon.STATUS_INITIATED || status.AgentUpgrade.Status == exchangecommon.STATUS_ROLLBACK_STARTED {
-				glog.Infof(nmwlog(fmt.Sprintf("The nmp %v with latest keyword is currently being executed or downloaded (status is %v). Exiting without changing status to \"waiting\", checking this nmp later", statusName, status.AgentUpgrade.Status)))
+			if status.AgentUpgrade.Status == exchangecommon.STATUS_NEW {
+				glog.V(3).Infof(nmwlog(fmt.Sprintf("The nmp %v is already in 'waiting' status. do nothing.", statusName)))
+				continue
+			} else if status.AgentUpgrade.Status == exchangecommon.STATUS_DOWNLOADED || status.AgentUpgrade.Status == exchangecommon.STATUS_DOWNLOAD_STARTED || status.AgentUpgrade.Status == exchangecommon.STATUS_INITIATED || status.AgentUpgrade.Status == exchangecommon.STATUS_ROLLBACK_STARTED {
+				glog.V(3).Infof(nmwlog(fmt.Sprintf("The nmp %v with latest keyword is currently being executed or downloaded (status is %v). Exiting without changing status to \"waiting\", checking this nmp later", statusName, status.AgentUpgrade.Status)))
 				needDeferCommand = true
 			} else {
-				glog.Infof(nmwlog(fmt.Sprintf("Change status to \"waiting\" for the nmp %v", statusName)))
-				status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
-				// Add startWindow to current time to randomize upgrade start times just like what occurs when an NMP first executes
-				if status.TimeToStart() {
-					nmp, err := persistence.FindNodeManagementPolicy(n.db, statusName)
+				if isUpToDate, err := IsAgentUpToDate(status, exchange.GetNodeUpgradeVersionsHandler(n), n.db); err != nil {
+					glog.Errorf(nmwlog(fmt.Sprintf("Error checking if the agent versions are up to date for nmp %v. %v", statusName, err)))
+				} else if !isUpToDate {
+					glog.V(3).Infof(nmwlog(fmt.Sprintf("Change status to \"waiting\" for the nmp %v", statusName)))
+
+					// Add startWindow to current time to randomize upgrade start times just like what occurs when an NMP first executes
+					if status.TimeToStart() {
+						nmp, err := persistence.FindNodeManagementPolicy(n.db, statusName)
+						if err != nil {
+							glog.Errorf(nmwlog(fmt.Sprintf("Error getting nmp from db to check the startWindow value. Error was: %v", err)))
+						}
+						if nmp != nil {
+							status.SetScheduledStartTime(exchangecommon.TIME_NOW_KEYWORD, nmp.LastUpdated, nmp.UpgradeWindowDuration)
+						}
+					}
+
+					status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
+					err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, statusName, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
 					if err != nil {
-						glog.Errorf(nmwlog(fmt.Sprintf("Error getting nmp from db to check the startWindow value. Error was: %v", err)))
+						glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)))
 					}
-					if nmp != nil {
-						status.SetScheduledStartTime(exchangecommon.TIME_NOW_KEYWORD, nmp.LastUpdated, nmp.UpgradeWindowDuration)
-					}
-				}
-				err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, statusName, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
-				if err != nil {
-					glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)))
+				} else {
+					glog.V(3).Infof(nmwlog(fmt.Sprintf("The agent versions are up to date for nmp %v.", statusName)))
 				}
 			}
 		}
 
-		if needDeferCommand {
+		if needDeferCommand && cmd != nil {
 			n.AddDeferredCommand(cmd)
 		}
 	}

@@ -5,8 +5,9 @@ import (
 )
 
 const (
-	EL_NMP_STATUS_CREATED = "New node management policy status created for policy %v."
-	EL_NMP_STATUS_CHANGED = "Node management status for %v changed to %v."
+	EL_NMP_STATUS_CREATED            = "New node management policy status created for policy %v."
+	EL_NMP_STATUS_CHANGED            = "Node management status for %v changed to %v."
+	EL_NMP_STATUS_CHANGED_WITH_ERROR = "Node management status for %v changed to %v. Error message: %v"
 )
 
 // This is does nothing useful at run time.
