@@ -1,6 +1,7 @@
 package governance
 
 import (
+	"encoding/json"
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
@@ -171,10 +172,21 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 		}
 	}
 
+	// Will need to marshao and unmarshal device_status_new.Services, so that operatorStatus will be in same formt in unMarchaledNodeStatus and oldWlStatus
+	serial, err := json.Marshal(device_status_new.Services)
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Failed to marshal device_status_new.Service, error was: %v", err)))
+	}
+
+	var unmarshalledNodeStatus []persistence.WorkloadStatus
+	if err := json.Unmarshal(serial, &unmarshalledNodeStatus); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Failed to unmarshal device_status_new.Service byte back to persistence.WorkloadStatus, error was: %v", err)))
+	}
+
 	// report the status to the exchange
 	w.deviceStatus = &device_status_new
 
-	statusChanged = changeInWorkloadStatuses(device_status_new.Services, oldWlStatus)
+	statusChanged = changeInWorkloadStatuses(unmarshalledNodeStatus, oldWlStatus)
 
 	if statusChanged {
 		glog.V(5).Infof(logString(fmt.Sprintf("device status to report to the exchange: %v", device_status_new)))
@@ -420,16 +432,24 @@ func (w *GovernanceWorker) surfaceErrors() int {
 	return exchangesync.UpdateSurfaceErrors(w.db, *pDevice, currentExchangeErrors.ErrorList, putErrorsHandler, serviceResolverHandler, w.BaseWorker.Manager.Config.Edge.SurfaceErrorTimeoutS, w.BaseWorker.Manager.Config.Edge.SurfaceErrorAgreementPersistentS)
 }
 
-func changeInWorkloadStatuses(newStatuses []WorkloadStatus, oldStatuses []persistence.WorkloadStatus) bool {
+func changeInWorkloadStatuses(newStatuses []persistence.WorkloadStatus, oldStatuses []persistence.WorkloadStatus) bool {
 	if len(oldStatuses) != len(newStatuses) {
 		return true
 	}
 	matches := 0
 
 	for _, oldStatus := range oldStatuses {
+		// delete metadata:map[resourceVersion:360179] from oldStatus
+		oldOpStatus := oldStatus.OperatorStatus
+		deleteResourceVersionFromOperatorStatus(oldOpStatus)
+
 		for _, newStatus := range newStatuses {
 			if statusMatch(newStatus, oldStatus) {
-				if !reflect.DeepEqual(newStatus.OperatorStatus, oldStatus.OperatorStatus) {
+				newOpStatus := newStatus.OperatorStatus
+				// delete metadata:map[resourceVersion:360179] from newStatus
+				deleteResourceVersionFromOperatorStatus(newOpStatus)
+
+				if !reflect.DeepEqual(newOpStatus, oldOpStatus) {
 					return true
 				}
 				if changeInContainerStatuses(newStatus.Containers, oldStatus.Containers) {
@@ -448,14 +468,26 @@ func changeInWorkloadStatuses(newStatuses []WorkloadStatus, oldStatuses []persis
 	return false
 }
 
-func statusMatch(newStatus WorkloadStatus, oldStatus persistence.WorkloadStatus) bool {
+func deleteResourceVersionFromOperatorStatus(OperatorStatus interface{}) {
+	if glog.V(5) {
+		glog.Infof(logString("delete resource version from operatorStatus"))
+	}
+	switch v := OperatorStatus.(type) {
+	case map[string]interface{}:
+		delete(v, "metadata")
+	default:
+		// do nothing
+	}
+}
+
+func statusMatch(newStatus persistence.WorkloadStatus, oldStatus persistence.WorkloadStatus) bool {
 	return oldStatus.AgreementId == newStatus.AgreementId &&
 		oldStatus.ServiceURL == newStatus.ServiceURL &&
 		oldStatus.Org == newStatus.Org &&
 		(oldStatus.Version == newStatus.Version || oldStatus.Version == "" || newStatus.Version == "")
 }
 
-func changeInContainerStatuses(newContainers []ContainerStatus, oldContainers []persistence.ContainerStatus) bool {
+func changeInContainerStatuses(newContainers []persistence.ContainerStatus, oldContainers []persistence.ContainerStatus) bool {
 	if len(oldContainers) != len(newContainers) {
 		return true
 	}
