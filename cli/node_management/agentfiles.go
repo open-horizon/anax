@@ -67,7 +67,7 @@ func getAgentFiles(org, credToUse, fileTypeFilter, fileVersionFilter string) []a
 	}
 
 	// Assemble URL
-	urlPath := "api/v1/objects/IBM?filters=true"
+	urlPath := "api/v1/objects/IBM?filters=true&deleted=false"
 
 	// Slice to store agent files
 	agentFileObjects := make([]agentFileInfo, 0)
