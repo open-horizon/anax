@@ -565,13 +565,8 @@ func (n *NodeManagementWorker) UpdateStatus(policyName string, status *exchangec
 
 // Check if the current agent versions are up to date for software, cert and config according to
 // the specification of the nmp. The NMP must have at least one 'latest' as the version string.
-func IsAgentUpToDate(status *exchangecommon.NodeManagementPolicyStatus, getUpgradeVers exchange.NodeUpgradeVersionsHandler, db *bolt.DB) (bool, error) {
-	// get agent file versions
-	exchAFVs, err := getUpgradeVers()
-	if err != nil {
-		return false, fmt.Errorf("Failed to get the AgentFileVersion from the exchange. %v", err)
-	}
-
+func IsAgentUpToDate(status *exchangecommon.NodeManagementPolicyStatus, exchAFVs *exchangecommon.AgentFileVersions, db *bolt.DB) (bool, error) {
+	// get local device info
 	dev, err := persistence.FindExchangeDevice(db)
 	if err != nil || dev == nil {
 		return false, fmt.Errorf("Failed to get device from the local db: %v", err)
@@ -588,13 +583,14 @@ func IsAgentUpToDate(status *exchangecommon.NodeManagementPolicyStatus, getUpgra
 		// check config version
 		if status.AgentUpgradeInternal.LatestMap.ConfigLatest {
 			versions := exchAFVs.ConfigVersions
-			if dev.SoftwareVersions == nil {
-				return false, nil
+
+			devConfigVer := ""
+			if dev.SoftwareVersions != nil {
+				if ver, ok := dev.SoftwareVersions[persistence.CONFIG_VERSION]; ok {
+					devConfigVer = ver
+				}
 			}
-			devConfigVer, ok := dev.SoftwareVersions[persistence.CONFIG_VERSION]
-			if !ok {
-				return false, nil
-			}
+
 			if !IsVersionLatest(versions, devConfigVer) {
 				return false, nil
 			}
@@ -602,13 +598,14 @@ func IsAgentUpToDate(status *exchangecommon.NodeManagementPolicyStatus, getUpgra
 		// check certificate version
 		if status.AgentUpgradeInternal.LatestMap.CertLatest {
 			versions := exchAFVs.CertVersions
-			if dev.SoftwareVersions == nil {
-				return false, nil
+
+			devCertVer := ""
+			if dev.SoftwareVersions != nil {
+				if ver, ok := dev.SoftwareVersions[persistence.CERT_VERSION]; ok {
+					devCertVer = ver
+				}
 			}
-			devCertVer, ok := dev.SoftwareVersions[persistence.CERT_VERSION]
-			if !ok {
-				return false, nil
-			}
+
 			if !IsVersionLatest(versions, devCertVer) {
 				return false, nil
 			}
@@ -617,7 +614,46 @@ func IsAgentUpToDate(status *exchangecommon.NodeManagementPolicyStatus, getUpgra
 	return true, nil
 }
 
-// check if current version is the latest available version
+// Compare status.UpgradedVersions with the AgentFileVersions.
+// It returns true if all the versions are up to date. This means
+// that the nmp has been processed before with the latest versions.
+func IsLatestVersionHandled(status *exchangecommon.NodeManagementPolicyStatus, exchAFVs *exchangecommon.AgentFileVersions) (bool, error) {
+
+	// not handled
+	if status.AgentUpgrade == nil {
+		return false, nil
+	}
+
+	upgradedVersions := status.AgentUpgrade.UpgradedVersions
+
+	if exchAFVs != nil {
+		// check software version
+		if status.AgentUpgradeInternal.LatestMap.SoftwareLatest {
+			versions := exchAFVs.SoftwareVersions
+			if !IsVersionLatest(versions, upgradedVersions.SoftwareVersion) {
+				return false, nil
+			}
+		}
+		// check config version
+		if status.AgentUpgradeInternal.LatestMap.ConfigLatest {
+			versions := exchAFVs.ConfigVersions
+			if !IsVersionLatest(versions, upgradedVersions.ConfigVersion) {
+				return false, nil
+			}
+		}
+		// check certificate version
+		if status.AgentUpgradeInternal.LatestMap.CertLatest {
+			versions := exchAFVs.CertVersions
+			if !IsVersionLatest(versions, upgradedVersions.CertVersion) {
+				return false, nil
+			}
+		}
+	}
+	return true, nil
+}
+
+// check if current version is the latest available version. If the number of
+// available versions is zero, the current version is considered the latest.
 func IsVersionLatest(availibleVers []string, currentVersion string) bool {
 	if availibleVers != nil && len(availibleVers) != 0 {
 		sort.Slice(availibleVers, func(i, j int) bool {
@@ -638,41 +674,64 @@ func (n *NodeManagementWorker) HandleAgentFilesVersionChange(cmd *AgentFileVersi
 		glog.Errorf(nmwlog(fmt.Sprintf("Error getting nmp statuses from db to change to \"waiting\". Error was: %v", err)))
 		return
 	} else {
+		// get agent file versions
+		exchAFVs, err := exchange.GetNodeUpgradeVersionsHandler(n)()
+		if err != nil {
+			glog.Errorf("Failed to get the AgentFileVersion from the exchange. %v", err)
+			return
+		}
+
 		needDeferCommand := false
 		for statusName, status := range latestStatuses {
-			if status.AgentUpgrade.Status == exchangecommon.STATUS_NEW {
+			setStatusToWaiting := false
+			nmpStatus := status.AgentUpgrade.Status
+			if nmpStatus == exchangecommon.STATUS_NEW {
 				glog.V(3).Infof(nmwlog(fmt.Sprintf("The nmp %v is already in 'waiting' status. do nothing.", statusName)))
 				continue
-			} else if status.AgentUpgrade.Status == exchangecommon.STATUS_DOWNLOADED || status.AgentUpgrade.Status == exchangecommon.STATUS_DOWNLOAD_STARTED || status.AgentUpgrade.Status == exchangecommon.STATUS_INITIATED || status.AgentUpgrade.Status == exchangecommon.STATUS_ROLLBACK_STARTED {
-				glog.V(3).Infof(nmwlog(fmt.Sprintf("The nmp %v with latest keyword is currently being executed or downloaded (status is %v). Exiting without changing status to \"waiting\", checking this nmp later", statusName, status.AgentUpgrade.Status)))
+			} else if nmpStatus == exchangecommon.STATUS_DOWNLOADED || nmpStatus == exchangecommon.STATUS_DOWNLOAD_STARTED || nmpStatus == exchangecommon.STATUS_INITIATED || nmpStatus == exchangecommon.STATUS_ROLLBACK_STARTED {
+				glog.V(3).Infof(nmwlog(fmt.Sprintf("The nmp %v with latest keyword is currently being executed or downloaded (status is %v). Exiting without changing status to \"waiting\", checking this nmp later", statusName, nmpStatus)))
 				needDeferCommand = true
-			} else {
-				if isUpToDate, err := IsAgentUpToDate(status, exchange.GetNodeUpgradeVersionsHandler(n), n.db); err != nil {
-					glog.Errorf(nmwlog(fmt.Sprintf("Error checking if the agent versions are up to date for nmp %v. %v", statusName, err)))
-				} else if !isUpToDate {
-					glog.V(3).Infof(nmwlog(fmt.Sprintf("Change status to \"waiting\" for the nmp %v", statusName)))
-
-					// Add startWindow to current time to randomize upgrade start times just like what occurs when an NMP first executes
-					if status.TimeToStart() {
-						nmp, err := persistence.FindNodeManagementPolicy(n.db, statusName)
-						if err != nil {
-							glog.Errorf(nmwlog(fmt.Sprintf("Error getting nmp from db to check the startWindow value. Error was: %v", err)))
-						}
-						if nmp != nil {
-							status.SetScheduledStartTime(exchangecommon.TIME_NOW_KEYWORD, nmp.LastUpdated, nmp.UpgradeWindowDuration)
-						}
-					}
-
-					status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
-					err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, statusName, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
-					if err != nil {
-						glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)))
-					}
+			} else if nmpStatus == exchangecommon.STATUS_DOWNLOAD_FAILED || nmpStatus == exchangecommon.STATUS_FAILED_JOB || nmpStatus == exchangecommon.STATUS_PRECHECK_FAILED || nmpStatus == exchangecommon.STATUS_ROLLBACK_FAILED || nmpStatus == exchangecommon.STATUS_ROLLBACK_SUCCESSFUL {
+				if isHandled, err := IsLatestVersionHandled(status, exchAFVs); err != nil {
+					glog.Errorf(nmwlog(fmt.Sprintf("Error checking if the latest versions are previously handled for nmp %v. %v", statusName, err)))
+				} else if isHandled {
+					glog.V(3).Infof(nmwlog(fmt.Sprintf("The latest agent versions are previously handled for nmp %v. The status was %v. Exiting without changing status to \"waiting\".", statusName, nmpStatus)))
 				} else {
-					glog.V(3).Infof(nmwlog(fmt.Sprintf("The agent versions are up to date for nmp %v.", statusName)))
+					setStatusToWaiting = true
+				}
+			} else {
+				if isUpToDate, err := IsAgentUpToDate(status, exchAFVs, n.db); err != nil {
+					glog.Errorf(nmwlog(fmt.Sprintf("Error checking if the agent versions are up to date for nmp %v. %v", statusName, err)))
+				} else if isUpToDate {
+					glog.V(3).Infof(nmwlog(fmt.Sprintf("The agent versions are up to date for nmp %v. Exiting without changing status to \"waiting\".", statusName)))
+				} else {
+					setStatusToWaiting = true
 				}
 			}
-		}
+
+			// set the status to waiting for this nmp
+			if setStatusToWaiting {
+				glog.V(3).Infof(nmwlog(fmt.Sprintf("Change status to \"waiting\" for the nmp %v", statusName)))
+
+				// Add startWindow to current time to randomize upgrade start times just like what occurs when an NMP first executes
+				if status.TimeToStart() {
+					nmp, err := persistence.FindNodeManagementPolicy(n.db, statusName)
+					if err != nil {
+						glog.Errorf(nmwlog(fmt.Sprintf("Error getting nmp from db to check the startWindow value. Error was: %v", err)))
+					}
+					if nmp != nil {
+						status.SetScheduledStartTime(exchangecommon.TIME_NOW_KEYWORD, nmp.LastUpdated, nmp.UpgradeWindowDuration)
+					}
+				}
+
+				status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
+				err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, statusName, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
+				if err != nil {
+					glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)))
+				}
+			}
+
+		} // end for
 
 		if needDeferCommand && cmd != nil {
 			n.AddDeferredCommand(cmd)
