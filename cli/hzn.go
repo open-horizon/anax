@@ -362,6 +362,13 @@ Environment Variables:
 	exNMPStatusIdTok := exNMPStatusCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNMPStatusNode := exNMPStatusCmd.Flag("node", msgPrinter.Sprintf("Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.")).Short('N').String()
 	exNMPStatusLong := exNMPStatusCmd.Flag("long", msgPrinter.Sprintf("Show the entire contents of each node management policy status object.")).Short('l').Bool()
+	exNMPEnableCmd := exNMPCmd.Command("enable", msgPrinter.Sprintf("Enable a node management policy in the Horizon Exchange."))
+	exNMPEnableName := exNMPEnableCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to enable.")).String()
+	exNMPEnableStartTime := exNMPEnableCmd.Flag("start-time", msgPrinter.Sprintf("The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"")).Short('s').String()
+	exNMPEnableStartWindow := exNMPEnableCmd.Flag("start-window", msgPrinter.Sprintf("The start window of the enabled node management policy.")).Short('w').String()
+	exNMPDisableCmd := exNMPCmd.Command("disable", msgPrinter.Sprintf("Enable a node management policy in the Horizon Exchange."))
+	exNMPDisableName := exNMPDisableCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to enable.")).String()
+
 	exNodeCmd := exchangeCmd.Command("node", msgPrinter.Sprintf("List and manage nodes in the Horizon Exchange"))
 	exNodeAddPolicyCmd := exNodeCmd.Command("addpolicy | addp", msgPrinter.Sprintf("Add or replace the node policy in the Horizon Exchange.")).Alias("addp").Alias("addpolicy")
 	exNodeAddPolicyIdTok := exNodeAddPolicyCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
@@ -859,6 +866,10 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", true)
 		case "nmp status":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNMPStatusIdTok, false)
+		case "nmp enable":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", true)
+		case "nmp disable":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", true)
 		case "node list | ls":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListNodeIdTok, false)
 		case "node update | up":
@@ -1095,6 +1106,10 @@ Environment Variables:
 		exchange.NMPRemove(*exOrg, credToUse, *exNMPRemoveName, *exNMPRemoveForce)
 	case exNMPStatusCmd.FullCommand():
 		exchange.NMPStatus(*exOrg, credToUse, *exNMPStatusName, *exNMPStatusNode, !*exNMPStatusLong)
+	case exNMPEnableCmd.FullCommand():
+		exchange.NMPEnable(*exOrg, credToUse, *exNMPEnableName, *exNMPEnableStartTime, *exNMPEnableStartWindow)
+	case exNMPDisableCmd.FullCommand():
+		exchange.NMPDisable(*exOrg, credToUse, *exNMPDisableName)
 
 	case exNodeListCmd.FullCommand():
 		exchange.NodeList(*exOrg, credToUse, *exNode, !*exNodeLong)
