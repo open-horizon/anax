@@ -11,6 +11,8 @@ import (
 	"github.com/open-horizon/anax/nodemanagement"
 	"github.com/open-horizon/edge-sync-service/common"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 const BatchSize = 50
@@ -353,6 +355,131 @@ func NMPStatus(org, credToUse, nmpName, nodeName string, long bool) {
 		fmt.Println(cliutils.MarshalIndent(allNMPStatusNames, "exchange nmp status"))
 	} else {
 		fmt.Println(cliutils.MarshalIndent(allNMPStatuses, "exchange nmp status"))
+	}
+}
+
+func NMPEnable(org, credToUse, nmpName string, startTime string, startWindow string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+	var exchUrl = cliutils.GetExchangeUrl()
+
+	if startTime != "" && startTime != "now" {
+		if _, err := time.Parse(time.RFC3339, startTime); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to parse start time: %v. The start time must be in RFC3339 format or set to \"now\".", err))
+		}
+	}
+
+	var startWindowInInt int
+	var err error
+	if startWindow != "" {
+		if startWindowInInt, err = strconv.Atoi(startWindow); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to parse start window: %v. The start window must be Integer.", err))
+		}
+	}
+
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	var nmpOrg string
+	nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
+	nmpFullName := fmt.Sprintf("%v/%v", org, nmpName)
+
+	var nmpList exchange.ExchangeNodeManagementPolicyResponse
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+nmpOrg+"/managementpolicies"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpList)
+	if httpCode == 404 || len(nmpList.Policies) == 0 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("NMP %s not found in org %s", nmpName, nmpOrg))
+	} else {
+		exNMP := nmpList.Policies[nmpFullName]
+
+		if exNMP.Enabled && startTime == "" && startWindow == "" {
+			msgPrinter.Printf("Node management policy %v is already enabled in the Horizon Exchange", nmpFullName)
+			msgPrinter.Println()
+		} else {
+			exNMP.Enabled = true
+			if startTime != "" {
+				exNMP.PolicyUpgradeTime = startTime
+			}
+
+			if startWindow != "" {
+				exNMP.UpgradeWindowDuration = startWindowInInt
+			}
+
+			if exNMP.Constraints != nil && len(exNMP.Constraints) == 0 {
+				exNMP.Constraints = nil
+			}
+
+			if exNMP.Patterns != nil && len(exNMP.Patterns) == 0 {
+				exNMP.Patterns =  nil
+			}
+
+			exNMP.Owner = ""
+			exNMP.LastUpdated = ""
+			exNMP.Created = ""
+
+			fmt.Printf("exNMP2: %v \n", exNMP)
+
+			var resp struct {
+				Code string `json:"code"`
+				Msg  string `json:"msg"`
+			}
+			//try to update the existing policy
+			httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+nmpOrg+"/managementpolicies"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, exNMP, &resp)
+			if httpCode == 201 {
+				msgPrinter.Printf("Node management policy %v enabled in the Horizon Exchange", nmpFullName)
+				msgPrinter.Println()
+			} else if httpCode == 404 {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot enable node management policy %v: %v", nmpFullName, resp.Msg))
+			}
+		}
+	}
+}
+
+func NMPDisable(org, credToUse, nmpName string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+	var exchUrl = cliutils.GetExchangeUrl()
+
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	var nmpOrg string
+	nmpOrg, nmpName = cliutils.TrimOrg(org, nmpName)
+	nmpFullName := fmt.Sprintf("%v/%v", org, nmpName)
+
+	var nmpList exchange.ExchangeNodeManagementPolicyResponse
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+nmpOrg+"/managementpolicies"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpList)
+	if httpCode == 404 || len(nmpList.Policies) == 0 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("NMP %s not found in org %s", nmpName, nmpOrg))
+	} else {
+		exNMP := nmpList.Policies[nmpFullName]
+
+		if !exNMP.Enabled {
+			msgPrinter.Printf("Node management policy %v is already disabled in the Horizon Exchange", nmpFullName)
+			msgPrinter.Println()
+		} else {
+			exNMP.Enabled = false
+
+			if exNMP.Constraints != nil && len(exNMP.Constraints) == 0 {
+				exNMP.Constraints = nil
+			}
+
+			if exNMP.Patterns != nil && len(exNMP.Patterns) == 0 {
+				exNMP.Patterns = nil
+			}
+
+			exNMP.Owner = ""
+			exNMP.LastUpdated = ""
+			exNMP.Created = ""
+
+			var resp struct {
+				Code string `json:"code"`
+				Msg  string `json:"msg"`
+			}
+			//try to update the existing policy
+			httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+nmpOrg+"/managementpolicies"+cliutils.AddSlash(nmpName), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, exNMP, &resp)
+			if httpCode == 201 {
+				msgPrinter.Printf("Node management policy %v disabled in the Horizon Exchange", nmpFullName)
+				msgPrinter.Println()
+			} else if httpCode == 404 {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot disable node management policy %v: %v", nmpFullName, resp.Msg))
+			}
+		}
 	}
 }
 
