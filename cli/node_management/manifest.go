@@ -89,7 +89,7 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 	if manifestId != "" {
 		filterURLPath += fmt.Sprintf("&objectID=%s", manifestId)
 	}
-	urlPath := "api/v1/objects/" + manOrg + "?filters=true"
+	urlPath := "api/v1/objects/" + manOrg + "?filters=true&deleted=false"
 	fullPath := urlPath + filterURLPath
 
 	// Call the MMS service over HTTP to get the manifest metadata.
@@ -191,7 +191,7 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType, dsHashA
 	// Call the MMS service over HTTP to see if manifest exists.
 	updatedManifest := false
 	filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s", manifestsMeta.ObjectType, manifestsMeta.ObjectID)
-	urlPath := "api/v1/objects/" + manOrg + "?filters=true"
+	urlPath := "api/v1/objects/" + manOrg + "?filters=true&deleted=false"
 	fullPath := urlPath + filterURLPath
 	var dummyManifestsMeta []common.MetaData
 	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &dummyManifestsMeta)

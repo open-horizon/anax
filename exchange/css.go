@@ -261,7 +261,7 @@ func GetCSSObjectsByType(ec ExchangeContext, org string, objType string) (*MetaD
 	resp = new(MetaDataList)
 
 	url := ec.GetCSSURL() + path.Join("/api/v1/objects", org)
-	url = url + "?filters=true"
+	url = url + "?filters=true&deleted=false"
 	if objType != "" {
 		url = fmt.Sprintf(url+"&objectType=%v", objType)
 	}
