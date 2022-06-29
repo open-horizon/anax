@@ -727,16 +727,19 @@ func NodeManagementStatus(org, credToUse, nodeName, nmpName string, long bool) {
 	var nodeOrg string
 	nodeOrg, nodeName = cliutils.TrimOrg(org, nodeName)
 
-	if nodeName == "*" {
-		nodeName = ""
-	}
-
 	// Get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
+	// make sure the node exists
+	var nodes ExchangeNodes
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(nodeName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", nodeOrg, nodeName))
+	}
+
 	// Get the list of NMP statuses
 	var nmpStatusList exchangecommon.ExchangeNMPStatus
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+nodeName+"/managementStatus", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpStatusList)
+	httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+nodeName+"/managementStatus", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpStatusList)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Statuses for node %s not found in org %s", nodeName, nodeOrg))
 	}
@@ -761,6 +764,52 @@ func NodeManagementStatus(org, credToUse, nodeName, nmpName string, long bool) {
 		fmt.Println(cliutils.MarshalIndent(nmpStatusNames, "node management status"))
 	} else {
 		fmt.Println(cliutils.MarshalIndent(nmpStatuses, "node management status"))
+	}
+}
+
+func NodeManagementReset(org, credToUse, nodeName, nmpName string) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+
+	var nodeOrg string
+	nodeOrg, nodeName = cliutils.TrimOrg(org, nodeName)
+	_, nmpNameNoOrg := cliutils.TrimOrg(nodeOrg, nmpName)
+
+	// Get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// make sure the node exists
+	var nodes ExchangeNodes
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(nodeName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", nodeOrg, nodeName))
+	}
+
+	// Get the list of NMP statuses
+	var nmpStatusList exchangecommon.ExchangeNMPStatus
+	httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+nodeName+"/managementStatus", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nmpStatusList)
+	if httpCode == 404 {
+		msgPrinter.Printf("No management status found for node %s in org %s", nodeName, nodeOrg)
+		msgPrinter.Println()
+		return
+	}
+
+	// reset the status
+	found := false
+	for nmpStatusName, nmpStatus := range nmpStatusList.ManagementStatus {
+		_, nmpStatusNameNoOrg := cliutils.TrimOrg(org, nmpStatusName)
+		if nmpName == "" || nmpStatusNameNoOrg == nmpNameNoOrg {
+			nmpStatus.SetStatus(exchangecommon.STATUS_RESET)
+			cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+nodeName+"/managementStatus/"+nmpStatusNameNoOrg, cliutils.OrgAndCreds(org, credToUse), []int{201}, nmpStatus, nil)
+			msgPrinter.Printf("Node management status for %v is reset.", nmpStatusNameNoOrg)
+			msgPrinter.Println()
+			found = true
+		}
+	}
+	if found {
+		msgPrinter.Printf("The the Horizon agent for node %v/%v will re-evaluate the management policies.", nodeOrg, nodeName)
+		msgPrinter.Println()
+	} else if nmpName != "" {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node %s does not contain a status for %s in org %s", nodeName, nmpName, nodeOrg))
 	}
 }
 

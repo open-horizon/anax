@@ -107,6 +107,9 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	router.HandleFunc("/nodemanagement/status", a.managementStatus).Methods("GET", "OPTIONS")
 	router.HandleFunc("/nodemanagement/status/{org}/{nmpname}", a.managementStatus).Methods("GET", "PUT", "OPTIONS")
 	router.HandleFunc("/nodemanagement/status/{nmpname}", a.managementStatus).Methods("GET", "PUT", "OPTIONS")
+	router.HandleFunc("/nodemanagement/reset", a.managementReset).Methods("PUT", "OPTIONS")
+	router.HandleFunc("/nodemanagement/reset/{org}/{nmpname}", a.managementReset).Methods("PUT", "OPTIONS")
+	router.HandleFunc("/nodemanagement/reset/{nmpname}", a.managementReset).Methods("PUT", "OPTIONS")
 
 	// For importing workload public signing keys (RSA-PSS key pair public key)
 	router.HandleFunc("/{p:(?:publickey|trust)}", a.publickey).Methods("GET", "OPTIONS")

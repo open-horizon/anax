@@ -17,6 +17,7 @@ import (
 	"github.com/open-horizon/anax/cli/kube_deployment"
 	"github.com/open-horizon/anax/cli/metering"
 	_ "github.com/open-horizon/anax/cli/native_deployment"
+	"github.com/open-horizon/anax/cli/nm_status"
 	"github.com/open-horizon/anax/cli/node"
 	"github.com/open-horizon/anax/cli/node_management"
 	"github.com/open-horizon/anax/cli/policy"
@@ -406,6 +407,10 @@ Environment Variables:
 	exNodeManagementStatusNodeIdTok := exNodeManagementStatusCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeManagementStatusPol := exNodeManagementStatusCmd.Flag("policy", msgPrinter.Sprintf("Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.")).Short('p').String()
 	exNodeManagementStatusLong := exNodeManagementStatusCmd.Flag("long", msgPrinter.Sprintf("Show the entire contents of each node management policy status object.")).Short('l').Bool()
+	exNodeManagementResetCmd := exNodeManagementCmd.Command("reset", msgPrinter.Sprintf("Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade."))
+	exNodeManagementResetName := exNodeManagementResetCmd.Arg("node", msgPrinter.Sprintf("Re-evaluate node management policy for this node.")).Required().String()
+	exNodeManagementResetNodeIdTok := exNodeManagementResetCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNodeManagementResetPol := exNodeManagementResetCmd.Flag("policy", msgPrinter.Sprintf("The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.")).Short('p').String()
 	exNodeStatusList := exNodeCmd.Command("liststatus | lst", msgPrinter.Sprintf("List the run-time status of the node.")).Alias("lst").Alias("liststatus")
 	exNodeStatusIdTok := exNodeStatusList.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeStatusListNode := exNodeStatusList.Arg("node", msgPrinter.Sprintf("List status for this node")).Required().String()
@@ -634,7 +639,7 @@ Environment Variables:
 	nodeCmd := app.Command("node", msgPrinter.Sprintf("List and manage general information about this Horizon edge node."))
 	nodeListCmd := nodeCmd.Command("list | ls", msgPrinter.Sprintf("Display general information about this Horizon edge node.")).Alias("list").Alias("ls")
 
-	nodeManagementCmd := app.Command("nodemanagement | nm", msgPrinter.Sprintf("")).Alias("nm").Alias("nodemanagement")
+	nodeManagementCmd := app.Command("nodemanagement | nm", msgPrinter.Sprintf("List and manage manifests and agent files for node management.")).Alias("nm").Alias("nodemanagement")
 	nmOrg := nodeManagementCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	nmUserPw := nodeManagementCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
 
@@ -737,6 +742,13 @@ Environment Variables:
 	userinputRemoveForce := userinputRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'Are you sure?' prompt.")).Short('f').Bool()
 	userinputUpdateCmd := userinputCmd.Command("update | up", msgPrinter.Sprintf("Update an existing user input object for this Horizon edge node.")).Alias("up").Alias("update")
 	userinputUpdateFilePath := userinputUpdateCmd.Flag("file-path", msgPrinter.Sprintf("The file path to the json file with the updated user input object. Specify -f- to read from stdin.")).Short('f').Required().String()
+
+	nmstatusCmd := app.Command("nmstatus", msgPrinter.Sprintf("List and manage node management status for the local node."))
+	nmstatusListCmd := nmstatusCmd.Command("list", msgPrinter.Sprintf("Display the node managment status for the local node."))
+	nmstatusListName := nmstatusListCmd.Arg("name", msgPrinter.Sprintf("The name of the node management policy. If omitted the status of all management policies for this node will be displayed.")).String()
+	nmstatusListLong := nmstatusListCmd.Flag("long", msgPrinter.Sprintf("Show the entire contents of each node management status object.")).Short('l').Bool()
+	nmstatusResetCmd := nmstatusCmd.Command("reset", msgPrinter.Sprintf("Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade."))
+	nmstatusResetName := nmstatusResetCmd.Arg("name", msgPrinter.Sprintf("The name of the node management policy. If omitted all management policies for this node will be re-evaluated.")).String()
 
 	utilCmd := app.Command("util", msgPrinter.Sprintf("Utility commands."))
 	utilConfigConvCmd := utilCmd.Command("configconv | cfg", msgPrinter.Sprintf("Convert the configuration file from JSON format to a shell script.")).Alias("cfg").Alias("configconv")
@@ -896,6 +908,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeManagementListNodeIdTok, false)
 		case "node management | mgmt status":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeManagementStatusNodeIdTok, false)
+		case "node management | mgmt reset":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeManagementResetNodeIdTok, false)
 		case "service | serv list | ls":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok, false)
 		case "service | serv verify | vf":
@@ -1139,6 +1153,8 @@ Environment Variables:
 		exchange.NodeManagementList(*exOrg, credToUse, *exNodeManagementListName, *exNodeManagementListAll)
 	case exNodeManagementStatusCmd.FullCommand():
 		exchange.NodeManagementStatus(*exOrg, credToUse, *exNodeManagementStatusName, *exNodeManagementStatusPol, !*exNodeManagementStatusLong)
+	case exNodeManagementResetCmd.FullCommand():
+		exchange.NodeManagementReset(*exOrg, credToUse, *exNodeManagementResetName, *exNodeManagementResetPol)
 
 	case agbotCacheServedOrgList.FullCommand():
 		agreementbot.GetServedOrgs()
@@ -1345,6 +1361,12 @@ Environment Variables:
 		node_management.ManifestNew()
 	case nmManifestRemoveCmd.FullCommand():
 		node_management.ManifestRemove(*nmOrg, *nmUserPw, *nmManifestRemoveId, *nmManifestRemoveType, *nmManifestRemoveForce)
+
+	// node managment for local node
+	case nmstatusListCmd.FullCommand():
+		nm_status.List(*nmstatusListName, *nmstatusListLong)
+	case nmstatusResetCmd.FullCommand():
+		nm_status.Reset(*nmstatusResetName)
 
 	// DEPRECATED (voucherInspectCmd, voucherImportCmd, voucherListCmd are deprecated commands)
 	case voucherInspectCmd.FullCommand():

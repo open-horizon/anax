@@ -158,6 +158,7 @@ func (r ResourceStatus) String() string {
 }
 
 const (
+	STATUS_RESET               = "reset" // force to re-evaluate. only used to set the status from the exchange.
 	STATUS_NEW                 = "waiting"
 	STATUS_UNKNOWN             = "unknown"
 	STATUS_DOWNLOAD_STARTED    = "download started"
