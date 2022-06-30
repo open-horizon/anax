@@ -325,6 +325,21 @@ function get_variable() {
     else
         varValue="${!var_name}"
     fi
+
+    if [[ ( $var_name == "HZN_EXCHANGE_URL" ) && -n ${!var_name} ]]; then 
+        local TMP_HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL
+        if [[ "$TMP_HZN_EXCHANGE_URL" != "" ]]; then
+            LAST_CHAR=(${TMP_HZN_EXCHANGE_URL: -1})
+            # If this URL ends with "/" the curl commands will fail so remove the trailing / if it exists
+            if [[ "$LAST_CHAR" == "/" ]]; then
+                TMP_HZN_EXCHANGE_URL=${TMP_HZN_EXCHANGE_URL%?} 
+                log_debug "Changing variable $var_name from ${!var_name} to ${TMP_HZN_EXCHANGE_URL}"
+                export HZN_EXCHANGE_URL=${TMP_HZN_EXCHANGE_URL} 
+                varValue="${!var_name}"
+            fi
+        fi
+    fi
+
     log_info "${var_name}: $varValue (from $from)"
     log_debug "get_variable() end"
 }
