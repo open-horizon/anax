@@ -201,22 +201,37 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 	}
 	var msgMeta *persistence.MessageMeta
 	eventCode := ""
-	if cmd.Msg.Status == exchangecommon.STATUS_DOWNLOADED {
-		glog.Infof(nmwlog(fmt.Sprintf("Sucessfully downloaded packages for nmp %v.", cmd.Msg.NMPName)))
-		status.SetStatus(exchangecommon.STATUS_DOWNLOADED)
-		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOADED)
-		eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
-	} else if cmd.Msg.Status == exchangecommon.STATUS_NO_ACTION {
+
+	if cmd.Msg.Status == exchangecommon.STATUS_NO_ACTION {
 		glog.Infof(nmwlog(fmt.Sprintf("Already in compliance with nmp %v. Download skipped.", cmd.Msg.NMPName)))
 		status.SetStatus(exchangecommon.STATUS_NO_ACTION)
 		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_NO_ACTION)
 		eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
-	} else {
-		glog.Errorf(nmwlog(fmt.Sprintf("Failed to download packages for nmp %v. %v", cmd.Msg.NMPName, cmd.Msg.ErrorMessage)))
-		status.SetStatus(cmd.Msg.Status)
-		status.SetErrorMessage(cmd.Msg.ErrorMessage)
-		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED_WITH_ERROR, cmd.Msg.NMPName, cmd.Msg.Status, cmd.Msg.ErrorMessage)
+	} else 	if cmd.Msg.Status == exchangecommon.STATUS_DOWNLOADED {
+		glog.Infof(nmwlog(fmt.Sprintf("Sucessfully downloaded packages for nmp %v.", cmd.Msg.NMPName)))
+		status.SetStatus(exchangecommon.STATUS_DOWNLOADED)
+		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOADED)
+		eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
+	} else if cmd.Msg.Status == exchangecommon.STATUS_PRECHECK_FAILED {
+		glog.Infof(nmwlog(fmt.Sprintf("Node management policy %v failed precheck conditions.", cmd.Msg.NMPName)))
+		status.SetStatus(exchangecommon.STATUS_PRECHECK_FAILED)
+		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_PRECHECK_FAILED)
 		eventCode = persistence.EC_NMP_STATUS_CHANGED
+	} else {
+		if status.AgentUpgradeInternal.DownloadAttempts < 4 {
+			glog.Infof(nmwlog(fmt.Sprintf("Resetting status for %v to waiting to retry failed download.", cmd.Msg.NMPName)))
+			status.AgentUpgradeInternal.DownloadAttempts = status.AgentUpgradeInternal.DownloadAttempts + 1
+			status.SetStatus(exchangecommon.STATUS_NEW)
+			msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_NEW)
+			eventCode = persistence.EC_NMP_STATUS_CHANGED
+		} else {
+			glog.Infof(nmwlog(fmt.Sprintf("Download attempted 3 times already for %v. Download will not be tried again.", cmd.Msg.NMPName)))
+			glog.Errorf(nmwlog(fmt.Sprintf("Failed to download packages for nmp %v. %v", cmd.Msg.NMPName, cmd.Msg.ErrorMessage)))
+			status.SetStatus(cmd.Msg.Status)
+			status.SetErrorMessage(cmd.Msg.ErrorMessage)
+			msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED_WITH_ERROR, cmd.Msg.NMPName, cmd.Msg.Status, cmd.Msg.ErrorMessage)
+			eventCode = persistence.EC_NMP_STATUS_CHANGED
+		}
 	}
 	if cmd.Msg.Versions != nil {
 		status.AgentUpgrade.UpgradedVersions = *cmd.Msg.Versions
