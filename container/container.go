@@ -352,6 +352,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				Labels:       labels,
 				Volumes:      vols,
 				ExposedPorts: map[docker.Port]struct{}{},
+				User:         service.User,
 			},
 			HostConfig: docker.HostConfig{
 				Privileged:      service.Privileged,
@@ -369,6 +370,8 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				GroupAdd:        groupAdds,
 				Tmpfs:           service.Tmpfs,
 				SecurityOpt:     service.SecurityOpt,
+				Sysctls:         service.Sysctls,
+				PidMode:         service.PID,
 			},
 		}
 
