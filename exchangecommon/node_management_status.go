@@ -105,6 +105,7 @@ type AgentUpgradeInternalStatus struct {
 	Manifest          string             `json:"manifest,omitempty"`
 	ScheduledUnixTime time.Time          `json:"scheduledUnixTime,omitempty"`
 	LatestMap         AgentUpgradeLatest `json:"latestMap"`
+	DownloadAttempts  int 				 `json:"downloadAttempts"`
 }
 
 func (a AgentUpgradeInternalStatus) String() string {
