@@ -575,7 +575,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	// Set default built in properties before publishing to the exchange
 	msgPrinter.Printf("Adding built-in property values...")
 	msgPrinter.Println()
-	msgPrinter.Printf("The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch")
+	msgPrinter.Printf("The following property values will be overridden: service.url, service.name, service.org, service.version, service.arch")
 	msgPrinter.Println()
 
 	properties := policyFile.Properties
@@ -594,7 +594,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	}
 
 	// add/replace service policy
-	msgPrinter.Printf("Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.")
+	msgPrinter.Printf("Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile, nil)
 
@@ -669,7 +669,7 @@ func SaveOpYamlToFile(sId string, clusterDeployment string, filePath string, for
 	msgPrinter.Println()
 }
 
-// This function getst the operator yaml archive (in .tat.gz format) from the clusterDeployment
+// This function gets the operator yaml archive (in .tar.gz format) from the clusterDeployment
 // string from a service
 func GetOpYamlArchiveFromClusterDepl(deploymentConfig string) []byte {
 	// get message printer
