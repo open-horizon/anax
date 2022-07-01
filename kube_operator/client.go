@@ -204,6 +204,10 @@ func (c KubeClient) Status(tar string, agId string) ([]ContainerStatus, error) {
 		return nil, err
 	}
 
+	if len(apiObjMap[K8S_DEPLOYMENT_TYPE]) < 1 {
+		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to find operator deployment object.")))
+	}
+
 	deployment := apiObjMap[K8S_DEPLOYMENT_TYPE][0]
 
 	podList, err := deployment.Status(c, namespace)
