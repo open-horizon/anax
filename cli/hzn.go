@@ -367,8 +367,8 @@ Environment Variables:
 	exNMPEnableName := exNMPEnableCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to enable.")).String()
 	exNMPEnableStartTime := exNMPEnableCmd.Flag("start-time", msgPrinter.Sprintf("The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"")).Short('s').String()
 	exNMPEnableStartWindow := exNMPEnableCmd.Flag("start-window", msgPrinter.Sprintf("The start window of the enabled node management policy.")).Short('w').String()
-	exNMPDisableCmd := exNMPCmd.Command("disable", msgPrinter.Sprintf("Enable a node management policy in the Horizon Exchange."))
-	exNMPDisableName := exNMPDisableCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to enable.")).String()
+	exNMPDisableCmd := exNMPCmd.Command("disable", msgPrinter.Sprintf("Disable a node management policy in the Horizon Exchange."))
+	exNMPDisableName := exNMPDisableCmd.Arg("nmp-name", msgPrinter.Sprintf("The name of the node management policy to disable.")).String()
 
 	exNodeCmd := exchangeCmd.Command("node", msgPrinter.Sprintf("List and manage nodes in the Horizon Exchange"))
 	exNodeAddPolicyCmd := exNodeCmd.Command("addpolicy | addp", msgPrinter.Sprintf("Add or replace the node policy in the Horizon Exchange.")).Alias("addp").Alias("addpolicy")
