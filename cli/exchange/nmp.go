@@ -407,7 +407,7 @@ func NMPEnable(org, credToUse, nmpName string, startTime string, startWindow str
 			}
 
 			if exNMP.Patterns != nil && len(exNMP.Patterns) == 0 {
-				exNMP.Patterns =  nil
+				exNMP.Patterns = nil
 			}
 
 			exNMP.Owner = ""

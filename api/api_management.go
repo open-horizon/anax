@@ -16,7 +16,7 @@ import (
 
 func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 
-	resource := "management"
+	resource := "management status"
 	errorHandler := GetHTTPErrorHandler(w)
 
 	switch r.Method {
@@ -39,6 +39,7 @@ func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 
 		pathVars := mux.Vars(r)
 		nmpName := pathVars["nmpname"]
+		orgName := pathVars["org"]
 
 		// Must include nmpname in URL
 		if nmpName == "" {
@@ -69,20 +70,58 @@ func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
 
 		// Update the NMP Status
-		errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, getDevice, patchDevice, nmpName, a.db)
+		errHandled, out := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, getDevice, patchDevice, nmpName, orgName, a.db)
 		if errHandled {
 			return
-		}
-
-		// Send out all messages
-		for _, msg := range msgs {
-			a.Messages() <- msg
 		}
 
 		writeResponse(w, out, http.StatusCreated)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, PUT, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) managementReset(w http.ResponseWriter, r *http.Request) {
+
+	resource := "management reset"
+	errorHandler := GetHTTPErrorHandler(w)
+
+	switch r.Method {
+	case "PUT":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		pathVars := mux.Vars(r)
+		nmpName := pathVars["nmpname"]
+		orgName := pathVars["org"]
+
+		// Make sure current exchange version meet the requirement
+		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken(), false); err != nil {
+			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
+				persistence.NewMessageMeta(EL_API_ERR_IN_VERIFY_EXCH_VERSION, err.Error()),
+				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
+			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+			return
+		}
+
+		// Create handler for putting updated NMP status in the exchange
+		statusHandler := exchange.GetPutNodeManagementPolicyStatusHandler(a)
+		getDevice := exchange.GetHTTPDeviceHandler(a)
+		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
+
+		// Reset the NMP Status
+		errHandled, out := ResetManagementStatus(nmpName, orgName, errorHandler, statusHandler, getDevice, patchDevice, a.db)
+		if errHandled {
+			return
+		}
+
+		writeResponse(w, out, http.StatusCreated)
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "PUT, OPTIONS")
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)

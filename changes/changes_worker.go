@@ -292,6 +292,8 @@ func (w *ChangesWorker) findAndProcessChanges() {
 			resourceTypes[events.CHANGE_NMP_TYPE] = true
 		} else if change.IsAgentFileVersion() {
 			resourceTypes[events.CHANGE_AGENT_FILE_VERSION] = true
+		} else if change.IsNodeManagementPolicyStatus() {
+			resourceTypes[events.CHANGE_NMP_STATUS] = true
 		} else {
 			glog.V(5).Infof(chglog(fmt.Sprintf("Unhandled change: %v %v/%v", change.Resource, change.OrgID, change.ID)))
 		}
@@ -319,6 +321,7 @@ func (w *ChangesWorker) createSupportedResourceTypes(initialValue bool) map[even
 	resourceTypes[events.CHANGE_SERVICE_TYPE] = initialValue
 	resourceTypes[events.CHANGE_NMP_TYPE] = initialValue
 	resourceTypes[events.CHANGE_AGENT_FILE_VERSION] = initialValue
+	resourceTypes[events.CHANGE_NMP_STATUS] = initialValue
 	return resourceTypes
 }
 

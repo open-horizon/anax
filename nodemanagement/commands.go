@@ -124,3 +124,21 @@ func NewAgentFileVersionChangeCommand(msg *events.ExchangeChangeMessage) *AgentF
 		Msg: msg,
 	}
 }
+
+type NmpStatusChangeCommand struct {
+	Msg *events.ExchangeChangeMessage
+}
+
+func (a NmpStatusChangeCommand) String() string {
+	return fmt.Sprintf("Msg: %v", a.Msg)
+}
+
+func (a NmpStatusChangeCommand) ShortString() string {
+	return a.String()
+}
+
+func NewNmpStatusChangeCommand(msg *events.ExchangeChangeMessage) *NmpStatusChangeCommand {
+	return &NmpStatusChangeCommand{
+		Msg: msg,
+	}
+}

@@ -69,6 +69,9 @@ func (w *NodeManagementWorker) Initialize() bool {
 			glog.Errorf(nmwlog(fmt.Sprintf("Failed to reset nmp statuses in \"download started\" status back to \"waiting\".")))
 		}
 
+		// change status from 'reset' to 'waiting' if any
+		w.HandleNmpStatusReset()
+
 		// new versions of the agent files could be added while the node was down,
 		// need to catch the latest for manifests that specifies the 'latest' version.
 		w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGENT_FILE_VERSION)
@@ -103,6 +106,7 @@ func (w *NodeManagementWorker) checkNMPTimeToRun() int {
 		glog.Infof(nmwlog("There is an nmp currently being executed or downloaded. Exiting without looking for the next nmp to run."))
 		return 60
 	}
+
 	if waitingNMPs, err := persistence.FindWaitingNMPStatuses(w.db); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Failed to get nmp statuses from the database. Error was %v", err)))
 	} else {
@@ -278,6 +282,8 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 	case *AgentFileVersionChangeCommand:
 		cmd := command.(*AgentFileVersionChangeCommand)
 		n.HandleAgentFilesVersionChange(cmd)
+	case *NmpStatusChangeCommand:
+		n.HandleNmpStatusReset()
 	default:
 		return false
 	}
@@ -454,6 +460,8 @@ func (n *NodeManagementWorker) NewEvent(incoming events.Message) {
 			n.Commands <- NewNodePolChangeCommand(msg)
 		case events.CHANGE_AGENT_FILE_VERSION:
 			n.Commands <- NewAgentFileVersionChangeCommand(msg)
+		case events.CHANGE_NMP_STATUS:
+			n.Commands <- NewNmpStatusChangeCommand(msg)
 		}
 	}
 }
@@ -750,6 +758,45 @@ func (n *NodeManagementWorker) HandleAgentFilesVersionChange(cmd *AgentFileVersi
 
 		if needDeferCommand && cmd != nil {
 			n.AddDeferredCommand(cmd)
+		}
+	}
+}
+
+// This function gets all the 'reset' nmp status from the exchange and set them to
+// 'waiting' so that the agent can start re-evaluating them.
+func (w *NodeManagementWorker) HandleNmpStatusReset() {
+	glog.V(3).Infof(nmwlog(fmt.Sprintf("HandleNmpStatusReset re-evaluating NMPs that has the status 'reset'.")))
+
+	// get all the nmps that applies to this node from the exchange
+	allNmpStatus, err := exchange.GetNodeManagementAllStatuses(w, exchange.GetOrg(w.GetExchangeId()), exchange.GetId(w.GetExchangeId()))
+	if err != nil {
+		glog.Errorf(nmwlog(fmt.Sprintf("Error getting all nmp statuses for node from the exchange. %v", w.GetExchangeId(), err)))
+	} else {
+		glog.V(5).Infof(nmwlog(fmt.Sprintf("GetNodeManagementAllStatuses returns: %v", allNmpStatus)))
+	}
+
+	// find all nmp status from local db
+	allLocalStatuses, err := persistence.FindAllNMPStatus(w.db)
+	if err != nil {
+		glog.Errorf(nmwlog(fmt.Sprintf("Error getting all nmp statuses from the local database. %v", err)))
+	}
+
+	// change the status to 'waiting'
+	if allNmpStatus != nil {
+		for nmp_name, nmp_status := range allNmpStatus.PolicyStatuses {
+			if nmp_status.Status() == exchangecommon.STATUS_RESET {
+				if local_status, ok := allLocalStatuses[nmp_name]; ok {
+					glog.V(3).Infof(nmwlog(fmt.Sprintf("Change status from \"reset\" to \"waiting\" for the nmp %v", nmp_name)))
+
+					local_status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
+					err = w.UpdateStatus(nmp_name, local_status, exchange.GetPutNodeManagementPolicyStatusHandler(w), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, nmp_name, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
+					if err != nil {
+						glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v from \"reset\" to \"waiting\". Error was %v.", nmp_name, err)))
+					}
+				} else {
+					glog.V(3).Infof(nmwlog(fmt.Sprintf("node management status for nmp %v for node %v is set to \"reset\" but the status cannot be found from the local db. Skiping it.", nmp_name, w.GetExchangeId())))
+				}
+			}
 		}
 	}
 }

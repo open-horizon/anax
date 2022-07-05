@@ -127,6 +127,7 @@ const (
 	CHANGE_AGBOT_AGREEMENT_TYPE     EventId = "EXCHANGE_CHANGE_AGBOT_AGREEMENT"
 	CHANGE_NMP_TYPE                 EventId = "EXCHANGE_CHANGE_NODE_MANAGEMENT_POLICY"
 	CHANGE_AGENT_FILE_VERSION       EventId = "EXCHANGE_CHANGE_AGENT_FILE_VERSION"
+	CHANGE_NMP_STATUS               EventId = "EXCHANGE_CHANGE_NMP_STATUS"
 
 	// Secret related
 	UPDATED_SECRETS EventId = "SECRET_UPDATES"
@@ -2187,34 +2188,6 @@ func NewNMPDownloadCompleteMessage(id EventId, status string, errMsg string, nam
 		NMPName:      name,
 		Versions:     vers,
 		Latests:      latest,
-	}
-}
-
-type NMStatusChangedMessage struct {
-	event  Event
-	NmpID  string // org/nmp_name
-	Status string
-}
-
-func (n *NMStatusChangedMessage) Event() Event {
-	return n.event
-}
-
-func (n *NMStatusChangedMessage) String() string {
-	return fmt.Sprintf("event: %v, NmpID: %v, Status: %v", n.event, n.NmpID, n.Status)
-}
-
-func (n *NMStatusChangedMessage) ShortString() string {
-	return n.String()
-}
-
-func NewNMStatusChangedMessage(id EventId, nmpID string, nmStatus string) *NMStatusChangedMessage {
-	return &NMStatusChangedMessage{
-		event: Event{
-			Id: id,
-		},
-		NmpID:  nmpID,
-		Status: nmStatus,
 	}
 }
 
