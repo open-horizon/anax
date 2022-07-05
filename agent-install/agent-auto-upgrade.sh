@@ -752,20 +752,22 @@ if [ -n "$CONTAINER_NUMBER" ]; then
     container_num_flag="-N $CONTAINER_NUMBER"
 fi
 
-# run agent-intall.sh. catch the stdout and stderr in different variables 
-unset Std_msg Err_msg RC
+# run agent-intall.sh. catch the stdout and stderr in different files
 cd $pkg_dir
 cmd="${pkg_dir}/agent-install.sh -d ${node_id} -O ${node_org_id} -s -b ${overwrite_flag} -G ${upgrade_types} --auto-upgrade ${container_flag} ${container_num_flag}"
 log_info "$cmd"
-eval "$(${cmd} \
-        2> >(Err_msg=$(cat); typeset -p Err_msg) \
-        > >(Std_msg=$(cat); typeset -p Std_msg); \
-        RC=$?; typeset -p RC)"
-rc=$RC
-# display the agenty-install.sh output
-echo "$Std_msg"
+rm -f $pkg_dir/error.log
+${cmd} 2>$pkg_dir/error.log
+rc=$?
+
+# display the error
+cat $pkg_dir/error.log
+
 #check the return code
 if [ $rc -ne 0 ]; then
+    Err_msg=$(< $pkg_dir/error.log)
+    rm -f $pkg_dir/error.log
+
     #remove the timestamp and word ERROR from err_msg
     if [ -z "$Err_msg" ]; then
         errmsg="Unknown."
