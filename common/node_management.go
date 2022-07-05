@@ -72,10 +72,12 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 			if pDevice != nil {
 				cert_version := ""
 				config_version := ""
+				agent_version := ""
 				sw_version := pDevice.SoftwareVersions
 				if sw_version != nil {
 					cert_version, _ = sw_version[persistence.CERT_VERSION]
 					config_version, _ = sw_version[persistence.CONFIG_VERSION]
+					agent_version, _ = sw_version[persistence.AGENT_VERSION]
 				}
 
 				// Use the versions in the status to set the device versions
@@ -93,6 +95,12 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 					if newConfigVer != config_version {
 						updateExch = true
 					}
+				}
+
+				// Update the agent software version 
+				pDevice.SetAgentVersion(db, pDevice.Id, version.HORIZON_VERSION)
+				if version.HORIZON_VERSION != agent_version {
+					updateExch = true
 				}
 
 				// path the node with new cert and config versions
