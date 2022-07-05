@@ -2246,7 +2246,7 @@ curl -s http://localhost:8510/nodemanagement/status | jq '.'
 }
 ```
 
-#### **API:** GET  /nodemanagement/status/{nmpname}
+#### **API:** GET  /nodemanagement/status/{nmpName}
 ---
 
 Get the status objects that corresponds to the given node management policy name. The org that the NMP and node belong to can be optionally prepended (i.e. `/nodemanagement/status/nmp-name` and `/nodemanagement/status/org/nmp-name` refer to the same object, so long as the node is part of the given org) A guide to what each status value means can be found here: [node_management_status.md](node_management_status.md)
@@ -2324,12 +2324,12 @@ curl -s http://localhost:8510/nodemanagement/status/sample-nmp | jq '.'
 }
 ```
 
-#### **API:** PUT  /nodemanagement/status/{nmpname}
+#### **API:** PUT  /nodemanagement/status/{nmpName}
 ---
 
 Update the status object that corresponds to the given node management policy name. The org that the NMP and node belong to can be optionally prepended (i.e. `/nodemanagement/status/nmp-name` and `/nodemanagement/status/org/nmp-name` refer to the same object, so long as the node is part of the given org) A guide to what each status value means can be found here: [node_management_status.md](node_management_status.md)
 
-Currently, the only supported update to the status object is the agentUpgradePolicyStatus structure. When the node management worker first picks up the status, it will create a local status object and fill in
+Currently, the only supported update to the status object is the agentUpgradePolicyStatus structure. 
 
 **Parameters:**
 
@@ -2375,4 +2375,38 @@ curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
     "errorMessage": "Sample error message",
   }
 }'  http://localhost:8510/nodemanagement/status/sample-nmp
+```
+
+#### **API:** PUT  /nodemanagement/reset
+---
+
+Reset all of the NMP status objects that are stored on the node to the "waiting" state.
+
+**Response:**
+
+code:
+* 201 -- success
+
+**Examples:**
+
+```
+curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' http://localhost:8510/nodemanagement/reset
+```
+
+#### **API:** PUT  /nodemanagement/reset/{nmpName}
+---
+
+Reset all of the NMP status objects that are stored on the node to the "waiting" state.
+
+Reset the status object that corresponds to the given node management policy name to the "waiting" state. The org that the NMP and node belong to can be optionally prepended (i.e. `/nodemanagement/status/nmp-name` and `/nodemanagement/status/org/nmp-name` refer to the same object, so long as the node is part of the given org)(node_management_status.md)
+
+**Response:**
+
+code:
+* 201 -- success
+
+**Examples:**
+
+```
+curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' http://localhost:8510/nodemanagement/reset/sample-nmp
 ```

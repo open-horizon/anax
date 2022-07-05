@@ -62,8 +62,8 @@ In this case, there is one upgrade job type - agent auto upgrade. The status for
 }
 ```
 
-## Listing NMP statuses currently stored in the Exchange
-To list all the NMPS that exist in the Exchange, use the following command:
+## Listing the Exchange status of NMP currently stored in the Exchange
+To list the Exchange status of an NMP currently stored in the Exchange, use the following command:
 ```
 hzn exchange nmp status <nmp-name>
 ```
@@ -72,3 +72,39 @@ hzn exchange nmp status <nmp-name>
 
 * `--long, -l`: Display the entire contents of each node management policy status object.
 * `--node`: Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.
+
+To list all of the NMP statuses for a specific node, use the following command:
+```
+hzn exchange node management status <node-name>
+```
+
+**Optional Flags**:  
+
+* `--long, -l`: Display the entire contents of each node management policy status object.
+* `--policy, -p`: Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.
+
+**Note**: The 2 commands in this section are for listing the status of an NMP as that status exists in the Exchange. To see the status that is stored on the node itself, see the section **Listing the local status of NMP currently stored in the Exchange** below.
+
+## Listing the local status of NMP currently stored in the Exchange
+To list the local status of an NMP currently stored in the Exchange, use the following command:
+```
+hzn nmstatus list <nmp-name>
+```
+
+The `nmp-name` argument is optional and lets the user list a single NMP. This is useful when used with the `--long` flag.
+
+**Optional Flags**:  
+
+* `--long, -l`: Display the entire contents of each node management policy status object.
+
+**Note**: The command in this section are for listing the status of an NMP as that status exists in the node's local database. To see the status that is stored in the Exchange, see the section **Listing the Exchange status of NMP currently stored in the Exchange** below.
+
+## Resetting an already completed NMP
+Resetting an NMP stored in the Exchange can only be performed by the admins of the system - both the **hub admin** and the **org admin** (as well as root).
+
+This command allows the admin to reset an NMP status to the "waiting" status so that the NMP that corresponds to it can be re-evaluated and possibly executed again. This is useful when the same NMP needs to be run again due to a failure or if there is a change to the manifest.
+
+To reset an NMP that exists in the Exchange, use the following command:
+```
+hzn nmstatus reset <nmp_name> 
+```
