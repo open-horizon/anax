@@ -47,7 +47,7 @@ const (
 const MAX_MEMEORY = 1048576 // the unit is MB. This is 1000G
 
 func ListReadOnlyProperties() []string {
-	return []string{PROP_NODE_CPU, PROP_NODE_ARCH, PROP_NODE_MEMORY, PROP_NODE_HARDWAREID, PROP_NODE_K8S_VERSION}
+	return []string{PROP_NODE_CPU, PROP_NODE_ARCH, PROP_NODE_MEMORY, PROP_NODE_HARDWAREID, PROP_NODE_K8S_VERSION, PROP_NODE_OS, PROP_NODE_CONTAINERIZED}
 }
 
 func ListSupportedOperatingSystems() []string {
@@ -213,7 +213,9 @@ func IsNodeBuiltinPropertyName(propName string) bool {
 		propName == PROP_NODE_ARCH ||
 		propName == PROP_NODE_HARDWAREID ||
 		propName == PROP_NODE_PRIVILEGED ||
-		propName == PROP_NODE_K8S_VERSION {
+		propName == PROP_NODE_K8S_VERSION ||
+		propName == PROP_NODE_OS ||
+		propName == PROP_NODE_CONTAINERIZED {
 		return true
 	} else {
 		return false

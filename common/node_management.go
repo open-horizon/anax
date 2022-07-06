@@ -97,7 +97,7 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 					}
 				}
 
-				// Update the agent software version 
+				// Update the agent software version
 				pDevice.SetAgentVersion(db, pDevice.Id, version.HORIZON_VERSION)
 				if version.HORIZON_VERSION != agent_version {
 					updateExch = true
