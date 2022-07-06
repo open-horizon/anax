@@ -211,7 +211,7 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 		status.SetStatus(exchangecommon.STATUS_NO_ACTION)
 		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_NO_ACTION)
 		eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
-	} else 	if cmd.Msg.Status == exchangecommon.STATUS_DOWNLOADED {
+	} else if cmd.Msg.Status == exchangecommon.STATUS_DOWNLOADED {
 		glog.Infof(nmwlog(fmt.Sprintf("Sucessfully downloaded packages for nmp %v.", cmd.Msg.NMPName)))
 		status.SetStatus(exchangecommon.STATUS_DOWNLOADED)
 		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOADED)
