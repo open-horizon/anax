@@ -90,3 +90,20 @@ hzn exchange nmp remove <nmp-name>
 
 **Optional Flags**:  
  * `--force, -f`: Use this flag to skip the 'Are you sure prompt?'
+
+## Enabling and Disabling NMP's currently stored in the Exchange
+Enabling and disabling an NMP stored in the Exchange can only be performed by the admins of the system - both the **hub admin** and the **org admin** (as well as root).
+
+To enable an NMP that exist in the Exchange, use the following command:
+```
+hzn exchange nmp enable <nmp_name> 
+```
+
+**Optional Flags**:  
+* `--start-time, -s`: Set a new start time for the enabled NMP.
+* `--start-window, -w`: Set a new start window for the enabled NMP.
+
+To disable an NMP that exists in the Exchange, use the following command:
+```
+hzn exchange nmp disable <nmp_name> 
+```

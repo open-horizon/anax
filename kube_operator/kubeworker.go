@@ -114,7 +114,7 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 		w.Messages() <- events.NewWorkloadMessage(events.WORKLOAD_DESTROYED, cmd.AgreementProtocol, cmd.CurrentAgreementId, kdc)
 	case *MaintenanceCommand:
 		cmd := command.(*MaintenanceCommand)
-		glog.V(3).Infof(kwlog(fmt.Sprintf("recieved maintenance command %v", cmd)))
+		glog.V(3).Infof(kwlog(fmt.Sprintf("received maintenance command %v", cmd)))
 
 		kdc, ok := cmd.Deployment.(*persistence.KubeDeploymentConfig)
 		if !ok {
