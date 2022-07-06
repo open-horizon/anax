@@ -414,8 +414,6 @@ func NMPEnable(org, credToUse, nmpName string, startTime string, startWindow str
 			exNMP.LastUpdated = ""
 			exNMP.Created = ""
 
-			fmt.Printf("exNMP2: %v \n", exNMP)
-
 			var resp struct {
 				Code string `json:"code"`
 				Msg  string `json:"msg"`
