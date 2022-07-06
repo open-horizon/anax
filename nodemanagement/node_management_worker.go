@@ -217,9 +217,10 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOADED)
 		eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
 	} else if cmd.Msg.Status == exchangecommon.STATUS_PRECHECK_FAILED {
-		glog.Infof(nmwlog(fmt.Sprintf("Node management policy %v failed precheck conditions.", cmd.Msg.NMPName)))
+		glog.Infof(nmwlog(fmt.Sprintf("Node management policy %v failed precheck conditions. %v", cmd.Msg.NMPName, cmd.Msg.ErrorMessage)))
 		status.SetStatus(exchangecommon.STATUS_PRECHECK_FAILED)
-		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_PRECHECK_FAILED)
+		status.SetErrorMessage(cmd.Msg.ErrorMessage)
+		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED_WITH_ERROR, cmd.Msg.NMPName, exchangecommon.STATUS_PRECHECK_FAILED, cmd.Msg.ErrorMessage)
 		eventCode = persistence.EC_NMP_STATUS_CHANGED
 	} else {
 		if status.AgentUpgradeInternal.DownloadAttempts < 4 {
