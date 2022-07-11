@@ -93,7 +93,7 @@ The Automatic Agent Upgrade is a policy-based node management feature that allow
 7. Observe the status of the upgrade job (optional)
     - Now that the NMP has been published, it will soon get picked up by the worker on the agent to perform the upgrade. The status of the NMP can then be observed using the following command.
     ```
-    hzn exchange nmp status sample-nmp.json
+    hzn exchange nmp status sample-nmp
     ```
     OR
     ```
