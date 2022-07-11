@@ -416,7 +416,12 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 }
 
 func (n *NodeManagementWorker) NewEvent(incoming events.Message) {
-	glog.Infof(nmwlog(fmt.Sprintf("Handling event: %v", incoming)))
+	if glog.V(5) {
+		glog.Infof(nmwlog(fmt.Sprintf("Handling event: %v", incoming)))
+	} else {
+		glog.Infof(nmwlog(fmt.Sprintf("Handling event type: %v", incoming.Event())))
+	}
+	
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
