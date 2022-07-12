@@ -297,9 +297,6 @@ func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribut
 	byValueAttrs := make([]persistence.Attribute, 0, 10)
 	for _, a := range attrs {
 		switch a.(type) {
-		case *persistence.HAAttributes:
-			p := a.(*persistence.HAAttributes)
-			byValueAttrs = append(byValueAttrs, *p)
 		case *persistence.HTTPSBasicAuthAttributes:
 			p := a.(*persistence.HTTPSBasicAuthAttributes)
 			byValueAttrs = append(byValueAttrs, *p)

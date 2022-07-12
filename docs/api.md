@@ -403,7 +403,7 @@ attribute
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: HAAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
+| type| string | the attribute type. Supported attribute types are: MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
 | service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes:  MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
@@ -505,7 +505,7 @@ body:
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: HAAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
+| type| string | the attribute type. Supported attribute types are: MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
 | service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes:  MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |

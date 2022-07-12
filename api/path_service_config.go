@@ -377,30 +377,9 @@ func CreateService(service *Service,
 	}
 
 	// Information advertised in the edge node policy file
-	var haPartner []string
 	var globalAgreementProtocols []interface{}
 
 	props := make(map[string]interface{})
-
-	// There might be node wide global attributes. Check for them and grab the values to use as defaults for later.
-	allAttrs, aerr := persistence.FindApplicableAttributes(db, "", "")
-	if aerr != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Unable to fetch global attributes, error %v", err))), nil, nil
-	}
-
-	// For each node wide attribute, extract the value and save it for use later in this function.
-	for _, attr := range allAttrs {
-		// Extract HA property
-		if attr.GetMeta().Type == "HAAttributes" {
-			haPartner = attr.(persistence.HAAttributes).Partners
-			glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global HA attribute %v", attr)))
-		}
-	}
-
-	// If an HA device has no HA attribute then the configuration is invalid.
-	if pDevice.HA && len(haPartner) == 0 {
-		return errorhandler(NewAPIUserInputError("services on an HA device must specify an HA partner.", "service.[attribute].type")), nil, nil
-	}
 
 	// Persist all attributes on this service, and while we're at it, fetch the attribute values we need for the node side policy file.
 	// Any policy attributes we find will overwrite values set in a global attribute of the same type.
@@ -419,9 +398,6 @@ func CreateService(service *Service,
 					userInput = append(userInput, *ui)
 				}
 			}
-
-		case *persistence.HAAttributes:
-			haPartner = attr.(*persistence.HAAttributes).Partners
 
 		case *persistence.AgreementProtocolAttributes:
 			agpl := attr.(*persistence.AgreementProtocolAttributes).Protocols
@@ -526,7 +502,7 @@ func CreateService(service *Service,
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service policy: %v", service)))
 
 		// Generate a policy based on all the attributes and the service definition.
-		if polFileName, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
+		if polFileName, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
 			return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
 		} else {
 			if from_user {

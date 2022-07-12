@@ -25,7 +25,7 @@ func Test_ChangeServiceConfigState(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", false, "myOrg", "apattern", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", "myOrg", "apattern", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -122,7 +122,7 @@ func Test_ChangeServiceConfigState_Wrong_Url(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", false, "myOrg", "apattern", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", "myOrg", "apattern", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}

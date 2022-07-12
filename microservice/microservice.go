@@ -302,7 +302,6 @@ func RemoveMicroservicePolicy(spec_ref string, org string, version string, msdef
 func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath string, db *bolt.DB, e chan events.Message, deviceOrg string, pattern string) error {
 	glog.V(3).Infof("Generate policy for the given service %v/%v version %v key %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id)
 
-	var haPartner []string
 	var serviceAgreementProtocols []interface{}
 
 	props := make(map[string]interface{})
@@ -311,9 +310,6 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 	handleServiceAttributes := func(attributes []persistence.Attribute) {
 		for _, attr := range attributes {
 			switch attr.(type) {
-			case persistence.HAAttributes:
-				haPartner = attr.(persistence.HAAttributes).Partners
-
 			case persistence.AgreementProtocolAttributes:
 				agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
 				serviceAgreementProtocols = agpl.([]interface{})
@@ -392,7 +388,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 			maxAgreements = 5 // hard coded 2 for now, will change to 0 later
 		}
 
-		if polFileName, err := policy.GeneratePolicy(msdef.SpecRef, msdef.Org, msdef.Name, msdef.Version, msdef.RequestedArch, &props, haPartner, *list, maxAgreements, policyPath, deviceOrg); err != nil {
+		if polFileName, err := policy.GeneratePolicy(msdef.SpecRef, msdef.Org, msdef.Name, msdef.Version, msdef.RequestedArch, &props, *list, maxAgreements, policyPath, deviceOrg); err != nil {
 			return fmt.Errorf("Failed to generate policy for %v/%v version %v. Error: %v", msdef.Org, msdef.SpecRef, msdef.Version, err)
 		} else {
 			e <- events.NewPolicyCreatedMessage(events.NEW_POLICY, polFileName)

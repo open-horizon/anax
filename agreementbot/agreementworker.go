@@ -24,6 +24,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // These structs are the event bodies that flow from the processor to the agreement workers
@@ -673,9 +674,18 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating priority in persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
 						return
 					}
-				} else if err := b.db.NewWorkloadUsage(wi.Device.Id, wi.ProducerPolicy.HAGroup.Partners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-					return
+				} else {
+					haPartners := []string{}
+					if exchangeDev.HAGroup != "" {
+						if haPartners, err = b.GetHAGroupPartners(wi.Device.Id, exchangeDev.HAGroup, cph); err != nil {
+							glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("received error checking HA group %v completeness for device %v, error: %v", exchangeDev.HAGroup, wi.Device.Id, err)))
+							return
+						}
+					}
+					if err := b.db.NewWorkloadUsage(wi.Device.Id, haPartners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+						return
+					}
 				}
 
 				// Artificially bump up the retry count so that the loop will choose the next workload
@@ -745,13 +755,6 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			glog.Errorf(BAWlogstring(workerId, fmt.Errorf("Unable to get org %v from exchange: %v", exchange.GetOrg(wi.Device.Id), err)))
 		}
 		nodeMaxHBInterval = exchOrg.HeartbeatIntv.MaxInterval
-	}
-
-	// Call the exchange to make sure that all partners are registered in the exchange. We can do this check now that we know
-	// exactly what the merged producer policy looks like.
-	if err := b.incompleteHAGroup(cph, &wi.ProducerPolicy); err != nil {
-		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("received error checking HA group %v completeness for device %v, error: %v", wi.ProducerPolicy.HAGroup, wi.Device.Id, err)))
-		return
 	}
 
 	// If this device is advertising a property that we are supposed to ignore, then skip it.
@@ -963,6 +966,15 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 	if reply.ProposalAccepted() {
 
+		haPartners := []string{}
+		if exchangeDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.SenderId, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v, error: %v", wi.SenderId, err)))
+		} else if exchangeDev.HAGroup != "" {
+			if haPartners, err = b.GetHAGroupPartners(wi.SenderId, exchangeDev.HAGroup, cph); err != nil {
+				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("received error checking HA group %v completeness for device %v, error: %v", exchangeDev.HAGroup, wi.SenderId, err)))
+			}
+		}
+
 		// Find the saved agreement in the database. The returned agreement might be archived. If it's archived, then it is our agreement
 		// so we will delete the protocol msg.
 		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AFilter{}); err != nil {
@@ -988,8 +1000,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error validating proposal from pending agreement %v, error: %v", reply.AgreementId(), err)))
 		} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error demarshalling tsandcs policy from pending agreement %v, error: %v", reply.AgreementId(), err)))
-
-		} else if err := cph.PersistReply(reply, pol, workerId); err != nil {
+		} else if err := cph.PersistReply(reply, pol, haPartners, workerId); err != nil {
 			glog.Errorf(err.Error())
 
 		} else if err := cph.RecordConsumerAgreementState(reply.AgreementId(), pol, agreement.Org, "Producer agreed", b.workerID); err != nil {
@@ -1017,7 +1028,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 					// Need a new workload usage record but not the same as the highest priority. That can't be right.
 					ackReplyAsValid = false
 				} else if !pol.Workloads[0].HasEmptyPriority() {
-					if err := b.db.NewWorkloadUsage(wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
+					if err := b.db.NewWorkloadUsage(wi.SenderId, haPartners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
 				}
@@ -1389,29 +1400,6 @@ var BAWlogstring = func(workerID string, v interface{}) string {
 	return fmt.Sprintf("Base Agreement Worker (%v): %v", workerID, v)
 }
 
-// This function checks the Exchange for every declared HA partner to verify that the partner is registered in the
-// exchange. As long as all partners are registered, agreements can be made. The partners dont have to be up and heart
-// beating, they just have to be registered. If not all partners are registered then no agreements will be attempted
-// with any of the registered partners.
-func (b *BaseAgreementWorker) incompleteHAGroup(cph ConsumerProtocolHandler, producerPolicy *policy.Policy) error {
-
-	// If the HA group specification is empty, there is nothing to check.
-	if len(producerPolicy.HAGroup.Partners) == 0 {
-		return nil
-	} else {
-
-		// Make sure all partners are in the exchange
-		for _, partnerId := range producerPolicy.HAGroup.Partners {
-
-			if _, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerId, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
-				return errors.New(fmt.Sprintf("could not obtain device %v from the exchange: %v", partnerId, err))
-			}
-		}
-		return nil
-
-	}
-}
-
 // Legacy function. Ignore devices that export specificly known configured properties.
 func (b *BaseAgreementWorker) ignoreDevice(pol *policy.Policy) (bool, error) {
 
@@ -1421,4 +1409,86 @@ func (b *BaseAgreementWorker) ignoreDevice(pol *policy.Policy) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// This function get the members of the given HA group minus the given node.
+// Each partner has the format of "org/nodeid"
+func (b *BaseAgreementWorker) GetHAGroupPartners(nodeID string, haGroupName string, cph ConsumerProtocolHandler) ([]string, error) {
+
+	haPartners := []string{}
+
+	// If the agent is not in a HA group, there is nothing to check
+	if haGroupName == "" {
+		return nil, nil
+	}
+
+	org := exchange.GetOrg(nodeID)
+	nodeName := exchange.GetId(nodeID)
+
+	haGroupOrg := org
+
+	haGroup, err := GetHAGroup(haGroupOrg, haGroupName, b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken())
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("failed to obtain HA group %v from the exchange: %v", haGroupName, err))
+	}
+
+	if haGroup == nil {
+		// HA group does not exist
+		glog.Warningf("The HA group %v is specified for node %v, but the HA group does not exist.", haGroupName, nodeID)
+		return nil, nil
+	}
+
+	// return the members minus the current node. Each partner has the format of "org/nodeid"
+	if haGroup != nil && len(haGroup.Members) > 0 {
+		for _, partnerId := range haGroup.Members {
+			partnerOrg := exchange.GetOrg(partnerId)
+			partnerName := exchange.GetId(partnerId)
+			if partnerOrg == "" {
+				partnerOrg = org
+			}
+			if partnerName != nodeName || partnerOrg != org {
+				haPartners = append(haPartners, fmt.Sprintf("%s/%s", partnerOrg, partnerName))
+			}
+		}
+	}
+
+	return haPartners, nil
+}
+
+func GetHAGroup(org string, haGroupName string, httpClient *http.Client, url string, agbotId string, token string) (*exchangecommon.HAGroup, error) {
+
+	glog.V(5).Infof(logString(fmt.Sprintf("retrieving hagroup %v/%v from exchange", org, haGroupName)))
+
+	// TODO
+	//cachedHAGroup := exchange.GetHAGroupFromCache(exchange.GetOrg(deviceId), exchange.GetId(deviceId))
+	//if cachedHAGroup != nil {
+	//	return cachedHAGroup, nil
+	//}
+
+	var resp interface{}
+	resp = new(exchangecommon.GetHAGroupResponse)
+	targetURL := url + "orgs/" + org + "/hagroups/" + haGroupName
+	for {
+		if err, tpErr := exchange.InvokeExchange(httpClient, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
+			glog.Errorf(logString(err.Error()))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(logString(tpErr.Error()))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			if resp != nil {
+				hagroups := resp.(*exchangecommon.GetHAGroupResponse).NodeGroups
+				if hagroups != nil && len(hagroups) > 0 {
+					glog.V(5).Infof(logString(fmt.Sprintf("retrieved hagroup %v/%v from exchange: %v", org, haGroupName, hagroups[0])))
+					//TODO
+					//exchange.UpdateCache(exchange.HAGroupCacheMapKey(org, haGroupName), exchange.HAGROUP_DEF_TYPE_CACHE, hagroups[0])
+					return &hagroups[0], nil
+				}
+			}
+
+			// the ha group does not exist
+			return nil, fmt.Errorf("The HA group \"%v\" does not exist in organization %v.", haGroupName, org)
+		}
+	}
 }

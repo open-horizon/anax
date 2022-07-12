@@ -43,7 +43,7 @@ func Test_ProcessAllNMPS(t *testing.T) {
 	}
 
 	// device set to  use policy
-	_, err = persistence.SaveNewExchangeDevice(db, "testNode", "testNodeTok", "testNode", persistence.DEVICE_TYPE_DEVICE, false, "userdev", "", persistence.CONFIGSTATE_CONFIGURED, persistence.SoftwareVersion{persistence.AGENT_VERSION: "2.1.1", persistence.CONFIG_VERSION: "", persistence.CERT_VERSION: "1.2.3"})
+	_, err = persistence.SaveNewExchangeDevice(db, "testNode", "testNodeTok", "testNode", persistence.DEVICE_TYPE_DEVICE, "userdev", "", persistence.CONFIGSTATE_CONFIGURED, persistence.SoftwareVersion{persistence.AGENT_VERSION: "2.1.1", persistence.CONFIG_VERSION: "", persistence.CERT_VERSION: "1.2.3"})
 	if err != nil {
 		t.Errorf("Error saving exchange device in db: %v", err)
 	}
@@ -83,7 +83,7 @@ func Test_ProcessAllNMPS(t *testing.T) {
 
 	allPols := map[string]exchangecommon.ExchangeNodeManagementPolicy{"userdev/nmp1": nmp1, "userdev/nmp2": nmp2, "userdev/nmp3": nmp3}
 
-	err = w.ProcessAllNMPS("", getAllNMPSHandler(&allPols), getDeleteNMPStatusHandler(), getPutNMPStatusHandler())
+	err = w.ProcessAllNMPS("", getAllNMPSHandler(&allPols), getDeleteNMPStatusHandler(), getPutNMPStatusHandler(), getAllNodeManagementPolicyStatusHandler())
 	if err != nil {
 		t.Errorf("Unexpected error while processing nmps: %v.", err)
 	}
@@ -115,6 +115,12 @@ func getDeleteNMPStatusHandler() exchange.DeleteNodeManagementPolicyStatusHandle
 
 func getPutNMPStatusHandler() exchange.PutNodeManagementPolicyStatusHandler {
 	return func(orgId string, nodeId string, policyName string, nmpStatus *exchangecommon.NodeManagementPolicyStatus) (*exchange.PutPostDeleteStandardResponse, error) {
+		return nil, nil
+	}
+}
+
+func getAllNodeManagementPolicyStatusHandler() exchange.AllNodeManagementPolicyStatusHandler {
+	return func(orgId string, nodeId string) (*exchange.NodeManagementAllStatuses, error) {
 		return nil, nil
 	}
 }

@@ -28,8 +28,8 @@ type NodeAndStatus struct {
 	//Token              *string     `json:"token"`                 // removed omitempty
 	TokenLastValidTime string      `json:"token_last_valid_time"` // removed omitempty
 	TokenValid         *bool       `json:"token_valid"`           // removed omitempty
-	HA                 *bool       `json:"ha"`                    // removed omitempty
-	Config             Configstate `json:"configstate"`           // removed omitempty
+	HAGroup            *string     `json:"ha_group"`
+	Config             Configstate `json:"configstate"` // removed omitempty
 	// from apicommon.Info
 	Configuration *apicommon.Configuration `json:"configuration"`
 	Connectivity  map[string]bool          `json:"connectivity,omitempty"`
@@ -48,7 +48,7 @@ func (n *NodeAndStatus) CopyNodeInto(horDevice *api.HorizonDevice) {
 		n.TokenLastValidTime = cliutils.ConvertTime(*horDevice.TokenLastValidTime)
 	}
 	n.TokenValid = horDevice.TokenValid
-	n.HA = horDevice.HA
+	n.HAGroup = horDevice.HAGroup
 	n.Config.State = horDevice.Config.State
 	if horDevice.Config.LastUpdateTime != nil {
 		n.Config.LastUpdateTime = cliutils.ConvertTime(*horDevice.Config.LastUpdateTime)

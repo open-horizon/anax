@@ -193,13 +193,6 @@ func HydrateConcreteAttribute(v []byte) (Attribute, error) {
 		}
 		attr = ui
 
-	case "HAAttributes":
-		var ha HAAttributes
-		if err := json.Unmarshal(v, &ha); err != nil {
-			return nil, err
-		}
-		attr = ha
-
 	case "MeteringAttributes":
 		var ma MeteringAttributes
 		if err := json.Unmarshal(v, &ma); err != nil {
@@ -379,10 +372,6 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 			for k, v := range s.Mappings {
 				cutil.NativeToEnvVariableMap(envvars, k, v)
 			}
-
-		case HAAttributes:
-			s := serv.(HAAttributes)
-			writePrefix("HA_PARTNERS", strings.Join(s.Partners, ","))
 
 		case MeteringAttributes:
 			// Nothing to do

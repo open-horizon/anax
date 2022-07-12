@@ -113,9 +113,9 @@ func (c *BasicProtocolHandler) PersistAgreement(wi *InitiateAgreement, proposal 
 	return c.BaseConsumerProtocolHandler.PersistBaseAgreement(wi, proposal, workerID, "", "")
 }
 
-func (c *BasicProtocolHandler) PersistReply(r abstractprotocol.ProposalReply, pol *policy.Policy, workerID string) error {
+func (c *BasicProtocolHandler) PersistReply(r abstractprotocol.ProposalReply, pol *policy.Policy, haGroupPartners []string, workerID string) error {
 
-	return c.BaseConsumerProtocolHandler.PersistReply(r, pol, workerID)
+	return c.BaseConsumerProtocolHandler.PersistReply(r, pol, haGroupPartners, workerID)
 }
 
 func (c *BasicProtocolHandler) HandleBlockchainEvent(cmd *BlockchainEventCommand) {

@@ -297,53 +297,6 @@ then
 fi
 
 # =================================================================
-# run HA tests - device is non-HA, cant use HA config
-
-SERVICE_MODEL="service"
-APITESTURL="https://bluehorizon.network/"$SERVICE_MODEL"s/no-such-service"
-
-read -d '' service <<EOF
-{
-  "url": "$APITESTURL",
-  "versionRange": "1.0.0",
-  "attributes": [
-    {
-      "type": "HAAttributes",
-      "label": "HA Partner",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "partnerID": ["an54321"]
-      }
-    }
-  ]
-}
-EOF
-
-#fi
-
-echo -e "\n\n[D] payload for HA test: $service"
-
-echo "Registering service for HA test"
-
-RES=$(echo "$service" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/$SERVICE_MODEL/config")
-if [ "$RES" == "" ]
-then
-  echo -e "$service \nresulted in empty response"
-  exit 2
-fi
-
-ERR=$(echo $RES | jq -r ".error")
-SUB=${ERR:0:24}
-if [ "$SUB" != "HA partner not permitted" ]
-then
-  echo -e "$service \nresulted in incorrect response: $RES"
-  exit 2
-else
-  echo -e "found expected response: $RES"
-fi
-
-# =================================================================
 # run attribute specific tests
 
 # Set env vars depending on whether we're running services or not.

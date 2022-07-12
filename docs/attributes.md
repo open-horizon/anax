@@ -21,7 +21,6 @@ Valid values are:
 * [UserInputAttributes](#uia)
 * [HTTPSBasicAuthAttributes](#httpsa)
 * [DockerRegistryAuthAttributes](#bxa)
-* [HAAttributes](#haa)
 * [MeteringAttributes](#ma)
 * [AgreementProtocolAttributes](#agpa)
 
@@ -183,32 +182,6 @@ For example:
     }
 
 
-```
-
-### <a name="haa"></a>HAAttributes
-This attribute is used to declare the node as an HA partner with some other node(s).
-HA nodes all have the same services and workloads running on them.
-Workload and service upgrades will happen sequentially (i.e. not concurrently) on each HA partner so that there is always at least 1 node running.
-This attribute is used in conjunction with the `ha` field on the [POST /node](https://github.com/open-horizon/anax/blob/master/doc/api.md#api-post--node) API.
-If that `ha` field is set to true, then this attribute is used to specify the device ID of the partner node(s).
-The 'partnerID' variable is used to declare the partner(s) for this node, the value is the `id` field of the [POST /node](https://github.com/open-horizon/anax/blob/master/doc/api.md#api-post--node) API that the partner node(s) used.
-Each node that is a partner must name all its partners.
-
-The value for `publishable` should be `false`.
-
-The value for `host_only` should be `false`.
-
-For example:
-```
-    {
-        "type": "HAAttributes",
-        "label": "HA Partner",
-        "publishable": false,
-        "host_only": false,
-        "mappings": {
-            "partnerID": ["otherNode"]
-        }
-    }
 ```
 
 ### <a name="ma"></a>MeteringAttributes
