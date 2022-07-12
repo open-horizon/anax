@@ -2,67 +2,36 @@
 
 ## Automatic Agent Upgrade
 
-The Automatic Agent Upgrade is a policy-based node management feature that allows an org admin to create node management policies that deploy upgrade jobs to nodes and manages them autonomously. This allows the admin to ensure that all the nodes in the system are on their intended versions.
+The Automatic Agent Upgrade is a policy-based node management feature that allows an org admin to create node management policies that deploy upgrade jobs to nodes and manages them autonomously. This allows the admin to ensure that all the nodes in the system are using the intended versions.
+
+This feature utilizes existing agent artifacts that reside in Cloud Sync Service (CSS) from the edgeNodeFiles.sh installation script.
 
 ### How to set-up an Automatic Agent Upgrade policy
-
-1. Create a manifest
-    - The first step is to create a manifest using the command below and saving it to a file. In this example, the file is named `manifest.json`
-    ```
-    hzn nodemanagement manifest new > manifest.json
-    ```
-    **Note**: For more detailed information about manifests, see [here](./agentfile_manifest.md)
-
-2. Edit the manifest file
-    - Using a text editor, edit the manifest file to include all the files and versions needed for the upgrade job. The file should look similar to the example below.
-    ```
-    {
-        "softwareUpgrade": {
-            "files": [
-                "agent-install.sh",
-                "horizon-agent-linux-deb-amd64.tar.gz"
-            ],
-            "version": "latest"
-        },
-        "certificateUpgrade": {
-            "files": [
-                "agent-install.crt"
-            ],
-            "version": "latest"
-        },
-        "configurationUpgrade": {
-            "files": [
-                "agent-install.cfg"
-            ],
-            "version": "latest"
-        }
-    }
-    ```
-    **Note**: The files and versions must correspond to objects stored on the Management Hub. Use the `hzn nodemanagement agentfiles list` command to get a list of available files and versions.
-
-3. Add the manifest file to the Management Hub
-
-    Once the manifest is populated with all the necessary files and versions, the next step is to add the manifest to the Management Hub using the command below. In this example, the name of the manifest in the Hub will be `sample_manifest` and the file that contains the manifest is called `manifest.json`  
-    ```
-    hzn nodemanagement manifest add -t agent_upgrade_manifests -i sample_manifest -f manifest.json
-    ```
-  
-
-4. Create a Node Management Policy
-    - Use the following command to create a node management policy (NMP) and save it to a file. An NMP is responsible for determining which nodes the upgrade will be performed on. In this example, the file is named `nmp.json`
+1. Determine the manifestID for the new version of agent software.
+   - List the available manifests present in the IBM org on your system. Execute the following
+   ```
+   hzn nodemanagement manifest list -o IBM -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
+   ```
+   - Alternatively, if a custom manifest has been created (see [here])(./agentfile_manifest.md), those can be listed in the customers org by executing
+   ```
+   hzn nodemanagement manifest list -o $HZN_ORG_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
+   ```
+2. Create a Node Management Policy
+    - Use the following command to save a node management policy (NMP) template to a file. An NMP determines which nodes to upgrade, when to do the upgrade, and what to upgrade. In this example, the file is named `nmp.json`
     ```
     hzn exchange nmp new > nmp.json
     ```
     **Note**: For more detailed information about NMP's, see [here](./node_management_policy.md)
 
-5. Edit the NMP file
-    - Using a text editor, edit the NMP file to include all the files and versions needed for the upgrade job. The file should look similar to the example below.
+    - Using a text editor, edit the NMP file to set the parameters of the upgrade. In this example, `constraints` and `'properties' are used to identify the nodes to upgrade, the `start` and `startWindows`
+values indicate the upgrade will be attempted with a randomized start time of 300 seconds from now, and the `manifestID` indicates to use manifest `edgeNodeFiles_manifest_2.30.0-123` found in the IBM org.
     ```
+
     {
         "label": "Sample NMP",
         "description": "A sample description of the NMP",
         "constraints": [
-            "myproperty == myvalue"
+            "myconstraint == myvalue"
         ],
         "properties": [
             {
@@ -74,24 +43,27 @@ The Automatic Agent Upgrade is a policy-based node management feature that allow
         "start": "now",
         "startWindow": 300,
         "agentUpgradePolicy": {
-            "manifest": "sample_manifest",
+            "manifest": "IBM/edgeNodeFiles_manifest_2.30.0-123",
             "allowDowngrade": false
         }
     }
     ```
 
-6. Add the NMP to the Exchange
-    - Once the NMP is populated with all the necessary information, the next step is to add the NMP to the Exchange using the command below. In this example, the name of the NMP in the Hub will be `sample_nmp` and the file that contains the NMP is called `nmp.json` 
-    ```
-    hzn exchange nmp add sample_nmp -f nmp.json
-    ```
-    **Note**: The following command can be used to check which nodes the NMP will deploy to before publishing the NMP to the Exchange. This is useful to ensure the NMP does not deploy to any unintended nodes.
+3. Verify the impacted edge nodes (Optional)
+    The following command can be used to check which nodes the NMP applies to before publishing the NMP to the Exchange. This is useful to confirm the NMP parameters will target the desired
+edge nodes only.
     ```
     hzn exchange nmp add sample_nmp -f nmp.json --dry-run --applies-to
     ```
 
-7. Observe the status of the upgrade job (optional)
+4. Add the NMP to the Exchange
+    ```
+    hzn exchange nmp add sample_nmp -f nmp.json
+    ```
+
+5. Observe the status of the upgrade job (Optional)
     - Now that the NMP has been published, it will soon get picked up by the worker on the agent to perform the upgrade. The status of the NMP can then be observed using the following command.
+
     ```
     hzn exchange nmp status sample-nmp
     ```
@@ -99,3 +71,4 @@ The Automatic Agent Upgrade is a policy-based node management feature that allow
     ```
     hzn exchange node management status {node-name}
     ```
+
