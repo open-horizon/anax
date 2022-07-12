@@ -84,7 +84,7 @@ func (w *DownloadWorker) NewEvent(incoming events.Message) {
 	} else {
 		glog.Infof(dwlog(fmt.Sprintf("Handling event type: %v", incoming.Event())))
 	}
-	
+
 	switch incoming.(type) {
 	case *events.NMPStartDownloadMessage:
 		msg, _ := incoming.(*events.NMPStartDownloadMessage)

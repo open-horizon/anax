@@ -421,7 +421,7 @@ func (n *NodeManagementWorker) NewEvent(incoming events.Message) {
 	} else {
 		glog.Infof(nmwlog(fmt.Sprintf("Handling event type: %v", incoming.Event())))
 	}
-	
+
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
@@ -795,6 +795,10 @@ func (w *NodeManagementWorker) HandleNmpStatusReset() {
 					glog.V(3).Infof(nmwlog(fmt.Sprintf("Change status from \"reset\" to \"waiting\" for the nmp %v", nmp_name)))
 
 					local_status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
+					if local_status.AgentUpgradeInternal != nil {
+						local_status.AgentUpgradeInternal.DownloadAttempts = 0
+					}
+
 					err = w.UpdateStatus(nmp_name, local_status, exchange.GetPutNodeManagementPolicyStatusHandler(w), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, nmp_name, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
 					if err != nil {
 						glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v from \"reset\" to \"waiting\". Error was %v.", nmp_name, err)))
