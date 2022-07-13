@@ -55,6 +55,12 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 	if dbStatus.AgentUpgrade.Status != statusString {
 		dbStatus.AgentUpgrade.Status = statusString
 
+		if dbStatus.AgentUpgrade.Status == exchangecommon.STATUS_NEW {
+			if dbStatus.AgentUpgradeInternal != nil {
+				dbStatus.AgentUpgradeInternal.DownloadAttempts = 0
+			}
+		}
+
 		// Update the NMP status in the local db
 		if err := persistence.SaveOrUpdateNMPStatus(db, nmp_id, *dbStatus); err != nil {
 			return true, fmt.Errorf("Unable to update node management status object in local database, error %v", err)
