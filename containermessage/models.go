@@ -173,9 +173,9 @@ type Service struct {
 	LogDriver        string               `json:"log_driver,omitempty"` // Docker's log-driver. Syslog will be used as default driver
 	Secrets          map[string]Secret    `json:"secrets"`
 	SecurityOpt      []string             `json:"security_opt,omitempty"` // Related to SELinux security for podman
-	PID              string               `json:"pid"`                    // The process id that the container should run in, see docker run --pid
-	User             string               `json:"user"`                   // The linux user ID (UID format) in which the container should run, see docker run -user
-	Sysctls          map[string]string    `json:"sysctls"`                // The namespaced kernel parameters (sysctls) for this container, see docker run --sysctls
+	PID              string               `json:"pid,omitempty"`                    // The process id that the container should run in, see docker run --pid
+	User             string               `json:"user,omitempty"`                   // The linux user ID (UID format) in which the container should run, see docker run -user
+	Sysctls          map[string]string    `json:"sysctls,omitempty"`                // The namespaced kernel parameters (sysctls) for this container, see docker run --sysctls
 }
 
 func (s *Service) AddFilesystemBinding(bind string) {
