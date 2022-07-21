@@ -384,8 +384,11 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 
 	// get all the statuses for this node from the exchange in case they were not removed correctly at unregister
 	org, nodeId := cutil.SplitOrgSpecUrl(n.GetExchangeId())
+	allExStatuses := map[string]exchangecommon.NodeManagementPolicyStatus{}
 	allExStatusesResp, _ := getNMPStatus(org, nodeId)
-	allExStatuses := allExStatusesResp.PolicyStatuses
+	if allExStatusesResp != nil {
+		allExStatuses = allExStatusesResp.PolicyStatuses
+	}
 
 	if allStatuses, err := persistence.FindAllNMPStatus(n.db); err != nil {
 		return err
@@ -776,7 +779,7 @@ func (w *NodeManagementWorker) HandleNmpStatusReset() {
 	// get all the nmps that applies to this node from the exchange
 	allNmpStatus, err := exchange.GetNodeManagementAllStatuses(w, exchange.GetOrg(w.GetExchangeId()), exchange.GetId(w.GetExchangeId()))
 	if err != nil {
-		glog.Errorf(nmwlog(fmt.Sprintf("Error getting all nmp statuses for node from the exchange. %v", w.GetExchangeId(), err)))
+		glog.Errorf(nmwlog(fmt.Sprintf("Error getting all nmp statuses for node %v from the exchange. %v", w.GetExchangeId(), err)))
 	} else {
 		glog.V(5).Infof(nmwlog(fmt.Sprintf("GetNodeManagementAllStatuses returns: %v", allNmpStatus)))
 	}

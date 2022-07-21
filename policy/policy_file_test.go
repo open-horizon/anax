@@ -704,8 +704,6 @@ func Test_Merge_Producers_Create_TsAndCs1(t *testing.T) {
 		t.Error(err)
 	} else if len(pf_merged.APISpecs) != 2 {
 		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 2)
-	} else if len(pf_merged.HAGroup.Partners) != 1 {
-		t.Errorf("Error: HA group not merged, is %v\n", pf_merged.HAGroup.Partners)
 	} else if pf_merged.DataVerify.Metering.Tokens != 60 {
 		t.Errorf("Error: returned DataVerify.Tokens %v, should have returned %v\n", pf_merged.DataVerify.Metering.Tokens, 60)
 	} else {
@@ -1122,7 +1120,6 @@ func Test_DeepCopyPolicy(t *testing.T) {
 	copyPolicy.DataVerify.Metering.Tokens = 999
 	copyPolicy.Properties[0].Value = "foobar"
 	copyPolicy.Constraints[0] = "foobar"
-	copyPolicy.HAGroup.Partners[0] = "foobar"
 	copyPolicy.UserInput[0].ServiceOrgid = "foobar"
 	copyPolicy.UserInput[0].Inputs[0].Value = "foobar"
 	copyPolicy.SecretBinding[0].ServiceUrl = "foobar"
@@ -1140,8 +1137,6 @@ func Test_DeepCopyPolicy(t *testing.T) {
 		t.Errorf("Error deep copy failed property test, base: %v, copy: %v\n", basePolicy, copyPolicy)
 	} else if copyPolicy.Constraints[0] == basePolicy.Constraints[0] {
 		t.Errorf("Error deep copy failed constraint test, base: %v, copy: %v\n", basePolicy, copyPolicy)
-	} else if copyPolicy.HAGroup.Partners[0] == basePolicy.HAGroup.Partners[0] {
-		t.Errorf("Error deep copy failed hagroup test, base: %v, copy: %v\n", basePolicy, copyPolicy)
 	} else if copyPolicy.UserInput[0].ServiceOrgid == basePolicy.UserInput[0].ServiceOrgid {
 		t.Errorf("Error deep copy failed userinput test 1, base: %v, copy: %v\n", basePolicy, copyPolicy)
 	} else if copyPolicy.UserInput[0].Inputs[0].Value == basePolicy.UserInput[0].Inputs[0].Value {

@@ -225,16 +225,10 @@ func CreateHorizonDevice(device *HorizonDevice,
 		}
 	}
 
-	// So far everything checks out and verifies, so save the registration to the local database.
-	haDevice := false
-	if device.HA != nil && *device.HA == true {
-		haDevice = true
-	}
-
 	// set the agent software version
 	swVers := persistence.SoftwareVersion{persistence.AGENT_VERSION: version.HORIZON_VERSION}
 
-	pDev, err := persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, *device.NodeType, haDevice, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURING, swVers)
+	pDev, err := persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, *device.NodeType, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURING, swVers)
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting new device registration: %v", err))), nil, nil
 	}

@@ -919,7 +919,11 @@ func (w *AgreementWorker) advertiseAllPolicies() error {
 						pCompare = "="
 					case []string:
 						pType = "list"
-						pValue = exchange.ConvertToString(prop.Value.([]string))
+						val_array := prop.Value.([]string)
+						pValue = ""
+						if val_array != nil {
+							pValue = strings.Join(val_array, ",")
+						}
 						pCompare = "in"
 					default:
 						return errors.New(fmt.Sprintf("AgreementWorker encountered unsupported property type: %v", reflect.TypeOf(prop.Value).String()))

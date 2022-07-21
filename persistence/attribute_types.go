@@ -4,39 +4,6 @@ import (
 	"fmt"
 )
 
-type HAAttributes struct {
-	Meta     *AttributeMeta `json:"meta"`
-	Partners []string       `json:"partners"`
-}
-
-func (a HAAttributes) GetMeta() *AttributeMeta {
-	return a.Meta
-}
-
-func (a HAAttributes) GetGenericMappings() map[string]interface{} {
-	return map[string]interface{}{
-		"partnerID": a.Partners,
-	}
-}
-
-// TODO: duplicate this for the others too
-func (a HAAttributes) Update(other Attribute) error {
-	return fmt.Errorf("Update not implemented for type: %T", a)
-}
-
-func (a HAAttributes) PartnersContains(id string) bool {
-	for _, p := range a.Partners {
-		if p == id {
-			return true
-		}
-	}
-	return false
-}
-
-func (a HAAttributes) String() string {
-	return fmt.Sprintf("Meta: %v, Partners: %v", a.Meta, a.Partners)
-}
-
 type MeteringAttributes struct {
 	Meta                  *AttributeMeta `json:"meta"`
 	ServiceSpecs          *ServiceSpecs  `json:"service_specs"`

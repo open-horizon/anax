@@ -25,7 +25,7 @@ func Test_FindManagementStatusForOutput(t *testing.T) {
 	errorHandler := GetPassThroughErrorHandler(&myError)
 
 	// Create dummy exchange device in local DB
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate", persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", "org", "pattern", "configstate", persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("Unable to read node object, error %v", err)
 	} else if pDevice == nil {
@@ -83,7 +83,7 @@ func Test_UpdateManagementStatus(t *testing.T) {
 	}
 
 	// Create dummy exchange device in local DB
-	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", true, "org", "pattern", "configstate", persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
+	pDevice, err := persistence.SaveNewExchangeDevice(db, "id", "token", "name", "nodeType", "org", "pattern", "configstate", persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("Unable to read node object, error %v", err)
 	} else if pDevice == nil {
@@ -110,12 +110,10 @@ func Test_UpdateManagementStatus(t *testing.T) {
 	var newNMPStatus *exchangecommon.NodeManagementPolicyStatus
 
 	// Test #1 - Update a specific NMP Status to STATUS_DOWNLOADED
-	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, getDeviceHandler, patchDeviceHandler, "testnmp", db); errHandled {
+	if errHandled, out := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, getDeviceHandler, patchDeviceHandler, "testnmp", "org", db); errHandled {
 		t.Errorf("failed to update node management status in db, error %v", mainError)
 	} else if out != "Updated status for NMP org/testnmp." {
 		t.Errorf("incorrect return response, expected: %v, actual: %v", "Updated status for NMP org/testnmp.", out)
-	} else if msgs[0].Status != nmStatus.AgentUpgrade.Status {
-		t.Errorf("incorrect event(s) sent, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, msgs[0].Status)
 	}
 	newNMPStatus, _ = persistence.FindNMPStatus(db, "org/testnmp")
 	if newNMPStatus.AgentUpgrade.Status != nmStatus.AgentUpgrade.Status {
@@ -126,12 +124,10 @@ func Test_UpdateManagementStatus(t *testing.T) {
 	nmStatus.AgentUpgrade.Status = exchangecommon.STATUS_INITIATED
 	oldNMPStatus, _ := persistence.FindNMPStatus(db, "org/testnmp2")
 	oldStartTime := oldNMPStatus.AgentUpgrade.ActualStartTime
-	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, getDeviceHandler, patchDeviceHandler, "testnmp2", db); errHandled {
+	if errHandled, out := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, getDeviceHandler, patchDeviceHandler, "testnmp2", "org", db); errHandled {
 		t.Errorf("failed to update node management status in db, error %v", mainError)
 	} else if out != "Updated status for NMP org/testnmp2." {
 		t.Errorf("incorrect return response, expected: %v, actual: %v", "Updated status for NMP org/testnmp2.", out)
-	} else if msgs[0].Status != nmStatus.AgentUpgrade.Status {
-		t.Errorf("incorrect event(s) sent, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, msgs[0].Status)
 	}
 	newNMPStatus, _ = persistence.FindNMPStatus(db, "org/testnmp2")
 	if newNMPStatus.AgentUpgrade.Status != nmStatus.AgentUpgrade.Status {
@@ -144,12 +140,10 @@ func Test_UpdateManagementStatus(t *testing.T) {
 	nmStatus.AgentUpgrade.Status = exchangecommon.STATUS_SUCCESSFUL
 	oldNMPStatus, _ = persistence.FindNMPStatus(db, "org/testnmp2")
 	oldCompletionTime := oldNMPStatus.AgentUpgrade.CompletionTime
-	if errHandled, out, msgs := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, getDeviceHandler, patchDeviceHandler, "testnmp2", db); errHandled {
+	if errHandled, out := UpdateManagementStatus(nmStatus, errorHandler, statusHandler, getDeviceHandler, patchDeviceHandler, "testnmp2", "org", db); errHandled {
 		t.Errorf("failed to update node management status in db, error %v", mainError)
 	} else if out != "Updated status for NMP org/testnmp2." {
 		t.Errorf("incorrect return response, expected: %v, actual: %v", "Updated status for NMP org/testnmp2.", out)
-	} else if msgs[0].Status != nmStatus.AgentUpgrade.Status {
-		t.Errorf("incorrect event(s) sent, expected: %v, actual: %v", nmStatus.AgentUpgrade.Status, msgs[0].Status)
 	}
 	newNMPStatus, _ = persistence.FindNMPStatus(db, "org/testnmp2")
 	if newNMPStatus.AgentUpgrade.Status != nmStatus.AgentUpgrade.Status {

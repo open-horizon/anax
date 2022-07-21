@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"reflect"
@@ -30,7 +31,7 @@ type HorizonDevice struct {
 	Token              *string      `json:"token,omitempty"`
 	TokenLastValidTime *uint64      `json:"token_last_valid_time,omitempty"`
 	TokenValid         *bool        `json:"token_valid,omitempty"`
-	HA                 *bool        `json:"ha,omitempty"`
+	HAGroup            *string      `json:"ha_group,omitempty"`
 	Config             *Configstate `json:"configstate,omitempty"`
 }
 
@@ -61,6 +62,11 @@ func (h HorizonDevice) String() string {
 		nodeType = *h.NodeType
 	}
 
+	ha_group := ""
+	if h.HAGroup != nil {
+		ha_group = *h.HAGroup
+	}
+
 	cred := "not set"
 	if h.Token != nil && *h.Token != "" {
 		cred = "set"
@@ -76,18 +82,13 @@ func (h HorizonDevice) String() string {
 		tv = *h.TokenValid
 	}
 
-	ha := false
-	if h.HA != nil {
-		ha = *h.HA
-	}
-
-	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, NodeType: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, HA: %v, %v", id, org, pat, name, nodeType, cred, tlvt, tv, ha, h.Config)
+	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, NodeType: %v, HAGroup: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, %v", id, org, pat, name, nodeType, ha_group, cred, tlvt, tv, h.Config)
 }
 
 // This is a type conversion function but note that the token field within the persistent
 // is explicitly omitted so that it's not exposed in the API.
 func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *HorizonDevice {
-	return &HorizonDevice{
+	hDevice := HorizonDevice{
 		Id:                 &pDevice.Id,
 		Org:                &pDevice.Org,
 		Pattern:            &pDevice.Pattern,
@@ -95,12 +96,22 @@ func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *Ho
 		NodeType:           &pDevice.NodeType,
 		TokenValid:         &pDevice.TokenValid,
 		TokenLastValidTime: &pDevice.TokenLastValidTime,
-		HA:                 &pDevice.HA,
 		Config: &Configstate{
 			State:          &pDevice.Config.State,
 			LastUpdateTime: &pDevice.Config.LastUpdateTime,
 		},
 	}
+
+	haGroup := ""
+	if pDevice.Config.State != persistence.CONFIGSTATE_UNCONFIGURED {
+		node, err := exchangesync.GetExchangeNode()
+		if err == nil && node != nil {
+			haGroup = node.HAGroup
+		}
+	}
+	hDevice.HAGroup = &haGroup
+
+	return &hDevice
 }
 
 type Attribute struct {

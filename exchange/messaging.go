@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"golang.org/x/crypto/sha3"
 	"io/ioutil"
 	"os"
@@ -499,4 +500,49 @@ func DeleteKeys(keyPath string) error {
 	}
 
 	return nil
+}
+
+type PostMessage struct {
+	Message []byte `json:"message"`
+	TTL     int    `json:"ttl"`
+}
+
+func (p PostMessage) String() string {
+	return fmt.Sprintf("TTL: %v, Message: %x...", p.TTL, cutil.TruncateDisplayString(string(p.Message), 32))
+}
+
+func CreatePostMessage(msg []byte, ttl int) *PostMessage {
+	theTTL := 180
+	if ttl != 0 {
+		theTTL = ttl
+	}
+
+	pm := &PostMessage{
+		Message: msg,
+		TTL:     theTTL,
+	}
+
+	return pm
+}
+
+type ExchangeMessageTarget struct {
+	ReceiverExchangeId     string // in the form org/id
+	ReceiverPublicKeyObj   *rsa.PublicKey
+	ReceiverPublicKeyBytes []byte
+	ReceiverMsgEndPoint    string
+}
+
+func CreateMessageTarget(receiverId string, receiverPubKey *rsa.PublicKey, receiverPubKeySerialized []byte, receiverMessageEndpoint string) (*ExchangeMessageTarget, error) {
+	if len(receiverMessageEndpoint) == 0 && receiverPubKey == nil && len(receiverPubKeySerialized) == 0 {
+		return nil, errors.New(fmt.Sprintf("Must specify either one of the public key inputs OR the message endpoint input for the message receiver %v", receiverId))
+	} else if len(receiverMessageEndpoint) != 0 && (receiverPubKey != nil || len(receiverPubKeySerialized) != 0) {
+		return nil, errors.New(fmt.Sprintf("Specified message endpoint and at least one of the public key inputs for the message receiver %v, %v or %v", receiverId, receiverPubKey, receiverPubKeySerialized))
+	} else {
+		return &ExchangeMessageTarget{
+			ReceiverExchangeId:     receiverId,
+			ReceiverPublicKeyObj:   receiverPubKey,
+			ReceiverPublicKeyBytes: receiverPubKeySerialized,
+			ReceiverMsgEndPoint:    receiverMessageEndpoint,
+		}, nil
+	}
 }

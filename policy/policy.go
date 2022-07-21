@@ -14,7 +14,7 @@ import (
 // can take any version.
 // maxAgreements: 0 means unlimited.
 
-func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (string, error) {
+func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (string, error) {
 
 	glog.V(5).Infof("Generating policy for %v/%v", sensorOrg, sensorUrl)
 
@@ -34,11 +34,6 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 	// Add properties to the policy
 	for prop, val := range *props {
 		p.Add_Property(externalpolicy.Property_Factory(prop, val), false)
-	}
-
-	// Add HA configuration if there is any
-	if len(haPartners) != 0 {
-		p.Add_HAGroup(HAGroup_Factory(haPartners))
 	}
 
 	p.MaxAgreements = maxAgreements

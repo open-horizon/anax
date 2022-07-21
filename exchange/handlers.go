@@ -545,3 +545,19 @@ func GetNodeUpgradeVersionsHandler(ec ExchangeContext) NodeUpgradeVersionsHandle
 		return GetNodeUpgradeVersions(ec)
 	}
 }
+
+type HAGroupByNameHandler func(orgId string, groupName string) (*exchangecommon.HAGroup, error)
+
+func GetHAGroupByNameHandler(ec ExchangeContext) HAGroupByNameHandler {
+	return func(orgId string, groupName string) (*exchangecommon.HAGroup, error) {
+		return GetHAGroupByName(ec, orgId, groupName)
+	}
+}
+
+type AllHAGroupsHandler func(orgId string) ([]exchangecommon.HAGroup, error)
+
+func GetAllHAGroupsHandler(ec ExchangeContext) AllHAGroupsHandler {
+	return func(orgId string) ([]exchangecommon.HAGroup, error) {
+		return GetAllHAGroups(ec, orgId)
+	}
+}

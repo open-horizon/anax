@@ -153,34 +153,6 @@ func parseDockerRegistryAuth(errorhandler ErrorHandler, permitEmpty bool, given 
 	}
 }
 
-func parseHA(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.HAAttributes, bool, error) {
-	if permitEmpty {
-		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "ha.mappings")), nil
-	}
-
-	pID, exists := (*given.Mappings)["partnerID"]
-	if !exists {
-		return nil, errorhandler(NewAPIUserInputError("missing key", "ha.mappings.partnerID")), nil
-	} else if partnerIDs, ok := pID.([]interface{}); !ok {
-		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected []interface{} received %T", pID), "ha.mappings.partnerID")), nil
-	} else {
-		// convert partner values to proper array type
-		strPartners := make([]string, 0, 5)
-		for _, val := range partnerIDs {
-			p, ok := val.(string)
-			if !ok {
-				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("array value is not a string, it is %T", val), "ha.mappings.partnerID")), nil
-			}
-			strPartners = append(strPartners, p)
-
-		}
-		return &persistence.HAAttributes{
-			Meta:     generateAttributeMetadata(*given, reflect.TypeOf(persistence.HAAttributes{}).Name()),
-			Partners: strPartners,
-		}, false, nil
-	}
-}
-
 func parseMetering(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.MeteringAttributes, bool, error) {
 	if permitEmpty {
 		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "metering.mappings")), nil
@@ -416,13 +388,6 @@ func ValidateAndConvertAPIAttribute(errorhandler ErrorHandler, permitEmpty bool,
 			}
 			attribute = attr
 
-		case reflect.TypeOf(persistence.HAAttributes{}).Name():
-			attr, inputErr, err := parseHA(errorhandler, permitEmpty, &given)
-			if err != nil || inputErr {
-				return nil, inputErr, err
-			}
-			attribute = attr
-
 		case reflect.TypeOf(persistence.MeteringAttributes{}).Name():
 			attr, inputErr, err := parseMetering(errorhandler, permitEmpty, &given)
 			if err != nil || inputErr {
@@ -517,26 +482,6 @@ func validateConcreteAttributes(errorhandler ErrorHandler, persistedDevice *pers
 		for _, verifier := range additionalVerifiers {
 			if inputErr, err := verifier(attr); inputErr || err != nil {
 				return inputErr, err
-			}
-		}
-
-		if attr.GetMeta().Type == reflect.TypeOf(persistence.HAAttributes{}).Name() {
-			// if the device is not HA enabled then the HA partner attribute is illegal
-			if !persistedDevice.HA {
-				return errorhandler(NewAPIUserInputError("HA partner not permitted on non-HA devices", "service.[attribute].type")), nil
-			}
-
-			// Make sure that a device doesn't specify itself in the HA partner list
-			if _, ok := attr.GetGenericMappings()["partnerID"]; ok {
-				switch attr.GetGenericMappings()["partnerID"].(type) {
-				case []string:
-					partners := attr.GetGenericMappings()["partnerID"].([]string)
-					for _, partner := range partners {
-						if partner == persistedDevice.Id {
-							return errorhandler(NewAPIUserInputError("partner list cannot refer to itself.", "service.[attribute].mappings.partnerID")), nil
-						}
-					}
-				}
 			}
 		}
 	}

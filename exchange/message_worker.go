@@ -7,12 +7,30 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
 	"strconv"
 	"time"
 )
+
+type DeviceMessage struct {
+	MsgId       int    `json:"msgId"`
+	AgbotId     string `json:"agbotId"`
+	AgbotPubKey []byte `json:"agbotPubKey"`
+	Message     []byte `json:"message"`
+	TimeSent    string `json:"timeSent"`
+}
+
+func (d DeviceMessage) String() string {
+	return fmt.Sprintf("MsgId: %v, AgbotId: %v, AgbotPubKey %v, Message %v, TimeSent %v", d.MsgId, d.AgbotId, d.AgbotPubKey, cutil.TruncateDisplayString(string(d.Message), 32), d.TimeSent)
+}
+
+type GetDeviceMessageResponse struct {
+	Messages  []DeviceMessage `json:"messages"`
+	LastIndex int             `json:"lastIndex"`
+}
 
 type ExchangeMessageWorker struct {
 	worker.BaseWorker // embedded field

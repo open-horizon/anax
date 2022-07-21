@@ -43,7 +43,7 @@ func Test_CreateService0(t *testing.T) {
 		Attributes:    &attrs,
 	}
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, myOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", myOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, persistence.SoftwareVersion{persistence.AGENT_VERSION: "1.0.0"})
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}

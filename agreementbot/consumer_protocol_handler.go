@@ -35,7 +35,7 @@ type ConsumerProtocolHandler interface {
 	WorkQueue() *PrioritizedWorkQueue
 	DispatchProtocolMessage(cmd *NewProtocolMessageCommand, cph ConsumerProtocolHandler) error
 	PersistAgreement(wi *InitiateAgreement, proposal abstractprotocol.Proposal, workerID string) error
-	PersistReply(reply abstractprotocol.ProposalReply, pol *policy.Policy, workerID string) error
+	PersistReply(reply abstractprotocol.ProposalReply, pol *policy.Policy, haGroupPartners []string, workerID string) error
 	HandleAgreementTimeout(cmd *AgreementTimeoutCommand, cph ConsumerProtocolHandler)
 	HandleBlockchainEvent(cmd *BlockchainEventCommand)
 	HandlePolicyChanged(cmd *PolicyChangedCommand, cph ConsumerProtocolHandler)
@@ -463,9 +463,9 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 	return nil
 }
 
-func (b *BaseConsumerProtocolHandler) PersistReply(reply abstractprotocol.ProposalReply, pol *policy.Policy, workerID string) error {
+func (b *BaseConsumerProtocolHandler) PersistReply(reply abstractprotocol.ProposalReply, pol *policy.Policy, haGroupPartners []string, workerID string) error {
 
-	if _, err := b.db.AgreementMade(reply.AgreementId(), reply.DeviceId(), "", b.Name(), pol.HAGroup.Partners, "", "", ""); err != nil {
+	if _, err := b.db.AgreementMade(reply.AgreementId(), reply.DeviceId(), "", b.Name(), haGroupPartners, "", "", ""); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error updating agreement %v with reply info in DB, error: %v", reply.AgreementId(), err)))
 	}
 	return nil

@@ -307,9 +307,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	// Initialize the Horizon device (node)
 	msgPrinter.Printf("Initializing the Horizon node with node type '%v'...", nodeType)
 	msgPrinter.Println()
-	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
-	falseVal := false
-	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, NodeType: &nodeType, HA: &falseVal} //todo: support HA config
+	haGroup := "" // TODO: support ha group.
+	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, NodeType: &nodeType, HAGroup: &haGroup}
 
 	err := CreateNode(nd, timeout)
 	if err != nil {

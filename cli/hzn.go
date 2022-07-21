@@ -397,6 +397,7 @@ Environment Variables:
 	exNodeListPolicyCmd := exNodeCmd.Command("listpolicy | lsp", msgPrinter.Sprintf("Display the node policy from the Horizon Exchange.")).Alias("lsp").Alias("listpolicy")
 	exNodeListPolicyIdTok := exNodeListPolicyCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeListPolicyNode := exNodeListPolicyCmd.Arg("node", msgPrinter.Sprintf("List policy for this node.")).Required().String()
+
 	exNodeManagementCmd := exNodeCmd.Command("management | mgmt", msgPrinter.Sprintf("List and manage node management resources in the Horizon Exchange")).Alias("mgmt").Alias("management")
 	exNodeManagementListCmd := exNodeManagementCmd.Command("list | ls", msgPrinter.Sprintf("List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.")).Alias("ls").Alias("list")
 	exNodeManagementListName := exNodeManagementListCmd.Arg("node", msgPrinter.Sprintf("List node management policies for this node")).Required().String()
@@ -545,7 +546,30 @@ Environment Variables:
 	exVerService := exServiceVerifyCmd.Arg("service", msgPrinter.Sprintf("The service to verify.")).Required().String()
 	exServiceVerifyNodeIdTok := exServiceVerifyCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exSvcPubKeyFile := exServiceVerifyCmd.Flag("public-key-file", msgPrinter.Sprintf("The path of a pem public key file to be used to verify the service. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.")).Short('k').String()
+
+	exHAGroupCmd := exchangeCmd.Command("hagroup | hagr", msgPrinter.Sprintf("List and manage high availability (HA) groups in the Horizon Exchange")).Alias("hagroup").Alias("hagr")
+	exHAGroupListCmd := exHAGroupCmd.Command("list | ls", msgPrinter.Sprintf("Display the HA group resources from the Horizon Exchange.")).Alias("ls").Alias("list")
+	exHAGroupListName := exHAGroupListCmd.Arg("group-name", msgPrinter.Sprintf("List just this one HA group.")).String()
+	exHAGroupListNodeIdTok := exHAGroupListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
+	exHAGroupListLong := exHAGroupListCmd.Flag("long", msgPrinter.Sprintf("When listing all of the HA groups, show the entire resource of each group, instead of just the name.")).Short('l').Bool()
+	exHAGroupNewCmd := exHAGroupCmd.Command("new", msgPrinter.Sprintf("Display an empty HA group template that can be filled in."))
+	exHAGroupAddCmd := exHAGroupCmd.Command("add", msgPrinter.Sprintf("Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template."))
+	exHAGroupAddName := exHAGroupAddCmd.Arg("group-name", msgPrinter.Sprintf("The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.")).String()
+	exHAGroupAddJsonFile := exHAGroupAddCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
+	exHAGroupRemoveCmd := exHAGroupCmd.Command("remove | rm", msgPrinter.Sprintf("Remove the HA group in the Horizon Exchange.")).Alias("rm").Alias("remove")
+	exHAGroupRemoveName := exHAGroupRemoveCmd.Arg("group-name", msgPrinter.Sprintf("The name of the HA group to be removed.")).Required().String()
+	exHAGroupRemoveForce := exHAGroupRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
+	exHAGroupMemberCmd := exHAGroupCmd.Command("member | mb", msgPrinter.Sprintf("Manage HA group members in the Horizon Exchange")).Alias("mb").Alias("member")
+	exHAGroupMemberAddCmd := exHAGroupMemberCmd.Command("add", msgPrinter.Sprintf("Add nodes to the HA group in the Horizon Exchange."))
+	exHAGroupMemberAddName := exHAGroupMemberAddCmd.Arg("group-name", msgPrinter.Sprintf("The name of the HA group.")).Required().String()
+	exHAGroupMemberAddNodes := exHAGroupMemberAddCmd.Flag("node", msgPrinter.Sprintf("Node to be added to the HA group. This flag can be repeated to specify different nodes.")).Short('m').Required().Strings()
+	exHAGroupMemberRemoveCmd := exHAGroupMemberCmd.Command("remove | rm", msgPrinter.Sprintf("Remove nodes from the HA group in the Horizon Exchange.")).Alias("rm").Alias("remove")
+	exHAGroupMemberRemoveName := exHAGroupMemberRemoveCmd.Arg("group-name", msgPrinter.Sprintf("The name of the HA group.")).Required().String()
+	exHAGroupMemberRemoveNodes := exHAGroupMemberRemoveCmd.Flag("node", msgPrinter.Sprintf("Node to be removed from the HA group. This flag can be repeated to specify different nodes.")).Short('m').Required().Strings()
+	exHAGroupMemberRemoveForce := exHAGroupMemberRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
+
 	exStatusCmd := exchangeCmd.Command("status", msgPrinter.Sprintf("Display the status of the Horizon Exchange."))
+
 	exUserCmd := exchangeCmd.Command("user", msgPrinter.Sprintf("List and manage users in the Horizon Exchange."))
 	exUserCreateCmd := exUserCmd.Command("create | cr", msgPrinter.Sprintf("Create the user resource in the Horizon Exchange.")).Alias("cr").Alias("create")
 	exUserCreateUser := exUserCreateCmd.Arg("user", msgPrinter.Sprintf("Your username for this user account when creating it in the Horizon exchange.")).Required().String()
@@ -563,6 +587,7 @@ Environment Variables:
 	exUserSetAdminCmd := exUserCmd.Command("setadmin | sa", msgPrinter.Sprintf("Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.")).Alias("sa").Alias("setadmin")
 	exUserSetAdminUser := exUserSetAdminCmd.Arg("user", msgPrinter.Sprintf("The user to be modified.")).Required().String()
 	exUserSetAdminBool := exUserSetAdminCmd.Arg("isadmin", msgPrinter.Sprintf("True if they should be an admin user, otherwise false.")).Required().Bool()
+
 	exVersionCmd := exchangeCmd.Command("version", msgPrinter.Sprintf("Display the version of the Horizon Exchange."))
 
 	keyCmd := app.Command("key", msgPrinter.Sprintf("List and manage keys for signing and verifying services."))
@@ -934,6 +959,18 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceRemovePolicyIdTok, false)
 		case "service | serv newpolicy | newp":
 			// does not require exchange credentials
+		case "hagroup | hagr list | ls":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exHAGroupListNodeIdTok, false)
+		case "hagroup | hagr add":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", false)
+		case "hagroup | hagr remove | rm":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", false)
+		case "hagroup | hagr new":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", false)
+		case "hagroup | hagr member | mb add":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", false)
+		case "hagroup | hagr member | mb remove | rm":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "", false)
 		case "deployment | dep listpolicy | ls":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessListPolicyIdTok, false)
 		case "deployment | dep updatepolicy | upp":
@@ -1124,6 +1161,19 @@ Environment Variables:
 		exchange.NMPEnable(*exOrg, credToUse, *exNMPEnableName, *exNMPEnableStartTime, *exNMPEnableStartWindow)
 	case exNMPDisableCmd.FullCommand():
 		exchange.NMPDisable(*exOrg, credToUse, *exNMPDisableName)
+
+	case exHAGroupNewCmd.FullCommand():
+		exchange.HAGroupNew()
+	case exHAGroupListCmd.FullCommand():
+		exchange.HAGroupList(*exOrg, credToUse, *exHAGroupListName, !*exHAGroupListLong)
+	case exHAGroupAddCmd.FullCommand():
+		exchange.HAGroupAdd(*exOrg, credToUse, *exHAGroupAddName, *exHAGroupAddJsonFile)
+	case exHAGroupRemoveCmd.FullCommand():
+		exchange.HAGroupRemove(*exOrg, credToUse, *exHAGroupRemoveName, *exHAGroupRemoveForce)
+	case exHAGroupMemberAddCmd.FullCommand():
+		exchange.HAGroupMemberAdd(*exOrg, credToUse, *exHAGroupMemberAddName, *exHAGroupMemberAddNodes)
+	case exHAGroupMemberRemoveCmd.FullCommand():
+		exchange.HAGroupMemberRemove(*exOrg, credToUse, *exHAGroupMemberRemoveName, *exHAGroupMemberRemoveNodes, *exHAGroupMemberRemoveForce)
 
 	case exNodeListCmd.FullCommand():
 		exchange.NodeList(*exOrg, credToUse, *exNode, !*exNodeLong)

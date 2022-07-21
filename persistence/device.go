@@ -64,7 +64,6 @@ type ExchangeDevice struct {
 	Token              string          `json:"token"`
 	TokenLastValidTime uint64          `json:"token_last_valid_time"`
 	TokenValid         bool            `json:"token_valid"`
-	HA                 bool            `json:"ha"`
 	Config             Configstate     `json:"configstate"`
 	SoftwareVersions   SoftwareVersion `json:"softwareVersions"`
 }
@@ -84,7 +83,7 @@ func (e ExchangeDevice) GetId() string {
 	return fmt.Sprintf("%v/%v", e.Org, e.Id)
 }
 
-func newExchangeDevice(id string, token string, name string, nodeType string, tokenLastValidTime uint64, ha bool, org string, pattern string, configstate string, softwareVersions SoftwareVersion) (*ExchangeDevice, error) {
+func newExchangeDevice(id string, token string, name string, nodeType string, tokenLastValidTime uint64, org string, pattern string, configstate string, softwareVersions SoftwareVersion) (*ExchangeDevice, error) {
 	if id == "" || token == "" || name == "" || tokenLastValidTime == 0 || org == "" {
 		return nil, errors.New("Cannot create exchange device, illegal arguments")
 	}
@@ -107,7 +106,6 @@ func newExchangeDevice(id string, token string, name string, nodeType string, to
 		Token:              token,
 		TokenLastValidTime: tokenLastValidTime,
 		TokenValid:         true,
-		HA:                 ha,
 		Org:                org,
 		Pattern:            pattern,
 		Config:             cfg,
@@ -299,7 +297,7 @@ func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, in
 }
 
 // always assumed the given token is valid at the time of call
-func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, nodeType string, ha bool, organization string, pattern string, configstate string, softwareVersions SoftwareVersion) (*ExchangeDevice, error) {
+func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, nodeType string, organization string, pattern string, configstate string, softwareVersions SoftwareVersion) (*ExchangeDevice, error) {
 
 	if id == "" || token == "" || name == "" || organization == "" || configstate == "" {
 		return nil, errors.New("Argument null and must not be")
@@ -323,7 +321,7 @@ func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, no
 		return nil, fmt.Errorf("Duplicate record found in devices for %v.", name)
 	}
 
-	exDevice, err := newExchangeDevice(id, token, name, nodeType, uint64(time.Now().Unix()), ha, organization, pattern, configstate, softwareVersions)
+	exDevice, err := newExchangeDevice(id, token, name, nodeType, uint64(time.Now().Unix()), organization, pattern, configstate, softwareVersions)
 
 	if err != nil {
 		return nil, err

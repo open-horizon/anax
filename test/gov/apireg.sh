@@ -5,11 +5,6 @@ EMAIL="foo@goo.com"
 echo -e "\nBC setting is $BC"
 echo -e "\nPATTERN setting is $PATTERN\n"
 
-HA_DEVICE="false"
-if [ "$HA" == "1" ]; then
-  HA_DEVICE="true"
-fi
-
 echo "Calling node API"
 
 pat=$PATTERN
@@ -24,8 +19,7 @@ read -d '' newhzndevice <<EOF
   "token": "$TOKEN",
   "name": "$DEVICE_NAME",
   "organization": "$DEVICE_ORG",
-  "pattern": "$pat",
-  "ha": $HA_DEVICE
+  "pattern": "$pat"
 }
 EOF
 
@@ -165,8 +159,7 @@ fi
 # Run some non-HA tests since we have HA setup right now. HA tests only
 # run when testing services.
 
-if [ "$HA" == "1" ]; then
-    if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "spws" ]; then
+if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "spws" ]; then
 
         read -d '' pwsservice <<EOF
 {
@@ -212,21 +205,17 @@ EOF
             echo -e "found expected response: $RES"
         fi
  
-    elif [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
+elif [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
         echo -e "Pattern $PATTERN is not supported with HA tests, only sns and spws are supported."
-    fi
 fi
+
 
 # =======================================================================
 # Setup some services/workloads
 echo -e "\nNo netspeed setting is $NONS"
 if [ "$NONS" != "1" ]
 then
-  if [ "$HA" == "1" ]; then
-    ./nsha_apireg.sh
-  else
-    ./ns_apireg.sh
-  fi
+  ./ns_apireg.sh
   if [ $? -ne 0 ]
   then
     exit 2
@@ -256,11 +245,7 @@ fi
 echo -e "\nNo pws setting is $NOPWS"
 if [ "$NOPWS" != "1" ]
 then
-  if [ "$HA" == "1" ]; then
-    ./pwsha_apireg.sh
-  else
-    ./pws_apireg.sh
-  fi
+  ./pws_apireg.sh
   if [ $? -ne 0 ]
   then
     exit 2

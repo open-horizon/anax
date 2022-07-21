@@ -67,7 +67,6 @@ type Policy struct {
 	Properties         externalpolicy.PropertyList         `json:"properties,omitempty"`       // Version 2.0
 	Constraints        externalpolicy.ConstraintExpression `json:"constraints,omitempty"`      // Version 2.0
 	RequiredWorkload   string                              `json:"requiredWorkload,omitempty"` // Version 2.0
-	HAGroup            HighAvailabilityGroup               `json:"ha_group,omitempty"`         // Version 2.0
 	NodeH              NodeHealth                          `json:"nodeHealth,omitempty"`       // Version 2.0
 	UserInput          []UserInput                         `json:"userInput,omitempty"`
 	SecretBinding      []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"` // This structure has the servive secret name to secret provider name mappings
@@ -110,8 +109,6 @@ func (self *Policy) DeepCopy() *Policy {
 
 	newPolicy.RequiredWorkload = self.RequiredWorkload
 
-	newPolicy.HAGroup = HighAvailabilityGroup{Partners: make([]string, len(self.HAGroup.Partners))}
-	copy(newPolicy.HAGroup.Partners, self.HAGroup.Partners)
 	newPolicy.NodeH = self.NodeH
 
 	for _, ui := range self.UserInput {
@@ -157,15 +154,6 @@ func (self *Policy) Add_Property(p *externalpolicy.Property, replaceExisting boo
 		return self.Properties.Add_Property(p, replaceExisting)
 	} else {
 		return errors.New(fmt.Sprintf("Add_Property Error: input Property is nil."))
-	}
-}
-
-func (self *Policy) Add_HAGroup(g *HighAvailabilityGroup) error {
-	if g != nil {
-		self.HAGroup = *g
-		return nil
-	} else {
-		return errors.New(fmt.Sprintf("Add_HAGroup Error: input Group is nil."))
 	}
 }
 
@@ -278,8 +266,6 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Common Properties between %v and %v. Underlying error: %v", producer_policy1.Properties, producer_policy2.Properties, err))
 	} else if !producer_policy1.DataVerify.IsProducerCompatible(producer_policy2.DataVerify) {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Data verification must be compatible between %v and %v.", producer_policy1.DataVerify, producer_policy2.DataVerify))
-	} else if !producer_policy1.HAGroup.Compatible_With(&producer_policy2.HAGroup) {
-		return nil, errors.New(fmt.Sprintf("Compatibility Error: HAGroups must be compatible between %v and %v.", producer_policy1.HAGroup, producer_policy2.HAGroup))
 	}
 
 	merged_pol := new(Policy)
@@ -299,7 +285,6 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	(&merged_pol.Constraints).MergeWith(&producer_policy1.Constraints)
 	(&merged_pol.Constraints).MergeWith(&producer_policy2.Constraints)
 
-	merged_pol.HAGroup = *((&producer_policy1.HAGroup).Merge(&producer_policy2.HAGroup))
 	merged_pol.MaxAgreements = cutil.Min(producer_policy1.MaxAgreements, producer_policy2.MaxAgreements)
 
 	if producer_policy1.UserInput != nil && len(producer_policy1.UserInput) != 0 {
@@ -353,7 +338,6 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		// Merge the remaining policy.
 		// TODO: Can we get rid of any of these?
 		merged_pol.RequiredWorkload = producer_policy.RequiredWorkload
-		merged_pol.HAGroup = producer_policy.HAGroup
 		merged_pol.NodeH = consumer_policy.NodeH
 
 		// the user input is contained in pattern and deployment policy. they are consumer policies.

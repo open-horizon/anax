@@ -27,14 +27,14 @@ func Test_ResolveUpgradeVersions(t *testing.T) {
 
 	w := NewDownloadWorker("download", &config.HorizonConfig{}, db)
 
-	dev, err := persistence.SaveNewExchangeDevice(db, "testNode", "testNodeTok", "testNode", persistence.DEVICE_TYPE_DEVICE, false, "userdev", "", persistence.CONFIGSTATE_CONFIGURED, persistence.SoftwareVersion{persistence.AGENT_VERSION: "2.1.1", persistence.CONFIG_VERSION: "", persistence.CERT_VERSION: "1.2.3"})
+	dev, err := persistence.SaveNewExchangeDevice(db, "testNode", "testNodeTok", "testNode", persistence.DEVICE_TYPE_DEVICE, "userdev", "", persistence.CONFIGSTATE_CONFIGURED, persistence.SoftwareVersion{persistence.AGENT_VERSION: "2.1.1", persistence.CONFIG_VERSION: "", persistence.CERT_VERSION: "1.2.3"})
 	if err != nil {
 		t.Errorf("Error saving exchange device in db: %v", err)
 	}
 
 	upgradeVers := exchangecommon.AgentUpgradeVersions{SoftwareVersion: "2.1.2", ConfigVersion: "1.1.2", CertVersion: "1.5.2"}
 	nmpStatus := exchangecommon.NodeManagementPolicyStatus{AgentUpgradeInternal: &exchangecommon.AgentUpgradeInternalStatus{AllowDowngrade: false, ScheduledUnixTime: time.Unix(1649503122, 0)}}
-	versToUpgrade, err := w.ResolveUpgradeVersions(&upgradeVers, "testNMP", &nmpStatus)
+	versToUpgrade, err := w.ResolveUpgradeVersions(&upgradeVers, "testNMP", &nmpStatus, dev)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	} else if versToUpgrade.SoftwareVersion != "2.1.2" {
@@ -50,7 +50,7 @@ func Test_ResolveUpgradeVersions(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	}
 	upgradeVers = exchangecommon.AgentUpgradeVersions{ConfigVersion: "1.1.2", CertVersion: "1.1.3"}
-	versToUpgrade, err = w.ResolveUpgradeVersions(&upgradeVers, "testNMP", &nmpStatus)
+	versToUpgrade, err = w.ResolveUpgradeVersions(&upgradeVers, "testNMP", &nmpStatus, dev)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	} else if versToUpgrade.SoftwareVersion != "" {
@@ -65,7 +65,7 @@ func Test_ResolveUpgradeVersions(t *testing.T) {
 	// scheduled time after the upgrade we are checking
 	err = persistence.SaveOrUpdateNMPStatus(db, "userdev/nmp1", exchangecommon.NodeManagementPolicyStatus{AgentUpgradeInternal: &exchangecommon.AgentUpgradeInternalStatus{ScheduledUnixTime: time.Unix(1649503222, 0)}, AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{UpgradedVersions: exchangecommon.AgentUpgradeVersions{SoftwareVersion: "2.1.1"}}})
 	upgradeVers = exchangecommon.AgentUpgradeVersions{SoftwareVersion: "1.2.2", ConfigVersion: "1.0.1"}
-	versToUpgrade, err = w.ResolveUpgradeVersions(&upgradeVers, "testNMP", &nmpStatus)
+	versToUpgrade, err = w.ResolveUpgradeVersions(&upgradeVers, "testNMP", &nmpStatus, dev)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	} else if versToUpgrade.SoftwareVersion != "" {
@@ -79,7 +79,7 @@ func Test_ResolveUpgradeVersions(t *testing.T) {
 	err = persistence.SaveOrUpdateNMPStatus(db, "userdev/nmp1", exchangecommon.NodeManagementPolicyStatus{AgentUpgradeInternal: &exchangecommon.AgentUpgradeInternalStatus{ScheduledUnixTime: time.Unix(1649503422, 0)}, AgentUpgrade: &exchangecommon.AgentUpgradePolicyStatus{UpgradedVersions: exchangecommon.AgentUpgradeVersions{ConfigVersion: "1.1.1", CertVersion: "1.2.3"}}})
 	nmpStatus.AgentUpgradeInternal.ScheduledUnixTime = time.Unix(1649503322, 0)
 	upgradeVers = exchangecommon.AgentUpgradeVersions{SoftwareVersion: "0.0.1", ConfigVersion: "0.0.1", CertVersion: "0.0.1"}
-	versToUpgrade, err = w.ResolveUpgradeVersions(&upgradeVers, "testNMP", &nmpStatus)
+	versToUpgrade, err = w.ResolveUpgradeVersions(&upgradeVers, "testNMP", &nmpStatus, dev)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	} else if versToUpgrade.SoftwareVersion != "0.0.1" {
@@ -195,14 +195,14 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	dev, err := persistence.SaveNewExchangeDevice(db, "testNode", "testNode123", "testNode", persistence.DEVICE_TYPE_CLUSTER, false, "userdev", "", persistence.CONFIGSTATE_CONFIGURED, persistence.SoftwareVersion{})
+	dev, err := persistence.SaveNewExchangeDevice(db, "testNode", "testNode123", "testNode", persistence.DEVICE_TYPE_CLUSTER, "userdev", "", persistence.CONFIGSTATE_CONFIGURED, persistence.SoftwareVersion{})
 	if err != nil {
 		t.Errorf("Error saving node to db: %v", err)
 	}
 
 	w := NewDownloadWorker("download", &config.HorizonConfig{}, db)
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 2 {
 		t.Errorf("Expected 2 files for download. Got %v.", downloadFiles)
@@ -224,7 +224,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error updating node in db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
@@ -239,7 +239,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
@@ -254,7 +254,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 2 {
 		t.Errorf("Expected 2 file for download. Got %v.", downloadFiles)
@@ -271,7 +271,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 2 {
 		t.Errorf("Expected 2 file for download. Got %v.", downloadFiles)
@@ -290,7 +290,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
@@ -305,7 +305,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(); err != nil {
+	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
