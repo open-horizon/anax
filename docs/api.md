@@ -192,7 +192,7 @@ body:
 | nodeType | string | the node type. Valid values are 'device' and 'cluster'.  |
 | token_valid | bool| whether the agent's exchange token is valid or not. |
 | token_last_valid_time | uint64 | the time stamp when the agent's token was last valid. |
-| ha | bool | whether the node is part of an HA group or not. |
+| ha_group | string | The name of the HA group that node is in. |
 | configstate | json | the current configuration state of the agent. It contains the state and the last_update_time. The valid values for the state are "configuring", "configured", "unconfiguring", and "unconfigured". |
 
 **Example:**
@@ -206,7 +206,7 @@ curl -s http://localhost:8510/node | jq '.'
   "nodeType": "device",
   "token_last_valid_time": 1508174346,
   "token_valid": true,
-  "ha": false,
+  "ha_group": "mygroup",
   "configstate": {
     "state": "configured",
     "last_update_time": 1508174348
@@ -232,7 +232,6 @@ body:
 | organization | string | the agent's organization. |
 | pattern | string | the pattern that will be deployed on the node. |
 | name | string | the user readable name for the agent.  |
-| ha | bool | whether the node is part of an HA group or not. |
 
 **Response:**
 
@@ -1157,7 +1156,6 @@ body:
 | | header | json|  the header of the policy. It includes the name and the version of the policy. |
 | | apiSpec | array | an array of api specifications. Each one includes a URL pointing to the definition of the API spec, the version of the API spec in OSGI version format, the organization that implements the API spec, whether or not exclusive access to this API spec is required and the hardware architecture of the API spec implementation. |
 | | properties | array | an array of name value pairs that the current party have. |
-| | ha_group | json | a list of ha partners. |
 | | agreementProtocols | array | an array of agreement protocols. Each one includes the name of the agreement protocol.|
 
 Note: The policy also contains other fields that are unused and therefore not documented.
@@ -1195,7 +1193,6 @@ curl http://localhost:8510/service/policy | jq '.'
         "value": "1024"
       }
     ],
-    "ha_group": {},
     "nodeHealth": {}
   },
   ...

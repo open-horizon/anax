@@ -70,7 +70,6 @@
             "value": "rpival5"
         }
     ],
-    "ha_group": {},
     "nodeHealth": {
         "missing_heartbeat_interval": 600,
         "check_agreement_status": 30

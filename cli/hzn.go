@@ -716,12 +716,12 @@ Environment Variables:
 	nodeName := registerCmd.Flag("name", msgPrinter.Sprintf("The name of the node. If not specified, it will be the same as the node id.")).Short('m').String()
 	userPw := registerCmd.Flag("user-pw", msgPrinter.Sprintf("User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.")).Short('u').PlaceHolder("USER:PW").String()
 	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See %v/user_input.json. Specify -f- to read from stdin.", sample_dir)).Short('f').String() // not using ExistingFile() because it can be - for stdin
-
 	nodeOrgFlag := registerCmd.Flag("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('o').String()
 	patternFlag := registerCmd.Flag("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('p').String()
 	nodepolicyFlag := registerCmd.Flag("policy", msgPrinter.Sprintf("A JSON file that sets or overrides the node policy for this node. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.")).String()
 	org := registerCmd.Arg("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.")).String()
 	pattern := registerCmd.Arg("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.")).String()
+	haGroupName := registerCmd.Flag("hagroup", msgPrinter.Sprintf("The name of the HA group that this node will be added to.")).String()
 	waitServiceFlag := registerCmd.Flag("service", msgPrinter.Sprintf("Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.")).Short('s').String()
 	waitServiceOrgFlag := registerCmd.Flag("serviceorg", msgPrinter.Sprintf("The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.")).String()
 	waitTimeoutFlag := registerCmd.Flag("timeout", msgPrinter.Sprintf("The number of seconds for the --service to start. The default is 60 seconds, beginning when registration is successful. Ignored if --service is not specified.")).Short('t').Default("60").Int()
@@ -1284,7 +1284,7 @@ Environment Variables:
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
-		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName, *nodepolicyFlag, *waitServiceFlag, *waitServiceOrgFlag, *waitTimeoutFlag)
+		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName, *haGroupName, *nodepolicyFlag, *waitServiceFlag, *waitServiceOrgFlag, *waitTimeoutFlag)
 	case keyListCmd.FullCommand():
 		key.List(*keyName, *keyListAll)
 	case keyCreateCmd.FullCommand():

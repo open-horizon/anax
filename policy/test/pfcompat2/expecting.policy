@@ -55,6 +55,5 @@
         "conprop1 == conval1 OR conprop2 == conval2",
         "conprop1 == conval1"
     ],
-    "ha_group": {},
     "nodeHealth": {}
 }

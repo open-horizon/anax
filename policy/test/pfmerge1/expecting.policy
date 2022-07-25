@@ -51,6 +51,5 @@
         "rpiprop1 == rpival1 OR rpiprop2 == rpival2"
     ],
     "requiredWorkload": "http://mycompany.com/workload1",
-    "ha_group": {},
     "nodeHealth": {}
 }
