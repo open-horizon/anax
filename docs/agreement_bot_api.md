@@ -599,7 +599,6 @@ body:
 | properties | array | an array of name value pairs that the current party have. |
 | dataVerification | json | contains information on how data gets verified. |
 | nodeHealth | json | contains information on how to determine  the health of the node. |
-| ha_group | json | a list of ha partners. |
 
 
 **Example:**
@@ -646,7 +645,6 @@ curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-
     }
   },
   "proposalRejection": {},
-  "ha_group": {},
   "nodeHealth": {
     "missing_heartbeat_interval": 90,
     "check_agreement_status": 60
