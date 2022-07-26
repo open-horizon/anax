@@ -966,15 +966,6 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 	if reply.ProposalAccepted() {
 
-		haPartners := []string{}
-		if exchangeDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.SenderId, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v, error: %v", wi.SenderId, err)))
-		} else if exchangeDev.HAGroup != "" {
-			if haPartners, err = b.GetHAGroupPartners(wi.SenderId, exchangeDev.HAGroup, cph); err != nil {
-				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("received error checking HA group %v completeness for device %v, error: %v", exchangeDev.HAGroup, wi.SenderId, err)))
-			}
-		}
-
 		// Find the saved agreement in the database. The returned agreement might be archived. If it's archived, then it is our agreement
 		// so we will delete the protocol msg.
 		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AFilter{}); err != nil {
@@ -1000,7 +991,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error validating proposal from pending agreement %v, error: %v", reply.AgreementId(), err)))
 		} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error demarshalling tsandcs policy from pending agreement %v, error: %v", reply.AgreementId(), err)))
-		} else if err := cph.PersistReply(reply, pol, haPartners, workerId); err != nil {
+		} else if err := cph.PersistReply(reply, pol, workerId); err != nil {
 			glog.Errorf(err.Error())
 
 		} else if err := cph.RecordConsumerAgreementState(reply.AgreementId(), pol, agreement.Org, "Producer agreed", b.workerID); err != nil {
@@ -1028,6 +1019,16 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 					// Need a new workload usage record but not the same as the highest priority. That can't be right.
 					ackReplyAsValid = false
 				} else if !pol.Workloads[0].HasEmptyPriority() {
+
+					haPartners := []string{}
+					if exchangeDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.SenderId, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v, error: %v", wi.SenderId, err)))
+					} else if exchangeDev.HAGroup != "" {
+						if haPartners, err = b.GetHAGroupPartners(wi.SenderId, exchangeDev.HAGroup, cph); err != nil {
+							glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("received error checking HA group %v completeness for device %v, error: %v", exchangeDev.HAGroup, wi.SenderId, err)))
+						}
+					}
+
 					if err := b.db.NewWorkloadUsage(wi.SenderId, haPartners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
