@@ -679,13 +679,11 @@ func Test_Merge_Producers_Create_TsAndCs1(t *testing.T) {
 		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
 		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":2,"per_time_unit":"hour","notification_interval":3600}},` +
-		`"ha_group":{"partners":["12345"]},` +
 		`"maxAgreements":1}`
 	pb := `{"header":{"name":"ms2 policy","version": "2.0"},` +
 		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
 		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":120}},` +
-		`"ha_group":{"partners":["12345"]},` +
 		`"maxAgreements":1}`
 
 	pc := `{"header":{"name":"split netspeed policy","version":"2.0"},` +
@@ -736,7 +734,7 @@ func Test_Merge_EmptyProducer_and_Create_TsAndCs1(t *testing.T) {
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
-		`"proposalRejection":{},"ha_group":{}}`
+		`"proposalRejection":{}}`
 
 	if p1 := create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
@@ -793,7 +791,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
-		`"proposalRejection":{},"ha_group":{}}`
+		`"proposalRejection":{}}`
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "IBM/pws2",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
@@ -802,7 +800,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
-		`"proposalRejection":{},"ha_group":{}}`
+		`"proposalRejection":{}}`
 
 	pd := `{"header":{"name":"split netspeed policy","version":"2.0"},` +
 		`"agreementProtocols":[{"name":"Basic"}],` +
@@ -866,7 +864,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
-		`"proposalRejection":{},"ha_group":{}}`
+		`"proposalRejection":{}}`
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "IBM/pws2",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
@@ -875,7 +873,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
-		`"proposalRejection":{},"ha_group":{}}`
+		`"proposalRejection":{}}`
 
 	pd := `{"header":{"name":"split netspeed policy","version":"2.0"},` +
 		`"agreementProtocols":[{"name":"Basic"}],` +
@@ -945,7 +943,7 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
-		`"proposalRejection":{},"ha_group":{}}`
+		`"proposalRejection":{}}`
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "IBM/pws2",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
@@ -954,7 +952,7 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
-		`"proposalRejection":{},"ha_group":{}}`
+		`"proposalRejection":{}}`
 
 	pd := `{"header":{"name":"split netspeed policy","version":"2.0"},` +
 		`"agreementProtocols":[{"name":"Basic"}],` +
@@ -1100,7 +1098,6 @@ func Test_DeepCopyPolicy(t *testing.T) {
 		`"valueExchange":{"type":"crypto-currency"},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
 		`"proposalRejection":{},` +
-		`"ha_group":{"partners":["p1","p2"]},` +
 		`"properties":[{"name":"pname","value":"pvalue"}],` +
 		`"constraints":["con1","con2"],` +
 		`"nodeHealth":{},` +

@@ -68,12 +68,12 @@ func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *exchangecommon.NodePol
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodepolicyFlag string, waitService string, waitOrg string, waitTimeout int) {
+func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, haGroupName string, nodepolicyFlag string, waitService string, waitOrg string, waitTimeout int) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input
-	org, pattern, waitService, waitOrg = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg, nodeIdTok)
+	org, pattern, waitService, waitOrg, haGroupName = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg, nodeIdTok, haGroupName)
 
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	var userInputFileObj *common.UserInputFile
@@ -201,6 +201,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &devicesResp)
 
 	var existingNodeName string
+	var existingHagrName string
 	if httpCode != 200 {
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("node '%s/%s' does not exist in the Exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId))
@@ -228,6 +229,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the Exchange node %v.", nodeType, n.GetNodeType(), nId))
 				}
 				existingNodeName = n.Name
+				existingHagrName = n.HAGroup
 				break
 			}
 		}
@@ -242,6 +244,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the Exchange node %v.", nodeType, n.GetNodeType(), nId))
 			}
 			existingNodeName = n.Name
+			existingHagrName = n.HAGroup
 			break
 		}
 	}
@@ -294,6 +297,24 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			msgPrinter.Printf("Will proceed with the given pattern %s.", pattern)
 			msgPrinter.Println()
 		}
+	}
+
+	// add node to ha group if needed
+	if haGroupName != "" {
+		if existingHagrName != "" {
+			if existingHagrName != haGroupName {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given HA group %s because the node is in a different HA group %s.", haGroupName, existingHagrName))
+			} else {
+				msgPrinter.Printf("The node is already in the HA group '%s'.", haGroupName)
+				msgPrinter.Println()
+			}
+		} else {
+			AddNodeToHAGroup(org, nodeId, haGroupName, userPw)
+		}
+	} else if existingHagrName != "" {
+		// if the node is in a ha group and the user did not specify --hagroup
+		msgPrinter.Printf("Node %v/%v is in HA group %v.", org, nodeId, haGroupName)
+		msgPrinter.Println()
 	}
 
 	// Update node policy if specified
@@ -399,6 +420,60 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		msgPrinter.Println()
 	}
 
+}
+
+// Precondition: node is currently node in a HA group.
+// This function will add the given node to the given HA group.
+// It will create the HA group if it does not exist.
+func AddNodeToHAGroup(org, nodeId, haGroupName, userPw string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if userPw == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the user credentials with -u flag in order to create or update the HA group %v/%v.", org, haGroupName))
+	}
+
+	cliutils.SetWhetherUsingApiKey(userPw)
+	userOrg, userAuth := cliutils.TrimOrg(org, userPw)
+
+	var resp struct {
+		Code string `json:"code"`
+		Msg  string `json:"msg"`
+	}
+
+	var haGroupResp exchangecommon.GetHAGroupResponse
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/hagroups/"+haGroupName, cliutils.OrgAndCreds(userOrg, userAuth), []int{200, 404}, &haGroupResp)
+	if httpCode == 404 {
+		msgPrinter.Printf("Creating HA group %v/%v ...", org, haGroupName)
+		msgPrinter.Println()
+
+		// create the HA group if it does not exist
+		haGroupReq := exchangecommon.HAGroupPutPostRequest{
+			Description: haGroupName,
+			Members:     []string{nodeId},
+		}
+		cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/hagroups/"+haGroupName, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, haGroupReq, &resp)
+		msgPrinter.Printf("HA group %v/%v created with node %v as the member.", org, haGroupName, nodeId)
+		msgPrinter.Println()
+	} else {
+		// add the node to the existing group
+		msgPrinter.Printf("Adding node %v to HA group %v/%v ...", nodeId, org, haGroupName)
+		msgPrinter.Println()
+
+		newMembers := []string{}
+		if haGroupResp.NodeGroups[0].Members != nil {
+			newMembers = append(haGroupResp.NodeGroups[0].Members, nodeId)
+		} else {
+			newMembers = append(newMembers, nodeId)
+		}
+		haGroupReq := exchangecommon.HAGroupPutPostRequest{
+			Description: haGroupResp.NodeGroups[0].Description,
+			Members:     newMembers,
+		}
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/hagroups/"+haGroupName, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, haGroupReq, &resp)
+		msgPrinter.Printf("Node %v is added to HA group %v.", nodeId, haGroupName)
+		msgPrinter.Println()
+	}
 }
 
 // RegistrationFailure attempts to unregister the node if a critical error is encountered during registration.
@@ -570,7 +645,7 @@ func SetConfigState(timeout int, inputFile string) error {
 	}
 }
 
-func verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg, nodeIdTok string) (string, string, string, string) {
+func verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg, nodeIdTok string, haGroupName string) (string, string, string, string, string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -622,17 +697,39 @@ func verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, wai
 	}
 
 	if nodeId != "" {
-		illegalInput, err := api.InputIsIllegal(nodeId)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not validate node ID '%s': %v", nodeId, err))
-		} else if illegalInput != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed"))
-		} else if strings.Contains(nodeId, " ") {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("invalid node ID: Whitespace is not permitted"))
+		if err := ValidateExchangeIdString(nodeId); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("invalid node ID: %v", err))
 		}
 	}
 
-	return org, pattern, waitService, waitOrg
+	if haGroupName != "" {
+		var haGroupOrg string
+		haGroupOrg, haGroupName = cliutils.TrimOrg(org, haGroupName)
+		if haGroupOrg != org {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the HA group organization ID '%v' is different from the node organization ID '%v'.", haGroupOrg, org))
+		}
+		if err := ValidateExchangeIdString(haGroupName); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("invalid HA group ID: %v", err))
+		}
+	}
+
+	return org, pattern, waitService, waitOrg, haGroupName
+}
+
+func ValidateExchangeIdString(id string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	illegalInput, err := api.InputIsIllegal(id)
+	if err != nil {
+		return fmt.Errorf(msgPrinter.Sprintf("Could not validate. %v", err))
+	} else if illegalInput != "" {
+		return fmt.Errorf(msgPrinter.Sprintf("A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed."))
+	} else if strings.Contains(id, " ") {
+		return fmt.Errorf(msgPrinter.Sprintf("Whitespace is not permitted."))
+	}
+
+	return nil
 }
 
 // isWithinRanges returns true if version is within at least 1 of the ranges in versionRanges

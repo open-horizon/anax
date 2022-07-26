@@ -36,8 +36,5 @@
     "constraints": [
         "conprop1 == conval1 OR conprop2 == conval2"
     ],
-    "ha_group": {
-        "partners": null
-    },
     "maxAgreements": 1
 }
