@@ -73,8 +73,8 @@ func main() {
 
 Subcommands Description:
   agbot: List and manage Horizon agreement bot resources.
-  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.
-  architecture: Show the architecture of this machine (as defined by Horizon and golang). 
+  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.
+  architecture: Show the architecture of this machine. 
   attribute: List or manage the global attributes that are currently registered on this Horizon edge node.
   deploycheck: Check deployment compatibility.
   dev: Development tools for creation of services.
@@ -82,16 +82,17 @@ Subcommands Description:
   eventlog: List the event logs for the current or all registrations.
   exchange: List and manage Horizon Exchange resources.
   key: List and manage keys for signing and verifying services. 
-  metering: List or manage the metering (payment) information for the active or archived agreements.
   mms: List and manage Horizon Model Management Service resources.
+  nmstatus: List and manage node management status for the local node.
   node: List and manage general information about this Horizon edge node.
+  nodemanagement: List and manage manifests and agent files for node management.
   policy: List and manage policy for this Horizon edge node. 
-  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). 
-            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. 
+  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. 
   register: Register this edge node with the management hub.
+  secretsmanager: List and manage secrets in the secrets manager.
   service: List or manage the services that are currently registered on this Horizon edge node.
   status: Display the current horizon internal status for the node.
-  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.
+  unregister: Unregister and reset this Horizon edge node.
   userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.
   util: Utility commands.
   version: Show the Horizon version.
@@ -184,9 +185,10 @@ Environment Variables:
 	allCompNodeArch := allCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.")).Short('a').String()
 	allCompNodeType := allCompCmd.Flag("node-type", msgPrinter.Sprintf("The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.")).Short('t').String()
 	allCompNodeOrg := allCompCmd.Flag("node-org", msgPrinter.Sprintf("The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.")).Short('O').String()
-	allCompNodeId := allCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
-	allCompNodePolFile := allCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.")).String()
-	allCompNodeUIFile := allCompCmd.Flag("node-ui", msgPrinter.Sprintf("The JSON input file name containing the node user input. Mutually exclusive with -n.")).String()
+	allCompNodeId := allCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.")).Short('n').Strings()
+	allCompHAGroup := allCompCmd.Flag("ha-group", msgPrinter.Sprintf("The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.")).String()
+	allCompNodePolFile := allCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.")).String()
+	allCompNodeUIFile := allCompCmd.Flag("node-ui", msgPrinter.Sprintf("The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.")).String()
 	allCompBPolId := allCompCmd.Flag("business-pol-id", "").Hidden().String()
 	allCompDepPolId := allCompCmd.Flag("deployment-pol-id", msgPrinter.Sprintf("The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
 	allCompBPolFile := allCompCmd.Flag("business-pol", "").Hidden().String()
@@ -198,8 +200,9 @@ Environment Variables:
 	policyCompCmd := deploycheckCmd.Command("policy | pol", msgPrinter.Sprintf("Check policy compatibility.")).Alias("pol").Alias("policy")
 	policyCompNodeArch := policyCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility.")).Short('a').String()
 	policyCompNodeType := policyCompCmd.Flag("node-type", msgPrinter.Sprintf("The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.")).Short('t').String()
-	policyCompNodeId := policyCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
-	policyCompNodePolFile := policyCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n.")).String()
+	policyCompNodeId := policyCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.")).Short('n').Strings()
+	policyCompHAGroup := policyCompCmd.Flag("ha-group", msgPrinter.Sprintf("The name of an HA group. Mutually exclusive with -n and --node-pol.")).String()
+	policyCompNodePolFile := policyCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.")).String()
 	policyCompBPolId := policyCompCmd.Flag("business-pol-id", "").Hidden().String()
 	policyCompDepPolId := policyCompCmd.Flag("deployment-pol-id", msgPrinter.Sprintf("The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
 	policyCompBPolFile := policyCompCmd.Flag("business-pol", "").Hidden().String()
@@ -721,7 +724,7 @@ Environment Variables:
 	nodepolicyFlag := registerCmd.Flag("policy", msgPrinter.Sprintf("A JSON file that sets or overrides the node policy for this node. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.")).String()
 	org := registerCmd.Arg("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.")).String()
 	pattern := registerCmd.Arg("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.")).String()
-	haGroupName := registerCmd.Flag("hagroup", msgPrinter.Sprintf("The name of the HA group that this node will be added to.")).String()
+	haGroupName := registerCmd.Flag("ha-group", msgPrinter.Sprintf("The name of the HA group that this node will be added to.")).String()
 	waitServiceFlag := registerCmd.Flag("service", msgPrinter.Sprintf("Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.")).Short('s').String()
 	waitServiceOrgFlag := registerCmd.Flag("serviceorg", msgPrinter.Sprintf("The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.")).String()
 	waitTimeoutFlag := registerCmd.Flag("timeout", msgPrinter.Sprintf("The number of seconds for the --service to start. The default is 60 seconds, beginning when registration is successful. Ignored if --service is not specified.")).Short('t').Default("60").Int()
@@ -1306,13 +1309,13 @@ Environment Variables:
 	case policyRemoveCmd.FullCommand():
 		policy.Remove(*policyRemoveForce)
 	case policyCompCmd.FullCommand():
-		deploycheck.PolicyCompatible(*deploycheckOrg, *deploycheckUserPw, *policyCompNodeId, *policyCompNodeArch, *policyCompNodeType, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
+		deploycheck.PolicyCompatible(*deploycheckOrg, *deploycheckUserPw, *policyCompNodeId, *policyCompHAGroup, *policyCompNodeArch, *policyCompNodeType, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case userinputCompCmd.FullCommand():
 		deploycheck.UserInputCompatible(*deploycheckOrg, *deploycheckUserPw, *userinputCompNodeId, *userinputCompNodeArch, *userinputCompNodeType, *userinputCompNodeUIFile, *userinputCompBPolId, *userinputCompBPolFile, *userinputCompPatternId, *userinputCompPatternFile, *userinputCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case secretCompCmd.FullCommand():
 		deploycheck.SecretBindingCompatible(*deploycheckOrg, *deploycheckUserPw, *secretCompNodeId, *secretCompNodeArch, *secretCompNodeType, *secretCompNodeOrg, *secretCompDepPolId, *secretCompDepPolFile, *secretCompPatternId, *secretCompPatternFile, *secretCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case allCompCmd.FullCommand():
-		deploycheck.AllCompatible(*deploycheckOrg, *deploycheckUserPw, *allCompNodeId, *allCompNodeArch, *allCompNodeType, *allCompNodeOrg, *allCompNodePolFile, *allCompNodeUIFile, *allCompBPolId, *allCompBPolFile, *allCompPatternId, *allCompPatternFile, *allCompSPolFile, *allCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
+		deploycheck.AllCompatible(*deploycheckOrg, *deploycheckUserPw, *allCompNodeId, *allCompHAGroup, *allCompNodeArch, *allCompNodeType, *allCompNodeOrg, *allCompNodePolFile, *allCompNodeUIFile, *allCompBPolId, *allCompBPolFile, *allCompPatternId, *allCompPatternFile, *allCompSPolFile, *allCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case agreementListCmd.FullCommand():
 		agreement.List(*listArchivedAgreements, *listAgreementId)
 	case agreementCancelCmd.FullCommand():

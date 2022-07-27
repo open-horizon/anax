@@ -20,7 +20,7 @@ import (
 )
 
 // check if the policies are compatible
-func AllCompatible(org string, userPw string, nodeId string, nodeArch string, nodeType string, nodeOrg string,
+func AllCompatible(org string, userPw string, nodeIds []string, haGroupName string, nodeArch string, nodeType string, nodeOrg string,
 	nodePolFile string, nodeUIFile string, businessPolId string, businessPolFile string,
 	patternId string, patternFile string, servicePolFile string, svcDefFiles []string,
 	checkAllSvcs bool, showDetail bool) {
@@ -28,132 +28,158 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input and get the defaults
-	userOrg, credToUse, nId, useNodeId, bp, pattern, serviceDefs := verifyCompCheckParameters(
-		org, userPw, nodeId, nodeType, nodePolFile, nodeUIFile, businessPolId, businessPolFile,
+	userOrg, credToUse, nIds, useNodeId, bp, pattern, serviceDefs := verifyCompCheckParameters(
+		org, userPw, nodeIds, haGroupName, nodeType, nodePolFile, nodeUIFile, businessPolId, businessPolFile,
 		patternId, patternFile, servicePolFile, svcDefFiles)
-
-	compCheckInput := compcheck.CompCheck{}
-	compCheckInput.NodeArch = nodeArch
-	compCheckInput.NodeType = nodeType
-	compCheckInput.NodeOrg = nodeOrg
-	compCheckInput.BusinessPolicy = bp
-	compCheckInput.PatternId = patternId
-	compCheckInput.Pattern = pattern
-
-	// use the user org for the patternId if it does not include an org id
-	if compCheckInput.PatternId != "" {
-		compCheckInput.PatternId = cliutils.AddOrg(userOrg, compCheckInput.PatternId)
-	}
-
-	if useNodeId {
-		// add credentials'org to node id if the node id does not have an org
-		nId = cliutils.AddOrg(userOrg, nId)
-		compCheckInput.NodeId = nId
-	}
-
-	// formalize node id or get node policy
-	bUseLocalNodeForPolicy := false
-	bUseLocalNodeForUI := false
-	if bp != nil || pattern != nil || patternId != "" {
-		if nodePolFile != "" {
-			// read the node policy from file
-			var np exchangecommon.NodePolicy
-			readNodePolicyFile(nodePolFile, &np)
-			compCheckInput.NodePolicy = &np
-		} else if !useNodeId {
-			bUseLocalNodeForPolicy = true
-		}
-	}
-
-	if nodeUIFile != "" {
-		// read the node userinput from file
-		var node_ui []policy.UserInput
-		readUserInputFile(nodeUIFile, &node_ui)
-		compCheckInput.NodeUserInput = node_ui
-	} else if !useNodeId {
-		bUseLocalNodeForUI = true
-	}
-
-	if bUseLocalNodeForPolicy {
-		msgPrinter.Printf("Neither node id nor node policy is specified. Getting node policy from the local node.")
-		msgPrinter.Println()
-
-		// get node policy from local node
-		var np exchangecommon.NodePolicy
-		cliutils.HorizonGet("node/policy", []int{200}, &np, false)
-		compCheckInput.NodePolicy = &np
-	}
-
-	if bUseLocalNodeForUI {
-		msgPrinter.Printf("Neither node id nor node user input file is specified. Getting node user input from the local node.")
-		msgPrinter.Println()
-		// get node user input from local node
-		var node_ui []policy.UserInput
-		cliutils.HorizonGet("node/userinput", []int{200}, &node_ui, false)
-		compCheckInput.NodeUserInput = node_ui
-	}
-
-	if bUseLocalNodeForPolicy || bUseLocalNodeForUI {
-		// get id from local node, check arch
-		compCheckInput.NodeId, compCheckInput.NodeArch, compCheckInput.NodeType, compCheckInput.NodeOrg = getLocalNodeInfo(nodeArch, nodeType, nodeOrg)
-	}
-
-	if nodeType == "" && compCheckInput.NodeId != "" {
-		cliutils.Verbose(msgPrinter.Sprintf("No node type has been provided: node type of '%v' node will be used", compCheckInput.NodeId))
-	}
-
-	// read the service policy from file for the policy case
-	if servicePolFile != "" {
-		var sp exchangecommon.ServicePolicy
-		readServicePolicyFile(servicePolFile, &sp)
-		compCheckInput.ServicePolicy = sp.GetExternalPolicy()
-	}
-
-	// put the given service defs into the compCheckInput
-	if serviceDefs != nil || len(serviceDefs) != 0 {
-		compCheckInput.Service = serviceDefs
-	}
-
-	cliutils.Verbose(msgPrinter.Sprintf("Using compatibility checking input: %v", compCheckInput))
 
 	// get exchange context
 	ec := cliutils.GetUserExchangeContext(userOrg, credToUse)
 	agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
 
+	// read the service policy from file for the policy case
+	var sp exchangecommon.ServicePolicy
+	if servicePolFile != "" {
+		readServicePolicyFile(servicePolFile, &sp)
+	}
+
+	if nIds == nil || len(nIds) == 0 {
+		// this is the case where the local node will be used, useNodeId is false.
+		// add a fake node to make it easier to process
+		nIds = []string{"fake_fake_node"}
+	}
+
 	// compcheck.Compatible function calls the exchange package that calls glog.
 	// set glog to log to /dev/null so glog errors will not be printed
 	flag.Set("log_dir", "/dev/null")
 
-	// now we can call the real code to check if the policies are compatible.
-	// the policy validation are done wthin the calling function.
-	compOutput, err := compcheck.DeployCompatible(ec, agbotUrl, &compCheckInput, checkAllSvcs, msgPrinter)
-	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
-	} else {
-		if !showDetail {
-			compOutput.Input = nil
+	totalOutput := make(map[string]*compcheck.CompCheckOutput)
+	for _, nId := range nIds {
+		compCheckInput := compcheck.CompCheck{}
+		compCheckInput.NodeArch = nodeArch
+		compCheckInput.NodeType = nodeType
+		compCheckInput.NodeOrg = nodeOrg
+		compCheckInput.BusinessPolicy = bp
+		compCheckInput.PatternId = patternId
+		compCheckInput.Pattern = pattern
+
+		// use the user org for the patternId if it does not include an org id
+		if compCheckInput.PatternId != "" {
+			compCheckInput.PatternId = cliutils.AddOrg(userOrg, compCheckInput.PatternId)
 		}
 
-		// display the output
-		output, err := cliutils.DisplayAsJson(compOutput)
+		if useNodeId {
+			// add credentials'org to node id if the node id does not have an org
+			nId = cliutils.AddOrg(userOrg, nId)
+			compCheckInput.NodeId = nId
+		}
+
+		// formalize node id or get node policy
+		bUseLocalNodeForPolicy := false
+		bUseLocalNodeForUI := false
+		if bp != nil || pattern != nil || patternId != "" {
+			if nodePolFile != "" {
+				// read the node policy from file
+				var np exchangecommon.NodePolicy
+				readNodePolicyFile(nodePolFile, &np)
+				compCheckInput.NodePolicy = &np
+			} else if !useNodeId {
+				bUseLocalNodeForPolicy = true
+			}
+		}
+
+		if nodeUIFile != "" {
+			// read the node userinput from file
+			var node_ui []policy.UserInput
+			readUserInputFile(nodeUIFile, &node_ui)
+			compCheckInput.NodeUserInput = node_ui
+		} else if !useNodeId {
+			bUseLocalNodeForUI = true
+		}
+
+		if bUseLocalNodeForPolicy {
+			msgPrinter.Printf("Neither node id nor node policy is specified. Getting node policy from the local node.")
+			msgPrinter.Println()
+
+			// get node policy from local node
+			var np exchangecommon.NodePolicy
+			cliutils.HorizonGet("node/policy", []int{200}, &np, false)
+			compCheckInput.NodePolicy = &np
+		}
+
+		if bUseLocalNodeForUI {
+			msgPrinter.Printf("Neither node id nor node user input file is specified. Getting node user input from the local node.")
+			msgPrinter.Println()
+			// get node user input from local node
+			var node_ui []policy.UserInput
+			cliutils.HorizonGet("node/userinput", []int{200}, &node_ui, false)
+			compCheckInput.NodeUserInput = node_ui
+		}
+
+		if bUseLocalNodeForPolicy || bUseLocalNodeForUI {
+			// get id from local node, check arch
+			compCheckInput.NodeId, compCheckInput.NodeArch, compCheckInput.NodeType, compCheckInput.NodeOrg = getLocalNodeInfo(nodeArch, nodeType, nodeOrg)
+		}
+
+		if nodeType == "" && compCheckInput.NodeId != "" {
+			cliutils.Verbose(msgPrinter.Sprintf("No node type has been provided: node type of '%v' node will be used", compCheckInput.NodeId))
+		}
+
+		if servicePolFile != "" {
+			compCheckInput.ServicePolicy = sp.GetExternalPolicy()
+		}
+
+		// put the given service defs into the compCheckInput
+		if serviceDefs != nil || len(serviceDefs) != 0 {
+			compCheckInput.Service = serviceDefs
+		}
+
+		cliutils.Verbose(msgPrinter.Sprintf("Using compatibility checking input: %v", compCheckInput))
+
+		// now we can call the real code to check if the policies are compatible.
+		// the policy validation are done wthin the calling function.
+		compOutput, err := compcheck.DeployCompatible(ec, agbotUrl, &compCheckInput, checkAllSvcs, msgPrinter)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn deploycheck all' output: %v", err))
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+		} else {
+			if !showDetail {
+				compOutput.Input = nil
+			}
+			totalOutput[nId] = compOutput
 		}
-
-		fmt.Println(output)
 	}
+
+	// display the output
+	var output string
+	var err error
+	if haGroupName == "" && len(nIds) == 1 {
+		for _, o := range totalOutput {
+			output, err = cliutils.DisplayAsJson(o)
+			break
+		}
+	} else {
+		output, err = cliutils.DisplayAsJson(totalOutput)
+	}
+
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn deploycheck all' output: %v", err))
+	}
+	fmt.Println(output)
 }
 
-// Make sure -n and --node-pol, -b and -B pairs
+// Make sure -n and --ha-group, --node-pol, -b and -B pairs
 // and -p and -P pairs are mutually exclusive.
 // Business policy and pattern are mutually exclusive.
 // Get default credential, node id and org if they are not set.
-func verifyCompCheckParameters(org string, userPw string, nodeId string, nodeType string, nodePolFile string, nodeUIFile string,
+func verifyCompCheckParameters(org string, userPw string, nodeIds []string, haGroupName string, nodeType string, nodePolFile string, nodeUIFile string,
 	businessPolId string, businessPolFile string, patternId string, patternFile string, servicePolFile string,
-	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, common.AbstractPatternFile, []common.AbstractServiceFile) {
+	svcDefFiles []string) (string, string, []string, bool, *businesspolicy.BusinessPolicy, common.AbstractPatternFile, []common.AbstractServiceFile) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// if user credential is not given, then use the node auth env HZN_EXCHANGE_NODE_AUTH if it is defined.
+	credToUse := cliutils.WithDefaultEnvVar(&userPw, "HZN_EXCHANGE_NODE_AUTH")
+	orgToUse := org
 
 	// make sure the node type has correct value
 	ValidateNodeType(nodeType)
@@ -171,11 +197,51 @@ func verifyCompCheckParameters(org string, userPw string, nodeId string, nodeTyp
 		}
 	}
 
+	nodeIdToUse := []string{}
 	useNodeId := false
-	nodeIdToUse := nodeId
-	if nodeId != "" {
+	if haGroupName != "" {
+		if len(nodeIds) != 0 {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-n and --ha-group are mutually exclusive."))
+		}
+		if nodePolFile != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--ha-group and --node-pol are mutually exclusive."))
+		}
+		if nodeUIFile != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--ha-group and --node-ui are mutually exclusive."))
+		}
+
+		if orgToUse == "" {
+			orgToUse = GetOrgFromCred(org, *credToUse)
+		}
+
+		// get the HA group members
+		haMembers := GetHAGroupMembers(orgToUse, *credToUse, haGroupName)
+		if haMembers != nil && len(haMembers) > 0 {
+			useNodeId = true
+			for _, m := range haMembers {
+				nodeIdToUse = append(nodeIdToUse, m)
+			}
+		} else {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The HA group %v does not have members.", haGroupName))
+		}
+	} else if len(nodeIds) == 0 {
+		// use local node
 		if (useBPol && nodePolFile == "") || (!useBPol && nodeUIFile == "") {
-			// true means will use exchange call
+			// get node id from HZN_EXCHANGE_NODE_AUTH
+			if nodeIdTok := os.Getenv("HZN_EXCHANGE_NODE_AUTH"); nodeIdTok != "" {
+				id, _ := cliutils.SplitIdToken(nodeIdTok)
+				if id != "" {
+					// true means will use exchange call for node policy and node user input
+					useNodeId = true
+					nodeIdToUse = append(nodeIdToUse, id)
+				}
+			}
+		}
+	} else {
+		nodeIdToUse = append(nodeIdToUse, nodeIds...)
+
+		if (useBPol && nodePolFile == "") || (!useBPol && nodeUIFile == "") {
+			// true means will use exchange call for node policy and node user input
 			useNodeId = true
 		}
 		if nodePolFile != "" {
@@ -183,17 +249,6 @@ func verifyCompCheckParameters(org string, userPw string, nodeId string, nodeTyp
 		}
 		if nodeUIFile != "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-n and --node-ui are mutually exclusive."))
-		}
-	} else {
-		if (useBPol && nodePolFile == "") || (!useBPol && nodeUIFile == "") {
-			// get node id from HZN_EXCHANGE_NODE_AUTH
-			if nodeIdTok := os.Getenv("HZN_EXCHANGE_NODE_AUTH"); nodeIdTok != "" {
-				nodeIdToUse, _ = cliutils.SplitIdToken(nodeIdTok)
-				if nodeIdToUse != "" {
-					// true means will use exchange call
-					useNodeId = true
-				}
-			}
 		}
 	}
 
@@ -227,23 +282,9 @@ func verifyCompCheckParameters(org string, userPw string, nodeId string, nodeTyp
 
 	useSId, serviceDefs := useExchangeForServiceDef(svcDefFiles)
 
-	// if user credential is not given, then use the node auth env HZN_EXCHANGE_NODE_AUTH if it is defined.
-	credToUse := cliutils.WithDefaultEnvVar(&userPw, "HZN_EXCHANGE_NODE_AUTH")
-	orgToUse := org
 	if useNodeId || useBPolId || useSPolId || usePatternId || useSId {
-		if *credToUse == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the Exchange credential with -u for querying the node, deployment policy and service policy."))
-		} else {
-			// get the org from credToUse
-			if org == "" {
-				id, _ := cliutils.SplitIdToken(*credToUse)
-				if id != "" {
-					orgToUse, _ = cliutils.TrimOrg("", id)
-					if orgToUse == "" {
-						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the organization with -o for the Exchange credentials: %v.", *credToUse))
-					}
-				}
-			}
+		if orgToUse == "" {
+			orgToUse = GetOrgFromCred(org, *credToUse)
 		}
 	}
 
@@ -357,4 +398,23 @@ func ValidateNodeType(nodeType string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Wrong node type specified: %v. It must be 'device' or 'cluster'.", nodeType))
 	}
 
+}
+
+// returns the HA group members
+func GetHAGroupMembers(org string, credToUse string, haGroupName string) []string {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	var haGroupOrg string
+	haGroupOrg, haGroupName = cliutils.TrimOrg(org, haGroupName)
+
+	var haGroupResp exchangecommon.GetHAGroupResponse
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+haGroupOrg+"/hagroups/"+haGroupName, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &haGroupResp)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("HA group %v does not exist in org %v.", haGroupName, haGroupOrg))
+	} else {
+		return haGroupResp.NodeGroups[0].Members
+	}
+
+	return []string{}
 }
