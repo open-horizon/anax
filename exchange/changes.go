@@ -2,8 +2,9 @@ package exchange
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 // The LastUpdated field is explicitly omitted due to a pending change to the datatype of the field.
@@ -44,6 +45,7 @@ const RESOURCE_NODE_AGREEMENTS = "nodeagreements" // A change was made to one of
 const RESOURCE_NODE_STATUS = "nodestatus"
 const RESOURCE_NODE_ERROR = "nodeerrors" // A change was made to the node errors
 const RESOURCE_NODE_SERVICES_CONFIGSTATE = "services_configstate"
+const RESOURCE_HA_GROUP = "ha_group"                     // Lily: A change was made to the node hagroup. **currently in exchange 104, it is "nodegroup" instead of "hagroup"
 const RESOURCE_SERVICE = "service"                       // A change was made to a service
 const RESOURCE_AGBOT_SERVED_POLICY = "agbotbusinesspols" // A served deployment policy change occurred
 const RESOURCE_AGBOT_SERVED_PATTERN = "agbotpatterns"    // A served pattern change occurred
@@ -61,6 +63,9 @@ const CHANGE_OPERATION_CREATED = "created"
 const CHANGE_OPERATION_CREATED_MODIFIED = "created/modified"
 const CHANGE_OPERATION_MODIFIED = "modified"
 const CHANGE_OPERATION_DELETED = "deleted"
+
+// Lily notes:
+// Change: Exchange Change Resource type: nodegroup, Resource: userdev/mygroup, Operation: modified, Detailed changes: [{794}]
 
 // functions for interrogating change types
 func (e ExchangeChange) IsMessage(node string) bool {
@@ -135,6 +140,10 @@ func (e ExchangeChange) IsNodeError(node string) bool {
 
 func (e ExchangeChange) IsOrg() bool {
 	return e.Resource == RESOURCE_ORG
+}
+
+func (e ExchangeChange) IsHAGroup() bool {
+	return e.Resource == RESOURCE_HA_GROUP
 }
 
 func (e ExchangeChange) IsService() bool {

@@ -2,6 +2,7 @@ package agreementbot
 
 import (
 	"fmt"
+
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
@@ -359,4 +360,19 @@ func (e ServedPolicyCommand) ShortString() string {
 
 func NewServedPolicyCommand() *ServedPolicyCommand {
 	return &ServedPolicyCommand{}
+}
+
+// ==============================================================================================================
+type HAGroupChangedCommand struct {
+	Msg events.ExchangeChangeMessage
+}
+
+func (p HAGroupChangedCommand) ShortString() string {
+	return fmt.Sprintf("%v", p)
+}
+
+func NewHAGroupChangedCommand(msg *events.ExchangeChangeMessage) *HAGroupChangedCommand {
+	return &HAGroupChangedCommand{
+		Msg: *msg,
+	}
 }

@@ -53,7 +53,7 @@ type AgbotDatabase interface {
 	ArchiveAgreement(agreementid string, protocol string, reason uint, desc string) (*Agreement, error)
 
 	// Workoad usage related functions
-	NewWorkloadUsage(deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error
+	NewWorkloadUsage(deviceId string, haGroupName string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error
 	FindSingleWorkloadUsageByDeviceAndPolicyName(deviceid string, policyName string) (*WorkloadUsage, error)
 	FindWorkloadUsages(filters []WUFilter) ([]WorkloadUsage, error)
 
@@ -67,6 +67,8 @@ type AgbotDatabase interface {
 	UpdatePolicy(deviceid string, policyName string, pol string) (*WorkloadUsage, error)
 	UpdateWUAgreementId(deviceid string, policyName string, agid string, protocol string) (*WorkloadUsage, error)
 	DisableRollbackChecking(deviceid string, policyName string) (*WorkloadUsage, error)
+	UpdateHAGroupNameAndPartners(deviceid string, policyName string, haGroupName string, haPartners []string) (*WorkloadUsage, error)
+	UpdateHAPartners(deviceid string, policyName string, haPartners []string) (*WorkloadUsage, error)
 
 	DeleteWorkloadUsage(deviceid string, policyName string) error
 

@@ -3,13 +3,14 @@ package agreementbot
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
-	"time"
 )
 
 type ChangesWorker struct {
@@ -183,6 +184,23 @@ func (w *ChangesWorker) findAndProcessChanges() {
 
 		} else if change.IsNodeServiceConfigState("") {
 			batchedEvents[events.CHANGE_NODE_CONFIGSTATE_TYPE] = true
+
+		} else if change.IsHAGroup() {
+			// change is already deleted from cache
+			// save the new hagroup in cache. change contains org, hagroupname
+			// if change is:
+			// - create hagroup
+			//     for each member, agreementbot will need to find the workloadusage, then add hagroup, ha patner
+			// - update hagroup
+			//     agreementbot needs to get workloadusage by hagroup name, then update ha patners
+			// - delete hagroup
+			//     agreementbot needs to get workloadusage by hagroup name, then delete hagroup and ha patners for the []workloadusage
+
+			// Change: Exchange Change Resource type: ha_group, Resource: userdev/lilygroup, Operation: created, Detailed changes: [{783}]
+			glog.V(3).Infof(chglog(fmt.Sprintf("Lily - receive ha group change, sending messages")))
+			ev := events.NewExchangeChangeMessage(events.CHANGE_HA_GROUP)
+			ev.SetChange(change)
+			w.Messages() <- ev
 
 		} else {
 			glog.V(5).Infof(chglog(fmt.Sprintf("Unhandled change: %v %v/%v", change.Resource, change.OrgID, change.ID)))

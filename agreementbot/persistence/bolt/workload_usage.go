@@ -3,16 +3,17 @@ package bolt
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
-	"strconv"
 )
 
 const WORKLOAD_USAGE = "workload_usage"
 
-func (db *AgbotBoltDB) NewWorkloadUsage(deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error {
-	if wlUsage, err := persistence.NewWorkloadUsage(deviceId, hapartners, policy, policyName, priority, retryDurationS, verifiedDurationS, reqsNotMet, agid); err != nil {
+func (db *AgbotBoltDB) NewWorkloadUsage(deviceId string, haGroupName string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error {
+	if wlUsage, err := persistence.NewWorkloadUsage(deviceId, haGroupName, hapartners, policy, policyName, priority, retryDurationS, verifiedDurationS, reqsNotMet, agid); err != nil {
 		return err
 	} else if existing, err := db.FindSingleWorkloadUsageByDeviceAndPolicyName(deviceId, policyName); err != nil {
 		return err
@@ -70,6 +71,14 @@ func (db *AgbotBoltDB) UpdateWUAgreementId(deviceid string, policyName string, a
 
 func (db *AgbotBoltDB) DisableRollbackChecking(deviceid string, policyName string) (*persistence.WorkloadUsage, error) {
 	return persistence.DisableRollbackChecking(db, deviceid, policyName)
+}
+
+func (db *AgbotBoltDB) UpdateHAGroupNameAndPartners(deviceid string, policyName string, haGroupName string, haPartners []string) (*persistence.WorkloadUsage, error) {
+	return persistence.UpdateHAGroupNameAndPartners(db, deviceid, policyName, haGroupName, haPartners)
+}
+
+func (db *AgbotBoltDB) UpdateHAPartners(deviceid string, policyName string, haPartners []string) (*persistence.WorkloadUsage, error) {
+	return persistence.UpdateHAPartners(db, deviceid, policyName, haPartners)
 }
 
 func (db *AgbotBoltDB) SingleWorkloadUsageUpdate(deviceid string, policyName string, fn func(persistence.WorkloadUsage) *persistence.WorkloadUsage) (*persistence.WorkloadUsage, error) {

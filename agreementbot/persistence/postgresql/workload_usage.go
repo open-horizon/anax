@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
-	"strings"
 )
 
 // Constants for the SQL statements that are used to work with workload usages. These records are used to track what workload
@@ -230,8 +231,8 @@ func (db *AgbotPostgresqlDB) FindWorkloadUsages(filters []persistence.WUFilter) 
 	return wus, nil
 }
 
-func (db *AgbotPostgresqlDB) NewWorkloadUsage(deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error {
-	if wlUsage, err := persistence.NewWorkloadUsage(deviceId, hapartners, policy, policyName, priority, retryDurationS, verifiedDurationS, reqsNotMet, agid); err != nil {
+func (db *AgbotPostgresqlDB) NewWorkloadUsage(deviceId string, haGroupName string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error {
+	if wlUsage, err := persistence.NewWorkloadUsage(deviceId, haGroupName, hapartners, policy, policyName, priority, retryDurationS, verifiedDurationS, reqsNotMet, agid); err != nil {
 		return err
 	} else if existing, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(nil, deviceId, policyName); err != nil {
 		return err
@@ -258,6 +259,14 @@ func (db *AgbotPostgresqlDB) UpdatePriority(deviceid string, policyName string, 
 
 func (db *AgbotPostgresqlDB) UpdatePolicy(deviceid string, policyName string, pol string) (*persistence.WorkloadUsage, error) {
 	return persistence.UpdatePolicy(db, deviceid, policyName, pol)
+}
+
+func (db *AgbotPostgresqlDB) UpdateHAGroupNameAndPartners(deviceid string, policyName string, haGroupName string, haPartners []string) (*persistence.WorkloadUsage, error) {
+	return persistence.UpdateHAGroupNameAndPartners(db, deviceid, policyName, haGroupName, haPartners)
+}
+
+func (db *AgbotPostgresqlDB) UpdateHAPartners(deviceid string, policyName string, haPartners []string) (*persistence.WorkloadUsage, error) {
+	return persistence.UpdateHAPartners(db, deviceid, policyName, haPartners)
 }
 
 // Updating the agreement id in the existing record is easy. However, the record might be in the wrong partition. It is possible that
@@ -326,12 +335,21 @@ func (db *AgbotPostgresqlDB) SingleWorkloadUsageUpdate(deviceid string, policyNa
 		return nil, fmt.Errorf("Unable to locate workload usage for device: %v, and policy: %v", deviceid, policyName)
 	} else {
 		updated := fn(*wlUsage)
+
+		// func(w WorkloadUsage) *WorkloadUsage {
+		// 	w.HAGroupName = haGroupName
+		// 	w.HAPartners = haPartners
+		// 	glog.V(2).Infof("Lily - Set w.HAPartnerners (%v) to haPartners: %v", w.HAPartners, haPartners)
+		// 	return &w
+		// }
+
+		glog.V(2).Infof("Lily - SingleWorkloadUsageUpdate, workloadUsage to update is %v", updated.String())
 		return updated, db.wrapWUTransaction(deviceid, policyName, updated)
 	}
 }
 
 func (db *AgbotPostgresqlDB) wrapWUTransaction(deviceid string, policyName string, updated *persistence.WorkloadUsage) error {
-
+	glog.V(2).Infof("Lily - wrapWUTransaction, workloadUsage to update is %v", updated.String())
 	if tx, err := db.db.Begin(); err != nil {
 		return err
 	} else if err := db.persistUpdatedWorkloadUsage(tx, deviceid, policyName, updated); err != nil {
@@ -355,6 +373,8 @@ func (db *AgbotPostgresqlDB) persistUpdatedWorkloadUsage(tx *sql.Tx, deviceid st
 		// This code is running in a database transaction. Within the tx, the current record (mod) is
 		// read and then updated according to the updates within the input update record. It is critical
 		// to check for correct data transitions within the tx.
+		glog.V(2).Infof("Lily - persistUpdatedWorkloadUsage, workloadUsage to update is %v", update.String())
+
 		persistence.ValidateWUStateTransition(mod, update)
 		return db.updateWorkloadUsage(tx, mod, partition)
 	}

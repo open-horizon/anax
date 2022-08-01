@@ -4,6 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
@@ -15,11 +21,6 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
-	"net/http"
-	"os"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // for identifying the subworkers used by this worker
@@ -257,6 +258,11 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 		case events.CHANGE_NODE_TYPE:
 			// The node itself has changed.
 			w.nodeSearch.SetRescanNeeded()
+		case events.CHANGE_HA_GROUP:
+			// need to update cache and database
+			//msg.GetChange()
+			glog.Info("Lily - AgreementBot got events.CHANGE_HA_GROUP event, will send out HAGroupChanged command")
+			w.Commands <- NewHAGroupChangedCommand(msg)
 		}
 
 	case *events.SecretUpdatesMessage:
@@ -651,6 +657,10 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 		w.shutdownStarted = true
 		glog.V(4).Infof("AgreementBotWorker received start shutdown command")
 
+	case *HAGroupChangedCommand:
+		glog.Info("Lily - AgreementBot got HAGroupChangedCommand, will handle this command")
+		cmd, _ := command.(*HAGroupChangedCommand)
+		go w.handleHAGroupChange(&cmd.Msg)
 	default:
 		return false
 	}
@@ -1087,8 +1097,53 @@ func (w *AgreementBotWorker) syncOnInit() error {
 		}
 	}
 
+	glog.V(3).Infof(AWlogString("agreeemnts sync up completed normally."))
+
+	glog.V(3).Infof(AWlogString("beginning sync up workload usage."))
+
+	if err := w.syncWorkloadUsages(); err != nil {
+		glog.V(3).Infof(AWlogString("Lily - error occurs during sync up workload usage."))
+		return err
+	}
 	glog.V(3).Infof(AWlogString("sync up completed normally."))
 	return nil
+}
+
+func (w *AgreementBotWorker) syncWorkloadUsages() error {
+	glog.V(3).Infof(AWlogString("Lily - beginning sync up the workload usages."))
+
+	if workloadUsages, err := w.db.FindWorkloadUsages([]persistence.WUFilter{persistence.AllWUFilter()}); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("Lily - failed to retrieve all workload usages from database, error %v", err)))
+		return err
+	} else if len(workloadUsages) == 0 {
+		glog.V(3).Infof(AWlogString("Lily - no workload usage found in database"))
+	} else {
+		glog.V(3).Infof(AWlogString("Lily - starting loop through the workload usages."))
+
+		for _, workloadUsage := range workloadUsages {
+			if device, err := GetDevice(w.BaseWorker.EC.HTTPFactory.NewHTTPClient(nil), workloadUsage.DeviceId, w.BaseWorker.EC.URL, w.BaseWorker.EC.Id, w.BaseWorker.EC.Token); err != nil {
+				glog.Errorf(AWlogString(fmt.Sprintf("failed to retrieve device %v from exchange, error %v", workloadUsage.DeviceId, err)))
+				return err
+			} else if haPartners, err := GetHAPartners(workloadUsage.DeviceId, device.HAGroup, w.BaseWorker.EC.HTTPFactory.NewHTTPClient(nil), w.BaseWorker.EC.URL, w.BaseWorker.EC.Id, w.BaseWorker.EC.Token); err != nil {
+				glog.Errorf(AWlogString(fmt.Sprintf("failed to retrieve ha partners for device %v from exchange, error %v", workloadUsage.DeviceId, err)))
+				return err
+			} else {
+				// update haGroupName and haPartners for this workloadUsage
+				glog.V(3).Infof(AWlogString(fmt.Sprintf("Lily - before update. worload usage (%v) - ha group name: %v, ha partners: %v", workloadUsage.HAGroupName, workloadUsage.HAPartners, workloadUsage.DeviceId)))
+				// check updatePending...
+				//workloadUsage.PendingUpgradeTime
+				if updatedWorkloadUsage, err := w.db.UpdateHAGroupNameAndPartners(workloadUsage.DeviceId, workloadUsage.PolicyName, device.HAGroup, haPartners); err != nil {
+					glog.Errorf(AWlogString(fmt.Sprintf("failed to update ha group name and ha partners for device %v from exchange, error %v", workloadUsage.DeviceId, err)))
+					return err
+				} else {
+					glog.V(3).Infof(AWlogString(fmt.Sprintf("Lily - ha group name %v and ha partners %v are updated for worload usage (%v)", updatedWorkloadUsage.HAGroupName, updatedWorkloadUsage.HAPartners, updatedWorkloadUsage.DeviceId)))
+				}
+
+			}
+		}
+	}
+	return nil
+
 }
 
 func (w *AgreementBotWorker) cleanupAgreement(ag *persistence.Agreement) {
