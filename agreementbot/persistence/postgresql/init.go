@@ -102,6 +102,13 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 			return errors.New(fmt.Sprintf("unable to create secrets partition table index, error: %v", err))
 		}
 
+		// Create the ha group upgrade table. Do not partition it.
+		if _, err := db.db.Exec(CREATE_HA_GROUP_UPGRADE_MAIN_TABLE); err != nil {
+			return fmt.Errorf("unable to create ha group update table, error: %v", err)
+		} else if _, err := db.db.Exec(HA_GROUP_ADD_IF_NOT_PRESENT); err != nil {
+			return fmt.Errorf("unable to create ha group add if not present function, error: %v", err)
+		}
+
 		glog.V(3).Infof("Postgresql primary partition database tables exist.")
 
 		// Migrate the database tables if necessary. Extract the current schema version from the version table,

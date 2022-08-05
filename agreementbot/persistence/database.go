@@ -91,4 +91,9 @@ type AgbotDatabase interface {
 	DeleteSecretsForPattern(polOrg, patternName string) error
 	DeletePolicySecret(secretOrg, secretName, policyOrg, policyName string) error
 	DeletePatternSecret(secretOrg, secretName, patternOrg, patternName string) error
+
+	// Functions related to persistence of the state of nodes in ha groups executing node management upgrades.
+	CheckIfGroupPresentAndUpdateHATable(requestingNode UpgradingHAGroupNode) (*UpgradingHAGroupNode, error)
+	DeleteHAUpgradeNode(nodeToDelete UpgradingHAGroupNode) error
+	ListAllUpgradingNodesInOrg(orgId string) (*[]UpgradingHAGroupNode, error)
 }
