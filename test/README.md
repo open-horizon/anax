@@ -101,7 +101,7 @@ Here is a full description of all the variables you can use to setup the test th
 - NOK8S=1 - dont register the k8s-service1.
 - NOANAX=1 - anax is started for API tests but is then stopped and is NOT restarted to run workloads.
 - NOAGBOT=1 - the agbot is never started.
-- HA=1 - register 2 devices (and the workload services) as an HA pair. You will get 2 anax device processes in the container.
+- HA=1 - register 2 devices (and the workload services) as an HA pair. You will get 2 anax device processes in the container. Set TEST_PATTERNS=sns for pattern case. Set NOHELLO=1 for the policy case.
 - OLDANAX=1 - run the anax device based on the current commit in github, i.e. the device before you made your changes. This is helpfiul for compatibility testing of new agbot with previous device.
 - OLDAGBOT=1 - run the agbot based on the current commit in github, i.e. the agbot before you made your changes. This is helpfiul for compatibility testing of new device with previous agbot.
 - MULTIAGBOT=1 - run two instances of agbot for testing pursposes.

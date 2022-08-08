@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ./utils.sh
+
 echo -e "\nBC setting is $BC"
 
 if [ "$BC" != "1" ]
@@ -15,201 +17,77 @@ then
         # IBM/netspeed depends on: IBM/nework, IBN/network2, IBM/cpu
         # e2edev@somecomp.com/netspeed depends on: e2edev@somecomp.com/network, e2edev@somecomp.com/network2, IBM/cpu e2edev@somecomp.com/cpu
 
-        ### IBM/netspeed
         read -d '' snsconfig <<EOF
-{
-  "url": "https://bluehorizon.network/services/netspeed",
-  "arch": "${ARCH}",
-  "versionRange": "[2.2.0,INFINITY)",
-  "organization": "IBM",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "var1": "aString",
-        "var2": 5,
-        "var3": 22.2
+[
+  {
+    "serviceOrgid": "IBM",
+    "serviceUrl": "https://bluehorizon.network/services/netspeed",
+    "serviceArch": "${ARCH}",
+    "serviceVersionRange": "[2.2.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "var1",
+        "value": "aString"
+      },
+      {
+        "name": "var2",
+        "value": 5
+      },
+      {
+        "name": "var3",
+        "value": 22.2
       }
-    }
-  ]
-}
-EOF
-        echo -e "\n\n[D] IBM/netspeed service config payload: $snsconfig"
-        echo "Registering IBM/netspeed service config on node"
-        ERR=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            echo -e "error occured: $ERR"
-            exit 2
-        fi
-
-        ### e2edev@somecomp.com/netspeed
-        read -d '' snsconfig <<EOF
-{
-  "url": "https://bluehorizon.network/services/netspeed",
-  "arch": "${ARCH}",
-  "versionRange": "2.2.0",
-  "organization": "e2edev@somecomp.com",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "var1": "node_String",
-        "var2": 20,
-        "var3": 23.2
+    ]
+  },
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "https://bluehorizon.network/services/netspeed",
+    "serviceArch": "${ARCH}",
+    "serviceVersionRange": "[2.2.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "var1",
+        "value": "node_String"
+      },
+      {
+        "name": "var2",
+        "value": 20
+      },
+      {
+        "name": "var3",
+        "value": 23.2
       }
-    }
-  ]
-}
-EOF
-        echo -e "\n\n[D] e2edev@somecomp.com/netspeed service config payload: $snsconfig"
-        echo "Registering e2edev@somecomp.com/netspeed service config on node"
-        ERR=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            echo -e "error occured: $ERR"
-            exit 2
-        fi
-
-        ### IBM/network
-        read -d '' networkservice <<EOF
-{
-  "url": "https://bluehorizon.network/services/network",
-  "arch": "${ARCH}",
-  "versionRange": "1.0.0",
-  "organization": "IBM",
-  "attributes": []
-}
-EOF
-        echo -e "\n\n[D] networkservice payload: $networkservice"
-        echo "Registering IBM/network service"
-        ERR=$(echo "$networkservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            echo -e "error occured: $ERR"
-            exit 2
-        fi
-
-        ### e2edev@somecomp.com/network
-        read -d '' networkservice <<EOF
-{
-  "url": "https://bluehorizon.network/services/network",
-  "arch": "${ARCH}",
-  "versionRange": "1.0.0",
-  "organization": "e2edev@somecomp.com",
-  "attributes": []
-}
-EOF
-        echo -e "\n\n[D] networkservice payload: $networkservice"
-        echo "Registering e2edev@somecomp.com/network service"
-        ERR=$(echo "$networkservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            echo -e "error occured: $ERR"
-            exit 2
-        fi
-
-
-        ### IBM/network2
-        read -d '' networkservice <<EOF
-{
-  "url": "https://bluehorizon.network/services/network2",
-  "arch": "${ARCH}",
-  "versionRange": "1.0.0",
-  "organization": "IBM",
-  "attributes": []
-}
-EOF
-        echo -e "\n\n[D] networkservice payload: $networkservice"
-        echo "Registering IBM/network2 service"
-        ERR=$(echo "$networkservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            if [ "${ERR:0:22}" != "Duplicate registration" ]; then
-                echo -e "error occured: $ERR"
-                exit 2
-            fi
-        fi
-
-        ### e2edev@somecomp.com/network2
-        read -d '' networkservice <<EOF
-{
-  "url": "https://bluehorizon.network/services/network2",
-  "arch": "${ARCH}",
-  "versionRange": "1.0.0",
-  "organization": "e2edev@somecomp.com",
-  "attributes": []
-}
-EOF
-        echo -e "\n\n[D] networkservice payload: $networkservice"
-        echo "Registering e2edev@somecomp.com/network2 service"
-        ERR=$(echo "$networkservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            if [ "${ERR:0:22}" != "Duplicate registration" ]; then
-                echo -e "error occured: $ERR"
-                exit 2
-            fi
-        fi
-
-         ### IBM/cpu
-        read -d '' slocservice <<EOF
-{
-    "url": "https://bluehorizon.network/service-cpu",
-    "arch": "${ARCH}",
-    "name": "cpu",
-    "organization": "IBM",
-    "attributes": [
-        {
-            "type": "UserInputAttributes",
-            "label": "User input variables",
-            "publishable": false,
-            "host_only": false,
-            "mappings": {
-                "cpu_var1": "ibmnodevar1"
-            }
-        }
     ]
-}
-EOF
-        echo -e "\n\n[D] service based cpu service payload: $slocservice"
-        echo "Registering service based IBM/cpu service"
-        ERR=$(echo "$slocservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            if [ "${ERR:0:22}" != "Duplicate registration" ]; then 
-                echo -e "error occured: $ERR"
-                exit 2
-            fi
-        fi
-
-         ### e2edev@somecomp.com/cpu
-        read -d '' slocservice <<EOF
-{
-    "url": "https://bluehorizon.network/service-cpu",
-    "arch": "${ARCH}",
-    "name": "cpu",
-    "organization": "e2edev@somecomp.com",
-    "versionRange": "1.0.0",
-    "attributes": [
-        {
-            "type": "UserInputAttributes",
-            "label": "User input variables",
-            "publishable": false,
-            "host_only": false,
-            "mappings": {
-                "cpu_var1": "e2edevnodevar1"
-             }
-        }
+  },
+  {
+    "serviceOrgid": "IBM",
+    "serviceUrl": "https://bluehorizon.network/service-cpu",
+    "serviceArch": "${ARCH}",
+    "serviceVersionRange": "[1.0.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "cpu_var1",
+        "value": "ibmnodevar1"
+      }
     ]
-}
+  },
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "https://bluehorizon.network/service-cpu",
+    "serviceArch": "${ARCH}",
+    "inputs": [
+      {
+        "name": "cpu_var1",
+        "value": "e2edevnodevar1"
+      }
+    ]
+  }
+]
 EOF
-        echo -e "\n\n[D] service based cpu service payload: $slocservice"
-        echo "Registering service based e2edev@somecomp.com/cpu service"
-        ERR=$(echo "$slocservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            echo -e "error occured: $ERR"
-            exit 2
-        fi
+        echo -e "\n\n[D] user input for netspeed service: $snsconfig"
+        echo "Registering user input for netspeed service"
+        RES=$(echo "$snsconfig" | curl -sS -X PATCH -w %{http_code} -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
+        check_api_result "201" "$RES"
 
     elif [ "$PATTERN" == "sns" ] || [ "$PATTERN" == "sall" ]
     then
@@ -217,126 +95,86 @@ EOF
         # Configure the netspeed service variables, at an older version level just to be sure
         # that the runtime will still pick them up for the newer version that is installed in the exchange.
 
-        ### IBM/netspeed
         read -d '' snsconfig <<EOF
-{
-  "url": "https://bluehorizon.network/services/netspeed",
-  "arch": "${ARCH}",
-  "versionRange": "[2.2.0,INFINITY)",
-  "organization": "IBM",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "var1": "node_String",
-        "var2": 20,
-        "var3": 20.2,
-        "var4": ["nodeabcd"]
+[
+  {
+    "serviceOrgid": "IBM",
+    "serviceUrl": "https://bluehorizon.network/services/netspeed",
+    "serviceArch": "${ARCH}",
+    "serviceVersionRange": "[2.2.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "var1",
+        "value": "node_String"
+      },
+      {
+        "name": "var2",
+        "value": 20
+      },
+      {
+        "name": "var3",
+        "value": 20.2
+      },
+      {
+        "name": "var4",
+        "value": ["nodeabcd"]
       }
-    }
-  ]
-}
-EOF
-        echo -e "\n\n[D] IBM/netspeed service config payload: $snsconfig"
-        echo "Registering IBM/netspeed service config on node"
-        ERR=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            echo -e "error occured: $ERR"
-            exit 2
-        fi
-
-        ### e2edev@somecomp.com/netspeed
-        read -d '' snsconfig <<EOF
-{
-  "url": "https://bluehorizon.network/services/netspeed",
-  "arch": "${ARCH}",
-  "versionRange": "2.2.0",
-  "organization": "e2edev@somecomp.com",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "var1": "node_String",
-        "var2": 21,
-        "var3": 21.2,
-        "var4": ["nodeabcd"]
+    ]
+  },
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "https://bluehorizon.network/services/netspeed",
+    "serviceArch": "${ARCH}",
+    "serviceVersionRange": "[2.2.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "var1",
+        "value": "node_String"
+      },
+      {
+        "name": "var2",
+        "value": 21
+      },
+      {
+        "name": "var3",
+        "value": 21.2
+      },
+      {
+        "name": "var4",
+        "value": ["nodeabcd"]
       }
-    }
-  ]
-}
+    ]
+  },
+  {
+    "serviceOrgid": "IBM",
+    "serviceUrl": "https://bluehorizon.network/service-cpu",
+    "serviceArch": "${ARCH}",
+    "serviceVersionRange": "[1.0.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "cpu_var1",
+        "value": "ibmnodevar1"
+      }
+    ]
+  },
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "https://bluehorizon.network/service-cpu",
+    "serviceArch": "${ARCH}",
+    "inputs": [
+      {
+        "name": "cpu_var1",
+        "value": "e2edevnodevar1"
+      }
+    ]
+  }
+]
 EOF
-        echo -e "\n\n[D] e2edev@somecomp.com/netspeed service config payload: $snsconfig"
-        echo "Registering e2edev@somecomp.com/netspeed service config on node"
-        ERR=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            echo -e "error occured: $ERR"
-            exit 2
-        fi
 
-         ### IBM/cpu
-        read -d '' slocservice <<EOF
-{
-    "url": "https://bluehorizon.network/service-cpu",
-    "arch": "${ARCH}",
-    "name": "cpu",
-    "organization": "IBM",
-    "attributes": [
-        {
-            "type": "UserInputAttributes",
-            "label": "User input variables",
-            "publishable": false,
-            "host_only": false,
-            "mappings": {
-                "cpu_var1": "ibmnodevar1"
-            }
-        }
-    ]
-}
-EOF
-        echo -e "\n\n[D] service based cpu service payload: $slocservice"
-        echo "Registering service based IBM/cpu service"
-        ERR=$(echo "$slocservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            if [ "${ERR:0:22}" != "Duplicate registration" ]; then 
-                echo -e "error occured: $ERR"
-                exit 2
-            fi
-        fi
-        
-         ### e2edev@somecomp.com/cpu
-        read -d '' slocservice <<EOF
-{
-    "url": "https://bluehorizon.network/service-cpu",
-    "arch": "${ARCH}",
-    "name": "cpu",
-    "organization": "e2edev@somecomp.com",
-    "versionRange": "1.0.0",
-    "attributes": [
-        {
-            "type": "UserInputAttributes",
-            "label": "User input variables",
-            "publishable": false,
-            "host_only": false,
-            "mappings": {
-                "cpu_var1": "e2edevnodevar1"
-             }
-        }
-    ]
-}
-EOF
-        echo -e "\n\n[D] service based cpu service payload: $slocservice"
-        echo "Registering service based e2edev@somecomp.com/cpu service"
-        ERR=$(echo "$slocservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-        if [ "$ERR" != "null" ]; then
-            echo -e "error occured: $ERR"
-            exit 2
-        fi
+        echo -e "\n\n[D] user input for netspeed service: $snsconfig"
+        echo "Registering user input for netspeed service"
+        RES=$(echo "$snsconfig" | curl -sS -w %{http_code} -X PATCH -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
+        check_api_result "201" "$RES"
 
     fi
 fi

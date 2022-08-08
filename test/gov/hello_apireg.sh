@@ -1,98 +1,55 @@
 #!/bin/bash
 
+source ./utils.sh
+
 echo -e "Pattern is set to $PATTERN"
 
 if [ "$PATTERN" == "susehello" ] || [ "$PATTERN" == "sall" ]
 then
 
-# Configure the usehello service variables.
-read -d '' snsconfig <<EOF
-{
-  "url": "my.company.com.services.usehello2",
-  "version": "1.0.0",
-  "organization": "e2edev@somecomp.com",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "MY_VAR1": "e2edev"
+  read -d '' helloconfig <<EOF
+[
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "my.company.com.services.usehello2",
+    "serviceVersionRange": "[1.0.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "MY_VAR1",
+        "value": "e2edev"
       }
-    }
-  ]
-}
+    ]
+  },
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "my.company.com.services.hello2",
+    "serviceVersionRange": "[1.0.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "MY_S_VAR1",
+        "value": "node_String"
+      }
+    ]
+  },
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "my.company.com.services.cpu2",
+    "serviceVersionRange": "[1.0.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "MY_CPU_VAR",
+        "value": "e2edev"
+      }
+    ]
+  }
+]
 EOF
 
-echo -e "\n\n[D] usehello service config payload: $snsconfig"
+  echo -e "\n\n[D] user input for usehello service: $helloconfig"
 
-echo "Registering usehello service config on node"
+  echo "Registering user input for usehello service"
 
-ERR=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-if [ "$ERR" != "null" ]; then
-  echo -e "error occured: $ERR"
-  exit 2
-fi
-
-# Configure the hello service variables.
-read -d '' snsconfig <<EOF
-{
-  "url": "my.company.com.services.hello2",
-  "version": "1.0.0",
-  "organization": "e2edev@somecomp.com",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "MY_S_VAR1": "e2edev"
-      }
-    }
-  ]
-}
-EOF
-
-echo -e "\n\n[D] hello service config payload: $snsconfig"
-
-echo "Registering hello service config on node"
-
-ERR=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-if [ "$ERR" != "null" ]; then
-  echo -e "error occured: $ERR"
-  exit 2
-fi
-
-# Configure the cpu service variables.
-read -d '' snsconfig <<EOF
-{
-  "url": "my.company.com.services.cpu2",
-  "version": "1.0.0",
-  "organization": "e2edev@somecomp.com",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "MY_CPU_VAR": "e2edev"
-      }
-    }
-  ]
-}
-EOF
-
-echo -e "\n\n[D] cpu service config payload: $snsconfig"
-
-echo "Registering cpu service config on node"
-
-ERR=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-if [ "$ERR" != "null" ]; then
-  echo -e "error occured: $ERR"
-  exit 2
-fi
+  RES=$(echo "$helloconfig" | curl -sS -w %{http_code} -X PATCH -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
+  check_api_result "201" "$RES"
 
 fi
