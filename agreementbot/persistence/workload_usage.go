@@ -7,27 +7,25 @@ import (
 )
 
 type WorkloadUsage struct {
-	Id                 uint64   `json:"record_id"`            // unique primary key for records
-	DeviceId           string   `json:"device_id"`            // the device id we are working with, immutable after construction
-	HAPartners         []string `json:"ha_partners"`          // list of device id(s) which are partners to this device
-	PendingUpgradeTime uint64   `json:"pending_upgrade_time"` // time when this usage was marked for pending upgrade
-	Policy             string   `json:"policy"`               // the policy containing the workloads we're managing
-	PolicyName         string   `json:"policy_name"`          // the name of the policy containing the workloads we're managing
-	Priority           int      `json:"priority"`             // the workload priority that we're working with
-	RetryCount         int      `json:"retry_count"`          // The number of retries attempted so far
-	RetryDurationS     int      `json:"retry_durations"`      // The number of seconds in which the specified number of retries must occur in order for the next priority workload to be attempted.
-	CurrentAgreementId string   `json:"current_agreement_id"` // the agreement id currently in use
-	FirstTryTime       uint64   `json:"first_try_time"`       // time when first agrement attempt was made, used to count retries per time
-	LatestRetryTime    uint64   `json:"latest_retry_time"`    // time when the newest retry has occurred
-	DisableRetry       bool     `json:"disable_retry"`        // when true, retry and retry durations are disbled which effectively disables workload rollback
-	VerifiedDurationS  int      `json:"verified_durations"`   // the number of seconds for successful data verification before disabling workload rollback retries
-	ReqsNotMet         bool     `json:"requirements_not_met"` // this workload usage record is not at the highest priority because the device did not meet the API spec requirements at one of the higher priorities
+	Id                 uint64 `json:"record_id"`            // unique primary key for records
+	DeviceId           string `json:"device_id"`            // the device id we are working with, immutable after construction
+	PendingUpgradeTime uint64 `json:"pending_upgrade_time"` // time when this usage was marked for pending upgrade
+	Policy             string `json:"policy"`               // the policy containing the workloads we're managing
+	PolicyName         string `json:"policy_name"`          // the name of the policy containing the workloads we're managing
+	Priority           int    `json:"priority"`             // the workload priority that we're working with
+	RetryCount         int    `json:"retry_count"`          // The number of retries attempted so far
+	RetryDurationS     int    `json:"retry_durations"`      // The number of seconds in which the specified number of retries must occur in order for the next priority workload to be attempted.
+	CurrentAgreementId string `json:"current_agreement_id"` // the agreement id currently in use
+	FirstTryTime       uint64 `json:"first_try_time"`       // time when first agrement attempt was made, used to count retries per time
+	LatestRetryTime    uint64 `json:"latest_retry_time"`    // time when the newest retry has occurred
+	DisableRetry       bool   `json:"disable_retry"`        // when true, retry and retry durations are disbled which effectively disables workload rollback
+	VerifiedDurationS  int    `json:"verified_durations"`   // the number of seconds for successful data verification before disabling workload rollback retries
+	ReqsNotMet         bool   `json:"requirements_not_met"` // this workload usage record is not at the highest priority because the device did not meet the API spec requirements at one of the higher priorities
 }
 
 func (w WorkloadUsage) String() string {
 	return fmt.Sprintf("Id: %v, "+
 		"DeviceId: %v, "+
-		"HA Partners: %v, "+
 		"Pending Upgrade Time: %v, "+
 		"PolicyName: %v, "+
 		"Priority: %v, "+
@@ -40,14 +38,13 @@ func (w WorkloadUsage) String() string {
 		"VerifiedDurationS: %v, "+
 		"ReqsNotMet: %v, "+
 		"Policy: %v",
-		w.Id, w.DeviceId, w.HAPartners, w.PendingUpgradeTime, w.PolicyName, w.Priority, w.RetryCount,
+		w.Id, w.DeviceId, w.PendingUpgradeTime, w.PolicyName, w.Priority, w.RetryCount,
 		w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.DisableRetry, w.VerifiedDurationS, w.ReqsNotMet, w.Policy)
 }
 
 func (w WorkloadUsage) ShortString() string {
 	return fmt.Sprintf("Id: %v, "+
 		"DeviceId: %v, "+
-		"HA Partners: %v, "+
 		"Pending Upgrade Time: %v, "+
 		"PolicyName: %v, "+
 		"Priority: %v, "+
@@ -59,7 +56,7 @@ func (w WorkloadUsage) ShortString() string {
 		"DisableRetry: %v, "+
 		"VerifiedDurationS: %v, "+
 		"ReqsNotMet: %v",
-		w.Id, w.DeviceId, w.HAPartners, w.PendingUpgradeTime, w.PolicyName, w.Priority, w.RetryCount,
+		w.Id, w.DeviceId, w.PendingUpgradeTime, w.PolicyName, w.Priority, w.RetryCount,
 		w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.DisableRetry, w.VerifiedDurationS, w.ReqsNotMet)
 }
 
@@ -71,7 +68,6 @@ func NewWorkloadUsage(deviceId string, hapartners []string, policy string, polic
 	} else {
 		return &WorkloadUsage{
 			DeviceId:           deviceId,
-			HAPartners:         hapartners,
 			PendingUpgradeTime: 0,
 			Policy:             policy,
 			PolicyName:         policyName,

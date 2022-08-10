@@ -4,10 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/golang/glog"
 	_ "github.com/lib/pq"
 	"github.com/open-horizon/anax/config"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 // This function is called by the anax main to allow the configured database a chance to initialize itself.
@@ -107,6 +108,11 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 			return fmt.Errorf("unable to create ha group update table, error: %v", err)
 		} else if _, err := db.db.Exec(HA_GROUP_ADD_IF_NOT_PRESENT); err != nil {
 			return fmt.Errorf("unable to create ha group add if not present function, error: %v", err)
+		}
+
+		// Create the ha group service upgrade table. Do not partition it.
+		if _, err := db.db.Exec(CREATE_HA_WORKLOAD_UPGRADE_MAIN_TABLE); err != nil {
+			return fmt.Errorf("unable to create ha workload upgrade table, error: %v", err)
 		}
 
 		glog.V(3).Infof("Postgresql primary partition database tables exist.")

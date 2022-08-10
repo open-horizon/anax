@@ -3,13 +3,15 @@ package agreementbot
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
-	"time"
 )
 
 type ChangesWorker struct {
@@ -138,7 +140,7 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	// Loop through each change to identify resources that we are interested in, and then send out event messages
 	// to notify the other workers that they have some work to do.
 	for _, change := range changes.Changes {
-		exchange.DeleteCacheResourceFromChange(change, "")
+		deletedCache := exchange.DeleteCacheResourceFromChange(change, "")
 		if glog.V(5) {
 			glog.Infof(chglog(fmt.Sprintf("Change: %v", change)))
 		}
@@ -183,6 +185,20 @@ func (w *ChangesWorker) findAndProcessChanges() {
 
 		} else if change.IsNodeServiceConfigState("") {
 			batchedEvents[events.CHANGE_NODE_CONFIGSTATE_TYPE] = true
+
+		} else if change.IsHAGroup() {
+			// Deleted cache is: &{mygroup mygroup [anaxdevice6] 2022-08-11T17:09:56.545935742Z[UTC]}
+			glog.V(3).Infof(chglog(fmt.Sprintf("Lily - receive ha group change, sending messages. Deleted cache is: %v", deletedCache)))
+			if deletedHACache, ok := deletedCache.(exchangecommon.HAGroup); ok {
+				glog.V(3).Infof(chglog(fmt.Sprintf("Lily - receive ha group change, Deleted HA cache is: %v", deletedHACache)))
+			} else {
+				glog.V(3).Infof(chglog("Lily - deletedCache is nil or failed to cast deletedCache to deletedHACache: %v"))
+			}
+
+			ev := events.NewExchangeChangeMessage(events.CHANGE_HA_GROUP)
+			ev.SetChange(change)
+			ev.SetResourceBeforeChange(deletedCache)
+			w.Messages() <- ev
 
 		} else {
 			glog.V(5).Infof(chglog(fmt.Sprintf("Unhandled change: %v %v/%v", change.Resource, change.OrgID, change.ID)))

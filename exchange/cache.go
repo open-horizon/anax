@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/cache"
-	"golang.org/x/crypto/sha3"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cache"
+	"github.com/open-horizon/anax/exchangecommon"
+	"golang.org/x/crypto/sha3"
 )
 
 // This is the struct type that has the top-level cache of all resource types
@@ -31,6 +33,7 @@ const NODE_DEF_TYPE_CACHE = "NODE_DEF_CACHE"
 const NODE_POL_TYPE_CACHE = "NODE_POLICY_CACHE"
 const EXCH_VERS_TYPE_CACHE = "EXCH_VERS_CACHE"
 const ORG_DEF_TYPE_CACHE = "ORG_DEF_CACHE"
+const HA_GROUP_TYPE_CACHE = "HA_GROUP_TYPE_CACHE"
 
 // This only applies to the exchange version.
 // All others are monitored for changes theough the changes api
@@ -57,6 +60,9 @@ func (c *CacheEntry) Copy() interface{} {
 	case ExchangeNodePolicy:
 		exchPol := c.Resource.(ExchangeNodePolicy)
 		resourceCopy = *(&exchPol).DeepCopy()
+	case exchangecommon.HAGroup:
+		haGroup := c.Resource.(exchangecommon.HAGroup)
+		resourceCopy = *(&haGroup).DeepCopy()
 	default:
 		resourceCopy = c.Resource
 	}
@@ -169,6 +175,16 @@ func GetOrgDefFromCache(org string) *Organization {
 
 	if typedOrgDef, ok := orgDef.(Organization); ok {
 		return &typedOrgDef
+	}
+	return nil
+}
+
+// GetHAGroupFromCache returns the hagroup from the exchange chache if it is present, or nil if it is not
+func GetHAGroupFromCache(hagroupOrg string, hagroupName string) *exchangecommon.HAGroup {
+	hagroup := GetResourceFromCache(HAgroupCacheMapKey(hagroupOrg, hagroupName), HA_GROUP_TYPE_CACHE, 0)
+
+	if typedHagroup, ok := hagroup.(exchangecommon.HAGroup); ok {
+		return &typedHagroup
 	}
 	return nil
 }
@@ -385,7 +401,7 @@ func UpdateCacheNodePatchWriteThru(nodeOrg string, nodeId string, cachedDevice *
 }
 
 // DeleteCacheResourceFromChange takes an ExchangeChange and attempts to delete the now out-of-date exchange cache resource if it is present
-func DeleteCacheResourceFromChange(change ExchangeChange, nodeId string) {
+func DeleteCacheResourceFromChange(change ExchangeChange, nodeId string) interface{} {
 	if change.IsService() {
 		id, arch, _ := svcInformationFromSvcId(change.ID)
 		DeleteCacheResource(SVC_DEF_TYPE_CACHE, ServiceCacheMapKey(change.OrgID, id, arch))
@@ -394,17 +410,31 @@ func DeleteCacheResourceFromChange(change ExchangeChange, nodeId string) {
 		DeleteCacheResource(SVC_KEY_TYPE_CACHE, sIdWithOrg)
 		DeleteCacheResource(SVC_DOCKAUTH_TYPE_CACHE, sIdWithOrg)
 	} else if change.IsNode(nodeId) || change.IsNodeAgreement(nodeId) || change.IsNodeServiceConfigState(nodeId) {
+		node := GetNodeFromCache(change.OrgID, change.ID)
 		DeleteCacheResource(NODE_DEF_TYPE_CACHE, NodeCacheMapKey(change.OrgID, change.ID))
+		return node
 	} else if change.IsNodePolicy(nodeId) {
+		nodePol := GetNodePolicyFromCache(change.OrgID, change.ID)
 		DeleteCacheResource(NODE_POL_TYPE_CACHE, NodeCacheMapKey(change.OrgID, change.ID))
+		return nodePol
 	} else if change.IsServicePolicy() {
 		sIdWithOrg := fmt.Sprintf("%s/%s", change.OrgID, change.ID)
+		svcPol := GetServicePolicyFromCache(sIdWithOrg)
 		DeleteCacheResource(SVC_POL_TYPE_CACHE, sIdWithOrg)
+		return svcPol
 	} else if change.IsOrg() && (change.Operation == CHANGE_OPERATION_CREATED || change.Operation == CHANGE_OPERATION_DELETED) {
 		DeleteOrgCachedResources(change.OrgID)
 	} else if change.IsOrg() {
+		org := GetOrgDefFromCache(change.OrgID)
 		DeleteCacheResource(ORG_DEF_TYPE_CACHE, change.OrgID)
+		return org
+	} else if change.IsHAGroup() {
+		//haGroup := GetHAGroupFromCache(change.OrgID, change.ID)
+		haGroup := GetResourceFromCache(HAgroupCacheMapKey(change.OrgID, change.ID), HA_GROUP_TYPE_CACHE, 0)
+		DeleteCacheResource(HA_GROUP_TYPE_CACHE, HAgroupCacheMapKey(change.OrgID, change.ID))
+		return haGroup
 	}
+	return nil
 }
 
 func svcInformationFromSvcId(svcId string) (svcUrl string, svcArch string, svcVersion string) {
@@ -431,6 +461,10 @@ func ServicePolicyCacheMapKey(svcOrg string, svcId string, svcArch string, svcVe
 // NodeCacheMapKey returns a string to use for the cache map key for a node with the given org and id
 func NodeCacheMapKey(nodeOrg string, nodeId string) string {
 	return fmt.Sprintf("%s/%s", nodeOrg, nodeId)
+}
+
+func HAgroupCacheMapKey(hagroupOrg string, hagroupName string) string {
+	return fmt.Sprintf("%s/%s", hagroupOrg, hagroupName)
 }
 
 // NewResourceCache will create the top-level cache

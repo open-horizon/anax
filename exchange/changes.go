@@ -2,8 +2,9 @@ package exchange
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 // The LastUpdated field is explicitly omitted due to a pending change to the datatype of the field.
@@ -55,12 +56,16 @@ const RESOURCE_ORG = "org"                               // A change was made to
 const RESOURCE_NMP = "mgmtpolicy"                        // A change was made to a node management policy
 const RESOURCE_AGENT_FILE_VERSION = "agentfileversion"   // A change was made to the agent file versions
 const RESOURCE_NMP_STATUS = "nodemgmtpolstatus"          // A change was made to the node management status
+const RESOURCE_HA_GROUP = "ha_group"                     // A change was made to the hagroup.
 
 // constants for operation values
 const CHANGE_OPERATION_CREATED = "created"
 const CHANGE_OPERATION_CREATED_MODIFIED = "created/modified"
 const CHANGE_OPERATION_MODIFIED = "modified"
 const CHANGE_OPERATION_DELETED = "deleted"
+
+// Lily notes:
+// Change: Exchange Change Resource type: nodegroup, Resource: userdev/mygroup, Operation: modified, Detailed changes: [{794}]
 
 // functions for interrogating change types
 func (e ExchangeChange) IsMessage(node string) bool {
@@ -173,6 +178,10 @@ func (e ExchangeChange) IsAgentFileVersion() bool {
 
 func (e ExchangeChange) IsNodeManagementPolicyStatus() bool {
 	return e.Resource == RESOURCE_NMP_STATUS
+}
+
+func (e ExchangeChange) IsHAGroup() bool {
+	return e.Resource == RESOURCE_HA_GROUP
 }
 
 // This is the struct we get back from the exchange API call.

@@ -2,13 +2,14 @@ package events
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
-	"time"
 )
 
 type Event struct {
@@ -128,6 +129,7 @@ const (
 	CHANGE_NMP_TYPE                 EventId = "EXCHANGE_CHANGE_NODE_MANAGEMENT_POLICY"
 	CHANGE_AGENT_FILE_VERSION       EventId = "EXCHANGE_CHANGE_AGENT_FILE_VERSION"
 	CHANGE_NMP_STATUS               EventId = "EXCHANGE_CHANGE_NMP_STATUS"
+	CHANGE_HA_GROUP                 EventId = "EXCHANGE_CHANGE_HA_GROUP"
 
 	// Secret related
 	UPDATED_SECRETS EventId = "SECRET_UPDATES"
@@ -2024,8 +2026,9 @@ func NewMMSObjectPoliciesMessage(id EventId, np interface{}) *MMSObjectPoliciesM
 }
 
 type ExchangeChangeMessage struct {
-	event  Event
-	change interface{}
+	event                Event
+	change               interface{}
+	resourceBeforeChange interface{}
 }
 
 func (w *ExchangeChangeMessage) Event() Event {
@@ -2046,6 +2049,14 @@ func (w *ExchangeChangeMessage) SetChange(c interface{}) {
 
 func (w *ExchangeChangeMessage) GetChange() interface{} {
 	return w.change
+}
+
+func (w *ExchangeChangeMessage) SetResourceBeforeChange(r interface{}) {
+	w.resourceBeforeChange = r
+}
+
+func (w *ExchangeChangeMessage) GetResourceBeforeChange() interface{} {
+	return w.resourceBeforeChange
 }
 
 func NewExchangeChangeMessage(id EventId) *ExchangeChangeMessage {
