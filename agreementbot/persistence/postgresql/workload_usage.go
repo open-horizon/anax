@@ -230,8 +230,8 @@ func (db *AgbotPostgresqlDB) FindWorkloadUsages(filters []persistence.WUFilter) 
 	return wus, nil
 }
 
-func (db *AgbotPostgresqlDB) NewWorkloadUsage(deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error {
-	if wlUsage, err := persistence.NewWorkloadUsage(deviceId, hapartners, policy, policyName, priority, retryDurationS, verifiedDurationS, reqsNotMet, agid); err != nil {
+func (db *AgbotPostgresqlDB) NewWorkloadUsage(deviceId string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error {
+	if wlUsage, err := persistence.NewWorkloadUsage(deviceId, policy, policyName, priority, retryDurationS, verifiedDurationS, reqsNotMet, agid); err != nil {
 		return err
 	} else if existing, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(nil, deviceId, policyName); err != nil {
 		return err

@@ -675,14 +675,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 						return
 					}
 				} else {
-					haPartners := []string{}
-					if exchangeDev.HAGroup != "" {
-						if haPartners, err = b.GetHAGroupPartners(wi.Device.Id, exchangeDev.HAGroup, cph); err != nil {
-							glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("received error checking HA group %v completeness for device %v, error: %v", exchangeDev.HAGroup, wi.Device.Id, err)))
-							return
-						}
-					}
-					if err := b.db.NewWorkloadUsage(wi.Device.Id, haPartners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
+					if err := b.db.NewWorkloadUsage(wi.Device.Id, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
 						return
 					}
@@ -1019,19 +1012,10 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 					// Need a new workload usage record but not the same as the highest priority. That can't be right.
 					ackReplyAsValid = false
 				} else if !pol.Workloads[0].HasEmptyPriority() {
-
-					haPartners := []string{}
-					if exchangeDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.SenderId, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v, error: %v", wi.SenderId, err)))
-					} else if exchangeDev.HAGroup != "" {
-						if haPartners, err = b.GetHAGroupPartners(wi.SenderId, exchangeDev.HAGroup, cph); err != nil {
-							glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("received error checking HA group %v completeness for device %v, error: %v", exchangeDev.HAGroup, wi.SenderId, err)))
-						}
-					}
-
-					if err := b.db.NewWorkloadUsage(wi.SenderId, haPartners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
+					if err := b.db.NewWorkloadUsage(wi.SenderId, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
+
 				}
 			} else {
 				if wlUsage.Policy == "" {
@@ -1412,59 +1396,13 @@ func (b *BaseAgreementWorker) ignoreDevice(pol *policy.Policy) (bool, error) {
 	return false, nil
 }
 
-// This function get the members of the given HA group minus the given node.
-// Each partner has the format of "org/nodeid"
-func (b *BaseAgreementWorker) GetHAGroupPartners(nodeID string, haGroupName string, cph ConsumerProtocolHandler) ([]string, error) {
-
-	haPartners := []string{}
-
-	// If the agent is not in a HA group, there is nothing to check
-	if haGroupName == "" {
-		return nil, nil
-	}
-
-	org := exchange.GetOrg(nodeID)
-	nodeName := exchange.GetId(nodeID)
-
-	haGroupOrg := org
-
-	haGroup, err := GetHAGroup(haGroupOrg, haGroupName, b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken())
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("failed to obtain HA group %v from the exchange: %v", haGroupName, err))
-	}
-
-	if haGroup == nil {
-		// HA group does not exist
-		glog.Warningf("The HA group %v is specified for node %v, but the HA group does not exist.", haGroupName, nodeID)
-		return nil, nil
-	}
-
-	// return the members minus the current node. Each partner has the format of "org/nodeid"
-	if haGroup != nil && len(haGroup.Members) > 0 {
-		for _, partnerId := range haGroup.Members {
-			partnerOrg := exchange.GetOrg(partnerId)
-			partnerName := exchange.GetId(partnerId)
-			if partnerOrg == "" {
-				partnerOrg = org
-			}
-			if partnerName != nodeName || partnerOrg != org {
-				haPartners = append(haPartners, fmt.Sprintf("%s/%s", partnerOrg, partnerName))
-			}
-		}
-	}
-
-	return haPartners, nil
-}
-
 func GetHAGroup(org string, haGroupName string, httpClient *http.Client, url string, agbotId string, token string) (*exchangecommon.HAGroup, error) {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("retrieving hagroup %v/%v from exchange", org, haGroupName)))
-
-	// TODO
-	//cachedHAGroup := exchange.GetHAGroupFromCache(exchange.GetOrg(deviceId), exchange.GetId(deviceId))
-	//if cachedHAGroup != nil {
-	//	return cachedHAGroup, nil
-	//}
+	cachedHAGroup := exchange.GetHAGroupFromCache(org, haGroupName)
+	if cachedHAGroup != nil {
+		return cachedHAGroup, nil
+	}
 
 	var resp interface{}
 	resp = new(exchangecommon.GetHAGroupResponse)
@@ -1482,8 +1420,8 @@ func GetHAGroup(org string, haGroupName string, httpClient *http.Client, url str
 				hagroups := resp.(*exchangecommon.GetHAGroupResponse).NodeGroups
 				if hagroups != nil && len(hagroups) > 0 {
 					glog.V(5).Infof(logString(fmt.Sprintf("retrieved hagroup %v/%v from exchange: %v", org, haGroupName, hagroups[0])))
-					//TODO
-					//exchange.UpdateCache(exchange.HAGroupCacheMapKey(org, haGroupName), exchange.HAGROUP_DEF_TYPE_CACHE, hagroups[0])
+
+					exchange.UpdateCache(exchange.HAgroupCacheMapKey(org, haGroupName), exchange.HA_GROUP_TYPE_CACHE, hagroups[0])
 					return &hagroups[0], nil
 				}
 			}
@@ -1492,4 +1430,55 @@ func GetHAGroup(org string, haGroupName string, httpClient *http.Client, url str
 			return nil, fmt.Errorf("The HA group \"%v\" does not exist in organization %v.", haGroupName, org)
 		}
 	}
+}
+
+// This function get the members of the given HA group minus the given node.
+// Each partner has the format of "org/nodeid"
+func GetHAPartners(nodeID string, haGroupName string, httpClient *http.Client, url string, agbotId string, token string) ([]string, error) {
+	glog.V(5).Infof(logString(fmt.Sprintf("retrieving HA partners for node %v in group %v from exchange", nodeID, haGroupName)))
+	haPartners := []string{}
+
+	// If the agent is not in a HA group, there is nothing to check
+	if haGroupName == "" {
+		return haPartners, nil
+	}
+
+	org := exchange.GetOrg(nodeID)
+	nodeName := exchange.GetId(nodeID)
+
+	haGroupOrg := org
+
+	haGroup, err := GetHAGroup(haGroupOrg, haGroupName, httpClient, url, agbotId, token)
+	if err != nil {
+		return haPartners, errors.New(fmt.Sprintf("failed to obtain HA group %v from the exchange: %v", haGroupName, err))
+	}
+
+	if haGroup == nil {
+		// HA group does not exist
+		glog.Warningf("The HA group %v is specified for node %v, but the HA group does not exist.", haGroupName, nodeID)
+		return haPartners, nil
+	}
+
+	// return the members minus the current node. Each partner has the format of "org/nodeid"
+	if haGroup != nil && len(haGroup.Members) > 0 {
+		foundItself := false
+		for _, partnerId := range haGroup.Members {
+			partnerOrg := exchange.GetOrg(partnerId)
+			partnerName := exchange.GetId(partnerId)
+			if partnerOrg == "" {
+				partnerOrg = org
+			}
+			if partnerName != nodeName || partnerOrg != org {
+				haPartners = append(haPartners, fmt.Sprintf("%s/%s", partnerOrg, partnerName))
+			} else {
+				foundItself = true
+			}
+		}
+		if !foundItself {
+			glog.Warningf("The node: %v is not in the HA group: %v", nodeID, haGroupName)
+			return []string{}, nil
+		}
+	}
+
+	return haPartners, nil
 }
