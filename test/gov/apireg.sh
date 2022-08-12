@@ -1,9 +1,16 @@
 #!/bin/bash
 
-EMAIL="foo@goo.com"
-
 echo -e "\nBC setting is $BC"
 echo -e "\nPATTERN setting is $PATTERN\n"
+
+if [ "$HA" == "1" ]; then
+    if [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
+        echo -e "Pattern $PATTERN is not supported with HA tests, only sns and spws are supported."
+        exit 2
+    fi
+fi
+
+EMAIL="foo@goo.com"
 
 echo "Calling node API"
 
@@ -152,61 +159,6 @@ then
     fi
 else
   echo -e "found expected response: $RES"
-fi
-
-
-# =========================================================================
-# Run some non-HA tests since we have HA setup right now. HA tests only
-# run when testing services.
-
-if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "spws" ]; then
-
-        read -d '' pwsservice <<EOF
-{
-  "url": "https://bluehorizon.network/services/netspeed",
-  "versionRange": "2.2.0",
-  "organization": "IBM",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "var1": "aString",
-        "var2": 6,
-        "var3": 12.3,
-        "var4": ["abcdefg", "12345"],
-        "var5": "override"
-      }
-    }
-  ]
-}
-EOF
-
-        echo "Testing non-HA service registration"
-
-        echo -e "\n\n[D] service payload: $pwsservice"
-
-        RES=$(echo "$pwsservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
-        if [ "$RES" == "" ]
-        then
-            echo -e "$pwsservice \nresulted in empty response"
-            exit 2
-        fi
-
-        ERR=$(echo $RES | jq -r ".error")
-        SUB=${ERR:0:37}
-        if [ "$SUB" != "services on an HA device must specify" ]
-        then
-            echo -e "$pwsservice \nresulted in incorrect response: $RES"
-            exit 2
-        else
-            echo -e "found expected response: $RES"
-        fi
- 
-elif [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
-        echo -e "Pattern $PATTERN is not supported with HA tests, only sns and spws are supported."
 fi
 
 

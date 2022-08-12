@@ -500,6 +500,15 @@ else
   echo -e "Unconfig loop tests are disabled."
 fi
 
+# HA test
+if [ "$HA" == "1" ]; then
+  ./ha_test.sh
+  if [ $? -ne 0 ]; then
+    echo "HA tests failure."
+    exit 1
+  fi
+fi
+
 #Start the edge cluster verification test.
 if [ "$NOKUBE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${TEST_PATTERNS}" == "" ]
 then

@@ -7,38 +7,7 @@ ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 KEY_TEST_DIR="/tmp/keytest"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
-# $1 - Service url to wait for
-# $2 - Service org to wait for
-# $3 - Service version to wait for (optional)
-function WaitForService() {
-  current_svc_version=""
-  TIMEOUT=0
-  while [[ $TIMEOUT -le 25 ]]
-  do
-    if [ "${3}" == "" ]; then
-        echo -e "Waiting for service $2/$1 with any version."
-    else
-        echo -e "Waiting for service $2/$1 with version $3."
-    fi
-    svc_inst=$(curl -s $ANAX_API/service | jq -r ".instances.active[] | select (.ref_url == \"$1\") | select (.organization == \"$2\")")
-    if [ $? -ne 0 ]; then
-        echo -e "${PREFIX} failed to get $1 service instace. ${svc_inst}"
-        exit 2
-    fi
-
-    current_svc_version=$(echo "$svc_inst" | jq -r '.version')
-
-    if [ "$current_svc_version" == "" ] || ([ "$3" != "" ] && [ "$current_svc_version" != "$3" ]); then
-        sleep 5s
-        ((TIMEOUT++))
-    else
-        echo -e "Found service $2/$1 with version $3."
-        break
-    fi
-
-    if [[ $TIMEOUT == 26 ]]; then echo -e "Timeout waiting for service $1 to start"; exit 2; fi
-  done
-}
+source ./utils.sh
 
 CPU_URL="https://bluehorizon.network/service-cpu"
 CPU_ORG="e2edev@somecomp.com"

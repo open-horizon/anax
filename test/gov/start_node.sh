@@ -13,6 +13,31 @@
 # This env var can be changed to whatever pattern you want to run.
 # export PATTERN="sall"
 
+# create an HA group in the exchange with 2 nodes: an12345 and an54321
+function create_HA_group {
+    export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
+    E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
+    USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
+
+    if [ $DEVICE_ORG == "userdev" ]; then
+        auth=${USERDEV_ADMIN_AUTH}
+    else
+        auth=${E2EDEV_ADMIN_AUTH}
+    fi
+    read -d '' hagroup <<EOF
+{
+    "description": "HA group testing",
+    "members": [
+      "an12345",
+      "an54321"
+    ]
+}
+EOF
+    echo "$hagroup" | hzn exchange hagroup add -f- group1 -o $DEVICE_ORG -u $auth
+
+}
+
+
 nohup ./start_anax_loop.sh &>/dev/null &
 
 sleep 5
@@ -29,7 +54,9 @@ fi
 # Setup anax itself through APIs.
 if [ "$HA" == "1" ]
 then
-    export PARTNERID="$DEVICE_ORG/an54321"
+    # create an HA group
+    create_HA_group
+
     ./apireg.sh
 
     if [ $? -ne 0 ]
@@ -46,7 +73,6 @@ then
         export DEVICE_NAME="anaxdev2"
         export HZN_AGENT_PORT=8511
         export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
-        export PARTNERID="an54321"
 
         if [ "$OLDANAX" == "1" ]
         then
@@ -67,7 +93,6 @@ then
 
         sleep 5
 
-        export PARTNERID="$DEVICE_ORG/an12345"
         ./apireg.sh
         if [ $? -ne 0 ]
         then

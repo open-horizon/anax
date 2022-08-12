@@ -254,6 +254,7 @@ clean:
 	ARCH=$(arch) gov/stop_kube.sh
 	@echo "Shutdown anax cleanly"
 	-@curl -sSLX DELETE http://localhost:8510/node 2>/dev/null || true
+	-@curl -sSLX DELETE http://localhost:8511/node 2>/dev/null || true
 	@echo "Removing agent containers"
 	-@HC_BASE=$(ANAX_SOURCE)/anax-in-container $(ANAX_SOURCE)/test/gov/stop_multiple_agents.sh
 	@echo "Removing e2edevtest container"
