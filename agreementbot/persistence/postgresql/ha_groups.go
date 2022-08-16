@@ -9,7 +9,7 @@ import (
 // Constants for the sql table operations required to manage node upgrades for nodes in HA groups
 
 // Create the ha group table. This table will not be partitioned as it is shared between agbots
-const CREATE_HA_GROUP_UPGRADE_MAIN_TABLE=`CREATE TABLE IF NOT EXISTS ha_group_updates (
+const CREATE_HA_GROUP_UPGRADE_MAIN_TABLE = `CREATE TABLE IF NOT EXISTS ha_group_updates (
 	group_name text NOT NULL,
 	org_id text NOT NULL,
 	node_id text NOT NULL,
@@ -19,7 +19,7 @@ const CREATE_HA_GROUP_UPGRADE_MAIN_TABLE=`CREATE TABLE IF NOT EXISTS ha_group_up
 
 // Check if the ha group is in the table. If not add the group, node, and nmp that it is upgrading with
 // These operations are in the same transaction to prevent a situation where 2 agbots check for the group name, before either can add it to the table
-const HA_GROUP_ADD_IF_NOT_PRESENT=`
+const HA_GROUP_ADD_IF_NOT_PRESENT = `
 CREATE OR REPLACE FUNCTION ha_group_add_if_not_present(
 	ha_group_name CHARACTER VARYING,
 	ha_org_id CHARACTER VARYING,
@@ -51,7 +51,7 @@ func (db *AgbotPostgresqlDB) CheckIfGroupPresentAndUpdateHATable(requestingNode 
 
 	if qerr != nil && qerr != sql.ErrNoRows {
 		return nil, fmt.Errorf("error scanning row for ha nodes in group %v currently updating error: %v", requestingNode.GroupName, qerr)
-	} 
+	}
 
 	if !dbNodeId.Valid {
 		return nil, fmt.Errorf("node id returned from ha group updates table search is not valid")
@@ -82,10 +82,10 @@ func (db *AgbotPostgresqlDB) ListAllUpgradingNodesInOrg(orgId string) (*[]persis
 
 		if err = rows.Scan(&dbGroupId, &dbNodeId, &dbNmpId); err != nil {
 			return nil, fmt.Errorf("error scanning row for ha nodes in org %v currently upgrading error was: %v", orgId, err)
-		} 
+		}
 
 		upgradingNodes = append(upgradingNodes, persistence.UpgradingHAGroupNode{GroupName: dbGroupId.String, OrgId: orgId, NodeId: dbNodeId.String, NMPName: dbNmpId.String})
 	}
 
 	return &upgradingNodes, nil
-} 
+}

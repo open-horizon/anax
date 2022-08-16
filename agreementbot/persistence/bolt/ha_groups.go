@@ -1,4 +1,4 @@
-package bolt 
+package bolt
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"github.com/open-horizon/anax/agreementbot/persistence"
 )
 
-const HABUCKET= "ha_updates"
+const HABUCKET = "ha_updates"
 
 func (db *AgbotBoltDB) CheckIfGroupPresentAndUpdateHATable(requestingNode persistence.UpgradingHAGroupNode) (*persistence.UpgradingHAGroupNode, error) {
 	var updatedDBNode persistence.UpgradingHAGroupNode
@@ -22,23 +22,23 @@ func (db *AgbotBoltDB) CheckIfGroupPresentAndUpdateHATable(requestingNode persis
 			// there is no node in this group updating. put the requesting node into the table
 			if dbNodeJson == nil {
 				if serialized, err := json.Marshal(dbNodeJson); err != nil {
-					return err 
+					return err
 				} else if err = b.Put([]byte(HABUCKET), serialized); err != nil {
 					return err
 				}
 				updatedDBNode = requestingNode
-				return nil 
+				return nil
 			}
 
 			if err := json.Unmarshal(dbNodeJson, &dbNode); err != nil {
 				return err
 			}
 			updatedDBNode = dbNode
-			return nil 
+			return nil
 		}
 	})
 
-	return &updatedDBNode, dbErr 
+	return &updatedDBNode, dbErr
 }
 
 func (db *AgbotBoltDB) DeleteHAUpgradeNode(nodeToDelete persistence.UpgradingHAGroupNode) error {
@@ -55,7 +55,7 @@ func (db *AgbotBoltDB) DeleteHAUpgradeNode(nodeToDelete persistence.UpgradingHAG
 func (db *AgbotBoltDB) FindHAUpgradeNodesWithFilters(filterSlice []persistence.HANodeUpgradeFilter) (*[]persistence.UpgradingHAGroupNode, error) {
 	upgradingHANodes := make([]persistence.UpgradingHAGroupNode, 0)
 
-	readErr := db.db.View(func (tx *bolt.Tx) error {
+	readErr := db.db.View(func(tx *bolt.Tx) error {
 		if b := tx.Bucket([]byte(HABUCKET)); b != nil {
 			b.ForEach(func(k, v []byte) error {
 				var haNode persistence.UpgradingHAGroupNode
@@ -63,7 +63,7 @@ func (db *AgbotBoltDB) FindHAUpgradeNodesWithFilters(filterSlice []persistence.H
 				if err := json.Unmarshal(v, &haNode); err != nil {
 					return err
 				} else {
-					include :=  true
+					include := true
 					for _, filter := range filterSlice {
 						if !filter(haNode) {
 							include = false
@@ -82,7 +82,7 @@ func (db *AgbotBoltDB) FindHAUpgradeNodesWithFilters(filterSlice []persistence.H
 
 	if readErr == nil {
 		return &upgradingHANodes, nil
-	} 
+	}
 	return nil, readErr
 }
 

@@ -13,11 +13,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/exchange"
+	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/config"
 	anaxExchange "github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -314,7 +316,7 @@ func VoucherDownload(org, userCreds, device, outputFile string, overwrite bool) 
 }
 
 // hzn sdo voucher import <voucher-file>
-func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyFilePath, patternName string) {
+func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyFilePath, patternName, userInputFileName, haGroupName string) {
 	defer voucherFile.Close()
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Importing voucher file name: %s", voucherFile.Name()))
@@ -329,20 +331,25 @@ func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyF
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("accessing %s: %v", policyFilePath, err))
 		}
 	}
+	if userInputFileName != "" {
+		if _, err := os.Stat(userInputFileName); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("accessing %s: %v", userInputFileName, err))
+		}
+	}
 
 	// Determine voucher file type, and handle it accordingly
 	if strings.HasSuffix(voucherFile.Name(), ".json") {
-		import1Voucher(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, patternName, false)
+		import1Voucher(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, patternName, userInputFileName, haGroupName, false)
 	} else if strings.HasSuffix(voucherFile.Name(), ".tar") {
-		importTar(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, patternName)
+		importTar(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, patternName, userInputFileName, haGroupName)
 	} else if strings.HasSuffix(voucherFile.Name(), ".tar.gz") || strings.HasSuffix(voucherFile.Name(), ".tgz") {
 		gzipReader, err := gzip.NewReader(voucherFile)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading voucher file %s: %v", voucherFile.Name(), err))
 		}
-		importTar(org, userCreds, sdoUrl, gzipReader, voucherFile.Name(), example, policyFilePath, patternName)
+		importTar(org, userCreds, sdoUrl, gzipReader, voucherFile.Name(), example, policyFilePath, patternName, userInputFileName, haGroupName)
 	} else if strings.HasSuffix(voucherFile.Name(), ".zip") {
-		importZip(org, userCreds, sdoUrl, voucherFile, example, policyFilePath, patternName)
+		importZip(org, userCreds, sdoUrl, voucherFile, example, policyFilePath, patternName, userInputFileName, haGroupName)
 	} else {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unsupported voucher file type extension: %s", voucherFile.Name()))
 	}
@@ -351,10 +358,10 @@ func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyF
 func DeprecatedVoucherImport(org, userCreds string, voucherFile *os.File, example, policyFilePath, patternName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 	fmt.Fprintf(os.Stderr, msgPrinter.Sprintf("WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.\n"))
-	VoucherImport(org, userCreds, voucherFile, example, policyFilePath, patternName)
+	VoucherImport(org, userCreds, voucherFile, example, policyFilePath, patternName, "", "")
 }
 
-func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath, patternName string) {
+func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath, patternName, userInputFileName, haGroupName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 	tarReader := tar.NewReader(voucherFileReader)
 	for {
@@ -372,12 +379,12 @@ func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, vouch
 			if strings.HasPrefix(header.Name, ".") || !strings.HasSuffix(header.Name, ".json") {
 				continue
 			}
-			import1Voucher(org, userCreds, sdoUrl, tarReader, header.Name, example, policyFilePath, patternName, true)
+			import1Voucher(org, userCreds, sdoUrl, tarReader, header.Name, example, policyFilePath, patternName, userInputFileName, haGroupName, true)
 		}
 	}
 }
 
-func importZip(org, userCreds, sdoUrl string, voucherFile *os.File, example, policyFilePath, patternName string) {
+func importZip(org, userCreds, sdoUrl string, voucherFile *os.File, example, policyFilePath, patternName, userInputFileName, haGroupName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 	voucherBytes, err := ioutil.ReadAll(bufio.NewReader(voucherFile))
 	if err != nil {
@@ -395,12 +402,12 @@ func importZip(org, userCreds, sdoUrl string, voucherFile *os.File, example, pol
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("opening file %s within zip for %s: %v", fileInfo.Name, voucherFile.Name(), err))
 		}
-		import1Voucher(org, userCreds, sdoUrl, zipFileReader, fileInfo.Name, example, policyFilePath, patternName, true)
+		import1Voucher(org, userCreds, sdoUrl, zipFileReader, fileInfo.Name, example, policyFilePath, patternName, userInputFileName, haGroupName, true)
 		zipFileReader.Close()
 	}
 }
 
-func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath, patternName string, quieter bool) {
+func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath, patternName, userInputFileName, haGroupName string, quieter bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Parse the voucher so we can tell them what we are doing
@@ -429,7 +436,7 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 	// Doing the equivalent of: hzn exchange node create -org "org" -n "$nodeId:$nodeToken" -u "user:pw" (with optional pattern)
 	//todo: try to get the device arch from the voucher
 	//exchange.NodeCreate(org, "", importResponse.NodeId, importResponse.NodeToken, userCreds, "amd64", "", persistence.DEVICE_TYPE_DEVICE, true)
-	NodeAddDevice(org, importResponse.NodeId, importResponse.NodeToken, userCreds, "", patternName, quieter)
+	NodeAddDevice(org, importResponse.NodeId, importResponse.NodeToken, userCreds, "", patternName, userInputFileName, quieter)
 
 	// Create the node policy in the exchange, if they specified it
 	var policyStr string
@@ -445,6 +452,11 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 	}
 	if policyStr != "" {
 		NodeAddPolicyString(org, userCreds, importResponse.NodeId, policyStr, quieter)
+	}
+
+	// add the node in the HA group, if specified
+	if haGroupName != "" {
+		register.AddNodeToHAGroup(org, importResponse.NodeId, haGroupName, userCreds)
 	}
 }
 
@@ -480,14 +492,29 @@ func SdoPostVoucher(url, creds, org string, requestBodyBytes []byte, respBody *I
 }
 
 // This is similar to exchange.NodeCreate(), except it can optionally set a pattern
-func NodeAddDevice(org, nodeId, nodeToken, userPw, arch, patternName string, quieter bool) {
+func NodeAddDevice(org, nodeId, nodeToken, userPw, arch, patternName, userInputFileName string, quieter bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 	if !quieter {
 		msgPrinter.Printf("Adding/updating node...")
 		msgPrinter.Println()
 	}
 
-	putNodeReqBody := anaxExchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, NodeType: persistence.DEVICE_TYPE_DEVICE, Pattern: patternName, PublicKey: []byte(""), Arch: arch}
+	var inputs []policy.UserInput
+	if userInputFileName != "" {
+		userinputBytes, err := ioutil.ReadFile(userInputFileName)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the service cofiguration user input file %s: %v", userInputFileName, err))
+		}
+
+		err = json.Unmarshal([]byte(userinputBytes), &inputs)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("Error unmarshaling userInput json file: %v", err))
+		}
+	} else {
+		inputs = []policy.UserInput{}
+	}
+
+	putNodeReqBody := anaxExchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, NodeType: persistence.DEVICE_TYPE_DEVICE, Pattern: patternName, UserInput: inputs, PublicKey: []byte(""), Arch: arch}
 	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, userPw), []int{201}, putNodeReqBody, nil)
 }
 
