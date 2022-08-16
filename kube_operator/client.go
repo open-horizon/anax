@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	v1scheme "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	v1beta1scheme "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -365,7 +366,7 @@ func getK8sObjectFromYaml(yamlFiles []YamlFile, sch *runtime.Scheme) ([]APIObjec
 	}
 
 	for _, fileStr := range indivYamls {
-		decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
+		decode := serializer.NewCodecFactory(sch).UniversalDecoder(v1beta1scheme.SchemeGroupVersion, v1scheme.SchemeGroupVersion, rbacv1.SchemeGroupVersion, appsv1.SchemeGroupVersion, corev1.SchemeGroupVersion).Decode
 		obj, gvk, err := decode([]byte(fileStr.Body), nil, nil)
 
 		if err != nil {
