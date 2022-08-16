@@ -42,7 +42,7 @@ func NewNodeManagementWorker(name string, config *config.HorizonConfig, db *bolt
 		db:         db,
 	}
 
-	glog.Infof(nmwlog(fmt.Sprintf("Starting Node Management Worker %v", worker.EC)))
+	glog.Infof(nmwlog(fmt.Sprintf("Starting Node Management Worker.")))
 	worker.Start(worker, 0)
 	return worker
 }

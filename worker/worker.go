@@ -129,6 +129,10 @@ func NewExchangeContext(id string, token string, url string, cssurl string, http
 	}
 }
 
+func (b BaseExchangeContext) String() string {
+	return fmt.Sprintf("Id: %v, Token: *****, URL: %v, CSSURL: %v, HTTPFactory: %v", b.Id, b.URL, b.CSSURL, b.HTTPFactory)
+}
+
 // This function should return the id in the form org/id.
 func (w *BaseWorker) GetExchangeId() string {
 	if w.EC != nil {

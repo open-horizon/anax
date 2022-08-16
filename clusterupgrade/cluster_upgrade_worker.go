@@ -74,7 +74,7 @@ func NewClusterUpgradeWorker(name string, config *config.HorizonConfig, db *bolt
 		kubeClient: kubeClient,
 	}
 
-	glog.Infof(cuwlog(fmt.Sprintf("Starting Cluster Upgrade Worker %v", worker.EC)))
+	glog.Infof(cuwlog(fmt.Sprintf("Starting Cluster Upgrade Worker.")))
 	worker.Start(worker, 0)
 	return worker
 }

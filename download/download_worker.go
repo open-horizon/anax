@@ -50,7 +50,7 @@ func NewDownloadWorker(name string, config *config.HorizonConfig, db *bolt.DB) *
 		db:         db,
 	}
 
-	glog.Info(dwlog(fmt.Sprintf("Starting Download Worker %v", worker.EC)))
+	glog.Info(dwlog(fmt.Sprintf("Starting Download Worker.")))
 	worker.Start(worker, 0)
 	return worker
 }
