@@ -2,14 +2,13 @@ package persistence
 
 import (
 	"fmt"
-
 )
 
 type UpgradingHAGroupNode struct {
 	GroupName string `json:"groupName"`
-	OrgId string `json:"orgId"`
-	NodeId string `json:"nodeId"`
-	NMPName string `json:"nmpName"`
+	OrgId     string `json:"orgId"`
+	NodeId    string `json:"nodeId"`
+	NMPName   string `json:"nmpName"`
 }
 
 func (u UpgradingHAGroupNode) String() string {
@@ -25,7 +24,7 @@ func (u UpgradingHAGroupNode) DeepEqual(v UpgradingHAGroupNode) bool {
 }
 
 // This function will check if a node in the given HAGroup and org is currently in the upgrading table
-// If none is present, the querying node will be added 
+// If none is present, the querying node will be added
 // The function returns the node in the table for that group after the query
 // So if the returned node is the same as the requesting one, give permission to upgrade
 // Otherwise, do not allow the requestin node to upgrade
@@ -41,7 +40,7 @@ func DeleteHAUpgradingNode(db AgbotDatabase, orgId string, groupName string, nod
 	return db.DeleteHAUpgradeNode(UpgradingHAGroupNode{GroupName: groupName, OrgId: orgId, NodeId: nodeId, NMPName: nmpName})
 }
 
-type HANodeUpgradeFilter func(UpgradingHAGroupNode) bool 
+type HANodeUpgradeFilter func(UpgradingHAGroupNode) bool
 
 func OrgHANodeUpgradeFilter(orgId string) HANodeUpgradeFilter {
 	return func(u UpgradingHAGroupNode) bool { return u.OrgId == orgId }

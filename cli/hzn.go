@@ -841,6 +841,8 @@ Environment Variables:
 	sdoVoucherImportExample := sdoVoucherImportCmd.Flag("example", msgPrinter.Sprintf("Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.")).Short('e').String()
 	sdoVoucherImportPolicy := sdoVoucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.")).String()
 	sdoVoucherImportPattern := sdoVoucherImportCmd.Flag("pattern", msgPrinter.Sprintf("The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.")).Short('p').String()
+	sdoVoucherImportUI := sdoVoucherImportCmd.Flag("user-input", msgPrinter.Sprintf("A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.")).Short('f').String()
+	sdoVoucherImportHAGroup := sdoVoucherImportCmd.Flag("ha-group", msgPrinter.Sprintf("The name of the HA group that the edge device associated with this voucher will be added to.")).String()
 	sdoVoucherDownloadCmd := sdoVoucherCmd.Command("download | dl", msgPrinter.Sprintf("Download the specified SDO ownership voucher from SDO owner services.")).Alias("dl").Alias("download")
 	sdoVoucherDownloadDevice := sdoVoucherDownloadCmd.Arg("device-id", msgPrinter.Sprintf("The SDO ownership voucher to download.")).Required().String()
 	sdoVoucherDownloadFile := sdoVoucherDownloadCmd.Flag("file-path", msgPrinter.Sprintf("The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.")).Short('f').String()
@@ -1442,7 +1444,7 @@ Environment Variables:
 	case sdoVoucherInspectCmd.FullCommand():
 		sdo.VoucherInspect(*sdoVoucherInspectFile)
 	case sdoVoucherImportCmd.FullCommand():
-		sdo.VoucherImport(*sdoOrg, *sdoUserPw, *sdoVoucherImportFile, *sdoVoucherImportExample, *sdoVoucherImportPolicy, *sdoVoucherImportPattern)
+		sdo.VoucherImport(*sdoOrg, *sdoUserPw, *sdoVoucherImportFile, *sdoVoucherImportExample, *sdoVoucherImportPolicy, *sdoVoucherImportPattern, *sdoVoucherImportUI, *sdoVoucherImportHAGroup)
 	case sdoVoucherListCmd.FullCommand():
 		sdo.VoucherList(*sdoOrg, *sdoUserPw, *sdoVoucherToList, !*sdoVoucherListLong)
 	case sdoVoucherDownloadCmd.FullCommand():
