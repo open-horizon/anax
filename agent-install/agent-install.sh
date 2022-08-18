@@ -108,6 +108,7 @@ Options/Flags:
     -b                  Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
     -C                  Install only the horizon-cli package, not the full agent (This flag is equivalent to AGENT_ONLY_CLI)
     -G                  A comma separated list of upgrade types. Supported types are 'software', 'cert' and 'config'. The default is 'software,cert,config'. It is used togetther with --auto-upgrade flag to perform partial agent upgrade. (This flag is equivalent to AGENT_UPGRADE_TYPES)
+        --ha-group      Specify the HA group this node will be added to during the node registration, if -s is not specified. (This flag is equivalent to HZN_HA_GROUP)
         --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to AGENT_IN_CONTAINER)
     -N                  The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
@@ -154,10 +155,15 @@ function now() {
 # Note: could not put this in a function, because getopts would only process the function args
 AGENT_VERBOSITY=3   # default until we get it from all of the possible places
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts begin"; fi
+
+all_args=("$@")
 while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
     case $opt in
     -)
         case "${OPTARG}" in
+            ha-group)
+                ARG_HZN_HA_GROUP=${all_args[$OPTIND-1]}
+                ;;
             container)
                 ARG_AGENT_IN_CONTAINER=true
                 ;;
@@ -977,6 +983,7 @@ function get_all_variables() {
     get_variable NODE_ID   # deprecated
     get_variable HZN_DEVICE_ID
     get_variable HZN_NODE_ID
+    get_variable HZN_HA_GROUP
     get_variable HZN_AGENT_PORT
     get_variable HZN_EXCHANGE_PATTERN
     get_variable HZN_NODE_POLICY
@@ -1139,6 +1146,20 @@ function check_variables() {
         log_fatal 1 "If both HZN_MGMT_HUB_CERT_PATH and AGENT_CERT_FILE are specified they must be equal."
     fi
 
+    # several flags can't be set with AGENT_ONLY_CLI
+    if [[ $AGENT_ONLY_CLI == 'true' ]]; then
+        if [[ -n $HZN_EXCHANGE_PATTERN || -n $HZN_NODE_POLICY || -n $ARG_AGENT_WAIT_FOR_SERVICE || -n $ARG_AGENT_REGISTRATION_TIMEOUT || -n $ARG_AGENT_WAIT_FOR_SERVICE_ORG || -n $ARG_HZN_HA_GROUP ]]; then
+            log_fatal 1 "Since AGENT_ONLY_CLI=='$AGENT_ONLY_CLI', none of these can be set: HZN_EXCHANGE_PATTERN, HZN_NODE_POLICY, AGENT_WAIT_FOR_SERVICE, AGENT_REGISTRATION_TIMEOUT, AGENT_WAIT_FOR_SERVICE_ORG, HZN_HA_GROUP"
+        fi
+    fi
+
+    # several flags can't be set with AGENT_SKIP_REGISTRATION
+    if [[ $AGENT_SKIP_REGISTRATION == 'true' ]]; then
+        if [[ -n $HZN_EXCHANGE_PATTERN || -n $HZN_NODE_POLICY || -n $ARG_AGENT_WAIT_FOR_SERVICE || -n $ARG_AGENT_REGISTRATION_TIMEOUT || -n $ARG_AGENT_WAIT_FOR_SERVICE_ORG || -n $ARG_HZN_HA_GROUP ]]; then
+            log_fatal 1 "Since AGENT_SKIP_REGISTRATION=='$AGENT_SKIP_REGISTRATION', none of these can be set: HZN_EXCHANGE_PATTERN, HZN_NODE_POLICY, AGENT_WAIT_FOR_SERVICE, AGENT_REGISTRATION_TIMEOUT, AGENT_WAIT_FOR_SERVICE_ORG, HZN_HA_GROUP"
+        fi
+    fi
+
     # Policy and pattern are mutually exclusive
     if [[ -n "${HZN_NODE_POLICY}" && -n "${HZN_EXCHANGE_PATTERN}" ]]; then
         log_fatal 1 "HZN_NODE_POLICY and HZN_EXCHANGE_PATTERN can not both be set"
@@ -1147,13 +1168,6 @@ function check_variables() {
     # if a node policy is non-empty, check if the file exists
     if [[ -n $HZN_NODE_POLICY && ! -f $HZN_NODE_POLICY ]]; then
         log_fatal 1 "HZN_NODE_POLICY file '$HZN_NODE_POLICY' does not exist"
-    fi
-
-    # several flags can't be set with AGENT_ONLY_CLI
-    if [[ $AGENT_ONLY_CLI == 'true' ]]; then
-        if [[ -n $HZN_EXCHANGE_PATTERN || -n $HZN_NODE_POLICY || -n $ARG_AGENT_WAIT_FOR_SERVICE || -n $ARG_AGENT_REGISTRATION_TIMEOUT || -n $ARG_AGENT_WAIT_FOR_SERVICE_ORG ]]; then
-            log_fatal 1 "Since AGENT_ONLY_CLI=='$AGENT_ONLY_CLI', none of these can be set: HZN_EXCHANGE_PATTERN, HZN_NODE_POLICY, AGENT_WAIT_FOR_SERVICE, AGENT_REGISTRATION_TIMEOUT, AGENT_WAIT_FOR_SERVICE_ORG"
-        fi
     fi
 
     if is_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
@@ -1770,7 +1784,7 @@ function install_macos() {
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         start_device_agent_container  $container_num # even if it already running, it restarts it
 
-        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY" "$HZN_HA_GROUP"
     fi
 
     log_debug "install_macos() end"
@@ -2019,7 +2033,7 @@ function install_debian() {
             restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
         fi
 
-        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY" "$HZN_HA_GROUP"
     fi
 
     log_debug "install_debian() end"
@@ -2065,7 +2079,7 @@ function install_debian_container() {
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         start_device_agent_container  $container_num # even if it already running, it restarts it
-        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY" "$HZN_HA_GROUP"
     fi
 
     log_debug "install_debian_container() end"
@@ -2275,7 +2289,7 @@ function install_redhat() {
             restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
         fi
 
-        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY" "$HZN_HA_GROUP"
     fi
 
     log_debug "install_redhat() end"
@@ -2322,7 +2336,7 @@ function install_redhat_container() {
 
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         start_device_agent_container $container_num  # even if it already running, it restarts it
-        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY" "$HZN_HA_GROUP"
     fi
 
     log_debug "install_redhat_container() end"
@@ -2698,6 +2712,7 @@ function registration() {
     local skip_reg=$1
     local pattern=$2
     local policy=$3
+    local ha_group=$4
 
     if [[ $skip_reg == 'true' ]]; then return; fi
 
@@ -2707,15 +2722,32 @@ function registration() {
     # Get current node registration state and determine if we need to unregister first
     local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
 
+
     # Register the edge node
     if [[ $node_state == 'configured' ]]; then
-        if [[ -n $policy ]]; then
-            # We only need to update the node policy (we can keep the node registered).
-            log_info "The current registration settings are correct, keeping them, except updating the node policy..."
-            # Since hzn might be in the edge cluster container, need to pass the policy file's contents in via stdin
-            cat $policy | agent_exec "hzn policy update -f-"
-        else   # nothing needs changing in the current registration
+        if [[ -z $policy ]] && [[ -z $ha_group ]]; then
+            # nothing needs changing in the current registration
             log_info "The current registration settings are correct, keeping them."
+        else   
+            log_info "The node is currently registered."
+            if [[ -n $policy ]]; then
+                # We only need to update the node policy (we can keep the node registered).
+                log_info "Updating the node policy..."
+                # Since hzn might be in the edge cluster container, need to pass the policy file's contents in via stdin
+                cat $policy | agent_exec "hzn policy update -f-"
+            fi
+
+            if [[ -n $ha_group ]]; then
+                reg_node_hagr=$(jq -r .ha_group 2>/dev/null <<< $hzn_node_list || true)
+                if [[ $reg_node_hagr != $ha_group ]]; then
+                    # we can keep the node registered but change the HA group this node is in
+                    if [[ -n $reg_node_hagr ]]; then 
+                        log_warning "The node is currently in a HA group $reg_node_hagr. Please run 'hzn exchange hagroup' command to add this node to HA group $ha_group."
+                    else               
+                        add_node_to_ha_group $ha_group
+                    fi
+                fi
+            fi
         fi
     else
         # Register the node. First get some variables ready
@@ -2743,25 +2775,79 @@ function registration() {
             pattern_flag="-p '$pattern'"
         fi
 
+        if [[ -n $ha_group ]]; then
+            ha_group_flag="--ha-group '$ha_group'"
+        fi
+
         # Now actually do the registration
         log_info "Registering the edge node..."
         local reg_cmd
         local reg_cmd_mask
         if [[ -n $policy ]]; then
             # Since hzn might be in the edge cluster container, need to pass the policy file's contents in via stdin
-            reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag --policy=-"
-            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth_mask -n ******** $wait_service_flag $wait_org_flag $timeout_flag --policy=$policy"
+            reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag --policy=- $ha_group_flag"
+            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth_mask -n ******** $wait_service_flag $wait_org_flag $timeout_flag --policy=$policy $ha_group_flag"
             echo "$reg_cmd_mask"
             cat $policy | agent_exec "$reg_cmd"
         else  # register w/o policy or with pattern
-            reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag"
-            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth_mask -n ******** $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag"
+            reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag $ha_group_flag"
+            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth_mask -n ******** $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag $ha_group_flag" 
             echo "$reg_cmd_mask"
             agent_exec  "$reg_cmd"
         fi
     fi
 
     log_debug "registration() end"
+}
+
+# This function will add the given node to the given HA group.
+# It will create the HA group if it does not exist.
+function add_node_to_ha_group() {
+    log_debug "add_node_to_ha_group() begin"
+
+    local ha_group_name=$1
+
+    local exch_creds cert_flag
+    if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then
+        exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH"
+    else
+        exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH"   # input checking requires either user creds or node creds
+    fi
+
+    if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
+        cert_flag="--cacert $AGENT_CERT_FILE"
+    fi
+
+    log_info "Getting HA group $ha_group_name..."
+    echo "curl -sSL -w %{http_code} $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/hagroups/$ha_group_name -u '*****'"
+    local exch_output=$(curl -sSL -w %{http_code} $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/hagroups/$ha_group_name -u "$exch_creds" 2>&1) || true
+
+    if [[ -n "$exch_output" ]]; then
+        local http_code="${exch_output: -3}"
+        local len=${#exch_output}
+        local output=${exch_output:0: len - 3}
+        if [[ $http_code -eq 404 ]]; then
+            # the group does not exist, create it
+            log_info "The HA group $ha_group_name does not exist, creating it with this node as a member..."
+            local hagr_def=$(jq --null-input --arg DSCRP "HA group $ha_group_name" '{description: $DSCRP}' | jq --arg N $NODE_ID '.members |= [ $N ] + .') 
+            local cmd="echo '$hagr_def' | hzn exchange hagroup add -f- '$ha_group_name' -o '$HZN_ORG_ID' -u '$exch_creds'"
+            local cmd_mask="echo '$hagr_def' | hzn exchange hagroup add -f- '$ha_group_name' -o '$HZN_ORG_ID' -u '*****'" 
+            echo "$cmd_mask"
+            agent_exec "$cmd"            
+        elif [[ $http_code -eq 200 ]]; then
+            # the group exists, add the node to it
+            log_info "The HA group $ha_group_name exists, adding this node to it..."
+            local cmd="hzn exchange hagroup member add '$ha_group_name' --node '$NODE_ID' -o '$HZN_ORG_ID' -u '$exch_creds' "
+            local cmd_mask="hzn exchange hagroup member add '$ha_group_name' --node '$NODE_ID' -o '$HZN_ORG_ID' -u '*****'" 
+            echo "$cmd_mask"
+            agent_exec "$cmd"
+        else           
+            log_fatal 4 "Failed to get HA group from the exchange. $output"
+        fi
+    else
+        log_fatal 4 "Unable to add node to HA group $ha_group_name."
+    fi
+    log_debug "add_node_to_ha_group() end"
 }
 
 # autocomplete support for CLI
@@ -3843,7 +3929,7 @@ function install_cluster() {
     get_pod_id
 
     # register
-    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY" "$HZN_HA_GROUP"
     log_debug "install_cluster() end"
 }
 
@@ -3882,7 +3968,7 @@ function update_cluster() {
     check_deployment_status
     get_pod_id
 
-    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY" "$HZN_HA_GROUP"
 
     log_debug "update_cluster() end"
 }
