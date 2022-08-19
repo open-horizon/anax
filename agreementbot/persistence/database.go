@@ -53,7 +53,7 @@ type AgbotDatabase interface {
 	ArchiveAgreement(agreementid string, protocol string, reason uint, desc string) (*Agreement, error)
 
 	// Workoad usage related functions
-	NewWorkloadUsage(deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error
+	NewWorkloadUsage(deviceId string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error
 	FindSingleWorkloadUsageByDeviceAndPolicyName(deviceid string, policyName string) (*WorkloadUsage, error)
 	FindWorkloadUsages(filters []WUFilter) ([]WorkloadUsage, error)
 
@@ -96,4 +96,13 @@ type AgbotDatabase interface {
 	CheckIfGroupPresentAndUpdateHATable(requestingNode UpgradingHAGroupNode) (*UpgradingHAGroupNode, error)
 	DeleteHAUpgradeNode(nodeToDelete UpgradingHAGroupNode) error
 	ListAllUpgradingNodesInOrg(orgId string) (*[]UpgradingHAGroupNode, error)
+
+	// Functions related to persistence of the state of workload in ha groups executing service upgrades.
+	DeleteHAUpgradingWorkload(workloadToDelete UpgradingHAGroupWorkload) error
+	DeleteHAUpgradingWorkloadsByGroupName(org string, haGroupName string) error
+	DeleteHAUpgradingWorkloadsByGroupNameAndDeviceId(org string, haGroupName string, deviceId string) error
+	ListHAUpgradingWorkloadsByGroupName(org string, haGroupName string) ([]UpgradingHAGroupWorkload, error)
+	GetHAUpgradingWorkload(org string, haGroupName string, policyName string) (*UpgradingHAGroupWorkload, error)
+	UpdateHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) (bool, error)
+	InsertHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) error
 }

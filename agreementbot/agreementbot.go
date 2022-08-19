@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/version"
@@ -257,6 +258,9 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 		case events.CHANGE_NODE_TYPE:
 			// The node itself has changed.
 			w.nodeSearch.SetRescanNeeded()
+		case events.CHANGE_HA_GROUP:
+			// A hagroup has changed
+			w.Commands <- NewHAGroupChangedCommand(msg)
 		}
 
 	case *events.SecretUpdatesMessage:
@@ -651,6 +655,9 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 		w.shutdownStarted = true
 		glog.V(4).Infof("AgreementBotWorker received start shutdown command")
 
+	case *HAGroupChangedCommand:
+		cmd, _ := command.(*HAGroupChangedCommand)
+		go w.handleHAGroupChange(&cmd.Msg)
 	default:
 		return false
 	}
@@ -1542,8 +1549,107 @@ func (w *AgreementBotWorker) secretsUpdate() int {
 	return 0
 }
 
+func (w *AgreementBotWorker) handleHAGroupChange(msg *events.ExchangeChangeMessage) error {
+	glog.Info(AWlogString(fmt.Sprintf("AgreementBot start to handle HA group change: %v", msg.String())))
+	change := msg.GetChange()
+	deletedCache := msg.GetResourceBeforeChange()
+
+	glog.Info(AWlogString(fmt.Sprintf("AgreementBot is handling HA group change: %v, deleted cache is: %v", change, deletedCache)))
+	haGroupChange, _ := change.(exchange.ExchangeChange)
+
+	var deletedHACache *exchangecommon.HAGroup
+	if castDeletedHACache, ok := deletedCache.(exchangecommon.HAGroup); ok {
+		deletedHACache = &castDeletedHACache
+	} else {
+		deletedHACache = nil
+	}
+
+	if haGroupChange.Operation == exchange.CHANGE_OPERATION_MODIFIED {
+		glog.V(5).Infof(AWlogString(fmt.Sprintf("HA group %v/%v is modified", haGroupChange.OrgID, haGroupChange.ID)))
+		// get deleted nodes
+		oldMembers := []string{}
+		if deletedHACache != nil {
+			oldMembers = deletedHACache.Members
+		}
+
+		exHAGroup, err := GetHAGroup(haGroupChange.OrgID, haGroupChange.ID, w.GetHTTPFactory().NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
+		if err != nil {
+			return errors.New(fmt.Sprintf("unable to get HA group %v/%v from exchange , error %v", haGroupChange.OrgID, haGroupChange.ID, err))
+		}
+		newMemebers := exHAGroup.Members
+
+		_, deletedMembers, _, _ := compareHAMembers(haGroupChange.OrgID, oldMembers, newMemebers)
+		glog.V(5).Infof(AWlogString(fmt.Sprintf("deletedMemebers for HA group %v/%v are :%v", haGroupChange.OrgID, haGroupChange.ID, deletedMembers)))
+
+		// check workload Upgrading table for the org/hagroup, if nodes are in table also deleted memebers, remove that record from table
+		for _, deletedMember := range deletedMembers {
+			// deletedMember is in this format org/deviceId
+			// upgradingWorkload example: GroupName: mygroup, OrgId: userdev, PolicyName: sns_bluehorizon.network-services-netspeed_<pattern_org>_amd64, NodeId: userdev/anaxdevice6
+			if err = w.db.DeleteHAUpgradingWorkloadsByGroupNameAndDeviceId(haGroupChange.OrgID, haGroupChange.ID, deletedMember); err != nil {
+				glog.Info(AWlogString(fmt.Sprintf("failed to remove record from HA_workload_upgrade table with org: %v, hagroup: %v, deviceId: %v, error was: %v", haGroupChange.OrgID, haGroupChange.ID, deletedMember, err)))
+				glog.Errorf(AWlogString(err))
+			}
+		}
+
+	} else if haGroupChange.Operation == exchange.CHANGE_OPERATION_DELETED {
+		glog.V(5).Infof(AWlogString(fmt.Sprintf("HA group %v/%v is deleted", haGroupChange.OrgID, haGroupChange.ID)))
+
+		// delete all the upgrading workload for group if there is any in the table
+		glog.V(5).Infof(AWlogString(fmt.Sprintf("deleting all upgrading workload usages for %v/%v", haGroupChange.OrgID, haGroupChange.ID)))
+		if err := w.db.DeleteHAUpgradingWorkloadsByGroupName(haGroupChange.OrgID, haGroupChange.ID); err != nil {
+			glog.Info(AWlogString(fmt.Sprintf("failed to remove record from HA_workload_upgrade table with org: %v, hagroup: %v, error was: %v", haGroupChange.OrgID, haGroupChange.ID, err)))
+			glog.Errorf(AWlogString(err))
+		}
+	}
+	return nil
+}
+
 // ==========================================================================================================
 // Utility functions
+
+// old members are [device1, device2, device3]
+// new members are [device2, device3, device4, device5]
+// return new members, deleted members, new added members, overlapped memebers in format of (org/device)
+func compareHAMembers(org string, oldMembers []string, newMembers []string) ([]string, []string, []string, []string) {
+	deletedMembers := make([]string, 0)
+	addedMembers := make([]string, 0)
+	overlappedMembers := make([]string, 0)
+	newMembersWithOrg := make([]string, 0) // convert [device2, device3, device4, device5] to [org/device2, org/device3, org/device4, org/device5]
+
+	for _, newMember := range newMembers {
+		found := false
+		newMemberWithOrg := fmt.Sprintf("%v/%v", org, newMember)
+		newMembersWithOrg = append(newMembersWithOrg, newMemberWithOrg)
+		for _, oldMember := range oldMembers {
+			if oldMember == newMember {
+				found = true
+				break
+			}
+
+		}
+		if !found {
+			addedMembers = append(addedMembers, newMemberWithOrg)
+		}
+	}
+
+	for _, oldMember := range oldMembers {
+		found := false
+		oldMemberWithOrg := fmt.Sprintf("%v/%v", org, oldMember)
+		for _, newMemberWithOrg := range newMembersWithOrg {
+			if newMemberWithOrg == oldMemberWithOrg {
+				found = true
+				overlappedMembers = append(overlappedMembers, newMemberWithOrg)
+				break
+			}
+		}
+		if !found {
+			deletedMembers = append(deletedMembers, oldMemberWithOrg)
+		}
+	}
+
+	return newMembersWithOrg, deletedMembers, addedMembers, overlappedMembers
+
+}
 
 var AWlogString = func(v interface{}) string {
 	return fmt.Sprintf("AgreementBotWorker %v", v)

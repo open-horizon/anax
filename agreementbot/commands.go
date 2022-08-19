@@ -360,3 +360,18 @@ func (e ServedPolicyCommand) ShortString() string {
 func NewServedPolicyCommand() *ServedPolicyCommand {
 	return &ServedPolicyCommand{}
 }
+
+// ==============================================================================================================
+type HAGroupChangedCommand struct {
+	Msg events.ExchangeChangeMessage
+}
+
+func (p HAGroupChangedCommand) ShortString() string {
+	return fmt.Sprintf("%v", p)
+}
+
+func NewHAGroupChangedCommand(msg *events.ExchangeChangeMessage) *HAGroupChangedCommand {
+	return &HAGroupChangedCommand{
+		Msg: *msg,
+	}
+}

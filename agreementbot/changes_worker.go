@@ -138,7 +138,7 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	// Loop through each change to identify resources that we are interested in, and then send out event messages
 	// to notify the other workers that they have some work to do.
 	for _, change := range changes.Changes {
-		exchange.DeleteCacheResourceFromChange(change, "")
+		deletedCache := exchange.DeleteCacheResourceFromChange(change, "")
 		if glog.V(5) {
 			glog.Infof(chglog(fmt.Sprintf("Change: %v", change)))
 		}
@@ -183,6 +183,12 @@ func (w *ChangesWorker) findAndProcessChanges() {
 
 		} else if change.IsNodeServiceConfigState("") {
 			batchedEvents[events.CHANGE_NODE_CONFIGSTATE_TYPE] = true
+
+		} else if change.IsHAGroup() {
+			ev := events.NewExchangeChangeMessage(events.CHANGE_HA_GROUP)
+			ev.SetChange(change)
+			ev.SetResourceBeforeChange(deletedCache)
+			w.Messages() <- ev
 
 		} else {
 			glog.V(5).Infof(chglog(fmt.Sprintf("Unhandled change: %v %v/%v", change.Resource, change.OrgID, change.ID)))
