@@ -42,7 +42,7 @@ const HA_GROUP_ADD_IF_NOT_PRESENT_BY_FUNCTION = `SELECT * FROM ha_group_add_if_n
 
 const HA_GROUP_DELETE_NODE = `DELETE FROM ha_group_updates WHERE group_name = $1 AND org_id = $2 AND node_id = $3 AND nmp_id = $4 `
 
-const HA_GROUP_GET_ALL_IN_ORG = `SELECT group_name, node_id, nmp_id FROM ha_group_updates WHERE org_id = $1`
+const HA_GROUP_GET_IN_ORG_GROUP = `SELECT node_id, nmp_id FROM ha_group_updates WHERE org_id = $1 AND group_name = $2`
 
 func (db *AgbotPostgresqlDB) CheckIfGroupPresentAndUpdateHATable(requestingNode persistence.UpgradingHAGroupNode) (*persistence.UpgradingHAGroupNode, error) {
 	var dbNodeId sql.NullString
@@ -67,25 +67,17 @@ func (db *AgbotPostgresqlDB) DeleteHAUpgradeNode(nodeToDelete persistence.Upgrad
 	return qerr
 }
 
-func (db *AgbotPostgresqlDB) ListAllUpgradingNodesInOrg(orgId string) (*[]persistence.UpgradingHAGroupNode, error) {
-	upgradingNodes := []persistence.UpgradingHAGroupNode{}
-	rows, err := db.db.Query(HA_GROUP_GET_ALL_IN_ORG, orgId)
-	if err != nil {
-		return nil, fmt.Errorf("error querying database for all upgrading nodes in org %v. Error was: %v", orgId, err)
+func (db *AgbotPostgresqlDB) ListUpgradingNodeInGroup(orgId string, groupName string) (*persistence.UpgradingHAGroupNode, error) {
+	var dbNodeId sql.NullString
+	var dbNmpId sql.NullString
+	qerr := db.db.QueryRow(HA_GROUP_GET_IN_ORG_GROUP, orgId, groupName).Scan(&dbNodeId, &dbNmpId)
+	if qerr != nil && qerr != sql.ErrNoRows {
+		return nil, fmt.Errorf("error querying database for upgrading node in group %v. Error was: %v", orgId, groupName, qerr)
 	}
 
-	defer rows.Close()
-	for rows.Next() {
-		var dbGroupId sql.NullString
-		var dbNodeId sql.NullString
-		var dbNmpId sql.NullString
-
-		if err = rows.Scan(&dbGroupId, &dbNodeId, &dbNmpId); err != nil {
-			return nil, fmt.Errorf("error scanning row for ha nodes in org %v currently upgrading error was: %v", orgId, err)
-		}
-
-		upgradingNodes = append(upgradingNodes, persistence.UpgradingHAGroupNode{GroupName: dbGroupId.String, OrgId: orgId, NodeId: dbNodeId.String, NMPName: dbNmpId.String})
+	if dbNodeId.Valid {
+		return &persistence.UpgradingHAGroupNode{GroupName: groupName, OrgId: orgId, NodeId: dbNodeId.String, NMPName: dbNmpId.String}, nil
 	}
 
-	return &upgradingNodes, nil
-}
+	return nil, nil
+} 
