@@ -40,6 +40,9 @@ import (
 	"time"
 )
 
+const UserTypeCred = "users"
+const NodeTypeCred = "nodes"
+
 type SecureAPI struct {
 	worker.Manager // embedded field
 	name           string
@@ -189,6 +192,7 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc(`/org/{org}/secrets/user/{user}/{secret:[\w\/\-]+}`, a.userSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets", a.orgSecrets).Methods("LIST", "OPTIONS")
 		router.HandleFunc(`/org/{org}/secrets/{secret:[\w\/\-]+}`, a.orgSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc("/org/{org}/hagroup/{group}/nodemanagement/{node}/{nmpid}", a.haNodeNMPUpdateRequest).Methods("POST", "OPTIONS")
 
 		apiListen := fmt.Sprintf("%v:%v", apiListenHost, apiListenPort)
 
@@ -202,6 +206,50 @@ func (a *SecureAPI) listen() {
 			glog.Fatalf(APIlogString(fmt.Sprintf("failed to start listener on %v, error %v", apiListen, err)))
 		}
 	}()
+}
+
+func (a *SecureAPI) haNodeNMPUpdateRequest(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		pathVars := mux.Vars(r)
+		org := pathVars["org"]
+		node := pathVars["node"]
+		nmpId := pathVars["nmpid"]	
+		groupName := pathVars["group"]
+
+		resourceString := fmt.Sprintf("/org/%v/hanode/%v/%v/%v", org, groupName, node, nmpId)
+
+		if node_ec, _, msgPrinter, nodeAuthenticated := a.processExchangeCred(resourceString, NodeTypeCred, w, r); nodeAuthenticated {
+			if node_ec.GetExchangeId() != fmt.Sprintf("%v/%v", org, node) {
+				writeResponse(w, msgPrinter.Sprintf("Error node authentication credentials do not match requesting node."), http.StatusBadRequest)
+				return
+			}
+
+			if dev, err := exchange.GetExchangeDevice(node_ec.GetHTTPFactory(), fmt.Sprintf("%s/%s", org, node), node_ec.GetExchangeId(), node_ec.GetExchangeToken(), node_ec.GetExchangeURL()); err != nil {
+				writeResponse(w, msgPrinter.Sprintf("Unable to retrieve node from the exchange."), http.StatusBadRequest)
+				return
+			} else if dev.HAGroup != groupName {
+				writeResponse(w, msgPrinter.Sprintf("Error node ha group %v does not match group name in request %v.", dev.HAGroup, groupName), http.StatusBadRequest)
+				return
+			}
+
+
+			reqNode := persistence.UpgradingHAGroupNode{GroupName: groupName, OrgId: org, NodeId: node, NMPName: nmpId}
+			upgradingNode, err := persistence.NodeManagementUpgradeQuery(a.db, reqNode)
+			if err != nil {
+				glog.Errorf("Error handling ha node upgrade request from node %v/%v: %v", org, node, err)
+				writeResponse(w, msgPrinter.Sprintf("Error handling node upgrade request: %v", err.Error()), http.StatusInternalServerError)
+				return
+			}
+			if reqNode.DeepEqual(*upgradingNode) {
+				glog.V(3).Infof("Node %v/%v can begin upgrade for nmp %v.", org, node, nmpId)
+				w.WriteHeader(http.StatusOK)
+			} else {
+				glog.V(3).Infof("Node %v/%v cannot begin upgrade for nmp %v. Node %v/%v also in group %v is currently upgrading.", org, node, nmpId, upgradingNode.OrgId, upgradingNode.NodeId, groupName)
+				w.WriteHeader(http.StatusConflict)
+			}
+		}
+	}
 }
 
 // This function does policy compatibility check.
@@ -285,7 +333,7 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/policycompatible called.")))
 
 		// check user cred
-		if user_ec, _, msgPrinter, ok := a.processUserCred("/deploycheck/policycompatible", w, r); ok {
+		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/deploycheck/policycompatible", UserTypeCred, w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -408,7 +456,7 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/userinputcompatible called.")))
 
-		if user_ec, _, msgPrinter, ok := a.processUserCred("/deploycheck/userinputcompatible", w, r); ok {
+		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/deploycheck/userinputcompatible", UserTypeCred, w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -531,7 +579,7 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/secretbindingcompatible called.")))
 
-		if user_ec, exUser, msgPrinter, ok := a.processUserCred("/deploycheck/secretbindingcompatible", w, r); ok {
+		if user_ec, exUser, msgPrinter, ok := a.processExchangeCred("/deploycheck/secretbindingcompatible", UserTypeCred, w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -688,7 +736,7 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/deploycompatible called.")))
 
-		if user_ec, exUser, msgPrinter, ok := a.processUserCred("/deploycheck/deploycompatible", w, r); ok {
+		if user_ec, exUser, msgPrinter, ok := a.processExchangeCred("/deploycheck/deploycompatible", UserTypeCred, w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -737,7 +785,7 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 }
 
 // This function checks user cred and writes corrsponding response. It also creates a message printer with given language from the http request.
-func (a *SecureAPI) processUserCred(resource string, w http.ResponseWriter, r *http.Request) (exchange.ExchangeContext, string, *message.Printer, bool) {
+func (a *SecureAPI) processExchangeCred(resource string, authType string, w http.ResponseWriter, r *http.Request) (exchange.ExchangeContext, string, *message.Printer, bool) {
 	// get message printer with the language passed in from the header
 	lan := r.Header.Get("Accept-Language")
 	if lan == "" {
@@ -749,11 +797,11 @@ func (a *SecureAPI) processUserCred(resource string, w http.ResponseWriter, r *h
 	userId, userPasswd, ok := r.BasicAuth()
 	if !ok {
 		glog.Errorf(APIlogString(fmt.Sprintf("%v is called without exchange authentication.", resource)))
-		writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange user id is supplied."), http.StatusUnauthorized)
+		writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange %v id is supplied.", authType), http.StatusUnauthorized)
 		return nil, "", nil, false
-	} else if user_ec, exUser, err := a.authenticateWithExchange(userId, userPasswd, msgPrinter); err != nil {
-		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the Exchange. %v", userId, err)))
-		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the Exchange. %v", err), http.StatusUnauthorized)
+	} else if user_ec, exUser, err := a.authenticateWithExchange(userId, userPasswd, authType, msgPrinter); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate %v %v with the Exchange. %v", authType, userId, err)))
+		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the %v with the Exchange. %v", authType, err), http.StatusUnauthorized)
 		return nil, "", nil, false
 	} else {
 		return user_ec, exUser, msgPrinter, true
@@ -855,7 +903,7 @@ func (a *SecureAPI) decodeCompCheckBody(body []byte, msgPrinter *message.Printer
 
 // This function verifies the given exchange user name and password.
 // The user must be in the format of orgId/userId.
-func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msgPrinter *message.Printer) (exchange.ExchangeContext, string, error) {
+func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, authType string, msgPrinter *message.Printer) (exchange.ExchangeContext, string, error) {
 	glog.V(5).Infof(APIlogString(fmt.Sprintf("authenticateWithExchange called with user %v", user)))
 
 	orgId, userId := cutil.SplitOrgSpecUrl(user)
@@ -877,14 +925,21 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msg
 		retryCount = retryCount - 1
 
 		var resp interface{}
-		resp = new(exchange.GetUsersResponse)
-		targetURL := fmt.Sprintf("%vorgs/%v/users/%v", user_ec.GetExchangeURL(), orgId, userId)
+		if authType == UserTypeCred {
+			resp = new(exchange.GetUsersResponse)
+		} else if authType == NodeTypeCred {
+			resp = new(exchange.GetDevicesResponse)
+		}
+		
+		targetURL := fmt.Sprintf("%vorgs/%v/%v/%v", user_ec.GetExchangeURL(), orgId, authType, userId)
+
+		glog.Errorf("Maxwell: target url is %v", targetURL)
 
 		if err, tpErr := exchange.InvokeExchange(a.httpClient, "GET", targetURL, user, userPasswd, nil, &resp); err != nil {
 			glog.Errorf(APIlogString(err.Error()))
 
 			if strings.Contains(err.Error(), "401") {
-				return nil, "", fmt.Errorf(msgPrinter.Sprintf("Wrong organization id, user id or password."))
+				return nil, "", fmt.Errorf(msgPrinter.Sprintf("Wrong organization id, %s id or password."), authType)
 			} else {
 				return nil, "", err
 			}
@@ -896,7 +951,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msg
 			}
 			time.Sleep(time.Duration(retryInterval) * time.Second)
 			continue
-		} else {
+		} else if authType == UserTypeCred {
 			// iterate through the users returned by the Exchange (should only be one)
 			users, _ := resp.(*exchange.GetUsersResponse)
 			for key := range users.Users {
@@ -906,6 +961,22 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msg
 					return nil, "", fmt.Errorf(msgPrinter.Sprintf("Exchange user %s is not in the correct format, should be org/username.", key))
 				}
 				return user_ec, orgAndUsername[1], nil
+			}
+		} else if authType == NodeTypeCred {
+			// iterate through the nodes returned by the Exchange (should only be one)
+			if devs, ok := resp.(*exchange.GetDevicesResponse); !ok {
+				return nil, "", fmt.Errorf("Maxwell:  response could not be cast to GetDevicesResponse")
+			} else if devs == nil {
+				return nil, "", fmt.Errorf("No device %v found in exchange.", user)
+			} else {
+				for key := range devs.Devices {
+					// key should be in the format {org}/{user}
+					orgAndUsername := strings.Split(key, "/")
+					if len(orgAndUsername) != 2 {
+						return nil, "", fmt.Errorf(msgPrinter.Sprintf("Exchange device %s is not in the correct format, should be org/nodename.", key))
+					}
+					return user_ec, orgAndUsername[1], nil
+				}
 			}
 		}
 	}
@@ -1000,7 +1071,7 @@ func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *Secret
 		resourceString = fmt.Sprintf(api_url, "{org}", "{user}", "{secret}")
 	}
 
-	ec, exUser, msgPrinter, userAuthenticated := a.processUserCred(resourceString, w, r)
+	ec, exUser, msgPrinter, userAuthenticated := a.processExchangeCred(resourceString, UserTypeCred, w, r)
 	if !userAuthenticated {
 		return nil
 	}

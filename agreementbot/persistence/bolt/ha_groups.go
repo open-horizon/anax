@@ -86,8 +86,16 @@ func (db *AgbotBoltDB) FindHAUpgradeNodesWithFilters(filterSlice []persistence.H
 	return nil, readErr
 }
 
-func (db *AgbotBoltDB) ListAllUpgradingNodesInOrg(orgId string) (*[]persistence.UpgradingHAGroupNode, error) {
-	return db.FindHAUpgradeNodesWithFilters([]persistence.HANodeUpgradeFilter{persistence.OrgHANodeUpgradeFilter(orgId)})
+func (db *AgbotBoltDB) ListUpgradingNodeInGroup(orgId string, groupName string) (*persistence.UpgradingHAGroupNode, error) {
+	if nodesInGroup, err := db.FindHAUpgradeNodesWithFilters([]persistence.HANodeUpgradeFilter{persistence.OrgHANodeUpgradeFilter(orgId), persistence.GroupHANodeUpgradeFilter(groupName)}); err != nil {
+		return nil, err
+	} else if len(*nodesInGroup) == 0 {
+		return nil, nil
+	} else if len(*nodesInGroup) > 1 {
+		return nil, fmt.Errorf("Error: multiple nodes in group %v/%v are present in upgrading table.", orgId, groupName)
+	} else {
+		return &(*nodesInGroup)[0], nil
+	}
 }
 
 func groupId(orgId string, groupName string) string {
