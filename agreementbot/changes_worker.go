@@ -22,7 +22,7 @@ type ChangesWorker struct {
 
 func NewChangesWorker(name string, cfg *config.HorizonConfig) *ChangesWorker {
 
-	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.AgreementBot.CSSURL, cfg.Collaborators.HTTPClientFactory)
+	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.AgreementBot.CSSURL, "", cfg.Collaborators.HTTPClientFactory)
 	worker := &ChangesWorker{
 		BaseWorker:     worker.NewBaseWorker(name, cfg, ec),
 		changeID:       0,

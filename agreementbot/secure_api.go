@@ -214,41 +214,45 @@ func (a *SecureAPI) haNodeNMPUpdateRequest(w http.ResponseWriter, r *http.Reques
 		pathVars := mux.Vars(r)
 		org := pathVars["org"]
 		node := pathVars["node"]
-		nmpId := pathVars["nmpid"]	
+		nmpId := pathVars["nmpid"]
 		groupName := pathVars["group"]
 
 		resourceString := fmt.Sprintf("/org/%v/hanode/%v/%v/%v", org, groupName, node, nmpId)
 
 		if node_ec, _, msgPrinter, nodeAuthenticated := a.processExchangeCred(resourceString, NodeTypeCred, w, r); nodeAuthenticated {
 			if node_ec.GetExchangeId() != fmt.Sprintf("%v/%v", org, node) {
-				writeResponse(w, msgPrinter.Sprintf("Error node authentication credentials do not match requesting node."), http.StatusBadRequest)
+				writeResponse(w, exchange.PutPostDeleteStandardResponse{Code: fmt.Sprintf("%v", http.StatusBadRequest), Msg: msgPrinter.Sprintf("Error node authentication credentials do not match requesting node.")}, http.StatusBadRequest)
 				return
 			}
 
 			if dev, err := exchange.GetExchangeDevice(node_ec.GetHTTPFactory(), fmt.Sprintf("%s/%s", org, node), node_ec.GetExchangeId(), node_ec.GetExchangeToken(), node_ec.GetExchangeURL()); err != nil {
-				writeResponse(w, msgPrinter.Sprintf("Unable to retrieve node from the exchange."), http.StatusBadRequest)
+				writeResponse(w, exchange.PutPostDeleteStandardResponse{Code: fmt.Sprintf("%v", http.StatusBadRequest), Msg: msgPrinter.Sprintf("Unable to retrieve node from the exchange.")}, http.StatusBadRequest)
 				return
 			} else if dev.HAGroup != groupName {
-				writeResponse(w, msgPrinter.Sprintf("Error node ha group %v does not match group name in request %v.", dev.HAGroup, groupName), http.StatusBadRequest)
+				writeResponse(w, exchange.PutPostDeleteStandardResponse{Code: fmt.Sprintf("%v", http.StatusBadRequest), Msg: msgPrinter.Sprintf("Error node ha group %v does not match group name in request %v.", dev.HAGroup, groupName)}, http.StatusBadRequest)
 				return
 			}
-
 
 			reqNode := persistence.UpgradingHAGroupNode{GroupName: groupName, OrgId: org, NodeId: node, NMPName: nmpId}
 			upgradingNode, err := persistence.NodeManagementUpgradeQuery(a.db, reqNode)
 			if err != nil {
 				glog.Errorf("Error handling ha node upgrade request from node %v/%v: %v", org, node, err)
-				writeResponse(w, msgPrinter.Sprintf("Error handling node upgrade request: %v", err.Error()), http.StatusInternalServerError)
+				writeResponse(w, exchange.PutPostDeleteStandardResponse{Code: fmt.Sprintf("%v", http.StatusInternalServerError), Msg: msgPrinter.Sprintf("Error handling node upgrade request: %v", err.Error())}, http.StatusInternalServerError)
 				return
 			}
 			if reqNode.DeepEqual(*upgradingNode) {
 				glog.V(3).Infof("Node %v/%v can begin upgrade for nmp %v.", org, node, nmpId)
-				w.WriteHeader(http.StatusOK)
+				writeResponse(w, exchange.PutPostDeleteStandardResponse{Code: fmt.Sprintf("%v", http.StatusCreated), Msg: msgPrinter.Sprintf("Node %v/%v can start executing nmp %v.", org, node, nmpId)}, http.StatusCreated)
 			} else {
 				glog.V(3).Infof("Node %v/%v cannot begin upgrade for nmp %v. Node %v/%v also in group %v is currently upgrading.", org, node, nmpId, upgradingNode.OrgId, upgradingNode.NodeId, groupName)
-				w.WriteHeader(http.StatusConflict)
+				writeResponse(w, exchange.PutPostDeleteStandardResponse{Code: fmt.Sprintf("%v", http.StatusConflict), Msg: msgPrinter.Sprintf("Node %v/%v can not start executing nmp %v.", org, node, nmpId)}, http.StatusConflict)
 			}
 		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "POST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
@@ -930,10 +934,8 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, aut
 		} else if authType == NodeTypeCred {
 			resp = new(exchange.GetDevicesResponse)
 		}
-		
-		targetURL := fmt.Sprintf("%vorgs/%v/%v/%v", user_ec.GetExchangeURL(), orgId, authType, userId)
 
-		glog.Errorf("Maxwell: target url is %v", targetURL)
+		targetURL := fmt.Sprintf("%vorgs/%v/%v/%v", user_ec.GetExchangeURL(), orgId, authType, userId)
 
 		if err, tpErr := exchange.InvokeExchange(a.httpClient, "GET", targetURL, user, userPasswd, nil, &resp); err != nil {
 			glog.Errorf(APIlogString(err.Error()))
@@ -965,7 +967,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, aut
 		} else if authType == NodeTypeCred {
 			// iterate through the nodes returned by the Exchange (should only be one)
 			if devs, ok := resp.(*exchange.GetDevicesResponse); !ok {
-				return nil, "", fmt.Errorf("Maxwell:  response could not be cast to GetDevicesResponse")
+				return nil, "", fmt.Errorf("Error occured: exchange response could not be cast to GetDevicesResponse.")
 			} else if devs == nil {
 				return nil, "", fmt.Errorf("No device %v found in exchange.", user)
 			} else {

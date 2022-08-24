@@ -278,7 +278,7 @@ func (w *ClusterUpgradeWorker) Messages() chan events.Message {
 func getEC(config *config.HorizonConfig, db *bolt.DB) *worker.BaseExchangeContext {
 	var ec *worker.BaseExchangeContext
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.GetCSSURL(), config.Collaborators.HTTPClientFactory)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.GetCSSURL(), config.Edge.AgbotURL, config.Collaborators.HTTPClientFactory)
 	}
 	return ec
 }

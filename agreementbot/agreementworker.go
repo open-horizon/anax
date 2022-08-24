@@ -320,6 +320,14 @@ func (b *BaseAgreementWorker) GetCSSURL() string {
 	}
 }
 
+func (b *BaseAgreementWorker) GetAgbotURL() string {
+	if b.ec != nil {
+		return b.ec.AgbotURL
+	} else {
+		return ""
+	}
+}
+
 func (b *BaseAgreementWorker) GetHTTPFactory() *config.HTTPClientFactory {
 	if b.ec != nil {
 		return b.ec.HTTPFactory

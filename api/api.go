@@ -58,7 +58,7 @@ func NewAPIListener(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *pol
 	if err != nil {
 		glog.Errorf(apiLogString(fmt.Sprintf("Unable to read node object, error %v", err)))
 	} else if pDevice != nil {
-		listener.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Collaborators.HTTPClientFactory)
+		listener.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Edge.AgbotURL, cfg.Collaborators.HTTPClientFactory)
 	}
 
 	listener.listen(cfg)
@@ -235,6 +235,14 @@ func (a *API) GetCSSURL() string {
 		return a.EC.CSSURL
 	} else {
 		return a.Config.GetCSSURL()
+	}
+}
+
+func (a *API) GetAgbotURL() string {
+	if a.EC != nil {
+		return a.EC.AgbotURL
+	} else {
+		return a.Config.Edge.AgbotURL
 	}
 }
 

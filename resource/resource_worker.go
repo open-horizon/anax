@@ -24,7 +24,7 @@ func NewResourceWorker(name string, config *config.HorizonConfig, db *bolt.DB, a
 	var rm *ResourceManager
 	dev, _ := persistence.FindExchangeDevice(db)
 	if dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.GetCSSURL(), config.Collaborators.HTTPClientFactory)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.GetCSSURL(), config.Edge.AgbotURL, config.Collaborators.HTTPClientFactory)
 		if !dev.IsEdgeCluster() {
 			if config == nil || config.GetCSSURL() == "" {
 				term_string := "Terminating, unable to start model management resource manager. Please set either CSSURL in the anax configuration file or HZN_FSS_CSSURL in /etc/default/horizon file."
@@ -74,7 +74,7 @@ func (w *ResourceWorker) NewEvent(incoming events.Message) {
 
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
+		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.Edge.AgbotURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
 		w.Commands <- NewNodeConfigCommand(msg)
 
 	case *events.NodeShutdownMessage:

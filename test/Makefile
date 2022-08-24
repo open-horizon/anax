@@ -308,7 +308,7 @@ e2edevtest-docker-prereqs:
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(E2EDEVTEST_TEMPFS)/usr/local/bin
 	cp -r $(CURDIR)/docker/fs/etc $(E2EDEVTEST_TEMPFS)
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(E2EDEVTEST_TEMPFS)/root
-	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) HZN_AGBOT_URL=$(AGBOT_SAPI_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 
 test-image:
 	@echo "Handling $(DOCKER_TEST_INAME)"

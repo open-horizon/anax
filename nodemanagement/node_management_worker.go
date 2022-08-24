@@ -100,7 +100,42 @@ func (w *NodeManagementWorker) checkNMPTimeToRun() int {
 		glog.Infof(nmwlog(fmt.Sprintf("Node is not configured.")))
 		return 60
 	}
-	if downloadedInitiatedStatuses, err := persistence.FindNMPSWithStatuses(w.db, []string{exchangecommon.STATUS_DOWNLOADED, exchangecommon.STATUS_INITIATED, exchangecommon.STATUS_DOWNLOAD_STARTED}); err != nil {
+
+	dev, err := exchange.GetExchangeDevice(w.GetHTTPFactory(), w.GetExchangeId(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
+	if err != nil {
+		glog.Errorf(nmwlog(fmt.Sprintf("Failed to get device from exchange: %v", err)))
+		return 60
+	}
+	groupName := dev.HAGroup
+	if haWaitingNMPs, err := persistence.FindHAWaitingNMPStatuses(w.db); err != nil {
+		glog.Errorf(nmwlog(fmt.Sprintf("Failed to get nmp statuses waiting on ha upgrade permission: %v", err)))
+	} else {
+		for haWaitingStatusName, status := range haWaitingNMPs {
+			changeToDownloaded := false
+			if groupName == "" {
+				changeToDownloaded = true
+			} else if yes, err := exchange.HANodeCanExecuteNMP(w, w.GetAgbotURL(), groupName, exchange.GetId(haWaitingStatusName)); err != nil {
+				glog.Errorf(nmwlog(fmt.Sprintf("Error calling agbot to check if nmp %v can be executed: %v", haWaitingStatusName, err)))
+			} else if yes {
+				changeToDownloaded = true
+			}
+			if changeToDownloaded {
+				status.SetStatus(exchangecommon.STATUS_DOWNLOADED)
+				msgMeta := persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, haWaitingStatusName, exchangecommon.STATUS_DOWNLOADED)
+				eventCode := persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
+
+				err = w.UpdateStatus(haWaitingStatusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(w), msgMeta, eventCode)
+				if err != nil {
+					glog.Errorf(nmwlog(fmt.Sprintf("Failed to update nmp status %v: %v", haWaitingStatusName, err)))
+				}
+			}
+		}
+		if len(haWaitingNMPs) > 0 {
+			return 60
+		}
+	}
+
+	if downloadedInitiatedStatuses, err := persistence.FindNMPSWithStatuses(w.db, []string{exchangecommon.STATUS_DOWNLOADED, exchangecommon.STATUS_INITIATED, exchangecommon.STATUS_DOWNLOAD_STARTED, exchangecommon.STATUS_HA_WAITING}); err != nil {
 		glog.Errorf(nmwlog(fmt.Sprintf("Failed to get nmp statuses from the database. Error was %v", err)))
 	} else if len(downloadedInitiatedStatuses) > 0 {
 		glog.Infof(nmwlog("There is an nmp currently being executed or downloaded. Exiting without looking for the next nmp to run."))
@@ -122,10 +157,11 @@ func (w *NodeManagementWorker) checkNMPTimeToRun() int {
 					glog.Errorf(nmwlog(fmt.Sprintf("Failed to update nmp status %v: %v", earliestNmpName, err)))
 				}
 				w.Messages() <- events.NewNMPStartDownloadMessage(events.NMP_START_DOWNLOAD, events.StartDownloadMessage{NMPStatus: earliestNmpStatus, NMPName: earliestNmpName})
-				return 60
+				break
 			}
 		}
 	}
+
 	return 60
 }
 
@@ -169,7 +205,7 @@ func getLatest(statusMap *map[string]*exchangecommon.NodeManagementPolicyStatus)
 func getEC(config *config.HorizonConfig, db *bolt.DB) *worker.BaseExchangeContext {
 	var ec *worker.BaseExchangeContext
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.GetCSSURL(), config.Collaborators.HTTPClientFactory)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.GetCSSURL(), config.Edge.AgbotURL, config.Collaborators.HTTPClientFactory)
 	}
 
 	return ec
@@ -213,9 +249,18 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 		eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
 	} else if cmd.Msg.Status == exchangecommon.STATUS_DOWNLOADED {
 		glog.Infof(nmwlog(fmt.Sprintf("Sucessfully downloaded packages for nmp %v.", cmd.Msg.NMPName)))
-		status.SetStatus(exchangecommon.STATUS_DOWNLOADED)
-		msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOADED)
-		eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
+		if dev, err := exchange.GetExchangeDevice(n.GetHTTPFactory(), n.GetExchangeId(), n.GetExchangeId(), n.GetExchangeToken(), n.GetExchangeURL()); err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf("Failed to get device from the db: %v", err)))
+			return
+		} else if dev.HAGroup != "" {
+			status.SetStatus(exchangecommon.STATUS_HA_WAITING)
+			msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_HA_WAITING)
+			eventCode = persistence.EC_NMP_STATUS_CHANGED
+		} else {
+			status.SetStatus(exchangecommon.STATUS_DOWNLOADED)
+			msgMeta = persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, cmd.Msg.NMPName, exchangecommon.STATUS_DOWNLOADED)
+			eventCode = persistence.EC_NMP_STATUS_DOWNLOAD_SUCCESSFUL
+		}
 	} else if cmd.Msg.Status == exchangecommon.STATUS_PRECHECK_FAILED {
 		glog.Infof(nmwlog(fmt.Sprintf("Node management policy %v failed precheck conditions. %v", cmd.Msg.NMPName, cmd.Msg.ErrorMessage)))
 		status.SetStatus(exchangecommon.STATUS_PRECHECK_FAILED)

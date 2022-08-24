@@ -15,6 +15,7 @@ type ExchangeContext interface {
 	GetExchangeToken() string
 	GetExchangeURL() string
 	GetCSSURL() string
+	GetAgbotURL() string
 	GetHTTPFactory() *config.HTTPClientFactory
 }
 
@@ -27,6 +28,7 @@ type CustomExchangeContext struct {
 	password    string
 	exchangeURL string
 	cssURL      string
+	agbotURL    string
 	httpFactory *config.HTTPClientFactory
 }
 
@@ -44,6 +46,10 @@ func (c *CustomExchangeContext) GetExchangeURL() string {
 
 func (c *CustomExchangeContext) GetCSSURL() string {
 	return c.cssURL
+}
+
+func (c *CustomExchangeContext) GetAgbotURL() string {
+	return c.agbotURL
 }
 
 func (c *CustomExchangeContext) GetHTTPFactory() *config.HTTPClientFactory {
