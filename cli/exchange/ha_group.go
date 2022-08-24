@@ -97,6 +97,10 @@ func HAGroupAdd(org, credToUse, haGroupName, jsonFilePath string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("HA group name is not specified."))
 	}
 
+	if haGroupFile.Description == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("HA group description cannot be empty."))
+	}
+
 	haGroupRequest := exchangecommon.HAGroupPutPostRequest{
 		Description: haGroupFile.Description,
 		Members:     haGroupFile.Members,
