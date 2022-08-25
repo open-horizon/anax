@@ -8,15 +8,16 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/i18n"
-	"github.com/open-horizon/edge-sync-service/common"
 	"math/big"
 	"net"
 	"os"
 	"path"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/edge-sync-service/common"
 )
 
 const (
@@ -52,6 +53,15 @@ func CreateCertificate(org string, keyPath string, certPath string) error {
 		return errors.New(msgPrinter.Sprintf("unable to generate private key for MMS API certificate, error %v", err))
 	}
 
+	clusterAgentServiceHost := os.Getenv("AGENT_SERVICE_SERVICE_HOST")
+	ipAddress := []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("::1")}
+	if clusterAgentServiceHost != "" {
+		ipAddress = append(ipAddress, net.ParseIP(clusterAgentServiceHost))
+	}
+
+	glog.V(3).Infof(reslog(fmt.Sprintf("Lily - clusterAgentServiceHost is %v", clusterAgentServiceHost)))
+	glog.V(3).Infof(reslog(fmt.Sprintf("Lily - ipAddress is %v", ipAddress)))
+
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
@@ -65,8 +75,8 @@ func CreateCertificate(org string, keyPath string, certPath string) error {
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
-		DNSNames:              []string{"localhost"},
-		IPAddresses:           []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("::1")},
+		DNSNames:              []string{"localhost", "e2edevtest", "agent-service.openhorizon-agent.svc.cluster.local", "agent-service", "agent-service.openhorizon-agent.svc"},
+		IPAddresses:           ipAddress,
 	}
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)

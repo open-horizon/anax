@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: agent
   namespace: __AgentNameSpace__
+  labels:
+    app: agent
 spec:
   replicas: 1
   selector:
@@ -46,6 +48,11 @@ spec:
           subPath: policy
         ports:
         - containerPort: 8510
+          name: anax-port
+        - containerPort: 8443
+          name: ess-secure
+        - containerPort: 8080
+          name: ess-insecure
         securityContext:
           allowPrivilegeEscalation: true
         env:
@@ -53,5 +60,32 @@ spec:
           value: __OrgId__
         - name: AGENT_CLUSTER_IMAGE_REGISTRY_HOST
           value: __ImageRegistryHost__
+        - name: AGENT_NAMESPACE
+          value: __AgentNameSpace__
         - name: HZN_MGMT_HUB_CERT_PATH
           value: /etc/default/cert/agent-install.crt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-service
+  namespace: openhorizon-agent
+  labels:
+    app: agent
+spec:
+  selector:
+    app: agent
+  ports:
+    - name: ess-secure-port-name
+      protocol: TCP
+      port: 8443
+      targetPort: 8443
+    - name: ess-insecure-port-name
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: anax-port-name
+      protocol: TCP
+      port: 8510
+      targetPort: 8510
+
