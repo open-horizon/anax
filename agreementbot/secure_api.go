@@ -214,7 +214,7 @@ func (a *SecureAPI) haNodeNMPUpdateRequest(w http.ResponseWriter, r *http.Reques
 		pathVars := mux.Vars(r)
 		org := pathVars["org"]
 		node := pathVars["node"]
-		nmpId := pathVars["nmpid"]	
+		nmpId := pathVars["nmpid"]
 		groupName := pathVars["group"]
 
 		resourceString := fmt.Sprintf("/org/%v/hanode/%v/%v/%v", org, groupName, node, nmpId)
@@ -232,7 +232,6 @@ func (a *SecureAPI) haNodeNMPUpdateRequest(w http.ResponseWriter, r *http.Reques
 				writeResponse(w, msgPrinter.Sprintf("Error node ha group %v does not match group name in request %v.", dev.HAGroup, groupName), http.StatusBadRequest)
 				return
 			}
-
 
 			reqNode := persistence.UpgradingHAGroupNode{GroupName: groupName, OrgId: org, NodeId: node, NMPName: nmpId}
 			upgradingNode, err := persistence.NodeManagementUpgradeQuery(a.db, reqNode)
@@ -930,7 +929,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, aut
 		} else if authType == NodeTypeCred {
 			resp = new(exchange.GetDevicesResponse)
 		}
-		
+
 		targetURL := fmt.Sprintf("%vorgs/%v/%v/%v", user_ec.GetExchangeURL(), orgId, authType, userId)
 
 		glog.Errorf("Maxwell: target url is %v", targetURL)

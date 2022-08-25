@@ -10,12 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"math"
 	mrand "math/rand"
 	"net"
@@ -27,6 +21,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 const (
@@ -274,28 +275,50 @@ func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId st
 	envAdds[prefix+"ESS_API_PROTOCOL"] = fssProtocol
 
 	// The address of the file sync service API.
+	namespace := os.Getenv("AGENT_NAMESPACE")
+	if namespace != "" {
+		// ESS in cluster
+		fssAddress = fmt.Sprintf("agent-service.%v.svc.cluster.local", namespace)
+	}
 	envAdds[prefix+"ESS_API_ADDRESS"] = fssAddress
 
 	// The port of the file sync service API. Zero when using a unix domain socket.
+	if strings.Contains(fssPort, "\"") {
+		fssPort = strings.ReplaceAll(fssPort, "\"", "")
+
+	}
 	envAdds[prefix+"ESS_API_PORT"] = fssPort
 
-	// The name of the mounted file containing the FSS credentials that the container should use.
-	envAdds[prefix+"ESS_AUTH"] = path.Join(config.HZN_FSS_AUTH_MOUNT, config.HZN_FSS_AUTH_FILE)
+	if namespace != "" {
+		// The secret name of the FSS credentials that the operator should use.
+		envAdds[prefix+"ESS_AUTH"] = config.HZN_FSS_AUTH_PATH + "-" + agreementId
 
-	// The name of the mounted file containing the FSS API SSL Certificate that the container should use.
-	envAdds[prefix+"ESS_CERT"] = path.Join(config.HZN_FSS_CERT_MOUNT, config.HZN_FSS_CERT_FILE)
+		// The secret name of FSS API SSL Certificate that the operator should use.
+		envAdds[prefix+"ESS_CERT"] = config.HZN_FSS_CERT_PATH
 
+	} else {
+		// The name of the mounted file containing the FSS credentials that the container should use.
+		envAdds[prefix+"ESS_AUTH"] = path.Join(config.HZN_FSS_AUTH_MOUNT, config.HZN_FSS_AUTH_FILE)
+
+		// The name of the mounted file containing the FSS API SSL Certificate that the container should use.
+		envAdds[prefix+"ESS_CERT"] = path.Join(config.HZN_FSS_CERT_MOUNT, config.HZN_FSS_CERT_FILE)
+	}
 }
 
 // Temporary function to remove ESS env vars for the edge cluster case.
-func RemoveESSEnvVars(envAdds map[string]string, prefix string) map[string]string {
-	delete(envAdds, prefix+"ESS_API_PROTOCOL")
-	delete(envAdds, prefix+"ESS_API_ADDRESS")
-	delete(envAdds, prefix+"ESS_API_PORT")
-	delete(envAdds, prefix+"ESS_AUTH")
-	delete(envAdds, prefix+"ESS_CERT")
-	return envAdds
-}
+// HZN_ESS_CERT=/ess-cert/cert.pem
+// HZN_ESS_AUTH=/ess-auth/auth.json
+// HZN_ESS_API_PROTOCOL=secure
+// HZN_ESS_API_ADDRESS=/var/tmp/horizon/horizon7/fss-domain-socket/essapi.sock -->
+// HZN_ESS_API_PORT=0
+// func RemoveESSEnvVars(envAdds map[string]string, prefix string) map[string]string {
+// 	delete(envAdds, prefix+"ESS_API_PROTOCOL")
+// 	delete(envAdds, prefix+"ESS_API_ADDRESS")
+// 	delete(envAdds, prefix+"ESS_API_PORT")
+// 	delete(envAdds, prefix+"ESS_AUTH")
+// 	delete(envAdds, prefix+"ESS_CERT")
+// 	return envAdds
+// }
 
 // This function is similar to the above, for env vars that are system related. It is only used by workloads.
 func SetSystemEnvvars(envAdds map[string]string, prefix string, lat string, lon string, cpus string, ram string, arch string) {

@@ -6,11 +6,16 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/cutil"
-	yaml "gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
+	"os"
+	"reflect"
+	"strings"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
+	yaml "gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -24,8 +29,6 @@ import (
 	dynamic "k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	"reflect"
-	"strings"
 )
 
 const (
@@ -92,8 +95,8 @@ func NewDynamicKubeClient() (dynamic.Interface, error) {
 }
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
-func (c KubeClient) Install(tar string, envVars map[string]string, agId string, crInstallTimeout int64) error {
-	apiObjMap, namespace, err := processDeployment(tar, envVars, agId, crInstallTimeout)
+func (c KubeClient) Install(tar string, envVars map[string]string, fssAuthFilePath string, agId string, crInstallTimeout int64) error {
+	apiObjMap, namespace, err := processDeployment(tar, envVars, fssAuthFilePath, agId, crInstallTimeout)
 	if err != nil {
 		return err
 	}
@@ -151,7 +154,7 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string, 
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
 func (c KubeClient) Uninstall(tar string, agId string) error {
-	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, agId, 0)
+	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, "", agId, 0)
 	if err != nil {
 		return err
 	}
@@ -184,7 +187,7 @@ func (c KubeClient) Uninstall(tar string, agId string) error {
 	return nil
 }
 func (c KubeClient) OperatorStatus(tar string, agId string) (interface{}, error) {
-	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, agId, 0)
+	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, "", agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +203,7 @@ func (c KubeClient) OperatorStatus(tar string, agId string) (interface{}, error)
 	return status, nil
 }
 func (c KubeClient) Status(tar string, agId string) ([]ContainerStatus, error) {
-	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, agId, 0)
+	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, "", agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +248,7 @@ func (c KubeClient) Status(tar string, agId string) ([]ContainerStatus, error) {
 }
 
 // processDeployment takes the deployment string and converts it to a map with the k8s objects, the namespace to be used, and an error if one occurs
-func processDeployment(tar string, envVars map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func processDeployment(tar string, envVars map[string]string, fssAuthFilePath string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	// Read the yaml files from the commpressed tar files
 	yamls, err := getYamlFromTarGz(tar)
 	if err != nil {
@@ -268,7 +271,7 @@ func processDeployment(tar string, envVars map[string]string, agId string, crIns
 	}
 
 	// Sort the k8s api objects by kind
-	return sortAPIObjects(k8sObjs, unstructCr, envVars, agId, crInstallTimeout)
+	return sortAPIObjects(k8sObjs, unstructCr, envVars, fssAuthFilePath, agId, crInstallTimeout)
 }
 
 // CreateConfigMap will create a config map with the provided environment variable map
@@ -286,6 +289,30 @@ func (c KubeClient) CreateConfigMap(envVars map[string]string, agId string, name
 		return "", fmt.Errorf("Error: failed to create config map for %s: %v", agId, err)
 	}
 	return res.ObjectMeta.Name, nil
+}
+
+func (c KubeClient) CreateESSSecret(fssAuthFilePath string, agId string, namespace string) (string, error) {
+	if essAuth, err := os.Open(fssAuthFilePath); err != nil {
+		return "", err
+	} else if essAuthBytes, err := ioutil.ReadAll(essAuth); err != nil {
+		return "", err
+	} else {
+		secretData := make(map[string][]byte)
+		secretData[config.HZN_FSS_AUTH_FILE] = essAuthBytes
+		fssSecret := corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%s", config.HZN_FSS_AUTH_PATH, agId),
+				Namespace: namespace,
+			},
+			Data: secretData,
+		}
+		res, err := c.Client.CoreV1().Secrets(namespace).Create(context.Background(), &fssSecret, metav1.CreateOptions{})
+		if err != nil {
+			return "", fmt.Errorf("Error: failed to create ess secret for %s: %v", agId, err)
+		}
+		return res.ObjectMeta.Name, nil
+	}
+
 }
 
 func unstructuredObjectFromYaml(crStr YamlFile) (*unstructured.Unstructured, error) {
@@ -309,6 +336,33 @@ func addConfigMapVarToDeploymentObject(deployment appsv1.Deployment, configMapNa
 		deployment.Spec.Template.Spec.Containers[i].Env = newEnv
 		i--
 	}
+	return deployment
+}
+
+// add a reference to the envvar config map to the deployment
+func addVolumeToDeploymentObject(deployment appsv1.Deployment) appsv1.Deployment {
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - addVolumeToDeploymentObject to deployment %v", deployment)))
+	pvcvs := &corev1.PersistentVolumeClaimVolumeSource{ClaimName: "openhorizon-agent-pvc", ReadOnly: false}
+	vs := corev1.VolumeSource{PersistentVolumeClaim: pvcvs}
+	volume := corev1.Volume{Name: "agent-pvc-storage", VolumeSource: vs}
+
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - volume is %v", volume)))
+	newVolume := append(deployment.Spec.Template.Spec.Volumes, volume)
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - newVolume is %v", newVolume)))
+	deployment.Spec.Template.Spec.Volumes = newVolume
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - deployment.Spec.Template.Spec.Volumes is %v", deployment.Spec.Template.Spec.Volumes)))
+
+	vm := corev1.VolumeMount{Name: "agent-pvc-storage", MountPath: "/ess-cert", SubPath: "horizon/ess-auth/SSL/cert"}
+
+	i := len(deployment.Spec.Template.Spec.Containers) - 1
+	for i >= 0 {
+		newVM := append(deployment.Spec.Template.Spec.Containers[i].VolumeMounts, vm)
+		deployment.Spec.Template.Spec.Containers[i].VolumeMounts = newVM
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - deployment.Spec.Template.Spec.Containers[%v].VolumeMounts is %v", i, deployment.Spec.Template.Spec.Containers[i].VolumeMounts)))
+		i--
+	}
+
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - returned deployment is %v", deployment)))
 	return deployment
 }
 

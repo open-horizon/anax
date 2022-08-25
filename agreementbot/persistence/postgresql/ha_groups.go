@@ -80,4 +80,4 @@ func (db *AgbotPostgresqlDB) ListUpgradingNodeInGroup(orgId string, groupName st
 	}
 
 	return nil, nil
-} 
+}

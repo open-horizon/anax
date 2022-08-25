@@ -3,6 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"os/signal"
+	"path"
+	"runtime"
+	"runtime/pprof"
+	"syscall"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreement"
@@ -30,13 +38,6 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
-	"os"
-	"os/signal"
-	"path"
-	"runtime"
-	"runtime/pprof"
-	"syscall"
-	"time"
 )
 
 // The core of anax is an event handling system that distributes events to workers, where the workers
@@ -189,7 +190,7 @@ func main() {
 		if imageWorker := imagefetch.NewImageFetchWorker("ImageFetch", cfg, db); imageWorker != nil {
 			workers.Add(imageWorker)
 		}
-		workers.Add(kube_operator.NewKubeWorker("Kube", cfg, db))
+		workers.Add(kube_operator.NewKubeWorker("Kube", cfg, db, authm))
 		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
 		workers.Add(changes.NewChangesWorker("ExchangeChanges", cfg, db))
 		workers.Add(nodemanagement.NewNodeManagementWorker("NodeManagement", cfg, db))
