@@ -354,6 +354,8 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/cache/deploymentpol", a.ListDeploy).Methods("GET", "OPTIONS")
 		router.HandleFunc("/cache/deploymentpol/{org}", a.ListDeploy).Methods("GET", "OPTIONS")
 		router.HandleFunc("/cache/deploymentpol/{org}/{name}", a.ListDeploy).Methods("GET", "OPTIONS")
+		router.HandleFunc("/ha/upgradingwlu", a.ha_upgrading_wlu).Methods("GET", "OPTIONS")
+		router.HandleFunc("/ha/upgradingnode", a.ha_upgrading_node).Methods("GET", "OPTIONS")
 
 		if err := http.ListenAndServe(apiListen, nocache(router)); err != nil {
 			glog.Fatalf(APIlogString(fmt.Sprintf("failed to start listener on %v, error %v", apiListen, err)))
@@ -839,6 +841,48 @@ func (a *API) partition(w http.ResponseWriter, r *http.Request) {
 			writeResponse(w, output, http.StatusOK)
 		}
 
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// List all the entries in the ha_workload_upgrade table. They are the HA nodes
+// in which the workload is being upgraded.
+func (a *API) ha_upgrading_wlu(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case "GET":
+		if ha_wlu, err := a.db.ListAllHAUpgradingWorkloads(); err != nil {
+			glog.Error(APIlogString(fmt.Sprintf("error finding all HA nodes in which the workload is being upgraded, error: %v", err)))
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		} else {
+			// write output
+			writeResponse(w, ha_wlu, http.StatusOK)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// List all the entries in the ha_group_updates table. They are
+// the nodes that are being upgraded when the node is in a HA group.
+func (a *API) ha_upgrading_node(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case "GET":
+		if ha_nodes, err := a.db.ListAllUpgradingHANode(); err != nil {
+			glog.Error(APIlogString(fmt.Sprintf("error finding all upgrading HA nodes, error: %v", err)))
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		} else {
+			// write output
+			writeResponse(w, ha_nodes, http.StatusOK)
+		}
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")
 		w.WriteHeader(http.StatusOK)

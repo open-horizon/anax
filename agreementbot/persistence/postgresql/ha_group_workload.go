@@ -57,6 +57,8 @@ const HA_WORKLOAD_UPDATE = `UPDATE ha_workload_upgrade SET node_id = $4 WHERE gr
 
 const HA_WORKLOAD_INSERT = `INSERT INTO ha_workload_upgrade (group_name, org_id, policy_name, node_id) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING;`
 
+const HA_WORKLOAD_GET_ALL = `SELECT group_name, org_id, policy_name, node_id FROM ha_workload_upgrade;`
+
 func (db *AgbotPostgresqlDB) DeleteHAUpgradingWorkload(workloadToDelete persistence.UpgradingHAGroupWorkload) error {
 	_, qerr := db.db.Exec(HA_WORKLOAD_DELETE, workloadToDelete.GroupName, workloadToDelete.OrgId, workloadToDelete.PolicyName, workloadToDelete.NodeId)
 	return qerr
@@ -114,6 +116,31 @@ func (db *AgbotPostgresqlDB) GetHAUpgradingWorkload(org string, haGroupName stri
 	} else {
 		return uwl, nil
 	}
+}
+
+func (db *AgbotPostgresqlDB) ListAllHAUpgradingWorkloads() ([]persistence.UpgradingHAGroupWorkload, error) {
+	upgradingWorkloads := []persistence.UpgradingHAGroupWorkload{}
+	rows, err := db.db.Query(HA_WORKLOAD_GET_ALL)
+
+	if err != nil {
+		return nil, fmt.Errorf("error querying database for all upgrading workloads. Error was: %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var dbHAGroup sql.NullString
+		var dbOrg sql.NullString
+		var dbPolicyName sql.NullString
+		var dbNodeId sql.NullString
+
+		if err = rows.Scan(&dbHAGroup, &dbOrg, &dbPolicyName, &dbNodeId); err != nil {
+			return nil, fmt.Errorf("error scanning row for ha workloads, error was: %v", err)
+		}
+
+		upgradingWorkloads = append(upgradingWorkloads, persistence.UpgradingHAGroupWorkload{GroupName: dbHAGroup.String, OrgId: dbOrg.String, PolicyName: dbPolicyName.String, NodeId: dbNodeId.String})
+	}
+
+	return upgradingWorkloads, nil
 }
 
 func (db *AgbotPostgresqlDB) UpdateHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) (bool, error) {
