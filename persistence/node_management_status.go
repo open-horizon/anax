@@ -167,6 +167,10 @@ func FindWaitingNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagem
 	return FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(exchangecommon.STATUS_NEW)})
 }
 
+func FindHAWaitingNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
+	return FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(exchangecommon.STATUS_HA_WAITING)})
+}
+
 func FindInitiatedNMPStatuses(db *bolt.DB) (map[string]*exchangecommon.NodeManagementPolicyStatus, error) {
 	return FindNMPStatusWithFilters(db, []NMStatusFilter{StatusNMSFilter(exchangecommon.STATUS_INITIATED)})
 }

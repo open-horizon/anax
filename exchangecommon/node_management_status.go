@@ -172,6 +172,7 @@ const (
 	STATUS_ROLLBACK_STARTED    = "rollback started"
 	STATUS_ROLLBACK_FAILED     = "rollback failed"
 	STATUS_ROLLBACK_SUCCESSFUL = "rollback successful"
+	STATUS_HA_WAITING          = "ha node waiting"
 )
 
 func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string) NodeManagementPolicyStatus {

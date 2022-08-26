@@ -75,6 +75,7 @@ type ConsumerProtocolHandler interface {
 	GetExchangeToken() string
 	GetExchangeURL() string
 	GetCSSURL() string
+	GetAgbotURL() string
 	GetServiceBased() bool
 	GetHTTPFactory() *config.HTTPClientFactory
 	SendEventMessage(event events.Message)
@@ -116,6 +117,10 @@ func (b *BaseConsumerProtocolHandler) GetExchangeURL() string {
 
 func (b *BaseConsumerProtocolHandler) GetCSSURL() string {
 	return b.config.GetAgbotCSSURL()
+}
+
+func (b *BaseConsumerProtocolHandler) GetAgbotURL() string {
+	return ""
 }
 
 func (b *BaseConsumerProtocolHandler) GetServiceBased() bool {

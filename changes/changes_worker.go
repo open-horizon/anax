@@ -52,7 +52,7 @@ func NewChangesWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *Chan
 	var ec *worker.BaseExchangeContext
 	dev, _ := persistence.FindExchangeDevice(db)
 	if dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), newLimitedRetryHTTPFactory(cfg.Collaborators.HTTPClientFactory))
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Edge.AgbotURL, newLimitedRetryHTTPFactory(cfg.Collaborators.HTTPClientFactory))
 	}
 
 	worker := &ChangesWorker{
@@ -519,7 +519,7 @@ func (w *ChangesWorker) updatePollingInterval(updateType string) {
 // with the exchange.
 func (w *ChangesWorker) handleDeviceRegistration(cmd *DeviceRegisteredCommand) {
 	msg := cmd.Msg
-	w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), newLimitedRetryHTTPFactory(w.Config.Collaborators.HTTPClientFactory))
+	w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Edge.AgbotURL, newLimitedRetryHTTPFactory(w.Config.Collaborators.HTTPClientFactory))
 
 	// set up initial polling time
 	w.pollInitTime = time.Now().Unix()

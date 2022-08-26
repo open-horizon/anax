@@ -44,7 +44,7 @@ func GetUpgradingNodeInGroup(db AgbotDatabase, orgId string, groupName string) (
 	return db.ListUpgradingNodeInGroup(orgId, groupName)
 }
 
-type HANodeUpgradeFilter func(UpgradingHAGroupNode) bool 
+type HANodeUpgradeFilter func(UpgradingHAGroupNode) bool
 
 func OrgHANodeUpgradeFilter(orgId string) HANodeUpgradeFilter {
 	return func(u UpgradingHAGroupNode) bool { return u.OrgId == orgId }

@@ -95,7 +95,7 @@ func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm 
 	var lrec exchange.ExchangeContext
 	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Collaborators.HTTPClientFactory)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Edge.AgbotURL, cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
 		lrec = newLimitedRetryExchangeContext(ec)
 	}
@@ -502,7 +502,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
-	w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", cmd.Msg.Org(), cmd.Msg.DeviceId()), cmd.Msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
+	w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", cmd.Msg.Org(), cmd.Msg.DeviceId()), cmd.Msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Edge.AgbotURL, w.Config.Collaborators.HTTPClientFactory)
 	w.devicePattern = cmd.Msg.Pattern()
 	w.limitedRetryEC = newLimitedRetryExchangeContext(w.EC)
 

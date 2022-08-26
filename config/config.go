@@ -11,6 +11,7 @@ import (
 
 const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
 const FileSyncServiceCSSURLEnvvarName = "HZN_FSS_CSSURL"
+const AgbotURLEnvvarName = "HZN_AGBOT_URL"
 const VaultURLEnvvarName = "HZN_VAULT_ADDR"
 const ExchangeMessageNoDynamicPollEnvvarName = "HZN_NO_DYNAMIC_POLL"
 const OldMgmtHubCertPath = "HZN_ICP_CA_CERT_PATH"
@@ -40,6 +41,7 @@ type Config struct {
 	TrustSystemCACerts               bool   // If equal to true, the HTTP client factory will set up clients that trust CA certs provided by a Linux distribution (see https://golang.org/pkg/crypto/x509/#SystemCertPool and https://golang.org/src/crypto/x509/root_linux.go)
 	CACertsPath                      string // Path to a file containing PEM-encoded x509 certs HTTP clients in Anax will trust (additive to the configuration option "TrustSystemCACerts")
 	ExchangeURL                      string
+	AgbotURL                         string
 	DefaultHTTPClientTimeoutS        uint
 	PolicyPath                       string
 	ExchangeHeartbeat                int       // Seconds between heartbeats
@@ -333,6 +335,10 @@ func enrichFromEnvvars(config *HorizonConfig) error {
 		config.Edge.FileSyncService.CSSURL = fssCSSURL
 	}
 
+	if agbotURL := os.Getenv(AgbotURLEnvvarName); agbotURL != "" {
+		config.Edge.AgbotURL = agbotURL
+	}
+
 	if vaultURL := os.Getenv(VaultURLEnvvarName); vaultURL != "" {
 		config.AgreementBot.Vault.VaultURL = vaultURL
 	}
@@ -500,6 +506,7 @@ func (con *Config) String() string {
 		", TrustSystemCACerts: %v"+
 		", CACertsPath: %v"+
 		", ExchangeURL: %v"+
+		", AgbotURL: %v"+
 		", DefaultHTTPClientTimeoutS: %v"+
 		", PolicyPath: %v"+
 		", ExchangeHeartbeat: %v"+
@@ -525,7 +532,7 @@ func (con *Config) String() string {
 		", BlockchainAccountId: %v"+
 		", BlockchainDirectoryAddress %v",
 		con.ServiceStorage, con.APIListen, con.DBPath, con.DockerEndpoint, con.DockerCredFilePath, con.DefaultCPUSet,
-		con.DefaultServiceRegistrationRAM, con.StaticWebContent, con.PublicKeyPath, con.TrustSystemCACerts, con.CACertsPath, con.ExchangeURL,
+		con.DefaultServiceRegistrationRAM, con.StaticWebContent, con.PublicKeyPath, con.TrustSystemCACerts, con.CACertsPath, con.ExchangeURL, con.AgbotURL,
 		con.DefaultHTTPClientTimeoutS, con.PolicyPath, con.ExchangeHeartbeat, con.AgreementTimeoutS,
 		con.DVPrefix, con.RegistrationDelayS, con.ExchangeMessageTTL, con.ExchangeMessageDynamicPoll, con.ExchangeMessagePollInterval,
 		con.ExchangeMessagePollMaxInterval, con.ExchangeMessagePollIncrement, con.UserPublicKeyPath, con.ReportDeviceStatus,

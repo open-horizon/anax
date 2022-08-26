@@ -67,7 +67,7 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 	pattern := ""
 	deviceType := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Collaborators.HTTPClientFactory)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Edge.AgbotURL, cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
 		deviceType = dev.GetNodeType()
 		lrec = newLimitedRetryExchangeContext(ec)
@@ -112,7 +112,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
+		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Edge.AgbotURL, w.Config.Collaborators.HTTPClientFactory)
 		w.devicePattern = msg.Pattern()
 		w.deviceType = msg.DeviceType()
 		w.limitedRetryEC = newLimitedRetryExchangeContext(w.EC)

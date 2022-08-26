@@ -66,7 +66,7 @@ type AgreementBotWorker struct {
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, s secrets.AgbotSecrets) *AgreementBotWorker {
 
-	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.AgreementBot.CSSURL, cfg.Collaborators.HTTPClientFactory)
+	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.AgreementBot.CSSURL, "", cfg.Collaborators.HTTPClientFactory)
 
 	baseWorker := worker.NewBaseWorker(name, cfg, ec)
 	worker := &AgreementBotWorker{

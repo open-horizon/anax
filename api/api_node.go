@@ -81,7 +81,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *device.Token, a.Config.Edge.ExchangeURL, a.Config.GetCSSURL(), a.Config.Collaborators.HTTPClientFactory)
+		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *device.Token, a.Config.Edge.ExchangeURL, a.Config.GetCSSURL(), a.Config.Edge.AgbotURL, a.Config.Collaborators.HTTPClientFactory)
 
 		// sync the node policy and userinput with the exchange
 		if err := exchangesync.NodeInitalSetup(a.db, exchange.GetHTTPDeviceHandler(a), exchange.GetHTTPPatchDeviceHandler(a)); err != nil {
@@ -131,7 +131,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *dev.Token, a.Config.Edge.ExchangeURL, a.Config.GetCSSURL(), a.Config.Collaborators.HTTPClientFactory)
+		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *dev.Token, a.Config.Edge.ExchangeURL, a.Config.GetCSSURL(), a.Config.Edge.AgbotURL, a.Config.Collaborators.HTTPClientFactory)
 
 		writeResponse(w, exDev, http.StatusOK)
 
