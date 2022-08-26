@@ -66,7 +66,12 @@ function startMultiAgents {
     fi 
 
     # register the agent
-    regcmd="hzn register -f $UIFILE -p $PATTERN -o e2edev@somecomp.com -u e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
+    ha_group_option=""
+    if [ "$HA" == "1" ]; then
+      ha_group_option="--ha-group group2"
+    fi
+
+    regcmd="hzn register -f $UIFILE -p $PATTERN -o e2edev@somecomp.com -u e2edev@somecomp.com/e2edevadmin:e2edevadminpw $ha_group_option"
     ret=$(docker exec -e "HORIZON_URL=http://localhost:${agent_port}" horizon${horizon_num} $regcmd)
     if [ $? -ne 0 ]; then
       echo "${PREFIX} Registration failed for anaxdevice${device_num}: $ret"

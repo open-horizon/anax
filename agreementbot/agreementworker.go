@@ -1404,6 +1404,7 @@ func (b *BaseAgreementWorker) ignoreDevice(pol *policy.Policy) (bool, error) {
 	return false, nil
 }
 
+// Get HA group, returns nil if the group does not exist.
 func GetHAGroup(org string, haGroupName string, httpClient *http.Client, url string, agbotId string, token string) (*exchangecommon.HAGroup, error) {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("retrieving hagroup %v/%v from exchange", org, haGroupName)))
@@ -1435,7 +1436,7 @@ func GetHAGroup(org string, haGroupName string, httpClient *http.Client, url str
 			}
 
 			// the ha group does not exist
-			return nil, fmt.Errorf("The HA group \"%v\" does not exist in organization %v.", haGroupName, org)
+			return nil, nil
 		}
 	}
 }

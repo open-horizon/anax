@@ -392,6 +392,9 @@ func (b *BaseConsumerProtocolHandler) HandleMMSObjectPolicy(cmd *MMSObjectPolicy
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued object policy change command.")))
 }
 
+// Note: Multiple agbot could call this function at the same time (for different agreement).
+//       Table workloadusage is partitioned. So one agbot could only see the workloadusage in
+//       its own partition. Table ha_workload_upgrade is not partitioned.
 func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, reason string, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Canceling Agreement: %v, reason: %v", ag, reason)))
 	// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
@@ -406,55 +409,27 @@ func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, 
 		}
 
 		if theDev != nil && theDev.HAGroup != "" {
-			// get partners
-			partners, err := GetHAPartners(ag.DeviceId, theDev.HAGroup, b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken())
-			if err != nil {
-				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error getting ha partners for device %v, error: %v", ag.DeviceId, err)))
+			// update pending upgrade for itself. So that governerHA won't think this device has finish upgrade
+			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("setting workloadusage pending for %v using policy %v", ag.DeviceId, ag.PolicyName)))
+			if _, err := b.db.UpdatePendingUpgrade(ag.DeviceId, ag.PolicyName); err != nil {
+				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to set workloadusage pending for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 			}
-			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("HA partners for %v are: %v", ag.DeviceId, partners)))
 
 			deviceAndGroupOrg := exchange.GetOrg(ag.DeviceId)
 			if upgradingWorkload, err := b.db.GetHAUpgradingWorkload(deviceAndGroupOrg, theDev.HAGroup, ag.PolicyName); err != nil {
 				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error get HA upgrading workload with hagroup %v, org: %v, policyName: %v, error: %v", theDev.HAGroup, ag.Org, ag.PolicyName, err)))
 				return
 			} else if upgradingWorkload != nil {
-				if anotherWorkload, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(upgradingWorkload.NodeId, upgradingWorkload.PolicyName); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error getting workload usage for the ha upgrading workload %v/%v/%v/%v, error: %v", deviceAndGroupOrg, theDev.HAGroup, upgradingWorkload.PolicyName, upgradingWorkload.NodeId, err)))
-					return
-				} else if anotherWorkload == nil || anotherWorkload.PendingUpgradeTime != 0 {
-					// has workload is currently doing upgrading for this given group
-					// Skip this agreement, it is part of an HA group where another member is upgrading
-					return
-				} else {
-					// workload is updated, then delete this workload from ha upgrading workload table
-					if err := b.db.DeleteHAUpgradingWorkload(*upgradingWorkload); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error deleting workload usage for the ha upgrading workload %v/%v/%v/%v, error: %v", deviceAndGroupOrg, theDev.HAGroup, upgradingWorkload.PolicyName, upgradingWorkload.NodeId, err)))
-						return
-					}
-				}
-			}
-
-			// no workload is upgrading currently for this hagroup if:
-			//     - upgradingWorkload == nil ||
-			//     - upgradingWorkload != nil && anotherWorkload != nil && anotherWorkload.PendingUpgradeTime == 0
-			// then choose this device's agreement within the HA group to start upgrading.
-			// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
-
-			for _, partnerId := range partners {
-				// update the pending time of partner that use same policy name
-				if _, err := b.db.UpdatePendingUpgrade(partnerId, ag.PolicyName); err != nil {
-					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("could not update pending workload upgrade for %v using policy %v, error: %v", partnerId, ag.PolicyName, err)))
-				}
-			}
-
-			// update pending upgrade for itself. So that governerHA won't think this device has finish upgrade
-			if _, err := b.db.UpdatePendingUpgrade(ag.DeviceId, ag.PolicyName); err != nil {
-				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("could not update pending workload upgrade for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+				// there is a upgrading workload, let the govenance handle the status and order
+				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("upgrading workload: %v", upgradingWorkload)))
+				return
 			}
 
 			// put this workload in HA workload upgrading table
+			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("inserting HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId)))
 			if err = b.db.InsertHAUpgradingWorkloadForGroupAndPolicy(deviceAndGroupOrg, theDev.HAGroup, ag.PolicyName, ag.DeviceId); err != nil {
-				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v, error: %v", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId, err)))
+				// might not be an error if the entry is already added by another agbot
+				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v, error: %v", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId, err)))
 				return
 			} else {
 				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("delete workloadusage and cancel agreement for: org: %v, hagroup: %v, policyName: %v deviceId: %v", ag.Org, theDev.HAGroup, ag.PolicyName, ag.DeviceId)))
@@ -465,7 +440,6 @@ func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, 
 				cph.WorkQueue().InboundHigh() <- &agreementWork
 				return
 			}
-
 		}
 	}
 

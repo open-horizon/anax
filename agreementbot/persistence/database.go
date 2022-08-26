@@ -105,6 +105,6 @@ type AgbotDatabase interface {
 	ListHAUpgradingWorkloadsByGroupName(org string, haGroupName string) ([]UpgradingHAGroupWorkload, error)
 	ListAllHAUpgradingWorkloads() ([]UpgradingHAGroupWorkload, error)
 	GetHAUpgradingWorkload(org string, haGroupName string, policyName string) (*UpgradingHAGroupWorkload, error)
-	UpdateHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) (bool, error)
+	UpdateHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) error
 	InsertHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) error
 }
