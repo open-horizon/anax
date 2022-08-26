@@ -86,6 +86,10 @@ func (db *AgbotBoltDB) ListHAUpgradingWorkloadsByGroupName(org string, haGroupNa
 	return db.FindHAUpgradeWorkloadsWithFilters([]persistence.HAWorkloadUpgradeFilter{persistence.HAWorkloadUpgradeGroupFilter(org, haGroupName)})
 }
 
+func (db *AgbotBoltDB) ListAllHAUpgradingWorkloads() ([]persistence.UpgradingHAGroupWorkload, error) {
+	return db.FindHAUpgradeWorkloadsWithFilters([]persistence.HAWorkloadUpgradeFilter{})
+}
+
 func (db *AgbotBoltDB) GetHAUpgradingWorkload(org string, haGroupName string, policyName string) (*persistence.UpgradingHAGroupWorkload, error) {
 	key := haWLUId(org, haGroupName, policyName)
 

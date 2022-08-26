@@ -7,8 +7,8 @@ import (
 type UpgradingHAGroupNode struct {
 	GroupName string `json:"groupName"`
 	OrgId     string `json:"orgId"`
-	NodeId    string `json:"nodeId"`
-	NMPName   string `json:"nmpName"`
+	NodeId    string `json:"nodeId"`  // does not contain the org
+	NMPName   string `json:"nmpName"` // does not contain the org
 }
 
 func (u UpgradingHAGroupNode) String() string {

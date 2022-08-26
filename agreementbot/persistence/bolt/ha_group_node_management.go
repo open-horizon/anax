@@ -52,7 +52,7 @@ func (db *AgbotBoltDB) DeleteHAUpgradeNode(nodeToDelete persistence.UpgradingHAG
 	})
 }
 
-func (db *AgbotBoltDB) FindHAUpgradeNodesWithFilters(filterSlice []persistence.HANodeUpgradeFilter) (*[]persistence.UpgradingHAGroupNode, error) {
+func (db *AgbotBoltDB) FindHAUpgradeNodesWithFilters(filterSlice []persistence.HANodeUpgradeFilter) ([]persistence.UpgradingHAGroupNode, error) {
 	upgradingHANodes := make([]persistence.UpgradingHAGroupNode, 0)
 
 	readErr := db.db.View(func(tx *bolt.Tx) error {
@@ -81,7 +81,7 @@ func (db *AgbotBoltDB) FindHAUpgradeNodesWithFilters(filterSlice []persistence.H
 	})
 
 	if readErr == nil {
-		return &upgradingHANodes, nil
+		return upgradingHANodes, nil
 	}
 	return nil, readErr
 }
@@ -89,13 +89,17 @@ func (db *AgbotBoltDB) FindHAUpgradeNodesWithFilters(filterSlice []persistence.H
 func (db *AgbotBoltDB) ListUpgradingNodeInGroup(orgId string, groupName string) (*persistence.UpgradingHAGroupNode, error) {
 	if nodesInGroup, err := db.FindHAUpgradeNodesWithFilters([]persistence.HANodeUpgradeFilter{persistence.OrgHANodeUpgradeFilter(orgId), persistence.GroupHANodeUpgradeFilter(groupName)}); err != nil {
 		return nil, err
-	} else if len(*nodesInGroup) == 0 {
+	} else if len(nodesInGroup) == 0 {
 		return nil, nil
-	} else if len(*nodesInGroup) > 1 {
+	} else if len(nodesInGroup) > 1 {
 		return nil, fmt.Errorf("Error: multiple nodes in group %v/%v are present in upgrading table.", orgId, groupName)
 	} else {
-		return &(*nodesInGroup)[0], nil
+		return &(nodesInGroup)[0], nil
 	}
+}
+
+func (db *AgbotBoltDB) ListAllUpgradingHANode() ([]persistence.UpgradingHAGroupNode, error) {
+	return db.FindHAUpgradeNodesWithFilters([]persistence.HANodeUpgradeFilter{})
 }
 
 func groupId(orgId string, groupName string) string {

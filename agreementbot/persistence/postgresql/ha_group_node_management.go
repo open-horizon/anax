@@ -44,6 +44,8 @@ const HA_GROUP_DELETE_NODE = `DELETE FROM ha_group_updates WHERE group_name = $1
 
 const HA_GROUP_GET_IN_ORG_GROUP = `SELECT node_id, nmp_id FROM ha_group_updates WHERE org_id = $1 AND group_name = $2`
 
+const HA_GROUP_GET_ALL_NODES = `SELECT group_name, org_id, node_id, nmp_id FROM ha_group_updates`
+
 func (db *AgbotPostgresqlDB) CheckIfGroupPresentAndUpdateHATable(requestingNode persistence.UpgradingHAGroupNode) (*persistence.UpgradingHAGroupNode, error) {
 	var dbNodeId sql.NullString
 	var dbNmpId sql.NullString
@@ -80,4 +82,29 @@ func (db *AgbotPostgresqlDB) ListUpgradingNodeInGroup(orgId string, groupName st
 	}
 
 	return nil, nil
+}
+
+func (db *AgbotPostgresqlDB) ListAllUpgradingHANode() ([]persistence.UpgradingHAGroupNode, error) {
+	upgradingNodes := []persistence.UpgradingHAGroupNode{}
+	rows, err := db.db.Query(HA_GROUP_GET_ALL_NODES)
+
+	if err != nil {
+		return nil, fmt.Errorf("error querying database for all upgrading HA nodes. Error was: %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var dbHAGroup sql.NullString
+		var dbOrg sql.NullString
+		var dbNodeId sql.NullString
+		var dbNmpId sql.NullString
+
+		if err = rows.Scan(&dbHAGroup, &dbOrg, &dbNodeId, &dbNmpId); err != nil {
+			return nil, fmt.Errorf("error scanning row for ha nodes, error was: %v", err)
+		}
+
+		upgradingNodes = append(upgradingNodes, persistence.UpgradingHAGroupNode{GroupName: dbHAGroup.String, OrgId: dbOrg.String, NodeId: dbNodeId.String, NMPName: dbNmpId.String})
+	}
+
+	return upgradingNodes, nil
 }

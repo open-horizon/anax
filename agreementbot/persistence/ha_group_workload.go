@@ -10,7 +10,7 @@ type UpgradingHAGroupWorkload struct {
 	GroupName  string `json:"groupName"`
 	OrgId      string `json:"orgId"`
 	PolicyName string `json:"policyName"`
-	NodeId     string `json:"nodeId"`
+	NodeId     string `json:"nodeId"` // format: org/deviceId
 }
 
 func (u UpgradingHAGroupWorkload) String() string {

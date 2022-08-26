@@ -411,6 +411,13 @@ func (w *AgreementBotWorker) Initialize() bool {
 		return w.fail()
 	}
 
+	// Reevaluate the entries in ha_workload_upgrade table because there might be changes for the HA groups when
+	// the agbot was down
+	if err := w.reevaluateHAWordloadUsage(); err != nil {
+		glog.Errorf("AgreementBotWorker Terminating, unable to reevaluate HA_workload_upgrade table, error: %v", err)
+		return w.fail()
+	}
+
 	// Start the go thread that checks for stale partitions.
 	w.DispatchSubworker(STALE_PARTITIONS, w.stalePartitions, int(w.BaseWorker.Manager.Config.GetPartitionStale()), false)
 
@@ -981,6 +988,56 @@ func DeleteMessage(msgId int, agbotId, agbotToken, exchangeURL string, httpClien
 			return nil
 		}
 	}
+}
+
+// This function goes through all entries in the HA_workload_upgrade table
+// and makes sure that that the HAGroup name for the node is correct.
+func (w *AgreementBotWorker) reevaluateHAWordloadUsage() error {
+	glog.V(3).Infof(AWlogString("beginning reevaluate HA_workload_upgrade table."))
+
+	haWorkloads, err := w.db.ListAllHAUpgradingWorkloads()
+	if err != nil {
+		return fmt.Errorf("Failed to get all entries from HA_workload_upgrade table. %v", err)
+	}
+
+	if haWorkloads == nil || len(haWorkloads) == 0 {
+		glog.V(3).Infof(AWlogString(fmt.Sprintf("No rentires in the HA_workload_upgrade table. Nothing to do.")))
+		return nil
+	} else {
+		glog.V(3).Infof(AWlogString(fmt.Sprintf("There are %v entries in the HA_workload_upgrade table.", len(haWorkloads))))
+	}
+
+	for _, ha_wlu := range haWorkloads {
+		bDelete := false
+
+		device, err := GetDevice(w.GetHTTPFactory().NewHTTPClient(nil), ha_wlu.NodeId, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
+		if err != nil {
+			return fmt.Errorf("error getting device %v, error: %v", ha_wlu.NodeId, err)
+		} else if device == nil {
+			// delete it from the table
+			bDelete = true
+			glog.V(3).Infof(AWlogString(fmt.Sprintf("node %v cannot be found, deleting record %v from the HA_workload_upgrade table.", ha_wlu.NodeId, ha_wlu)))
+		} else if device.HAGroup == "" {
+			bDelete = true
+			glog.V(3).Infof(AWlogString(fmt.Sprintf("node %v does not belong to any HA group now, deleting record %v from the HA_workload_upgrade table.", ha_wlu.NodeId, ha_wlu)))
+		} else {
+			// check if the HA group name is the same
+			haGroupName := device.HAGroup
+			if haGroupName != ha_wlu.GroupName {
+				bDelete = true
+				glog.V(3).Infof(AWlogString(fmt.Sprintf("Node HA group name %v is different from the HA group name %v in the HA_workload_upgrade table for node %v, deleting the record.", haGroupName, ha_wlu.GroupName, ha_wlu.NodeId)))
+			}
+		}
+
+		if bDelete {
+			if err := w.db.DeleteHAUpgradingWorkload(ha_wlu); err != nil {
+				return fmt.Errorf("error deleting the HA upgrading workload record %v, error: %v", ha_wlu, err)
+			}
+		}
+	}
+
+	glog.V(3).Infof(AWlogString("reevaluating HA_workload_upgrade table completed normally."))
+	return nil
 }
 
 func (w *AgreementBotWorker) syncOnInit() error {
