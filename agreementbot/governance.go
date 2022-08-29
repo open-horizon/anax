@@ -349,7 +349,10 @@ func (w *AgreementBotWorker) governHAPartners() {
 					// begin upgrading the partner who needs it.
 					if upgradedPartnerFound != "" && partnerUpgrading == "" {
 						// update node_id in ha upgrading workload to wlu.DeviceId
-						// db.updateNode
+						if _, err := w.db.UpdateHAUpgradingWorkloadForGroupAndPolicy(org, haGroupName, wlu.PolicyName, wlu.DeviceId); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("error updating HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v, error: %v", haGroupName, org, wlu.PolicyName, wlu.DeviceId, err)))
+							return
+						}
 						w.UpgradeWorkload(wlu)
 					} else {
 						glog.V(3).Infof(logString(fmt.Sprintf("no HA group members can be upgraded in group %v/%v.", org, haGroupName)))
