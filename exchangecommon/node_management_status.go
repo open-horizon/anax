@@ -175,6 +175,10 @@ const (
 	STATUS_HA_WAITING          = "ha node waiting"
 )
 
+func IsActiveStatus(status string) bool {
+	return status == STATUS_DOWNLOAD_STARTED || status == STATUS_DOWNLOADED || status == STATUS_INITIATED || status == STATUS_ROLLBACK_STARTED || status == STATUS_HA_WAITING
+}
+
 func StatusFromNewPolicy(policy ExchangeNodeManagementPolicy, workingDir string) NodeManagementPolicyStatus {
 	newStatus := NodeManagementPolicyStatus{
 		AgentUpgrade: &AgentUpgradePolicyStatus{Status: STATUS_NEW}, AgentUpgradeInternal: &AgentUpgradeInternalStatus{},

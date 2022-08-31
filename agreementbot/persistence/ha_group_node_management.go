@@ -40,8 +40,16 @@ func DeleteHAUpgradingNode(db AgbotDatabase, orgId string, groupName string, nod
 	return db.DeleteHAUpgradeNode(UpgradingHAGroupNode{GroupName: groupName, OrgId: orgId, NodeId: nodeId, NMPName: nmpName})
 }
 
+func DeleteHAUpgradeNodeByGroup(db AgbotDatabase, orgId string, groupName string) error {
+	return db.DeleteHAUpgradeNodeByGroup(orgId, groupName)
+}
+
 func GetUpgradingNodeInGroup(db AgbotDatabase, orgId string, groupName string) (*UpgradingHAGroupNode, error) {
 	return db.ListUpgradingNodeInGroup(orgId, groupName)
+}
+
+func GetAllUpgradingNodes(db AgbotDatabase) ([]UpgradingHAGroupNode, error) {
+	return db.ListAllUpgradingHANode()
 }
 
 type HANodeUpgradeFilter func(UpgradingHAGroupNode) bool

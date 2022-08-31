@@ -42,6 +42,8 @@ const HA_GROUP_ADD_IF_NOT_PRESENT_BY_FUNCTION = `SELECT * FROM ha_group_add_if_n
 
 const HA_GROUP_DELETE_NODE = `DELETE FROM ha_group_updates WHERE group_name = $1 AND org_id = $2 AND node_id = $3 AND nmp_id = $4 `
 
+const HA_GROUP_DELETE_NODE_BY_GROUP = `DELETE FROM ha_group_updates WHERE group_name = $1 AND org_id = $2 `
+
 const HA_GROUP_GET_IN_ORG_GROUP = `SELECT node_id, nmp_id FROM ha_group_updates WHERE org_id = $1 AND group_name = $2`
 
 const HA_GROUP_GET_ALL_NODES = `SELECT group_name, org_id, node_id, nmp_id FROM ha_group_updates`
@@ -66,6 +68,11 @@ func (db *AgbotPostgresqlDB) CheckIfGroupPresentAndUpdateHATable(requestingNode 
 
 func (db *AgbotPostgresqlDB) DeleteHAUpgradeNode(nodeToDelete persistence.UpgradingHAGroupNode) error {
 	_, qerr := db.db.Exec(HA_GROUP_DELETE_NODE, nodeToDelete.GroupName, nodeToDelete.OrgId, nodeToDelete.NodeId, nodeToDelete.NMPName)
+	return qerr
+}
+
+func (db *AgbotPostgresqlDB) DeleteHAUpgradeNodeByGroup(orgId string, groupName string) error {
+	_, qerr := db.db.Exec(HA_GROUP_DELETE_NODE_BY_GROUP, groupName, orgId)
 	return qerr
 }
 

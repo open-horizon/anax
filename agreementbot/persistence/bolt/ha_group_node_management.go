@@ -52,6 +52,16 @@ func (db *AgbotBoltDB) DeleteHAUpgradeNode(nodeToDelete persistence.UpgradingHAG
 	})
 }
 
+func (db *AgbotBoltDB) DeleteHAUpgradeNodeByGroup(orgId string, groupName string) error {
+	return db.db.Update(func(tx *bolt.Tx) error {
+		if b := tx.Bucket([]byte(HABUCKET)); b == nil {
+			return fmt.Errorf("Unknown bucket %v", HABUCKET)
+		} else {
+			return b.Delete([]byte(groupId(orgId, groupName)))
+		}
+	})
+}
+
 func (db *AgbotBoltDB) FindHAUpgradeNodesWithFilters(filterSlice []persistence.HANodeUpgradeFilter) ([]persistence.UpgradingHAGroupNode, error) {
 	upgradingHANodes := make([]persistence.UpgradingHAGroupNode, 0)
 
