@@ -30,6 +30,7 @@ const GOVERN_ARCHIVED_AGREEMENTS = "AgBotGovernArchivedAgreements"
 const SECRETS_PROVIDER = "AgbotSecretsProvider"
 const SECRETS_UPDATE = "AgbotSecretsUpdate"
 const AGENT_FILE_VERSION_UPDATE = "AgbotUpdateAgentFileVersion"
+const NMP_HA_GROUP_STATUS = "NMPHAGroupMonitor"
 
 //const GOVERN_BC_NEEDS = "AgBotGovernBlockchain"
 const POLICY_WATCHER = "AgBotPolicyWatcher"
@@ -335,6 +336,9 @@ func (w *AgreementBotWorker) Initialize() bool {
 
 	// Start the go thread that heartbeats to the database.
 	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3), false)
+
+	// Start a subworker to monitor the ha group nmp upgrades and update the table as needed
+	w.DispatchSubworker(NMP_HA_GROUP_STATUS, w.monitorHAGroupNMPUpdates, 60, false)
 
 	// Login the agbot to the secrets provider.
 	w.secretsProviderMaintenance()
@@ -1606,6 +1610,38 @@ func (w *AgreementBotWorker) secretsUpdate() int {
 	return 0
 }
 
+func (w *AgreementBotWorker) monitorHAGroupNMPUpdates() int {
+	upgradingNodes, err := persistence.GetAllUpgradingNodes(w.db)
+	if err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("error getting upgrading ha nodes: %v", err)))
+	}
+
+	for _, node := range upgradingNodes{
+		remove := false
+		if exNode, err := exchange.GetExchangeDevice(w.GetHTTPFactory(), fmt.Sprintf("%v/%v", node.OrgId, node.NodeId), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL()); err != nil {
+			glog.Errorf(AWlogString(fmt.Sprintf("error getting node %v/%v: %v", node.OrgId, node.NodeId, err)))
+			continue
+		} else if exNode == nil || exNode.HAGroup != node.GroupName {
+			remove = true
+		} else if nmpStatus, err := exchange.GetNodeManagementPolicyStatus(w, node.OrgId, node.NodeId, node.NMPName); err != nil {
+			glog.Errorf(AWlogString(fmt.Sprintf("error getting nmp status %v/%v/%v: %v", node.OrgId, node.NodeId, node.NMPName, err)))
+			continue
+		} else if !exchangecommon.IsActiveStatus(nmpStatus.Status()) {
+			remove = true
+		}
+
+		if remove {
+			err := persistence.DeleteHAUpgradeNodeByGroup(w.db, node.OrgId, node.GroupName)
+			if err != nil {
+				glog.Errorf(AWlogString(fmt.Sprintf("error deleting nmp status %v/%v/%v: %v", node.OrgId, node.NodeId, node.NMPName, err)))
+			} else {
+				glog.Errorf("removed %v/%v/%v", node.OrgId, node.NodeId, node.NMPName)
+			}
+		}
+	}
+	return 60
+}
+
 func (w *AgreementBotWorker) handleHAGroupChange(msg *events.ExchangeChangeMessage) error {
 	glog.Info(AWlogString(fmt.Sprintf("AgreementBot start to handle HA group change: %v", msg.String())))
 	change := msg.GetChange()
@@ -1646,6 +1682,11 @@ func (w *AgreementBotWorker) handleHAGroupChange(msg *events.ExchangeChangeMessa
 				glog.Info(AWlogString(fmt.Sprintf("failed to remove record from HA_workload_upgrade table with org: %v, hagroup: %v, deviceId: %v, error was: %v", haGroupChange.OrgID, haGroupChange.ID, deletedMember, err)))
 				glog.Errorf(AWlogString(err))
 			}
+
+			// delete from the upgrading nmp table
+			if err := persistence.DeleteHAUpgradeNodeByGroup(w.db, haGroupChange.OrgID, haGroupChange.ID); err != nil {
+				glog.Errorf("Error deleting group entry %v/%v from nmp update table: %v", haGroupChange.OrgID, haGroupChange.ID, err)
+			}
 		}
 
 	} else if haGroupChange.Operation == exchange.CHANGE_OPERATION_DELETED {
@@ -1656,6 +1697,11 @@ func (w *AgreementBotWorker) handleHAGroupChange(msg *events.ExchangeChangeMessa
 		if err := w.db.DeleteHAUpgradingWorkloadsByGroupName(haGroupChange.OrgID, haGroupChange.ID); err != nil {
 			glog.Info(AWlogString(fmt.Sprintf("failed to remove record from HA_workload_upgrade table with org: %v, hagroup: %v, error was: %v", haGroupChange.OrgID, haGroupChange.ID, err)))
 			glog.Errorf(AWlogString(err))
+		}
+
+		// delete from the upgrading nmp table
+		if err := persistence.DeleteHAUpgradeNodeByGroup(w.db, haGroupChange.OrgID, haGroupChange.ID); err != nil {
+			glog.Errorf("Error deleting group entry %v/%v from nmp update table: %v", haGroupChange.OrgID, haGroupChange.ID, err)
 		}
 	}
 	return nil
