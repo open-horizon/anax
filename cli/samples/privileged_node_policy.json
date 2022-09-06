@@ -1,5 +1,6 @@
 /* 
 Sample node policy that illustrates how to enable privileged execution mode containers to be deployed onto a node.
+Set it to the top level because it is a built-in node property.
 */
 
 {
@@ -10,4 +11,12 @@ Sample node policy that illustrates how to enable privileged execution mode cont
     }
   ],
   "constraints": []
+  "deployment": {
+    "properties": [],
+    "constraints": []
+  },
+  "management": {
+    "properties": [],
+    "constraints": []
+  }
 }

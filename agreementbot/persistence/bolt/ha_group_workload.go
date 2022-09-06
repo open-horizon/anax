@@ -122,7 +122,7 @@ func (db *AgbotBoltDB) GetHAUpgradingWorkload(org string, haGroupName string, po
 	}
 }
 
-func (db *AgbotBoltDB) UpdateHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) (bool, error) {
+func (db *AgbotBoltDB) UpdateHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) error {
 	key := haWLUId(org, haGroupName, policyName)
 	dbErr := db.db.Update(func(tx *bolt.Tx) error {
 		if b, err := tx.CreateBucketIfNotExists([]byte(HA_WORKLOAD_USAGE_BUCKET)); err != nil {
@@ -150,9 +150,9 @@ func (db *AgbotBoltDB) UpdateHAUpgradingWorkloadForGroupAndPolicy(org string, ha
 	})
 
 	if dbErr != nil {
-		return false, dbErr
+		return dbErr
 	} else {
-		return true, nil
+		return nil
 	}
 }
 

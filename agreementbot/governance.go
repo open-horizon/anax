@@ -19,6 +19,11 @@ import (
 	"time"
 )
 
+const (
+	WORKLOAD_STATUS_UPGRADING = 1
+	WORKLOAD_STATUS_UPGRADED  = 2
+)
+
 func (w *AgreementBotWorker) GovernAgreements() int {
 
 	// This is the amount of time for the routine to wait as discovered through scanning active agreements. Node health
@@ -265,19 +270,18 @@ func calculateSkipTime(nhCheckrate uint64, pgi uint64) uint64 {
 // usage records that need to be upgraded. If there are none, then there is no need to do a more exhaustive analysis of
 // the state of the HA group. Non-HA workload usages dont have the concern about incremental workload upgrades, so they are ignored
 // by this routine.
-
+// Note: Multiple agbot could call this function at the same time (for different agreement).
+//       Table workloadusage is partitioned. So one agbot could only see the workloadusage in
+//       its own partition. Table ha_workload_upgrade is not partitioned.
 func (w *AgreementBotWorker) governHAPartners() {
+	// Part A: remove all entries from the ha_workload_upgrade table if the upgrade is done.
+	// Part B: handle workloaduages that has pendingUpdateTime != 0
 	// 1. get all the workload with pendingUpdateTime != 0
 	// 2. for each workload get from step 1:
 	//    - get device of that workload (device id, org)
 	//    - device != nil then get hagroup name of that device
 	//         - hagroup != "":
 	//               - check ha workload upgrade table with (org, hagroupName, workload.policyName)
-	//                     - has entry in the table (return another nodeId) && (getWorkload(policyName, another nodeId) == nil || getWorkload(policyName, nodeId).pendingUpdateTime != 0)
-	//                           => that workload is still being update, set "partnerUpgrading"
-	//                     - has entry in the table (return another nodeId) && getWorkload(policyName, another nodeId).pendingUpdateTime == 0
-	//                           => checkWorkloadUsageAgreement(anotherWorkload, currentWorkload), to set "partnerUpgrading" and "upgradedPartnerFound"
-	//                                  - if upgradedPartnerFound != "" && partnerUpgrading == "", then update this workload: Update workload in ha upgrading workload table, delete workload from db, cancel agreement if there is one
 	//                     - doesn't have entry
 	//                           => no one is upgrading, can update this workload: insert this workload in table, delete workload from db, cancel agreement if there is one
 	//         - hagroup == ""
@@ -285,11 +289,37 @@ func (w *AgreementBotWorker) governHAPartners() {
 
 	glog.V(5).Infof(logString("checking for HA partners needing a workload upgrade."))
 
-	HAPendingUpgradeWUFilter := func() persistence.WUFilter {
-		return func(a persistence.WorkloadUsage) bool { return a.PendingUpgradeTime != 0 }
+	// check if current workload is upgraded.
+	// remove it from the ha_workload_upgrade table if upgraded.
+	haWorkloads, err := w.db.ListAllHAUpgradingWorkloads()
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Failed to get all entries from HA_workload_upgrade table. %v", err)))
+		return
+	}
+	if haWorkloads == nil || len(haWorkloads) == 0 {
+		glog.V(5).Infof(AWlogString(fmt.Sprintf("No rentires in the HA_workload_upgrade table.")))
+	} else {
+		glog.V(5).Infof(AWlogString(fmt.Sprintf("There are %v entries in the HA_workload_upgrade table.", len(haWorkloads))))
+
+		for _, ha_wlu := range haWorkloads {
+			statusCode := w.checkWorkloadStatus(ha_wlu.NodeId, ha_wlu.PolicyName)
+			glog.V(5).Infof(AWlogString(fmt.Sprintf("Upgrade status code is %v for %v", statusCode, ha_wlu)))
+
+			if statusCode == WORKLOAD_STATUS_UPGRADED {
+				glog.V(5).Infof(AWlogString(fmt.Sprintf("Upgrade completed. Removing HA upgrading record %v", ha_wlu)))
+				// remove the entry from the ha_workload_upgrade table for the ones that are done
+				if err := w.db.DeleteHAUpgradingWorkload(ha_wlu); err != nil {
+					// might not be an error if the entry is deleted by another agbot
+					glog.Warningf(logString(fmt.Sprintf("unable to delete the HA upgrading workload record %v. %v", ha_wlu, err)))
+				}
+			}
+		}
 	}
 
 	// find the workloads that are waiting to upgrade
+	HAPendingUpgradeWUFilter := func() persistence.WUFilter {
+		return func(a persistence.WorkloadUsage) bool { return a.PendingUpgradeTime != 0 }
+	}
 	if upgrades, err := w.db.FindWorkloadUsages([]persistence.WUFilter{HAPendingUpgradeWUFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error searching for workload usage that are waiting for upgrade, error: %v", err)))
 		return
@@ -297,9 +327,6 @@ func (w *AgreementBotWorker) governHAPartners() {
 		for _, wlu := range upgrades {
 			glog.V(5).Infof(logString(fmt.Sprintf("checking for workload usage %v that are waiting for upgrading", wlu.String())))
 			// Setup variables to track the state of the HA group that the current workload usage record belongs to.
-			partnerUpgrading := ""
-			upgradedPartnerFound := ""
-
 			device, err := GetDevice(w.GetHTTPFactory().NewHTTPClient(nil), wlu.DeviceId, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 			if err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error getting device %v, error: %v", wlu.DeviceId, err)))
@@ -307,7 +334,7 @@ func (w *AgreementBotWorker) governHAPartners() {
 			} else if device == nil {
 				// ignore it? continue to next waiting workload
 				continue
-			} else if device != nil && device.HAGroup == "" {
+			} else if device.HAGroup == "" {
 				// update this workload:
 				glog.V(5).Infof(logString(fmt.Sprintf("device %v does not belong to hagroup, update workload %v.", device, wlu.String())))
 				w.UpgradeWorkload(wlu)
@@ -320,39 +347,13 @@ func (w *AgreementBotWorker) governHAPartners() {
 					glog.Errorf(logString(fmt.Sprintf("error getting ha upgrading workload for %v/%v/%v, error: %v", org, haGroupName, wlu.PolicyName, err)))
 					return
 				} else if currentUpgradingWorkloadForGroup == nil {
+					glog.V(5).Infof(logString(fmt.Sprintf("no workload is upgrading for hagroup %v, now upgrade the workload: %v.", device.HAGroup, wlu.String())))
 					// insert this workload into ha workload upgrade table, then upgrade this workload
 					if err = w.db.InsertHAUpgradingWorkloadForGroupAndPolicy(org, haGroupName, wlu.PolicyName, wlu.DeviceId); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v, error: %v", haGroupName, org, wlu.PolicyName, wlu.DeviceId, err)))
-						return
-					}
-					glog.V(5).Infof(logString(fmt.Sprintf("no workload is upgrading for hagroup %v, now upgrade the workload: %v.", device.HAGroup, wlu.String())))
-					w.UpgradeWorkload(wlu)
-
-				} else {
-					glog.V(5).Infof(logString(fmt.Sprintf("find partner upgrading workload present in ha upgrading workload table, record is %v. Now checking this partner's workload...", currentUpgradingWorkloadForGroup)))
-					anotherWorkload, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(currentUpgradingWorkloadForGroup.NodeId, currentUpgradingWorkloadForGroup.PolicyName)
-					if err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error getting workload usage for the ha upgrading workload %v/%v/%v/%v, error: %v", org, haGroupName, wlu.PolicyName, currentUpgradingWorkloadForGroup.NodeId, err)))
-						return
-					} else if anotherWorkload == nil || anotherWorkload.PendingUpgradeTime != 0 {
-						// If the partner doesnt have a workload usage record, then it is because that partner is upgrading.
-						// Workload usage records are deleted when we want to upgrade a device. We also cancel the previous agreement.
-						// workload is still upgrading, set "partnerUpgrading"
-						glog.V(5).Infof(logString(fmt.Sprintf("partner of %v is still upgrading", wlu.ShortString())))
-						partnerUpgrading = currentUpgradingWorkloadForGroup.NodeId
-					} else { //anotherWorkload.PendingUpgradeTime == 0
-						glog.V(5).Infof(logString(fmt.Sprintf("partner workload of %v is checked, now checking agreement...", wlu.ShortString())))
-						partnerUpgrading, upgradedPartnerFound = w.checkWorkloadUsageAgreement(anotherWorkload, &wlu)
-					}
-
-					// If there is already one partner successfully upgraded and there are no partners in the middle of an upgrade, then
-					// begin upgrading the partner who needs it.
-					if upgradedPartnerFound != "" && partnerUpgrading == "" {
-						// update node_id in ha upgrading workload to wlu.DeviceId
-						// db.updateNode
-						w.UpgradeWorkload(wlu)
+						// might not be an error if the insertion was done by another agbot before this one
+						glog.Warningf(logString(fmt.Sprintf("unable to insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v. %v", haGroupName, org, wlu.PolicyName, wlu.DeviceId, err)))
 					} else {
-						glog.V(3).Infof(logString(fmt.Sprintf("no HA group members can be upgraded in group %v/%v.", org, haGroupName)))
+						w.UpgradeWorkload(wlu)
 					}
 				}
 			}
@@ -360,18 +361,41 @@ func (w *AgreementBotWorker) governHAPartners() {
 	}
 }
 
+// check if a workload is upgrading (1), upgrading(2), other(0)
+func (w *AgreementBotWorker) checkWorkloadStatus(nodeId string, policyName string) int {
+	wlu, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(nodeId, policyName)
+	if err != nil {
+		// might not be error if the wlu in not in the same partition as this agbot
+		glog.Warningf(logString(fmt.Sprintf("could not get workload usage for node %v, policy %v. %v", nodeId, policyName, err)))
+		return 0
+	} else if wlu == nil || wlu.PendingUpgradeTime != 0 {
+		// If it doesnt have a workload usage record, then it is because that it is upgrading.
+		// Workload usage records are deleted when we want to upgrade a device. We also cancel the previous agreement.
+		return WORKLOAD_STATUS_UPGRADING
+	} else { //wlu.PendingUpgradeTime == 0
+		upgrading, upgraded := w.checkWorkloadUsageAgreement(wlu)
+		if upgraded != "" {
+			return WORKLOAD_STATUS_UPGRADED
+		}
+		if upgrading != "" {
+			return WORKLOAD_STATUS_UPGRADING
+		}
+	}
+	return 0
+}
+
 // This function is used to determine if a device is actively trying to make an agreement. This is important to know because
 // a device in an HA group that is in the midst of making an agreement will prevent the agbot from upgrading other HA
 // partners. This function also considers the possibility that an HA partner has stopped heart beating (because it died), and
 // therefore wont be making any agreements right now. In that case, we skip that device and look for others to start upgrading.
-func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence.WorkloadUsage, currentWLU *persistence.WorkloadUsage) (string, string) {
+func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence.WorkloadUsage) (string, string) {
 
 	// partnerWLU.PendingUpgradeTime == 0 && this wlu.PendingUpgradeTime != 0
 	partnerUpgrading := ""
 	upgradedPartnerFound := ""
 
 	if ag, err := w.db.FindSingleAgreementByAgreementIdAllProtocols(partnerWLU.CurrentAgreementId, policy.AllAgreementProtocols(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", partnerWLU.CurrentAgreementId, err)))
+		glog.Warningf(logString(fmt.Sprintf("unable to read agreement %v from database. %v", partnerWLU.CurrentAgreementId, err)))
 	} else if ag == nil {
 		// If we dont find an agreement for a partner, then it is because a previous agreement with that partner has failed and we
 		// managed to catch the workload usage record in a transition state between agreement attempts.
@@ -383,12 +407,12 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence
 		} else if len(dev.LastHeartbeat) != 0 && (uint64(cutil.TimeInSeconds(dev.LastHeartbeat, cutil.ExchangeTimeFormat)+300) > uint64(time.Now().Unix())) {
 			// If the device is still alive (heart beat received in the last 5 mins), then assume this partner is trying to make an
 			// agreement. Exit the partner loop because no one else can safely upgrade right now. The upgrade might be bad.
-			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is upgrading, current worload device is %v.", partnerWLU.DeviceId, currentWLU.DeviceId)))
+			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is upgrading.", partnerWLU.DeviceId)))
 			partnerUpgrading = partnerWLU.DeviceId
 		} else {
 			// If the device is not alive then ignore it. We dont want this failed device to hold up the workload
 			// upgrade of other devices.
-			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is not heartbeating, current worload device is %v.", partnerWLU.DeviceId, currentWLU.DeviceId)))
+			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is not heartbeating.", partnerWLU.DeviceId)))
 		}
 	} else if ag.DataVerifiedTime != ag.AgreementCreationTime && ag.AgreementTimedout == 0 {
 		// If we find a partner with an agreement where data has been verified and that is also not being cancelled,
@@ -400,7 +424,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence
 		} else {
 			workload := pol.NextHighestPriorityWorkload(0, 0, 0)
 			if partnerWLU.Priority == workload.Priority.PriorityValue {
-				glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v has upgraded, current worload device is %v.", partnerWLU.DeviceId, currentWLU.DeviceId)))
+				glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v has upgraded.", partnerWLU.DeviceId)))
 				upgradedPartnerFound = partnerWLU.DeviceId
 			}
 		}
