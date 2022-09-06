@@ -408,7 +408,6 @@ body:
 | ---- | ---- | ---------------- |
 | current_agreement_id  | json | the agreement id for this agreement |
 | device_id | json | the exchange id of the device in this agreement |
-| ha_partners | json | a list of device ids which are HA partners of the device in this agreement |
 | agreement_protocol | json | the name of the agreement protocol used to make the agreement |
 | agreement_inception_time | json | the time in seconds when the agbot started the agreement protocol |
 | agreement_creation_time | json | the time in seconds when the agbot sent an agreement proposal to the device |
@@ -436,7 +435,6 @@ curl -s http://localhost/agreement/93bcddde28f43cf59761e948ebff45f0ad9e060e3081d
 {
   "current_agreement_id": "93bcddde28f43cf59761e948ebff45f0ad9e060e3081dcd76e9cc94235d73a90",
   "device_id": "an12345",
-  "ha_partners": null,
   "agreement_protocol": "Citizen Scientist",
   "agreement_inception_time": 1494855357,
   "agreement_creation_time": 1494855357,
@@ -709,7 +707,6 @@ body:
 | ---- | ---- | ---------------- |
 | id   | number | primary key of the usage record in the local database |
 | device_id | string | the device id running a workload for the agbot |
-| ha_partners | array | a list of device ids that are HA partners with this device |
 | pending_upgrade_time | timestamp | the time (in seconds) when this workload was marked to be upgraded as a result of a policy change |
 | policy | json | the full consumer (agbot) policy being used to manage a workload on the device |
 | policy_name | string | the name of the consumer (agbot) policy with a workload on the device |
@@ -729,7 +726,6 @@ curl -s http://localhost/workloadusage | jq '.'
   {
     "record_id": 1,
     "device_id": "an12345",
-    "ha_partners": null,
     "pending_upgrade_time": 0,
     "policy": "...",
     "policy_name": "netspeed policy",

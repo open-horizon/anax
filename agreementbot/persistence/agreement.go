@@ -17,7 +17,6 @@ type Agreement struct {
 	Org                            string   `json:"org"`                               // the org in which the policy exists that was used to make this agreement
 	DeviceId                       string   `json:"device_id"`                         // the device id we are working with, immutable after construction
 	DeviceType                     string   `json:"device_type"`                       // the type of the device, the valid values are 'device' and 'cluster', the default is 'decive'
-	HAPartners                     []string `json:"ha_partners"`                       // list of HA partner device IDs
 	AgreementProtocol              string   `json:"agreement_protocol"`                // immutable after construction - name of protocol in use
 	AgreementProtocolVersion       int      `json:"agreement_protocol_version"`        // version of protocol in use - New in V2 protocol
 	AgreementInceptionTime         uint64   `json:"agreement_inception_time"`          // immutable after construction
@@ -70,7 +69,6 @@ func (a Agreement) String() string {
 		"AgreementProtocolVersion: %v, "+
 		"DeviceId: %v, "+
 		"DeviceType: %v, "+
-		"HA Partners: %v, "+
 		"AgreementInceptionTime: %v, "+
 		"AgreementCreationTime: %v, "+
 		"AgreementFinalizedTime: %v, "+
@@ -107,7 +105,7 @@ func (a Agreement) String() string {
 		"AgreementTimeoutS: %v, "+
 		"LastSecretUpdateTime: %v, "+
 		"LastSecretUpdateTimeAck: %v",
-		a.Archived, a.CurrentAgreementId, a.Org, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.DeviceType, a.HAPartners,
+		a.Archived, a.CurrentAgreementId, a.Org, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.DeviceType,
 		a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
 		a.DataVerificationURL, a.DataVerificationUser, a.DataVerificationCheckRate, a.DataVerificationMissedCount, a.DataVerificationNoDataInterval,
@@ -128,7 +126,6 @@ func NewAgreement(agreementid string, org string, deviceid string, deviceType st
 			Org:                            org,
 			DeviceId:                       deviceid,
 			DeviceType:                     deviceType,
-			HAPartners:                     []string{},
 			AgreementProtocol:              agreementProto,
 			AgreementProtocolVersion:       0,
 			AgreementInceptionTime:         uint64(time.Now().Unix()),
@@ -218,11 +215,10 @@ func AgreementUpdate(db AgbotDatabase, agreementid string, proposal string, poli
 	}
 }
 
-func AgreementMade(db AgbotDatabase, agreementId string, counterParty string, signature string, protocol string, hapartners []string, bcType string, bcName string, bcOrg string) (*Agreement, error) {
+func AgreementMade(db AgbotDatabase, agreementId string, counterParty string, signature string, protocol string, bcType string, bcName string, bcOrg string) (*Agreement, error) {
 	if agreement, err := db.SingleAgreementUpdate(agreementId, protocol, func(a Agreement) *Agreement {
 		a.CounterPartyAddress = counterParty
 		a.ProposalSig = signature
-		a.HAPartners = hapartners
 		a.BlockchainType = bcType
 		a.BlockchainName = bcName
 		a.BlockchainOrg = bcOrg
@@ -434,9 +430,6 @@ func ValidateStateTransition(mod *Agreement, update *Agreement) {
 	}
 	if mod.DataNotificationSent < update.DataNotificationSent { // Valid transitions must move forward
 		mod.DataNotificationSent = update.DataNotificationSent
-	}
-	if len(mod.HAPartners) == 0 { // 1 transition from empty array to non-empty
-		mod.HAPartners = update.HAPartners
 	}
 	if mod.MeteringTokens == 0 { // 1 transition from zero to non-zero
 		mod.MeteringTokens = update.MeteringTokens

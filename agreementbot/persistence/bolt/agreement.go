@@ -97,8 +97,8 @@ func (db *AgbotBoltDB) AgreementUpdate(agreementid string, proposal string, poli
 	return persistence.AgreementUpdate(db, agreementid, proposal, policy, dvPolicy, defaultCheckRate, hash, sig, protocol, agreementProtoVersion)
 }
 
-func (db *AgbotBoltDB) AgreementMade(agreementId string, counterParty string, signature string, protocol string, hapartners []string, bcType string, bcName string, bcOrg string) (*persistence.Agreement, error) {
-	return persistence.AgreementMade(db, agreementId, counterParty, signature, protocol, hapartners, bcType, bcName, bcOrg)
+func (db *AgbotBoltDB) AgreementMade(agreementId string, counterParty string, signature string, protocol string, bcType string, bcName string, bcOrg string) (*persistence.Agreement, error) {
+	return persistence.AgreementMade(db, agreementId, counterParty, signature, protocol, bcType, bcName, bcOrg)
 }
 
 func (db *AgbotBoltDB) AgreementBlockchainUpdate(agreementId string, consumerSig string, hash string, counterParty string, signature string, protocol string) (*persistence.Agreement, error) {

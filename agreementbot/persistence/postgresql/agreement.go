@@ -376,8 +376,8 @@ func (db *AgbotPostgresqlDB) AgreementUpdate(agreementid string, proposal string
 	return persistence.AgreementUpdate(db, agreementid, proposal, policy, dvPolicy, defaultCheckRate, hash, sig, protocol, agreementProtoVersion)
 }
 
-func (db *AgbotPostgresqlDB) AgreementMade(agreementId string, counterParty string, signature string, protocol string, hapartners []string, bcType string, bcName string, bcOrg string) (*persistence.Agreement, error) {
-	return persistence.AgreementMade(db, agreementId, counterParty, signature, protocol, hapartners, bcType, bcName, bcOrg)
+func (db *AgbotPostgresqlDB) AgreementMade(agreementId string, counterParty string, signature string, protocol string, bcType string, bcName string, bcOrg string) (*persistence.Agreement, error) {
+	return persistence.AgreementMade(db, agreementId, counterParty, signature, protocol, bcType, bcName, bcOrg)
 }
 
 func (db *AgbotPostgresqlDB) AgreementTimedout(agreementid string, protocol string) (*persistence.Agreement, error) {
