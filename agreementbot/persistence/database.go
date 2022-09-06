@@ -37,7 +37,7 @@ type AgbotDatabase interface {
 	AgreementAttempt(agreementid string, org string, deviceid string, deviceType string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth, protocolTimeout uint64, agreementTimeout uint64) error
 	AgreementFinalized(agreementid string, protocol string) (*Agreement, error)
 	AgreementUpdate(agreementid string, proposal string, policy string, dvPolicy policy.DataVerification, defaultCheckRate uint64, hash string, sig string, protocol string, agreementProtoVersion int) (*Agreement, error)
-	AgreementMade(agreementId string, counterParty string, signature string, protocol string, hapartners []string, bcType string, bcName string, bcOrg string) (*Agreement, error)
+	AgreementMade(agreementId string, counterParty string, signature string, protocol string, bcType string, bcName string, bcOrg string) (*Agreement, error)
 	AgreementBlockchainUpdate(agreementId string, consumerSig string, hash string, counterParty string, signature string, protocol string) (*Agreement, error)
 	AgreementBlockchainUpdateAck(agreementId string, protocol string) (*Agreement, error)
 	AgreementTimedout(agreementid string, protocol string) (*Agreement, error)

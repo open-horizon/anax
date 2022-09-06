@@ -502,7 +502,7 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 
 func (b *BaseConsumerProtocolHandler) PersistReply(reply abstractprotocol.ProposalReply, pol *policy.Policy, workerID string) error {
 
-	if _, err := b.db.AgreementMade(reply.AgreementId(), reply.DeviceId(), "", b.Name(), []string{}, "", "", ""); err != nil {
+	if _, err := b.db.AgreementMade(reply.AgreementId(), reply.DeviceId(), "", b.Name(), "", "", ""); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error updating agreement %v with reply info in DB, error: %v", reply.AgreementId(), err)))
 	}
 	return nil

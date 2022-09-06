@@ -916,10 +916,40 @@ func (a *API) GetHorizonAgbotConfig() (*HorizonAgbotConfig, error) {
 	if err != nil {
 		glog.Error(APIlogString(fmt.Sprintf("error finding File System Config File %v, error: %v", a.configFile, err)))
 	}
-	return &HorizonAgbotConfig{
+
+	agbotConfig := HorizonAgbotConfig{
 		InMemoryConfig:   a.Config.AgreementBot,
 		FileSystemConfig: cfg.AgreementBot,
-	}, err
+	}
+
+	// mask out the passwords
+	if agbotConfig.InMemoryConfig.Postgresql.Password != "" {
+		agbotConfig.InMemoryConfig.Postgresql.Password = "*****"
+	}
+	if agbotConfig.InMemoryConfig.ExchangeToken != "" {
+		agbotConfig.InMemoryConfig.ExchangeToken = "*****"
+	}
+	if agbotConfig.InMemoryConfig.DefaultWorkloadPW != "" {
+		agbotConfig.InMemoryConfig.DefaultWorkloadPW = "*****"
+	}
+	if agbotConfig.InMemoryConfig.ActiveAgreementsPW != "" {
+		agbotConfig.InMemoryConfig.ActiveAgreementsPW = "*****"
+	}
+
+	if agbotConfig.FileSystemConfig.Postgresql.Password != "" {
+		agbotConfig.FileSystemConfig.Postgresql.Password = "*****"
+	}
+	if agbotConfig.FileSystemConfig.ExchangeToken != "" {
+		agbotConfig.FileSystemConfig.ExchangeToken = "*****"
+	}
+	if agbotConfig.FileSystemConfig.DefaultWorkloadPW != "" {
+		agbotConfig.FileSystemConfig.DefaultWorkloadPW = "*****"
+	}
+	if agbotConfig.FileSystemConfig.ActiveAgreementsPW != "" {
+		agbotConfig.FileSystemConfig.ActiveAgreementsPW = "*****"
+	}
+
+	return &agbotConfig, err
 }
 
 func getAgbotInfo(config *config.HorizonConfig) {
