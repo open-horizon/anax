@@ -18,6 +18,13 @@ spec:
               claimName: openhorizon-agent-pvc
           containers:
           - name: agent-auto-upgrade
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+              capabilities:
+                drop: ["ALL"]
             image: '__ImagePath__'
             command:
               - /bin/sh
@@ -34,6 +41,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: AGENT_NAMESPACE
+              value:  __AgentNameSpace__
           restartPolicy: Never
           serviceAccountName: __ServiceAccount__
           serviceAccount: __ServiceAccount__

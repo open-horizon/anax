@@ -14,10 +14,6 @@ spec:
         app: agent
     spec:
       serviceAccountName: agent-service-account
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
       volumes:
       - name: agent-etc-vol
         configMap:
@@ -47,10 +43,19 @@ spec:
         ports:
         - containerPort: 8510
         securityContext:
-          allowPrivilegeEscalation: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop: ["ALL"]
         env:
         - name: HZN_ORG_ID
           value: __OrgId__
+        - name: AGENT_NAMESPACE
+          value:  __AgentNameSpace__
         - name: AGENT_CLUSTER_IMAGE_REGISTRY_HOST
           value: __ImageRegistryHost__
         - name: HZN_MGMT_HUB_CERT_PATH
