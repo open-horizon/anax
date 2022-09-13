@@ -18,6 +18,7 @@ WaitForService $CPU_URL $CPU_ORG
 if [ $? -ne 0 ]; then exit $?; fi
 
 # Save current cpu version for later comparing
+current_svc_version=$(echo "$svc_inst" | jq -r '.version')
 old_cpu_version="${current_svc_version}"
 echo "Running ${CPU_ORG} ${CPU_URL} version $current_svc_version"
 
