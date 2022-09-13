@@ -3,8 +3,9 @@ package kube_operator
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,7 +18,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"time"
 )
 
 type APIObjectInterface interface {
@@ -30,7 +30,7 @@ type APIObjectInterface interface {
 // Sort a slice of k8s api objects by kind of object
 // Returns a map of object type names to api object interfaces types, the namespace to be used for the operator, and an error if one occurs
 // Also verifies that all objects are named so they can be found and uninstalled
-func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstructured, envVarMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstructured, envVarMap map[string]string, fssAuthFilePath string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	namespace := ""
 	objMap := map[string][]APIObjectInterface{}
 	for _, obj := range allObjects {
@@ -84,7 +84,7 @@ func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstru
 						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedDeployment.ObjectMeta.Namespace)))
 					}
 				}
-				newDeployment := DeploymentAppsV1{DeploymentObject: typedDeployment, EnvVarMap: envVarMap, AgreementId: agreementId}
+				newDeployment := DeploymentAppsV1{DeploymentObject: typedDeployment, EnvVarMap: envVarMap, FssAuthFilePath: fssAuthFilePath, AgreementId: agreementId}
 				if newDeployment.Name() != "" {
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes deployment object %s.", newDeployment.Name())))
 					objMap[K8S_DEPLOYMENT_TYPE] = append(objMap[K8S_DEPLOYMENT_TYPE], newDeployment)
@@ -277,6 +277,7 @@ func (sa ServiceAccountCoreV1) Name() string {
 type DeploymentAppsV1 struct {
 	DeploymentObject *appsv1.Deployment
 	EnvVarMap        map[string]string
+	FssAuthFilePath  string
 	AgreementId      string
 }
 
@@ -284,24 +285,37 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating deployment %v", d)))
 
 	// The ESS is not supported in edge cluster services, so for now, remove the ESS env vars.
-	envAdds := cutil.RemoveESSEnvVars(d.EnvVarMap, config.ENVVAR_PREFIX)
+	//envAdds := cutil.RemoveESSEnvVars(d.EnvVarMap, config.ENVVAR_PREFIX)
 
 	// Create the config map.
-	mapName, err := c.CreateConfigMap(envAdds, d.AgreementId, namespace)
+	mapName, err := c.CreateConfigMap(d.EnvVarMap, d.AgreementId, namespace)
 	if err != nil && errors.IsAlreadyExists(err) {
 		d.Uninstall(c, namespace)
-		mapName, err = c.CreateConfigMap(envAdds, d.AgreementId, namespace)
+		mapName, err = c.CreateConfigMap(d.EnvVarMap, d.AgreementId, namespace)
 	}
 	if err != nil {
 		return err
 	}
 
+	secretName, err := c.CreateESSSecret(d.FssAuthFilePath, d.AgreementId, namespace)
+	if err != nil && errors.IsAlreadyExists(err) {
+		d.Uninstall(c, namespace)
+		mapName, err = c.CreateESSSecret(d.FssAuthFilePath, d.AgreementId, namespace)
+	}
+	if err != nil {
+		return err
+	}
+	glog.V(3).Infof(kwlog(fmt.Sprintf("ess secret %v is created", secretName)))
+
 	// Let the operator know about the config map
 	dWithEnv := addConfigMapVarToDeploymentObject(*d.DeploymentObject, mapName)
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - dWithEnv is %v", dWithEnv)))
+	// dWithEnvAndVolume := addVolumeToDeploymentObject(dWithEnv)
+	// glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - dWithEnvAndVolume is %v", dWithEnvAndVolume)))
 	_, err = c.Client.AppsV1().Deployments(namespace).Create(context.Background(), &dWithEnv, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		d.Uninstall(c, namespace)
-		mapName, err = c.CreateConfigMap(envAdds, d.AgreementId, namespace)
+		mapName, err = c.CreateConfigMap(d.EnvVarMap, d.AgreementId, namespace)
 		_, err = c.Client.AppsV1().Deployments(namespace).Create(context.Background(), &dWithEnv, metav1.CreateOptions{})
 	}
 	if err != nil {

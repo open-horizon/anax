@@ -3,40 +3,50 @@ package resource
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/edge-sync-service/common"
 	"github.com/open-horizon/edge-sync-service/core/base"
 	"github.com/open-horizon/edge-sync-service/core/security"
 	"github.com/open-horizon/edge-utilities/logger"
 	"github.com/open-horizon/edge-utilities/logger/log"
 	"github.com/open-horizon/edge-utilities/logger/trace"
-	"io/ioutil"
-	"os"
-	"path"
-	"time"
+)
+
+const (
+	AGENT_NAMESPACE = "openhorizon-agent"
 )
 
 type ResourceManager struct {
-	config  *config.HorizonConfig
-	org     string
-	pattern string
-	id      string
-	token   string
+	config     *config.HorizonConfig
+	org        string
+	pattern    string
+	id         string
+	token      string
+	nodeType   string
+	kubeClient *KubeClient
 }
 
-func NewResourceManager(cfg *config.HorizonConfig, org string, pattern string, id string, token string) *ResourceManager {
+func NewResourceManager(cfg *config.HorizonConfig, org string, pattern string, id string, token string, nodeType string, kubeClient *KubeClient) *ResourceManager {
 	if id != "" && pattern == "" {
 		pattern = "openhorizon/openhorizon.edgenode"
 	}
 	return &ResourceManager{
-		config:  cfg,
-		pattern: pattern,
-		id:      id,
-		org:     org,
-		token:   token,
+		config:     cfg,
+		pattern:    pattern,
+		id:         id,
+		org:        org,
+		token:      token,
+		nodeType:   nodeType,
+		kubeClient: kubeClient,
 	}
 }
 
@@ -44,19 +54,21 @@ func (r *ResourceManager) Configured() bool {
 	return r.id != ""
 }
 
-func (r *ResourceManager) NodeConfigUpdate(org string, pattern string, id string, token string) {
+func (r *ResourceManager) NodeConfigUpdate(org string, pattern string, id string, token string, nodeType string) {
 	r.pattern = pattern
 	r.id = id
 	r.org = org
 	r.token = token
+	r.nodeType = nodeType
 }
 
 func (r ResourceManager) String() string {
 	return fmt.Sprintf("ResourceManager: Org %v"+
 		", Pattern: %v"+
 		", ID: %v"+
-		", Token: %v",
-		r.org, r.pattern, r.id, r.token)
+		", Token: %v"+
+		", NodeType: %v",
+		r.org, r.pattern, r.id, r.token, r.nodeType)
 }
 
 func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
@@ -76,45 +88,47 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 	certFile := path.Join(r.config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_FILE)
 	certKeyFile := path.Join(r.config.GetESSSSLCertKeyPath(), config.HZN_FSS_CERT_KEY_FILE)
 
-	if essCert, err := os.Open(certFile); err != nil {
-		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
-	} else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
-		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
-	} else if essCertKey, err := os.Open(certKeyFile); err != nil {
-		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
-	} else if essCertKeyBytes, err := ioutil.ReadAll(essCertKey); err != nil {
-		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
-	} else {
-		// create path for ListeningAddress if it does not exist
-		listenAddrPath := r.config.GetFileSyncServiceAPIUnixDomainSocketPath()
-		if listenAddrPath != "" {
-			if _, err := os.Stat(listenAddrPath); os.IsNotExist(err) {
-				os.MkdirAll(listenAddrPath, 0755)
-			}
+	// if essCert, err := os.Open(certFile); err != nil {
+	// 	return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
+	// } else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
+	// 	return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
+	// } else if essCertKey, err := os.Open(certKeyFile); err != nil {
+	// 	return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
+	// } else if essCertKeyBytes, err := ioutil.ReadAll(essCertKey); err != nil {
+	// 	return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
+	// } else {
+	// create path for ListeningAddress if it does not exist
+	listenAddrPath := r.config.GetFileSyncServiceAPIUnixDomainSocketPath()
+	if listenAddrPath != "" {
+		if _, err := os.Stat(listenAddrPath); os.IsNotExist(err) {
+			os.MkdirAll(listenAddrPath, 0755)
 		}
-
-		// Configure the embedded ESS using configuration from the node.
-		common.Configuration.NodeType = "ESS"
-		common.Configuration.DestinationType = exchange.GetId(r.pattern)
-		common.Configuration.DestinationID = r.id
-		common.Configuration.OrgID = r.org
-		common.Configuration.ListeningType = r.config.GetFileSyncServiceProtocol()
-		common.Configuration.ListeningAddress = r.config.GetFileSyncServiceAPIListen()
-		common.Configuration.SecureListeningPort = r.config.GetFileSyncServiceAPIPort()
-		common.Configuration.ServerCertificate = string(essCertBytes)
-		common.Configuration.ServerKey = string(essCertKeyBytes)
-		common.Configuration.CommunicationProtocol = "http"
-		common.Configuration.EnableDataChunk = r.config.IsDataChunkEnabled()
-		common.Configuration.MaxDataChunkSize = r.config.GetFileSyncServiceMaxDataChunkSize()
-		common.Configuration.HTTPPollingInterval = r.config.GetESSPollingRate()
-		common.Configuration.PersistenceRootPath = r.config.GetFileSyncServiceStoragePath()
-		common.Configuration.HTTPCSSUseSSL = true
-		common.Configuration.HTTPCSSCACertificate = r.config.GetCSSSSLCert()
-		common.Configuration.LogTraceDestination = "glog"
-		common.Configuration.ObjectQueueBufferSize = r.config.GetFSSObjectQueueSize()
-		common.Configuration.HTTPESSClientTimeout = r.config.GetHTTPESSClientTimeout()
-		common.Configuration.HTTPESSObjClientTimeout = r.config.GetHTTPESSObjClientTimeout()
 	}
+
+	// Configure the embedded ESS using configuration from the node.
+	common.Configuration.NodeType = "ESS"
+	common.Configuration.DestinationType = exchange.GetId(r.pattern)
+	common.Configuration.DestinationID = r.id
+	common.Configuration.OrgID = r.org
+	common.Configuration.ListeningType = r.config.GetFileSyncServiceProtocol() // secure for cluster, unix-secure for e2edev and device
+	common.Configuration.ListeningAddress = r.config.GetFileSyncServiceAPIListen()
+	common.Configuration.SecureListeningPort = r.config.GetFileSyncServiceAPIPort()
+	common.Configuration.ServerCertificate = certFile
+	common.Configuration.ServerKey = certKeyFile
+	//common.Configuration.ServerCertificate = "/etc/agent-service/ess-auth/SSL/cert/tls.crt"
+	//common.Configuration.ServerKey = "/etc/agent-service/ess-auth/SSL/cert/tls.key"
+	common.Configuration.CommunicationProtocol = "http"
+	common.Configuration.EnableDataChunk = r.config.IsDataChunkEnabled()
+	common.Configuration.MaxDataChunkSize = r.config.GetFileSyncServiceMaxDataChunkSize()
+	common.Configuration.HTTPPollingInterval = r.config.GetESSPollingRate()
+	common.Configuration.PersistenceRootPath = r.config.GetFileSyncServiceStoragePath()
+	common.Configuration.HTTPCSSUseSSL = true
+	common.Configuration.HTTPCSSCACertificate = r.config.GetCSSSSLCert()
+	common.Configuration.LogTraceDestination = "glog"
+	common.Configuration.ObjectQueueBufferSize = r.config.GetFSSObjectQueueSize()
+	common.Configuration.HTTPESSClientTimeout = r.config.GetHTTPESSClientTimeout()
+	common.Configuration.HTTPESSObjClientTimeout = r.config.GetHTTPESSObjClientTimeout()
+	//}
 
 	if glog.V(5) {
 		common.Configuration.LogLevel = "TRACE"
@@ -157,8 +171,39 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 	// Set the authenticator that we're going to use.
 	security.SetAuthentication(&FSSAuthenticate{nodeOrg: r.org, nodeID: r.id, nodeToken: r.token, AuthMgr: am})
 
-	return nil
+	// if it is cluster, setup tls secrets (tls secrets ask for both cert.pem and key.pem, so use configmap to save the cert.pem, which is not sensitive data)
+	if r.nodeType == persistence.DEVICE_TYPE_CLUSTER {
+		/*
+			Using kubectl:
+			$ kubectl create secret tls my-tls-secret \
+			--key < private key filename> \
+			--cert < certificate filename>
 
+			Using yaml file:
+			---
+			apiVersion: v1
+			data:
+			tls.crt: "base64 encoded cert"
+			tls.key: "base64 encoded key"
+			kind: Secret
+			metadata:
+			name: my-tls-secret
+			namespace: default
+			type: kubernetes.io/tls
+		*/
+
+		if essCert, err := os.Open(certFile); err != nil {
+			return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
+		} else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
+			return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
+		} else if err = r.kubeClient.CreateSecretFromCertificate(AGENT_NAMESPACE, config.HZN_FSS_CERT_PATH, essCertBytes); err != nil {
+			return errors.New(fmt.Sprintf("unable to create secret from ESS Certificate, error %v", err))
+		} else {
+			glog.V(3).Infof(rmLogString(fmt.Sprintf("ESS Certificate is created as secret %v under namespace %v", config.HZN_FSS_CERT_PATH, AGENT_NAMESPACE)))
+		}
+	}
+
+	return nil
 }
 
 func (r ResourceManager) setupSecretsAPI(am *AuthenticationManager, db *bolt.DB) {
@@ -174,7 +219,9 @@ func (r ResourceManager) StartFileSyncServiceAndSecretsAPI(am *AuthenticationMan
 		os.Exit(98)
 	}
 
-	r.setupSecretsAPI(am, db)
+	if r.nodeType == persistence.DEVICE_TYPE_DEVICE {
+		r.setupSecretsAPI(am, db)
+	}
 
 	// Start the embedded ESS and secret APIs
 	if err := base.Start("", true); err != nil {
@@ -188,8 +235,7 @@ func (r ResourceManager) StartFileSyncServiceAndSecretsAPI(am *AuthenticationMan
 }
 
 func censorAndDumpConfig() {
-	toBeCensored := []*string{&common.Configuration.ServerCertificate, &common.Configuration.ServerKey,
-		&common.Configuration.HTTPCSSCACertificate,
+	toBeCensored := []*string{
 		&common.Configuration.MQTTUserName, &common.Configuration.MQTTPassword,
 		&common.Configuration.MQTTCACertificate, &common.Configuration.MQTTSSLCert, &common.Configuration.MQTTSSLKey,
 		&common.Configuration.MongoUsername, &common.Configuration.MongoPassword, &common.Configuration.MongoCACertificate}
