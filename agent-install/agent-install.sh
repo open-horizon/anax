@@ -41,7 +41,10 @@ CSS_OBJ_AGENT_CERT_BASE='/api/v1/objects/IBM/agent_cert_files'
 CSS_OBJ_AGENT_CONFIG_BASE='/api/v1/objects/IBM/agent_config_files'
 
 SEMVER_REGEX='^[0-9]+\.[0-9]+(\.[0-9]+)+'   # matches a version like 1.2.3 (must be at least 3 fields). Also allows a bld num on the end like: 1.2.3-RC1
-DEFAULT_AGENT_IMAGE_TAR_FILE='amd64_anax.tar.gz'
+
+# The following variable will need to have the $ARCH prepended to it before it can be used - currently only amd64 and arm64 are built
+DEFAULT_AGENT_IMAGE_TAR_FILE='_anax.tar.gz'
+
 INSTALLED_AGENT_CFG_FILE="/etc/default/horizon"
 AGENT_CONTAINER_PORT_BASE=8080
 
@@ -1028,7 +1031,7 @@ function get_all_variables() {
         get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
         get_variable PKG_APT_KEY
         get_variable APT_REPO_BRANCH 'updates'
-        get_variable AGENT_IMAGE_TAR_FILE "$DEFAULT_AGENT_IMAGE_TAR_FILE"
+        get_variable AGENT_IMAGE_TAR_FILE "${ARCH}${DEFAULT_AGENT_IMAGE_TAR_FILE}"
     elif is_cluster; then
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE 'openhorizon-agent'

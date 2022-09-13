@@ -7,8 +7,11 @@ function getHznVersion() { local hzn_version=$(hzn version | grep "^Horizon CLI"
 # Global constants
 SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM x86_64-macOS x86_64-Cluster ppc64le-RPM ppc64le-Cluster ALL'
 EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
-AGENT_IMAGE_TAR_FILE='amd64_anax.tar.gz'
-AGENT_IMAGE='amd64_anax'
+
+# Note: arch must prepend the following 2 variables when used - currently only amd64 and arm64 are built and pushed
+AGENT_IMAGE_TAR_FILE='_anax.tar.gz'
+AGENT_IMAGE='_anax'
+
 AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
 AGENT_K8S_IMAGE='amd64_anax_k8s'
 AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE='amd64_auto-upgrade-cronjob_k8s.tar.gz'
@@ -219,7 +222,7 @@ function manifestInitUpgradeFields() {
 # Remove files from previous run, so we know there won't be (for example) multiple versions of the horizon pkgs in the dir
 function cleanUpPreviousFiles() {
     echo "Removing any generated files from previous run..."
-    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "$AGENT_IMAGE_TAR_FILE" "$AGENT_K8S_IMAGE_TAR_FILE" "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*.{deb,rpm,pkg,crt}
+    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "amd64${AGENT_IMAGE_TAR_FILE}" "arm64${AGENT_IMAGE_TAR_FILE}" "$AGENT_K8S_IMAGE_TAR_FILE" "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*.{deb,rpm,pkg,crt}
     chk $? "removing previous files in $PWD"
     echo
 }
@@ -708,8 +711,8 @@ function getHorizonPackageFiles() {
 
     if [[ $opsys == 'macos' ]]; then   #future: do this for all amd64/x86_64
         if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
-            tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE"
-            chk $? "extracting $pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
+            tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/amd64${AGENT_IMAGE_TAR_FILE}"
+            chk $? "extracting $pkgBaseName/docker/amd64${AGENT_IMAGE_TAR_FILE} from $PACKAGE_NAME.tar.gz"
         else
             if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
                 echo "Logging into $PULL_REGISTRY ..."
@@ -718,24 +721,29 @@ function getHorizonPackageFiles() {
                 ALREADY_LOGGED_INTO_REGISTRY='true'
             fi
 
-            echo "Pulling $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG ..."
-            docker pull $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG
-            chk $? "pulling $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG"
+            for ARCH in amd64 arm64; do
+                echo "Pulling $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG ..."
+                docker pull $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG
+                chk $? "pulling $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG"
 
-            echo "Saving $AGENT_IMAGE:$AGENT_IMAGE_TAG to $AGENT_IMAGE_TAR_FILE ..."
-            docker save $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG | gzip > $AGENT_IMAGE_TAR_FILE
-            chk $? "saving $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG"
+                echo "Saving ${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG to ${ARCH}$AGENT_IMAGE_TAR_FILE ..."
+                docker save $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG | gzip > ${ARCH}${AGENT_IMAGE_TAR_FILE}
+                chk $? "saving $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG"
+	    done
         fi
 
         if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-            echo "Extracting version from $AGENT_IMAGE_TAR_FILE ..."
-            local version=$(tar -zxOf "$AGENT_IMAGE_TAR_FILE" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
-            version=${version##*:}   # strip the path and image name from the front
-            echo "Version/tag of $AGENT_IMAGE_TAR_FILE is: $version"
-            putOneFileInCss "$AGENT_IMAGE_TAR_FILE" agent_files false $version
-            putOneFileInCss "$AGENT_IMAGE_TAR_FILE" "agent_software_files-${version}" true $version
 
-            addElementToArray $softwareFiles "$AGENT_IMAGE_TAR_FILE"
+            for ARCH in amd64 arm64; do
+                echo "Extracting version from ${ARCH}${AGENT_IMAGE_TAR_FILE} ..."
+                local version=$(tar -zxOf "${ARCH}${AGENT_IMAGE_TAR_FILE}" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
+                version=${version##*:}   # strip the path and image name from the front
+                echo "Version/tag of ${ARCH}${AGENT_IMAGE_TAR_FILE} is: $version"
+                putOneFileInCss "${ARCH}${AGENT_IMAGE_TAR_FILE}" agent_files false $version
+                putOneFileInCss "${ARCH}${AGENT_IMAGE_TAR_FILE}" "agent_software_files-${version}" true $version
+
+                addElementToArray $softwareFiles "${ARCH}${AGENT_IMAGE_TAR_FILE}"
+            done
         fi
     fi
 }
@@ -853,11 +861,11 @@ function createTarFile () {
 
     local files_to_compress
     if [[ $EDGE_NODE_TYPE == 'ALL' ]]; then
-        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_IMAGE_TAR_FILE $AGENT_K8S_IMAGE_TAR_FILE $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*"
+        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt amd64$AGENT_IMAGE_TAR_FILE arm64${AGENT_IMAGE_TAR_FILE} $AGENT_K8S_IMAGE_TAR_FILE $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*"
     elif [[ $EDGE_NODE_TYPE == "x86_64-Cluster" || $EDGE_NODE_TYPE == "ppc64le-Cluster" ]]; then
         files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_K8S_IMAGE_TAR_FILE $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml"
     elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
-        files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon-cli* $AGENT_IMAGE_TAR_FILE"
+        files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon-cli* amd64${AGENT_IMAGE_TAR_FILE}"
     else   # linux device
         files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon*"
     fi
