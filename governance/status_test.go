@@ -66,7 +66,7 @@ func Test_GetContainerStatus(t *testing.T) {
 	// test fail with a wrong deployment string
 	deployment := "{\"services\":{\"netspeed5\":{st\":{\"image\":\"mycompany/x86/test:v1.0\"}}}"
 
-	status, err := GetContainerStatus(deployment, agreementId, false, containers)
+	status, err := GetContainerStatus(deployment, agreementId, false, containers, "")
 
 	assert.Error(t, err, "Error should be returned. ")
 
@@ -75,7 +75,7 @@ func Test_GetContainerStatus(t *testing.T) {
 	exp_status := []exchange.ContainerStatus{exchange.ContainerStatus{Name: "/aaaa-netspeed5", Image: "mycompany/x86/netspeed5:v2.5", Created: 1507728202, State: "running"},
 		{Name: "/aaaa-test", Image: "mycompany/x86/test:v1.0", Created: 1507728356, State: "running"}}
 
-	status, err = GetContainerStatus(deployment, agreementId, false, containers)
+	status, err = GetContainerStatus(deployment, agreementId, false, containers, "")
 
 	assert.Nil(t, err)
 	assert.True(t, statusArrayIsSame(exp_status, status), "The elements should be the same.")
@@ -86,7 +86,7 @@ func Test_GetContainerStatus(t *testing.T) {
 	exp_status = []exchange.ContainerStatus{exchange.ContainerStatus{Name: "netspeed5", Image: "mycompany/x86/netspeed5:v2.5", Created: 0, State: "not started"},
 		{Name: "test", Image: "mycompany/x86/test:v1.0", Created: 0, State: "not started"}}
 
-	status, err = GetContainerStatus(deployment, agreementId, false, containers)
+	status, err = GetContainerStatus(deployment, agreementId, false, containers, "")
 
 	assert.Nil(t, err)
 	assert.True(t, statusArrayIsSame(exp_status, status), "The elements should be the same.")
@@ -96,7 +96,7 @@ func Test_GetContainerStatus(t *testing.T) {
 	exp_status = []exchange.ContainerStatus{exchange.ContainerStatus{Name: "netspeed5", Image: "mycompany/x86/netspeed5:v2.5", Created: 0, State: "not started"},
 		{Name: "test", Image: "mycompany/x86/test:v1.0", Created: 0, State: "not started"}}
 
-	status, err = GetContainerStatus(deployment, agreementId, false, make([]docker.APIContainers, 0))
+	status, err = GetContainerStatus(deployment, agreementId, false, make([]docker.APIContainers, 0), "")
 
 	assert.Nil(t, err)
 	assert.True(t, statusArrayIsSame(exp_status, status), "The elements should be the same.")
@@ -107,7 +107,7 @@ func Test_GetContainerStatus(t *testing.T) {
 	exp_status = []exchange.ContainerStatus{exchange.ContainerStatus{Name: "/bluehorizon.network-microservices-gps_2.0.3_52df00-gps", Image: "mycompany/x86/gps:2.0.6", Created: 1507728188, State: "running"}}
 	containers = []docker.APIContainers{c1, c2, c3, c4}
 
-	status, err = GetContainerStatus(deployment, key, true, containers)
+	status, err = GetContainerStatus(deployment, key, true, containers, "")
 
 	assert.Nil(t, err)
 	assert.True(t, statusArrayIsSame(exp_status, status), "The elements should be the same.")

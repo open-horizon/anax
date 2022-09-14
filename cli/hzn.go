@@ -189,9 +189,10 @@ Environment Variables:
 	allCompCmd := deploycheckCmd.Command("all", msgPrinter.Sprintf("Check all compatibilities for a deployment."))
 	allCompNodeArch := allCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.")).Short('a').String()
 	allCompNodeType := allCompCmd.Flag("node-type", msgPrinter.Sprintf("The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.")).Short('t').String()
+	allCompNodeNs := allCompCmd.Flag("cluster-namespace", msgPrinter.Sprintf("The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'")).Short('s').String()
 	allCompNodeOrg := allCompCmd.Flag("node-org", msgPrinter.Sprintf("The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.")).Short('O').String()
 	allCompNodeId := allCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.")).Short('n').Strings()
-	allCompHAGroup := allCompCmd.Flag("ha-group", msgPrinter.Sprintf("The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.")).String()
+	allCompHAGroup := allCompCmd.Flag("ha-group", msgPrinter.Sprintf("The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.")).String()
 	allCompNodePolFile := allCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.")).String()
 	allCompNodeUIFile := allCompCmd.Flag("node-ui", msgPrinter.Sprintf("The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.")).String()
 	allCompBPolId := allCompCmd.Flag("business-pol-id", "").Hidden().String()
@@ -205,8 +206,9 @@ Environment Variables:
 	policyCompCmd := deploycheckCmd.Command("policy | pol", msgPrinter.Sprintf("Check policy compatibility.")).Alias("pol").Alias("policy")
 	policyCompNodeArch := policyCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility.")).Short('a').String()
 	policyCompNodeType := policyCompCmd.Flag("node-type", msgPrinter.Sprintf("The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.")).Short('t').String()
+	policyCompNodeNs := policyCompCmd.Flag("cluster-namespace", msgPrinter.Sprintf("The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'")).Short('s').String()
 	policyCompNodeId := policyCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.")).Short('n').Strings()
-	policyCompHAGroup := policyCompCmd.Flag("ha-group", msgPrinter.Sprintf("The name of an HA group. Mutually exclusive with -n and --node-pol.")).String()
+	policyCompHAGroup := policyCompCmd.Flag("ha-group", msgPrinter.Sprintf("The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.")).String()
 	policyCompNodePolFile := policyCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.")).String()
 	policyCompBPolId := policyCompCmd.Flag("business-pol-id", "").Hidden().String()
 	policyCompDepPolId := policyCompCmd.Flag("deployment-pol-id", msgPrinter.Sprintf("The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
@@ -1351,13 +1353,13 @@ Environment Variables:
 	case policyRemoveCmd.FullCommand():
 		policy.Remove(*policyRemoveForce)
 	case policyCompCmd.FullCommand():
-		deploycheck.PolicyCompatible(*deploycheckOrg, *deploycheckUserPw, *policyCompNodeId, *policyCompHAGroup, *policyCompNodeArch, *policyCompNodeType, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
+		deploycheck.PolicyCompatible(*deploycheckOrg, *deploycheckUserPw, *policyCompNodeId, *policyCompHAGroup, *policyCompNodeArch, *policyCompNodeType, *policyCompNodeNs, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case userinputCompCmd.FullCommand():
 		deploycheck.UserInputCompatible(*deploycheckOrg, *deploycheckUserPw, *userinputCompNodeId, *userinputCompNodeArch, *userinputCompNodeType, *userinputCompNodeUIFile, *userinputCompBPolId, *userinputCompBPolFile, *userinputCompPatternId, *userinputCompPatternFile, *userinputCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case secretCompCmd.FullCommand():
 		deploycheck.SecretBindingCompatible(*deploycheckOrg, *deploycheckUserPw, *secretCompNodeId, *secretCompNodeArch, *secretCompNodeType, *secretCompNodeOrg, *secretCompDepPolId, *secretCompDepPolFile, *secretCompPatternId, *secretCompPatternFile, *secretCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case allCompCmd.FullCommand():
-		deploycheck.AllCompatible(*deploycheckOrg, *deploycheckUserPw, *allCompNodeId, *allCompHAGroup, *allCompNodeArch, *allCompNodeType, *allCompNodeOrg, *allCompNodePolFile, *allCompNodeUIFile, *allCompBPolId, *allCompBPolFile, *allCompPatternId, *allCompPatternFile, *allCompSPolFile, *allCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
+		deploycheck.AllCompatible(*deploycheckOrg, *deploycheckUserPw, *allCompNodeId, *allCompHAGroup, *allCompNodeArch, *allCompNodeType, *allCompNodeNs, *allCompNodeOrg, *allCompNodePolFile, *allCompNodeUIFile, *allCompBPolId, *allCompBPolFile, *allCompPatternId, *allCompPatternFile, *allCompSPolFile, *allCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case agreementListCmd.FullCommand():
 		agreement.List(*listArchivedAgreements, *listAgreementId)
 	case agreementCancelCmd.FullCommand():

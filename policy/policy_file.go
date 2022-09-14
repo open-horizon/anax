@@ -69,8 +69,9 @@ type Policy struct {
 	RequiredWorkload   string                              `json:"requiredWorkload,omitempty"` // Version 2.0
 	NodeH              NodeHealth                          `json:"nodeHealth,omitempty"`       // Version 2.0
 	UserInput          []UserInput                         `json:"userInput,omitempty"`
-	SecretBinding      []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"` // This structure has the servive secret name to secret provider name mappings
-	SecretDetails      []exchangecommon.SecretBinding      `json:"secretDetails,omitempty"` // This structure has the service secret name to secret details mappings
+	SecretBinding      []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"`    // This structure has the servive secret name to secret provider name mappings
+	SecretDetails      []exchangecommon.SecretBinding      `json:"secretDetails,omitempty"`    // This structure has the service secret name to secret details mappings
+	ClusterNamespace   string                              `json:"clusterNamespace,omitempty"` // the namespace for the service to be deployed
 }
 
 // These functions are used to create Policy objects. You can create the base object
@@ -129,6 +130,8 @@ func (self *Policy) DeepCopy() *Policy {
 		newSD := sd.MakeCopy()
 		newPolicy.SecretDetails = append(newPolicy.SecretDetails, newSD)
 	}
+
+	newPolicy.ClusterNamespace = self.ClusterNamespace
 
 	return newPolicy
 }
@@ -362,6 +365,8 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 			}
 		}
 
+		merged_pol.ClusterNamespace = consumer_policy.ClusterNamespace
+
 		return merged_pol, nil
 	}
 }
@@ -506,6 +511,8 @@ func (self *Policy) String() string {
 	res += fmt.Sprintf("Node Health: %v\n", self.NodeH)
 	res += fmt.Sprintf("SecretBinding: %v\n", self.SecretBinding)
 
+	res += fmt.Sprintf("ClusterNamespace: %v\n", self.ClusterNamespace)
+
 	return res
 }
 
@@ -523,6 +530,7 @@ func (self *Policy) ShortString() string {
 	}
 	res += fmt.Sprintf("Properties: %v\n", propString)
 	res += fmt.Sprintf("Constraints: %v\n", self.Constraints)
+	res += fmt.Sprintf("ClusterNamespace: %v\n", self.ClusterNamespace)
 
 	return res
 }

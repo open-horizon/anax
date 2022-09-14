@@ -64,8 +64,9 @@ func NewCompCheckError(err error, errCode int) *CompCheckError {
 type CompCheck struct {
 	NodeId         string                         `json:"node_id,omitempty"`
 	NodeArch       string                         `json:"node_arch,omitempty"`
-	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
-	NodeOrg        string                         `json:"node_org,omitempty"`  // can be omitted if node_id is specified
+	NodeType       string                         `json:"node_type,omitempty"`              // can be omitted if node_id is specified
+	NodeClusterNS  string                         `json:"node_cluster_namespace,omitempty"` // can be omitted if node_id is specified. If node_id is not specified the default values is "openhorizon-gent". The value is ignored if the node type is device.
+	NodeOrg        string                         `json:"node_org,omitempty"`               // can be omitted if node_id is specified
 	NodePolicy     *exchangecommon.NodePolicy     `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
 	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
@@ -77,8 +78,8 @@ type CompCheck struct {
 }
 
 func (p CompCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
-		p.NodeId, p.NodeArch, p.NodeType, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeClusterNS：%v， NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodeClusterNS, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
 
 }
 
@@ -90,8 +91,9 @@ func (p CompCheck) String() string {
 type CompCheck_NoAbstract struct {
 	NodeId         string                         `json:"node_id,omitempty"`
 	NodeArch       string                         `json:"node_arch,omitempty"`
-	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
-	NodeOrg        string                         `json:"node_org,omitempty"`  // can be omitted if node_id is specified
+	NodeType       string                         `json:"node_type,omitempty"`              // can be omitted if node_id is specified
+	NodeClusterNS  string                         `json:"node_cluster_namespace,omitempty"` // can be omitted if node_id is specified. If node_id is not specified the default values is "openhorizon-gent". The value is ignored if the node type is device.
+	NodeOrg        string                         `json:"node_org,omitempty"`               // can be omitted if node_id is specified
 	NodePolicy     *exchangecommon.NodePolicy     `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
 	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
@@ -113,6 +115,7 @@ func (p *CompCheck) UnmarshalJSON(b []byte) error {
 	p.NodeId = cc.NodeId
 	p.NodeArch = cc.NodeArch
 	p.NodeType = cc.NodeType
+	p.NodeClusterNS = cc.NodeClusterNS
 	p.NodeOrg = cc.NodeOrg
 	p.NodePolicy = cc.NodePolicy
 	p.NodeUserInput = cc.NodeUserInput
@@ -162,6 +165,7 @@ type CompCheckResource struct {
 	NodeId         string                                   `json:"node_id,omitempty"`
 	NodeArch       string                                   `json:"node_arch,omitempty"`
 	NodeType       string                                   `json:"node_type,omitempty"`
+	NodeClusterNS  string                                   `json:"node_cluster_namespace,omitempty"` // can be omitted if node_id is specified. If node_id is not specified the default values is "openhorizon-gent". The value is ignored if the node type is device.
 	NodeOrg        string                                   `json:"node_org,omitempty"`
 	NodePolicy     *exchangecommon.NodePolicy               `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput                       `json:"node_user_input,omitempty"`
@@ -179,8 +183,8 @@ type CompCheckResource struct {
 }
 
 func (p CompCheckResource) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
-		p.NodeId, p.NodeArch, p.NodeType, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeClusterNS: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodeClusterNS, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
 
 }
 
@@ -189,6 +193,7 @@ func NewCompCheckResourceFromUICheck(uiInput *UserInputCheck) *CompCheckResource
 	rsrc.NodeId = uiInput.NodeId
 	rsrc.NodeArch = uiInput.NodeArch
 	rsrc.NodeType = uiInput.NodeType
+	rsrc.NodeClusterNS = uiInput.NodeClusterNS
 	rsrc.NodeUserInput = uiInput.NodeUserInput
 	rsrc.BusinessPolId = uiInput.BusinessPolId
 	rsrc.BusinessPolicy = uiInput.BusinessPolicy
@@ -252,6 +257,7 @@ func NewCompCheckResourceFromPolicyCheck(pcInput *PolicyCheck) *CompCheckResourc
 	rsrc.NodeId = pcInput.NodeId
 	rsrc.NodeArch = pcInput.NodeArch
 	rsrc.NodeType = pcInput.NodeType
+	rsrc.NodeClusterNS = pcInput.NodeClusterNS
 	rsrc.NodePolicy = pcInput.NodePolicy
 	rsrc.BusinessPolId = pcInput.BusinessPolId
 	rsrc.BusinessPolicy = pcInput.BusinessPolicy
@@ -353,7 +359,7 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 
 	// check user input for those services that are compatible
 	uiCheckInput := createUserInputCheckInput(ccInput, pcOutput, msgPrinter)
-	uiOutput, err := userInputCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, serviceDefResolverHandler, getSelectedServices, uiCheckInput, true, msgPrinter)
+	uiOutput, err := userInputCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, serviceDefResolverHandler, getSelectedServices, nodePolicyHandler, uiCheckInput, true, msgPrinter)
 	if err != nil {
 		return nil, err
 	}
@@ -389,6 +395,7 @@ func createUserInputCheckInput(ccInput *CompCheck, pcOutput *CompCheckOutput, ms
 	uiCheckInput.NodeId = pcOutput.Input.NodeId
 	uiCheckInput.NodeArch = pcOutput.Input.NodeArch
 	uiCheckInput.NodeType = pcOutput.Input.NodeType
+	uiCheckInput.NodeClusterNS = pcOutput.Input.NodeClusterNS
 	uiCheckInput.BusinessPolId = pcOutput.Input.BusinessPolId
 	uiCheckInput.BusinessPolicy = pcOutput.Input.BusinessPolicy
 
@@ -525,6 +532,7 @@ func createCompCheckOutput(pcOutput *CompCheckOutput, privOutput *CompCheckOutpu
 	ccInput.NodeId = lastOutput.Input.NodeId
 	ccInput.NodeArch = lastOutput.Input.NodeArch
 	ccInput.NodeType = lastOutput.Input.NodeType
+	ccInput.NodeClusterNS = lastOutput.Input.NodeClusterNS
 	ccInput.NodeOrg = lastOutput.Input.NodeOrg
 	if uiOutput != nil {
 		ccInput.NodeUserInput = uiOutput.Input.NodeUserInput
@@ -553,6 +561,7 @@ func convertToPolicyCheck(in *CompCheck) *PolicyCheck {
 	out.NodeId = in.NodeId
 	out.NodeArch = in.NodeArch
 	out.NodeType = in.NodeType
+	out.NodeClusterNS = in.NodeClusterNS
 	out.NodePolicy = in.NodePolicy
 	out.BusinessPolId = in.BusinessPolId
 	out.BusinessPolicy = in.BusinessPolicy
@@ -782,6 +791,76 @@ func CheckTypeCompatibility(nodeType string, serviceDef common.AbstractServiceFi
 	}
 
 	return true, ""
+}
+
+// verifies the input node's cluster namespace matches the exchange node type.
+func VerifyNodeClusterNamespace(nodeNamespace string, exchNodeNamespace string, nodeId string, msgPrinter *message.Printer) (string, error) {
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	if nodeNamespace != "" {
+		if exchNodeNamespace != "" && nodeNamespace != exchNodeNamespace {
+			return "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node's cluster namespace '%v' does not match the node's cluster namespace '%v' from the node %v.", nodeNamespace, exchNodeNamespace, nodeId)), COMPCHECK_INPUT_ERROR)
+		}
+		return nodeNamespace, nil
+	} else {
+		return exchNodeNamespace, nil
+	}
+}
+
+// Check if the node namespace is compatible with the serivce for cluster case.
+// The deployerNamespace is the namespace defined in the deployment policy or pattern. If it is empty, it will be
+// the namespace defined in the clusterDeployment attribute of service definition.
+// Compatibility check:
+// If the node's namespace is openhorizon-agent, then it can deploy the services with all namespaces.
+// Otherwise it can only deploy the service to its own namespace.
+// If the service's namepace is empty, then it will be deployed to the same namespace as the agent.
+func CheckClusterNamespaceCompatibility(nodeType string, nodeNamespace string, deployerNamespace string, clusterDeployment interface{}, inspectOperator bool, msgPrinter *message.Printer) (bool, string, string) {
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	if nodeType == persistence.DEVICE_TYPE_DEVICE {
+		return true, "", ""
+	}
+
+	// for backward compatibility
+	if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+		if nodeNamespace == "" {
+			nodeNamespace = externalpolicy.DEFAULT_NODE_K8S_NAMESPACE
+		}
+	}
+
+	// the case where the namespace in the deployment policy or pattern is defined.
+	if deployerNamespace != "" {
+		if nodeNamespace == deployerNamespace || nodeNamespace == externalpolicy.DEFAULT_NODE_K8S_NAMESPACE {
+			return true, deployerNamespace, ""
+		} else {
+			return false, deployerNamespace, msgPrinter.Sprintf("The namespace '%v' specified in the deployment policy or pattern does not match the namespace of the agent: '%v'", deployerNamespace, nodeNamespace)
+		}
+	}
+
+	// get the namespace from the service
+	svcNamespace := ""
+	if metadata, err := common.GetClusterDeploymentMetadata(clusterDeployment, inspectOperator, msgPrinter); err != nil {
+		return false, "", msgPrinter.Sprintf("Failed to get cluster deployment from the service. %v", err)
+	} else if metadata != nil {
+		if ns, ok := metadata["namespace"]; ok {
+			svcNamespace = ns.(string)
+		}
+	}
+
+	// the case where the namespace in the deployment policy or pattern is not defined.
+	if nodeNamespace == externalpolicy.DEFAULT_NODE_K8S_NAMESPACE {
+		return true, svcNamespace, ""
+	} else {
+		if nodeNamespace == svcNamespace {
+			return true, svcNamespace, ""
+		} else {
+			return false, svcNamespace, msgPrinter.Sprintf("The namespace '%v' specified in the service does not match the namespace of the agent: '%v'. Please overwrite it in the deployment policy or pattern.", svcNamespace, nodeNamespace)
+		}
+	}
 }
 
 // Get the dependent services for the given service.

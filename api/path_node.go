@@ -157,8 +157,6 @@ func CreateHorizonDevice(device *HorizonDevice,
 		device.NodeType = &np
 	}
 
-	// HA validation. Since the HA declaration is a boolean, there is nothing to validate for HA.
-
 	// make sure current exchange version meet the requirement
 	deviceId := fmt.Sprintf("%v/%v", *device.Org, *device.Id)
 	if exchangeVersion, err := getExchangeVersion(deviceId, *device.Token); err != nil {
@@ -242,8 +240,17 @@ func CreateHorizonDevice(device *HorizonDevice,
 	tmpArch := cutil.ArchString()
 	pdr.Arch = &tmpArch
 	if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("error adding architecture for the exchange node. %v", err))), nil, nil
+		return errorhandler(NewSystemError(fmt.Sprintf("error updating architecture for the exchange node. %v", err))), nil, nil
 	}
+
+	// update the cluster namespace for the exchange node
+	// TODO: enable it after exchange api supports it
+	//pdr = exchange.PatchDeviceRequest{}
+	//ns := cutil.GetClusterNamespace()
+	//pdr.ClusterNamespace = &ns
+	//if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
+	//	return errorhandler(NewSystemError(fmt.Sprintf("error updating cluster namespace for the exchange node. %v", err))), nil, nil
+	//}
 
 	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device
 	// object suitable for output (external consumption). Specifically the token is omitted.

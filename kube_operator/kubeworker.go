@@ -41,7 +41,7 @@ func (w *KubeWorker) NewEvent(incoming events.Message) {
 
 		switch msg.Event().Id {
 		case events.AGREEMENT_ENDED:
-			cmd := NewUnInstallCommand(msg.AgreementProtocol, msg.AgreementId, msg.Deployment)
+			cmd := NewUnInstallCommand(msg.AgreementProtocol, msg.AgreementId, msg.ClusterNamespace, msg.Deployment)
 			w.Commands <- cmd
 		}
 
@@ -50,7 +50,7 @@ func (w *KubeWorker) NewEvent(incoming events.Message) {
 
 		switch msg.Event().Id {
 		case events.CONTAINER_MAINTAIN:
-			cmd := NewMaintenanceCommand(msg.AgreementProtocol, msg.AgreementId, msg.Deployment)
+			cmd := NewMaintenanceCommand(msg.AgreementProtocol, msg.AgreementId, msg.ClusterNamespace, msg.Deployment)
 			w.Commands <- cmd
 		}
 
@@ -107,7 +107,7 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 		if !ok {
 			glog.Warningf(kwlog(fmt.Sprintf("ignoring non-Kube cancelation command %v", cmd)))
 			return true
-		} else if err := w.uninstallKubeOperator(kdc, cmd.CurrentAgreementId); err != nil {
+		} else if err := w.uninstallKubeOperator(kdc, cmd.CurrentAgreementId, cmd.AgreementProtocol, cmd.ClusterNamespace); err != nil {
 			glog.Errorf(kwlog(fmt.Sprintf("failed to uninstall kube operator %v", cmd.Deployment)))
 		}
 
@@ -118,8 +118,8 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 
 		kdc, ok := cmd.Deployment.(*persistence.KubeDeploymentConfig)
 		if !ok {
-			glog.Warningf(kwlog(fmt.Sprintf("ignoring non-Kube maintenance command: %v", cmd)))
-		} else if err := w.operatorStatus(kdc, "Running", cmd.AgreementId); err != nil {
+			glog.Warningf(kwlog(fmt.Sprintf("ignoring non-Kube maintenence command: %v", cmd)))
+		} else if err := w.operatorStatus(kdc, "Running", cmd.AgreementId, cmd.AgreementProtocol, cmd.ClusterNamespace); err != nil {
 			glog.Errorf(kwlog(fmt.Sprintf("%v", err)))
 			w.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, kdc)
 		}
@@ -140,37 +140,40 @@ func (w *KubeWorker) getLaunchContext(launchContext interface{}) *events.Agreeme
 
 func (w *KubeWorker) processKubeOperator(lc *events.AgreementLaunchContext, kd *persistence.KubeDeploymentConfig, crInstallTimeout int64) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("begin install of Kube Deployment %s", lc.AgreementId)))
+
 	client, err := NewKubeClient()
 	if err != nil {
 		return err
 	}
-	err = client.Install(kd.OperatorYamlArchive, *(lc.EnvironmentAdditions), lc.AgreementId, crInstallTimeout)
+	err = client.Install(kd.OperatorYamlArchive, kd.Metadata, *(lc.EnvironmentAdditions), lc.AgreementId, lc.Configure.ClusterNamespace, crInstallTimeout)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (w *KubeWorker) uninstallKubeOperator(kd *persistence.KubeDeploymentConfig, agId string) error {
+func (w *KubeWorker) uninstallKubeOperator(kd *persistence.KubeDeploymentConfig, agId string, agp string, reqNamespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("begin uninstall of Kube Deployment %s", agId)))
+
 	client, err := NewKubeClient()
 	if err != nil {
 		return err
 	}
-	err = client.Uninstall(kd.OperatorYamlArchive, agId)
+	err = client.Uninstall(kd.OperatorYamlArchive, kd.Metadata, agId, reqNamespace)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (w *KubeWorker) operatorStatus(kd *persistence.KubeDeploymentConfig, intendedState string, agId string) error {
+func (w *KubeWorker) operatorStatus(kd *persistence.KubeDeploymentConfig, intendedState string, agId string, agp string, reqnamespace string) error {
 	glog.V(5).Infof(kwlog(fmt.Sprintf("begin listing operator status %v", kd.ToString())))
+
 	client, err := NewKubeClient()
 	if err != nil {
 		return err
 	}
-	opStatus, err := client.Status(kd.OperatorYamlArchive, agId)
+	opStatus, err := client.Status(kd.OperatorYamlArchive, kd.Metadata, agId, reqnamespace)
 	if err != nil {
 		return err
 	}

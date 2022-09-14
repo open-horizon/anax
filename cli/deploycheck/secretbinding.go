@@ -44,7 +44,7 @@ func SecretBindingCompatible(org string, userPw string, nodeId string, nodeArch 
 		msgPrinter.Println()
 
 		// get id from local node, check arch
-		sbCheckInput.NodeId, sbCheckInput.NodeArch, sbCheckInput.NodeType, sbCheckInput.NodeOrg = getLocalNodeInfo(nodeArch, nodeType, nodeOrg)
+		sbCheckInput.NodeId, sbCheckInput.NodeArch, sbCheckInput.NodeType, _, sbCheckInput.NodeOrg = getLocalNodeInfo(nodeArch, nodeType, "", nodeOrg)
 	}
 
 	// put the given service defs into the sbCheckInput

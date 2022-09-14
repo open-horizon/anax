@@ -17,6 +17,7 @@ type Device struct {
 	Name               string             `json:"name"`
 	Owner              string             `json:"owner"`
 	NodeType           string             `json:"nodeType"`
+	ClusterNamespace   string             `json:"clusterNamespace"`
 	Pattern            string             `json:"pattern"`
 	RegisteredServices []Microservice     `json:"registeredServices"`
 	MsgEndPoint        string             `json:"msgEndPoint"`
@@ -31,11 +32,11 @@ type Device struct {
 }
 
 func (d Device) String() string {
-	return fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, HAGroup: %v, Pattern: %v, SoftwareVersions: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.HAGroup, d.Pattern, d.SoftwareVersions, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput, d.HeartbeatIntv)
+	return fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, ClusterNamespace: %v, HAGroup: %v, Pattern: %v, SoftwareVersions: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.ClusterNamespace, d.HAGroup, d.Pattern, d.SoftwareVersions, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput, d.HeartbeatIntv)
 }
 
 func (d Device) ShortString() string {
-	str := fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, HAGroup: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.HAGroup, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
+	str := fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, ClusterNamespace: %v, HAGroup: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.ClusterNamespace, d.HAGroup, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
 	for _, ms := range d.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
@@ -43,7 +44,7 @@ func (d Device) ShortString() string {
 }
 
 func (n Device) DeepCopy() *Device {
-	nodeCopy := Device{Token: n.Token, Name: n.Name, Owner: n.Owner, NodeType: n.NodeType, HAGroup: n.HAGroup, Pattern: n.Pattern, MsgEndPoint: n.MsgEndPoint, LastHeartbeat: n.LastHeartbeat, PublicKey: n.PublicKey, Arch: n.Arch, HeartbeatIntv: n.HeartbeatIntv, LastUpdated: n.LastUpdated}
+	nodeCopy := Device{Token: n.Token, Name: n.Name, Owner: n.Owner, NodeType: n.NodeType, ClusterNamespace: n.ClusterNamespace, HAGroup: n.HAGroup, Pattern: n.Pattern, MsgEndPoint: n.MsgEndPoint, LastHeartbeat: n.LastHeartbeat, PublicKey: n.PublicKey, Arch: n.Arch, HeartbeatIntv: n.HeartbeatIntv, LastUpdated: n.LastUpdated}
 	if n.RegisteredServices == nil {
 		nodeCopy.RegisteredServices = nil
 	} else {
@@ -187,6 +188,7 @@ type PutDeviceRequest struct {
 	Token              string             `json:"token"`
 	Name               string             `json:"name"`
 	NodeType           string             `json:"nodeType"`
+	ClusterNamespace   *string            `json:"clusterNamespace,omitempty"`
 	Pattern            string             `json:"pattern"`
 	RegisteredServices []Microservice     `json:"registeredServices"`
 	MsgEndPoint        string             `json:"msgEndPoint"`
@@ -197,11 +199,11 @@ type PutDeviceRequest struct {
 }
 
 func (p PutDeviceRequest) String() string {
-	return fmt.Sprintf("Token: %v, Name: %v, NodeType: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x, Arch: %v, UserInput: %v", "*****", p.Name, p.NodeType, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey, p.Arch, p.UserInput)
+	return fmt.Sprintf("Token: %v, Name: %v, NodeType: %v, ClusterNamespace: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x, Arch: %v, UserInput: %v", "*****", p.Name, p.NodeType, p.ClusterNamespace, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey, p.Arch, p.UserInput)
 }
 
 func (p PutDeviceRequest) ShortString() string {
-	str := fmt.Sprintf("Token: %v, Name: %v, NodeType: %v, MsgEndPoint %v, Arch: %v, SoftwareVersions %v", "*****", p.Name, p.NodeType, p.MsgEndPoint, p.Arch, p.SoftwareVersions)
+	str := fmt.Sprintf("Token: %v, Name: %v, NodeType: %v, ClusterNamespace: %v, MsgEndPoint %v, Arch: %v, SoftwareVersions %v", "*****", p.Name, p.NodeType, p.ClusterNamespace, p.MsgEndPoint, p.Arch, p.SoftwareVersions)
 	str += ", Service URLs: "
 	for _, ms := range p.RegisteredServices {
 		str += fmt.Sprintf("%v %v,", ms.Url, ms.Version)
@@ -273,6 +275,7 @@ type PatchDeviceRequest struct {
 	UserInput          *[]policy.UserInput `json:"userInput,omitempty"`
 	Pattern            *string             `json:"pattern,omitempty"`
 	Arch               *string             `json:"arch,omitempty"`
+	ClusterNamespace   *string             `json:"clusterNamespace,omitempty"`
 	RegisteredServices *[]Microservice     `json:"registeredServices,omitempty"`
 	SoftwareVersions   SoftwareVersion     `json:"softwareVersions"`
 }
@@ -286,7 +289,11 @@ func (p PatchDeviceRequest) String() string {
 	if p.Arch != nil {
 		arch = *p.Arch
 	}
-	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, SoftwareVersions: %v", p.UserInput, p.RegisteredServices, pattern, arch, p.SoftwareVersions)
+	clusterNs := "nil"
+	if p.ClusterNamespace != nil {
+		clusterNs = *p.ClusterNamespace
+	}
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, ClusterNamespace: %v, SoftwareVersions: %v", p.UserInput, p.RegisteredServices, pattern, arch, clusterNs, p.SoftwareVersions)
 }
 
 func (p PatchDeviceRequest) ShortString() string {
@@ -315,7 +322,12 @@ func (p PatchDeviceRequest) ShortString() string {
 		arch = *p.Arch
 	}
 
-	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, SoftwareVersions: %v", userInput, registeredServices, pattern, arch, p.SoftwareVersions)
+	clusterNs := "nil"
+	if p.ClusterNamespace != nil {
+		clusterNs = *p.ClusterNamespace
+	}
+
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, ClusterNamespace: %v, SoftwareVersions: %v", userInput, registeredServices, pattern, arch, clusterNs, p.SoftwareVersions)
 }
 
 // patch the the device

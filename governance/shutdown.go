@@ -330,10 +330,16 @@ func (w *GovernanceWorker) terminateAllAgreements(reason string) error {
 		glog.V(3).Infof(logString(fmt.Sprintf("ending agreement: %v", ag.CurrentAgreementId)))
 		pph := w.producerPH[ag.AgreementProtocol]
 		reasonCode := pph.GetTerminationCode(reason)
+
+		clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ag)
+		if err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ag.CurrentAgreementId, err)))
+		}
+
 		w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reasonCode, pph.GetTerminationReason(reasonCode))
 
 		// send the event to the container worker in case it has started workload containers.
-		w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
+		w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, clusterNamespace, ag.GetDeploymentConfig())
 		// clean up microservice instances, but make sure we dont upgrade any microservices as a result of agreement cancellation.
 		skipUpgrade := true
 		w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, skipUpgrade)

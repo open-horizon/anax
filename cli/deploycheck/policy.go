@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/persistence"
 	"os"
 )
 
@@ -30,12 +31,12 @@ func readServicePolicyFile(filePath string, inputFileStruct *exchangecommon.Serv
 }
 
 // check if the policies are compatible
-func PolicyCompatible(org string, userPw string, nodeIds []string, haGroupName string, nodeArch string, nodeType string, nodePolFile string, businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string, checkAllSvcs bool, showDetail bool) {
+func PolicyCompatible(org string, userPw string, nodeIds []string, haGroupName string, nodeArch string, nodeType string, nodeNamespace string, nodePolFile string, businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string, checkAllSvcs bool, showDetail bool) {
 
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input and get the defaults
-	userOrg, credToUse, nIds, useNodeId, serviceDefs := verifyPolicyCompatibleParameters(org, userPw, nodeIds, haGroupName, nodeType, nodePolFile, businessPolId, businessPolFile, servicePolFile, svcDefFiles)
+	userOrg, credToUse, nIds, useNodeId, serviceDefs := verifyPolicyCompatibleParameters(org, userPw, nodeIds, haGroupName, nodeType, nodeNamespace, nodePolFile, businessPolId, businessPolFile, servicePolFile, svcDefFiles)
 
 	// get exchange context
 	ec := cliutils.GetUserExchangeContext(userOrg, credToUse)
@@ -71,6 +72,7 @@ func PolicyCompatible(org string, userPw string, nodeIds []string, haGroupName s
 		policyCheckInput := compcheck.PolicyCheck{}
 		policyCheckInput.NodeArch = nodeArch
 		policyCheckInput.NodeType = nodeType
+		policyCheckInput.NodeClusterNS = nodeNamespace
 		policyCheckInput.BusinessPolicy = bp
 
 		// formalize node id or get node policy
@@ -92,7 +94,7 @@ func PolicyCompatible(org string, userPw string, nodeIds []string, haGroupName s
 
 		if bUseLocalNode {
 			// get id from local node, check arch
-			policyCheckInput.NodeId, policyCheckInput.NodeArch, policyCheckInput.NodeType, _ = getLocalNodeInfo(nodeArch, nodeType, "")
+			policyCheckInput.NodeId, policyCheckInput.NodeArch, policyCheckInput.NodeType, policyCheckInput.NodeClusterNS, _ = getLocalNodeInfo(nodeArch, nodeType, nodeNamespace, "")
 
 			// get node policy from local node
 			var np exchangecommon.NodePolicy
@@ -148,13 +150,23 @@ func PolicyCompatible(org string, userPw string, nodeIds []string, haGroupName s
 
 // make sure -n and --node-pol, -b and -B, pairs are mutually compatible.
 // get default credential, node id and org if they are not set.
-func verifyPolicyCompatibleParameters(org string, userPw string, nodeIds []string, haGroupName string, nodeType string, nodePolFile string,
-	businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string) (string, string, []string, bool, []common.AbstractServiceFile) {
+func verifyPolicyCompatibleParameters(org string, userPw string,
+	nodeIds []string, haGroupName string,
+	nodeType string, nodeNamespace string,
+	nodePolFile string,
+	businessPolId string, businessPolFile string,
+	servicePolFile string,
+	svcDefFiles []string) (string, string, []string, bool, []common.AbstractServiceFile) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// make sure the node type has correct value
 	ValidateNodeType(nodeType)
+
+	// make sure the namespace is only specified for cluster node
+	if nodeType == persistence.DEVICE_TYPE_DEVICE && nodeNamespace != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-s can only be specified when the node type sepcified by -t is 'cluster'."))
+	}
 
 	credToUse := cliutils.WithDefaultEnvVar(&userPw, "HZN_EXCHANGE_NODE_AUTH")
 	orgToUse := org

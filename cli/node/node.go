@@ -20,11 +20,12 @@ type Configstate struct {
 // This is a combo of anax's HorizonDevice and Info (status) structs
 type NodeAndStatus struct {
 	// from api.HorizonDevice
-	Id       *string `json:"id"`
-	Org      *string `json:"organization"`
-	Pattern  *string `json:"pattern"` // a simple name, not prefixed with the org
-	Name     *string `json:"name"`    // removed omitempty
-	NodeType *string `json:"nodeType"`
+	Id               *string `json:"id"`
+	Org              *string `json:"organization"`
+	Pattern          *string `json:"pattern"` // a simple name, not prefixed with the org
+	Name             *string `json:"name"`    // removed omitempty
+	NodeType         *string `json:"nodeType"`
+	ClusterNamespace *string `json:"clusterNamespace"`
 	//Token              *string     `json:"token"`                 // removed omitempty
 	TokenLastValidTime string      `json:"token_last_valid_time"` // removed omitempty
 	TokenValid         *bool       `json:"token_valid"`           // removed omitempty
@@ -43,6 +44,7 @@ func (n *NodeAndStatus) CopyNodeInto(horDevice *api.HorizonDevice) {
 	n.Pattern = horDevice.Pattern
 	n.Name = horDevice.Name
 	n.NodeType = horDevice.NodeType
+	n.ClusterNamespace = horDevice.ClusterNamespace
 	//n.Token = horDevice.Token  // <- the api always returns null for the token (as it should)
 	if horDevice.TokenLastValidTime != nil {
 		n.TokenLastValidTime = cliutils.ConvertTime(*horDevice.TokenLastValidTime)

@@ -38,18 +38,20 @@ func (w BusinessPolicy) String() string {
 }
 
 type ServiceRef struct {
-	Name            string           `json:"name"`                      // refers to a service definition in the exchange
-	Org             string           `json:"org,omitempty"`             // the org holding the service definition
-	Arch            string           `json:"arch,omitempty"`            // the hardware architecture of the service definition
-	ServiceVersions []WorkloadChoice `json:"serviceVersions,omitempty"` // a list of service version for rollback
-	NodeH           NodeHealth       `json:"nodeHealth"`                // policy for determining when a node's health is violating its agreements
+	Name             string           `json:"name"`                      // refers to a service definition in the exchange
+	Org              string           `json:"org,omitempty"`             // the org holding the service definition
+	Arch             string           `json:"arch,omitempty"`            // the hardware architecture of the service definition
+	ClusterNamespace string           `json:"clusterNamespace"`          // the namespace ths service will be deployed to.
+	ServiceVersions  []WorkloadChoice `json:"serviceVersions,omitempty"` // a list of service version for rollback
+	NodeH            NodeHealth       `json:"nodeHealth"`                // policy for determining when a node's health is violating its agreements
 }
 
 func (w ServiceRef) String() string {
-	return fmt.Sprintf("Name: %v, Org: %v, Arch: %v, ServiceVersions: %v, NodeH: %v",
+	return fmt.Sprintf("Name: %v, Org: %v, Arch: %v, ClusterNamespace: %v, ServiceVersions: %v, NodeH: %v",
 		w.Name,
 		w.Org,
 		w.Arch,
+		w.ClusterNamespace,
 		w.ServiceVersions,
 		w.NodeH)
 }
@@ -229,6 +231,8 @@ func (b *BusinessPolicy) GenPolicyFromBusinessPolicy(policyName string) (*policy
 		newSB := sb.MakeCopy()
 		pol.SecretBinding = append(pol.SecretBinding, newSB)
 	}
+
+	pol.ClusterNamespace = service.ClusterNamespace
 
 	glog.V(3).Infof("converted %v into policy %v.", service, policyName)
 

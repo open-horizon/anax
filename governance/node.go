@@ -114,10 +114,14 @@ func (w *GovernanceWorker) handleNodeUserInputUpdated(svcSpecs persistence.Servi
 					persistence.EC_CANCEL_AGREEMENT,
 					ag)
 
+				clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ag)
+				if err != nil {
+					glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ag.CurrentAgreementId, err)))
+				}
 				w.cancelAgreement(agreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
 
 				// send the event to the container in case it has started the workloads.
-				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, agreementId, ag.GetDeploymentConfig())
+				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, agreementId, clusterNamespace, ag.GetDeploymentConfig())
 				// clean up microservice instances if needed
 				w.handleMicroserviceInstForAgEnded(agreementId, false)
 			}

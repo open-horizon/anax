@@ -8,7 +8,9 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -260,6 +262,14 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			glog.Errorf(BPPHlogString(w.Name(), "node type matching failed, ignoring proposal"))
 			err_log_event = "Node type matching failed, ignoring proposal"
 			handled = true
+		} else if nsmatch, err := w.MatchClusterNamespace(tcPolicy, dev); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking cluster namespace match, %v", err)))
+			err_log_event = fmt.Sprintf("Received error checking cluster namespace match, %v", err)
+			handled = true
+		} else if !nsmatch {
+			glog.Errorf(BPPHlogString(w.Name(), "cluster namespace matching failed, ignoring proposal"))
+			err_log_event = "Cluster namespace matching failed, ignoring proposal"
+			handled = true
 		} else if pmatch, err := w.MatchPattern(tcPolicy, dev); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking pattern name match, %v", err)))
 			err_log_event = fmt.Sprintf("Received error checking pattern name match, %v", err)
@@ -462,6 +472,30 @@ func (w *BaseProducerProtocolHandler) MatchNodeType(tcPolicy *policy.Policy, dev
 		glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("workload has the correct deployment for the node type '%v'", nodeType)))
 		return true, nil
 	}
+}
+
+// check if the namespace spcified in the policy is comaptible
+func (w *BaseProducerProtocolHandler) MatchClusterNamespace(tcPolicy *policy.Policy, dev *persistence.ExchangeDevice) (bool, error) {
+	nodeType := dev.GetNodeType()
+	if nodeType == persistence.DEVICE_TYPE_DEVICE {
+		return true, nil
+	} else if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+		workload := tcPolicy.Workloads[0]
+		if workload.ClusterDeployment == "" {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("no cluster deployment configuration is provided.")))
+			return false, nil
+		} else {
+			compResult, _, reason := compcheck.CheckClusterNamespaceCompatibility(nodeType, cutil.GetClusterNamespace(), tcPolicy.ClusterNamespace, workload.ClusterDeployment, true, nil)
+			if compResult {
+				glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("cluster namespace matches. %v")))
+			} else {
+				glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("cluster namespace not match. %v", reason)))
+			}
+			return compResult, nil
+		}
+	}
+
+	return true, nil
 }
 
 // check if the proposal has the same pattern

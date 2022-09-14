@@ -536,10 +536,15 @@ func (w *GovernanceWorker) governAgreements() {
 // TODO: consolidate every place that does the same thing as this function to call this function instead.
 func (w *GovernanceWorker) cancelGovernedAgreement(ag *persistence.EstablishedAgreement, reason uint) {
 
+	clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(ag)
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ag.CurrentAgreementId, err)))
+	}
+
 	w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
 
 	// cleanup workloads
-	w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
+	w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, clusterNamespace, ag.GetDeploymentConfig())
 
 	// clean up microservice instances if needed
 	w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, false)
@@ -566,8 +571,12 @@ func (w *GovernanceWorker) governContainers() int {
 			// Make sure containers are still running.
 			glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure containers are still up for agreement %v.", ag.CurrentAgreementId)))
 
+			clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ag)
+			if err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ag.CurrentAgreementId, err)))
+			}
 			// current contract, ensure workloads still running
-			w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
+			w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, clusterNamespace, ag.GetDeploymentConfig())
 
 		}
 	}
@@ -821,10 +830,15 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				persistence.EC_CANCEL_AGREEMENT,
 				ags[0])
 
+			clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ags[0])
+			if err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ags[0].CurrentAgreementId, err)))
+			}
+
 			w.cancelAgreement(agreementId, cmd.AgreementProtocol, cmd.Reason, w.producerPH[cmd.AgreementProtocol].GetTerminationReason(cmd.Reason))
 
 			// send the event to the container in case it has started the workloads.
-			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, cmd.AgreementProtocol, agreementId, cmd.Deployment)
+			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, cmd.AgreementProtocol, agreementId, clusterNamespace, cmd.Deployment)
 			// clean up microservice instances if needed
 			w.handleMicroserviceInstForAgEnded(agreementId, false)
 		}
@@ -905,7 +919,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 							persistence.EC_CANCEL_AGREEMENT_PER_AGBOT,
 							ags[0])
 
-						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].GetDeploymentConfig())
+						clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ags[0])
+						if err != nil {
+							glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ags[0].CurrentAgreementId, err)))
+						}
+
+						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, clusterNamespace, ags[0].GetDeploymentConfig())
 						reason := w.producerPH[msgProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED)
 						w.cancelAgreement(replyAck.AgreementId(), msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
 						// clean up microservice instances if needed
@@ -1042,9 +1061,13 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						deleteMessage = true
 						err_log_msg = fmt.Sprintf("ignoring cancel, agreement %v is terminating", canReceived.AgreementId())
 					} else {
+						clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ags[0])
+						if err != nil {
+							glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ags[0].CurrentAgreementId, err)))
+						}
 						w.cancelAgreement(canReceived.AgreementId(), msgProtocol, canReceived.Reason(), w.producerPH[msgProtocol].GetTerminationReason(canReceived.Reason()))
 						// cleanup workloads if needed
-						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].GetDeploymentConfig())
+						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, clusterNamespace, ags[0].GetDeploymentConfig())
 						// clean up microservice instances if needed
 						w.handleMicroserviceInstForAgEnded(ags[0].CurrentAgreementId, false)
 						deleteMessage = true
@@ -1090,9 +1113,14 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 							persistence.NewMessageMeta(EL_GOV_AG_NOT_VALID, ags[0].RunningWorkload.URL),
 							persistence.EC_CANCEL_AGREEMENT_PER_AGBOT,
 							ags[0])
+
+						clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ags[0])
+						if err != nil {
+							glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ags[0].CurrentAgreementId, err)))
+						}
 						w.cancelAgreement(agid, msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
 						// cleanup workloads if needed
-						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, msgProtocol, agid, ags[0].GetDeploymentConfig())
+						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, msgProtocol, agid, clusterNamespace, ags[0].GetDeploymentConfig())
 						// clean up microservice instances if needed
 						w.handleMicroserviceInstForAgEnded(agid, false)
 					}
@@ -1133,9 +1161,13 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 					glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, agreement %v is already terminating", ags[0].CurrentAgreementId)))
 				} else {
 					glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it has been cancelled on the blockchain.", ags[0].CurrentAgreementId)))
+					clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ags[0])
+					if err != nil {
+						glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ags[0].CurrentAgreementId, err)))
+					}
 					w.cancelAgreement(ags[0].CurrentAgreementId, ags[0].AgreementProtocol, uint(reason), w.producerPH[protocol].GetTerminationReason(uint(reason)))
 					// cleanup workloads if needed
-					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].GetDeploymentConfig())
+					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, clusterNamespace, ags[0].GetDeploymentConfig())
 					// clean up microservice instances if needed
 					w.handleMicroserviceInstForAgEnded(ags[0].CurrentAgreementId, false)
 				}
@@ -1504,7 +1536,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		}
 
 		cc := events.NewContainerConfig(workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo,
-			workload.ClusterDeployment, workload.ClusterDeploymentSignature, workload.DeploymentOverrides, img_auths)
+			workload.ClusterDeployment, workload.ClusterDeploymentSignature, tcPolicy.ClusterNamespace, workload.DeploymentOverrides, img_auths)
 
 		lc := new(events.AgreementLaunchContext)
 		lc.Configure = *cc
@@ -2036,12 +2068,30 @@ func (w *GovernanceWorker) cancelAllAgreements() {
 				persistence.EC_CANCEL_AGREEMENT,
 				ag)
 
+			clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ag)
+			if err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ag.CurrentAgreementId, err)))
+			}
 			w.cancelAgreement(agreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
 
 			// send the event to the container in case it has started the workloads.
-			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, agreementId, ag.GetDeploymentConfig())
+			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, agreementId, clusterNamespace, ag.GetDeploymentConfig())
 			// clean up microservice instances if needed
 			w.handleMicroserviceInstForAgEnded(agreementId, false)
 		}
 	}
+}
+
+// Get the requested cluster namespace from the agreement
+func (w *GovernanceWorker) GetRequestedClusterNamespaceFromAg(ag *persistence.EstablishedAgreement) (string, error) {
+	protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "", "")
+	if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
+		return "", fmt.Errorf(logString(fmt.Sprintf("encountered error demarshalling proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
+	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
+		return "", fmt.Errorf(logString(fmt.Sprintf("unable to  demarshal TsAndCs of agreement %v, error %v", ag.CurrentAgreementId, err)))
+	} else {
+		return tcPolicy.ClusterNamespace, nil
+	}
+
+	return "", nil
 }

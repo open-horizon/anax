@@ -74,7 +74,7 @@ func UserInputCompatible(org string, userPw string, nodeId string, nodeArch stri
 
 	if bUseLocalNode {
 		// get id from local node, check arch
-		uiCheckInput.NodeId, uiCheckInput.NodeArch, uiCheckInput.NodeType, _ = getLocalNodeInfo(nodeArch, nodeType, "")
+		uiCheckInput.NodeId, uiCheckInput.NodeArch, uiCheckInput.NodeType, _, _ = getLocalNodeInfo(nodeArch, nodeType, "", "")
 
 		// get node user input from local node
 		var node_ui []policy.UserInput

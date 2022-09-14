@@ -214,7 +214,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 	// go through all the workloads and check if user input is compatible or not
 	service_comp := map[string]common.AbstractServiceFile{}
 	service_incomp := map[string]common.AbstractServiceFile{}
-	svc_type_mismatch := map[string]bool{}
+	svc_other_mismatch := map[string]bool{}
 	overall_compatible := true
 
 	// save all the services that are retrieved from the exchange so that
@@ -253,7 +253,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, topSvcDef, msgPrinter)
 						if !compatible_t {
 							reason = reason_t
-							svc_type_mismatch[sId] = true
+							svc_other_mismatch[sId] = true
 						}
 
 						if compatible && compatible_t {
@@ -294,7 +294,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 								compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, &svc, msgPrinter)
 								if !compatible_t {
 									reason = reason_t
-									svc_type_mismatch[sId] = true
+									svc_other_mismatch[sId] = true
 								}
 
 								if compatible && compatible_t {
@@ -346,7 +346,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, useSDef, msgPrinter)
 						if !compatible_t {
 							reason = reason_t
-							svc_type_mismatch[sId] = true
+							svc_other_mismatch[sId] = true
 						}
 
 						if compatible && compatible_t {
@@ -371,7 +371,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 		if overall_compatible && !service_compatible {
 			if useBPol {
 				overall_compatible = false
-			} else if len(service_incomp) != len(svc_type_mismatch) {
+			} else if len(service_incomp) != len(svc_other_mismatch) {
 				// some compatibility errors are from non type mismatch
 				overall_compatible = false
 			}
@@ -385,7 +385,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 	// for the pattern case, if all the services are type mismatch then the overall_compatible should
 	// turn to false
 	if overall_compatible && !useBPol {
-		if len(service_comp) == 0 && len(svc_type_mismatch) > 0 {
+		if len(service_comp) == 0 && len(svc_other_mismatch) > 0 {
 			overall_compatible = false
 		}
 	}

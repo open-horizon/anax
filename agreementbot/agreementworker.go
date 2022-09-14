@@ -547,8 +547,18 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			return
 		}
 
-		// zero out the dependent services for cluster type
+		// for cluster type and check for namespace compatibility
+		consumerNamespace := ""
 		if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+			t_comp, consumerNamespace, t_reason = compcheck.CheckClusterNamespaceCompatibility(nodeType, exchangeDev.ClusterNamespace, wi.ConsumerPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), false, msgPrinter)
+			if !t_comp {
+				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with node %v for service %v/%v %v. %v", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version, t_reason)))
+				return
+			} else {
+				wi.ConsumerPolicy.ClusterNamespace = consumerNamespace
+			}
+
+			// zero out the dependent services
 			asl = new(policy.APISpecList)
 		}
 
@@ -604,7 +614,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				return
 			} else if ccOutput.Compatible {
 				if err := wi.ProducerPolicy.APISpecs.Supports(*asl); err != nil {
-					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it: %v", workload, wi.Device.Id, err)))
+					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v can't support it: %v", workload, wi.Device.Id, err)))
 				} else {
 					policy_match = true
 				}
