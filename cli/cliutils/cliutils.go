@@ -1991,7 +1991,7 @@ func GetHTTPClient(timeout int) *http.Client {
 			ResponseHeaderTimeout: time.Duration(responseTimeout) * time.Second,
 			ExpectContinueTimeout: time.Duration(expectContinue) * time.Second,
 			MaxIdleConns:          config.MaxHTTPIdleConnections,
-			IdleConnTimeout:       config.HTTPIdleConnectionTimeoutS * time.Second,
+			IdleConnTimeout:       config.HTTPIdleConnectionTimeout * time.Millisecond, // ms since we don't want cli to hold onto connections for very long
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: skipSSL,
 			},

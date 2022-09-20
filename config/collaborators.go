@@ -25,6 +25,8 @@ type Collaborators struct {
 }
 
 func NewCollaborators(hConfig HorizonConfig) (*Collaborators, error) {
+
+
 	httpClientFactory, err := newHTTPClientFactory(hConfig)
 	if err != nil {
 		return nil, err
@@ -81,6 +83,14 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 	var caBytes []byte
 	var mgmtHubBytes []byte
 	var cssCaBytes []byte
+
+	var isAgbot bool
+	//DBPath is set for agent
+	if len(hConfig.Edge.DBPath) == 0 {
+		isAgbot = true
+	} else {
+		isAgbot = false
+	}
 
 	if hConfig.Edge.CACertsPath != "" {
 		var err error
@@ -152,6 +162,42 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 
 	tlsConf.BuildNameToCertificate()
 
+	var idleTimeout time.Duration
+	var maxHTTPIdleConnections, maxHTTPIdleConnsPerHost, maxConnsPerHost int
+	if isAgbot {
+		// For agbot, we want a relatively large idle connection timeout to reuse connections so we use the value in seconds 
+		idleTimeout = time.Duration(hConfig.Edge.HTTPIdleConnectionTimeout) * time.Second
+		maxHTTPIdleConnections = MaxHTTPIdleConnections
+		maxHTTPIdleConnsPerHost = MaxHTTPIdleConnsPerHost
+		maxConnsPerHost = MaxHTTPIdleConnsPerHost
+	} else {
+		// For agent, in order to support 10's of thousands of agents, we want a short idle connection timeout to free up the connection when a request completes so we use the value in milliseconds 
+		idleTimeout = time.Duration(hConfig.Edge.HTTPIdleConnectionTimeout) * time.Millisecond
+
+		// Allow bigger number of total IdleConnections
+		maxHTTPIdleConnections = MaxHTTPIdleConnections
+
+		// Just limit the ConnsPerHost for the agent to avoid keeping them open to the mgmt hub
+		maxHTTPIdleConnsPerHost = MaxHTTPIdleConnsPerHost_Agent
+		maxConnsPerHost = MaxHTTPIdleConnsPerHost_Agent
+	}
+
+	// The transport needs to be reused to allow reuse of HTTP connections
+	transport := &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout:   20 * time.Second,
+			KeepAlive: 60 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout:   20 * time.Second,
+		ResponseHeaderTimeout: 20 * time.Second,
+		ExpectContinueTimeout: 8 * time.Second,
+		MaxIdleConns:          maxHTTPIdleConnections,
+		MaxIdleConnsPerHost:   maxHTTPIdleConnsPerHost,
+		MaxConnsPerHost:       maxConnsPerHost,
+		IdleConnTimeout:       idleTimeout,
+		TLSClientConfig:       &tlsConf,
+	}
+
 	clientFunc := func(overrideTimeoutS *uint) *http.Client {
 		var timeoutS uint
 
@@ -166,18 +212,7 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 			// body reading. This means that you must set the timeout according
 			// to the total payload size you expect
 			Timeout: time.Second * time.Duration(timeoutS),
-			Transport: &http.Transport{
-				Dial: (&net.Dialer{
-					Timeout:   20 * time.Second,
-					KeepAlive: 60 * time.Second,
-				}).Dial,
-				TLSHandshakeTimeout:   20 * time.Second,
-				ResponseHeaderTimeout: 20 * time.Second,
-				ExpectContinueTimeout: 8 * time.Second,
-				MaxIdleConns:          MaxHTTPIdleConnections,
-				IdleConnTimeout:       HTTPIdleConnectionTimeoutS * time.Second,
-				TLSClientConfig:       &tlsConf,
-			},
+			Transport: transport,
 		}
 	}
 

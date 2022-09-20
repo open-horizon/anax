@@ -43,6 +43,7 @@ type Config struct {
 	ExchangeURL                      string
 	AgbotURL                         string
 	DefaultHTTPClientTimeoutS        uint
+	HTTPIdleConnectionTimeout        uint      // Will be seconds for agbot and milliseconds for agent
 	PolicyPath                       string
 	ExchangeHeartbeat                int       // Seconds between heartbeats
 	ExchangeVersionCheckIntervalM    int64     // Exchange version check interval in minutes. The default is 720. This is now deprecated with the usage of /changes API which returns exchange version on every call.
@@ -381,6 +382,7 @@ func Read(file string) (*HorizonConfig, error) {
 		// instantiate mostly empty which will be filled. Values here are defaults that can be overridden by the user
 		config := HorizonConfig{
 			Edge: Config{
+				HTTPIdleConnectionTimeout:      HTTPIdleConnectionTimeout,
 				DefaultHTTPClientTimeoutS:      HTTPRequestTimeoutS,
 				ExchangeMessageDynamicPoll:     true,
 				ExchangeMessagePollInterval:    ExchangeMessagePollInterval_DEFAULT,
@@ -508,6 +510,7 @@ func (con *Config) String() string {
 		", ExchangeURL: %v"+
 		", AgbotURL: %v"+
 		", DefaultHTTPClientTimeoutS: %v"+
+		", HTTPIdleConnectionTimeout: %v"+
 		", PolicyPath: %v"+
 		", ExchangeHeartbeat: %v"+
 		", AgreementTimeoutS: %v"+
@@ -533,7 +536,7 @@ func (con *Config) String() string {
 		", BlockchainDirectoryAddress %v",
 		con.ServiceStorage, con.APIListen, con.DBPath, con.DockerEndpoint, con.DockerCredFilePath, con.DefaultCPUSet,
 		con.DefaultServiceRegistrationRAM, con.StaticWebContent, con.PublicKeyPath, con.TrustSystemCACerts, con.CACertsPath, con.ExchangeURL, con.AgbotURL,
-		con.DefaultHTTPClientTimeoutS, con.PolicyPath, con.ExchangeHeartbeat, con.AgreementTimeoutS,
+		con.DefaultHTTPClientTimeoutS, con.HTTPIdleConnectionTimeout, con.PolicyPath, con.ExchangeHeartbeat, con.AgreementTimeoutS,
 		con.DVPrefix, con.RegistrationDelayS, con.ExchangeMessageTTL, con.ExchangeMessageDynamicPoll, con.ExchangeMessagePollInterval,
 		con.ExchangeMessagePollMaxInterval, con.ExchangeMessagePollIncrement, con.UserPublicKeyPath, con.ReportDeviceStatus,
 		con.TrustCertUpdatesFromOrg, con.TrustDockerAuthFromOrg, con.ServiceUpgradeCheckIntervalS, con.MultipleAnaxInstances,
