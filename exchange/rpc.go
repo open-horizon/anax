@@ -107,7 +107,12 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 	if req, err := http.NewRequest(method, urlObj.String(), requestBody); err != nil {
 		return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed creating HTTP request, error: %v", method, urlPath, requestBody, err)), nil
 	} else {
-		req.Close = true // work around to ensure that Go doesn't get connections confused. Supposed to be fixed in Go 1.6.
+                /*
+                 * "req.Close  = true" code commented out so that agbot can reuse connections on the management hub.
+                 * In order to support 10's of thousands of agents though there is a different behavior between agbot and agent where the agbot sets
+                 * a IdleConnTimeout in seconds and the agent sets the IdleConnTimeout in milliseconds so it frees up quickly after a request/response
+                 */
+                //req.Close = true // work around to ensure that Go doesn't get connections confused. Supposed to be fixed in Go 1.6.
 		req.Header.Add("Accept", "application/json")
 		if method != "GET" {
 			req.Header.Add("Content-Type", "application/json")

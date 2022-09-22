@@ -116,7 +116,7 @@ func (vs *AgbotVaultSecrets) newHTTPClient(cfg *config.HorizonConfig) (*http.Cli
 	}
 
 	return &http.Client{
-		// remember that this timouet is for the whole request, including
+		// remember that this timeout is for the whole request, including
 		// body reading. This means that you must set the timeout according
 		// to the total payload size you expect
 		Timeout: time.Second * time.Duration(20),
@@ -127,7 +127,10 @@ func (vs *AgbotVaultSecrets) newHTTPClient(cfg *config.HorizonConfig) (*http.Cli
 			}).Dial,
 			ResponseHeaderTimeout: 20 * time.Second,
 			ExpectContinueTimeout: 8 * time.Second,
+			// Guidance from https://www.loginradius.com/blog/engineering/tune-the-go-http-client-for-high-performance/
 			MaxIdleConns:          20,
+			MaxConnsPerHost:       20,
+			MaxIdleConnsPerHost:   20,
 			IdleConnTimeout:       120 * time.Second,
 			TLSClientConfig:       &tlsConf,
 		},
@@ -194,6 +197,7 @@ func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, meth
 	return resp, err
 }
 
+
 // Common function to invoke the Vault API.
 func (vs *AgbotVaultSecrets) invokeVault(token string, url string, method string, body interface{}) (*http.Response, error) {
 
@@ -214,10 +218,13 @@ func (vs *AgbotVaultSecrets) invokeVault(token string, url string, method string
 		return nil, errors.New(fmt.Sprintf("unable to create HTTP request for %v, error %v", apiMsg, err))
 	}
 
+
 	if token != "" {
 		req.Header.Add("X-Vault-Token", token)
 	}
-	req.Close = true
+
+	// Close code commented out so we can reuse connection and avoid SSL handshake
+	//req.Close = true
 
 	// Send the request to the vault.
 	resp, err := vs.httpClient.Do(req)

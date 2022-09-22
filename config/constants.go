@@ -11,14 +11,20 @@ const MICROSERVICE_EXEC_TIMEOUT = 180
 // MaxHTTPIdleConnections see https://golang.org/pkg/net/http/
 const MaxHTTPIdleConnections = 20
 
+// MaxHTTPIdleConnsPerHost see https://golang.org/pkg/net/http/
+const MaxHTTPIdleConnsPerHost = 20
+
+// MaxHTTPIdleConnsPerHost see https://golang.org/pkg/net/http/
+const MaxHTTPIdleConnsPerHost_Agent = 1
+
 // HTTPRequestTimeoutS see https://golang.org/pkg/net/http/
 const HTTPRequestTimeoutS = 30
 
 // HTTPRequestTimeoutOverride environment variable
 const HTTPRequestTimeoutOverride = "HZN_HTTP_TIMEOUT"
 
-// HTTPIdleConnectionTimeoutS see https://golang.org/pkg/net/http/
-const HTTPIdleConnectionTimeoutS = 120
+// HTTPIdleConnectionTimeout see https://golang.org/pkg/net/http/
+const HTTPIdleConnectionTimeout = 60     // Will be in seconds for agbot and milliseconds for agent
 
 const HZN_VAR_BASE_DEFAULT = "/var/horizon"
 

@@ -460,7 +460,9 @@ func (auth *HorizonAuthenticate) invokeExchange(url string, user string, pw stri
 	// Add the basic auth header so that the exchange will authenticate.
 	req.SetBasicAuth(user, pw)
 	req.Header.Add("Accept", "application/json")
-	req.Close = true
+
+	// Remove the req.Close so that connections from CSS to Exchange can be reused
+	//req.Close = true 
 
 	// Send the request to verify the user.
 	resp, err := auth.httpClient.Do(req)
@@ -558,7 +560,11 @@ func newHTTPClient(certPath string) (*http.Client, error) {
 			TLSHandshakeTimeout:   20 * time.Second,
 			ResponseHeaderTimeout: 20 * time.Second,
 			ExpectContinueTimeout: 8 * time.Second,
+
+			// Guidance from https://www.loginradius.com/blog/engineering/tune-the-go-http-client-for-high-performance/
 			MaxIdleConns:          20,
+			MaxConnsPerHost:       20,
+			MaxIdleConnsPerHost:   20,
 			IdleConnTimeout:       120 * time.Second,
 			TLSClientConfig:       &tlsConf,
 		},
