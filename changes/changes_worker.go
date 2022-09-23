@@ -23,11 +23,11 @@ const (
 	UPDATE_TYPE_ALERT       = "ALERT"       // set the poll interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL
 	UPDATE_TYPE_NEW_CONFIG  = "NEW_CONFIG"  // adjust the poll interval according to the new configuration
 	UPDATE_TYPE_NO_CHANGES  = "NO_CHANGES"  // increate poll interval because there are no changes
-	UPDATE_TYPE_HB_FAILED   = "HB_FAILED"   // set poll interval to minimum until hb succeds
+	UPDATE_TYPE_HB_FAILED   = "HB_FAILED"   // set poll interval to minimum until hb succeeds
 	UPDATE_TYPE_HB_RESTORED = "HB_RESTORED" // set poll interval back to what it was before failing
 
 	// alert level
-	POLL_INTERVAL_ALERT_LEVEL = 2
+	POLL_INTERVAL_ALERT_LEVEL = 4
 )
 
 type ChangesWorker struct {
@@ -38,7 +38,7 @@ type ChangesWorker struct {
 	pollMinInterval        int    // The minimum time to wait between polls to the exchange.
 	pollMaxInterval        int    // The maximum time to wait between polls to the exchange.
 	pollAdjustment         int    // The amount to increase the polling time, each time it is increased.
-	pollInitTime           int64  // THe time when the polling starts 10sec interval
+	pollInitTime           int64  // The time when the polling starts 10sec interval.
 	agreementReached       bool   // True when ths node has seen at least one agreement.
 	noMsgCount             int    // How many consecutive polls have returned no changes.
 	changeID               uint64 // The current change Id in the exchange.
@@ -240,11 +240,11 @@ func (w *ChangesWorker) findAndProcessChanges() {
 
 	w.noworkDispatch = time.Now().Unix()
 
-	// If there is no last known change id, then we havent initialized yet,so do nothing.
+	// If there is no last known change id, then we havent initialized yet, so do nothing.
 	maxRecords := 1000
 	if w.changeID == 0 {
 		if err := w.getChangeId(); err != nil {
-			glog.Errorf(chglog(fmt.Sprintf("Failed to get the max change id. %v", err)))
+			glog.Errorf(chglog(fmt.Sprintf("Failed to get the max change ID. %v", err)))
 			return
 		} else if w.changeID == 0 {
 			glog.Warningf(chglog(fmt.Sprintf("No starting change ID")))
@@ -430,7 +430,7 @@ func (w *ChangesWorker) handleHeartbeatStateAndError(changes *exchange.ExchangeC
 }
 
 // Setting up the new polling interval according to the updateType:
-// 	 UPDATE_TYPE_RESET:  set the poll interval to min
+// 	UPDATE_TYPE_RESET:  set the poll interval to min
 //	 UPDATE_TYPE_ALERT:  set the poll interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL
 //	 UPDATE_TYPE_NEW_CONFIG: adjust the poll interval according to the new configuration from node or node org
 //	 UPDATE_TYPE_NO_CHANGES: increate poll interval because there are no changes
@@ -438,7 +438,7 @@ func (w *ChangesWorker) handleHeartbeatStateAndError(changes *exchange.ExchangeC
 func (w *ChangesWorker) updatePollingInterval(updateType string) {
 
 	if updateType == UPDATE_TYPE_RESET {
-		// set the polling interval to minial. This is the case where agreement negotiation started when the node needs to
+		// set the polling interval to minimal. This is the case where agreement negotiation started when the node needs to
 		// watch the upcoming messages more closely.
 		if w.pollInterval != w.pollMinInterval {
 			w.pollInterval = w.pollMinInterval
@@ -450,7 +450,7 @@ func (w *ChangesWorker) updatePollingInterval(updateType string) {
 	} else if updateType == UPDATE_TYPE_ALERT {
 		// This is the case when the node should be watching the changes more often than max but not as frequent as min.
 		// It is called alert.
-		// For excample: node policy changed, node userinput changed, node itself changed, service changed,
+		// For example: node policy changed, node userinput changed, node itself changed, service changed,
 		// agreement canceled etc.
 		// Set the polling interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL.
 		// If the current pollInterval is smaller than the alert value, keep the current because it may
@@ -612,7 +612,7 @@ func (w *ChangesWorker) getHeartbeatIntervals() bool {
 	if updated {
 		// make sure that the min interval is not greater than the max
 		if w.pollMaxInterval < w.pollMinInterval {
-			glog.V(3).Infof(chglog(fmt.Sprintf("Max poll interval %v cannot be samller than the min %v. Will make max poll interval equals to then min poll interval.", w.pollMaxInterval, w.pollMinInterval)))
+			glog.V(3).Infof(chglog(fmt.Sprintf("Max poll interval %v cannot be smaller than the min %v. Will make max poll interval equal to the min poll interval.", w.pollMaxInterval, w.pollMinInterval)))
 			w.pollMaxInterval = w.pollMinInterval
 		}
 
