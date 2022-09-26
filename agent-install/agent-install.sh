@@ -49,8 +49,10 @@ INSTALLED_AGENT_CFG_FILE="/etc/default/horizon"
 AGENT_CONTAINER_PORT_BASE=8080
 
 # edge cluster agent deployment
+DEFAULT_AGENT_NAMESPACE="openhorizon-agent"
 SERVICE_ACCOUNT_NAME="agent-service-account"
 CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
+ROLE_BINDING_NAME="role-binding"
 DEPLOYMENT_NAME="agent"
 SECRET_NAME="openhorizon-agent-secrets"
 CRONJOB_AUTO_UPGRADE_NAME="auto-upgrade-cronjob"
@@ -114,6 +116,7 @@ Options/Flags:
         --ha-group      Specify the HA group this node will be added to during the node registration, if -s is not specified. (This flag is equivalent to HZN_HA_GROUP)
         --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to AGENT_IN_CONTAINER)
+        --namespace     The namespace that the cluster agent will be installed to. The default is 'openhorizon-agent'
     -N                  The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
     -h  --help          This usage
 
@@ -172,6 +175,9 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
                 ;;
             auto-upgrade)
                 ARG_AGENT_AUTO_UPGRADE=true
+                ;;
+            namespace)
+                ARG_AGENT_NAMESPACE=${all_args[$OPTIND-1]}
                 ;;
             help)
                 usage 0
@@ -1019,12 +1025,15 @@ function get_all_variables() {
                 KUBECTL="k3s kubectl"
             elif command -v microk8s.kubectl >/dev/null 2>&1; then
                 KUBECTL=microk8s.kubectl
+            elif command -v oc >/dev/null 2>&1; then
+                KUBECTL=oc
             elif command -v kubectl >/dev/null 2>&1; then
                 KUBECTL=kubectl
             else
                 log_fatal 2 "kubectl is not available. Please install kubectl and ensure that it is found on your \$PATH"
             fi
         fi
+        log_info "KUBECTL is set to $KUBECTL"
     fi
 
     if is_device; then
@@ -1034,7 +1043,7 @@ function get_all_variables() {
         get_variable AGENT_IMAGE_TAR_FILE "${ARCH}${DEFAULT_AGENT_IMAGE_TAR_FILE}"
     elif is_cluster; then
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
-        get_variable AGENT_NAMESPACE 'openhorizon-agent'
+        get_variable AGENT_NAMESPACE "$DEFAULT_AGENT_NAMESPACE"
         USE_EDGE_CLUSTER_REGISTRY='true'   #get_variable USE_EDGE_CLUSTER_REGISTRY 'true'  # currently true is the only supported value
         get_variable AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS '75'
 
@@ -3437,7 +3446,7 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
         kubernetes_api="batch/v1"
     fi
 
-    sed -e "s#__KubernetesApi__#${kubernetes_api}#g" -e "s#__ServiceAccount__#\"${SERVICE_ACCOUNT_NAME}\"#g" auto-upgrade-cronjob-template.yml > auto-upgrade-cronjob.yml
+    sed -e "s#__KubernetesApi__#${kubernetes_api}#g" -e "s#__ServiceAccount__#\"${SERVICE_ACCOUNT_NAME}\"#g" -e "s#__AgentNameSpace__#\"${AGENT_NAMESPACE}\"#g" auto-upgrade-cronjob-template.yml > auto-upgrade-cronjob.yml
     chk $? 'creating auto-upgrade-cronjob.yml'
 
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
@@ -3479,6 +3488,21 @@ function prepare_k8s_pvc_file() {
     chk $? 'creating persistentClaim.yml'
 
     log_debug "prepare_k8s_pvc_file() end"
+}
+
+# Cluster only: to create image stream under namespace for ocp cluster
+function create_image_stream() {
+    log_info "create_image_stream() begin"
+
+    if ! $KUBECTL get imagestream agent -n ${AGENT_NAMESPACE} 2>/dev/null; then
+        $KUBECTL create imagestream agent -n ${AGENT_NAMESPACE}
+        chk $? "creating imagestream under namespace ${AGENT_NAMESPACE}"
+        log_info "imagestream under namespace ${AGENT_NAMESPACE} created"
+    else
+        log_info "imagestream under namespace ${AGENT_NAMESPACE} exists, skip creating imagestream"
+    fi
+
+    log_info "create_image_stream() end"
 }
 
 # Cluster only: to create cluster resources
@@ -3527,6 +3551,12 @@ function create_namespace() {
         log_info "namespace ${AGENT_NAMESPACE} exists, skip creating namespace"
     fi
 
+    if ! is_small_kube && [[ "$AGENT_NAMESPACE" != "$DEFAULT_AGENT_NAMESPACE" ]] ; then
+        # if it is ocp cluster and not in default namespace, then update the annotation of namespace
+        log_info "update annotation of namespace ${AGENT_NAMESPACE}"
+        $KUBECTL annotate namespace ${AGENT_NAMESPACE} openshift.io/sa.scc.uid-range='1000/1000' openshift.io/sa.scc.supplemental-groups='1000/1000' --overwrite
+    fi
+
     log_debug "create_namespace() end"
 }
 
@@ -3545,6 +3575,40 @@ function create_service_account() {
         log_info "serviceaccount ${SERVICE_ACCOUNT_NAME} exists, skip creating serviceaccount"
     fi
 
+    if [[ "$AGENT_NAMESPACE" == "$DEFAULT_AGENT_NAMESPACE" ]]; then
+        log_info "agent namespace ($AGENT_NAMESPACE) is default namesapce: $DEFAULT_AGENT_NAMESPACE, will create clusterrolebinding"
+        create_cluster_role_binding
+    else
+        log_info "creating rolebinding under agent namespace $AGENT_NAMESPACE"
+	create_namespace_admin_role
+        create_role_binding
+    fi
+
+    log_debug "create_service_account() end"
+}
+
+# Cluster only: to create a admin role under agent namespace
+function create_namespace_admin_role() {
+    agent_namespace_admin_role_name="agent-namespace-admin"
+    log_debug "create_namespace_admin_role begin"
+    log_verbose "checking if $agent_namespace_admin_role_name role exist under namespace $AGENT_NAMESPACE..."
+
+    if ! $KUBECTL get role ${agent_namespace_admin_role_name} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+        log_verbose "creating ${agent_namespace_admin_role_name} under agent namespace ${AGENT_NAMESPACE}..."
+        $KUBECTL apply -f role.yml -n ${AGENT_NAMESPACE}
+        chk $? "creating admin role under namespace ${AGENT_NAMESPACE}"
+        log_info "${agent_namespace_admin_role_name} is created under namespace ${AGENT_NAMESPACE}"
+    else
+        log_info "${agent_namespace_admin_role_name} exists, skip creating role"
+    fi
+
+    log_debug "create_namespace_admin_role end"
+}
+
+# Cluster only: to create cluster role binding, bind service account to cluster admin
+function create_cluster_role_binding() {
+    log_debug "create_cluster_role_binding() begin"
+
     log_verbose "checking if clusterrolebinding exist..."
 
     if ! $KUBECTL get clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} 2>/dev/null; then
@@ -3555,7 +3619,27 @@ function create_service_account() {
     else
         log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} exists, skip creating clusterrolebinding"
     fi
-    log_debug "create_service_account() end"
+
+    log_debug "create_cluster_role_binding() end"
+}
+
+# Cluster only: to create role binding, bind service account to admin (admin under agent namesapce)
+function create_role_binding() {
+    log_debug "create_role_binding() begin"
+
+    AGENT_ROLE_BINDING="$AGENT_NAMESPACE-$ROLE_BINDING_NAME"
+    log_verbose "checking if rolebinding $AGENT_ROLE_BINDING exist..."
+
+    if ! $KUBECTL get rolebinding ${AGENT_ROLE_BINDING} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+        log_verbose "Binding ${SERVICE_ACCOUNT_NAME} to admin..."
+        $KUBECTL create rolebinding ${AGENT_ROLE_BINDING} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --role=agent-namespace-admin -n ${AGENT_NAMESPACE}
+        chk $? "creating rolebinding for ${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}"
+        log_info "rolebinding ${AGENT_ROLE_BINDING} created"
+    else
+        log_info "rolebinding ${AGENT_ROLE_BINDING} exists, skip creating rolebinding"
+    fi
+    
+    log_debug "create_role_binding() end"
 }
 
 # Cluster only: to create secret from cert file for agent deployment
@@ -3719,7 +3803,7 @@ function check_resources_for_deployment() {
 function create_deployment() {
     log_debug "create_deployment() begin"
 
-    log_verbose "creating deployment..."
+    log_verbose "creating deployment under namespace $AGENT_NAMESPACE..."
     $KUBECTL apply -f deployment.yml -n ${AGENT_NAMESPACE}
     chk $? 'creating deployment'
 
@@ -3865,7 +3949,7 @@ function update_secret_for_image_reigstry_cert() {
 function patch_deployment_with_image_registry_volume() {
     log_debug "patch_deployment_with_image_registry_volume() begin"
 
-    $KUBECTL patch deployment agent -p "{\"spec\":{\"template\":{\"spec\":{\"volumes\":[{\"name\": \
+    $KUBECTL patch deployment agent -n ${AGENT_NAMESPACE} -p "{\"spec\":{\"template\":{\"spec\":{\"volumes\":[{\"name\": \
     \"agent-docker-cert-volume\",\"secret\":{\"secretName\":\"openhorizon-agent-secrets-docker-cert\"}}], \
     \"containers\":[{\"name\":\"anax\",\"volumeMounts\":[{\"mountPath\":\"/etc/docker/certs.d/${EDGE_CLUSTER_REGISTRY_HOST}\" \
     ,\"name\":\"agent-docker-cert-volume\"},{\"mountPath\":\"/etc/docker/certs.d/${DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY}\" \
@@ -3886,6 +3970,9 @@ function install_update_cluster() {
 
     # push agent and cronjob images to cluster's registry
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
+        if ! is_small_kube; then
+            create_image_stream
+        fi
         pushImagesToEdgeClusterRegistry
     fi
 

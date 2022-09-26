@@ -2,7 +2,6 @@
 
 # Variables for interfacing with agent pod
 KUBECTL="kubectl"
-AGENT_NAMESPACE="openhorizon-agent"
 POD_ID=$($KUBECTL get pod -l app=agent -n ${AGENT_NAMESPACE} 2>/dev/null | grep "agent-" | cut -d " " -f1 2>/dev/null)
 
 # Timeout value for agent deployment
@@ -164,7 +163,7 @@ function rollback_configmap() {
 
     # Download the config map backup to a yaml file
     log_verbose "Downloading backup config map to yaml file..."
-    cmd_output=$( { $KUBECTL get configmap -n ${AGENT_NAMESPACE} openhorizon-agent-config-backup -o yaml > /tmp/openhorizon-agent-config-backup.yaml; } 2>&1 )
+    cmd_output=$( { $KUBECTL get configmap -n ${AGENT_NAMESPACE} openhorizon-agent-config-backup -o yaml > /tmp/agentbackup/openhorizon-agent-config-backup.yaml; } 2>&1 )
     rc=$?
     if [[ $rc != 0 ]]; then
         rollback_failed "Config map backup could not be retrieved. Error: $cmd_output"
@@ -172,7 +171,7 @@ function rollback_configmap() {
 
     # Rename the config map name in the yaml file
     log_verbose "Renaming \"openhorizon-agent-config-backup\" to \"openhorizon-agent-config\"..."
-    sed -i 's/openhorizon-agent-config-backup/openhorizon-agent-config/g' /tmp/openhorizon-agent-config-backup.yaml
+    sed -i 's/openhorizon-agent-config-backup/openhorizon-agent-config/g' /tmp/agentbackup/openhorizon-agent-config-backup.yaml
     
     # Delete the currently deployed config map
     log_verbose "Deleting current config map..."
@@ -184,7 +183,7 @@ function rollback_configmap() {
     
     # Recreate config map using yaml file
     log_verbose "Creating new config map from backup yaml file..."
-    cmd_output=$( { $KUBECTL apply -n ${AGENT_NAMESPACE} -f /tmp/openhorizon-agent-config-backup.yaml; } 2>&1 )
+    cmd_output=$( { $KUBECTL apply -n ${AGENT_NAMESPACE} -f /tmp/agentbackup/openhorizon-agent-config-backup.yaml; } 2>&1 )
     rc=$?
     if [[ $rc != 0 ]]; then
         rollback_failed "Config map could not be created. Error: $cmd_output"
@@ -210,7 +209,7 @@ function rollback_secret() {
 
     # Download the config map backup to a yaml file
     log_verbose "Downloading backup secret to yaml file..."
-    cmd_output=$( { $KUBECTL get secret -n ${AGENT_NAMESPACE} openhorizon-agent-secrets-backup -o yaml > /tmp/openhorizon-agent-secrets-backup.yaml; } 2>&1 )
+    cmd_output=$( { $KUBECTL get secret -n ${AGENT_NAMESPACE} openhorizon-agent-secrets-backup -o yaml > /tmp/agentbackup/openhorizon-agent-secrets-backup.yaml; } 2>&1 )
     rc=$?
     if [[ $rc != 0 ]]; then
         rollback_failed "Secret backup could not be retrieved. Error: $cmd_output"
@@ -218,7 +217,7 @@ function rollback_secret() {
 
     # Rename the secret name in the yaml file
     log_verbose "Renaming \"openhorizon-agent-secrets-backup\" to \"openhorizon-agent-secrets\"..."
-    sed -i 's/openhorizon-agent-secrets-backup/openhorizon-agent-secrets/g' /tmp/openhorizon-agent-secrets-backup.yaml
+    sed -i 's/openhorizon-agent-secrets-backup/openhorizon-agent-secrets/g' /tmp/agentbackup/openhorizon-agent-secrets-backup.yaml
     
     # Delete the currently deployed secret
     log_verbose "Deleting current secret..."
@@ -230,7 +229,7 @@ function rollback_secret() {
     
     # Recreate secret using yaml file
     log_verbose "Creating new secret from backup yaml file..."
-    cmd_output=$( { $KUBECTL apply -n ${AGENT_NAMESPACE} -f /tmp/openhorizon-agent-secrets-backup.yaml; } 2>&1 )
+    cmd_output=$( { $KUBECTL apply -n ${AGENT_NAMESPACE} -f /tmp/agentbackup/openhorizon-agent-secrets-backup.yaml; } 2>&1 )
     rc=$?
     if [[ $rc != 0 ]]; then
         rollback_failed "Secret could not be created. Error: $cmd_output"
@@ -268,7 +267,7 @@ function rollback_agent_image() {
 
     # Download the agent deployment to a yaml file
     log_verbose "Dowloading agent deployment to yaml file..."
-    cmd_output=$( { $KUBECTL get deployment -n ${AGENT_NAMESPACE} agent -o yaml > /tmp/deployment.yaml; } 2>&1 )
+    cmd_output=$( { $KUBECTL get deployment -n ${AGENT_NAMESPACE} agent -o yaml > /tmp/agentbackup/deployment.yaml; } 2>&1 )
     rc=$?
     if [[ $rc != 0 ]]; then
         rollback_failed "Agent deployment could not be retrieved. Error: $cmd_output"
@@ -276,9 +275,9 @@ function rollback_agent_image() {
 
     # Replace the agent version in the yaml file to the version the agent attempted to upgrade from
     log_verbose "Downgrading version from $current_version to $old_image_version..."
-    sed -i "s/$current_version/$old_image_version/g" /tmp/deployment.yaml
+    sed -i "s/$current_version/$old_image_version/g" /tmp/agentbackup/deployment.yaml
 
-    log_debug "New deployment.yaml file: $(cat /tmp/deployment.yaml)"
+    log_debug "New deployment.yaml file: $(cat /tmp/agentbackup/deployment.yaml)"
     
     # Delete the current agent deployment
     log_verbose "Deleting current agent deployment..."
@@ -290,7 +289,7 @@ function rollback_agent_image() {
     
     # Redeploy the agent using the yaml file
     log_verbose "Creating new agent deployment from backup yaml file..."
-    cmd_output=$( { $KUBECTL apply -n ${AGENT_NAMESPACE} -f /tmp/deployment.yaml; } 2>&1 )
+    cmd_output=$( { $KUBECTL apply -n ${AGENT_NAMESPACE} -f /tmp/agentbackup/deployment.yaml; } 2>&1 )
     log_debug "Output from apply command: $cmd_output"
     rc=$?
     if [[ $rc != 0 ]]; then
@@ -383,6 +382,8 @@ function get_status_path() {
         fi
     done
 
+    log_info "STATUS_PATH is $STATUS_PATH"
+
     # Exit early if status.json does not exist
     local no_active_jobs
     test -f $STATUS_PATH 2>&1
@@ -412,6 +413,8 @@ function restart_agent_pod() {
 }
 
 #====================== Main  ======================
+
+log_info "cronjob under namesapce: $AGENT_NAMESPACE"
 
 # Sets STATUS_PATH for rest of script
 get_status_path

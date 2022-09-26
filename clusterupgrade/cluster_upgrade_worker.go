@@ -33,7 +33,6 @@ const (
 )
 
 const (
-	AGENT_NAMESPACE       = "openhorizon-agent"
 	AGENT_CONFIGMAP       = "openhorizon-agent-config"
 	AGENT_SECRET          = "openhorizon-agent-secrets"
 	AGENT_SERVICE_ACCOUNT = "agent-service-account"
@@ -49,6 +48,8 @@ const (
 const (
 	DEFAULT_CERT_PATH = "/etc/default/cert/"
 )
+
+var AGENT_NAMESPACE string
 
 var cuwlog = func(v interface{}) string {
 	return fmt.Sprintf("Cluster upgrade worker: %v", v)
@@ -80,6 +81,9 @@ func NewClusterUpgradeWorker(name string, config *config.HorizonConfig, db *bolt
 }
 
 func (w *ClusterUpgradeWorker) Initialize() bool {
+	AGENT_NAMESPACE = os.Getenv("AGENT_NAMESPACE")
+	glog.Infof(cuwlog(fmt.Sprintf("Agent namespace is %v", AGENT_NAMESPACE)))
+
 	if dev, _ := persistence.FindExchangeDevice(w.db); dev != nil && dev.Config.State == persistence.CONFIGSTATE_CONFIGURED {
 		baseWorkingDir := w.Config.Edge.GetNodeMgmtDirectory() // baseWorkingDir is: /var/horizon/nmp
 		if err := w.syncOnInit(w.db, w.kubeClient, baseWorkingDir); err != nil {

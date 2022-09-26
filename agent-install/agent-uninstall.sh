@@ -12,7 +12,8 @@ IMAGE_REGISTRY_SECRET_NAME="openhorizon-agent-secrets-docker-cert"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
 CRONJOB_AUTO_UPGRADE_NAME="auto-upgrade-cronjob"
-AGENT_NAMESPACE="openhorizon-agent"
+DEFAULT_AGENT_NAMESPACE="openhorizon-agent"
+ADMIN_ROLE="agent-namespace-admin"
 USE_DELETE_FORCE=false
 DELETE_TIMEOUT=10 # Default delete timeout
 
@@ -118,7 +119,7 @@ function show_config() {
 
 # checks input arguments and env variables specified
 function validate_args(){
-	log_debug "validate_args() begin"
+    log_debug "validate_args() begin"
 
     log_info "Checking script requirements..."
 
@@ -372,22 +373,31 @@ function deleteAgentResources() {
         log_info "cronjob ${CRONJOB_AUTO_UPGRADE_NAME} does not exist, skip deleting cronjob"
     fi
 
-    log_info "Deleting clusterrolebinding..."
-    $KUBECTL delete clusterrolebinding $CLUSTER_ROLE_BINDING_NAME
-
     set +e
+    if [[ "$AGENT_NAMESPACE" == "$DEFAULT_AGENT_NAMESPACE" ]]; then
+        log_info "Deleting clusterrolebinding..."
+        $KUBECTL delete clusterrolebinding $CLUSTER_ROLE_BINDING_NAME
+    else
+        log_info "Deleting rolebinding..."
+        ROLE_BINDING="$AGENT_NAMESPACE-role-binding"
+        $KUBECTL delete rolebinding $ROLE_BINDING -n $AGENT_NAMESPACE
+
+        log_info "Deleting role..."
+        $KUBECTL delete role $ADMIN_ROLE -n $AGENT_NAMESPACE
+    fi
+
     log_info "Deleting persistent volume..."
     $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
 
     log_info "Deleting serviceaccount..."
     $KUBECTL delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE
-    set -e
 
     log_info "Deleting namespace..."
     $KUBECTL delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
 
     log_info "Deleting cert file from /etc/default/cert ..."
     rm /etc/default/cert/agent-install.crt
+    set -e
 
     log_debug "deleteAgentResources() end"
 }
