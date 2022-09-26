@@ -27,7 +27,7 @@ const (
 	UPDATE_TYPE_HB_RESTORED = "HB_RESTORED" // set poll interval back to what it was before failing
 
 	// alert level
-	POLL_INTERVAL_ALERT_LEVEL = 4
+	POLL_INTERVAL_ALERT_LEVEL = 2
 )
 
 type ChangesWorker struct {
@@ -154,7 +154,7 @@ func (w *ChangesWorker) NewEvent(incoming events.Message) {
 		w.Commands <- NewUpdateIntervalCommand(UPDATE_TYPE_RESET)
 
 	case *events.NodePolicyMessage:
-		w.Commands <- NewUpdateIntervalCommand(UPDATE_TYPE_ALERT)
+		w.Commands <- NewUpdateIntervalCommand(UPDATE_TYPE_RESET)
 
 	case *events.NodeUserInputMessage:
 		w.Commands <- NewUpdateIntervalCommand(UPDATE_TYPE_ALERT)
@@ -430,10 +430,10 @@ func (w *ChangesWorker) handleHeartbeatStateAndError(changes *exchange.ExchangeC
 }
 
 // Setting up the new polling interval according to the updateType:
-// 	UPDATE_TYPE_RESET:  set the poll interval to min
-//	 UPDATE_TYPE_ALERT:  set the poll interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL
-//	 UPDATE_TYPE_NEW_CONFIG: adjust the poll interval according to the new configuration from node or node org
-//	 UPDATE_TYPE_NO_CHANGES: increate poll interval because there are no changes
+//   UPDATE_TYPE_RESET:  set the poll interval to min
+//   UPDATE_TYPE_ALERT:  set the poll interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL
+//   UPDATE_TYPE_NEW_CONFIG: adjust the poll interval according to the new configuration from node or node org
+//   UPDATE_TYPE_NO_CHANGES: increate poll interval because there are no changes
 
 func (w *ChangesWorker) updatePollingInterval(updateType string) {
 
@@ -445,7 +445,6 @@ func (w *ChangesWorker) updatePollingInterval(updateType string) {
 			w.SetNoWorkInterval(w.pollInterval)
 			glog.V(3).Infof(chglog(fmt.Sprintf("Resetting poll interval to %v, max interval is %v, increment is %v.", w.pollInterval, w.pollMaxInterval, w.pollAdjustment)))
 		}
-
 		w.noMsgCount = 0
 	} else if updateType == UPDATE_TYPE_ALERT {
 		// This is the case when the node should be watching the changes more often than max but not as frequent as min.
