@@ -32,6 +32,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/kube_operator"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
 	"golang.org/x/text/language"
@@ -2255,4 +2256,9 @@ func AddHeaders(req *http.Request, headers map[string]string) {
 		req.Header.Add(key, value)
 	}
 
+}
+
+func GetOperatorNamespace(tar string) (string, error) {
+	_, namespace, err := kube_operator.ProcessDeployment(tar, map[string]string{}, "", 0) 
+	return namespace, err 
 }
