@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
+	"os"
 	"strings"
 )
 
@@ -357,6 +358,18 @@ func getSpecRefsForPattern(nodeType string, patName string,
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("working with pattern definition %v", patternDef)))
 
+	nodeNamespace := os.Getenv("AGENT_NAMESPACE")
+	if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+		if nodeNamespace == "" {
+			nodeNamespace = externalpolicy.DEFAULT_NODE_K8S_NAMESPACE
+		}
+		if nodeNamespace != externalpolicy.DEFAULT_NODE_K8S_NAMESPACE {
+			if patternDef.ClusterNamespace != "" && patternDef.ClusterNamespace != nodeNamespace {
+				return nil, nil, NewSystemError(fmt.Sprintf("Pattern cluster namespace is different from agent namespace. Cluster namespace in pattern is %v, agent namespace is %v", patternDef.ClusterNamespace, nodeNamespace))
+			}
+		}
+	}
+
 	// For each workload/top-level service in the pattern, resolve it to a list of required services.
 	// A pattern can have references to workloads or to services, but not a mixture of both.
 	completeAPISpecList := new(policy.APISpecList)
@@ -399,6 +412,15 @@ func getSpecRefsForPattern(nodeType string, patName string,
 			if serviceType != exchangecommon.SERVICE_TYPE_BOTH && nodeType != serviceType {
 				glog.Infof(apiLogString(fmt.Sprintf("skipping service %v/%v because it's type %v does not match the node type %v. ", service.ServiceOrg, service.ServiceURL, serviceType, nodeType)))
 				break
+			}
+
+			if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+				// Ignore service that has namespace conflict
+				if compatible, _, reason := compcheck.CheckClusterNamespaceCompatibility(nodeType, nodeNamespace, patternDef.ClusterNamespace, serviceDef.ClusterDeployment, true, nil); !compatible {
+					// warning
+					glog.Infof(apiLogString(fmt.Sprintf("skipping service %v/%v because %v", service.ServiceOrg, service.ServiceURL, reason)))
+					continue
+				}
 			}
 
 			if checkWorkloadConfig {
