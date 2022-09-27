@@ -440,6 +440,7 @@ func (w *ChangesWorker) updatePollingInterval(updateType string) {
 	if updateType == UPDATE_TYPE_RESET {
 		// set the polling interval to minimal. This is the case where agreement negotiation started when the node needs to
 		// watch the upcoming messages more closely.
+		// Also when the node policy changed and an agreement negotiation will likely need to start
 		if w.pollInterval != w.pollMinInterval {
 			w.pollInterval = w.pollMinInterval
 			w.SetNoWorkInterval(w.pollInterval)
@@ -449,8 +450,7 @@ func (w *ChangesWorker) updatePollingInterval(updateType string) {
 	} else if updateType == UPDATE_TYPE_ALERT {
 		// This is the case when the node should be watching the changes more often than max but not as frequent as min.
 		// It is called alert.
-		// For example: node policy changed, node userinput changed, node itself changed, service changed,
-		// agreement canceled etc.
+		// For example: node userinput changed, node itself changed, service changed, agreement canceled etc.
 		// Set the polling interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL.
 		// If the current pollInterval is smaller than the alert value, keep the current because it may
 		// be in the middle of the agreement negotiation.
