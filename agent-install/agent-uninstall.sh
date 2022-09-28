@@ -125,42 +125,42 @@ function validate_args(){
 
     # check kubectl is available
     if [ "${KUBECTL}" != "" ]; then   # If user set KUBECTL env variable, check that it exists
-                if command -v $KUBECTL > /dev/null 2>&1; then
-                        : # nothing more to do
-                else
-                        log_fatal 2 "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
-                fi
+        if command -v $KUBECTL > /dev/null 2>&1; then
+            : # nothing more to do
+        else
+            log_fatal 2 "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
+        fi
     else
-                # Nothing specified. Attempt to detect what should be used.
-                if command -v k3s > /dev/null 2>&1; then    # k3s needs to be checked before kubectl since k3s creates a symbolic link to kubectl
-                        KUBECTL="k3s kubectl"
-                elif command -v microk8s.kubectl >/dev/null 2>&1; then
-                        KUBECTL=microk8s.kubectl
-                elif command -v kubectl >/dev/null 2>&1; then
-                        KUBECTL=kubectl
-                else
-                        log_fatal 2 "kubectl is not available, please install kubectl and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
-                fi
+        # Nothing specified. Attempt to detect what should be used.
+        if command -v k3s > /dev/null 2>&1; then    # k3s needs to be checked before kubectl since k3s creates a symbolic link to kubectl
+            KUBECTL="k3s kubectl"
+        elif command -v microk8s.kubectl >/dev/null 2>&1; then
+            KUBECTL=microk8s.kubectl
+        elif command -v kubectl >/dev/null 2>&1; then
+            KUBECTL=kubectl
+        else
+            log_fatal 2 "kubectl is not available, please install kubectl and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
+        fi
     fi
 
     # check jq is available
     log_info "Checking if jq is installed..."
     if command -v jq >/dev/null 2>&1; then
-	log_info "jq found"
+        log_info "jq found"
     else
         log_info "jq not found, please install it. Exiting..."
         exit 1
     fi
 
     if [[ -z "$HZN_EXCHANGE_USER_AUTH" ]]; then
-    	echo "\$HZN_EXCHANGE_USER_AUTH: ${HZN_EXCHANGE_USER_AUTH}"
-	log_info "\$HZN_EXCHANGE_USER_AUTH is not set. Exiting..."
-	exit 1
+        echo "\$HZN_EXCHANGE_USER_AUTH: ${HZN_EXCHANGE_USER_AUTH}"
+        log_info "\$HZN_EXCHANGE_USER_AUTH is not set. Exiting..."
+        exit 1
     fi
 
     if [[ -z "$AGENT_NAMESPACE" ]]; then
-        log_info "AGENT_NAMESPACE is not specified. Please use -m to set. Exiting..."
-	exit 1
+        AGENT_NAMESPACE=$DEFAULT_AGENT_NAMESPACE
+        echo "\$AGENT_NAMESPACE: ${AGENT_NAMESPACE}"
     fi
 
     log_info "Check finished successfully"
@@ -228,18 +228,18 @@ function removeNodeFromLocalAndManagementHub() {
 
     if [[ "$NODE_STATE" != *"unconfigured"* ]] && [[ "$NODE_STATE" != *"unconfiguring"* ]]; then
         if [[ -n $NODE_STATE ]]; then
-		log_info "Process with unregister..."
-		unregister $NODE_ID
-		sleep 2
-	else 
-		log_info "node state is empty"
-	fi
+            log_info "Process with unregister..."
+            unregister $NODE_ID
+            sleep 2
+        else 
+            log_info "node state is empty"
+        fi
     else
         log_info "Node is not registered, skip unregister..."
-	if [[ "$DELETE_EX_NODE" == "true" ]]; then
-	    log_info "Remove node from the management hub..."
-	    deleteNodeFromManagementHub $NODE_ID
-	fi
+        if [[ "$DELETE_EX_NODE" == "true" ]]; then
+            log_info "Remove node from the management hub..."
+            deleteNodeFromManagementHub $NODE_ID
+        fi
     fi
 
     if [[ -n $NODE_STATE ]] && [[ "$DELETE_EX_NODE" == "true" ]]; then
@@ -258,7 +258,7 @@ function unregister() {
 
     if [[ "$DELETE_EX_NODE" == "true" ]]; then
         log_info "This script will delete the node from the management hub"
-	HZN_UNREGISTER_CMD="hzn unregister -rf -t 1"
+        HZN_UNREGISTER_CMD="hzn unregister -rf -t 1"
     else
         log_info "This script will NOT delete the node from the management hub"
         HZN_UNREGISTER_CMD="hzn unregister -f -t 1"
