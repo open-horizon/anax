@@ -116,7 +116,6 @@ Options/Flags:
         --ha-group      Specify the HA group this node will be added to during the node registration, if -s is not specified. (This flag is equivalent to HZN_HA_GROUP)
         --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to AGENT_IN_CONTAINER)
-        --namespace     The namespace that the cluster agent will be installed to. The default is 'openhorizon-agent'
     -N                  The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
     -h  --help          This usage
 
@@ -176,9 +175,9 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
             auto-upgrade)
                 ARG_AGENT_AUTO_UPGRADE=true
                 ;;
-            namespace)
-                ARG_AGENT_NAMESPACE=${all_args[$OPTIND-1]}
-                ;;
+            # namespace)
+            #     ARG_AGENT_NAMESPACE=${all_args[$OPTIND-1]}
+            #     ;;
             help)
                 usage 0
                 ;;
