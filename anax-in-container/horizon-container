@@ -345,7 +345,7 @@ start() {
 		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e ANAX_DOCKER_ENDPOINT=${DOCKER_HOST} -e DOCKER_HOST=${DOCKER_HOST} -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
 		checkrc $? "docker run"
 	else
-		${DOCKER_ENGINE} run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} -v ${DOMAIN_SOCKET_MOUNT} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
+		${DOCKER_ENGINE} run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=${fssHostSharePath} -v ${DOMAIN_SOCKET_MOUNT} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:${fssHostSharePath} $dockerImage:$dockerTag
 		checkrc $? "docker run"
 	fi
 

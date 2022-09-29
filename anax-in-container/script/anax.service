@@ -82,7 +82,11 @@ defaultEnv() {
 		mkdir -p /private/var/tmp
 		ln -s /var/tmp/horizon /private/var/tmp/horizon
 	else
-		base_host_dir="/var/tmp/horizon/${DOCKER_NAME}"
+		if [ -z ${HZN_VAR_RUN_BASE} ]; then 
+			base_host_dir="/var/tmp/horizon/${DOCKER_NAME}"
+		else
+			base_host_dir="${HZN_VAR_RUN_BASE}"
+		fi
 	fi
 
 	if [[ -d ${base_host_dir}/ess-auth ]]; then
@@ -101,6 +105,10 @@ defaultEnv() {
 	# always add this directory. Agent will create it.
 	anaxJson=$(jq ".Edge.NodeMgmtWorkDirectory = \"${base_host_dir}/nmp\" " <<< $anaxJson)
 	checkrc $? "change NodeMgmtWorkDirectory"
+
+	# always add this directory. Agent will create it.
+	anaxJson=$(jq ".Edge.FileSyncService.PersistencePath = \"${base_host_dir}/ess-store\" " <<< $anaxJson)
+	checkrc $? "change PersistencePath"
 
 	# Write the new json back to the file
 	echo "$anaxJson" > $anaxJsonFile
