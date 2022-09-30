@@ -113,7 +113,7 @@ DOCKER_REG_PW := testpassword
 # css
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
-DOCKER_CSS_TAG := 1.6.11
+DOCKER_CSS_TAG := 1.6.11-638
 CSS_INTERNAL_PORT := 8080
 CSS_URL ?= $(HZN_TRANSPORT)://css-api:$(CSS_INTERNAL_PORT)
 

@@ -503,7 +503,7 @@ i18n-catalog: gopathlinks deps $(TMPGOPATH)/bin/gotext
 	rm -Rf vendor; \
 	cd $(PKGPATH) && \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
-			tools/update-i18n-messages
+			CGO_ENABLED=0 tools/update-i18n-messages
 	rm -Rf vendor; \
 
 i18n-translation: i18n-catalog
@@ -522,7 +522,7 @@ $(TMPGOPATH)/bin/gotext:
 	if [ ! -e "$(TMPGOPATH)/bin/gotext" ]; then \
 		echo "Fetching gotext"; \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
-			go get -u golang.org/x/text/cmd/gotext; \
+			go install golang.org/x/text/cmd/gotext@master; \
 	fi
 
 gopathlinks:
