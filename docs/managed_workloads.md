@@ -25,7 +25,6 @@ This environment variable is only set if this is a top-level service (referenced
 
 * `HZN_AGREEMENTID`: The unique identifier for the contractual agreement that the currently-running service is a part of. The lifecycle of the service never exceeds the lifecycle of an active agreement.
 
-
 These environment variables are for Model Management System (MMS), which is implemented by the embedded ESS. The absence of these variables means that the MMS is not available to the service.
 
 * `HZN_ESS_API_PROTOCOL`: The transport protocol to use when accessing the ESS API. The only supported value is secure-unix, but other values might be supported in the future. The secure-unix protocol means that HTTPS should be used and the network transport will be via unix domain socket.
@@ -33,4 +32,3 @@ These environment variables are for Model Management System (MMS), which is impl
 * `HZN_ESS_API_PORT`: The port on which the ESS listens. This is ignored when HZN_ESS_API_PROTOCOL is secure-unix.
 * `HZN_ESS_AUTH`: The path to a JSON file containing the service's userid and token which should be passed to all ESS APIs as basic auth credentials in the HTTP header. Within the JSON file, the field "id" contains the userid and the field "token" contains the authentication token. Each service gets its own id and token, and should not be shared with any other service.
 * `HZN_ESS_CERT`: The path to a TLS (SSL) certificate used to encrypt the call to all ESS APIs.
-

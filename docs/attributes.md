@@ -1,10 +1,11 @@
 ## Horizon Attributes
 
-This document contains the definition for each attribute that can be set on the [POST /attribute](https://github.com/open-horizon/anax/blob/master/doc/api.md#api-post--attribute) API or the [POST /service/config](https://github.com/open-horizon/anax/blob/master/doc/api.md#api-post--serviceconfig) API.
+This document contains the definition for each attribute that can be set on the [POST /attribute](../api.md#api-post--attribute) API or the [POST /service/config](../api.md#api-post--serviceconfig) API.
 Attributes are used to condition the behavior of the Horizon agent and/or services running on the agent.
 
 The body of the attribute section always follows the following form:
-```
+
+```json
     {
         "type": "<attribute_type>",
         "label": "a string that could be displayed in a user interface",
@@ -18,6 +19,7 @@ The body of the attribute section always follows the following form:
 
 The `type` field is a string that indicates which attribute you would like to set.
 Valid values are:
+
 * [UserInputAttributes](#uia)
 * [HTTPSBasicAuthAttributes](#httpsa)
 * [DockerRegistryAuthAttributes](#bxa)
@@ -36,6 +38,7 @@ The `mappings` field is a map of variables and values that are specific to the t
 If an attribute type has any specific variables to be set, they are described in the type's section below.
 
 ### <a name="uia"></a>UserInputAttributes
+
 This attribute is used to set user input variables from a service definition.
 Every service can define variables that the node user can configure.
 Only service variables that don't have default values in the service definition must be set through the UserInputAttributes attribute.
@@ -47,11 +50,12 @@ The value for `publishable` should be `true`.
 
 The value for `host_only` should be `false`.
 
-The `service_specs` specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the UserInputAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the UserInputAttributes, you must specify the `service_specs`. 
+The `service_specs` specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the UserInputAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the UserInputAttributes, you must specify the `service_specs`.
 
 The variables you can set are defined by the service definition.
 Suppose the service definition contained the following userInputs section:
-```
+
+```json
     "userInput":[
         {
             "name":"test",
@@ -71,7 +75,8 @@ The `test` variable has no default so it needs to be set through a UserInputAttr
 The `testDefault` variable has a default, so it can be optionally set by the same attribute.
 
 For example:
-```
+
+```json
     {
         "type": "UserInputAttributes",
         "label": "variables",
@@ -90,6 +95,7 @@ For example:
 ```
 
 ### <a name="httpsa"></a>HTTPSBasicAuthAttributes
+
 This attribute is used to set a host wide basic auth user and password for HTTPS communication.
 The `url` variable sets the HTTP network domain and path to which this attribute applies.
 HTTPS communication to other URLs will not use this basic auth configuration.
@@ -103,7 +109,8 @@ The `username` variable is a string containing the basic auth user name.
 The `password` variable is a string containing the basic auth user's password.
 
 For example:
-```
+
+```json
     {
         "type": "HTTPSBasicAuthAttributes",
         "label": "HTTPS Basic auth",
@@ -118,19 +125,19 @@ For example:
 ```
 
 ### <a name="bxa"></a>DockerRegistryAuthAttributes
+
 This attribute is used to set a docker authentication user name and password or token that enables the Horizon agent to access a docker repository when downloading images for services and workloads.
 
 The value for `publishable` should be `false`.
 
 The value for `host_only` should be `true`.
 
-The value for `token` can be a token, an API key or a password. 
-
-/* use this if your docker images are in the IBM Cloud container registry, you can use either token or Identity and Access Management (IAM) API key. */
-
+The value for `token` can be a token, an API key or a password.
 
 For example:
-```
+
+```json
+    /* Use this if your docker images are in the IBM Cloud container registry, you can use either token or Identity and Access Management (IAM) API key. */
     {
         "type": "DockerRegistryAuthAttributes",
         "label": "Docker auth",
@@ -139,8 +146,8 @@ For example:
         "mappings": {
             "auths": [
                 {
-                    "registry": "mydockerrepo", 
-                    "username": "user1", 
+                    "registry": "mydockerrepo",
+                    "username": "user1",
                     "token": "myDockerhubPassword"
                 }
             ]
@@ -148,7 +155,6 @@ For example:
     }
 
     /* Use this if your docker images are in the IBM Cloud container registry. The `myDockerToken` variable is a string containing the docker token used to access the repository. */
-
     {
         "type": "DockerRegistryAuthAttributes",
         "label": "Docker auth",
@@ -158,7 +164,7 @@ For example:
             "auths": [
                 {
                     "registry": "registry.ng.bluemix.net",
-                    "username": "token", 
+                    "username": "token",
                     "token": "myDockerToken"
                 }
             ]
@@ -174,17 +180,16 @@ For example:
         "mappings": {
             "auths": [
                 {
-                    "registry": "registry.ng.bluemix.net", 
-                    "username": "iamapikey", 
+                    "registry": "registry.ng.bluemix.net",
+                    "username": "iamapikey",
                     "token": "myIAMApiKey"}
             ]
         }
     }
-
-
 ```
 
 ### <a name="ma"></a>MeteringAttributes
+
 This attribute is used to configure how the service wants to be metered as part of an agreement.
 
 The value for `publishable` should be `true`.
@@ -192,17 +197,19 @@ The value for `publishable` should be `true`.
 The value for `host_only` should be `false`.
 
 The variables that can be configured are:
+
 * `tokens` - The number of tokens to be granted per unit time as specified below.
 * `perTimeUnit` - The unit of time over which the tokens are granted. Valid values are: `min`, `hour`, `day`.
 * `notificationInterval` - An integer indication how often, in seconds, the agbot should notify the node that tokens are being granted.
-* `service_specs` - An array specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the MeteringAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the MeteringAttributes, you must specify the `service_specs`. 
+* `service_specs` - An array specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the MeteringAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the MeteringAttributes, you must specify the `service_specs`.
 
 If the agbot also specifies a metering policy, the metering attributes specified by the node must be satisfied by the agbot's policy.
 If a nodes wants more token per unit time than the agbot is willing to provide, then an agreement cannot be made.
 If an agbot is able to satisfy the node, then the tokens per unit time specified by the node will be used.
 
 For example, the service wants the agbot to grant 2 tokens per hour, and notify the mode that the agreement is still valid every hour (3600 seconds).
-```
+
+```json
 {
     "type": "MeteringAttributes",
     "label": "Metering Policy",
@@ -223,6 +230,7 @@ For example, the service wants the agbot to grant 2 tokens per hour, and notify 
 ```
 
 ### <a name="agpa"></a>AgreementProtocolAttributes
+
 This attribute is used when service has a specific requirement for an agreement protocol.
 An agreement protocol is a pre-defined mechanism for enabling 2 entities (a node and an agbot) to agree on which services and workloads to run.
 The Horizon system supports 1 protocol; "Basic".
@@ -230,9 +238,9 @@ By default, the Horizon system uses the "Basic" protocol (which requires nothing
 
 Agreement protocols are chosen by the agbot based on the order they appear in the node's service's attributes.
 
-The `service_specs` specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the AgreementProtocolAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the AgreementProtocolAttributes, you must specify the `service_specs`. 
+The `service_specs` specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the AgreementProtocolAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the AgreementProtocolAttributes, you must specify the `service_specs`.
 
-```
+```json
     {
         "type": "AgreementProtocolAttributes",
         "label": "Agreement Protocols",
@@ -253,5 +261,3 @@ The `service_specs` specifies what services the attribute applies to. If the `ur
         }
     }
 ```
-
-

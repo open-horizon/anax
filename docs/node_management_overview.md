@@ -7,26 +7,32 @@ The Automatic Agent Upgrade is a policy-based node management feature that allow
 This feature utilizes existing agent artifacts that reside in Cloud Sync Service (CSS) from the edgeNodeFiles.sh installation script.
 
 ### How to set-up an Automatic Agent Upgrade policy
+
 1. Determine the manifestID for the new version of agent software.
    - List the available manifests present in the IBM org on your system. Execute the following
-   ```
+
+   ```bash
    hzn nodemanagement manifest list -o IBM -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
    ```
+
    - Alternatively, if a custom manifest has been created (see [here])(./agentfile_manifest.md), those can be listed in the customers org by executing
-   ```
+
+   ```bash
    hzn nodemanagement manifest list -o $HZN_ORG_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
    ```
+
 2. Create a Node Management Policy
     - Use the following command to save a node management policy (NMP) template to a file. An NMP determines which nodes to upgrade, when to do the upgrade, and what to upgrade. In this example, the file is named `nmp.json`
-    ```
+
+    ```bash
     hzn exchange nmp new > nmp.json
     ```
+
     **Note**: For more detailed information about NMP's, see [here](./node_management_policy.md)
 
-    - Using a text editor, edit the NMP file to set the parameters of the upgrade. In this example, `constraints` and `'properties' are used to identify the nodes to upgrade, the `start` and `startWindows`
-values indicate the upgrade will be attempted with a randomized start time of 300 seconds from now, and the `manifestID` indicates to use manifest `edgeNodeFiles_manifest_2.30.0-123` found in the IBM org.
-    ```
+    - Using a text editor, edit the NMP file to set the parameters of the upgrade. In this example, `constraints` and `properties` are used to identify the nodes to upgrade, the `start` and `startWindows` values indicate the upgrade will be attempted with a randomized start time of 300 seconds from now, and the `manifestID` indicates to use manifest `edgeNodeFiles_manifest_2.30.0-123` found in the IBM org.
 
+    ```json
     {
         "label": "Sample NMP",
         "description": "A sample description of the NMP",
@@ -36,7 +42,7 @@ values indicate the upgrade will be attempted with a randomized start time of 30
         "properties": [
             {
             "name": "myproperty",
-            "value": "myvalue""
+            "value": "myvalue"
             }
         ],
         "enabled": true,
@@ -50,25 +56,25 @@ values indicate the upgrade will be attempted with a randomized start time of 30
     ```
 
 3. Verify the impacted edge nodes (Optional)
-    The following command can be used to check which nodes the NMP applies to before publishing the NMP to the Exchange. This is useful to confirm the NMP parameters will target the desired
-edge nodes only.
-    ```
+    The following command can be used to check which nodes the NMP applies to before publishing the NMP to the Exchange. This is useful to confirm the NMP parameters will target the desired edge nodes only.
+
+    ```bash
     hzn exchange nmp add sample_nmp -f nmp.json --dry-run --applies-to
     ```
 
 4. Add the NMP to the Exchange
-    ```
+
+    ```bash
     hzn exchange nmp add sample_nmp -f nmp.json
     ```
 
 5. Observe the status of the upgrade job (Optional)
     - Now that the NMP has been published, it will soon get picked up by the worker on the agent to perform the upgrade. The status of the NMP can then be observed using the following command.
 
-    ```
+    ```bash
     hzn exchange nmp status sample-nmp
     ```
-    OR
-    ```
+    or
+    ```bash
     hzn exchange node management status {node-name}
     ```
-

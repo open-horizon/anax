@@ -13,6 +13,7 @@ Model policy expressions are used to further constrain the deployment targets fo
 Use the `hzn mms object new` command to generate a skeleton model object file.
 
 Following are the fields in the JSON representation of a model object:
+
 - `objectID`: A unique name for a model object, created by the author of the model object. It must be unique within an Open Horizon organization. This field is required.
 - `objectType`: A user defined name representing the type of the object. This is used to help the model object author differentiate different kinds of objects. There are no builtin types, nor does the Open Horizon runtime use this type for anything other than identifying a model object instance or gfroup of instances. This field is required.
 - `destinationOrgID`: The Open Horizon organization where the model object will reside. This field is required.
@@ -34,7 +35,8 @@ Following are the fields in the JSON representation of a model object:
 
 The following is an example of a model policy.
 The model object associated with this policy will be deployed on nodes where the `my.company.com.services.usemodel` service from `serviceOrg` is deployed, as long as the node properties are compatible with the model policy constraint expression. And further, that any node constraint expressions are compatible with this model's properties:
-```
+
+```json
 {
   "description": "a long description of the object",
   "objectID": "uniqueString",

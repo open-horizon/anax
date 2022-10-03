@@ -9,6 +9,7 @@ The `hzn dev service new` command will also generate a deployment policy along w
 Use the `hzn deploycheck` command to evaluate the compatibility of your deployment policy with the node where you want the service to be deployed.
 
 Following are the fields in the JSON representation of a deployment policy:
+
 - `label`: A short description of the deployment policy suitable to be displayed in a UI. This field is not required.
 - `description`: A longer description of the deployment policy. This field is not required.
 - `services`: A list of service to be deployed. There MUST be at least one service in the list.
@@ -47,7 +48,8 @@ This policy will deploy the service to any node which matches one of the archite
 Two versions of the service are mentioned, with version `2.3.1` having a higher priority for deployment than version `2.3.0`.
 The deployed service is dependent on service `my.company.com.service.other` which has a variable `var1` that needs to be set in order for it to deploy correctly.
 Both `2.3.0` and `2.3.1` versions of the services have a secret `ai_secret` defined that the service container will use to access an AI service on the cloud once the secret provider secret name is bound to it. The policy binds it to a secret provider secret named `cloud_ai_secret_name`.
-```
+
+```json
 {
   "label": "something short for a UI to display",
   "description": "a longer explanation of what this policy does",
