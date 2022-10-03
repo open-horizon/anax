@@ -1,6 +1,7 @@
 # Policy Properties and Constraints
 
 Services are deployed to edge nodes by either:
+
 * Assigning a pattern (which defines the services that should be deployed) to a node when the node registers with the Hub, OR
 * Assigning policy expressions to a node, which can be done at any point in the node's lifecycle. This is where policy properties and constraints become important.
 
@@ -33,41 +34,43 @@ The `list of strings` type is a comma separated list of strings, essentially ena
 There is currently no support for custom property types, and there are currently no complex property types.
 
 The JSON representation of a property is:
-```
+
+```json
 {
-	"name": "property-name-here",
-	"type": "property-type-here",
-	"value": <property-value here>
+ "name": "property-name-here",
+ "type": "property-type-here",
+ "value": <property-value here>
 }
 ```
 
 The following is an example using each of the property types:
-```
+
+```json
 {
-	"name": "stringProperty",       /* type is omitted to demonstrate that Open Horizon will interpret this property as a string type */
-	"value": "string-value"
+ "name": "stringProperty",       /* type is omitted to demonstrate that Open Horizon will interpret this property as a string type */
+ "value": "string-value"
 },
 {
-	"name": "intProperty",          /* type is omitted to demonstrate that Open Horizon will interpret this property as an int type */
-	"value": 10
+ "name": "intProperty",          /* type is omitted to demonstrate that Open Horizon will interpret this property as an int type */
+ "value": 10
 },
 {
-	"name": "booleanProperty",      /* type is omitted to demonstrate that Open Horizon will interpret this property as a string type */
-	"value": true
+ "name": "booleanProperty",      /* type is omitted to demonstrate that Open Horizon will interpret this property as a string type */
+ "value": true
 },
 {
-	"name": "floatProperty",        /* type is omitted to demonstrate that Open Horizon will interpret this property as a string type */
-	"value": 3.4
+ "name": "floatProperty",        /* type is omitted to demonstrate that Open Horizon will interpret this property as a string type */
+ "value": 3.4
 },
 {
-	"name": "versionProperty",      /* type is specified to demonstrate that Open Horizon would otherwise interpret this property as a string */
-	"type": "version",
-	"value": "1.2.7"
+ "name": "versionProperty",      /* type is specified to demonstrate that Open Horizon would otherwise interpret this property as a string */
+ "type": "version",
+ "value": "1.2.7"
 },
 {
-	"name": "losProperty",          /* type is specified to demonstrate that Open Horizon would otherwise interpret this property as a string */
-	"type": "list of strings",
-	"value": "value1,value2"
+ "name": "losProperty",          /* type is specified to demonstrate that Open Horizon would otherwise interpret this property as a string */
+ "type": "list of strings",
+ "value": "value1,value2"
 }
 ```
 
@@ -78,7 +81,7 @@ Think of constraints as selection predicates used to select nodes based on the p
 Constraints are most commonly found in deployment policies but can be specified on node, service and model policy.
 
 Constraints are specified using a simple text based language.
-The lexical parser used to interpret the language is described by an ebnf in a function called getLexer() in [the code](../externalpolicy/text_language/text_language.go).
+The lexical parser used to interpret the language is described by an ebnf in a function called getLexer() in [the code](https://github.com/open-horizon/anax/blob/master/externalpolicy/text_language/text_language.go).
 The language allows property name references and their expected values to be strung together with boolean operators `AND` and `OR` into boolean expressions.
 The more golang-like boolean operators (`&&` and `||`) are also supported.
 Parentheses are supported in order to create evaluation precedence.
@@ -91,6 +94,7 @@ For example, using the example properties defined in the properties section abov
 `"booleanProperty = true AND floatProperty < 1.0"` will evaluate to false.
 
 Each property type has operators that can be used to evaluate property values:
+
 * `string` - the operators `==` or `=` denote equals to and `!=` denotes not equal to.
 * `int` - supports the operators `==, <, >, <=, >=, =, !=`.
 * `boolean` - supports `==, =`
@@ -99,10 +103,11 @@ Each property type has operators that can be used to evaluate property values:
 * `list of strings` - supports `in` where the property has one of the values specified in the constraint.
 
 The JSON representation of a constraint is:
-```
+
+```json
 [
-	"<constraint-expression-one>",
-	"<constraint-expression-two>", ...
+ "<constraint-expression-one>",
+ "<constraint-expression-two>", ...
 ]
 ```
 
