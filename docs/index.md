@@ -10,7 +10,7 @@ This document contains the Horizon JSON APIs for the horizon system running an A
 This document contains the Horizon REST APIs for the Horizon agent running on an edge node.
 
 ## [Horizon Attributes](attributes.md)
-This document contains the definition for each attribute that can be set on the [POST /attribute](https://github.com/open-horizon/anax/blob/master/doc/api.md#api-post--attribute) API or the [POST /service/config](https://github.com/open-horizon/anax/blob/master/doc/api.md#api-post--serviceconfig) API.
+This document contains the definition for each attribute that can be set on the [POST /attribute](../api.md#api-post--attribute) API or the [POST /service/config](../api.md#api-post--serviceconfig) API.
 
 ## [Policy Properties](built_in_policy.md)
 There are built-in property names that can be used in the policies.
