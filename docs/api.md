@@ -59,7 +59,7 @@ curl -s http://localhost:8510/status | jq '.'
 #### **API:** GET  /status/workers
 ---
 
-Get the current Horizon agent worker status and the status trasition logs. 
+Get the current Horizon agent worker status and the status trasition logs.
 **Parameters:**
 
 none
@@ -450,7 +450,7 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| attribute | json | Please refer to [Attribute Definitions](https://github.com/open-horizon/anax/blob/master/doc/attributes.md) for a description of all attributes.  |
+| attribute | json | Please refer to [Attribute Definitions](../attributes.md) for a description of all attributes.  |
 
 **Response:**
 
@@ -951,7 +951,7 @@ body:
 
 **Example:**
 ```
-curl http://localhost:8510/service/config |jq 
+curl http://localhost:8510/service/config |jq
 "config": [
   {
     "sensor_url": "https://bluehorizon.network/services/netspeed",
@@ -1716,7 +1716,7 @@ curl -s http://localhost:8510/eventlog/all | jq '.'
 #### **API:** GET  /node/userinput
 ---
 
-Get the node's user input for the service configurations. The user input on the local node is alway in sync with the user input for the node on the exchange. 
+Get the node's user input for the service configurations. The user input on the local node is alway in sync with the user input for the node on the exchange.
 
 **Parameters:**
 
@@ -1782,7 +1782,7 @@ Set the node's user input for the service configuration. The node on the exchang
 
 body:
 
-The body is an array of the following: 
+The body is an array of the following:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -1821,13 +1821,13 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '[
 #### **API:** PATCH  /node/userinput
 ---
 
-Patch the node's user input for the service configuration. The node on the exchange will be updated too with the new user input. 
+Patch the node's user input for the service configuration. The node on the exchange will be updated too with the new user input.
 
 **Parameters:**
 
 body:
 
-The body is an array of the following: 
+The body is an array of the following:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -1893,7 +1893,7 @@ curl -s -w "%{http_code}" -X DELETE "http://localhost:8510/node/userinput" | jq 
 #### **API:** GET  /node/policy
 ---
 
-Get the node policy. The local node policy is alway in sync with the node policy on the exchange. 
+Get the node policy. The local node policy is alway in sync with the node policy on the exchange.
 
 **Parameters:**
 
@@ -1963,7 +1963,7 @@ Set the node policy. The node on the exchange will be updated too with the new p
 
 body:
 
-The body is an array of the following: 
+The body is an array of the following:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -2008,7 +2008,7 @@ Patch the properties or the constraints for the node policy. The node on the exc
 
 body:
 
-The body is an array of the following: 
+The body is an array of the following:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -2078,7 +2078,7 @@ code:
 
 body:
 
-**agentUpgradePolicyStatus**:  
+**agentUpgradePolicyStatus**:
 - The following fields describe the status of an agent auto upgrade job as defined by the NMP created by a user. This is the structure that stays synchronized with the Exchange during the upgrade process.
 
 | name | subfield | type | description |
@@ -2092,7 +2092,7 @@ body:
 | | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
 | status | | string | A string message that lists the current state of the upgrade job. |
 | errorMessage | | string | A string message containing any possible error messages that occur during the job. |
-| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |  
+| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |
 
 
 **agentUpgradeInternal**:
@@ -2157,7 +2157,7 @@ code:
 
 body:
 
-**agentUpgradePolicyStatus**:  
+**agentUpgradePolicyStatus**:
 - The following fields describe the status of an agent auto upgrade job as defined by the NMP created by a user. This is the structure that stays synchronized with the Exchange during the upgrade process.
 
 | name | subfield | type | description |
@@ -2171,7 +2171,7 @@ body:
 | | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
 | status | | string | A string message that lists the current state of the upgrade job. |
 | errorMessage | | string | A string message containing any possible error messages that occur during the job. |
-| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |  
+| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |
 
 
 **agentUpgradeInternal**:
@@ -2259,7 +2259,7 @@ code:
 
 body:
 
-**agentUpgradePolicyStatus**:  
+**agentUpgradePolicyStatus**:
 - The following fields describe the status of an agent auto upgrade job as defined by the NMP created by a user. This is the structure that stays synchronized with the Exchange during the upgrade process.
 
 | name | subfield | type | description |
@@ -2273,7 +2273,7 @@ body:
 | | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
 | status | | string | A string message that lists the current state of the upgrade job. |
 | errorMessage | | string | A string message containing any possible error messages that occur during the job. |
-| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |  
+| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |
 
 
 **agentUpgradeInternal**:
@@ -2326,13 +2326,13 @@ curl -s http://localhost:8510/nodemanagement/status/sample-nmp | jq '.'
 
 Update the status object that corresponds to the given node management policy name. The org that the NMP and node belong to can be optionally prepended (i.e. `/nodemanagement/status/nmp-name` and `/nodemanagement/status/org/nmp-name` refer to the same object, so long as the node is part of the given org) A guide to what each status value means can be found here: [node_management_status.md](node_management_status.md)
 
-Currently, the only supported update to the status object is the agentUpgradePolicyStatus structure. 
+Currently, the only supported update to the status object is the agentUpgradePolicyStatus structure.
 
 **Parameters:**
 
 body:
 
-**agentUpgradePolicyStatus**:  
+**agentUpgradePolicyStatus**:
 - The following fields describe the status of an agent auto upgrade job as defined by the NMP created by a user. This is the structure that stays synchronized with the Exchange during the upgrade process.
 
 | name  | type | description |
