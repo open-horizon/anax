@@ -434,7 +434,7 @@ read -d '' resmeta <<EOF
   "destinationID": "testDestId2",
   "version": "1.0.0",
   "description": "a file",
-  "expiration": "2022-10-02T15:00:00Z"
+  "expiration": "2029-10-02T15:00:00Z"
 }
 EOF
 
@@ -794,7 +794,7 @@ done
 
 # --expirationTime
 TARGET_NUM_OBJS=1
-EXP_TIME_BEFORE="2025-10-02T15:00:00Z"
+EXP_TIME_BEFORE="2030-10-02T15:00:00Z"
 OBJS_CMD=$(hzn mms object list --expirationTime=${EXP_TIME_BEFORE} | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 RESULT_OBJ_ID="test2"
@@ -808,7 +808,7 @@ if [ $(echo $OBJS_CMD | jq -r '.[0].objectID') != ${RESULT_OBJ_ID} ]; then
   exit 1
 fi
 
-WRONGFMT_EXP_TIME_BEFORE="20251002T150000Z"
+WRONGFMT_EXP_TIME_BEFORE="20301002T150000Z"
 hzn mms object list --expirationTime=${WRONGFMT_EXP_TIME_BEFORE}
 if [ $? -eq 0 ]; then
     echo -e "Should return error message when list with --expirationTime in wrong format"
