@@ -3,11 +3,9 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
-
 	"net/http"
+	"regexp"
 	"strings"
-
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
@@ -411,7 +409,7 @@ func AddOrgToAgbotServingList(org, userPw, theOrg, agbot string) {
 	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/businesspols", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, inputPol, nil)
 }
 
-// Validates that org name doesn't contain underscores (_), comas (,), blank spaces ( ), single quotes ('), or question marks (?)
+// Validates that org name doesn't contain underscores (_), commas (,), blank spaces ( ), single quotes ('), or question marks (?)
 func ValidateOrg(org string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
