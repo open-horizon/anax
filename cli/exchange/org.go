@@ -3,12 +3,15 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
+
+	"net/http"
+	"strings"
+
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
-	"net/http"
-	"strings"
 )
 
 type ExchangeOrgs struct {
@@ -69,6 +72,9 @@ func OrgCreate(org, userPwCreds, theOrg string, label string, desc string, tags 
 
 	// get credentials
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
+
+	// check if organization name is valid
+	ValidateOrg(theOrg)
 
 	// check if the agbot specified by -a exist or not
 	CheckAgbot(org, userPwCreds, agbot)
@@ -196,6 +202,9 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, tags 
 func OrgDel(org, userPwCreds, theOrg, agbot string, force bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// check if organization name is valid
+	ValidateOrg(theOrg)
 
 	// Search exchange for org, throw error if not found.
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, nil)
@@ -400,4 +409,16 @@ func AddOrgToAgbotServingList(org, userPw, theOrg, agbot string) {
 
 	inputPol := exchange.ServedBusinessPolicy{BusinessPolOrg: theOrg, BusinessPol: "*", NodeOrg: theOrg}
 	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/businesspols", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, inputPol, nil)
+}
+
+// Validates that org name doesn't contain underscores (_), comas (,), blank spaces ( ), single quotes ('), or question marks (?)
+func ValidateOrg(org string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+	// Regex to check if any of the invalid character is present
+	if invalid, err := regexp.MatchString(`[_,\s\?\']`, org); err != nil {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Problem validating org name: %v", err))
+	} else if invalid {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid organization. Organization cannot contain: [ _ , <space> ' ?]"))
+	}
 }
