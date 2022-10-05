@@ -1134,25 +1134,6 @@ func (w *AgreementBotWorker) syncOnInit() error {
 	return nil
 }
 
-func (w *AgreementBotWorker) cleanupAgreement(ag *persistence.Agreement) {
-	// Update state in exchange
-	if err := DeleteConsumerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), ag.CurrentAgreementId); err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
-	}
-
-	// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
-	if err := w.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
-		glog.Warningf(AWlogString(fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
-	}
-
-	// Indicate that the agreement is timed out
-	if _, err := w.db.AgreementTimedout(ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("error marking agreement %v terminated: %v", ag.CurrentAgreementId, err)))
-	}
-
-	w.consumerPH.Get(ag.AgreementProtocol).HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, w.consumerPH.Get(ag.AgreementProtocol).GetTerminationCode(TERM_REASON_POLICY_CHANGED)), w.consumerPH.Get(ag.AgreementProtocol))
-}
-
 func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, pol *policy.Policy, org string, state string) error {
 
 	workload := pol.Workloads[0].WorkloadURL
@@ -1591,7 +1572,7 @@ func (w *AgreementBotWorker) monitorHAGroupNMPUpdates() int {
 		glog.Errorf(AWlogString(fmt.Sprintf("error getting upgrading ha nodes: %v", err)))
 	}
 
-	for _, node := range upgradingNodes{
+	for _, node := range upgradingNodes {
 		remove := false
 		if exNode, err := exchange.GetExchangeDevice(w.GetHTTPFactory(), fmt.Sprintf("%v/%v", node.OrgId, node.NodeId), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL()); err != nil {
 			glog.Errorf(AWlogString(fmt.Sprintf("error getting node %v/%v: %v", node.OrgId, node.NodeId, err)))

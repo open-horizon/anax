@@ -24,7 +24,7 @@ const HTTPRequestTimeoutS = 30
 const HTTPRequestTimeoutOverride = "HZN_HTTP_TIMEOUT"
 
 // HTTPIdleConnectionTimeout see https://golang.org/pkg/net/http/
-const HTTPIdleConnectionTimeout = 60     // Will be in seconds for agbot and milliseconds for agent
+const HTTPIdleConnectionTimeout = 60 // Will be in seconds for agbot and milliseconds for agent
 
 const HZN_VAR_BASE_DEFAULT = "/var/horizon"
 

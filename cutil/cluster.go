@@ -1,4 +1,4 @@
-package cutil 
+package cutil
 
 import (
 	"context"
@@ -62,7 +62,6 @@ func GetClusterCountInfo() (float64, float64, float64, string, string, error) {
 
 	return math.Round(availMem), math.Round(totalMem), cpu, arch, version, nil
 }
-
 
 // FloatFromQuantity returns a float64 with the value of the given quantity type
 func FloatFromQuantity(quantVal *resource.Quantity) float64 {

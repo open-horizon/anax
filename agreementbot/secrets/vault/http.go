@@ -128,11 +128,11 @@ func (vs *AgbotVaultSecrets) newHTTPClient(cfg *config.HorizonConfig) (*http.Cli
 			ResponseHeaderTimeout: 20 * time.Second,
 			ExpectContinueTimeout: 8 * time.Second,
 			// Guidance from https://www.loginradius.com/blog/engineering/tune-the-go-http-client-for-high-performance/
-			MaxIdleConns:          20,
-			MaxConnsPerHost:       20,
-			MaxIdleConnsPerHost:   20,
-			IdleConnTimeout:       120 * time.Second,
-			TLSClientConfig:       &tlsConf,
+			MaxIdleConns:        20,
+			MaxConnsPerHost:     20,
+			MaxIdleConnsPerHost: 20,
+			IdleConnTimeout:     120 * time.Second,
+			TLSClientConfig:     &tlsConf,
 		},
 	}, nil
 
@@ -197,7 +197,6 @@ func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, meth
 	return resp, err
 }
 
-
 // Common function to invoke the Vault API.
 func (vs *AgbotVaultSecrets) invokeVault(token string, url string, method string, body interface{}) (*http.Response, error) {
 
@@ -217,7 +216,6 @@ func (vs *AgbotVaultSecrets) invokeVault(token string, url string, method string
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create HTTP request for %v, error %v", apiMsg, err))
 	}
-
 
 	if token != "" {
 		req.Header.Add("X-Vault-Token", token)

@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/agreementbot/secrets"
+	"github.com/open-horizon/anax/basicprotocol"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
@@ -1311,15 +1312,20 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 	if wlUsage, err := b.db.UpdateWUAgreementId(ag.DeviceId, ag.PolicyName, "", cph.Name()); err != nil {
 		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("warning updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 
-	} else if wlUsage != nil && (wlUsage.ReqsNotMet || cph.IsTerminationReasonNodeShutdown(reason)) {
-		// If the workload usage record indicates that it is not at the highest priority workload because the device cant meet the
-		// requirements of the higher priority workload, then when an agreement gets cancelled, we will remove the record so that the
-		// agbot always tries the next agreement starting with the highest priority workload again.
-		// Or, we will remove the workload usage record if the device is cancelling the agreement because it is shutting down. A shut down
-		// node that comes back and registers again, will start trying to run the highest priority workload. It should not remember the
-		// workload priority in use at the time it was removed from the network.
-		if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting workload usage record for device %v and policyName %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+	} else {
+
+		if wlUsage != nil && (wlUsage.ReqsNotMet || cph.IsTerminationReasonNodeShutdown(reason) || reason == basicprotocol.AB_CANCEL_POLICY_CHANGED || reason == basicprotocol.AB_CANCEL_FORCED_UPGRADE) {
+			// If the workload usage record indicates that it is not at the highest priority workload because the device cant meet the
+			// requirements of the higher priority workload, then when an agreement gets cancelled, we will remove the record so that the
+			// agbot always tries the next agreement starting with the highest priority workload again.
+			// Or, we will remove the workload usage record if the device is cancelling the agreement because it is shutting down. A shut down
+			// node that comes back and registers again, will start trying to run the highest priority workload. It should not remember the
+			// workload priority in use at the time it was removed from the network.
+			// Or, we will remove the workload usage record when the policy changes or the workload was forced to get upgraded
+			// so that it will try with the highest priority with the new policy.
+			if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting workload usage record for device %v and policyName %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+			}
 		}
 	}
 
