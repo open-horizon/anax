@@ -464,7 +464,7 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| attribute | json | Please refer to [Attribute Definitions](anax/docs/attributes.md) for a description of all attributes.  |
+| attribute | json | Please refer to [Attribute Definitions](./attributes.md) for a description of all attributes.  |
 
 **Response:**
 
