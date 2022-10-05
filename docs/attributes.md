@@ -1,6 +1,6 @@
 ## Horizon Attributes
 
-This document contains the definition for each attribute that can be set on the [POST /attribute](../api.md#api-post--attribute) API or the [POST /service/config](../api.md#api-post--serviceconfig) API.
+This document contains the definition for each attribute that can be set on the [POST /attribute](./api.md#api-post--attribute) API or the [POST /service/config](./api.md#api-post--serviceconfig) API.
 Attributes are used to condition the behavior of the Horizon agent and/or services running on the agent.
 
 The body of the attribute section always follows the following form:
