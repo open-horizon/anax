@@ -2,20 +2,22 @@
 
 This document contains the Horizon JSON APIs for the horizon system running an Agreement Bot. The output of the APIs is in JSON compact format. To get a better view, you can use JSONView extension in your web browser or use `jq` command from the command line interface. For example:
 
-```
+```bash
 curl -s http://<ip>/agreement | jq '.'
 ```
 
 ## 1. Horizon Agreement Bot Remote APIs
 
 The following APIs can be run from a remote node. They are secure APIs, which means you need to run with HTTPS and with a CA certificate file that is provided by the Agreenent Bot. You also need to provide your user name and password (or API key) from the Exchange for verification and authentication. For example:
-```
+
+```bash
 curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/deploycompatible
 ```
 
 ### 1.1 Deployment Compatibility Check
 
 #### **API:** GET  /deploycheck/deploycompatible
+
 ---
 
 This API does compatibility check for the given business policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
@@ -45,7 +47,8 @@ body:
 | service | json array | (optional) an array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json) for the format. |
 
 **Response:**
-code: 
+code:
+
 * 200 -- success
 
 body:
@@ -58,7 +61,7 @@ body:
 
 **Examples :**
 
-```
+```bash
 read -d '' comp_input <<EOF
 {
   "node_id":  "userdev/an12345,
@@ -73,7 +76,7 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
     "e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64": "Compatible",
   }
 }
- 
+
 
 echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/deploycompatible?checkAll=1 | jq '.'
 {
@@ -125,7 +128,7 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 
 ```
 
-```
+```bash
 # three different ways of getting definitions of the resource:
 bp_location=$(</user/me/input_files/compcheck/business_pol_location.json)
 node_ui=`cat /user/me/input_files/compcheck/node_ui.json`
@@ -166,8 +169,8 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 }
 ```
 
-
 #### **API:** GET  /deploycheck/policycompatible
+
 ---
 
 This API does the policy compatibility check for the given business policy, node policy and service policy. The business policy and the service policy will be merged to check against the node policy. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
@@ -193,7 +196,8 @@ body:
 | service_policy   | json | (optional) the service policy that will be put in the exchange. They are for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy. Please refer to [node policy sample](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json) for the format. |
 
 **Response:**
-code: 
+code:
+
 * 200 -- success
 
 body:
@@ -206,7 +210,7 @@ body:
 
 **Examples :**
 
-```
+```bash
 read -d '' comp_input <<EOF
 {
   "node_id":  "userdev/an12345,
@@ -226,7 +230,7 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 
 ```
 
-```
+```bash
 bp_location=$(</user/me/input_files/compcheck/business_pol_location.json)
 node_pol=$(</user/me/input_files/compcheck/node_policy.json)
 service_pol=$(</user/me/input_files/compcheck/service_policy.json)
@@ -248,8 +252,8 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 }
 ```
 
-
 #### **API:** GET  /deploycheck/userinputcompatible
+
 ---
 
 This API does the user input compatibility check for the given business policy (or a pattern), service definition and node user input. The user input values in the business policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
@@ -277,7 +281,8 @@ body:
 | service | json array | (optional) an array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json) for the format. |
 
 **Response:**
-code: 
+code:
+
 * 200 -- success
 
 body:
@@ -290,14 +295,14 @@ body:
 
 **Examples :**
 
-```
+```bash
 read -d '' comp_input <<EOF
 {
   "node_id":  "userdev/an12345,
   "pattern_id": "userdev/pat_location"
 }
 EOF
- 
+
 echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/userinputcompatible?checkAll=1 | jq '.'
 {
   "compatible": true,
@@ -309,7 +314,7 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 
 ```
 
-```
+```bash
 bp_location=`cat /user/me/input_files/compcheck/business_pol_location.json`
 node_ui=`cat /user/me/input_files/compcheck/node_ui.json`
 
@@ -329,7 +334,6 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 }
 ```
 
-
 ## 2. Horizon Agreement Bot Local APIs
 
 The following APIs should be run on same node where agbot is running.
@@ -337,15 +341,17 @@ The following APIs should be run on same node where agbot is running.
 ### 2.1 Agreement
 
 #### **API:** GET  /agreement
+
 ---
 
-Get all the active and archived agreements made on this agbot. The agreements that are being terminated but not yet archived are treated as archived in this API. Please note that the archived agreements get purged after a period of time which is defined by PurgeArchivedAgreementHours in the agbot configuration file. The purged agreements will not be shown by this API. 
+Get all the active and archived agreements made on this agbot. The agreements that are being terminated but not yet archived are treated as archived in this API. Please note that the archived agreements get purged after a period of time which is defined by PurgeArchivedAgreementHours in the agbot configuration file. The purged agreements will not be shown by this API.
 
 **Parameters:**
 none
 
 **Response:**
-code: 
+code:
+
 * 200 -- success
 
 body:
@@ -353,13 +359,14 @@ body:
 | name | type | description |
 | ---- | ---- | ---------------- |
 | agreements  | json | contains active and archived agreements |
-| active | array | an array of current agreements. | 
-| archived | array | an array of terminated agreements. | 
+| active | array | an array of current agreements. |
+| archived | array | an array of terminated agreements. |
 
 See the GET /agreement/{id} API for documentation of the fields in an agreement.
 
 **Example:**
-```
+
+```bash
 curl -s http://localhost/agreement | jq '.'
 {
   "agreements": {
@@ -387,6 +394,7 @@ curl -s http://localhost/agreement | jq '.'
 ```
 
 #### **API:** GET  /agreement/{id}
+
 ---
 
 Get detailed information for an agreement.
@@ -399,10 +407,11 @@ Get detailed information for an agreement.
 
 **Response:**
 code:
+
 * 200 -- success
 * 404 -- the agreement does not exist.
 
-body: 
+body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -430,7 +439,8 @@ body:
 | terminated_description | json | the textual description of the terminated_reason code |
 
 **Example:**
-```
+
+```bash
 curl -s http://localhost/agreement/93bcddde28f43cf59761e948ebff45f0ad9e060e3081dcd76e9cc94235d73a90 | jq -r '.'
 {
   "current_agreement_id": "93bcddde28f43cf59761e948ebff45f0ad9e060e3081dcd76e9cc94235d73a90",
@@ -462,6 +472,7 @@ curl -s http://localhost/agreement/93bcddde28f43cf59761e948ebff45f0ad9e060e3081d
 ```
 
 #### **API:** DELETE  /agreement/{id}
+
 ---
 
 Delete an agreement. The agbot will start new agreement negotiation with the device after the agreement deletion.
@@ -473,22 +484,24 @@ Delete an agreement. The agbot will start new agreement negotiation with the dev
 | id   | string | the id of the agreement to be deleted. |
 
 **Response:**
-code: 
+code:
+
 * 200 -- success
 * 404 -- the agreement does not exist.
 
-
-body: 
+body:
 none
 
 **Example:**
-```
+
+```bash
 curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d024895cadd2162a0768687ed55533
 ```
 
 ### 2.2 Policy
 
 #### **API:** GET  /policy
+
 ---
 
 Get all the names of policies that this agbot hosts.
@@ -498,8 +511,8 @@ Get all the names of policies that this agbot hosts.
 none
 
 **Response:**
-
 code:
+
 * 200 -- success
 
 body:
@@ -508,10 +521,9 @@ body:
 | ---- | ---- | ---------------- |
 | {org} | json | The key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot.  |
 
-
 **Example:**
 
-```
+```bash
 curl -s http://localhost:8046/policy | jq
 {
   "public": [
@@ -533,6 +545,7 @@ curl -s http://localhost:8046/policy | jq
 ```
 
 #### **API:** GET  /policy/{org}
+
 ---
 
 Get all name of the policies this agbot hosts for a organization.
@@ -544,8 +557,8 @@ Get all name of the policies this agbot hosts for a organization.
 | org | string | the name of the organization.  |
 
 **Response:**
-
 code:
+
 * 200 -- success
 
 body:
@@ -554,10 +567,9 @@ body:
 | ---- | ---- | ---------------- |
 | {org} | json | The key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot.  |
 
-
 **Example:**
 
-```
+```bash
 curl -s http://localhost:8046/policy/test | jq
 {
   "test": [
@@ -568,8 +580,8 @@ curl -s http://localhost:8046/policy/test | jq
 
 ```
 
-
 #### **API:** GET  /policy/{org}/{name}
+
 ---
 
 Get a specific policy.
@@ -582,8 +594,8 @@ Get a specific policy.
 | name | string | the name of the policy.  |
 
 **Response:**
-
 code:
+
 * 200 -- success
 
 body:
@@ -598,10 +610,9 @@ body:
 | dataVerification | json | contains information on how data gets verified. |
 | nodeHealth | json | contains information on how to determine  the health of the node. |
 
-
 **Example:**
 
-```
+```bash
 curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-workloads-location_IBM_arm |jq
 {
   "header": {
@@ -648,11 +659,10 @@ curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-
     "check_agreement_status": 60
   }
 }
-
-
 ```
 
 #### **API:** POST  /policy/{policy name}/upgrade
+
 ---
 
 Force a device to attempt a workload upgrade for the given device and given policy.
@@ -675,6 +685,7 @@ Note: At least one of agreementId or device MUST be specified. Organization is a
 
 **Response:**
 code:
+
 * 200 -- success
 
 body:
@@ -682,23 +693,25 @@ body:
 none
 
 **Example:**
-```
+
+```bash
 curl -s -X POST -H "Content-Type: application/json" -d '{"device":"12345678"}' http://localhost/policy/netspeed%20policy/upgrade
 ```
 
 ### 2.3 Workload Usage
 
 #### **API:** GET  /workloadusage
+
 ---
 
 Get current workload usage information for the agreements whose agbot policies have more than one workload priorities.
-
 
 **Parameters:**
 none
 
 **Response:**
 code:
+
 * 200 -- success
 
 body:
@@ -720,7 +733,8 @@ body:
 | current_agreement_id | string | the agreement id which forms the agreement between the consumer (agbot) and the device |
 
 **Example:**
-```
+
+```bash
 curl -s http://localhost/workloadusage | jq '.'
 [
   {
@@ -744,16 +758,17 @@ curl -s http://localhost/workloadusage | jq '.'
 ### 2.4 Status
 
 #### **API:** GET  /status
+
 ---
 
-Get the connectivity, configuration, and blockchain status on the agbot. The output includes the status of all blockchain containers, agent configuration and the agbot host's connectivity. 
-**Parameters:**
+Get the connectivity, configuration, and blockchain status on the agbot. The output includes the status of all blockchain containers, agent configuration and the agbot host's connectivity.
 
+**Parameters:**
 none
 
 **Response:**
-
 code:
+
 * 200 -- success
 
 body:
@@ -768,9 +783,9 @@ body:
 | configuration.architecture | string | the hardware architecture of the node as returned from the Go language API runtime.GOARCH. |
 | connectivity | json | whether or not the node has network connectivity with some remote sites. |
 
-
 **Example:**
-```
+
+```bash
 curl -s http://localhost:8046/status |jq '.'
 {
   "configuration": {
@@ -788,16 +803,17 @@ curl -s http://localhost:8046/status |jq '.'
 ```
 
 #### **API:** GET  /status/workers
+
 ---
 
-Get the current Horizon agent worker status and the status trasition logs. 
-**Parameters:**
+Get the current Horizon agent worker status and the status trasition logs.
 
+**Parameters:**
 none
 
 **Response:**
-
 code:
+
 * 200 -- success
 
 body:
@@ -807,10 +823,10 @@ body:
 | workers   | json | the current status of each worker and its subworkers. |
 | worker_status_log | string array |  the history of the worker status changes. |
 
-
 **Example:**
-```
-curl -s http://localhost:8046/status/workers |jq 
+
+```bash
+curl -s http://localhost:8046/status/workers |jq
 {
   "workers": {
     "AgBot": {

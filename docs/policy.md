@@ -21,7 +21,6 @@ Each node has only one policy that contains all the properties and constraints t
 
 The JSON representation of node policy and details of how it is used are elaborated [here](./node_policy.md):
 
-
 ## Service policy
 
 Service policy is an optional feature.
@@ -36,13 +35,13 @@ In expected usage scenarios, a change to one of these is usually coincident with
 Deployment policies are used to capture the more dynamic aspects of service deployment that arise from business requirements.
 
 The JSON representation of service policy contains properties and constraints as defined [here](./properties_and_constraints.md):
-```
+
+```json
 {
-	"properties": [],
-	"constraints": []
+ "properties": [],
+ "constraints": []
 }
 ```
-
 
 ## Deployment policy
 
