@@ -1039,7 +1039,8 @@ function get_all_variables() {
         get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
         get_variable PKG_APT_KEY
         get_variable APT_REPO_BRANCH 'updates'
-        get_variable AGENT_IMAGE_TAR_FILE "${ARCH}${DEFAULT_AGENT_IMAGE_TAR_FILE}"
+        local image_arch=$(get_image_arch)
+        get_variable AGENT_IMAGE_TAR_FILE "${image_arch}${DEFAULT_AGENT_IMAGE_TAR_FILE}"
     elif is_cluster; then
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE "$DEFAULT_AGENT_NAMESPACE"
