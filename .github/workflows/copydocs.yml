@@ -18,7 +18,7 @@ jobs:
         personal_token: ${{ secrets.PERSONAL_TOKEN }}
         src_path: docs
         dst_path: /docs/anax
-        dst_owner: joewxboy
+        dst_owner: open-horizon
         dst_repo_name: open-horizon.github.io
         dst_branch: master
         src_branch: master
