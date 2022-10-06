@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
@@ -72,7 +71,10 @@ func OrgCreate(org, userPwCreds, theOrg string, label string, desc string, tags 
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 
 	// check if organization name is valid
-	ValidateOrg(theOrg)
+	orgNameInvalidFlag := cliutils.ValidateOrg(theOrg)
+	if orgNameInvalidFlag {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid organization. Organization cannot contain: [ _ , <space> ' ?]"))
+	}
 
 	// check if the agbot specified by -a exist or not
 	CheckAgbot(org, userPwCreds, agbot)
@@ -202,7 +204,10 @@ func OrgDel(org, userPwCreds, theOrg, agbot string, force bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check if organization name is valid
-	ValidateOrg(theOrg)
+	orgNameInvalidFlag := cliutils.ValidateOrg(theOrg)
+	if orgNameInvalidFlag {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid organization. Organization cannot contain: [ _ , <space> ' ?]"))
+	}
 
 	// Search exchange for org, throw error if not found.
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, nil)
@@ -407,16 +412,4 @@ func AddOrgToAgbotServingList(org, userPw, theOrg, agbot string) {
 
 	inputPol := exchange.ServedBusinessPolicy{BusinessPolOrg: theOrg, BusinessPol: "*", NodeOrg: theOrg}
 	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/businesspols", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, inputPol, nil)
-}
-
-// Validates that org name doesn't contain underscores (_), commas (,), blank spaces ( ), single quotes ('), or question marks (?)
-func ValidateOrg(org string) {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
-	// Regex to check if any of the invalid character is present
-	if invalid, err := regexp.MatchString(`[_,\s\?\']`, org); err != nil {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Problem validating org name: %v", err))
-	} else if invalid {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid organization. Organization cannot contain: [ _ , <space> ' ?]"))
-	}
 }
