@@ -274,6 +274,22 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error demarshalling change policy event %v, error: %v", cmd.Msg.PolicyString(), err)))
 	} else {
 
+		// Remove the workloadusage that has the same policy name and does not have the agreement id associated.
+		// This will allow the highest serice version be tried under the new policy.
+		// For the ones with the agreement id, the agreements will get canceled and the workload usage will be removed anyway.
+		if wlu_array, err := b.db.FindWorkloadUsages([]persistence.WUFilter{persistence.PNoAWUFilter(eventPol.Header.Name)}); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Failed to get the workload usages with policy name: %v, %v", eventPol.Header.Name, err)))
+		} else {
+			for _, wlu := range wlu_array {
+				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("deleting workload usage %v.", wlu)))
+
+				if err := b.db.DeleteWorkloadUsage(wlu.DeviceId, wlu.PolicyName); err != nil {
+					glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Failed to delete the workload usages with device id: %v, policy name: %v, %v", wlu.DeviceId, wlu.PolicyName, err)))
+				}
+			}
+		}
+
+		// Cancel related agreements
 		InProgress := func() persistence.AFilter {
 			return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
 		}

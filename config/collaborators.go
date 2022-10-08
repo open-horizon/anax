@@ -26,7 +26,6 @@ type Collaborators struct {
 
 func NewCollaborators(hConfig HorizonConfig) (*Collaborators, error) {
 
-
 	httpClientFactory, err := newHTTPClientFactory(hConfig)
 	if err != nil {
 		return nil, err
@@ -165,13 +164,13 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 	var idleTimeout time.Duration
 	var maxHTTPIdleConnections, maxHTTPIdleConnsPerHost, maxConnsPerHost int
 	if isAgbot {
-		// For agbot, we want a relatively large idle connection timeout to reuse connections so we use the value in seconds 
+		// For agbot, we want a relatively large idle connection timeout to reuse connections so we use the value in seconds
 		idleTimeout = time.Duration(hConfig.Edge.HTTPIdleConnectionTimeout) * time.Second
 		maxHTTPIdleConnections = MaxHTTPIdleConnections
 		maxHTTPIdleConnsPerHost = MaxHTTPIdleConnsPerHost
 		maxConnsPerHost = MaxHTTPIdleConnsPerHost
 	} else {
-		// For agent, in order to support 10's of thousands of agents, we want a short idle connection timeout to free up the connection when a request completes so we use the value in milliseconds 
+		// For agent, in order to support 10's of thousands of agents, we want a short idle connection timeout to free up the connection when a request completes so we use the value in milliseconds
 		idleTimeout = time.Duration(hConfig.Edge.HTTPIdleConnectionTimeout) * time.Millisecond
 
 		// Allow bigger number of total IdleConnections
@@ -211,7 +210,7 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 			// remember that this timouet is for the whole request, including
 			// body reading. This means that you must set the timeout according
 			// to the total payload size you expect
-			Timeout: time.Second * time.Duration(timeoutS),
+			Timeout:   time.Second * time.Duration(timeoutS),
 			Transport: transport,
 		}
 	}

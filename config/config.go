@@ -43,7 +43,7 @@ type Config struct {
 	ExchangeURL                      string
 	AgbotURL                         string
 	DefaultHTTPClientTimeoutS        uint
-	HTTPIdleConnectionTimeout        uint      // Will be seconds for agbot and milliseconds for agent
+	HTTPIdleConnectionTimeout        uint // Will be seconds for agbot and milliseconds for agent
 	PolicyPath                       string
 	ExchangeHeartbeat                int       // Seconds between heartbeats
 	ExchangeVersionCheckIntervalM    int64     // Exchange version check interval in minutes. The default is 720. This is now deprecated with the usage of /changes API which returns exchange version on every call.

@@ -2259,6 +2259,6 @@ func AddHeaders(req *http.Request, headers map[string]string) {
 }
 
 func GetOperatorNamespace(tar string) (string, error) {
-	_, namespace, err := kube_operator.ProcessDeployment(tar, map[string]string{}, "", 0) 
-	return namespace, err 
+	_, namespace, err := kube_operator.ProcessDeployment(tar, map[string]string{}, "", 0)
+	return namespace, err
 }

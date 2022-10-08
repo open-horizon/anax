@@ -215,4 +215,8 @@ func PWUFilter(policyName string) WUFilter {
 	return func(a WorkloadUsage) bool { return a.PolicyName == policyName }
 }
 
+func PNoAWUFilter(policyName string) WUFilter {
+	return func(a WorkloadUsage) bool { return a.PolicyName == policyName && a.CurrentAgreementId == "" }
+}
+
 type WUFilter func(WorkloadUsage) bool

@@ -97,7 +97,7 @@ type AgbotDatabase interface {
 	DeleteHAUpgradeNode(nodeToDelete UpgradingHAGroupNode) error
 	ListUpgradingNodeInGroup(orgId string, groupName string) (*UpgradingHAGroupNode, error)
 	ListAllUpgradingHANode() ([]UpgradingHAGroupNode, error)
-	DeleteHAUpgradeNodeByGroup(orgId string, groupName string) (error)
+	DeleteHAUpgradeNodeByGroup(orgId string, groupName string) error
 
 	// Functions related to persistence of the state of workload in ha groups executing service upgrades.
 	DeleteHAUpgradingWorkload(workloadToDelete UpgradingHAGroupWorkload) error
