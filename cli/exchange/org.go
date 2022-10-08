@@ -3,12 +3,12 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
-	"net/http"
-	"strings"
 )
 
 type ExchangeOrgs struct {
@@ -69,6 +69,12 @@ func OrgCreate(org, userPwCreds, theOrg string, label string, desc string, tags 
 
 	// get credentials
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
+
+	// check if organization name is valid
+	orgNameInvalidFlag := cliutils.ValidateOrg(theOrg)
+	if orgNameInvalidFlag {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid organization. Organization cannot contain: [ _ , <space> ' ?]"))
+	}
 
 	// check if the agbot specified by -a exist or not
 	CheckAgbot(org, userPwCreds, agbot)
@@ -196,6 +202,12 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, tags 
 func OrgDel(org, userPwCreds, theOrg, agbot string, force bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// check if organization name is valid
+	orgNameInvalidFlag := cliutils.ValidateOrg(theOrg)
+	if orgNameInvalidFlag {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid organization. Organization cannot contain: [ _ , <space> ' ?]"))
+	}
 
 	// Search exchange for org, throw error if not found.
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, nil)

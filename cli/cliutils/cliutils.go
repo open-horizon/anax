@@ -2262,3 +2262,15 @@ func GetOperatorNamespace(tar string) (string, error) {
 	_, namespace, err := kube_operator.ProcessDeployment(tar, map[string]string{}, "", 0)
 	return namespace, err
 }
+
+// Validates that org name doesn't contain underscores (_), commas (,), blank spaces ( ), single quotes ('), or question marks (?)
+func ValidateOrg(org string) bool{
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+	// Regex to check if any of the invalid character is present
+	invalidCheck, err := regexp.MatchString(`[_,\s\?\']`, org)
+	if err != nil {
+		Fatal(INTERNAL_ERROR, msgPrinter.Sprintf("Problem validating org name: %v", err))
+	}
+	return invalidCheck
+}
