@@ -2264,7 +2264,7 @@ func GetOperatorNamespace(tar string) (string, error) {
 }
 
 // Validates that org name doesn't contain underscores (_), commas (,), blank spaces ( ), single quotes ('), or question marks (?)
-func ValidateOrg(org string) bool{
+func ValidateOrg(org string) bool {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 	// Regex to check if any of the invalid character is present

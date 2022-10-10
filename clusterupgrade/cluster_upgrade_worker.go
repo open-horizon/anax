@@ -17,11 +17,13 @@ import (
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/nodemanagement"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
 	"os"
 	"path"
 	"reflect"
+	"time"
 )
 
 const (
@@ -329,10 +331,47 @@ func (w *ClusterUpgradeWorker) CommandHandler(command worker.Command) bool {
 	return true
 }
 
+// Returns the agreement IDs for agreements that has AgreementExecutionStartTime == 0.
+func (w *ClusterUpgradeWorker) GetUncompletedAgreements() ([]string, error) {
+	notStartedFilter := func() persistence.EAFilter {
+		return func(a persistence.EstablishedAgreement) bool {
+			return a.AgreementExecutionStartTime == 0
+		}
+	}
+
+	ag_ids := []string{}
+	if uncompleted_ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), notStartedFilter()}); err != nil {
+		return ag_ids, fmt.Errorf("Unable to retrieve uncompleted agreements from database. Error: %v", err)
+	} else {
+		for _, ag := range uncompleted_ags {
+			ag_ids = append(ag_ids, ag.CurrentAgreementId)
+		}
+	}
+
+	return ag_ids, nil
+}
+
 func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir string, nmpName string) {
 	// nmpName: {org}/{nmpName}
 	// baseWorkingDir: /var/horizon/nmp/
 	glog.Infof(cuwlog(fmt.Sprintf("Start handling edge cluster upgrade for nmp: %v", nmpName)))
+
+	// check if the agent is making agreements with the agbot
+	for {
+		if uncompleted_ags, err := w.GetUncompletedAgreements(); err != nil {
+			glog.Errorf(cuwlog(fmt.Sprintf("Unable to retrieve uncompleted agreements from database. Error: %v", err)))
+			return
+		} else {
+			if len(uncompleted_ags) > 0 {
+				glog.Infof(cuwlog(fmt.Sprintf("Cannot start running nmp %v because there are agreements not completed yet: %v", nmpName, uncompleted_ags)))
+				time.Sleep(time.Duration(5) * time.Second)
+			} else {
+				glog.Infof(cuwlog(fmt.Sprintf("Agreement checking done.")))
+				break
+			}
+		}
+	}
+
 	status, err := persistence.FindNMPStatus(w.db, nmpName)
 	if err != nil {
 		glog.Errorf(cuwlog(fmt.Sprintf("Failed to get nmp status %v from the database: %v", nmpName, err)))
