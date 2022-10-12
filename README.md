@@ -20,7 +20,7 @@ Related Projects:
 
 ### Preconditions
 
-* Go version >=1.17 is a required dependency, download it [here](https://golang.org/dl/)
+* Go version >=1.19 is a required dependency, download it [here](https://golang.org/dl/)
 * To execute the lint and other code checkers (`make lint` or `make check`), you must install: `go vet`, `golint`, and `jshint`
 
 ### Pull Request Guidelines
@@ -96,10 +96,10 @@ Note that this target is automatically executed when executing targets `check` a
     cd agreementbot
     swagger generate spec -o ../docs/agbot_secure_api.json --exclude=edge-sync-service -m
 
-*Note - Place mms/secrets API swagger file in `docs`*
+*Note - Place mms/secrets API swagger file in `docs/mms_swagger`*
 
     cd ../resource
-    swagger generate spec -o ./mms_swagger.json --include=resource --include=edge-sync-service -m
+    swagger generate spec -o ../docs/mms_swagger.json --include=resource --include=edge-sync-service -m
 
 ### Internationalization
 
