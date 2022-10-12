@@ -562,8 +562,8 @@ func (self *Policy) ObscureWorkloadPWs(agreementId string, defaultPW string) err
 // (b) workload priorities dont have to be in order in the workload array.
 // (c) workload priorities dont have to be sequential, i.e. you can have priority 5, 10 and 45.
 // (d) there are no duplicate priority values in the array. This condition is checked by the Is_Self_Consistent() function
-//     which is called by the agbot when it initializes and reads in policy files.
 //
+//	which is called by the agbot when it initializes and reads in policy files.
 func (self *Policy) NextHighestPriorityWorkload(currentPriority int, retryCount int, retryStartTime uint64) *Workload {
 
 	glog.V(3).Infof("Checking for next higher priority workload. Starting from priority %v, with %v retries at %v", currentPriority, retryCount, retryStartTime)

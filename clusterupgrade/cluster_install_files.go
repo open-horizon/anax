@@ -24,7 +24,7 @@ import (
 
 const DOCKER_MANIFEST_FILE = "manifest.json"
 
-//----------------config file----------------
+// ----------------config file----------------
 func ReadAgentConfigFile(filename string) (map[string]string, error) {
 	configInMap := make(map[string]string)
 
@@ -57,7 +57,7 @@ func ReadAgentConfigFile(filename string) (map[string]string, error) {
 	return configInMap, err
 }
 
-//----------------cert file----------------
+// ----------------cert file----------------
 func ReadAgentCertFile(filename string) ([]byte, error) {
 	certFile, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -67,7 +67,7 @@ func ReadAgentCertFile(filename string) ([]byte, error) {
 	return certFile, nil
 }
 
-//TrustNewCert adds the icp cert file to be trusted in calls made by the given http client
+// TrustNewCert adds the icp cert file to be trusted in calls made by the given http client
 func TrustNewCert(httpClient *http.Client, certPath string) error {
 	if certPath != "" {
 		icpCert, err := ioutil.ReadFile(certPath)
@@ -139,7 +139,7 @@ func ValidateConfigAndCert(exchangeURL string, certPath string) error {
 
 }
 
-//----------------status.json file----------------
+// ----------------status.json file----------------
 func createNMPStatusFile(workDir string, status string) error {
 	fileName := path.Join(workDir, nodemanagement.STATUS_FILE_NAME)
 	glog.Infof(cuwlog(fmt.Sprintf("Creating status.json file at %v", fileName)))

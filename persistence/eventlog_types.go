@@ -192,7 +192,7 @@ func NewServiceEventSource(instance_id string, service_url string, org string, v
 	return &source
 }
 
-//Check if this event log matches the input selection.
+// Check if this event log matches the input selection.
 func (w ServiceEventSource) Matches(selectors map[string][]Selector) bool {
 	for s_attr, s_vals := range selectors {
 		handle := true

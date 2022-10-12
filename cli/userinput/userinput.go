@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-//Display a list of the current userInputs of the node
+// Display a list of the current userInputs of the node
 func List() {
 	var inputs []policy.UserInput
 	cliutils.HorizonGet("node/userinput", []int{200}, &inputs, false)
@@ -48,7 +48,7 @@ func New() {
 	}
 }
 
-//Add or overwrite the userinputs for this node
+// Add or overwrite the userinputs for this node
 func Add(filePath string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -66,7 +66,7 @@ func Add(filePath string) {
 	msgPrinter.Println()
 }
 
-//Update the userinputs for this node
+// Update the userinputs for this node
 func Update(filePath string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -84,7 +84,7 @@ func Update(filePath string) {
 	msgPrinter.Println()
 }
 
-//Remove the user inputs for this nose
+// Remove the user inputs for this nose
 func Remove(force bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()

@@ -11,7 +11,6 @@ import (
 // ================================================================================================================
 // Verify the function that converts external policy constraint expressions to the internal JSON format, for simple
 // constraint expressions.
-//
 func Test_simple_conversion(t *testing.T) {
 
 	ce := new(ConstraintExpression)

@@ -521,10 +521,11 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 
 // Check if the client is talking with docker or podman
 // The /version api returns something like:
-// {
-//   "Components": [{"Name": "Podman Engine","Version": "3.1.0-dev",...]
-//   ...
-// }
+//
+//	{
+//	  "Components": [{"Name": "Podman Engine","Version": "3.1.0-dev",...]
+//	  ...
+//	}
 func GetServerEnginType(client *docker.Client) (string, error) {
 	svType := API_SERVER_TYPE_DOCKER
 

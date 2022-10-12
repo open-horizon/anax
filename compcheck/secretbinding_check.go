@@ -66,8 +66,9 @@ func (p *SecretBindingCheck) UnmarshalJSON(b []byte) error {
 // Given the SecretBindingCheck input, check if the service bindings
 // defined in the deployment policy or pattern are compatible.
 // The required fields in SecretBindingCheck are:
-//  (NodeId or (NodeArch and NodeType and NodeOrg)) and
-//  (BusinessPolId or BusinessPolicy or PatternId or Pattern)
+//
+//	(NodeId or (NodeArch and NodeType and NodeOrg)) and
+//	(BusinessPolId or BusinessPolicy or PatternId or Pattern)
 //
 // When checking whether the secret binding compatible or not, the
 // node org will be used as the secret org.
@@ -424,10 +425,12 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 // 1. check if the given secret bindings satisfy the service secret requirements.
 // 2. if vaultSecretExists is not nil, check if the required secret binding names exist in the secret manager.
 // It returns (compatible, reason for not compatible, index map, error).
-//    where the index map is keyed by the index of the secretBinding array,
-//    the value is a map of service secret names in the binding
-//    that are needed. Using map here instead of array to make it easy to remove the
-//    duplicates.
+//
+//	where the index map is keyed by the index of the secretBinding array,
+//	the value is a map of service secret names in the binding
+//	that are needed. Using map here instead of array to make it easy to remove the
+//	duplicates.
+//
 // The caller must make sure that the dependent services are accurate and no extranous ones.
 // For performance reason, this function does not check the valadity of the dependent services.
 func VerifySecretBindingForServiceCache(sTopDef common.AbstractServiceFile,
@@ -488,10 +491,11 @@ func VerifySecretBindingForServiceCache(sTopDef common.AbstractServiceFile,
 // 2. check if the given secret bindings satisfy the service secret requirements.
 // 3. if vaultSecretExists is not nil, check if the required secret binding names exist in the secret manager.
 // It returns (compatible, reason for not compatible, index map, top level service def, top level service id, a map dependen service defs keyed by service id, error).
-//    where the index map is keyed by the index of the secretBinding array,
-//    the value is a map of service secret names in the binding
-//    that are needed. Using map here instead of array to make it easy to remove the
-//    duplicates.
+//
+//	where the index map is keyed by the index of the secretBinding array,
+//	the value is a map of service secret names in the binding
+//	that are needed. Using map here instead of array to make it easy to remove the
+//	duplicates.
 func VerifySecretBindingForService(svcSpec *ServiceSpec,
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	vaultSecretExists exchange.VaultSecretExistsHandler, agbotUrl string,
@@ -524,10 +528,11 @@ func VerifySecretBindingForService(svcSpec *ServiceSpec,
 // 2. check if the given secret bindings satisfy the service secret requirements.
 // 3. if vaultSecretExists is not nil, check if the required secret binding names exist in the secret manager.
 // It returns (compatible, reason for not compatible, index map, a map dependen service defs keyed by service id, error).
-//    where the index map is keyed by the index of the secretBinding array,
-//    the value is a map of service secret names in the binding
-//    that are needed. Using map here instead of array to make it easy to remove the
-//    duplicates.
+//
+//	where the index map is keyed by the index of the secretBinding array,
+//	the value is a map of service secret names in the binding
+//	that are needed. Using map here instead of array to make it easy to remove the
+//	duplicates.
 func VerifySecretBindingForServiceDef(sDef common.AbstractServiceFile,
 	dependentServices map[string]exchange.ServiceDefinition, // can be nil
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
@@ -802,8 +807,10 @@ func VerifySingleVaultSecret(vaultSecretName string, nodeOrg string, agbotURL st
 
 // Parse the given vault secret name and return (user_name, secret_name, fully_qualified_name)
 // The vault secret name has the following formats:
-//     mysecret
-//     user/myusername/mysecrte
+//
+//	mysecret
+//	user/myusername/mysecrte
+//
 // The fully qualified name in vault is the name above preceded by "openhorizon/<orgname>".
 // However, it is not valid to specify the fully qualified name in the deployment policy or the pattern.
 // The <org_name> will always be the node's org name at the deployment time.

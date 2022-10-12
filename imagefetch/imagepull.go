@@ -160,7 +160,7 @@ func pullImageFromRepos(config config.Config, authConfigs map[string][]docker.Au
 	return nil
 }
 
-//  This function try maxPullAttempts times to pull the image from the repo. It exits out imediately if there is auth error.
+// This function try maxPullAttempts times to pull the image from the repo. It exits out imediately if there is auth error.
 func pullSingleImageFromRepo(client *docker.Client, opts docker.PullImageOptions, auth docker.AuthConfiguration) error {
 	glog.V(5).Infof("Pulling image %v with auth name %v.", opts, auth.Username)
 

@@ -271,8 +271,9 @@ func calculateSkipTime(nhCheckrate uint64, pgi uint64) uint64 {
 // the state of the HA group. Non-HA workload usages dont have the concern about incremental workload upgrades, so they are ignored
 // by this routine.
 // Note: Multiple agbot could call this function at the same time (for different agreement).
-//       Table workloadusage is partitioned. So one agbot could only see the workloadusage in
-//       its own partition. Table ha_workload_upgrade is not partitioned.
+//
+//	Table workloadusage is partitioned. So one agbot could only see the workloadusage in
+//	its own partition. Table ha_workload_upgrade is not partitioned.
 func (w *AgreementBotWorker) governHAPartners() {
 	// Part A: remove all entries from the ha_workload_upgrade table if the upgrade is done.
 	// Part B: handle workloaduages that has pendingUpdateTime != 0
@@ -535,7 +536,6 @@ func GetDevice(httpClient *http.Client, deviceId string, url string, agbotId str
 
 // Govern the archived agreements, periodically deleting them from the database if they are old enough. The
 // age limit is defined by the agbot configuration, PurgeArchivedAgreementHours.
-//
 func (w *AgreementBotWorker) GovernArchivedAgreements() int {
 
 	// Default to purging archived agreements an hour after they are terminated.

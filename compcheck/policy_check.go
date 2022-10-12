@@ -64,11 +64,13 @@ func (p *PolicyCheck) UnmarshalJSON(b []byte) error {
 // This is the function that HZN and the agbot secure API calls.
 // Given the PolicyCheck input, check if the policies are compatible.
 // The required fields in PolicyCheck are:
-//  (NodeId or NodePolicy) and (BusinessPolId or BusinessPolicy)
+//
+//	(NodeId or NodePolicy) and (BusinessPolId or BusinessPolicy)
 //
 // When checking whether the policies are compatible or not, we devide policies into two side:
-//    Edge side: node policy (including the node built-in policy)
-//    Agbot side: business policy + service policy + service built-in properties
+//
+//	Edge side: node policy (including the node built-in policy)
+//	Agbot side: business policy + service policy + service built-in properties
 func PolicyCompatible(ec exchange.ExchangeContext, pcInput *PolicyCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
 
 	getDeviceHandler := exchange.GetHTTPDeviceHandler(ec)

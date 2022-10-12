@@ -2,16 +2,16 @@
 //
 // This is the secure API for the agreement bot.
 //
-//   schemes: https
-//   host: localhost
-//   basePath: https://host:port/
-//   version: 0.0.1
+//	schemes: https
+//	host: localhost
+//	basePath: https://host:port/
+//	version: 0.0.1
 //
-//   consumes:
-//   - application/json
+//	consumes:
+//	- application/json
 //
-//   produces:
-//   - application/json
+//	produces:
+//	- application/json
 //
 // swagger:meta
 package agreementbot
@@ -1033,32 +1033,35 @@ type SecretRequestInfo struct {
 //
 // ---
 // consumes:
-//  - application/json
+//   - application/json
+//
 // parameters:
-//  - name: org
-//    in: query
-//    type: string
-//    required: true
-//    description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
-//  - name: user
-//    in: query
-//    type: string
-//    required: false
-//    description: "The user owning the secret."
-//  - name: secret
-//    in: query
-//    type: string
-//    required: false
-//    description: "The secret key (name)."
+//   - name: org
+//     in: query
+//     type: string
+//     required: true
+//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+//   - name: user
+//     in: query
+//     type: string
+//     required: false
+//     description: "The user owning the secret."
+//   - name: secret
+//     in: query
+//     type: string
+//     required: false
+//     description: "The secret key (name)."
+//
 // responses:
-//  '400':
-//    description: "Secret org or name does not meet constraints."
-//    schema:
-//     type: string
-//  '503':
-//    description: "Secret provider not ready or not configured."
-//    schema:
-//     type: string
+//
+//	'400':
+//	  description: "Secret org or name does not meet constraints."
+//	  schema:
+//	   type: string
+//	'503':
+//	  description: "Secret provider not ready or not configured."
+//	  schema:
+//	   type: string
 func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *SecretRequestInfo {
 
 	// Process in the inputs and verify that they are consistent with the logged in user.

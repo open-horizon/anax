@@ -18,7 +18,7 @@ import (
 	"runtime"
 )
 
-//BusinessListPolicy lists all the policies in the org or only the specified policy if one is given
+// BusinessListPolicy lists all the policies in the org or only the specified policy if one is given
 func BusinessListPolicy(org string, credToUse string, policy string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 
@@ -63,7 +63,7 @@ func BusinessListPolicy(org string, credToUse string, policy string, namesOnly b
 	}
 }
 
-//BusinessAddPolicy will add a new policy or overwrite an existing policy byt he same name in the Horizon Exchange
+// BusinessAddPolicy will add a new policy or overwrite an existing policy byt he same name in the Horizon Exchange
 func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath string, noConstraints bool) {
 
 	//check for ExchangeUrl early on
@@ -120,7 +120,7 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 	}
 }
 
-//BusinessUpdatePolicy will replace a single attribute of a business policy in the Horizon Exchange
+// BusinessUpdatePolicy will replace a single attribute of a business policy in the Horizon Exchange
 func BusinessUpdatePolicy(org string, credToUse string, policyName string, filePath string) {
 
 	//check for ExchangeUrl early on
@@ -215,7 +215,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 	msgPrinter.Println()
 }
 
-//BusinessRemovePolicy will remove an existing business policy in the Horizon Exchange
+// BusinessRemovePolicy will remove an existing business policy in the Horizon Exchange
 func BusinessRemovePolicy(org string, credToUse string, policy string, force bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	var polOrg string
@@ -284,7 +284,9 @@ func verifySecretBindingForPolicy(policy *businesspolicy.BusinessPolicy, polOrg 
 
 // Validate that each service secret has a vault binding in the given deployment policy.
 // checkAllArches -- if the arch for the service is '*' or an empty string,
-//   validate the secret bindings for all the arches that have this service.
+//
+//	validate the secret bindings for all the arches that have this service.
+//
 // It does not verify if the vault secret exist in vault.
 // It returns 2 array of SecretBinding objects. One for needed and one for extraneous.
 func ValidateSecretBindingForDeplPolicy(policy *businesspolicy.BusinessPolicy,
@@ -322,11 +324,12 @@ func ValidateSecretBindingForDeplPolicy(policy *businesspolicy.BusinessPolicy,
 // Given a top level service and an array of vault secret bindings, validate that
 // all the secrets for the service and dependent services have vault bindings.
 // It returns an index map keyed by index of the secretBinding array,
-//    the value is a map of service secret names in the binding
-//    that are needed. Using map here instead of array to make it easy to remove the
-//    duplicates.
-//    It also returns a map of dependent services keyed by the service id, the top
-//    level service definition and id.
+//
+//	the value is a map of service secret names in the binding
+//	that are needed. Using map here instead of array to make it easy to remove the
+//	duplicates.
+//	It also returns a map of dependent services keyed by the service id, the top
+//	level service definition and id.
 //
 // checkAllArches -- if the arch for the service is '*' or an empty string,
 // validate the secret bindings for all the arches that have this service.

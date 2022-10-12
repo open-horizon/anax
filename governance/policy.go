@@ -64,9 +64,11 @@ func (w *GovernanceWorker) handleNodePolicyUpdated(ucDeployment int, ucManagemen
 
 // Handles the node policy changes for deployment.
 // The updateCode is the OR of
-//   EP_COMPARE_PROPERTY_CHANGED,
-//   EP_COMPARE_CONSTRAINT_CHANGED,
-//   EP_ALLOWPRIVILEGED_CHANGED
+//
+//	EP_COMPARE_PROPERTY_CHANGED,
+//	EP_COMPARE_CONSTRAINT_CHANGED,
+//	EP_ALLOWPRIVILEGED_CHANGED
+//
 // defined in externalpolicy/ExternalPolicy.go
 func (w *GovernanceWorker) handleNodePolicyUpdateForDeployment(updateCode int) {
 
@@ -122,10 +124,12 @@ func (w *GovernanceWorker) handleNodePolicyUpdateForDeployment(updateCode int) {
 
 // Handles the node policy changes for node management.
 // The updateCode is the OR of
-//   EP_COMPARE_PROPERTY_CHANGED,
-//   EP_COMPARE_CONSTRAINT_CHANGED,
-//   EP_COMPARE_DELETED,
-//   EP_ALLOWPRIVILEGED_CHANGED
+//
+//	EP_COMPARE_PROPERTY_CHANGED,
+//	EP_COMPARE_CONSTRAINT_CHANGED,
+//	EP_COMPARE_DELETED,
+//	EP_ALLOWPRIVILEGED_CHANGED
+//
 // defined in externalpolicy/ExternalPolicy.go
 func (w *GovernanceWorker) handleNodePolicyUpdateForManagement(updateCode int) {
 }

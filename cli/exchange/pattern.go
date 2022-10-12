@@ -510,7 +510,6 @@ func verifySecretBindingForPattern(secretBinding []exchangecommon.SecretBinding,
 // validate the secret bindings for all the arches that have this service.
 // It does not verify the vault secret exists in the vault.
 // It returns 2 array of SecretBinding objects. One for needed and one for extraneous.
-//
 func ValidateSecretBinding(secretBinding []exchangecommon.SecretBinding,
 	sRef []exchange.ServiceReference, ec exchange.ExchangeContext, checkAllArches bool,
 	msgPrinter *message.Printer) ([]exchangecommon.SecretBinding, []exchangecommon.SecretBinding, error) {

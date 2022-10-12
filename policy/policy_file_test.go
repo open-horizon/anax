@@ -295,7 +295,6 @@ func Test_Policy_Incompatible(t *testing.T) {
 
 // Finally, merge 2 policy files (producer and consumer.) together and make sure the merged
 // policy is what we would expect.
-//
 func Test_Policy_Merge(t *testing.T) {
 
 	if _, err := os.Stat("./test/pfmerge1/merged.policy"); !os.IsNotExist(err) {

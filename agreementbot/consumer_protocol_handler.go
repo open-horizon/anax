@@ -409,8 +409,9 @@ func (b *BaseConsumerProtocolHandler) HandleMMSObjectPolicy(cmd *MMSObjectPolicy
 }
 
 // Note: Multiple agbot could call this function at the same time (for different agreement).
-//       Table workloadusage is partitioned. So one agbot could only see the workloadusage in
-//       its own partition. Table ha_workload_upgrade is not partitioned.
+//
+//	Table workloadusage is partitioned. So one agbot could only see the workloadusage in
+//	its own partition. Table ha_workload_upgrade is not partitioned.
 func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, reason string, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Canceling Agreement: %v, reason: %v", ag, reason)))
 	// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record

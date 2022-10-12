@@ -2,16 +2,16 @@
 //
 // This is the main package of the cloud synchronization service
 //
-//   schemes: http
-//   host: localhost
-//   basePath: /
-//   version: 0.0.1
+//	schemes: http
+//	host: localhost
+//	basePath: /
+//	version: 0.0.1
 //
-//   consumes:
-//   - application/json
+//	consumes:
+//	- application/json
 //
-//   produces:
-//   - application/json
+//	produces:
+//	- application/json
 //
 // swagger:meta
 package main

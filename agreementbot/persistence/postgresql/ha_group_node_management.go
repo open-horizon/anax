@@ -81,7 +81,7 @@ func (db *AgbotPostgresqlDB) ListUpgradingNodeInGroup(orgId string, groupName st
 	var dbNmpId sql.NullString
 	qerr := db.db.QueryRow(HA_GROUP_GET_IN_ORG_GROUP, orgId, groupName).Scan(&dbNodeId, &dbNmpId)
 	if qerr != nil && qerr != sql.ErrNoRows {
-		return nil, fmt.Errorf("error querying database for upgrading node in group %v. Error was: %v", orgId, groupName, qerr)
+		return nil, fmt.Errorf("error querying database for upgrading node in group %v/%v. Error was: %v", orgId, groupName, qerr)
 	}
 
 	if dbNodeId.Valid {

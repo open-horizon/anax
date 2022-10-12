@@ -266,7 +266,7 @@ func (self *RequiredProperty) Merge(other *RequiredProperty) *RequiredProperty {
 //
 
 // A simple function used to extract the 1 and only key of the input map. Callers of this function
-/// must check that there is only 1 key in the map before calling.
+// / must check that there is only 1 key in the map before calling.
 func getControlOperator(m *map[string]interface{}) string {
 	return getKeys(*m)[0]
 }

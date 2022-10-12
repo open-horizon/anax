@@ -32,7 +32,7 @@ const SECRETS_UPDATE = "AgbotSecretsUpdate"
 const AGENT_FILE_VERSION_UPDATE = "AgbotUpdateAgentFileVersion"
 const NMP_HA_GROUP_STATUS = "NMPHAGroupMonitor"
 
-//const GOVERN_BC_NEEDS = "AgBotGovernBlockchain"
+// const GOVERN_BC_NEEDS = "AgBotGovernBlockchain"
 const POLICY_WATCHER = "AgBotPolicyWatcher"
 const STALE_PARTITIONS = "AgbotStaleDatabasePartition"
 const MESSAGE_KEY_CHECK = "AgbotMessageKeyCheck"
@@ -42,7 +42,7 @@ type DVState struct {
 	nhSkip uint64
 }
 
-//package level variable
+// package level variable
 var patternManager *PatternManager
 var businessPolManager *BusinessPolicyManager
 

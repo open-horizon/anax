@@ -138,14 +138,17 @@ func (w EventLog) IsSourceType(source_type string) bool {
 
 // Checks if the event log matches the selectors
 // For example:
-//   selectors = [string][]Selector{
-//			"a": [{"~": "test"}, {"~", "agreement"}],
-//          "b": [{"=", "this is a test"}],
-//			"c":[{">", 100}]
-//		}
+//
+//	  selectors = [string][]Selector{
+//				"a": [{"~": "test"}, {"~", "agreement"}],
+//	         "b": [{"=", "this is a test"}],
+//				"c":[{">", 100}]
+//			}
+//
 // It means checking if this event log matches the following logic:
-//  the attribute "a" contains the word "test" and "agreement",
-//  and attribute "b" equals "this is a test" and attribute "c" is greater than 100.
+//
+//	the attribute "a" contains the word "test" and "agreement",
+//	and attribute "b" equals "this is a test" and attribute "c" is greater than 100.
 func (w EventLog) Matches(selectors map[string][]Selector) bool {
 
 	// separate base selectors and source selectors
@@ -600,10 +603,12 @@ func GroupSelectors(selectors map[string][]Selector) (map[string][]Selector, map
 
 // Given the selector, check if the given attribute match or not.
 // Example:
-//   MatchTypes("this is a test", [{ "~", "test"}, {"~", "aaa"}])
-//     --- check the string to see if it contains "test" and "aaa".
-//   MatchTypes(12345, [{">", 100}])
-//     --- check the integer to see if it is greater than 100.
+//
+//	MatchTypes("this is a test", [{ "~", "test"}, {"~", "aaa"}])
+//	  --- check the string to see if it contains "test" and "aaa".
+//	MatchTypes(12345, [{">", 100}])
+//	  --- check the integer to see if it is greater than 100.
+//
 // This function returns (match_or_not, handled_or_not, error)
 func MatchAttributeValue(attr interface{}, selectors []Selector) (bool, bool, error) {
 	for _, s := range selectors {

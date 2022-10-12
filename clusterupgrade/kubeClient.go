@@ -312,7 +312,7 @@ func (c KubeClient) UpdateAgentSecret(namespace string, secretName string, newSe
 	}
 }
 
-//----------------Service Account----------------
+// ----------------Service Account----------------
 func (c KubeClient) GetServiceAccount(namespace string, serviceAccountName string) (*v1.ServiceAccount, error) {
 	glog.V(3).Infof(cuwlog(fmt.Sprintf("Get service account %v under namespace %v", serviceAccountName, namespace)))
 
@@ -400,7 +400,7 @@ func (c KubeClient) GetKeyChain(namespace string, serviceAccountName string) (au
 	return kc, err
 }
 
-//----------------Deployment----------------
+// ----------------Deployment----------------
 func (c KubeClient) GetDeployment(namespace string, deploymentName string) (*appsv1.Deployment, error) {
 	glog.V(3).Infof(cuwlog(fmt.Sprintf("Get deployment %v under agent namespace %v", deploymentName, namespace)))
 	deployment, err := c.Client.AppsV1().Deployments(namespace).Get(context.Background(), deploymentName, metav1.GetOptions{})
