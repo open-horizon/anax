@@ -89,12 +89,17 @@ Note that this target is automatically executed when executing targets `check` a
 
 #### Generate swagger documentation
 
-    swagger generate spec -o ./swagger.json --scan-model
+    swagger generate spec -o ./swagger.json -m
 
 *Note - Place agbot secure api swagger file in `docs/agbot_secure_api`*
 
     cd agreementbot
-    swagger generate spec -o ../docs/agbot_secure_api.json --scan-model
+    swagger generate spec -o ../docs/agbot_secure_api.json --exclude=edge-sync-service -m
+
+*Note - Place mms/secrets API swagger file in `docs`*
+
+    cd ../resource
+    swagger generate spec -o ./mms_swagger.json --include=resource --include=edge-sync-service -m
 
 ### Internationalization
 

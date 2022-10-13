@@ -4,16 +4,16 @@
 //
 // The Agent Secrets APIs enables service containers to receive updated secrets
 //
-//	schemes: http, https
-//	host: localhost
-//	basePath: /
-//	version: 1.0.0
+//  schemes: http, https
+//  host: localhost
+//  basePath: /
+//  version: 1.0.0
 //
-//	consumes:
-//	- application/json
+//  consumes:
+//  - application/json
 //
-//	produces:
-//	- application/json
+//  produces:
+//  - application/json
 //
 // swagger:meta
 package resource
@@ -90,21 +90,20 @@ func (api *SecretAPI) SetupAuthenticator(auth *SecretsAPIAuthenticate) {
 // parameters:
 //
 // responses:
-//
-//	'200':
-//	  description: Secrets response
-//	  schema:
-//	    type: array
-//	    items:
-//	      type: string
-//	'404':
-//	  description: No updated secrets found
-//	  schema:
-//	    type: string
-//	'500':
-//	  description: Failed to retrieve the secret names of updated secrets
-//	  schema:
-//	    type: string
+//   '200':
+//     description: Secrets response
+//     schema:
+//       type: array
+//       items:
+//         type: string
+//   '404':
+//     description: No updated secrets found
+//     schema:
+//       type: string
+//   '500':
+//     description: Failed to retrieve the secret names of updated secrets
+//     schema:
+//       type: string
 func (api *SecretAPI) handleGetSecrets(writer http.ResponseWriter, request *http.Request) {
 	glog.V(3).Infof(secAPILogString(fmt.Sprintf("GET /api/v1/secrets")))
 

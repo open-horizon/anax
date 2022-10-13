@@ -593,6 +593,49 @@
         }
       }
     },
+    "/api/v1/objects/{objectType}/{objectID}/deleted": {
+      "put": {
+        "description": "Confirm the deletion of the object of the specified object type and object ID by the application.\nThe application should invoke this API after it completed the actions associated with deleting the object.",
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "ESS"
+        ],
+        "summary": "The service confirms object deletion.",
+        "operationId": "handleObjectDeleted",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The object type of the object to confirm its deletion",
+            "name": "objectType",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The object ID of the object to confirm its deletion",
+            "name": "objectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Object's deletion confirmed",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Failed to confirm the object's deletion",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/objects/{objectType}/{objectID}/received": {
       "put": {
         "description": "Mark the object of the specified object type and object ID as having been received by the application.\nAfter the object is marked as received it will only be delivered to the application again if specified in the objects request.",
@@ -1239,8 +1282,7 @@
           "text/plain"
         ],
         "tags": [
-          "CSS",
-          "ESS"
+          "CSS"
         ],
         "summary": "The service confirms object deletion.",
         "operationId": "handleObjectDeleted",
@@ -1825,8 +1867,8 @@
             "in": "query"
           },
           {
-            "type": "boolean",
-            "description": "Fetch the objects with noData marked to true",
+            "type": "string",
+            "description": "Specify true or false. Fetch the objects with noData marked to true/false. If not specified, object will not be filtered by \"noData\" field",
             "name": "noData",
             "in": "query"
           },
@@ -1834,6 +1876,12 @@
             "type": "string",
             "description": "Fetch the objects with expiration time before specified timestamp in RFC3339 format",
             "name": "expirationTimeBefore",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Specify true or false. Fetch the object with deleted marked to true/false. If not specified, object will not be filtered by \"deleted\" field",
+            "name": "deleted",
             "in": "query"
           }
         ],
@@ -1860,6 +1908,36 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/objects/{orgID}?list_object_type=true": {
+      "get": {
+        "description": "Get the list of objects types under a given org\nThis is a CSS only API.",
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "tags": [
+          "CSS"
+        ],
+        "summary": "Get objects types",
+        "operationId": "handleListObjectTypes",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The orgID of the object types to retrieve",
+            "name": "orgID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Must be true to indicate that object types are to be retrieved",
+            "name": "list_object_type",
+            "in": "query",
+            "required": true
+          }
+        ]
       }
     },
     "/api/v1/objects?destination_policy=true": {
@@ -2458,201 +2536,6 @@
       },
       "x-go-package": "github.com/open-horizon/edge-sync-service/common"
     },
-    "AuthenticateOKBody": {
-      "description": "AuthenticateOKBody authenticate o k body",
-      "type": "object",
-      "required": [
-        "IdentityToken",
-        "Status"
-      ],
-      "properties": {
-        "IdentityToken": {
-          "description": "An opaque token used to authenticate a user after a successful login",
-          "type": "string"
-        },
-        "Status": {
-          "description": "The status of the authentication",
-          "type": "string"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/registry"
-    },
-    "BoundSecret": {
-      "type": "object",
-      "title": "a binding that maps a secret name to a secret manager secret name.",
-      "additionalProperties": {
-        "type": "string"
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
-    },
-    "BusinessPolicy": {
-      "description": "BusinessPolicy the business policy",
-      "type": "object",
-      "properties": {
-        "constraints": {
-          "$ref": "#/definitions/ConstraintExpression"
-        },
-        "description": {
-          "type": "string",
-          "x-go-name": "Description"
-        },
-        "label": {
-          "type": "string",
-          "x-go-name": "Label"
-        },
-        "owner": {
-          "type": "string",
-          "x-go-name": "Owner"
-        },
-        "properties": {
-          "$ref": "#/definitions/PropertyList"
-        },
-        "secretBinding": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SecretBinding"
-          },
-          "x-go-name": "SecretBinding"
-        },
-        "service": {
-          "$ref": "#/definitions/ServiceRef"
-        },
-        "userInput": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UserInput"
-          },
-          "x-go-name": "UserInput"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
-    },
-    "ConstraintExpression": {
-      "type": "array",
-      "title": "This type implements all the ConstraintLanguage Plugin methods and delegates to plugin system.",
-      "items": {
-        "type": "string"
-      },
-      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
-    },
-    "ContainerChangeResponseItem": {
-      "description": "ContainerChangeResponseItem change item in response to ContainerChanges operation",
-      "type": "object",
-      "required": [
-        "Kind",
-        "Path"
-      ],
-      "properties": {
-        "Kind": {
-          "description": "Kind of change",
-          "type": "integer",
-          "format": "uint8"
-        },
-        "Path": {
-          "description": "Path to file that has changed",
-          "type": "string"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerCreateCreatedBody": {
-      "description": "ContainerCreateCreatedBody OK response to ContainerCreate operation",
-      "type": "object",
-      "required": [
-        "Id",
-        "Warnings"
-      ],
-      "properties": {
-        "Id": {
-          "description": "The ID of the created container",
-          "type": "string",
-          "x-go-name": "ID"
-        },
-        "Warnings": {
-          "description": "Warnings encountered when creating the container",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerTopOKBody": {
-      "description": "ContainerTopOKBody OK response to ContainerTop operation",
-      "type": "object",
-      "required": [
-        "Processes",
-        "Titles"
-      ],
-      "properties": {
-        "Processes": {
-          "description": "Each process running in the container, where each is process\nis an array of values corresponding to the titles.",
-          "type": "array",
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "Titles": {
-          "description": "The ps column titles",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerUpdateOKBody": {
-      "description": "ContainerUpdateOKBody OK response to ContainerUpdate operation",
-      "type": "object",
-      "required": [
-        "Warnings"
-      ],
-      "properties": {
-        "Warnings": {
-          "description": "warnings",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerWaitOKBody": {
-      "description": "ContainerWaitOKBody OK response to ContainerWait operation",
-      "type": "object",
-      "required": [
-        "Error",
-        "StatusCode"
-      ],
-      "properties": {
-        "Error": {
-          "$ref": "#/definitions/ContainerWaitOKBodyError"
-        },
-        "StatusCode": {
-          "description": "Exit code of the container",
-          "type": "integer",
-          "format": "int64"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerWaitOKBodyError": {
-      "description": "ContainerWaitOKBodyError container waiting error, if any",
-      "type": "object",
-      "properties": {
-        "Message": {
-          "description": "Details of an error",
-          "type": "string"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
     "DBHealthStatusInfo": {
       "description": "DBHealthStatusInfo describes the health status of the database of the sync-service node",
       "type": "object",
@@ -2771,19 +2654,6 @@
       },
       "x-go-package": "github.com/open-horizon/edge-sync-service/common"
     },
-    "ExternalPolicy": {
-      "description": "BusinessPolicy the external policy",
-      "type": "object",
-      "properties": {
-        "constraints": {
-          "$ref": "#/definitions/ConstraintExpression"
-        },
-        "properties": {
-          "$ref": "#/definitions/PropertyList"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
-    },
     "HealthStatusInfo": {
       "description": "HealthStatusInfo describes the health status of the sync-service node",
       "type": "object",
@@ -2803,20 +2673,6 @@
         }
       },
       "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
-    "Input": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "value": {
-          "type": "object",
-          "x-go-name": "Value"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/policy"
     },
     "MQTTHealthStatusInfo": {
       "description": "MQTTHealthStatusInfo describes the health status of the MQTT connection of the sync-service node",
@@ -3023,6 +2879,12 @@
           "type": "string",
           "x-go-name": "SourceDataURI"
         },
+        "uploadChunkSize": {
+          "description": "UploadChunkSize is an internal field indicating the upload chunk size used when uploading the\nthe model (if chunking was used)\nThis field should not be set by users.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "UploadChunkSize"
+        },
         "version": {
           "description": "Version is the object's version (as used by the application).\nOptional field, empty by default.",
           "type": "string",
@@ -3030,22 +2892,6 @@
         }
       },
       "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
-    "NodeHealth": {
-      "type": "object",
-      "properties": {
-        "check_agreement_status": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "CheckAgreementStatus"
-        },
-        "missing_heartbeat_interval": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "MissingHBInterval"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
     },
     "ObjectDestinationPolicy": {
       "type": "object",
@@ -3214,62 +3060,6 @@
       },
       "x-go-package": "github.com/open-horizon/edge-sync-service/common"
     },
-    "Property": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "type": {
-          "type": "string",
-          "x-go-name": "Type"
-        },
-        "value": {
-          "type": "object",
-          "x-go-name": "Value"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
-    },
-    "PropertyList": {
-      "description": "This struct represents property values advertised by the policy",
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/Property"
-      },
-      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
-    },
-    "SecretBinding": {
-      "description": "The secret binding that maps service secret names to secret manager secret names",
-      "type": "object",
-      "properties": {
-        "secrets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/BoundSecret"
-          },
-          "x-go-name": "Secrets"
-        },
-        "serviceArch": {
-          "type": "string",
-          "x-go-name": "ServiceArch"
-        },
-        "serviceOrgid": {
-          "type": "string",
-          "x-go-name": "ServiceOrgid"
-        },
-        "serviceUrl": {
-          "type": "string",
-          "x-go-name": "ServiceUrl"
-        },
-        "serviceVersionRange": {
-          "type": "string",
-          "x-go-name": "ServiceVersionRange"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
-    },
     "ServiceID": {
       "description": "ServiceID contains the ID of a service to which an object may have affinity for",
       "type": "object",
@@ -3297,48 +3087,6 @@
       },
       "x-go-package": "github.com/open-horizon/edge-sync-service/common"
     },
-    "ServiceRef": {
-      "type": "object",
-      "properties": {
-        "arch": {
-          "type": "string",
-          "x-go-name": "Arch"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "nodeHealth": {
-          "$ref": "#/definitions/NodeHealth"
-        },
-        "org": {
-          "type": "string",
-          "x-go-name": "Org"
-        },
-        "serviceVersions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/WorkloadChoice"
-          },
-          "x-go-name": "ServiceVersions"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
-    },
-    "UpgradePolicy": {
-      "type": "object",
-      "properties": {
-        "lifecycle": {
-          "type": "string",
-          "x-go-name": "Lifecycle"
-        },
-        "time": {
-          "type": "string",
-          "x-go-name": "Time"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
-    },
     "UsageInfo": {
       "description": "UsageInfo describes the usage of the sync-service node",
       "type": "object",
@@ -3360,78 +3108,6 @@
         }
       },
       "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
-    "UserInput": {
-      "type": "object",
-      "title": "UserInput This type is used to describe a configuration variable that the node owner/user has to set before the service is able to execute on the edge node.",
-      "properties": {
-        "inputs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Input"
-          },
-          "x-go-name": "Inputs"
-        },
-        "serviceArch": {
-          "type": "string",
-          "x-go-name": "ServiceArch"
-        },
-        "serviceOrgid": {
-          "type": "string",
-          "x-go-name": "ServiceOrgid"
-        },
-        "serviceUrl": {
-          "type": "string",
-          "x-go-name": "ServiceUrl"
-        },
-        "serviceVersionRange": {
-          "type": "string",
-          "x-go-name": "ServiceVersionRange"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/policy"
-    },
-    "WorkloadChoice": {
-      "type": "object",
-      "properties": {
-        "priority": {
-          "$ref": "#/definitions/WorkloadPriority"
-        },
-        "upgradePolicy": {
-          "$ref": "#/definitions/UpgradePolicy"
-        },
-        "version": {
-          "type": "string",
-          "x-go-name": "Version"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
-    },
-    "WorkloadPriority": {
-      "type": "object",
-      "properties": {
-        "priority_value": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "PriorityValue"
-        },
-        "retries": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Retries"
-        },
-        "retry_durations": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "RetryDurationS"
-        },
-        "verified_durations": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "VerifiedDurationS"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
     },
     "bulkACLUpdate": {
       "description": "bulkACLUpdate is the payload used when performing a bulk update on an ACL (either adding uses to an\nACL or removing users from an ACL.",
