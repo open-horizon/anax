@@ -72,19 +72,24 @@ func LogExchangeEvent(db *bolt.DB, severity string, message_meta *persistence.Me
 // If all_logs is false, only the event logs for the current registration is returned.
 // The input selectors is a map of selector array.
 // For example:
-//   selectors = [string][]Selector{
-//			"a": [{"~": "test"}, {"~", "agreement"}],
-//          "b": [{"=", "this is a test"}],
-//			"c":[{">", 100}]
-//		}
+//
+//	  selectors = [string][]Selector{
+//				"a": [{"~": "test"}, {"~", "agreement"}],
+//	         "b": [{"=", "this is a test"}],
+//				"c":[{">", 100}]
+//			}
+//
 // It means checking if this event log matches the following logic:
-//    the attribute "a" contains the word "test" and "agreement",
-//    attribute "b" equals "this is a test" and attribute "c" is greater than 100.
+//
+//	the attribute "a" contains the word "test" and "agreement",
+//	attribute "b" equals "this is a test" and attribute "c" is greater than 100.
+//
 // A real example is:
-//   { 	"severity": [{"=", "info"}],
-//		"message": [{"~", "agreement"}, {"~", "service"}],
-//		"agreement_id": [{"=", c47db9ec232ae4b32c98c08579efcc420aa7652e5fe23d04289c8315c17a04ab}]
-//   }
+//
+//	  { 	"severity": [{"=", "info"}],
+//			"message": [{"~", "agreement"}, {"~", "service"}],
+//			"agreement_id": [{"=", c47db9ec232ae4b32c98c08579efcc420aa7652e5fe23d04289c8315c17a04ab}]
+//	  }
 //
 // msgPrinter: Used for i18n. If nil, the default will be used.
 func GetEventLogs(db *bolt.DB, all_logs bool, selectors map[string][]persistence.Selector, msgPrinter *message.Printer) ([]persistence.EventLog, error) {

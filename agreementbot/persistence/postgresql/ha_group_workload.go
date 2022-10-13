@@ -58,7 +58,7 @@ func (db *AgbotPostgresqlDB) ListHAUpgradingWorkloadsByGroupName(org string, haG
 	rows, err := db.db.Query(HA_WORKLOAD_GET_ALL_IN_HA_GROUP, haGroupName, org)
 
 	if err != nil {
-		return nil, fmt.Errorf("error querying database for all upgrading workloads in org/hagroup %v. Error was: %v", org, haGroupName, err)
+		return nil, fmt.Errorf("error querying database for all upgrading workloads in org/hagroup %v/%v. Error was: %v", org, haGroupName, err)
 	}
 
 	defer rows.Close()

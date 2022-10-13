@@ -141,7 +141,7 @@ func Test_PropertyList_incompatible(t *testing.T) {
 	}
 }
 
-//Test the property validation with valid properties
+// Test the property validation with valid properties
 func Test_Validate_valid(t *testing.T) {
 	p1 := `[{"name":"prop1","value":"val1","type":"string"},{"name":"prop2","value":"val2"},{"name":"prop3","value":"423"}]`
 	if pl1 := create_PropertyList(p1, t); pl1 != nil {
@@ -185,7 +185,7 @@ func Test_Validate_valid(t *testing.T) {
 	}
 }
 
-//Test the property validation with invalid properties
+// Test the property validation with invalid properties
 func Test_Validate_invalid(t *testing.T) {
 	p1 := `[{"name":"prop1","value":["val1","val2","val4"]}]`
 	if pl1 := create_PropertyList(p1, t); pl1 != nil {

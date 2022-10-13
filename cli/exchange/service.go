@@ -503,7 +503,7 @@ func ServiceRemoveAuth(org, userPw, service string, authId uint) {
 	}
 }
 
-//ServiceListPolicy lists the policy for the service in the Horizon Exchange
+// ServiceListPolicy lists the policy for the service in the Horizon Exchange
 func ServiceListPolicy(org string, credToUse string, service string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -532,7 +532,7 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 	fmt.Println(string(buf.String()))
 }
 
-//ServiceAddPolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
+// ServiceAddPolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
 func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath string) {
 
 	//check for ExchangeUrl early on
@@ -602,7 +602,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	msgPrinter.Println()
 }
 
-//ServiceRemovePolicy removes the service policy in the exchange
+// ServiceRemovePolicy removes the service policy in the exchange
 func ServiceRemovePolicy(org string, credToUse string, service string, force bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()

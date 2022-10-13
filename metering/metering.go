@@ -154,7 +154,6 @@ func (m *MeteringNotification) GetMeterHash() string {
 // results of the calculation are set directly onto the object.
 //
 // The amount is the full amount earned since the agreement started.
-//
 func (m *MeteringNotification) calculateAmount(meterPolicy policy.Meter, startTime uint64, checkRate uint64, missedChecks uint64) error {
 
 	normalize := map[string]float64{"min": 1.0, "hour": 60.0, "day": 1440.0}

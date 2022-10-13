@@ -1,7 +1,6 @@
 // Package main Edge Syncronization Service
 //
 // This is the main package of the edge synchronization service used by the hzn dev tool.
-//
 package main
 
 //go:generate swagger generate spec

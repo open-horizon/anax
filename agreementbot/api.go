@@ -763,7 +763,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//Get Agbot config info
+// Get Agbot config info
 func (a *API) config(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
@@ -893,7 +893,6 @@ func (a *API) ha_upgrading_node(w http.ResponseWriter, r *http.Request) {
 
 // ==========================================================================================
 // Utility functions used by many of the API endpoints.
-//
 type HorizonAgbot struct {
 	Id  string `json:"agbot_id"`
 	Org string `json:"organization"`

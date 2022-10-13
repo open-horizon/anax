@@ -84,7 +84,6 @@ func ExtractProtocol(msg string) (string, error) {
 // =======================================================================================================
 // Protocol Handler - This is the interface that Horizon uses to interact with agreement protocol
 // implementations.
-//
 type ProtocolHandler interface {
 	// Base protocol handler methods. These are implemented by the abstract interface.
 	Name() string

@@ -43,7 +43,6 @@ import (
 // process events that they are about. However, to get started, anax needs to do a bunch of initialization
 // tasks. The config file has to be read in, the databases have to get created, and then the eventing system
 // and the workers can be fired up.
-//
 func main() {
 	configFile := flag.String("config", "/etc/colonus/anax.config", "Config file location")
 	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to file")

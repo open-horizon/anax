@@ -9,7 +9,6 @@ import ()
 // version schema:
 // ver:     The current version of the database schema.
 // updated: A timestamp to record last updated time.
-//
 const VERSION_CREATE_TABLE = `CREATE TABLE IF NOT EXISTS version (
 	id serial PRIMARY KEY,
 	ver int NOT NULL,

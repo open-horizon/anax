@@ -107,7 +107,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 	}
 }
 
-//call horizon DELETE /node api, timeout in 3 minutes.
+// call horizon DELETE /node api, timeout in 3 minutes.
 func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()

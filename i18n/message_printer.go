@@ -14,7 +14,7 @@ const DEFAULT_LANGUAGE = "en"
 
 var messagePrinter *message.Printer
 
-//en,zh_CN,zh_TW,fr,de,it,ja,pt_BR,es,ko
+// en,zh_CN,zh_TW,fr,de,it,ja,pt_BR,es,ko
 var supportedLangs = []language.Tag{
 	language.Make("en"), // english fallback
 	language.Make("zh_CN"),

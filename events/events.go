@@ -926,7 +926,7 @@ func NewGovernanceWorkloadCancelationMessage(id EventId, cause EndContractCause,
 	}
 }
 
-//Workload messages
+// Workload messages
 type WorkloadMessage struct {
 	event             Event
 	AgreementProtocol string
@@ -962,7 +962,7 @@ func NewWorkloadMessage(id EventId, protocol string, agreementId string, deploym
 	}
 }
 
-//Container messages
+// Container messages
 type ContainerMessage struct {
 	event         Event
 	LaunchContext ContainerLaunchContext
@@ -994,7 +994,7 @@ func NewContainerMessage(id EventId, lc ContainerLaunchContext, serviceName stri
 	}
 }
 
-//Container stop message
+// Container stop message
 type ContainerStopMessage struct {
 	event         Event
 	ContainerName string
@@ -1024,7 +1024,7 @@ func NewContainerStopMessage(id EventId, containerName string, org string) *Cont
 	}
 }
 
-//Container Shutdown message
+// Container Shutdown message
 type ContainerShutdownMessage struct {
 	event         Event
 	ContainerName string

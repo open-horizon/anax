@@ -237,7 +237,7 @@ func (rb RolebindingRbacV1) Name() string {
 	return rb.RolebindingObject.ObjectMeta.Name
 }
 
-//----------------ServiceAccount----------------
+// ----------------ServiceAccount----------------
 type ServiceAccountCoreV1 struct {
 	ServiceAccountObject *corev1.ServiceAccount
 }
@@ -343,7 +343,7 @@ func (d DeploymentAppsV1) Name() string {
 //----------------CRD & CR----------------
 // A new version requires a new CRD client type and adding the version scheme in getK8sObjectFromYaml
 
-//--------Version v1beta1--------
+// --------Version v1beta1--------
 // NewCRDV1beta1Client returns the client needed to create a CRD in the cluster
 func NewCRDV1beta1Client() (*apiv1beta1client.ApiextensionsV1beta1Client, error) {
 	config, err := cutil.NewKubeConfig()
@@ -542,7 +542,7 @@ func (cr CustomResourceV1Beta1) gvr() (*schema.GroupVersionResource, error) {
 	}
 }
 
-//--------Version v1--------
+// --------Version v1--------
 // NewCRDV1Client returns a client that can be used to interact with custom resource definitions in the cluster
 func NewCRDV1Client() (*apiv1client.ApiextensionsV1Client, error) {
 	config, err := cutil.NewKubeConfig()

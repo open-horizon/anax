@@ -70,7 +70,8 @@ func (p *UserInputCheck) UnmarshalJSON(b []byte) error {
 // This is the function that HZN and the agbot secure API calls.
 // Given the UserInoutCheck input, check if the user inputs are compatible.
 // The required fields in UserInputCheck are:
-//  (NodeId or NodeUserInput) and(BusinessPolId or BusinessPolicy or PatternId or Pattern)
+//
+//	(NodeId or NodeUserInput) and(BusinessPolId or BusinessPolicy or PatternId or Pattern)
 //
 // When checking whether the user inputs are compatible or not, we need to merge the node's user input
 // with the ones in the business policy and check them against the user input requirements in the top level

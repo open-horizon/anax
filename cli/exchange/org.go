@@ -3,12 +3,12 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
+	"net/http"
+	"strings"
 )
 
 type ExchangeOrgs struct {

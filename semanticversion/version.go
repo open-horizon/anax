@@ -20,7 +20,7 @@ import (
 // '(' following version is excluded from the range
 // '[' following version is included in the range
 //
-// <version> is a string of x or x.y or x.y.z
+// <version> is a string of x or x.y or x.y.z or x.y.z-a
 //
 // <right-spec> if specified is one of:
 // ')' previous version is excluded from the range
@@ -158,26 +158,22 @@ func (self *Version_Expression) recalc_expression() {
 }
 
 // Return the version expression that was used as input to create this object
-//
 func (self *Version_Expression) Get_expression() string {
 	return self.full_expression
 }
 
 // Return the start version
-//
 func (self *Version_Expression) Get_start_version() string {
 	return self.start
 }
 
 // Return the end version
-//
 func (self *Version_Expression) Get_end_version() string {
 	return self.end
 }
 
 // Return true if the input version string in a valid version string and
 // if it falls within the boundaries of this object's version range.
-//
 func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 	if !IsVersionString(expr) {
 		errorString := i18n.GetMessagePrinter().Sprintf("Version_Expression: %v is not a valid version string.", expr)
@@ -360,7 +356,7 @@ func IsVersionString(expr string) bool {
 		}
 	}
 	for _, val := range prerelease {
-		if !strings.Contains("0123456789abcdefghijklmnopqrstuvwxyz-", strings.ToLower(string(val))) {
+		if !strings.Contains("0123456789abcdefghijklmnopqrstuvwxyz-.", strings.ToLower(string(val))) {
 			return false
 		}
 	}
@@ -404,7 +400,7 @@ func normalize(expr string) string {
 	}
 	preRelease := strings.Join(strings.Split(expr, preReleaseSeperator)[1:], preReleaseSeperator)
 	result := strings.Split(expr, preReleaseSeperator)[0]
-	nums := strings.Split(expr, numberSeperator)
+	nums := strings.Split(result, numberSeperator)
 	if len(nums) < 3 {
 		result += strings.Repeat(".0", 3-len(nums))
 	}
@@ -415,9 +411,10 @@ func normalize(expr string) string {
 }
 
 // Return 1 if the input version v1 is higher than v2
-//        0 if the input version v1 equals to v2
-//        -1 if the input version v1 is lower than v2
-//        error if v1 or v2 is no a valid sigle version string
+//
+//	0 if the input version v1 equals to v2
+//	-1 if the input version v1 is lower than v2
+//	error if v1 or v2 is no a valid sigle version string
 func CompareVersions(v1 string, v2 string) (int, error) {
 	// make sure it is a single version string
 	if !IsVersionString(v1) || !IsVersionString(v2) {
@@ -466,5 +463,77 @@ func CompareVersions(v1 string, v2 string) (int, error) {
 		}
 	}
 
-	return strings.Compare(pr1, pr2), nil
+	// compare pre-release strings
+	return ComparePrereleases(pr1, pr2), nil
+}
+
+// Compares the given pre-release strings.
+// A prerelease string is a series of dot separated identifiers.
+// Identifiers MUST comprise only ASCII alphanumerics and hyphens [0-9A-Za-z-].
+// According to "Semantic Versioning 2.0.0" in https://semver.org:
+// Precedence for two pre-release versions with the same major, minor, and patch version MUST be determined
+// by comparing each dot separated identifier from left to right until a difference is found.
+// Example: 1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0
+func ComparePrereleases(pr1 string, pr2 string) int {
+	// same version
+	if strings.Compare(pr1, pr2) == 0 {
+		return 0
+	}
+
+	// When major, minor, and patch are equal, a pre-release version has lower precedence than a normal version:
+	// Example: 1.0.0-alpha < 1.0.0
+	if pr1 == "" {
+		return 1
+	}
+	if pr2 == "" {
+		return -1
+	}
+
+	pr1s := strings.Split(pr1, numberSeperator)
+	pr2s := strings.Split(pr2, numberSeperator)
+	len1 := len(pr1s)
+	len2 := len(pr2s)
+
+	for i := 0; i < len1; i++ {
+		// A larger set of pre-release fields has a higher precedence than a smaller set, if all of the preceding identifiers are equal.
+		if len2 < i+1 {
+			return 1
+		}
+
+		if pr1s[i] == pr2s[i] {
+			continue
+		}
+
+		n1, err1 := strconv.Atoi(pr1s[i])
+		n2, err2 := strconv.Atoi(pr2s[i])
+		if err1 == nil && err2 == nil {
+			// Identifiers consisting of only digits are compared numerically.
+			if n1 < n2 {
+				return -1
+			} else if n1 > n2 {
+				return 1
+			}
+		} else {
+			if err1 == nil {
+				// Numeric identifiers always have lower precedence than non-numeric identifiers.
+				return -1
+			} else if err2 == nil {
+				// Numeric identifiers always have lower precedence than non-numeric identifiers.
+				return 1
+			} else {
+				// Identifiers with letters or hyphens are compared lexically in ASCII sort order.
+				comp := strings.Compare(pr1s[i], pr2s[i])
+				if comp != 0 {
+					return comp
+				}
+			}
+		}
+	}
+
+	if len1 < len2 {
+		// The above iteration did not run through the rest of pr2
+		return -1
+	}
+
+	return 0
 }

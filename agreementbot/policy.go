@@ -243,17 +243,16 @@ func DeleteDestinationsForObjects(ec exchange.ExchangeContext, destsToDeleteMap 
 // MMS object policy changes can cause a significant impact to where objects are placed throughout the entire system.
 // Any aspect of the policy could have changed.
 // When an MMS object policy changes, it might mean one of the following:
-// 1. Nothing changes.
-//   a. A brand new policy is not eligible for any node on which the referenced service(s) are already running.
-//   b. A policy change is still not sufficent to make the object eligible for nodes that are running the referenced service(s).
-// 2. There are nodes from which the object should be removed.
-// 3. There are nodes on which the object should be placed, where the referenced service(s) are running.
-//   a. A new object/policy is placed on the node long after the agreement is in place.
-//   b. A policy change makes the object eligible for the node long after the agreement is in place.
+//  1. Nothing changes.
+//     a. A brand new policy is not eligible for any node on which the referenced service(s) are already running.
+//     b. A policy change is still not sufficent to make the object eligible for nodes that are running the referenced service(s).
+//  2. There are nodes from which the object should be removed.
+//  3. There are nodes on which the object should be placed, where the referenced service(s) are running.
+//     a. A new object/policy is placed on the node long after the agreement is in place.
+//     b. A policy change makes the object eligible for the node long after the agreement is in place.
 //
 // Objects are not placed on nodes without an agreement, so we can find all the relevant nodes by looking through
 // all of our agreements. The actions we can take are to either add or remove a node from the object's destination list.
-//
 func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler, wi *ObjectPolicyChange, workerId string) {
 
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("received MMS Object Policy event: %v", wi)))

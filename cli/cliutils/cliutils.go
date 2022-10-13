@@ -185,8 +185,10 @@ func MarshalIndent(v interface{}, errMsg string) string {
 	return string(jsonBytes)
 }
 
-//todo: this function should be removed because it was for WIoTP keys that shouldn't have the org prepended.
-//		The name is also very misleading because it doesn't apply to Cloud IAM api keys.
+// todo: this function should be removed because it was for WIoTP keys that shouldn't have the org prepended.
+//
+//	The name is also very misleading because it doesn't apply to Cloud IAM api keys.
+//
 // SetWhetherUsingApiKey is a hack because some api keys are global and shouldn't be prepended by the org
 // an api key or device id/token.
 func SetWhetherUsingApiKey(creds string) {
@@ -300,8 +302,8 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 	return
 }
 
-//PullDockerImage pulls the image from the docker registry. Progress is written to stdout. Function returns the image digest.
-//If an error occurs the error is printed then the function exits.
+// PullDockerImage pulls the image from the docker registry. Progress is written to stdout. Function returns the image digest.
+// If an error occurs the error is printed then the function exits.
 func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (digest string, err error) {
 	var repository string // for PullImageOptions later on
 	if domain == "" {
@@ -1095,7 +1097,7 @@ func GetIcpCertPath() string {
 	return ""
 }
 
-//TrustIcpCert adds the icp cert file to be trusted in calls made by the given http client
+// TrustIcpCert adds the icp cert file to be trusted in calls made by the given http client
 func TrustIcpCert(httpClient *http.Client) error {
 	icpCertPath := GetIcpCertPath()
 	if icpCertPath != "" {
@@ -2264,7 +2266,7 @@ func GetOperatorNamespace(tar string) (string, error) {
 }
 
 // Validates that org name doesn't contain underscores (_), commas (,), blank spaces ( ), single quotes ('), or question marks (?)
-func ValidateOrg(org string) bool{
+func ValidateOrg(org string) bool {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 	// Regex to check if any of the invalid character is present

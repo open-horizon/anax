@@ -535,7 +535,6 @@ func (m *MessageHandlerRegistry) Contains(name string) bool {
 // This is the Event Handler Main control flow area: it receives incoming Message messages and operates on them by pushing them
 // out to each worker. Workers then receive messages and, for messages they care about, the worker pushes them out as commands
 // onto their own channels to operate on them.
-//
 func eventHandler(incoming events.Message, workers *MessageHandlerRegistry) (string, error) {
 	successMsg := "propagated event to all workers"
 
@@ -560,7 +559,6 @@ func eventHandler(incoming events.Message, workers *MessageHandlerRegistry) (str
 
 // This function combines all messages (events) from workers into a single global message queue. From this
 // global queue, each message will get delivered to each worker by the event handler function.
-//
 func mux(workers *MessageHandlerRegistry, muxed chan events.Message) chan events.Message {
 
 	for _, w := range workers.Handlers {

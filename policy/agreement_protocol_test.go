@@ -309,7 +309,7 @@ func Test_AgreementProtocolList_no_intersect(t *testing.T) {
 
 }
 
-//Some tests on the Single_Element API
+// Some tests on the Single_Element API
 func Test_AgreementProtocolList_single_element(t *testing.T) {
 	var pl1 *AgreementProtocolList
 
