@@ -675,6 +675,16 @@ if [ "$nm_status" != "downloaded" ]; then
     exit 0
 fi
 
+# check if the agent is in the process making agreements. if it is, exit.
+# make sure all the agreements have services running.
+agreements=$(hzn agreement list 2>/dev/null || true)   
+log_debug "hzn agreement list:\n${agreements}"
+uncompleted_ags=$(jq -r 'map(select(.agreement_execution_start_time == "")) | length' 2>/dev/null <<< $agreements || true)
+if [[ $uncompleted_ags != "0" ]]; then
+    log_info "There are $uncompleted_ags agreements not ready. Skip."
+    exit 0
+fi
+
 # gather node configuration information
 node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
 node_org_id=$(jq -r .organization 2>/dev/null <<< $hzn_node_list || true)
