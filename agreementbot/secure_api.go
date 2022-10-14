@@ -1053,15 +1053,14 @@ type SecretRequestInfo struct {
 //     description: "The secret key (name)."
 //
 // responses:
-//
-//	'400':
-//	  description: "Secret org or name does not meet constraints."
-//	  schema:
-//	   type: string
-//	'503':
-//	  description: "Secret provider not ready or not configured."
-//	  schema:
-//	   type: string
+//   '400':
+//     description: "Secret org or name does not meet constraints."
+//     schema:
+//       type: string
+//   '503':
+//     description: "Secret provider not ready or not configured."
+//     schema:
+//       type: string
 func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *SecretRequestInfo {
 
 	// Process in the inputs and verify that they are consistent with the logged in user.

@@ -25,7 +25,7 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Check deployment compatibility. ",
+        "summary": "Check deployment compatibility.",
         "operationId": "deploy_compatible",
         "parameters": [
           {
@@ -253,7 +253,7 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Check the secret binding compatibility. ",
+        "summary": "Check the secret binding compatibility.",
         "operationId": "secretbinding_compatible",
         "parameters": [
           {
@@ -465,7 +465,7 @@
     "/org/{org}/secrets": {},
     "/org/{org}/secrets/*": {
       "get": {
-        "description": "Authenticates the node user with the exchange. Checks if the vault plugin being used is ready. \nPerforms sanity checks on the secret user and secret name provided.",
+        "description": "Authenticates the node user with the exchange. Checks if the vault plugin being used is ready.\nPerforms sanity checks on the secret user and secret name provided.",
         "consumes": [
           "application/json"
         ],
@@ -761,7 +761,7 @@
           "x-go-name": "NodeOrg"
         },
         "node_policy": {
-          "$ref": "#/definitions/ExternalPolicy"
+          "$ref": "#/definitions/NodePolicy"
         },
         "node_type": {
           "type": "string",
@@ -924,41 +924,6 @@
       },
       "x-go-package": "github.com/docker/docker/api/types/container"
     },
-    "DBHealthStatusInfo": {
-      "description": "DBHealthStatusInfo describes the health status of the database of the sync-service node",
-      "type": "object",
-      "properties": {
-        "dbReadFailures": {
-          "type": "integer",
-          "format": "uint32",
-          "x-go-name": "DBReadFailures"
-        },
-        "dbStatus": {
-          "type": "string",
-          "x-go-name": "DBStatus"
-        },
-        "dbWriteFailures": {
-          "type": "integer",
-          "format": "uint32",
-          "x-go-name": "DBWriteFailures"
-        },
-        "disconnectedFromDB": {
-          "type": "boolean",
-          "x-go-name": "DisconnectedFromDB"
-        },
-        "lastDisconnectFromDBDuration": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "LastDisconnectFromDBDuration"
-        },
-        "timeSinceLastReadWriteError": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "TimeSinceLastReadWriteError"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
     "DataVerification": {
       "type": "object",
       "properties": {
@@ -993,89 +958,6 @@
       },
       "x-go-package": "github.com/open-horizon/anax/exchange"
     },
-    "Destination": {
-      "description": "Each sync service edge node (ESS) has an address that is composed of the node's ID, Type, and Organization.\nAn ESS node communicates with the CSS using either MQTT or HTTP.",
-      "type": "object",
-      "title": "Destination describes a sync service node.",
-      "required": [
-        "destinationType",
-        "destinationID",
-        "communication",
-        "codeVersion"
-      ],
-      "properties": {
-        "codeVersion": {
-          "description": "CodeVersion is the sync service code version used by the destination",
-          "type": "string",
-          "x-go-name": "CodeVersion"
-        },
-        "communication": {
-          "description": "Communication is the communication protocol used by the destination to connect (can be MQTT or HTTP)",
-          "type": "string",
-          "enum": [
-            "HTTP",
-            "MQTT"
-          ],
-          "x-go-name": "Communication"
-        },
-        "destinationID": {
-          "description": "DestID is the destination ID",
-          "type": "string",
-          "x-go-name": "DestID"
-        },
-        "destinationOrgID": {
-          "description": "DestOrgID is the destination organization ID\nEach sync service object belongs to a single organization",
-          "type": "string",
-          "x-go-name": "DestOrgID"
-        },
-        "destinationType": {
-          "description": "DestType is the destination type",
-          "type": "string",
-          "x-go-name": "DestType"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
-    "DestinationsStatus": {
-      "description": "DestinationsStatus describes the delivery status of an object for a destination\nDestinationsStatus provides information about the delivery status of an object for a certain destination.\nThe status can be one of the following:\nIndication whether the object has been delivered to the destination\npending - inidicates that the object is pending delivery to this destination\ndelivering - indicates that the object is being delivered to this destination\ndelivered - indicates that the object was delivered to this destination\nconsumed - indicates that the object was consumed by this destination\ndeleted - indicates that this destination acknowledged the deletion of the object\nerror - indicates that a feedback error message was received from this destination",
-      "type": "object",
-      "required": [
-        "destinationType",
-        "destinationID",
-        "status"
-      ],
-      "properties": {
-        "destinationID": {
-          "description": "DestID is the destination ID",
-          "type": "string",
-          "x-go-name": "DestID"
-        },
-        "destinationType": {
-          "description": "DestType is the destination type",
-          "type": "string",
-          "x-go-name": "DestType"
-        },
-        "message": {
-          "description": "Message is the message for the destination",
-          "type": "string",
-          "x-go-name": "Message"
-        },
-        "status": {
-          "description": "Status is the destination status",
-          "type": "string",
-          "enum": [
-            "pending",
-            "delivering",
-            "delivered",
-            "consumed",
-            "deleted",
-            "error"
-          ],
-          "x-go-name": "Status"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
     "ExternalPolicy": {
       "description": "BusinessPolicy the external policy",
       "type": "object",
@@ -1096,253 +978,6 @@
         "type": "object"
       },
       "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "HealthStatusInfo": {
-      "description": "HealthStatusInfo describes the health status of the sync-service node",
-      "type": "object",
-      "properties": {
-        "healthStatus": {
-          "type": "string",
-          "x-go-name": "HealthStatus"
-        },
-        "nodeType": {
-          "type": "string",
-          "x-go-name": "NodeType"
-        },
-        "upTime": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "UpTime"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
-    "Input": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "value": {
-          "type": "object",
-          "x-go-name": "Value"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/policy"
-    },
-    "MQTTHealthStatusInfo": {
-      "description": "MQTTHealthStatusInfo describes the health status of the MQTT connection of the sync-service node",
-      "type": "object",
-      "properties": {
-        "disconnectedFromMQTTBroker": {
-          "type": "boolean",
-          "x-go-name": "DisconnectedFromMQTTBroker"
-        },
-        "lastDisconnectFromBrokerDuration": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "LastDisconnectFromBrokerDuration"
-        },
-        "mqttConnectionStatus": {
-          "type": "string",
-          "x-go-name": "MQTTConnectionStatus"
-        },
-        "publishFailures": {
-          "type": "integer",
-          "format": "uint32",
-          "x-go-name": "PublishFailures"
-        },
-        "subscribeFailures": {
-          "type": "integer",
-          "format": "uint32",
-          "x-go-name": "SubscribeFailures"
-        },
-        "timeSinceLastPublishError": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "TimeSinceLastPublishError"
-        },
-        "timeSinceLastSubscribeError": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "TimeSinceLastSubscribeError"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
-    "MetaData": {
-      "description": "Every object includes metadata (mandatory) and data (optional). The metadata and data can be updated independently.\nEach sync service node (ESS) has an address that is composed of the node's ID, Type, and Organization.\nTo send an object to a single node set the destinationType and destinationID fields to match the node's Type and ID.\nTo send an object to all the nodes of a certain type set destinationType to the appropriate type and leave destinationID empty.\nIf both destinationType and destinationID are empty the object is sent to all nodes.",
-      "type": "object",
-      "title": "MetaData is the metadata that identifies and defines the sync service object.",
-      "required": [
-        "objectID",
-        "objectType"
-      ],
-      "properties": {
-        "activationTime": {
-          "description": "ActivationTime is a timestamp/date as to when this object should automatically be activated.\nThe timestamp should be provided in RFC3339 format.\nOptional field, if omitted (and Inactive is true) the object is never automatically activated.",
-          "type": "string",
-          "x-go-name": "ActivationTime"
-        },
-        "autodelete": {
-          "description": "AutoDelete is a flag indicating whether to delete the object after it is delivered to all its destinations from the DestinationsList.\nOptional field, default is false (do not delete).\nThis field is used only when working with the CSS. Objects are always deleted after delivery on the ESS.",
-          "type": "boolean",
-          "x-go-name": "AutoDelete"
-        },
-        "chunkSize": {
-          "description": "ChunkSize is an internal field indicating the maximal message payload size.\nThis field should not be set by users.",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "ChunkSize"
-        },
-        "consumers": {
-          "description": "ExpectedConsumers is the number of applications that are expected to indicate that they have consumed the object.\nOptional field, default is 1.",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "ExpectedConsumers"
-        },
-        "dataID": {
-          "description": "DataID is an internal data ID.\nThis field should not be set by users.",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "DataID"
-        },
-        "deleted": {
-          "description": "Deleted is a flag indicating to applications polling for updates that this object has been deleted.\nRead only field, should not be set by users.",
-          "type": "boolean",
-          "x-go-name": "Deleted"
-        },
-        "description": {
-          "description": "Description is a textual description of the object.\nOptional field, empty by default.",
-          "type": "string",
-          "x-go-name": "Description"
-        },
-        "destinationDataUri": {
-          "description": "DestinationDataURI is a URI indicating where the receiver of the object should store it.\nCurrently only file URIs are supported.\nThis field is available only when working with the CSS.\nOptional field, if omitted the object is stored in the node's internal storage.",
-          "type": "string",
-          "x-go-name": "DestinationDataURI"
-        },
-        "destinationID": {
-          "description": "DestID is the ID of the destination. If omitted the object is sent to all ESSs with the same DestType.\nThis field is ignored when working with ESS (the destination is the CSS).",
-          "type": "string",
-          "x-go-name": "DestID"
-        },
-        "destinationOrgID": {
-          "description": "DestOrgID is the organization ID of the object (an object belongs to exactly one organization).\nThis field is ignored when working with ESS (the ESS's orgID is used).",
-          "type": "string",
-          "x-go-name": "DestOrgID"
-        },
-        "destinationPolicy": {
-          "$ref": "#/definitions/Policy"
-        },
-        "destinationType": {
-          "description": "DestType is the type of destination to send the object to.\nIf omitted (and if DestinationsList is omitted too) the object is broadcasted to all known destinations.\nThis field is ignored when working with ESS (the destination is always the CSS).",
-          "type": "string",
-          "x-go-name": "DestType"
-        },
-        "destinationsList": {
-          "description": "DestinationsList is the list of destinations as type:id pairs to send the object to.\nWhen a DestinationsList is provided DestType and DestID must be omitted.\nThis field is ignored when working with ESS (the destination is always the CSS).",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "x-go-name": "DestinationsList"
-        },
-        "expiration": {
-          "description": "Expiration is a timestamp/date indicating when the object expires.\nWhen the object expires it is automatically deleted.\nThe timestamp should be provided in RFC3339 format.\nThis field is available only when working with the CSS.\nOptional field, if omitted the object doesn't expire.",
-          "type": "string",
-          "x-go-name": "Expiration"
-        },
-        "hashAlgorithm": {
-          "description": "HashAlgorithm used for data signature sign/verification. \"SHA1\" and \"SHA256\" are supported hash algorithms.\nValid values are: \"SHA1\", \"SHA256\"\nOptional field, if omitted the data signature/verification will not be applied",
-          "type": "string",
-          "x-go-name": "HashAlgorithm"
-        },
-        "inactive": {
-          "description": "Inactive is a flag indicating that this object is inactive for now.\nAn object can be created as inactive which means it is not delivered to its destination. The object can be activated later.\nOptional field, default is false (object active).",
-          "type": "boolean",
-          "x-go-name": "Inactive"
-        },
-        "instanceID": {
-          "description": "InstanceID is an internal instance ID.\nThis field should not be set by users.",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "InstanceID"
-        },
-        "link": {
-          "description": "Link is a link to where the data for this object can be fetched from.\nThe link is set and used by the application. The sync service does not access the link.\nOptional field, if omitted the data must be provided by the application.",
-          "type": "string",
-          "x-go-name": "Link"
-        },
-        "metaOnly": {
-          "description": "MetaOnly is a flag that indicates that this update is only of the metadata. The current object's data is left unchanged.\nOptional field, default is false (both data and metadata are updated).",
-          "type": "boolean",
-          "x-go-name": "MetaOnly"
-        },
-        "noData": {
-          "description": "NoData is a flag indicating that there is no data for this object.\nObjects with no data can be used, for example, to send notifications.\nOptional field, default is false (object includes data).",
-          "type": "boolean",
-          "x-go-name": "NoData"
-        },
-        "objectID": {
-          "description": "ObjectID is a unique identifier of the object",
-          "type": "string",
-          "x-go-name": "ObjectID"
-        },
-        "objectSize": {
-          "description": "ObjectSize is an internal field indicating the size of the object's data.\nThis field should not be set by users.",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "ObjectSize"
-        },
-        "objectType": {
-          "description": "ObjectType is the type of the object.\nThe type is used to group multiple objects, for example when checking for object updates.",
-          "type": "string",
-          "x-go-name": "ObjectType"
-        },
-        "originID": {
-          "description": "OriginID is the ID of origin of the object. Set by the internal code.\nRead only field, should not be set by users.",
-          "type": "string",
-          "x-go-name": "OriginID"
-        },
-        "originType": {
-          "description": "OriginType is the type of origin of the object. Set by the internal code.\nRead only field, should not be set by users.",
-          "type": "string",
-          "x-go-name": "OriginType"
-        },
-        "ownerID": {
-          "description": "OwnerID is an internal field indicating who creates the object\nThis field should not be set by users",
-          "type": "string",
-          "x-go-name": "OwnerID"
-        },
-        "public": {
-          "description": "Public is a flag indicate this object is visiable to all users in all orgs\nOptional field, default is false (not visiable to all users)",
-          "type": "boolean",
-          "x-go-name": "Public"
-        },
-        "publicKey": {
-          "description": "PublicKey is a base64 encoded string. It is the publicKey to verify the data of the object\nOptional field, if omitted the data will not be verified with public key and signature",
-          "type": "string",
-          "x-go-name": "PublicKey"
-        },
-        "signature": {
-          "description": "Signature is a base64 encoded string. It is the data signature to verify data of the object\nOptional field, if omitted the data will not be verified with public key and signature",
-          "type": "string",
-          "x-go-name": "Signature"
-        },
-        "sourceDataUri": {
-          "description": "SourceDataURI is a URI indicating where the sender of the object should read the data from.\nCurrently only file URIs are supported.\nThis field is available only when working with the ESS.\nOptional field, if omitted the object's data should be provided by the user.",
-          "type": "string",
-          "x-go-name": "SourceDataURI"
-        },
-        "version": {
-          "description": "Version is the object's version (as used by the application).\nOptional field, empty by default.",
-          "type": "string",
-          "x-go-name": "Version"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
     },
     "Meter": {
       "type": "object",
@@ -1380,109 +1015,32 @@
       },
       "x-go-package": "github.com/open-horizon/anax/businesspolicy"
     },
-    "ObjectDestinationPolicy": {
-      "type": "object",
-      "title": "ObjectDestinationPolicy contains information about an object that has a Destination Policy.",
-      "required": [
-        "orgID",
-        "objectType",
-        "objectID"
-      ],
-      "properties": {
-        "destinationPolicy": {
-          "$ref": "#/definitions/Policy"
-        },
-        "destinations": {
-          "description": "Destinations is the list of the object's current destinations",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DestinationsStatus"
-          },
-          "x-go-name": "Destinations"
-        },
-        "objectID": {
-          "description": "ObjectID is a unique identifier of the object",
-          "type": "string",
-          "x-go-name": "ObjectID"
-        },
-        "objectType": {
-          "description": "ObjectType is the type of the object.\nThe type is used to group multiple objects, for example when checking for object updates.",
-          "type": "string",
-          "x-go-name": "ObjectType"
-        },
-        "orgID": {
-          "description": "OrgID is the organization ID of the object (an object belongs to exactly one organization).",
-          "type": "string",
-          "x-go-name": "OrgID"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
-    "ObjectStatus": {
-      "description": "ObjectStatus describes the delivery status of an object for a destination\nThe status can be one of the following:\nIndication whether the object has been delivered to the destination\ndelivering - indicates that the object is being delivered\ndelivered - indicates that the object was delivered\nconsumed - indicates that the object was consumed\ndeleted - indicates that this destination acknowledged the deletion of the object\nerror - indicates that a feedback error message was received",
-      "type": "object",
-      "required": [
-        "objectType",
-        "objectID",
-        "status"
-      ],
-      "properties": {
-        "objectID": {
-          "description": "ObjectID is the object ID",
-          "type": "string",
-          "x-go-name": "ObjectID"
-        },
-        "objectType": {
-          "description": "ObjectType is the object type",
-          "type": "string",
-          "x-go-name": "ObjectType"
-        },
-        "orgID": {
-          "description": "OrgID is the organization ID of the organization",
-          "type": "string",
-          "x-go-name": "OrgID"
-        },
-        "status": {
-          "description": "Status is the object status for this destination",
-          "type": "string",
-          "enum": [
-            "delivering",
-            "delivered",
-            "consumed",
-            "deleted",
-            "error"
-          ],
-          "x-go-name": "Status"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
-    "Organization": {
-      "description": "Organization contains organization's information",
+    "NodePolicy": {
+      "description": "NodePolicy the node policy\nThe properties and constraints defined in the top-level are common\nproperties and constraints that are used by both Deployment and Management.\nIf the same property name is defined in the second level (Deployment or Management),\nthe perperty value of the second level takes the precedence.\nIf there are constraints defined in the second level, all the constraints defined in\nthe top level will be ignored.",
       "type": "object",
       "properties": {
-        "address": {
-          "description": "Address is the broker address to be used when connecting to this organization",
-          "type": "string",
-          "x-go-name": "Address"
+        "constraints": {
+          "$ref": "#/definitions/ConstraintExpression"
         },
-        "orgID": {
-          "description": "OrgID is the organization ID of the organization",
-          "type": "string",
-          "x-go-name": "OrgID"
+        "deployment": {
+          "$ref": "#/definitions/ExternalPolicy"
         },
-        "password": {
-          "description": "Password is the password to be used when connecting to this organization",
+        "description": {
           "type": "string",
-          "x-go-name": "Password"
+          "x-go-name": "Description"
         },
-        "user": {
-          "description": "User is the user name to be used when connecting to this organization",
+        "label": {
           "type": "string",
-          "x-go-name": "User"
+          "x-go-name": "Label"
+        },
+        "management": {
+          "$ref": "#/definitions/ExternalPolicy"
+        },
+        "properties": {
+          "$ref": "#/definitions/PropertyList"
         }
       },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
+      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
     },
     "PatternFile": {
       "description": "It is used when reading json file the user gives us as an input to create the pattern",
@@ -1539,69 +1097,6 @@
         }
       },
       "x-go-package": "github.com/open-horizon/anax/common"
-    },
-    "Policy": {
-      "description": "Policy describes a policy made up of a set of properties and constraints",
-      "type": "object",
-      "properties": {
-        "constraints": {
-          "description": "Constraints is a set of expressions that form the constraints for the policy",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "x-go-name": "Constraints"
-        },
-        "properties": {
-          "description": "Properties is the set of properties for a particular policy",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/PolicyProperty"
-          },
-          "x-go-name": "Properties"
-        },
-        "services": {
-          "description": "Services is the list of services this object has affinity for",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ServiceID"
-          },
-          "x-go-name": "Services"
-        },
-        "timestamp": {
-          "description": "Timestamp indicates when the policy was last updated (result of time.Now().UTC().UnixNano())",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Timestamp"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
-    "PolicyProperty": {
-      "description": "PolicyProperty is a property in a policy",
-      "type": "object",
-      "required": [
-        "name",
-        "value"
-      ],
-      "properties": {
-        "name": {
-          "description": "Name is the name of the property",
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "type": {
-          "description": "Type is the type of the property.\nIt is only required where the system can't interpret the value correctly by context.",
-          "type": "string",
-          "x-go-name": "Type"
-        },
-        "value": {
-          "description": "Value is the value of the property",
-          "type": "object",
-          "x-go-name": "Value"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
     },
     "Property": {
       "type": "object",
@@ -1871,33 +1366,6 @@
       },
       "x-go-package": "github.com/open-horizon/anax/common"
     },
-    "ServiceID": {
-      "description": "ServiceID contains the ID of a service to which an object may have affinity for",
-      "type": "object",
-      "properties": {
-        "arch": {
-          "description": "Arch is the architecture of the service",
-          "type": "string",
-          "x-go-name": "Arch"
-        },
-        "orgID": {
-          "description": "OrgID is the organization ID of the service",
-          "type": "string",
-          "x-go-name": "OrgID"
-        },
-        "serviceName": {
-          "description": "ServiceName is the name of the service",
-          "type": "string",
-          "x-go-name": "ServiceName"
-        },
-        "version": {
-          "description": "Version is the version of the service",
-          "type": "string",
-          "x-go-name": "Version"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
     "ServiceRef": {
       "type": "object",
       "properties": {
@@ -2010,69 +1478,32 @@
       },
       "x-go-package": "github.com/open-horizon/anax/businesspolicy"
     },
-    "UsageInfo": {
-      "description": "UsageInfo describes the usage of the sync-service node",
-      "type": "object",
-      "properties": {
-        "clientRequests": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "ClientRequests"
-        },
-        "registeredESS": {
-          "type": "integer",
-          "format": "uint32",
-          "x-go-name": "RegisteredESS"
-        },
-        "storedObjects": {
-          "type": "integer",
-          "format": "uint32",
-          "x-go-name": "StoredObjects"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/edge-sync-service/common"
-    },
     "UserInput": {
       "type": "object",
       "title": "UserInput This type is used to describe a configuration variable that the node owner/user has to set before the service is able to execute on the edge node.",
       "properties": {
-        "inputs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Input"
-          },
-          "x-go-name": "Inputs"
-        },
-        "serviceArch": {
+        "defaultValue": {
           "type": "string",
-          "x-go-name": "ServiceArch"
+          "x-go-name": "DefaultValue"
         },
-        "serviceOrgid": {
+        "label": {
           "type": "string",
-          "x-go-name": "ServiceOrgid"
+          "x-go-name": "Label"
         },
-        "serviceUrl": {
+        "name": {
           "type": "string",
-          "x-go-name": "ServiceUrl"
+          "x-go-name": "Name"
         },
-        "serviceVersionRange": {
+        "type": {
           "type": "string",
-          "x-go-name": "ServiceVersionRange"
+          "x-go-name": "Type"
         }
       },
-      "x-go-package": "github.com/open-horizon/anax/policy"
+      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
     },
     "WorkloadChoice": {
       "type": "object",
       "properties": {
-        "deployment_overrides": {
-          "type": "string",
-          "x-go-name": "DeploymentOverrides"
-        },
-        "deployment_overrides_signature": {
-          "type": "string",
-          "x-go-name": "DeploymentOverridesSignature"
-        },
         "priority": {
           "$ref": "#/definitions/WorkloadPriority"
         },
@@ -2084,7 +1515,7 @@
           "x-go-name": "Version"
         }
       },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
+      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
     },
     "WorkloadPriority": {
       "type": "object",
@@ -2110,7 +1541,7 @@
           "x-go-name": "VerifiedDurationS"
         }
       },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
+      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
     }
   }
 }
