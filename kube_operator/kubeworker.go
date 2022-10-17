@@ -74,7 +74,7 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 		if lc := w.getLaunchContext(cmd.LaunchContext); lc == nil {
 			glog.Errorf(kwlog(fmt.Sprintf("incoming event was not a known launch context %T", cmd.LaunchContext)))
 		} else {
-			glog.V(5).Infof(kwlog(fmt.Sprintf("LaunchContext(%T): %v", lc, lc)))
+			glog.V(5).Infof(kwlog(fmt.Sprintf("LaunchContext(%T) for agreement: %v", lc, lc.AgreementId)))
 
 			// ignore the native deployment
 			if lc.ContainerConfig().Deployment != "" {
@@ -101,7 +101,7 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 		}
 	case *UnInstallCommand:
 		cmd := command.(*UnInstallCommand)
-		glog.V(3).Infof(kwlog(fmt.Sprintf("uninstalling %v", cmd.Deployment)))
+		glog.V(3).Infof(kwlog(fmt.Sprintf("uninstalling operator from agreement %v", cmd.CurrentAgreementId)))
 
 		kdc, ok := cmd.Deployment.(*persistence.KubeDeploymentConfig)
 		if !ok {

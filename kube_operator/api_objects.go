@@ -17,6 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"strings"
 	"time"
 )
 
@@ -120,15 +121,68 @@ func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstru
 			} else {
 				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
-
+		default:
+			// for all other types, convert it to an unstructured object
+			if typedOO, ok := obj.Object.(*unstructured.Unstructured); ok {
+				newOO := OtherObject{Object: typedOO, GVK: obj.Type}
+				glog.V(4).Infof(kwlog(fmt.Sprintf("Found object %v of unstructured type %v", newOO.Name(), obj.Type)))
+				objMap[K8S_UNSTRUCTURED_TYPE] = append(objMap[K8S_UNSTRUCTURED_TYPE], newOO)
+			} else {
+				glog.Errorf(kwlog(fmt.Sprintf("Object with gvk %v has type %T, not unstructured kube type.", obj.Type, obj.Object)))
+			}
 		}
-
 	}
 	if namespace == "" {
 		namespace = ANAX_NAMESPACE
 	}
 
 	return objMap, namespace, nil
+}
+
+// ----------------OtherObjectType----------------
+// this will only work if the resource name is the kind but lowercase with an "s" on the end
+type OtherObject struct {
+	Object *unstructured.Unstructured
+	GVK    *schema.GroupVersionKind
+}
+
+func (o OtherObject) Install(c KubeClient, namespace string) error {
+	name := o.Name()
+	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to create object %v with GroupVersionKind %v", name, o.GVK)))
+
+	dynClient := c.DynClient.Resource(o.gvr())
+
+	if _, err := dynClient.Namespace(namespace).Create(context.Background(), o.Object, metav1.CreateOptions{}); err != nil {
+		return err
+	}
+
+	glog.V(3).Infof(kwlog(fmt.Sprintf("successfully created object %v with GroupVersionKind %v", name, o.GVK)))
+	return nil
+}
+
+func (o OtherObject) Uninstall(c KubeClient, namespace string) {
+	name := o.Name()
+	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to delete object %v with GroupVersionKind %v", name, o.GVK)))
+
+	dynClient := c.DynClient.Resource(o.gvr())
+
+	if err := dynClient.Namespace(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
+		glog.Errorf(kwlog(fmt.Sprintf("Failed to uninstall %v object %v: %v", o.GVK, name, err)))
+	}
+
+	glog.V(3).Infof(kwlog(fmt.Sprintf("successfully deleted object %v with GroupVersionKind %v", name, o.GVK)))
+}
+
+func (o OtherObject) Name() string {
+	return o.Object.GetName()
+}
+
+func (o OtherObject) Status(c KubeClient, namespace string) (interface{}, error) {
+	return nil, nil
+}
+
+func (o OtherObject) gvr() schema.GroupVersionResource {
+	return schema.GroupVersionResource{Group: o.GVK.Group, Version: o.GVK.Version, Resource: fmt.Sprintf("%ss", strings.ToLower(o.GVK.Kind))}
 }
 
 //----------------Namespace----------------
@@ -195,7 +249,7 @@ func (r RoleRbacV1) Uninstall(c KubeClient, namespace string) {
 }
 
 func (r RoleRbacV1) Status(c KubeClient, namespace string) (interface{}, error) {
-	return nil, nil
+	return &RoleRbacV1{}, nil
 }
 
 func (r RoleRbacV1) Name() string {
