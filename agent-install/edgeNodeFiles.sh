@@ -426,9 +426,9 @@ function test_IsFileInCss() {
 		chk $? 'getting exchange root creds'
         fi
 	
-	hzn mms object list -u ${USER_AUTH} -o ${org} -t ${objectType}  -i ${objectID} >/dev/null 2>&1 
+	objects=$( hzn mms object list -u ${USER_AUTH} -o ${org} -t ${objectType}  -i ${objectID} | grep -v "Listing"  | jq '. | length' ) 
 	rc=$?  
-	if [ $rc -eq 0 ]; then 
+	if [[ $rc -eq 0  && $objects -gt 0 ]]; then 
 		true
 		return
 	else
