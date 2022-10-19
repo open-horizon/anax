@@ -63,7 +63,7 @@ const SECRET_MOVE = `WITH moved_rows AS (
     DELETE FROM "secrets_pattern_ a
     RETURNING a.secret_org, a.secret_name, a.pattern_org, a.pattern_name, a.last_update_check
 )
-INSERT INTO "secrets_pattern_ (secret_org, secret_name, pattern_org, pattern_name, last_update_check, partition) SELECT secret_org, secret_name, pattern_org, pattern_name, last_update_check, 'partition_name' FROM moved_rows WHERE secret_org <> pattern_org;
+INSERT INTO "secrets_pattern_ (secret_org, secret_name, pattern_org, pattern_name, last_update_check, partition) SELECT secret_org, secret_name, pattern_org, pattern_name, last_update_check, 'partition_name' FROM moved_rows WHERE secret_org <> pattern_org ON CONFLICT DO NOTHING;
 `
 
 const SECRET_DROP_PARTITION_POLICY = `DROP TABLE "secrets_policy_;`
