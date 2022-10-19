@@ -278,7 +278,7 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
     export HZN_ORG_ID=<your-exchange-organization>
     ```
 
-3. Export the HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_AGBOT_URL and HZN_SDO_SVC_URL environment variables needed to configure the agent to be able to talk to the Hub resources.
+3. Export the HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_AGBOT_URL and HZN_SDO_SVC_URL (or HZN_FDO_SVC_URL) environment variables needed to configure the agent to be able to talk to the Hub resources.
 
     **Note**: Running `hzn env` on the machine running the Management Hub will reveal the IP address as well as the variable values to use above
 

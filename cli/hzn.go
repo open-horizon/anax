@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/eventlog"
 	"github.com/open-horizon/anax/cli/exchange"
+	"github.com/open-horizon/anax/cli/fdo"
 	_ "github.com/open-horizon/anax/cli/i18n_messages"
 	"github.com/open-horizon/anax/cli/key"
 	"github.com/open-horizon/anax/cli/kube_deployment"
@@ -97,6 +98,7 @@ Subcommands Description:
   util: Utility commands.
   version: Show the Horizon version.
   sdo: List and manage Horizon SDO ownership vouchers and keys.
+  fdo: List and manage Horizon FDO ownership vouchers and keys.
 
 Environment Variables:
   HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.
@@ -116,6 +118,9 @@ Environment Variables:
       Horizon Agent for the URL.)
   HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use
 	  to communicate with SDO owner services. (By default hzn will ask the
+		Horizon Agent for the URL.)
+  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use
+	  to communicate with FDO owner services. (By default hzn will ask the
 		Horizon Agent for the URL.)
 
   All these environment variables and ones mentioned in the command help can be
@@ -809,7 +814,7 @@ Environment Variables:
 
 	sdoCmd := app.Command("sdo", msgPrinter.Sprintf("List and manage resources in SDO owner services"))
 	sdoOrg := sdoCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
-	sdoUserPw := sdoCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
+	sdoUserPw := sdoCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
 
 	sdoKeyCmd := sdoCmd.Command("key", msgPrinter.Sprintf("List and manage Horizon SDO ownership keys."))
 
@@ -862,6 +867,26 @@ Environment Variables:
 	voucherImportExample := voucherImportCmd.Flag("example", msgPrinter.Sprintf("Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.")).Short('e').String()
 	voucherImportPolicy := voucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.")).String()
 	voucherImportPattern := voucherImportCmd.Flag("pattern", msgPrinter.Sprintf("The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.")).Short('p').String()
+
+	fdoCmd := app.Command("fdo", msgPrinter.Sprintf("List and manage resources in FDO owner services"))
+	fdoOrg := fdoCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
+	fdoUserPw := fdoCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query FDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
+
+	fdoVoucherCmd := fdoCmd.Command("voucher", msgPrinter.Sprintf("List and manage Horizon FDO ownership vouchers."))
+
+	fdoVoucherListCmd := fdoVoucherCmd.Command("list | ls", msgPrinter.Sprintf("List the imported FDO ownership vouchers.")).Alias("ls").Alias("list")
+	fdoVoucherToList := fdoVoucherListCmd.Arg("voucher", msgPrinter.Sprintf("List the full details of this FDO ownership voucher.")).String()
+	fdoVoucherImportCmd := fdoVoucherCmd.Command("import | imp", msgPrinter.Sprintf("Imports the FDO ownership voucher so that the corresponding device can be booted, configured, and registered.")).Alias("import").Alias("imp")
+	fdoVoucherImportFile := fdoVoucherImportCmd.Arg("voucher-file", msgPrinter.Sprintf("The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).")).Required().File() // returns the file descriptor
+	fdoVoucherImportExample := fdoVoucherImportCmd.Flag("example", msgPrinter.Sprintf("Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.")).Short('e').String()
+	fdoVoucherImportPolicy := fdoVoucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.")).String()
+	fdoVoucherImportPattern := fdoVoucherImportCmd.Flag("pattern", msgPrinter.Sprintf("The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.")).Short('p').String()
+	fdoVoucherImportUI := fdoVoucherImportCmd.Flag("user-input", msgPrinter.Sprintf("A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.")).Short('f').String()
+	fdoVoucherImportHAGroup := fdoVoucherImportCmd.Flag("ha-group", msgPrinter.Sprintf("The name of the HA group that the edge device associated with this voucher will be added to.")).String()
+	fdoVoucherDownloadCmd := fdoVoucherCmd.Command("download | dl", msgPrinter.Sprintf("Download the specified FDO ownership voucher from FDO owner services.")).Alias("dl").Alias("download")
+	fdoVoucherDownloadDevice := fdoVoucherDownloadCmd.Arg("device-id", msgPrinter.Sprintf("The FDO ownership voucher to download.")).Required().String()
+	fdoVoucherDownloadFile := fdoVoucherDownloadCmd.Flag("file-path", msgPrinter.Sprintf("The file that the data of downloaded voucher is written to in JSON format. This flag must be used with -f. If omit, will use default file name in format of <deviceID>.json and save in current directory.")).Short('f').String()
+	fdoVoucherDownloadOverwrite := fdoVoucherDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists.")).Short('O').Bool()
 
 	app.VersionFlag = nil
 
@@ -1079,6 +1104,12 @@ Environment Variables:
 	if strings.HasPrefix(fullCmd, "sdo key") && !strings.HasPrefix(fullCmd, "sdo key new") {
 		sdoOrg = cliutils.RequiredWithDefaultEnvVar(sdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		sdoUserPw = cliutils.RequiredWithDefaultEnvVar(sdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+	}
+
+	// For the fdo command family, make sure that org and exchange credentials are specified in some way.
+	if strings.HasPrefix(fullCmd, "fdo voucher") {
+		fdoOrg = cliutils.RequiredWithDefaultEnvVar(fdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		fdoUserPw = cliutils.RequiredWithDefaultEnvVar(fdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
 
 	// DEPRECATED
@@ -1449,6 +1480,14 @@ Environment Variables:
 		sdo.VoucherList(*sdoOrg, *sdoUserPw, *sdoVoucherToList, !*sdoVoucherListLong)
 	case sdoVoucherDownloadCmd.FullCommand():
 		sdo.VoucherDownload(*sdoOrg, *sdoUserPw, *sdoVoucherDownloadDevice, *sdoVoucherDownloadFile, *sdoVoucherDownloadOverwrite)
+
+	case fdoVoucherImportCmd.FullCommand():
+		fdo.VoucherImport(*fdoOrg, *fdoUserPw, *fdoVoucherImportFile, *fdoVoucherImportExample, *fdoVoucherImportPolicy, *fdoVoucherImportPattern, *fdoVoucherImportUI, *fdoVoucherImportHAGroup)
+	case fdoVoucherListCmd.FullCommand():
+		fdo.VoucherList(*fdoOrg, *fdoUserPw, *fdoVoucherToList)
+	case fdoVoucherDownloadCmd.FullCommand():
+		fdo.VoucherDownload(*fdoOrg, *fdoUserPw, *fdoVoucherDownloadDevice, *fdoVoucherDownloadFile, *fdoVoucherDownloadOverwrite)
+
 	case smSecretListCmd.FullCommand():
 		secret_manager.SecretList(*smOrg, *smUserPw, *smSecretListName)
 	case smSecretAddCmd.FullCommand():

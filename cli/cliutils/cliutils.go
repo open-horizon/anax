@@ -1267,6 +1267,26 @@ func GetSdoSvcUrl() string {
 	return sdoUrl
 }
 
+// GetFdoSvcUrl returns the url of the Horizon mgmt hub FDO owner service from env var or anax overwrite file
+func GetFdoSvcUrl() string {
+	msgPrinter := i18n.GetMessagePrinter()
+
+	fdoUrl := os.Getenv("HZN_FDO_SVC_URL")
+	if fdoUrl == "" {
+		Verbose(msgPrinter.Sprintf("HZN_FDO_SVC_URL is not set, get it from %s.", ANAX_OVERWRITE_FILE))
+		var err error
+		if fdoUrl, err = GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_FDO_SVC_URL"); err != nil {
+			Verbose(i18n.GetMessagePrinter().Sprintf("Error getting HZN_FDO_SVC_URL from %v: %v", ANAX_OVERWRITE_FILE, err))
+		} else if fdoUrl == "" {
+			Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("Could not get the HZN_FDO_SVC_URL value from the environment, %s, or one of the hzn.json files", ANAX_OVERWRITE_FILE))
+		}
+	}
+	fdoUrl = strings.TrimSuffix(fdoUrl, "/")
+
+	Verbose(msgPrinter.Sprintf("The FDO service url: %v", fdoUrl))
+	return fdoUrl
+}
+
 func printHorizonServiceRestError(horizonService string, apiMethod string, err error) {
 	serviceEnvVarName := "HZN_EXCHANGE_URL"
 	article := "an"
@@ -1275,6 +1295,9 @@ func printHorizonServiceRestError(horizonService string, apiMethod string, err e
 		article = "a"
 	} else if horizonService == "SDO Owner Service" {
 		serviceEnvVarName = "HZN_SDO_SVC_URL"
+		article = "a"
+	} else if horizonService == "FDO Owner Service" {
+		serviceEnvVarName = "HZN_FDO_SVC_URL"
 		article = "a"
 	}
 

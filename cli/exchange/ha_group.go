@@ -274,8 +274,8 @@ func HAGroupMemberRemove(org, credToUse, haGroupName string, nodeNames []string,
 	if len(nodesToRemove) > 1 {
 		msgPrinter.Printf("Nodes \"%v\" are removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
 		msgPrinter.Println()
-        } else if len(nodesToRemove) == 1 {
-                msgPrinter.Printf("Node \"%v\" is removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
+	} else if len(nodesToRemove) == 1 {
+		msgPrinter.Printf("Node \"%v\" is removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
 		msgPrinter.Println()
-        }
+	}
 }
