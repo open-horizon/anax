@@ -8,6 +8,10 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
+	olmv1scheme "github.com/operator-framework/api/pkg/operators/v1"
+	olmv1alpha1scheme "github.com/operator-framework/api/pkg/operators/v1alpha1"
+	olmv1client "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1"
+	olmv1alpha1client "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1"
 	yaml "gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
@@ -18,6 +22,7 @@ import (
 	v1beta1scheme "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -35,13 +40,31 @@ const (
 	// Variable that contains the name of the config map
 	HZN_ENV_KEY = "HZN_ENV_VARS"
 
-	K8S_ROLE_TYPE           = "Role"
-	K8S_ROLEBINDING_TYPE    = "RoleBinding"
-	K8S_DEPLOYMENT_TYPE     = "Deployment"
-	K8S_SERVICEACCOUNT_TYPE = "ServiceAccount"
-	K8S_CRD_TYPE            = "CustomResourceDefinition"
-	K8S_NAMESPACE_TYPE      = "Namespace"
+	K8S_ROLE_TYPE               = "Role"
+	K8S_ROLEBINDING_TYPE        = "RoleBinding"
+	K8S_DEPLOYMENT_TYPE         = "Deployment"
+	K8S_SERVICEACCOUNT_TYPE     = "ServiceAccount"
+	K8S_CRD_TYPE                = "CustomResourceDefinition"
+	K8S_NAMESPACE_TYPE          = "Namespace"
+	K8S_UNSTRUCTURED_TYPE       = "Unstructured"
+	K8S_OLM_OPERATOR_GROUP_TYPE = "OperatorGroup"
 )
+
+func getBaseK8sKinds() []string {
+	return []string{K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_DEPLOYMENT_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_CRD_TYPE, K8S_NAMESPACE_TYPE}
+}
+
+func getDangerKinds() []string {
+	return []string{K8S_OLM_OPERATOR_GROUP_TYPE}
+}
+
+func IsBaseK8sType(kind string) bool {
+	return cutil.SliceContains(getBaseK8sKinds(), kind)
+}
+
+func IsDangerType(kind string) bool {
+	return cutil.SliceContains(getDangerKinds(), kind)
+}
 
 // Intermediate state for the objects used for k8s api objects that haven't had their exact type asserted yet
 type APIObjects struct {
@@ -57,7 +80,10 @@ type YamlFile struct {
 
 // Client to interact with all standard k8s objects
 type KubeClient struct {
-	Client *kubernetes.Clientset
+	Client            *kubernetes.Clientset
+	DynClient         dynamic.Interface
+	OLMV1Alpha1Client olmv1alpha1client.OperatorsV1alpha1Client
+	OLMV1Client       olmv1client.OperatorsV1Client
 }
 
 // KubeStatus contains the status of operator pods and a user-defined status object
@@ -78,7 +104,11 @@ func NewKubeClient() (*KubeClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &KubeClient{Client: clientset}, nil
+	dynClient, err := NewDynamicKubeClient()
+	if err != nil {
+		return nil, err
+	}
+	return &KubeClient{Client: clientset, DynClient: dynClient}, nil
 }
 
 // NewDynamicKubeClient returns a kube client that interacts with unstructured.Unstructured type objects
@@ -104,44 +134,24 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string, 
 		apiObjMap[K8S_NAMESPACE_TYPE] = []APIObjectInterface{NamespaceCoreV1{NamespaceObject: &nsObj}}
 	}
 
-	for _, nsDef := range apiObjMap[K8S_NAMESPACE_TYPE] {
-		nsDef.Install(c, namespace)
-	}
+	baseK8sComponents := getBaseK8sKinds()
 
-	// Create the role types in the cluster
-	for _, roleDef := range apiObjMap[K8S_ROLE_TYPE] {
-		err = roleDef.Install(c, namespace)
-		if err != nil {
-			return err
-		}
-	}
-	// Create the rolebinding types in the cluster
-	for _, roleBindingDef := range apiObjMap[K8S_ROLEBINDING_TYPE] {
-		err = roleBindingDef.Install(c, namespace)
-		if err != nil {
-			return err
-		}
-	}
-	// Create the serviceaccount types in the cluster
-	for _, svcAcctDef := range apiObjMap[K8S_SERVICEACCOUNT_TYPE] {
-		err = svcAcctDef.Install(c, namespace)
-		if err != nil {
-			return err
-		}
-	}
-	// Create the deployment types in the cluster
-	for _, dep := range apiObjMap[K8S_DEPLOYMENT_TYPE] {
-		err = dep.Install(c, namespace)
-		if err != nil {
-			return err
+	// install all the objects of built-in k8s types
+	for _, componentType := range baseK8sComponents {
+		for _, componentObj := range apiObjMap[componentType] {
+			if err = componentObj.Install(c, namespace); err != nil {
+				return err
+			}
+			glog.Infof(kwlog(fmt.Sprintf("successfully installed %v %v", componentType, componentObj.Name())))
 		}
 	}
 
-	for _, crd := range apiObjMap[K8S_CRD_TYPE] {
-		err := crd.Install(c, namespace)
-		if err != nil {
+	// install any remaining components of unknown type
+	for _, unknownObj := range apiObjMap[K8S_UNSTRUCTURED_TYPE] {
+		if err = unknownObj.Install(c, namespace); err != nil {
 			return err
 		}
+		glog.Infof(kwlog(fmt.Sprintf("successfully installed %v", unknownObj.Name())))
 	}
 
 	glog.V(3).Infof(kwlog(fmt.Sprintf("all operator objects installed")))
@@ -160,29 +170,26 @@ func (c KubeClient) Uninstall(tar string, agId string) error {
 		crd.Uninstall(c, namespace)
 	}
 
-	// Delete the deployment types in the cluster
-	for _, dep := range apiObjMap[K8S_DEPLOYMENT_TYPE] {
-		dep.Uninstall(c, namespace)
+	baseK8sComponents := getBaseK8sKinds()
+
+	// uninstall all the objects of built-in k8s types
+	for _, componentType := range baseK8sComponents {
+		for _, componentObj := range apiObjMap[componentType] {
+			glog.Infof(kwlog(fmt.Sprintf("attempting to uninstall %v %v", componentType, componentObj.Name())))
+			componentObj.Uninstall(c, namespace)
+		}
 	}
-	// Delete the serviceaccount types in the cluster
-	for _, svcAcctDef := range apiObjMap[K8S_SERVICEACCOUNT_TYPE] {
-		svcAcctDef.Uninstall(c, namespace)
-	}
-	// Delete the rolebinding types in the cluster
-	for _, roleBindingDef := range apiObjMap[K8S_ROLEBINDING_TYPE] {
-		roleBindingDef.Uninstall(c, namespace)
-	}
-	// Delete the role types in the cluster
-	for _, roleDef := range apiObjMap[K8S_ROLE_TYPE] {
-		roleDef.Uninstall(c, namespace)
-	}
-	for _, namespaceDef := range apiObjMap[K8S_NAMESPACE_TYPE] {
-		namespaceDef.Uninstall(c, namespace)
+
+	// uninstall any remaining components of unknown type
+	for _, unknownObj := range apiObjMap[K8S_UNSTRUCTURED_TYPE] {
+		glog.Infof(kwlog(fmt.Sprintf("attempting to uninstall %v", unknownObj.Name())))
+		unknownObj.Uninstall(c, namespace)
 	}
 
 	glog.V(3).Infof(kwlog(fmt.Sprintf("Completed removal of all operator objects from the cluster.")))
 	return nil
 }
+
 func (c KubeClient) OperatorStatus(tar string, agId string) (interface{}, error) {
 	apiObjMap, namespace, err := ProcessDeployment(tar, map[string]string{}, agId, 0)
 	if err != nil {
@@ -258,13 +265,17 @@ func ProcessDeployment(tar string, envVars map[string]string, agId string, crIns
 		return nil, "", err
 	}
 
-	if len(customResources) != 1 {
+	if len(customResources) > 1 {
 		return nil, "", fmt.Errorf(kwlog(fmt.Sprintf("Expected one custom resource in deployment. Got %d", len(customResources))))
 	}
 
-	unstructCr, err := unstructuredObjectFromYaml(customResources[0])
-	if err != nil {
-		return nil, "", err
+	var unstructCr *unstructured.Unstructured
+
+	if len(customResources) > 0 {
+		unstructCr, err = unstructuredObjectFromYaml(customResources[0])
+		if err != nil {
+			return nil, "", err
+		}
 	}
 
 	// Sort the k8s api objects by kind
@@ -349,6 +360,8 @@ func getK8sObjectFromYaml(yamlFiles []YamlFile, sch *runtime.Scheme) ([]APIObjec
 	_ = v1beta1scheme.AddToScheme(sch)
 	_ = v1scheme.AddToScheme(sch)
 	_ = scheme.AddToScheme(sch)
+	_ = olmv1alpha1scheme.AddToScheme(sch)
+	_ = olmv1scheme.AddToScheme(sch)
 
 	// multiple yaml files can be in one file separated by '---'
 	// these are split here and rejoined with the single files
@@ -366,14 +379,24 @@ func getK8sObjectFromYaml(yamlFiles []YamlFile, sch *runtime.Scheme) ([]APIObjec
 	}
 
 	for _, fileStr := range indivYamls {
-		decode := serializer.NewCodecFactory(sch).UniversalDecoder(v1beta1scheme.SchemeGroupVersion, v1scheme.SchemeGroupVersion, rbacv1.SchemeGroupVersion, appsv1.SchemeGroupVersion, corev1.SchemeGroupVersion).Decode
+		decode := serializer.NewCodecFactory(sch).UniversalDecoder(v1beta1scheme.SchemeGroupVersion, v1scheme.SchemeGroupVersion, rbacv1.SchemeGroupVersion, appsv1.SchemeGroupVersion, corev1.SchemeGroupVersion, olmv1alpha1scheme.SchemeGroupVersion, olmv1scheme.SchemeGroupVersion).Decode
 		obj, gvk, err := decode([]byte(fileStr.Body), nil, nil)
 
 		if err != nil {
 			customResources = append(customResources, fileStr)
-		} else {
-			// If the object can not be recognized, return the yaml file
+		} else if IsBaseK8sType(gvk.Kind) {
 			newObj := APIObjects{Type: gvk, Object: obj}
+			retObjects = append(retObjects, newObj)
+		} else if IsDangerType(gvk.Kind) {
+			// the scheme has recognized this type but does not provide the function for converting it to an unstructured object. skip this one to avoid a panic.
+			glog.Errorf(kwlog(fmt.Sprintf("Skipping unsupported kind %v", gvk.Kind)))
+		} else {
+			newUnstructObj := unstructured.Unstructured{}
+			err = sch.Convert(obj, &newUnstructObj, conversion.Meta{})
+			if err != nil {
+				glog.Errorf("Err converting object to unstructured: %v", err)
+			}
+			newObj := APIObjects{Type: gvk, Object: &newUnstructObj}
 			retObjects = append(retObjects, newObj)
 		}
 	}
