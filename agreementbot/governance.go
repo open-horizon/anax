@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"math"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -210,7 +211,15 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 			}
 
 		} else {
-			glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database, error: %v", err)))
+			msg := logString(fmt.Sprintf("unable to read agreements from database, error: %v", err))
+			glog.Errorf(msg)
+
+			// This is the case where Postgresql database certificate got upgraded. The error is: "x509: certificate signed by unknown authority"
+			// Only checks for "x509" here to support globalization.
+			if strings.Contains(err.Error(), "x509") || strings.Contains(err.Error(), "X509") {
+				glog.Warningf(logString(fmt.Sprintf("The agbot will panic due to the database certificate error.")))
+				panic(msg)
+			}
 		}
 	}
 
