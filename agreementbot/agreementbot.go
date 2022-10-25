@@ -1445,7 +1445,15 @@ func (w *AgreementBotWorker) getServicePolicy(svcId string) (*externalpolicy.Ext
 func (w *AgreementBotWorker) databaseHeartBeat() int {
 
 	if err := w.db.HeartbeatPartition(); err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("Error heartbeating to the database, error: %v", err)))
+		msg := AWlogString(fmt.Sprintf("Error heartbeating to the database, error: %v", err))
+		glog.Errorf(msg)
+
+		// This is the case where Postgresql database certificate got upgraded. The error is: "x509: certificate signed by unknown authority"
+		// Only checks for "x509" here to support globalization.
+		if strings.Contains(err.Error(), "x509") || strings.Contains(err.Error(), "X509") {
+			glog.Warningf(logString(fmt.Sprintf("The agbot will panic due to the database certificate error.")))
+			panic(msg)
+		}
 	}
 
 	return 0
