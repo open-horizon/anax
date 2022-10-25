@@ -106,10 +106,6 @@ defaultEnv() {
 	anaxJson=$(jq ".Edge.NodeMgmtWorkDirectory = \"${base_host_dir}/nmp\" " <<< $anaxJson)
 	checkrc $? "change NodeMgmtWorkDirectory"
 
-	# always add this directory. Agent will create it.
-	anaxJson=$(jq ".Edge.FileSyncService.PersistencePath = \"${base_host_dir}/ess-store\" " <<< $anaxJson)
-	checkrc $? "change PersistencePath"
-
 	# Write the new json back to the file
 	echo "$anaxJson" > $anaxJsonFile
 	checkrc $? "write anax.json"
