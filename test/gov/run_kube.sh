@@ -36,7 +36,7 @@ sleep 2
 if [ $RC -ne 0 ]
 then
 	echo "Try to install microk8s"
-	sudo snap install microk8s --classic --channel=1.18/stable
+	sudo snap install microk8s --classic --channel=1.23/stable
 	IRC=$?
 	if [ $IRC -ne 0 ]; then echo "Unable to install microk8s: $IRC"; exit 1; fi
 
