@@ -15,7 +15,6 @@ import (
 	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
-	"github.com/open-horizon/anax/producer"
 )
 
 type ChangePattern struct {
@@ -80,49 +79,9 @@ func (w *GovernanceWorker) handleNodeUserInputUpdated(svcSpecs persistence.Servi
 
 	glog.V(5).Infof(logString(fmt.Sprintf("handling node user input changes")))
 
-	if svcSpecs == nil || len(svcSpecs) == 0 {
-		return
-	}
-
-	// get all the unarchived agreements
-	agreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()})
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve all the  from the database, error %v", err)))
-		return
-	}
-
-	// cancel the agreement if needed
-	for _, ag := range agreements {
-		agreementId := ag.CurrentAgreementId
-		if ag.AgreementTerminatedTime != 0 && ag.AgreementForceTerminatedTime == 0 {
-			glog.V(3).Infof(logString(fmt.Sprintf("skip agreement %v, it is already terminating", agreementId)))
-		} else {
-			bCancel, err := w.agreementRequiresService(ag, svcSpecs)
-			if err != nil {
-				glog.Errorf(fmt.Sprintf("%v", err))
-			}
-
-			if bCancel {
-				glog.V(3).Infof(logString(fmt.Sprintf("ending the agreement: %v", agreementId)))
-
-				reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_NODE_USERINPUT_CHANGED)
-
-				eventlog.LogAgreementEvent(
-					w.db,
-					persistence.SEVERITY_INFO,
-					persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
-					persistence.EC_CANCEL_AGREEMENT,
-					ag)
-
-				w.cancelAgreement(agreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
-
-				// send the event to the container in case it has started the workloads.
-				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, agreementId, ag.GetDeploymentConfig())
-				// clean up microservice instances if needed
-				w.handleMicroserviceInstForAgEnded(agreementId, false)
-			}
-		}
-	}
+	// Make sure that every agreement we have is in a valid state or proceeding to valid states in a timely fashion. If not,
+	// cancel the agreement and allow the agbots to re-make them if necessary.
+	w.governAgreements()
 }
 
 // Node pattern has been changes. Go unregister and re-register.

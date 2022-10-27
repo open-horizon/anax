@@ -1980,39 +1980,6 @@ func (w *GovernanceWorker) FindEstablishedAgreementsWithIds(agreementIds []strin
 	return persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), filters)
 }
 
-// Check if the agreement uses any of the given services
-func (w *GovernanceWorker) agreementRequiresService(ag persistence.EstablishedAgreement, svcSpecs persistence.ServiceSpecs) (bool, error) {
-	if svcSpecs == nil || len(svcSpecs) == 0 {
-		return false, nil
-	}
-
-	workload := ag.RunningWorkload
-	if workload.URL == "" || workload.Org == "" {
-		return false, nil
-	}
-
-	asl, _, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.URL, workload.Org, workload.Version, workload.Arch)
-	if err != nil {
-		return false, fmt.Errorf(logString(fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
-	}
-
-	for _, sp := range svcSpecs {
-		if workload.URL == sp.Url && workload.Org == sp.Org {
-			return true, nil
-		}
-		if asl != nil {
-			for _, s := range *asl {
-				if s.SpecRef == sp.Url && s.Org == sp.Org {
-					return true, nil
-				}
-
-			}
-		}
-	}
-
-	return false, nil
-}
-
 func (w *GovernanceWorker) cancelAllAgreements() {
 	glog.V(5).Infof(logString("Canceling all agreements..."))
 
