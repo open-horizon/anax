@@ -12,7 +12,7 @@ RUN curl -4fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-$
     && tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \
     && rm docker-${DOCKER_VER}.tgz
 
-RUN curl https://dl.google.com/go/go1.17.linux-amd64.tar.gz | tar -xzf- -C /usr/local/
+RUN curl https://dl.google.com/go/go1.19.linux-amd64.tar.gz | tar -xzf- -C /usr/local/
 
 RUN curl -4fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
     apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
