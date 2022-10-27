@@ -1020,11 +1020,15 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 				if !workload.Priority.IsSame(pol.Workloads[0].Priority) {
 					// Need a new workload usage record but not the same as the highest priority. That can't be right.
 					ackReplyAsValid = false
-				} else if !pol.Workloads[0].HasEmptyPriority() {
-					if err := b.db.NewWorkloadUsage(wi.SenderId, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+				} else {
+					if theDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.SenderId, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v policies, error: %v", wi.SenderId, err)))
+					} else if !pol.Workloads[0].HasEmptyPriority() || theDev.HAGroup != "" {
+						// workload usage is used to track the priorities as well as the service upgrades for HA groups
+						if err := b.db.NewWorkloadUsage(wi.SenderId, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+						}
 					}
-
 				}
 			} else {
 				if wlUsage.Policy == "" {
@@ -1313,8 +1317,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("warning updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 
 	} else {
-
-		if wlUsage != nil && (wlUsage.ReqsNotMet || cph.IsTerminationReasonNodeShutdown(reason) || reason == basicprotocol.AB_CANCEL_POLICY_CHANGED || reason == basicprotocol.AB_CANCEL_FORCED_UPGRADE) {
+		if wlUsage != nil && (wlUsage.ReqsNotMet || wlUsage.Priority == 0 || cph.IsTerminationReasonNodeShutdown(reason) || reason == basicprotocol.AB_CANCEL_POLICY_CHANGED || reason == basicprotocol.AB_CANCEL_FORCED_UPGRADE) {
 			// If the workload usage record indicates that it is not at the highest priority workload because the device cant meet the
 			// requirements of the higher priority workload, then when an agreement gets cancelled, we will remove the record so that the
 			// agbot always tries the next agreement starting with the highest priority workload again.

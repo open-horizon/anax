@@ -63,8 +63,8 @@ func (w WorkloadUsage) ShortString() string {
 // private factory method for workloadusage w/out persistence safety:
 func NewWorkloadUsage(deviceId string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) (*WorkloadUsage, error) {
 
-	if deviceId == "" || policyName == "" || priority == 0 || retryDurationS == 0 || agid == "" {
-		return nil, errors.New("Illegal input: one of deviceId, policy, policyName, priority, retryDurationS, retryLimit or agreement id is empty")
+	if deviceId == "" || policyName == "" || agid == "" {
+		return nil, errors.New("Illegal input: one of deviceId, policy, policyName, or agreement id is empty")
 	} else {
 		return &WorkloadUsage{
 			DeviceId:           deviceId,

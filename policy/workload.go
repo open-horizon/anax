@@ -225,7 +225,7 @@ func GetNextWorkloadChoice(wls WorkloadList, currentChoice int) *Workload {
 		}
 	}
 	if bestChoicePriority == -1 {
-		return nil 
+		return nil
 	}
 	return &bestChoice
 }
@@ -233,7 +233,7 @@ func GetNextWorkloadChoice(wls WorkloadList, currentChoice int) *Workload {
 func GetWorkloadWithPriority(wls WorkloadList, priority int) *Workload {
 	for _, wl := range wls {
 		if wl.Priority.PriorityValue == priority {
-			return &wl 
+			return &wl
 		}
 	}
 	return nil
