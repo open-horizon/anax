@@ -23,6 +23,7 @@ function check_api_result {
 # $1 - Service url to wait for
 # $2 - Service org to wait for
 # $3 - Service version to wait for (optional)
+# $4 - Service with error (bool, optional, default to false)
 # please export ANAX_API, MAX_ITERATION(default 25)
 function WaitForService() {
   current_svc_version=""
@@ -50,7 +51,10 @@ function WaitForService() {
     fi
 
     echo "svc_inst=$svc_inst"
-    if [ "$svc_inst" != "" ]; then
+    if [ "$4" == "true" ]; then
+        echo -e "Found service $2/$1 with version $3. Checking for err service: $4"
+	break
+    elif [ "$svc_inst" != "" ]; then
         svc_start_time=$(echo "$svc_inst" |jq -r '.execution_start_time')
     fi
 
