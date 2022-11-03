@@ -51,7 +51,7 @@ function WaitForService() {
     fi
 
     echo "svc_inst=$svc_inst"
-    if [ "$4" == "true" ]; then
+    if [ "$4" == "true" ] && [ "$svc_inst" != "" ]; then
         echo -e "Found service $2/$1 with version $3. Checking for err service: $4"
 	break
     elif [ "$svc_inst" != "" ]; then
