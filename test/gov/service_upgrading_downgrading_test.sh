@@ -138,7 +138,8 @@ hzn agreement list
 
 # Ensure service is upgrading/downgrading
 echo "Waiting for cpu service to be upgraded and downgraded because of an error..."
-WaitForService $CPU_URL $CPU_ORG $CPU_VERS_ERR
+ERROR_SERVICE="true"
+WaitForService $CPU_URL $CPU_ORG $CPU_VERS_ERR $ERROR_SERVICE
 if [ $? -ne 0 ]; then hzn eventlog list; exit $?; fi
 
 WaitForService $CPU_URL $CPU_ORG $CPU_VERS_NEW
