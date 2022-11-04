@@ -28,6 +28,7 @@ getCpuFromProc() {
 
 # Get the currect CPU consumption, then construct the HTTP response message
 CPU=$(getCpuFromProc)
+if [ "$CPU"=="00" ]; then CPU=0; fi
 HEADERS="Content-Type: text/html; charset=ISO-8859-1"
 BODY="{\"cpu\":${CPU}}"
 HTTP="HTTP/1.1 200 OK\r\n${HEADERS}\r\n\r\n${BODY}\r\n"
