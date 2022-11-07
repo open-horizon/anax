@@ -42,6 +42,9 @@ func ReadAgentConfigFile(filename string) (map[string]string, error) {
 	sc := bufio.NewScanner(file)
 	for sc.Scan() {
 		line := sc.Text()
+		if len(line) == 0 {
+			continue
+		}
 		if keyValue := strings.Split(line, "="); len(keyValue) != 2 {
 			return configInMap, fmt.Errorf(fmt.Sprintf("failed to parse content in agent config file %v", filename))
 		} else {

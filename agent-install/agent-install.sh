@@ -541,6 +541,7 @@ function get_certificate() {
 
     if [[ -n $css_cert_path ]]; then
         download_css_file "$css_cert_path"
+        
     fi
 
     #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
@@ -548,7 +549,7 @@ function get_certificate() {
     log_debug "get_certificate() end"
 }
 
-# get the cert file path beased on the value in AGENT_CERT_FILE_CSS and INPUT_FILE_PATH
+# get the cert file path beased on the value in AGENT_CERT_FILE_CSS and INPUT_FILE_PATH, will set AGENT_CERT_VERSION
 function get_cert_file_css_path() {
     log_debug "get_cert_file_css_path() begin"
 
@@ -566,6 +567,7 @@ function get_cert_file_css_path() {
             else
                 # new with version
                 css_path="css:${CSS_OBJ_AGENT_CERT_BASE}-${part2}"
+                AGENT_CERT_VERSION=${part2}
             fi
         else
             # 'css:' case - need to use AgentFileVersion to decide if we can get the latest csert
@@ -600,6 +602,7 @@ function get_cert_file_css_path() {
         if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_CERT_VERSIONS[@]} -gt 0 ]; then
             # new way
             css_path="css:${CSS_OBJ_AGENT_CERT_BASE}-${AGENT_CERT_VERSIONS[0]}"
+            AGENT_CERT_VERSION=${AGENT_CERT_VERSIONS[0]}
         else
             # fall back to old default way
             css_path="css:$CSS_OBJ_PATH_DEFAULT"
@@ -607,7 +610,7 @@ function get_cert_file_css_path() {
     fi
 
     css_path="$css_path/$AGENT_CERT_FILE_DEFAULT"
-    echo "css_path=$css_path"
+    echo "css_path=$css_path, AGENT_CERT_VERSION=$AGENT_CERT_VERSION"
     eval $__resultvar="'${css_path}'"
 
     log_debug "get_cert_file_css_path() end"
@@ -685,7 +688,48 @@ function download_css_file() {
         httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" $cert_flag -o "$local_file" $remote_path)
         chkHttp $? $httpCode 200 "downloading $remote_path" $local_file
     fi
+
+    local version_from_cert_file
+    getCertVersionFromCertFile version_from_cert_file
+
+    if [[ -n $AGENT_CERT_VERSION ]]; then
+        if [[ -z $version_from_cert_file ]]; then
+            # write AGENT_CERT_VERSION in file comment as ------OpenHorizon Version x.x.x-----
+            version_to_add="-----OpenHorizon Version $AGENT_CERT_VERSION-----"
+            log_debug "add this line $version_to_add to cert file"
+            
+            echo "-----OpenHorizon Version $AGENT_CERT_VERSION-----" > tmp-agent-install.crt
+            cat $AGENT_CERT_FILE_DEFAULT >> tmp-agent-install.crt
+            mv tmp-agent-install.crt $AGENT_CERT_FILE_DEFAULT
+        elif [[ "$AGENT_CERT_VERSION" != "$version_from_cert_file" ]]; then
+            # if version in cert != version in css filename, overwrite to use version in css filename
+            sed -i "s#$version_from_cert_file#${AGENT_CERT_VERSION}#g" $AGENT_CERT_FILE_DEFAULT 
+        fi
+    fi
+
     log_debug "download_css_file() end"
+}
+
+# returns the cert version from certificate file
+function getCertVersionFromCertFile() {
+    log_debug "getCertVersionFromCertFile() begin"
+    local __resultvar=$1
+
+    local cert_ver_from_file
+    while read -r line || [[ -n "$line" ]]; do
+        if [[ -z $line || ${line:0:1} != '-' ]]; then continue; fi   # only find the line start with "-"
+        content=$(echo $line | sed 's/-----\(.*\)-----/\1/')  # extract the part between ----- and -----
+        if [[ -n $content && $content == *"OpenHorizon Version"* ]]; then
+            log_debug "cert contains OpenHorizon Version: $content"
+            cert_ver_from_file=${content##* }
+        else
+            continue
+        fi
+    done < "$AGENT_CERT_FILE_DEFAULT"
+
+    log_debug "cert_ver_from_file=$cert_ver_from_file"
+    eval $__resultvar="'${cert_ver_from_file}'"
+    log_debug "getCertVersionFromCertFile() end" 
 }
 
 function download_anax_release_file() {
@@ -701,6 +745,7 @@ function download_anax_release_file() {
 # If necessary, download the cfg file from CSS.
 # The input_file_path is either AGENT_CFG_FILE or INPUT_FILE_PATH, the second
 # parameter tells which one it is: 1 for AGENT_CFG_FILE, 0 for INPUT_FILE_PATH.
+# this function sets AGENT_CONFIG_VERSION
 function download_config_file() {
     log_debug "download_config_file() begin"
     local input_file_path=$1   # normally the value of INPUT_FILE_PATH or AGENT_CFG_FILE
@@ -730,6 +775,7 @@ function download_config_file() {
                 if [[ $is_config_path -eq 1 ]]; then
                     # AGENT_CFG_FILE contains the version, use it
                     css_path="css:${CSS_OBJ_AGENT_CONFIG_BASE}-${part2}"
+                    AGENT_CONFIG_VERSION=${part2}
                 else
                     # INPUT_FILE_PATH contains the version, cannot use it
                     need_latest_cfg=true
@@ -746,6 +792,7 @@ function download_config_file() {
             if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_CONFIG_VERSIONS[@]} -gt 0 ]; then
                 # new way
                 css_path="css:${CSS_OBJ_AGENT_CONFIG_BASE}-${AGENT_CONFIG_VERSIONS[0]}"
+                AGENT_CONFIG_VERSION=${AGENT_CONFIG_VERSIONS[0]}
             else
                 # fall back to old default way
                 css_path="css:$CSS_OBJ_PATH_DEFAULT"
@@ -757,6 +804,8 @@ function download_config_file() {
             download_css_file "$css_path/$AGENT_CFG_FILE_DEFAULT"
         fi
     fi
+
+    echo "AGENT_CONFIG_VERSION=$AGENT_CONFIG_VERSION"
 
     # the cfg is specific to the instance of the cluster, so not available from anax/release
     #elif [[ $input_file_path == https://github.com/open-horizon/anax/releases* ]]; then
@@ -791,6 +840,23 @@ function read_config_file() {
         fi
     elif [[ ! -f "$AGENT_CFG_FILE" ]]; then
         log_fatal 1 "Configuration file $AGENT_CFG_FILE not found."
+    fi
+
+    log_debug "Start to get config version from AGENT_CFG_FILE: $AGENT_CFG_FILE"
+    config_in_file=$(cat ${AGENT_CFG_FILE} | grep "HZN_CONFIG_VERSION")
+    config_version_in_file=${config_in_file#*=}
+    log_debug "config_version_in_file: $config_version_in_file"
+
+    # Add config version into config file
+    if [[ -n $AGENT_CONFIG_VERSION ]]; then
+        # write or replace AGENT_CERT_VERSION in file comment as config_version=x.x.x
+        if [[ -z $config_in_file ]]; then
+            # add
+            echo "HZN_CONFIG_VERSION=$AGENT_CONFIG_VERSION" >> $AGENT_CFG_FILE
+        elif [[ "$AGENT_CONFIG_VERSION" != "$config_version_in_file" ]]; then
+            # replace, overwrite with the agent config file version in css filename
+            sed -i "s#HZN_CONFIG_VERSION=${config_version_in_file}#HZN_CONFIG_VERSION=${AGENT_CONFIG_VERSION}#g" $AGENT_CFG_FILE
+        fi
     fi
 
     # Read/parse the config file. Note: omitting IFS= because we want leading and trailing whitespace trimmed. Also -n $line handles the case where there is not a newline at the end of the last line.
@@ -991,6 +1057,7 @@ function get_all_variables() {
     get_variable NODE_ID   # deprecated
     get_variable HZN_DEVICE_ID
     get_variable HZN_NODE_ID
+    get_variable HZN_CONFIG_VERSION
     get_variable HZN_HA_GROUP
     get_variable HZN_AGENT_PORT
     get_variable HZN_EXCHANGE_PATTERN
@@ -1629,6 +1696,15 @@ function is_horizon_defaults_correct() {
         fi
     fi
 
+    if [[ -n $HZN_CONFIG_VERSION ]]; then
+        horizon_defaults_value=$(grep -E '^HZN_CONFIG_VERSION=' $defaults_file || true)
+        horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
+        if [[ $horizon_defaults_value != $HZN_CONFIG_VERSION ]]; then
+            log_info "HZN_CONFIG_VERSION changed, return"
+            return 1
+        fi
+    fi
+
     log_verbose "set IS_HORIZON_DEFAULTS_CORRECT to true and return"
     IS_HORIZON_DEFAULTS_CORRECT='true'
     log_debug "is_horizon_defaults_correct() end"
@@ -1711,6 +1787,9 @@ function create_or_update_horizon_defaults() {
         fi
         if [[ -n $anax_port ]]; then
             add_to_or_update_horizon_defaults 'HZN_AGENT_PORT' "$anax_port" $defaults_file
+        fi
+        if [[ -n $HZN_CONFIG_VERSION ]]; then
+            add_to_or_update_horizon_defaults 'HZN_CONFIG_VERSION' "$HZN_CONFIG_VERSION" $defaults_file
         fi
         HORIZON_DEFAULTS_CHANGED='true'
     fi
@@ -3385,6 +3464,7 @@ function create_horizon_env() {
     echo "HZN_NODE_ID=${NODE_ID}" >> $HZN_ENV_FILE
     echo "HZN_MGMT_HUB_CERT_PATH=$cluster_cert_path/$cert_name" >>$HZN_ENV_FILE
     echo "HZN_AGENT_PORT=8510" >>$HZN_ENV_FILE
+    echo "HZN_CONFIG_VERSION=${HZN_CONFIG_VERSION}" >> $HZN_ENV_FILE
     log_debug "create_horizon_env() end"
 }
 
@@ -3971,6 +4051,7 @@ function install_update_cluster() {
     # push agent and cronjob images to cluster's registry
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
         if ! is_small_kube; then
+            create_namespace
             create_image_stream
         fi
         pushImagesToEdgeClusterRegistry

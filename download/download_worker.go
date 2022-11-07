@@ -1,6 +1,7 @@
 package download
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -13,6 +14,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/anax/worker"
+	"io/ioutil"
 	"os"
 	"path"
 	"sort"
@@ -35,6 +37,7 @@ const (
 	HZN_CONFIG_FILE       = "agent-install.cfg"
 	HZN_CERT_FILE         = "agent-install.crt"
 	HZN_AGENTINSTALL_FILE = "agent-install.sh"
+	HZN_CONFIG_VERSION    = "HZN_CONFIG_VERSION"
 )
 
 type DownloadWorker struct {
@@ -250,6 +253,11 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 			if err = w.DownloadCSSObject(CSSSHAREDORG, configType, HZN_CONFIG_FILE, filePath, nmpName); err != nil {
 				return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, configType, HZN_CONFIG_FILE, err)
 			}
+
+			// insert config verstion HZN_CONFIG_VERSION=upgradeVersions.ConfigVersion
+			if err = insertVersionToConfig(filePath, nmpName, upgradeVersions.ConfigVersion); err != nil {
+				return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error to write HZN_CONFIG_VERSION=%v in config file, error was: %v", upgradeVersions.ConfigVersion, err)
+			}
 		} else {
 			glog.Errorf(dwlog(fmt.Sprintf("No config upgrade object found of expected type %v found in manifest list.", HZN_CONFIG_FILE)))
 			missingPkgs = append(missingPkgs, HZN_CONFIG_FILE)
@@ -260,6 +268,10 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 		if cutil.SliceContains(manifest.Certificate.FileList, HZN_CERT_FILE) {
 			if err = w.DownloadCSSObject(CSSSHAREDORG, certType, HZN_CERT_FILE, filePath, nmpName); err != nil {
 				return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, certType, HZN_CERT_FILE, err)
+			}
+
+			if err = insertVersionToCert(filePath, nmpName, upgradeVersions.CertVersion); err != nil {
+				return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error to write version %v in cert file, error was: %v", upgradeVersions.CertVersion, err)
 			}
 		} else {
 			glog.Errorf(dwlog(fmt.Sprintf("No cert upgrade object found of expected type %v found in manifest list.", HZN_CERT_FILE)))
@@ -569,6 +581,75 @@ func getPkgArch(pkgType string, arch string) string {
 	}
 
 	return pkgArch
+}
+
+func insertVersionToConfig(filePath string, nmpName string, version string) error {
+	lineToInsert := fmt.Sprintf("%s=%s", HZN_CONFIG_VERSION, version)
+	cfgFileName := path.Join(filePath, nmpName, HZN_CONFIG_FILE)
+
+	finfo, err := os.Stat(cfgFileName)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(cfgFileName, os.O_RDONLY, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	contents := make([]string, 0)
+	for scanner.Scan() {
+		if tmp := scanner.Text(); len(tmp) != 0 {
+			if !strings.Contains(tmp, HZN_CONFIG_VERSION) {
+				contents = append(contents, tmp)
+			}
+		}
+	}
+	contents = append(contents, lineToInsert)
+
+	fileContent := ""
+	for _, line := range contents {
+		fileContent += line
+		fileContent += "\n"
+	}
+	return ioutil.WriteFile(cfgFileName, []byte(fileContent), finfo.Mode())
+}
+
+func insertVersionToCert(filePath string, nmpName string, version string) error {
+	lineToInsert := fmt.Sprintf("%s%s %s%s\n", cutil.CERT_COMMENT, cutil.CERT_VERSION_TITLE, version, cutil.CERT_COMMENT)
+	certFileName := path.Join(filePath, nmpName, HZN_CERT_FILE)
+	finfo, err := os.Stat(certFileName)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(certFileName, os.O_RDONLY, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	contents := make([]string, 0)
+	for scanner.Scan() {
+		if tmp := scanner.Text(); len(tmp) != 0 {
+			if !strings.Contains(tmp, cutil.CERT_VERSION_TITLE) {
+				contents = append(contents, tmp)
+			}
+		}
+	}
+
+	fileContent := ""
+	for i, line := range contents {
+		if i == 0 {
+			fileContent += lineToInsert
+		}
+		fileContent += line
+		fileContent += "\n"
+	}
+	return ioutil.WriteFile(certFileName, []byte(fileContent), finfo.Mode())
 }
 
 func dwlog(input string) string {

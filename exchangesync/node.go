@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
+	"os"
 	"sync"
 )
 
@@ -15,6 +18,8 @@ var nodeUpdateLock sync.Mutex //The lock that protects the hash value
 
 var exchNode *exchange.Device
 var exchError error
+
+const HZN_CONFIG_VERSION_ENV = "HZN_CONFIG_VERSION"
 
 // Return the currently saved exchange node
 func GetExchangeNode() (*exchange.Device, error) {
@@ -71,10 +76,18 @@ func NodeInitalSetup(db *bolt.DB, getDevice exchange.DeviceHandler, patchDevice 
 		// set agent version, cert version and config version in exchange
 		cert_version := ""
 		config_version := ""
-		sw_version := pDevice.SoftwareVersions
-		if sw_version != nil {
-			cert_version, _ = sw_version[persistence.CERT_VERSION]
-			config_version, _ = sw_version[persistence.CONFIG_VERSION]
+
+		mhCertPath := os.Getenv(config.ManagementHubCertPath)
+		versionInCert := cutil.GetCertificateVersion(mhCertPath)
+		if versionInCert != "" {
+			cert_version = versionInCert
+			pDevice.SetCertVersion(db, pDevice.Id, cert_version)
+		}
+
+		versionInConfig := os.Getenv(HZN_CONFIG_VERSION_ENV)
+		if versionInConfig != "" {
+			config_version = versionInConfig
+			pDevice.SetConfigVersion(db, pDevice.Id, config_version)
 		}
 
 		if exchNode.SoftwareVersions == nil {
