@@ -9,10 +9,14 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/agreementbot/secrets"
+	"github.com/open-horizon/anax/basicprotocol"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -42,6 +46,7 @@ type ConsumerProtocolHandler interface {
 	HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler)
 	HandleServicePolicyChanged(cmd *ServicePolicyChangedCommand, cph ConsumerProtocolHandler)
 	HandleServicePolicyDeleted(cmd *ServicePolicyDeletedCommand, cph ConsumerProtocolHandler)
+	HandleNodePolicyChanged(cmd *NodePolicyChangedCommand, cph ConsumerProtocolHandler)
 	HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventCommand, cph ConsumerProtocolHandler)
 	HandleWorkloadUpgrade(cmd *WorkloadUpgradeCommand, cph ConsumerProtocolHandler)
 	HandleMakeAgreement(cmd *MakeAgreementCommand, cph ConsumerProtocolHandler)
@@ -305,8 +310,11 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 					glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("policy change handler skipping agreement %v because it is using a policy that did not change.", ag.CurrentAgreementId)))
 					continue
 				} else if err := b.pm.MatchesMine(cmd.Msg.Org(), pol); err != nil {
-					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
-					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+					agStillValid := b.HandlePolicyChangeForAgreement(ag, cph)
+					if !agStillValid {
+						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed incompatibly. Cancelling agreement: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
+						b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+					}
 				} else {
 					glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement %v, no policy content differences detected", ag.CurrentAgreementId)))
 				}
@@ -316,6 +324,61 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
 		}
 	}
+}
+
+func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persistence.Agreement, cph ConsumerProtocolHandler) bool {
+	glog.V(5).Infof("attempting to update agreement %v due to change in policy", ag)
+	svcAllPol := externalpolicy.ExternalPolicy{}
+
+	for _, svcId := range ag.ServiceId {
+		if svcPol, err := exchange.GetServicePolicyWithId(b, svcId); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get service policy for %v from the exchange: %v", svcId, err)))
+			return false
+		} else {
+			svcAllPol.MergeWith(&svcPol.ExternalPolicy, false)
+		}
+	}
+
+	msgPrinter := i18n.GetMessagePrinter()
+
+	busPolHandler := exchange.GetHTTPBusinessPoliciesHandler(b)
+	_, busPol, err := compcheck.GetBusinessPolicy(busPolHandler, ag.PolicyName, true, msgPrinter)
+	if err != nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get business policy %v/%v from the exchange: %v", ag.Org, ag.PolicyName, err)))
+		return false
+	}
+
+	nodePolHandler := exchange.GetHTTPNodePolicyHandler(b)
+	_, nodePol, err := compcheck.GetNodePolicy(nodePolHandler, ag.DeviceId, msgPrinter)
+	if err != nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get node policy for %v from the exchange.", ag.DeviceId)))
+		return false
+	}
+	dev, err := exchange.GetExchangeDevice(b.GetHTTPFactory(), ag.DeviceId, b.GetExchangeId(), b.GetExchangeToken(), b.GetExchangeURL())
+	if err != nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get node %v from the exchange.", ag.DeviceId)))
+		return false
+	}
+
+	match, _, producerPol, consumerPol, err := compcheck.CheckPolicyCompatiblility(nodePol, busPol, &svcAllPol, dev.Arch, nil)
+
+	if !match {
+		return false
+	}
+
+	wl := consumerPol.Workloads[0]
+
+	newTsCs, err := policy.Create_Terms_And_Conditions(producerPol, consumerPol, &wl, ag.CurrentAgreementId, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, basicprotocol.PROTOCOL_CURRENT_VERSION)
+	if err != nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error creating new terms and conditions: %v", err)))
+		return false
+	}
+
+	ag.LastPolicyUpdateTime = uint64(time.Now().Unix())
+
+	b.UpdateAgreement(&ag, basicprotocol.MsgUpdateTypePolicyChange, newTsCs, cph)
+
+	return true
 }
 
 func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler) {
@@ -362,9 +425,33 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePol
 	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
 		for _, ag := range agreements {
 			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId[0] == cmd.Msg.ServiceId {
+				agStillValid := b.HandlePolicyChangeForAgreement(ag, cph)
+				if !agStillValid {
+					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
+					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+				}
+			}
+		}
+	} else {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+	}
+}
 
-				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
-				b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+func (b *BaseConsumerProtocolHandler) HandleNodePolicyChanged(cmd *NodePolicyChangedCommand, cph ConsumerProtocolHandler) {
+	glog.V(5).Infof(BCPHlogstring(b.Name(), "recieved node policy change command."))
+
+	InProgress := func() persistence.AFilter {
+		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
+	}
+
+	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
+		for _, ag := range agreements {
+			if ag.Pattern == "" && ag.DeviceId == cmd.Msg.NodeId {
+				agStillValid := b.HandlePolicyChangeForAgreement(ag, cph)
+				if !agStillValid {
+					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
+					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+				}
 			}
 		}
 	} else {

@@ -67,6 +67,7 @@ const (
 	CACHE_SERVICE_POLICY   EventId = "CACHE_SERVICE_POLICY"
 	SERVICE_POLICY_CHANGED EventId = "SERVICE_POLICY_CHANGED"
 	SERVICE_POLICY_DELETED EventId = "SERVICE_POLICY_DELETED"
+	NODE_POLICY_CHANGED    EventId = "NODE_POLICY_CHANGED"
 
 	// exchange-related
 	NEW_DEVICE_REG             EventId = "NEW_DEVICE_REG"
@@ -696,6 +697,35 @@ func NewServicePolicyDeletedMessage(id EventId, bPolOrg, bPolName, svcId string)
 		BusinessPolOrg:  bPolOrg,
 		BusinessPolName: bPolName,
 		ServiceId:       svcId,
+	}
+}
+
+type NodePolicyChangedMessage struct {
+	event      Event
+	NodePolOrg string
+	NodeId     string
+}
+
+func (e NodePolicyChangedMessage) String() string {
+	return fmt.Sprintf("event: %v, NodePolOrg: %v, NodeId: %v", e.event, e.NodePolOrg, e.NodeId)
+}
+
+func (e NodePolicyChangedMessage) ShortString() string {
+	return fmt.Sprintf("event: %v, NodePolOrg: %v, NodeId: %v", e.event, e.NodePolOrg, e.NodeId)
+}
+
+func (e *NodePolicyChangedMessage) Event() Event {
+	return e.event
+}
+
+func NewNodePolicyChangedMessage(id EventId, nPolOrg string, nodeId string) *NodePolicyChangedMessage {
+
+	return &NodePolicyChangedMessage{
+		event: Event{
+			Id: id,
+		},
+		NodePolOrg: nPolOrg,
+		NodeId:     nodeId,
 	}
 }
 

@@ -1,8 +1,10 @@
 package abstractprotocol
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/policy"
 )
 
 // =======================================================================================================
@@ -67,4 +69,13 @@ func (bp *BaseProposal) ProducerPolicy() string {
 
 func (bp *BaseProposal) ConsumerId() string {
 	return bp.Consumerid
+}
+
+func (p *BaseProposal) SetTsAndCs(TCPolicy *policy.Policy) error {
+	if tcBytes, err := json.Marshal(TCPolicy); err != nil {
+		return fmt.Errorf("Error marshalling TsAndCs %v, error: %v", *TCPolicy, err)
+	} else {
+		p.TsandCs = string(tcBytes)
+	}
+	return nil
 }

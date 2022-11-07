@@ -43,6 +43,8 @@ type AgbotDatabase interface {
 	AgreementTimedout(agreementid string, protocol string) (*Agreement, error)
 	AgreementSecretUpdateTime(agreementid string, protocol string, secretUpdateTime uint64) (*Agreement, error)
 	AgreementSecretUpdateAckTime(agreementid string, protocol string, secretUpdateAckTime uint64) (*Agreement, error)
+	AgreementPolicyUpdateTime(agreementid string, protocol string, policyUpdateTime uint64) (*Agreement, error)
+	AgreementPolicyUpdateAckTime(agreementid string, protocol string, policyUpdateAckTime uint64) (*Agreement, error)
 
 	DataNotification(agreementid string, protocol string) (*Agreement, error)
 	DataVerified(agreementid string, protocol string) (*Agreement, error)

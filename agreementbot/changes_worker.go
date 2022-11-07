@@ -177,6 +177,8 @@ func (w *ChangesWorker) findAndProcessChanges() {
 
 		} else if change.IsNodePolicy("") {
 			batchedEvents[events.CHANGE_NODE_POLICY_TYPE] = true
+			ev := events.NewNodePolicyChangedMessage(events.NODE_POLICY_CHANGED, change.OrgID, change.ID)
+			w.Messages() <- ev
 
 		} else if change.IsNodeAgreement("") {
 			batchedEvents[events.CHANGE_NODE_AGREEMENT_TYPE] = true

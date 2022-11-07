@@ -484,6 +484,18 @@ func SetAgreementServiceDefId(db *bolt.DB, dbAgreementId string, protocol string
 	})
 }
 
+func SetAgreementProposal(db *bolt.DB, dbAgreementId string, protocols []string, newProposal string) (*EstablishedAgreement, error) {
+	if existingAgreements, err := FindEstablishedAgreementsAllProtocols(db, protocols, []EAFilter{IdEAFilter(dbAgreementId)}); err != nil {
+		return nil, fmt.Errorf("Error finding agreement %v for update: %v", dbAgreementId, err)
+	} else if len(existingAgreements) != 1 {
+		return nil, fmt.Errorf("Error: expected 1 agreement with id %v. Got %v.", dbAgreementId, len(existingAgreements))
+	} else {
+		existingAgreement := existingAgreements[0]
+		existingAgreement.Proposal = newProposal
+		return &existingAgreement, persistUpdatedAgreement(db, dbAgreementId, existingAgreement.AgreementProtocol, &existingAgreement)
+	}
+}
+
 func DeleteEstablishedAgreement(db *bolt.DB, agreementId string, protocol string) error {
 
 	if agreementId == "" {
@@ -614,6 +626,7 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				if mod.ServiceDefId == "" { // transition add microservice definition id
 					mod.ServiceDefId = update.ServiceDefId
 				}
+				mod.Proposal = update.Proposal // allow proposal to be updated to accomodate policy changes
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)

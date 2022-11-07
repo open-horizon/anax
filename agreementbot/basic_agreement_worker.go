@@ -414,12 +414,54 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 					// Drop the agreement lock
 					lock.Unlock()
 
+				} else if wi.Reply.IsPolicyChangeUpdate() {
+					// Get the agreement id lock to prevent any other thread from processing this same agreement.
+					lock := a.alm.getAgreementLock(wi.Reply.AgreementId())
+					lock.Lock()
+
+					// update the system to indicate that the policy update is complete.
+					glog.V(5).Infof(bwlogstring(a.workerID, fmt.Sprintf("policy update accepted %v", wi.Reply.ShortString())))
+
+					// Record the policy update ACK message.
+					if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.Reply.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{}); err != nil {
+						glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.Reply.AgreementId(), err)))
+					} else {
+						if agreement != nil {
+							if _, err := a.db.AgreementPolicyUpdateAckTime(wi.Reply.AgreementId(), a.protocolHandler.Name(), agreement.LastPolicyUpdateTime); err != nil {
+								glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("unable to save policy update ack time for %s, error: %v", wi.Reply.AgreementId(), err)))
+							}
+						} else {
+							// Agreement must belong to other agbot
+							deleteMessage = false
+						}
+					}
+
+					// Drop the agreement lock
+					lock.Unlock()
 				}
 
 			} else {
-				// Log the reject and then update the state of the system to prevent further updates for this change.
-				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("agent rejected update %v", wi.Reply.ShortString())))
 
+				if wi.Reply.IsPolicyChangeUpdate() {
+					// update the system to indicate that the policy update is complete.
+					glog.V(5).Infof(bwlogstring(a.workerID, fmt.Sprintf("policy update accepted %v", wi.Reply.ShortString())))
+
+					// Record the policy update ACK message.
+					if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.Reply.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{}); err != nil {
+						glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.Reply.AgreementId(), err)))
+					} else {
+						if agreement != nil {
+							deleteMessage = a.CancelAgreementWithLock(a.protocolHandler, wi.Reply.AgreementId(), basicprotocol.AB_CANCEL_UPDATE_REJECTED, a.workerID)
+						} else {
+							// Agreement must belong to other agbot
+							deleteMessage = false
+						}
+					}
+
+				} else {
+					// Log the reject and then update the state of the system to prevent further updates for this change.
+					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("agent rejected update %v", wi.Reply.ShortString())))
+				}
 			}
 
 			// Get rid of the original agreement update reply message.
