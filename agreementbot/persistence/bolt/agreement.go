@@ -145,6 +145,14 @@ func (db *AgbotBoltDB) AgreementSecretUpdateAckTime(agreementid string, protocol
 	return persistence.AgreementSecretUpdateAckTime(db, agreementid, protocol, secretUpdateAckTime)
 }
 
+func (db *AgbotBoltDB) AgreementPolicyUpdateTime(agreementid string, protocol string, policyUpdateTime uint64) (*persistence.Agreement, error) {
+	return persistence.AgreementPolicyUpdateTime(db, agreementid, protocol, policyUpdateTime)
+}
+
+func (db *AgbotBoltDB) AgreementPolicyUpdateAckTime(agreementid string, protocol string, policyUpdateAckTime uint64) (*persistence.Agreement, error) {
+	return persistence.AgreementPolicyUpdateAckTime(db, agreementid, protocol, policyUpdateAckTime)
+}
+
 // no error on not found, only nil
 func (db *AgbotBoltDB) FindSingleAgreementByAgreementId(agreementid string, protocol string, filters []persistence.AFilter) (*persistence.Agreement, error) {
 	filters = append(filters, persistence.IdAFilter(agreementid))

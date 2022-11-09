@@ -172,6 +172,44 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 
 			}
 
+		} else if update.IsPolicyChangeUpdate() {
+			// a policy that was used to form an agreement with this node has changed
+			// the agbot has sent an updated merged policy
+			// this will update the agreement's ts&cs with the new merged policy
+			glog.V(5).Infof(BPHlogString(fmt.Sprintf("handling update for %v: %v", update.AgreementId(), update.Metadata)))
+
+			// convert the meta data into a new policy
+			var newPolicy policy.Policy
+			if bytes, err := json.Marshal(update.Metadata); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("unable to marshal update for agreement %v: %v", update.AgreementId(), err)))
+				acceptedUpdate = false
+			} else if err = json.Unmarshal(bytes, &newPolicy); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("unable to unmarshal update for agreement %v: %v", update.AgreementId(), err)))
+				acceptedUpdate = false
+			} else if existingAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(c.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.IdEAFilter(update.AgreementId())}); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("error finding agreement %v for update: %v", update.AgreementId(), err)))
+				acceptedUpdate = false
+			} else if len(existingAgreements) != 1 {
+				glog.Errorf(BPHlogString(fmt.Sprintf("error: expected 1 agreement with id %v. Got %v.", update.AgreementId(), len(existingAgreements))))
+				acceptedUpdate = false
+			} else if prop, err := abstractprotocol.DemarshalProposal(existingAgreements[0].Proposal); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("failed to demashal proposal for agreement with id %v: %v", update.AgreementId(), err)))
+				acceptedUpdate = false
+			} else if bProp, ok := prop.(*abstractprotocol.BaseProposal); !ok {
+				glog.Errorf(BPHlogString(fmt.Sprintf("unable to type proposal %v as baseproposal: %v", prop, err)))
+				acceptedUpdate = false
+			} else if err = bProp.SetTsAndCs(&newPolicy); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("unable to set new terms and conditions for agreement %v: %v", update.AgreementId(), err)))
+				acceptedUpdate = false
+			} else if strProp, err := abstractprotocol.MarshalProposal(bProp); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("unable to marshal updated proposal for agreement %v in the db: %v", update.AgreementId(), err)))
+				acceptedUpdate = false
+			} else if updatedAg, err := persistence.SetAgreementProposal(c.db, update.AgreementId(), policy.AllAgreementProtocols(), strProp); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("unable to update agreement %v in the db: %v", update.AgreementId(), err)))
+				acceptedUpdate = false
+			} else {
+				glog.V(5).Infof(BPHlogString(fmt.Sprintf("updated agreement %v to %v", update.AgreementId(), updatedAg)))
+			}
 		} else {
 			// The update type is unexpected so simply reject it.
 			acceptedUpdate = false

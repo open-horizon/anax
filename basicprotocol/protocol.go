@@ -78,6 +78,7 @@ func NewBAgreementVerifyReply(bp *abstractprotocol.BaseProtocolMessage, exists b
 // imply that the rejecting party is cancelling the agreement. However, the sending party is free to cancel the agreement upon
 // receipt of a rejection.
 const MsgUpdateTypeSecret = "basicagreementupdatesecret"
+const MsgUpdateTypePolicyChange = "basicagreementtupdatepolicychange"
 
 type BAgreementUpdate struct {
 	*abstractprotocol.BaseProtocolMessage
@@ -102,6 +103,10 @@ func (b *BAgreementUpdate) IsValid() bool {
 
 func (b *BAgreementUpdate) IsSecretUpdate() bool {
 	return b.Updatetype == MsgUpdateTypeSecret
+}
+
+func (b *BAgreementUpdate) IsPolicyChangeUpdate() bool {
+	return b.Updatetype == MsgUpdateTypePolicyChange
 }
 
 func (b *BAgreementUpdate) UpdateType() string {
@@ -137,6 +142,10 @@ func (b *BAgreementUpdateReply) IsValid() bool {
 
 func (b *BAgreementUpdateReply) IsSecretUpdate() bool {
 	return b.Updatetype == MsgUpdateTypeSecret
+}
+
+func (b *BAgreementUpdateReply) IsPolicyChangeUpdate() bool {
+	return b.Updatetype == MsgUpdateTypePolicyChange
 }
 
 func (b *BAgreementUpdateReply) IsAccepted() bool {
@@ -542,6 +551,7 @@ const AB_USER_REQUESTED = 206
 const AB_CANCEL_FORCED_UPGRADE = 207
 const AB_CANCEL_NODE_HEARTBEAT = 208
 const AB_CANCEL_AG_MISSING = 209
+const AB_CANCEL_UPDATE_REJECTED = 210
 
 // const AB_CANCEL_BC_WRITE_FAILED       = 208  // xd0
 
@@ -577,8 +587,9 @@ func DecodeReasonCode(code uint64) string {
 		AB_USER_REQUESTED:          "agreement bot user requested",
 		AB_CANCEL_FORCED_UPGRADE:   "agreement bot user requested service upgrade",
 		// AB_CANCEL_BC_WRITE_FAILED:   "agreement bot agreement write failed"}
-		AB_CANCEL_NODE_HEARTBEAT: "agreement bot detected node heartbeat stopped",
-		AB_CANCEL_AG_MISSING:     "agreement bot detected agreement missing from node"}
+		AB_CANCEL_NODE_HEARTBEAT:  "agreement bot detected node heartbeat stopped",
+		AB_CANCEL_AG_MISSING:      "agreement bot detected agreement missing from node",
+		AB_CANCEL_UPDATE_REJECTED: "agreement update rejected by node"}
 
 	if reasonString, ok := codeMeanings[code]; !ok {
 		return "unknown reason code, device might be downlevel"

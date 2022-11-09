@@ -420,6 +420,14 @@ func (db *AgbotPostgresqlDB) AgreementSecretUpdateAckTime(agreementid string, pr
 	return persistence.AgreementSecretUpdateAckTime(db, agreementid, protocol, secretUpdateAckTime)
 }
 
+func (db *AgbotPostgresqlDB) AgreementPolicyUpdateTime(agreementid string, protocol string, policyUpdateTime uint64) (*persistence.Agreement, error) {
+	return persistence.AgreementPolicyUpdateTime(db, agreementid, protocol, policyUpdateTime)
+}
+
+func (db *AgbotPostgresqlDB) AgreementPolicyUpdateAckTime(agreementid string, protocol string, policyUpdateAckTime uint64) (*persistence.Agreement, error) {
+	return persistence.AgreementPolicyUpdateAckTime(db, agreementid, protocol, policyUpdateAckTime)
+}
+
 func (db *AgbotPostgresqlDB) DeleteAgreement(agreementid string, protocol string) error {
 	tx, err := db.db.Begin()
 	if err != nil {

@@ -208,6 +208,19 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 					}
 				}
+				// check if this agreement is waiting for a policy change update reply
+				// if it is, check if the update has timed out
+				if ag.LastPolicyUpdateTimeAck < ag.LastPolicyUpdateTime {
+					timeout := ag.ProtocolTimeoutS
+					if timeout == 0 {
+						_, timeout = w.SetAgreementTimeouts(ag, agp)
+					}
+					if uint64(time.Now().Unix())-ag.LastPolicyUpdateTime > timeout {
+						// exceeded timeout waiting for update reply. cancel the agreement
+						glog.V(3).Infof("agreement %v has timed out while waiting for reply to a policy change update", ag.CurrentAgreementId)
+						w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_REPLY))
+					}
+				}
 			}
 
 		} else {

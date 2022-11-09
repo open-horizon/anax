@@ -59,6 +59,8 @@ type Agreement struct {
 	AgreementTimeoutS              uint64   `json:"agreement_timeout_sec"`
 	LastSecretUpdateTime           uint64   `json:"last_secret_update_time"`     // The secret update time corresponding to the most recent secret update protocol msg sent for this agreement
 	LastSecretUpdateTimeAck        uint64   `json:"last_secret_update_time_ack"` // Will match the LastSecretUpdateTime when the agreement update ACK is received
+	LastPolicyUpdateTime           uint64   `json:"last_policy_update_time"`
+	LastPolicyUpdateTimeAck        uint64   `json:"last_policy_update_time_ack"`
 }
 
 func (a Agreement) String() string {
@@ -104,7 +106,9 @@ func (a Agreement) String() string {
 		"ProtocolTimeoutS: %v, "+
 		"AgreementTimeoutS: %v, "+
 		"LastSecretUpdateTime: %v, "+
-		"LastSecretUpdateTimeAck: %v",
+		"LastSecretUpdateTimeAck: %v"+
+		"LastPolicyUpdateTime: %v"+
+		"LastPolicyUpdateTimeAck: %v",
 		a.Archived, a.CurrentAgreementId, a.Org, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.DeviceType,
 		a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
@@ -113,7 +117,7 @@ func (a Agreement) String() string {
 		a.MeteringTokens, a.MeteringPerTimeUnit, a.MeteringNotificationInterval, a.MeteringNotificationSent, a.MeteringNotificationMsgs,
 		a.TerminatedReason, a.TerminatedDescription, a.BlockchainType, a.BlockchainName, a.BlockchainOrg, a.BCUpdateAckTime,
 		a.NHMissingHBInterval, a.NHCheckAgreementStatus, a.Pattern, a.ServiceId, a.ProtocolTimeoutS, a.AgreementTimeoutS,
-		a.LastSecretUpdateTime, a.LastSecretUpdateTimeAck)
+		a.LastSecretUpdateTime, a.LastSecretUpdateTimeAck, a.LastPolicyUpdateTime, a.LastPolicyUpdateTimeAck)
 }
 
 // Factory method for agreement w/out persistence safety.
@@ -373,6 +377,28 @@ func AgreementSecretUpdateAckTime(db AgbotDatabase, agreementid string, protocol
 	}
 }
 
+func AgreementPolicyUpdateTime(db AgbotDatabase, agreementid string, protocol string, policyUpdateTime uint64) (*Agreement, error) {
+	if agreement, err := db.SingleAgreementUpdate(agreementid, protocol, func(a Agreement) *Agreement {
+		a.LastPolicyUpdateTime = policyUpdateTime
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
+func AgreementPolicyUpdateAckTime(db AgbotDatabase, agreementid string, protocol string, policyUpdateAckTime uint64) (*Agreement, error) {
+	if agreement, err := db.SingleAgreementUpdate(agreementid, protocol, func(a Agreement) *Agreement {
+		a.LastPolicyUpdateTimeAck = policyUpdateAckTime
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
 // This code is running in a database transaction. Within the tx, the current record is
 // read and then updated according to the updates within the input update record. It is critical
 // to check for correct data transitions within the tx .
@@ -475,6 +501,12 @@ func ValidateStateTransition(mod *Agreement, update *Agreement) {
 	}
 	if mod.LastSecretUpdateTimeAck < update.LastSecretUpdateTimeAck { // Valid transitions must move forward
 		mod.LastSecretUpdateTimeAck = update.LastSecretUpdateTimeAck
+	}
+	if mod.LastPolicyUpdateTime < update.LastPolicyUpdateTime { // Valid transitions must move forward
+		mod.LastPolicyUpdateTime = update.LastPolicyUpdateTime
+	}
+	if mod.LastPolicyUpdateTimeAck < update.LastPolicyUpdateTimeAck { // Valid transitions must move forward
+		mod.LastPolicyUpdateTimeAck = update.LastPolicyUpdateTimeAck
 	}
 }
 

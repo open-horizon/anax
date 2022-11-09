@@ -221,6 +221,13 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewServicePolicyDeletedCommand(msg)
 		}
 
+	case *events.NodePolicyChangedMessage:
+		msg, _ := incoming.(*events.NodePolicyChangedMessage)
+		switch msg.Event().Id {
+		case events.NODE_POLICY_CHANGED:
+			w.Commands <- NewNodePolicyChangedCommand(msg)
+		}
+
 	case *events.MMSObjectPolicyMessage:
 		msg, _ := incoming.(*events.MMSObjectPolicyMessage)
 		w.Commands <- NewMMSObjectPolicyEventCommand(msg)
@@ -568,6 +575,16 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 			// Queue the command to the relevant protocol handler for further processing.
 			if w.consumerPH.Get(agp).AcceptCommand(cmd) {
 				w.consumerPH.Get(agp).HandleServicePolicyDeleted(cmd, w.consumerPH.Get(agp))
+			}
+		}
+
+	case *NodePolicyChangedCommand:
+		cmd, _ := command.(*NodePolicyChangedCommand)
+		// Send the node policy changed command to all protocol handlers
+		for _, agp := range w.consumerPH.GetAll() {
+			// Queue the command to the relevant protocol handler for further processing.
+			if w.consumerPH.Get(agp).AcceptCommand(cmd) {
+				w.consumerPH.Get(agp).HandleNodePolicyChanged(cmd, w.consumerPH.Get(agp))
 			}
 		}
 
