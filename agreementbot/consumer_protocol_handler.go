@@ -310,7 +310,11 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 					glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("policy change handler skipping agreement %v because it is using a policy that did not change.", ag.CurrentAgreementId)))
 					continue
 				} else if err := b.pm.MatchesMine(cmd.Msg.Org(), pol); err != nil {
-					agStillValid := b.HandlePolicyChangeForAgreement(ag, cph)
+					agStillValid := false
+					if ag.Pattern == "" {
+						agStillValid = b.HandlePolicyChangeForAgreement(ag, cph)
+					}
+					
 					if !agStillValid {
 						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed incompatibly. Cancelling agreement: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
 						b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
@@ -334,7 +338,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		if svcPol, err := exchange.GetServicePolicyWithId(b, svcId); err != nil {
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get service policy for %v from the exchange: %v", svcId, err)))
 			return false
-		} else {
+		} else if svcPol != nil {
 			svcAllPol.MergeWith(&svcPol.ExternalPolicy, false)
 		}
 	}
