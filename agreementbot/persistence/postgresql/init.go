@@ -112,6 +112,8 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 		// Create the ha group service upgrade table. Do not partition it.
 		if _, err := db.db.Exec(CREATE_HA_WORKLOAD_UPGRADE_MAIN_TABLE); err != nil {
 			return fmt.Errorf("unable to create ha workload upgrade table, error: %v", err)
+		} else if _, err := db.db.Exec(HA_WORKLOAD_ADD_IF_NOT_PRESENT); err != nil {
+			return fmt.Errorf("unable to create ha workload add if not present function, error: %v", err)
 		}
 
 		glog.V(3).Infof("Postgresql primary partition database tables exist.")

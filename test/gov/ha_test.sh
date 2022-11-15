@@ -46,92 +46,28 @@ function verify_ha_group_name {
 
 function publish_new_netspeed_service {
     echo -e "\n${PREFIX} publish netspeed service 2.4.0..."
-    read -d '' sdef <<EOF
-{
-    "label": "Netspeed for amd64",
-    "description": "Netspeed service",
-    "documentation": "",
-    "public": true,
-    "url": "https://bluehorizon.network/services/netspeed",
-    "version": "2.4.0",
-    "arch": "amd64",
-    "sharable": "multiple",
-    "matchHardware": {},
-    "requiredServices": [
-      {
-        "url": "https://bluehorizon.network/services/network",
-        "org": "IBM",
-        "versionRange": "1.0.0",
-        "arch": "amd64"
-      },
-      {
-        "url": "https://bluehorizon.network/services/network2",
-        "org": "IBM",
-        "versionRange": "1.0.0",
-        "arch": "amd64"
-      },
-      {
-        "url": "https://bluehorizon.network/service-cpu",
-        "org": "IBM",
-        "versionRange": "1.0.0",
-        "arch": "amd64"
-      }
-    ],
-    "userInput": [
-      {
-        "name": "var1",
-        "label": "",
-        "type": "string",
-        "defaultValue": ""
-      },
-      {
-        "name": "var2",
-        "label": "",
-        "type": "int",
-        "defaultValue": ""
-      },
-      {
-        "name": "var3",
-        "label": "",
-        "type": "float",
-        "defaultValue": ""
-      },
-      {
-        "name": "var4",
-        "label": "",
-        "type": "list of strings",
-        "defaultValue": ""
-      },
-      {
-        "name": "var5",
-        "label": "",
-        "type": "string",
-        "defaultValue": "default"
-      },
-      {
-        "name": "var6",
-        "label": "",
-        "type": "string",
-        "defaultValue": "default"
-      }
-    ],
-    "deployment": {
-        "services":{
-            "netspeed":{
-                "image":"openhorizon/example_ms_x86_cpu:1.2.2",
-                "secrets":{
-                    "sec3":{
-                        "description":"Secret 3 for IBM netspeed."
-                    }
-                }
-            }
-        }
-    }
-}
-EOF
-    res=$(echo "$sdef" | hzn exchange service publish -f- -O -P -o IBM -u ${IBM_ADMIN_AUTH} 2>&1)
+    if [ "${NOVAULT}" != "1" ]; then
+      NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0_secrets.json"
+      NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
+    else
+      NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0.json"
+      NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0.json"
+    fi
+    export VERS="2.4.0"
+    export ARCH=${ARCH}
+    export CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
+    export CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
+
+    res=$(cat ${NS_FILE_IBM} | envsubst | hzn exchange service publish -f- -O -P -o IBM -u ${IBM_ADMIN_AUTH} 2>&1)
     if [ $? -ne 0 ]; then
-        echo -e "\n${PREFIX} failed to create netspeed service version 2.4.0. $res"
+        echo -e "\n${PREFIX} failed to create netspeed service version 2.4.0 for IBM org. $res"
+        exit 2
+    fi 
+
+
+    res=$(cat ${NS_FILE_E2EDEV} | envsubst | hzn exchange service publish -f- -O -P -o e2edev@somecomp.com -u ${E2EDEV_ADMIN_AUTH} 2>&1)
+    if [ $? -ne 0 ]; then
+        echo -e "\n${PREFIX} failed to create netspeed service version 2.4.0 for e2edev@somecomp.com org. $res"
         exit 2
     fi 
 }
@@ -265,6 +201,10 @@ function update_sns_pattern {
     ]
 }
 EOF
+    if [ "${NOVAULT}" == "1" ]; then
+      sns=$(echo $sns |jq 'del(.secretBinding)')
+    fi
+
     res=$(echo "$sns" | hzn exchange pattern publish -f- -p sns -o e2edev@somecomp.com -u ${E2EDEV_ADMIN_AUTH} 2>&1)
     if [ $? -ne 0 ]; then
         echo -e "\n${PREFIX} failed to update pattern sns with netspeed service 2.4.0. $res"
@@ -275,18 +215,18 @@ EOF
 function update_ns_policy {
     echo -e "\n${PREFIX} updating deployment policy bp_netspeed with netspeed service 2.4.0..."
     read -d '' bp_ns <<EOF
-  {
+{
     "label": "business policy for netspeed",
     "description": "for netspeed",
     "service": {
       "name": "https://bluehorizon.network/services/netspeed",
-      "org": "IBM",
+      "org": "e2edev@somecomp.com",
       "arch": "*",
       "serviceVersions": [
         {
-          "version": "2.3.0",
+          "version": "2.4.0",
           "priority": {
-            "priority_value": 3,
+            "priority_value": 1,
             "retries": 1,
             "retry_durations": 1800,
             "verified_durations": 45
@@ -294,15 +234,14 @@ function update_ns_policy {
           "upgradePolicy": {}
         },
         {
-          "version": "2.4.0",
+          "version": "2.3.0",
           "priority": {
-            "priority_value": 1,
+            "priority_value": 2,
             "retries": 1,
             "retry_durations": 3600
           },
           "upgradePolicy": {}
         }
- 
       ],
       "nodeHealth": {}
     },
@@ -329,13 +268,13 @@ function update_ns_policy {
     ],
     "userInput": [
       {
-        "serviceOrgid": "IBM",
+        "serviceOrgid": "e2edev@somecomp.com",
         "serviceUrl": "https://bluehorizon.network/services/netspeed",
         "serviceVersionRange": "2.2.0",
         "inputs": [
           {
             "name": "var1",
-            "value": "bString"
+            "value": "bp_string"
           },
           {
             "name": "var2",
@@ -348,13 +287,13 @@ function update_ns_policy {
           {
             "name": "var4",
             "value": [
-              "abcd",
-              "1234"
+              "bp_abcd",
+              "bp_1234"
             ]
           },
           {
             "name": "var5",
-            "value": "override2"
+            "value": "bp_override2"
           }
         ]
       },
@@ -365,19 +304,33 @@ function update_ns_policy {
         "inputs": [
           {
             "name": "cpu_var1",
-            "value": "ibm_var1"
+            "value": "bp_ibm_var1"
+          }
+        ]
+      },
+      {
+        "serviceOrgid": "e2edev@somecomp.com",
+        "serviceUrl": "https://bluehorizon.network/service-cpu",
+        "serviceVersionRange": "1.0.0",
+        "inputs": [
+          {
+            "name": "cpu_var1",
+            "value": "bp_e2edev_var1"
           }
         ]
       }
     ],
     "secretBinding": [
       {
-        "serviceOrgid": "IBM",
+        "serviceOrgid": "e2edev@somecomp.com",
         "serviceUrl": "https://bluehorizon.network/services/netspeed",
-        "serviceVersionRange": "2.2.0",
+        "serviceVersionRange": "[2.2.0,INFINITY)",
         "secrets": [
           {
-            "sec3": "netspeed-secret3"
+            "sec1": "netspeed-secret1"
+          },
+          {
+            "sec2": "netspeed-secret2"
           }
         ]
       },
@@ -402,8 +355,12 @@ function update_ns_policy {
         ]
       }
     ]
-  }
+}
 EOF
+    if [ "${NOVAULT}" == "1" ]; then
+      bp_ns=$(echo $bp_ns |jq 'del(.secretBinding)')
+    fi
+
     res=$(echo "$bp_ns" | hzn exchange deployment addpolicy -f- -o userdev -u ${USERDEV_ADMIN_AUTH} bp_netspeed 2>&1)
     if [ $? -ne 0 ]; then
         echo -e "\n${PREFIX} failed to update deployment policy bp_netspeed with netspeed service 2.4.0. $res"
@@ -416,8 +373,8 @@ EOF
 function verify_rolling_upgrade {
     source ./utils.sh
 
+    NS_ORG=$1
     NS_URL="https://bluehorizon.network/services/netspeed"
-    NS_ORG="IBM"
     NS_VERSION="2.4.0"
     ANAX_API1="http://localhost:8510"
     ANAX_API2="http://localhost:8511"
@@ -465,7 +422,7 @@ if  [ "$PATTERN" != "" ]; then
         update_sns_pattern
 
         # check service rolling upgrade
-        verify_rolling_upgrade
+        verify_rolling_upgrade "IBM"
     fi
 else
     # add new netspeed service version 2.4.0 to deployment policy bp_netspeed
@@ -473,7 +430,7 @@ else
     update_ns_policy
 
     # check rolling upgrade
-    verify_rolling_upgrade
+    verify_rolling_upgrade "e2edev@somecomp.com"
 fi
 echo -e "${PREFIX} Done"
 

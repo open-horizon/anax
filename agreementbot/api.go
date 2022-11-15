@@ -354,8 +354,11 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/cache/deploymentpol", a.ListDeploy).Methods("GET", "OPTIONS")
 		router.HandleFunc("/cache/deploymentpol/{org}", a.ListDeploy).Methods("GET", "OPTIONS")
 		router.HandleFunc("/cache/deploymentpol/{org}/{name}", a.ListDeploy).Methods("GET", "OPTIONS")
-		router.HandleFunc("/ha/upgradingwlu", a.ha_upgrading_wlu).Methods("GET", "OPTIONS")
-		router.HandleFunc("/ha/upgradingnode", a.ha_upgrading_node).Methods("GET", "OPTIONS")
+		router.HandleFunc("/ha/upgradingwlu", a.ha_upgrading_wlu).Methods("GET", "DELETE", "OPTIONS")
+		router.HandleFunc("/ha/upgradingwlu/{org}/{group_name}", a.ha_upgrading_wlu).Methods("GET", "DELETE", "OPTIONS")
+		router.HandleFunc("/ha/upgradingwlu/{org}/{group_name}/{policy_name}", a.ha_upgrading_wlu).Methods("GET", "DELETE", "OPTIONS")
+		router.HandleFunc("/ha/upgradingnode", a.ha_upgrading_node).Methods("GET", "DELETE", "OPTIONS")
+		router.HandleFunc("/ha/upgradingnode/{org}/{group_name}", a.ha_upgrading_node).Methods("GET", "DELETE", "OPTIONS")
 
 		if err := http.ListenAndServe(apiListen, nocache(router)); err != nil {
 			glog.Fatalf(APIlogString(fmt.Sprintf("failed to start listener on %v, error %v", apiListen, err)))
@@ -849,21 +852,72 @@ func (a *API) partition(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// List all the entries in the ha_workload_upgrade table. They are the HA nodes
+// List ot delete the entries in the ha_workload_upgrade table. They are the HA nodes
 // in which the workload is being upgraded.
 func (a *API) ha_upgrading_wlu(w http.ResponseWriter, r *http.Request) {
 
+	glog.V(5).Infof(APIlogString(fmt.Sprintf("Handling %v on HA upgrading workloads.", r.Method)))
+
 	switch r.Method {
 	case "GET":
-		if ha_wlu, err := a.db.ListAllHAUpgradingWorkloads(); err != nil {
-			glog.Error(APIlogString(fmt.Sprintf("error finding all HA nodes in which the workload is being upgraded, error: %v", err)))
+		pathVars := mux.Vars(r)
+		orgID := pathVars["org"]
+		groupName := pathVars["group_name"]
+		policyName := pathVars["policy_name"]
+
+		var err error
+		var ha_wlu []persistence.UpgradingHAGroupWorkload
+		if orgID == "" {
+			ha_wlu, err = a.db.ListAllHAUpgradingWorkloads()
+		} else if policyName == "" {
+			ha_wlu, err = a.db.ListHAUpgradingWorkloadsByGroupName(orgID, groupName)
+		} else {
+			tmp_wlu, err := a.db.GetHAUpgradingWorkload(orgID, groupName, policyName)
+			if err == nil {
+				if tmp_wlu == nil {
+					ha_wlu = []persistence.UpgradingHAGroupWorkload{}
+				} else {
+					ha_wlu = []persistence.UpgradingHAGroupWorkload{*tmp_wlu}
+				}
+			}
+		}
+
+		if err != nil {
+			glog.Error(APIlogString(fmt.Sprintf("error finding HA nodes in which the workload is being upgraded, error: %v", err)))
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		} else {
 			// write output
 			writeResponse(w, ha_wlu, http.StatusOK)
 		}
+	case "DELETE":
+		pathVars := mux.Vars(r)
+		orgID := pathVars["org"]
+		groupName := pathVars["group_name"]
+		policyName := pathVars["policy_name"]
+
+		var err error
+		if orgID == "" {
+			err = a.db.DeleteAllHAUpgradingWorkload()
+		} else if policyName == "" {
+			err = a.db.DeleteHAUpgradingWorkloadsByGroupName(orgID, groupName)
+		} else {
+			var tmp_wlu *persistence.UpgradingHAGroupWorkload
+			tmp_wlu, err = a.db.GetHAUpgradingWorkload(orgID, groupName, policyName)
+			if err == nil && tmp_wlu != nil {
+				err = a.db.DeleteHAUpgradingWorkload(*tmp_wlu)
+			}
+		}
+
+		if err != nil {
+			glog.Error(APIlogString(fmt.Sprintf("error deleting HA nodes in which the workload is being upgraded, error: %v", err)))
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		} else {
+			// write output
+			w.WriteHeader(http.StatusOK)
+		}
+
 	case "OPTIONS":
-		w.Header().Set("Allow", "GET, OPTIONS")
+		w.Header().Set("Allow", "GET, DELETE, OPTIONS")
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -874,17 +928,54 @@ func (a *API) ha_upgrading_wlu(w http.ResponseWriter, r *http.Request) {
 // the nodes that are being upgraded when the node is in a HA group.
 func (a *API) ha_upgrading_node(w http.ResponseWriter, r *http.Request) {
 
+	glog.V(5).Infof(APIlogString(fmt.Sprintf("Handling %v on HA upgrading nodes.", r.Method)))
+
+	pathVars := mux.Vars(r)
+	orgID := pathVars["org"]
+	groupName := pathVars["group_name"]
+
 	switch r.Method {
 	case "GET":
-		if ha_nodes, err := a.db.ListAllUpgradingHANode(); err != nil {
-			glog.Error(APIlogString(fmt.Sprintf("error finding all upgrading HA nodes, error: %v", err)))
+		var err error
+		var ha_nodes []persistence.UpgradingHAGroupNode
+		if orgID == "" {
+			ha_nodes, err = a.db.ListAllUpgradingHANode()
+		} else {
+			var tmp_node *persistence.UpgradingHAGroupNode
+			tmp_node, err = a.db.ListUpgradingNodeInGroup(orgID, groupName)
+			if err == nil {
+				if tmp_node == nil {
+					ha_nodes = []persistence.UpgradingHAGroupNode{}
+				} else {
+					ha_nodes = []persistence.UpgradingHAGroupNode{*tmp_node}
+				}
+			}
+		}
+
+		if err != nil {
+			glog.Error(APIlogString(fmt.Sprintf("error finding upgrading HA nodes, error: %v", err)))
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		} else {
 			// write output
 			writeResponse(w, ha_nodes, http.StatusOK)
 		}
+	case "DELETE":
+		var err error
+		if orgID == "" {
+			err = a.db.DeleteAllUpgradingHANode()
+		} else {
+			err = a.db.DeleteHAUpgradeNodeByGroup(orgID, groupName)
+		}
+
+		if err != nil {
+			glog.Error(APIlogString(fmt.Sprintf("error deleting upgrading HA nodes, error: %v", err)))
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		} else {
+			// write output
+			w.WriteHeader(http.StatusOK)
+		}
 	case "OPTIONS":
-		w.Header().Set("Allow", "GET, OPTIONS")
+		w.Header().Set("Allow", "GET, DELETE, OPTIONS")
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)

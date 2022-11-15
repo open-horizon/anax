@@ -314,7 +314,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 					if ag.Pattern == "" {
 						agStillValid = b.HandlePolicyChangeForAgreement(ag, cph)
 					}
-					
+
 					if !agStillValid {
 						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed incompatibly. Cancelling agreement: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
 						b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
@@ -535,17 +535,19 @@ func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, 
 
 			// put this workload in HA workload upgrading table
 			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("inserting HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId)))
-			if err = b.db.InsertHAUpgradingWorkloadForGroupAndPolicy(deviceAndGroupOrg, theDev.HAGroup, ag.PolicyName, ag.DeviceId); err != nil {
-				// might not be an error if the entry is already added by another agbot
-				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v, error: %v", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId, err)))
+			if currentNodeId, err := b.db.InsertHAUpgradingWorkloadForGroupAndPolicy(deviceAndGroupOrg, theDev.HAGroup, ag.PolicyName, ag.DeviceId); err != nil {
+				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v, error: %v", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId, err)))
 				return
-			} else {
+			} else if currentNodeId == ag.DeviceId {
 				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("delete workloadusage and cancel agreement for: org: %v, hagroup: %v, policyName: %v deviceId: %v", ag.Org, theDev.HAGroup, ag.PolicyName, ag.DeviceId)))
 				if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 				}
 				agreementWork := NewCancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, cph.GetTerminationCode(reason), 0)
 				cph.WorkQueue().InboundHigh() <- &agreementWork
+				return
+			} else {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("unable to insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v because there is another node %v exists already in the table.", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId, currentNodeId)))
 				return
 			}
 		}
