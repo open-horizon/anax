@@ -10,18 +10,8 @@ import (
 
 const HA_WORKLOAD_USAGE_BUCKET = "ha_workload_usage"
 
-func (db *AgbotBoltDB) DeleteHAUpgradingWorkload(workloadToDelete persistence.UpgradingHAGroupWorkload) error {
-	return db.db.Update(func(tx *bolt.Tx) error {
-		if b := tx.Bucket([]byte(HA_WORKLOAD_USAGE_BUCKET)); b == nil {
-			return fmt.Errorf("Unknown bucket %v", HA_WORKLOAD_USAGE_BUCKET)
-		} else {
-			return b.Delete([]byte(haWLUId(workloadToDelete.OrgId, workloadToDelete.GroupName, workloadToDelete.PolicyName)))
-		}
-	})
-}
-
-func (db *AgbotBoltDB) DeleteHAUpgradingWorkloadsByGroupName(org string, haGroupName string) error {
-	if upgradingHAWorkloads, err := db.FindHAUpgradeWorkloadsWithFilters([]persistence.HAWorkloadUpgradeFilter{persistence.HAWorkloadUpgradeGroupFilter(org, haGroupName)}); err != nil {
+func (db *AgbotBoltDB) DeleteAllHAUpgradingWorkload() error {
+	if upgradingHAWorkloads, err := db.ListAllHAUpgradingWorkloads(); err != nil {
 		return err
 	} else if len(upgradingHAWorkloads) != 0 {
 		for _, upgrupgradingHAWorkload := range upgradingHAWorkloads {
@@ -34,8 +24,18 @@ func (db *AgbotBoltDB) DeleteHAUpgradingWorkloadsByGroupName(org string, haGroup
 	return nil
 }
 
-func (db *AgbotBoltDB) DeleteHAUpgradingWorkloadsByGroupNameAndDeviceId(org string, haGroupName string, deviceId string) error {
-	if upgradingHAWorkloads, err := db.FindHAUpgradeWorkloadsWithFilters([]persistence.HAWorkloadUpgradeFilter{persistence.HAWorkloadUpgradeGroupAndNodeFilter(org, haGroupName, deviceId)}); err != nil {
+func (db *AgbotBoltDB) DeleteHAUpgradingWorkload(workloadToDelete persistence.UpgradingHAGroupWorkload) error {
+	return db.db.Update(func(tx *bolt.Tx) error {
+		if b := tx.Bucket([]byte(HA_WORKLOAD_USAGE_BUCKET)); b == nil {
+			return fmt.Errorf("Unknown bucket %v", HA_WORKLOAD_USAGE_BUCKET)
+		} else {
+			return b.Delete([]byte(haWLUId(workloadToDelete.OrgId, workloadToDelete.GroupName, workloadToDelete.PolicyName)))
+		}
+	})
+}
+
+func (db *AgbotBoltDB) DeleteHAUpgradingWorkloadsByGroupName(org string, haGroupName string) error {
+	if upgradingHAWorkloads, err := db.FindHAUpgradeWorkloadsWithFilters([]persistence.HAWorkloadUpgradeFilter{persistence.HAWorkloadUpgradeGroupFilter(org, haGroupName)}); err != nil {
 		return err
 	} else if len(upgradingHAWorkloads) != 0 {
 		for _, upgrupgradingHAWorkload := range upgradingHAWorkloads {
@@ -156,14 +156,23 @@ func (db *AgbotBoltDB) UpdateHAUpgradingWorkloadForGroupAndPolicy(org string, ha
 	}
 }
 
-func (db *AgbotBoltDB) InsertHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) error {
+// Check if there is an entry for the given haGroupName, org, policyName. If exists, return the node id of the existing row. If not, insert a new row.
+func (db *AgbotBoltDB) InsertHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) (string, error) {
 	key := haWLUId(org, haGroupName, policyName)
+	newNodeId := deviceId
 	dbErr := db.db.Update(func(tx *bolt.Tx) error {
 		if b, err := tx.CreateBucketIfNotExists([]byte(HA_WORKLOAD_USAGE_BUCKET)); err != nil {
 			return err
 		} else {
 			current := b.Get([]byte(key))
 			if current != nil {
+				// get the node id
+				var mod persistence.UpgradingHAGroupWorkload
+				if err := json.Unmarshal(current, &mod); err != nil {
+					return fmt.Errorf("Failed to unmarshal ha upgrading workload DB data: %v. Error: %v", string(current), err)
+				} else {
+					newNodeId = mod.NodeId
+				}
 				// if already exit, do nothing (be consistent with postgresql/ha_group_workload.go)
 				return nil
 			} else {
@@ -180,7 +189,7 @@ func (db *AgbotBoltDB) InsertHAUpgradingWorkloadForGroupAndPolicy(org string, ha
 		}
 		return nil
 	})
-	return dbErr
+	return newNodeId, dbErr
 }
 
 func haWLUId(orgId string, groupName string, policyName string) string {

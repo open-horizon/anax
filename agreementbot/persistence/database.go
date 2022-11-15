@@ -96,18 +96,19 @@ type AgbotDatabase interface {
 
 	// Functions related to persistence of the state of nodes in ha groups executing node management upgrades.
 	CheckIfGroupPresentAndUpdateHATable(requestingNode UpgradingHAGroupNode) (*UpgradingHAGroupNode, error)
+	DeleteAllUpgradingHANode() error
 	DeleteHAUpgradeNode(nodeToDelete UpgradingHAGroupNode) error
 	ListUpgradingNodeInGroup(orgId string, groupName string) (*UpgradingHAGroupNode, error)
 	ListAllUpgradingHANode() ([]UpgradingHAGroupNode, error)
 	DeleteHAUpgradeNodeByGroup(orgId string, groupName string) error
 
 	// Functions related to persistence of the state of workload in ha groups executing service upgrades.
+	DeleteAllHAUpgradingWorkload() error
 	DeleteHAUpgradingWorkload(workloadToDelete UpgradingHAGroupWorkload) error
 	DeleteHAUpgradingWorkloadsByGroupName(org string, haGroupName string) error
-	DeleteHAUpgradingWorkloadsByGroupNameAndDeviceId(org string, haGroupName string, deviceId string) error
 	ListHAUpgradingWorkloadsByGroupName(org string, haGroupName string) ([]UpgradingHAGroupWorkload, error)
 	ListAllHAUpgradingWorkloads() ([]UpgradingHAGroupWorkload, error)
 	GetHAUpgradingWorkload(org string, haGroupName string, policyName string) (*UpgradingHAGroupWorkload, error)
 	UpdateHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) error
-	InsertHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) error
+	InsertHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) (string, error)
 }

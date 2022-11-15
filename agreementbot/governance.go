@@ -372,11 +372,12 @@ func (w *AgreementBotWorker) governHAPartners() {
 				} else if currentUpgradingWorkloadForGroup == nil {
 					glog.V(5).Infof(logString(fmt.Sprintf("no workload is upgrading for hagroup %v, now upgrade the workload: %v.", device.HAGroup, wlu.String())))
 					// insert this workload into ha workload upgrade table, then upgrade this workload
-					if err = w.db.InsertHAUpgradingWorkloadForGroupAndPolicy(org, haGroupName, wlu.PolicyName, wlu.DeviceId); err != nil {
-						// might not be an error if the insertion was done by another agbot before this one
+					if currentNodeId, err := w.db.InsertHAUpgradingWorkloadForGroupAndPolicy(org, haGroupName, wlu.PolicyName, wlu.DeviceId); err != nil {
 						glog.Warningf(logString(fmt.Sprintf("unable to insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v. %v", haGroupName, org, wlu.PolicyName, wlu.DeviceId, err)))
-					} else {
+					} else if currentNodeId == wlu.DeviceId {
 						w.UpgradeWorkload(wlu)
+					} else {
+						glog.Infof(logString(fmt.Sprintf("unable to insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v because there is another node %v exists already in the table.", haGroupName, org, wlu.PolicyName, wlu.DeviceId, currentNodeId)))
 					}
 				}
 			}

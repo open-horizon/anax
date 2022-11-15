@@ -20,9 +20,32 @@ const CREATE_HA_WORKLOAD_UPGRADE_MAIN_TABLE = `CREATE TABLE IF NOT EXISTS ha_wor
 	updated timestamp with time zone DEFAULT current_timestamp
 );`
 
+// Check if the ha group is in the table. If not add the group, node, and policy name that it is upgrading with
+// These operations are in the same transaction to prevent a situation where 2 agbots check for the group name, before either can add it to the table
+const HA_WORKLOAD_ADD_IF_NOT_PRESENT = `
+CREATE OR REPLACE FUNCTION ha_workload_add_if_not_present(
+ 	ha_group_name CHARACTER VARYING,
+ 	ha_org_id CHARACTER VARYING,
+ 	ha_policy_name CHARACTER VARYING,
+ 	ha_node_id CHARACTER VARYING)
+ 	RETURNS TABLE(db_node_id text) AS $$
+
+BEGIN
+LOCK TABLE ha_workload_upgrade;
+
+IF NOT EXISTS (SELECT node_id FROM ha_workload_upgrade WHERE group_name = ha_group_name AND org_id = ha_org_id AND policy_name = ha_policy_name) THEN
+ 	INSERT INTO ha_workload_upgrade (group_name, org_id, policy_name, node_id) VALUES (ha_group_name, ha_org_id, ha_policy_name, ha_node_id);
+END IF;
+
+RETURN QUERY SELECT node_id FROM ha_workload_upgrade WHERE group_name = ha_group_name AND org_id = ha_org_id AND policy_name = ha_policy_name;
+
+END $$ LANGUAGE plpgsql;`
+
 const HA_WORKLOAD_ADD_IF_NOT_PRESENT_BY_FUNCTION = `SELECT * FROM ha_workload_add_if_not_present($1,$2,$3,$4);`
 
 const HA_WORKLOAD_DELETE = `DELETE FROM ha_workload_upgrade WHERE group_name = $1 AND org_id = $2 AND policy_name = $3 AND node_id = $4;`
+
+const HA_WORKLOAD_DELETE_ALL = `DELETE FROM ha_workload_upgrade;`
 
 const HA_WORKLOAD_DELETE_ALL_IN_HA_GROUP = `DELETE FROM ha_workload_upgrade WHERE group_name = $1 AND org_id = $2;`
 
@@ -38,6 +61,11 @@ const HA_WORKLOAD_INSERT = `INSERT INTO ha_workload_upgrade (group_name, org_id,
 
 const HA_WORKLOAD_GET_ALL = `SELECT group_name, org_id, policy_name, node_id FROM ha_workload_upgrade;`
 
+func (db *AgbotPostgresqlDB) DeleteAllHAUpgradingWorkload() error {
+	_, qerr := db.db.Exec(HA_WORKLOAD_DELETE_ALL)
+	return qerr
+}
+
 func (db *AgbotPostgresqlDB) DeleteHAUpgradingWorkload(workloadToDelete persistence.UpgradingHAGroupWorkload) error {
 	_, qerr := db.db.Exec(HA_WORKLOAD_DELETE, workloadToDelete.GroupName, workloadToDelete.OrgId, workloadToDelete.PolicyName, workloadToDelete.NodeId)
 	return qerr
@@ -45,11 +73,6 @@ func (db *AgbotPostgresqlDB) DeleteHAUpgradingWorkload(workloadToDelete persiste
 
 func (db *AgbotPostgresqlDB) DeleteHAUpgradingWorkloadsByGroupName(org string, haGroupName string) error {
 	_, qerr := db.db.Exec(HA_WORKLOAD_DELETE_ALL_IN_HA_GROUP, haGroupName, org)
-	return qerr
-}
-
-func (db *AgbotPostgresqlDB) DeleteHAUpgradingWorkloadsByGroupNameAndDeviceId(org string, haGroupName string, deviceId string) error {
-	_, qerr := db.db.Exec(HA_WORKLOAD_DELETE_ALL_BY_GROUP_AND_NODE, haGroupName, org, deviceId)
 	return qerr
 }
 
@@ -131,12 +154,21 @@ func (db *AgbotPostgresqlDB) UpdateHAUpgradingWorkloadForGroupAndPolicy(org stri
 	return nil
 }
 
-func (db *AgbotPostgresqlDB) InsertHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) error {
-	if _, err := db.db.Exec(HA_WORKLOAD_INSERT, haGroupName, org, policyName, deviceId); err != nil {
-		return err
-	} else {
-		glog.V(2).Infof(fmt.Sprintf("Succeeded creating ha upgrading workload record: %v %v %v %v", org, haGroupName, policyName, deviceId))
+// Check if there is an entry for the given haGroupName, org, policyName. If exists, return the node id of the existing row. If not, insert a new row.
+func (db *AgbotPostgresqlDB) InsertHAUpgradingWorkloadForGroupAndPolicy(org string, haGroupName string, policyName string, deviceId string) (string, error) {
+	var dbNodeId sql.NullString
+	qerr := db.db.QueryRow(HA_WORKLOAD_ADD_IF_NOT_PRESENT_BY_FUNCTION, haGroupName, org, policyName, deviceId).Scan(&dbNodeId)
+
+	if qerr != nil && qerr != sql.ErrNoRows {
+		return deviceId, fmt.Errorf("error scanning row for ha workloads currently upgrading in group %v/%v for policy %v. %v", org, haGroupName, policyName, qerr)
 	}
 
-	return nil
+	if !dbNodeId.Valid {
+		return deviceId, fmt.Errorf("node id returned from ha workload updates table search is not valid")
+	}
+
+	if dbNodeId.String == deviceId {
+		glog.V(2).Infof(fmt.Sprintf("Succeeded inserting ha upgrading workload for node %v for %v/%v/%v.", deviceId, org, haGroupName, policyName))
+	}
+	return dbNodeId.String, nil
 }

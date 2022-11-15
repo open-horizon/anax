@@ -41,6 +41,20 @@ func (db *AgbotBoltDB) CheckIfGroupPresentAndUpdateHATable(requestingNode persis
 	return &updatedDBNode, dbErr
 }
 
+func (db *AgbotBoltDB) DeleteAllUpgradingHANode() error {
+	if upgradingHANodes, err := db.ListAllUpgradingHANode(); err != nil {
+		return err
+	} else if len(upgradingHANodes) != 0 {
+		for _, uNode := range upgradingHANodes {
+			// delete upgrading ha workload
+			if err = db.DeleteHAUpgradeNode(uNode); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (db *AgbotBoltDB) DeleteHAUpgradeNode(nodeToDelete persistence.UpgradingHAGroupNode) error {
 	return db.db.Update(func(tx *bolt.Tx) error {
 		if b := tx.Bucket([]byte(HABUCKET)); b == nil {
