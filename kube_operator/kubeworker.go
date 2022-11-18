@@ -118,7 +118,7 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 
 		kdc, ok := cmd.Deployment.(*persistence.KubeDeploymentConfig)
 		if !ok {
-			glog.Warningf(kwlog(fmt.Sprintf("ignoring non-Kube maintenence command: %v", cmd)))
+			glog.Warningf(kwlog(fmt.Sprintf("ignoring non-Kube maintenance command: %v", cmd)))
 		} else if err := w.operatorStatus(kdc, "Running", cmd.AgreementId); err != nil {
 			glog.Errorf(kwlog(fmt.Sprintf("%v", err)))
 			w.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, kdc)
