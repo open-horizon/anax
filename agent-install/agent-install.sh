@@ -23,7 +23,7 @@ SUPPORTED_DEBIAN_VERSION=(bullseye jammy focal bionic buster xenial stretch $SUP
 SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel redhatenterprise centos fedora $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: version 8 is added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
-SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 9.0 8 32 35 36 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 9.0 8 32 35 36 37 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
 
 SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
@@ -340,15 +340,15 @@ function get_variable() {
         varValue="${!var_name}"
     fi
 
-    if [[ ( $var_name == "HZN_EXCHANGE_URL" ) && -n ${!var_name} ]]; then 
+    if [[ ( $var_name == "HZN_EXCHANGE_URL" ) && -n ${!var_name} ]]; then
         local TMP_HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL
         if [[ "$TMP_HZN_EXCHANGE_URL" != "" ]]; then
             LAST_CHAR=(${TMP_HZN_EXCHANGE_URL: -1})
             # If this URL ends with "/" the curl commands will fail so remove the trailing / if it exists
             if [[ "$LAST_CHAR" == "/" ]]; then
-                TMP_HZN_EXCHANGE_URL=${TMP_HZN_EXCHANGE_URL%?} 
+                TMP_HZN_EXCHANGE_URL=${TMP_HZN_EXCHANGE_URL%?}
                 log_debug "Changing variable $var_name from ${!var_name} to ${TMP_HZN_EXCHANGE_URL}"
-                export HZN_EXCHANGE_URL=${TMP_HZN_EXCHANGE_URL} 
+                export HZN_EXCHANGE_URL=${TMP_HZN_EXCHANGE_URL}
                 varValue="${!var_name}"
             fi
         fi
@@ -2740,7 +2740,7 @@ function registration() {
         if [[ -z $policy ]] && [[ -z $ha_group ]]; then
             # nothing needs changing in the current registration
             log_info "The current registration settings are correct, keeping them."
-        else   
+        else
             log_info "The node is currently registered."
             if [[ -n $policy ]]; then
                 # We only need to update the node policy (we can keep the node registered).
@@ -2753,9 +2753,9 @@ function registration() {
                 reg_node_hagr=$(jq -r .ha_group 2>/dev/null <<< $hzn_node_list || true)
                 if [[ $reg_node_hagr != $ha_group ]]; then
                     # we can keep the node registered but change the HA group this node is in
-                    if [[ -n $reg_node_hagr ]]; then 
+                    if [[ -n $reg_node_hagr ]]; then
                         log_warning "The node is currently in a HA group $reg_node_hagr. Please run 'hzn exchange hagroup' command to add this node to HA group $ha_group."
-                    else               
+                    else
                         add_node_to_ha_group $ha_group
                     fi
                 fi
@@ -2803,7 +2803,7 @@ function registration() {
             cat $policy | agent_exec "$reg_cmd"
         else  # register w/o policy or with pattern
             reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag $ha_group_flag"
-            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth_mask -n ******** $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag $ha_group_flag" 
+            reg_cmd_mask="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth_mask -n ******** $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag $ha_group_flag"
             echo "$reg_cmd_mask"
             agent_exec  "$reg_cmd"
         fi
@@ -2841,19 +2841,19 @@ function add_node_to_ha_group() {
         if [[ $http_code -eq 404 ]]; then
             # the group does not exist, create it
             log_info "The HA group $ha_group_name does not exist, creating it with this node as a member..."
-            local hagr_def=$(jq --null-input --arg DSCRP "HA group $ha_group_name" '{description: $DSCRP}' | jq --arg N $NODE_ID '.members |= [ $N ] + .') 
+            local hagr_def=$(jq --null-input --arg DSCRP "HA group $ha_group_name" '{description: $DSCRP}' | jq --arg N $NODE_ID '.members |= [ $N ] + .')
             local cmd="echo '$hagr_def' | hzn exchange hagroup add -f- '$ha_group_name' -o '$HZN_ORG_ID' -u '$exch_creds'"
-            local cmd_mask="echo '$hagr_def' | hzn exchange hagroup add -f- '$ha_group_name' -o '$HZN_ORG_ID' -u '*****'" 
+            local cmd_mask="echo '$hagr_def' | hzn exchange hagroup add -f- '$ha_group_name' -o '$HZN_ORG_ID' -u '*****'"
             echo "$cmd_mask"
-            agent_exec "$cmd"            
+            agent_exec "$cmd"
         elif [[ $http_code -eq 200 ]]; then
             # the group exists, add the node to it
             log_info "The HA group $ha_group_name exists, adding this node to it..."
             local cmd="hzn exchange hagroup member add '$ha_group_name' --node '$NODE_ID' -o '$HZN_ORG_ID' -u '$exch_creds' "
-            local cmd_mask="hzn exchange hagroup member add '$ha_group_name' --node '$NODE_ID' -o '$HZN_ORG_ID' -u '*****'" 
+            local cmd_mask="hzn exchange hagroup member add '$ha_group_name' --node '$NODE_ID' -o '$HZN_ORG_ID' -u '*****'"
             echo "$cmd_mask"
             agent_exec "$cmd"
-        else           
+        else
             log_fatal 4 "Failed to get HA group from the exchange. $output"
         fi
     else
@@ -3638,7 +3638,7 @@ function create_role_binding() {
     else
         log_info "rolebinding ${AGENT_ROLE_BINDING} exists, skip creating rolebinding"
     fi
-    
+
     log_debug "create_role_binding() end"
 }
 
@@ -4093,9 +4093,9 @@ function get_docker_engine() {
                IFS=${OLDIFS}
 
                if [[ ${DOCKER_ENGINE} == "podman" ]]; then
-                  NetworkBackend=$(podman info -f json | jq '.host.networkBackend' | sed 's/"//g') 
+                  NetworkBackend=$(podman info -f json | jq '.host.networkBackend' | sed 's/"//g')
                   log_debug "podman network backend is set for ${NetworkBackend}"
-                  if [[ "${NetworkBackend}" != "netavark" ]]; then 
+                  if [[ "${NetworkBackend}" != "netavark" ]]; then
                      log_warning "Change podman to use the Netavark network stack to support more complex horizon scenarios"
                   fi
                fi
