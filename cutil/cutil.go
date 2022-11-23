@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"io/ioutil"
 	mrand "math/rand"
 	"net"
 	"os"
@@ -30,6 +31,9 @@ const (
 	ANAX_SVC_MISSING_VARIABLE = "variable %v for service %v is missing from mappings."
 	ANAX_SVC_MISSING_CONFIG   = "service config for version %v of %v is missing."
 	ANAX_SVC_WRONG_TYPE       = "variable %v for service %v is "
+
+	CERT_COMMENT              = "-----"
+	CERT_VERSION_TITLE = "OpenHorizon Version"
 )
 
 func FirstN(n int, ss []string) []string {
@@ -795,4 +799,30 @@ func GetDockerEndpoint() string {
 	}
 	dockerEP := "unix://" + listenerSocket
 	return dockerEP
+}
+
+// extrace the version in certificate file. The version should be in the first line in this format -----OpenHorizon Version x.x.x-----
+func GetCertificateVersion(certFilePath string) string {
+	var version string
+	if cert, err := os.Open(certFilePath); err != nil {
+		glog.Errorf(fmt.Sprintf("unable to open Certificate file %v, error %v", certFilePath, err))
+	} else if certBytes, err := ioutil.ReadAll(cert); err != nil {
+		glog.Errorf(fmt.Sprintf("unable to read Certificate file %v, error %v", certFilePath, err))
+	} else {
+		lines := strings.Split(string(certBytes), "\n")
+		for _, line := range lines {
+			if line != "" && strings.Contains(line, "-") && strings.Contains(line, CERT_VERSION_TITLE) {
+				parts := strings.Split(line, CERT_COMMENT)
+				if len(parts) == 3 {
+					line_with_version := parts[1] //OpenHorizon Version 1.1.1
+					ps := strings.Split(line_with_version, " ")
+					if len(ps) == 3 {
+						version = ps[2]
+						break
+					}
+				}
+			}
+		}
+	}
+	return version
 }
