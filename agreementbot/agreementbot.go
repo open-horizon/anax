@@ -927,12 +927,12 @@ func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
 }
 
 // Functions called by the policy watcher
-func (w *AgreementBotWorker) changedPolicy(org string, fileName string, pol *policy.Policy) {
+func (w *AgreementBotWorker) changedPolicy(org string, fileName string, pol *policy.Policy, oldPolicy *policy.Policy) {
 	glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker detected changed policy file %v containing %v", fileName, pol))
 	if policyString, err := policy.MarshalPolicy(pol); err != nil {
 		glog.Errorf(fmt.Sprintf("AgreementBotWorker error trying to marshal policy %v error: %v", pol, err))
 	} else {
-		w.Messages() <- events.NewPolicyChangedMessage(events.CHANGED_POLICY, fileName, pol.Header.Name, org, policyString)
+		w.Messages() <- events.NewPolicyChangedMessage(events.CHANGED_POLICY, fileName, pol.Header.Name, org, policyString, oldPolicy)
 	}
 }
 

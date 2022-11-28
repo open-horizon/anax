@@ -214,3 +214,27 @@ func (w Workload) HasEmptyPriority() bool {
 	}
 	return false
 }
+
+func GetNextWorkloadChoice(wls WorkloadList, currentChoice int) *Workload {
+	bestChoicePriority := -1
+	var bestChoice Workload
+	for _, wl := range wls {
+		if (currentChoice == -1 || wl.Priority.PriorityValue < currentChoice) && (bestChoicePriority == -1 || wl.Priority.PriorityValue < bestChoicePriority) {
+			bestChoicePriority = wl.Priority.PriorityValue
+			bestChoice = wl
+		}
+	}
+	if bestChoicePriority == -1 {
+		return nil 
+	}
+	return &bestChoice
+}
+
+func GetWorkloadWithPriority(wls WorkloadList, priority int) *Workload {
+	for _, wl := range wls {
+		if wl.Priority.PriorityValue == priority {
+			return &wl 
+		}
+	}
+	return nil
+}

@@ -5,8 +5,20 @@ USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 PREFIX="policy change test "
 
+timeout=6
 pws_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_pws")).current_agreement_id' )
 netspeed_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_netspeed")).current_agreement_id' )
+while [[ "$pws_ag" == "" || "$netspeed_ag" == "" ]]; do
+	sleep 5s
+	pws_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_pws")).current_agreement_id' )
+	netspeed_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_netspeed")).current_agreement_id' )
+	let timeout=$timeout-1
+	if [ $timeout == 0 ]; then
+		echo "timed out waiting for agreements to be formed before starting test."
+		echo "$(hzn agreement list)"
+		exit 1
+	fi
+done
 
 new_deployment_props=$(echo "{\"properties\": $(echo  $(hzn ex dep listpolicy bp_pws -u $USERDEV_ADMIN_AUTH -o userdev | jq '.[].properties += [{"name":"location","value":"buildingA"}]') | jq '.[].properties' )} ")
 echo $new_deployment_props | hzn ex dep updatepolicy bp_pws -u $USERDEV_ADMIN_AUTH -o userdev -f-
@@ -34,8 +46,8 @@ fi
 timeout=6
 while [[ $(hzn agreement list | jq 'length') > 2 && timeout > 0 ]]; do
 	sleep 5s
-	timeout=timeout-1
-	if [ timeout == 0 ]; then
+	let timeout=$timeout-1
+	if [ $timeout == 0 ]; then
 		echo "timed out waiting for incompatible agreements to be cancelled."
 		exit 1
 	fi
@@ -66,8 +78,8 @@ fi
 timeout=6
 while [[ $(hzn agreement list | jq 'length') != 5 && timeout > 0 ]]; do
 	sleep 5s
-	timeout=timeout-1
-	if [ timeout == 0 ]; then
+	let timeout=$timeout-1
+	if [ $timeout == 0 ]; then
 		echo "timed out waiting for agreements to be reformed."
 		exit 1
 	fi

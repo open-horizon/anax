@@ -504,7 +504,7 @@ func (w *AgreementBotWorker) VerifyNodeHealth(ag *persistence.Agreement, cph Con
 	// If the agreement is missing, cancel it.
 	if w.NHManager.NodeOutOfPolicy(ag.Pattern, ag.Org, ag.DeviceId, ag.NHMissingHBInterval) {
 		w.TerminateAgreement(ag, cph.GetTerminationCode(TERM_REASON_NODE_HEARTBEAT))
-	} else if w.NHManager.AgreementOutOfPolicy(ag.Pattern, ag.Org, ag.DeviceId, ag.CurrentAgreementId, ag.AgreementFinalizedTime, ag.NHCheckAgreementStatus) {
+	} else if w.NHManager.AgreementOutOfPolicy(ag.Pattern, ag.Org, ag.DeviceId, ag.CurrentAgreementId, ag.AgreementFinalizedTime, ag.NHCheckAgreementStatus) && (ag.LastPolicyUpdateTime == 0 || ag.LastPolicyUpdateTimeAck != 0) {
 		w.TerminateAgreement(ag, cph.GetTerminationCode(TERM_REASON_AG_MISSING))
 	}
 

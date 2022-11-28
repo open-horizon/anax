@@ -912,7 +912,7 @@ func DeletePolicyFile(name string) error {
 func PolicyFileChangeWatcher(homePath string,
 	contents *Contents,
 	arch_synonymns config.ArchSynonyms,
-	fileChanged func(org string, fileName string, policy *Policy),
+	fileChanged func(org string, fileName string, policy *Policy, oldPolicy *Policy),
 	fileDeleted func(org string, fileName string, policy *Policy),
 	fileError func(org string, fileName string, err error),
 	workloadOrServiceResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
@@ -951,7 +951,7 @@ func PolicyFileChangeWatcher(homePath string,
 						fileError(org, orgPath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy File Watcher cannot add policy file %v/%v because it has the same policy header name with the policy file %v/%v.", org, fileInfo.Name(), org, fn)))
 					} else {
 						contents.AddWatchEntry(org, fileInfo, policy)
-						fileChanged(org, orgPath+fileInfo.Name(), policy)
+						fileChanged(org, orgPath+fileInfo.Name(), policy, nil)
 						glog.V(5).Infof("Policy File Watcher Adding file %v", orgPath+fileInfo.Name())
 					}
 				}
@@ -998,11 +998,11 @@ func PolicyFileChangeWatcher(homePath string,
 						fileDeleted(org, orgPath+we.FInfo.Name(), we.Pol)
 						glog.V(5).Infof("Policy File Watcher detected deleted policy in existing file %v", orgPath+we.FInfo.Name())
 						// Inform the world about the new policy and save a reference to it.
-						fileChanged(org, orgPath+we.FInfo.Name(), policy)
+						fileChanged(org, orgPath+we.FInfo.Name(), policy, we.Pol)
 						glog.V(5).Infof("Policy File Watcher Stats detected new policy in existing file %v", orgPath+we.FInfo.Name())
 						contents.AddWatchEntry(org, newStat, policy)
 					} else {
-						fileChanged(org, orgPath+we.FInfo.Name(), policy)
+						fileChanged(org, orgPath+we.FInfo.Name(), policy, we.Pol)
 						glog.V(5).Infof("Policy File Watcher Stats detected changed file %v", orgPath+we.FInfo.Name())
 						contents.UpdateWatchEntry(org, newStat, policy)
 					}

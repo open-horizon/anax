@@ -212,7 +212,7 @@ func Initialize(policyPath string,
 
 	// Setup the callback functions for the policy file watcher. The change notification is the only callback
 	// that should be invoked at this time.
-	changeNotify := func(org string, fileName string, policy *Policy) {
+	changeNotify := func(org string, fileName string, policy *Policy, oldPolicy *Policy) {
 		numberFiles += 1
 		if err := pm.AddPolicy(org, policy); err != nil {
 			glog.Errorf("Policy Watcher change notification unable to add policy %v %v to Policy Manager, error %v", org, fileName, err)
