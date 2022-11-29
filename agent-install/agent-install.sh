@@ -22,9 +22,12 @@ SUPPORTED_DEBIAN_VARIANTS=(ubuntu raspbian debian $SUPPORTED_DEBIAN_VARIANTS_APP
 SUPPORTED_DEBIAN_VERSION=(bullseye jammy focal bionic buster xenial stretch $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
 SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel redhatenterprise centos fedora $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
-# Note: version 8 is added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
-SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 9.0 9.1 8 32 35 36 37 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+# Note: version 8 and 9 are added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
+SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 9.0 9.1 8 9 32 35 36 37 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
+
+SUPPORTED_EDGE_CLUSTER_ARCH=(amd64)
+SUPPORTED_ANAX_IN_CONTAINER_ARCH=(amd64 arm64)
 
 SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
 SUPPORTED_LINUX_DISTRO=(${SUPPORTED_DEBIAN_VARIANTS[@]} ${SUPPORTED_REDHAT_VARIANTS[@]})   # compared to what our detect_distro() sets DISTRO to
@@ -843,8 +846,11 @@ function read_config_file() {
     fi
 
     log_debug "Start to get config version from AGENT_CFG_FILE: $AGENT_CFG_FILE"
-    config_in_file=$(cat ${AGENT_CFG_FILE} | grep "HZN_CONFIG_VERSION")
+
+    set +e   # Need to disable for the following command so script doesn't terminate
+    config_in_file=$( cat ${AGENT_CFG_FILE} | grep "HZN_CONFIG_VERSION" )
     config_version_in_file=${config_in_file#*=}
+    set -e
     log_debug "config_version_in_file: $config_version_in_file"
 
     # Add config version into config file
@@ -1106,13 +1112,26 @@ function get_all_variables() {
         get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
         get_variable PKG_APT_KEY
         get_variable APT_REPO_BRANCH 'updates'
+
         local image_arch=$(get_image_arch)
+        # Currently only support a few architectures for anax-in-container; if anax-in-container specified, check the architecture
+	if is_macos; then
+                : # do not need to check
+        else 
+                if [[ $AGENT_IN_CONTAINER == 'true' ]]; then
+                        check_support "${SUPPORTED_ANAX_IN_CONTAINER_ARCH[*]}" "${image_arch}" 'anax-in-container architectures'
+                fi
+        fi
+
         get_variable AGENT_IMAGE_TAR_FILE "${image_arch}${DEFAULT_AGENT_IMAGE_TAR_FILE}"
     elif is_cluster; then
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE "$DEFAULT_AGENT_NAMESPACE"
         USE_EDGE_CLUSTER_REGISTRY='true'   #get_variable USE_EDGE_CLUSTER_REGISTRY 'true'  # currently true is the only supported value
         get_variable AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS '75'
+
+        local image_arch=$(get_cluster_image_arch)
+        check_support "${SUPPORTED_EDGE_CLUSTER_ARCH[*]}" "${image_arch}" 'kubernetes edge cluster architectures'
 
         if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
             local default_image_registry_on_edge_cluster
@@ -1761,6 +1780,9 @@ function create_or_update_horizon_defaults() {
         fi
         if [[ -n $anax_port ]]; then
             sudo sh -c "echo 'HZN_AGENT_PORT=$anax_port' >> $defaults_file"
+        fi
+        if [[ -n $HZN_CONFIG_VERSION ]]; then
+            sudo sh -c "echo 'HZN_CONFIG_VERSION=$HZN_CONFIG_VERSION' >> $defaults_file"
         fi
         HORIZON_DEFAULTS_CHANGED='true'
         MGMT_HUB_CERT_CHANGED='true'
@@ -3072,6 +3094,13 @@ function get_image_arch() {
     echo $image_arch
 }
 
+# Returns hardware architecture for the k8s cluster
+function get_cluster_image_arch() {
+    # We assume that all nodes in the k8s cluster are the same so just look at the 1st one... which will always work even for a small k8s cluster w/ 1 node
+    local image_arch=$( $KUBECTL get nodes -o json | jq '.items[0].status.nodeInfo.architecture' | sed 's/"//g' )
+    echo $image_arch
+}
+
 # checks if OS/distribution/codename/arch is supported
 function check_support() {
     log_debug "check_support() begin"
@@ -3217,7 +3246,7 @@ function loadClusterAgentImage() {
             if [[ -z $image_tag ]]; then
                 image_tag='latest'
             fi
-            local image_arch=$(get_image_arch)
+            local image_arch=$(get_cluster_image_arch)
             local image_path="openhorizon/${image_arch}_anax_k8s:$image_tag"
             log_info "Pulling $image_path from docker hub..."
             ${DOCKER_ENGINE} pull "$image_path"
@@ -3295,7 +3324,7 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
             if [[ -z $image_tag ]]; then
                 image_tag='latest'
             fi
-            local image_arch=$(get_image_arch)
+            local image_arch=$(get_cluster_image_arch)
             local image_path="openhorizon/${image_arch}_auto-upgrade-cronjob_k8s:$image_tag"
             log_info "Pulling $image_path from docker hub..."
             docker pull "$image_path"
@@ -3656,7 +3685,7 @@ function create_service_account() {
     fi
 
     if [[ "$AGENT_NAMESPACE" == "$DEFAULT_AGENT_NAMESPACE" ]]; then
-        log_info "agent namespace ($AGENT_NAMESPACE) is default namesapce: $DEFAULT_AGENT_NAMESPACE, will create clusterrolebinding"
+        log_info "agent namespace ($AGENT_NAMESPACE) is default namespace: $DEFAULT_AGENT_NAMESPACE, will create clusterrolebinding"
         create_cluster_role_binding
     else
         log_info "creating rolebinding under agent namespace $AGENT_NAMESPACE"
@@ -3703,7 +3732,7 @@ function create_cluster_role_binding() {
     log_debug "create_cluster_role_binding() end"
 }
 
-# Cluster only: to create role binding, bind service account to admin (admin under agent namesapce)
+# Cluster only: to create role binding, bind service account to admin (admin under agent namespace)
 function create_role_binding() {
     log_debug "create_role_binding() begin"
 
