@@ -42,6 +42,9 @@ CSS_OBJ_PATH_DEFAULT='/api/v1/objects/IBM/agent_files'
 CSS_OBJ_AGENT_SOFTWARE_BASE='/api/v1/objects/IBM/agent_software_files'
 CSS_OBJ_AGENT_CERT_BASE='/api/v1/objects/IBM/agent_cert_files'
 CSS_OBJ_AGENT_CONFIG_BASE='/api/v1/objects/IBM/agent_config_files'
+MAX_HTTP_RETRY=5
+SLEEP_SECONDS_BETWEEN_RETRY=15
+CURL_RETRY_PARMS="--retry 5 --retry-connrefused --retry-max-time 120"
 
 SEMVER_REGEX='^[0-9]+\.[0-9]+(\.[0-9]+)+'   # matches a version like 1.2.3 (must be at least 3 fields). Also allows a bld num on the end like: 1.2.3-RC1
 
@@ -494,7 +497,7 @@ function get_agent_file_versions() {
         cert_flag="--insecure"
     fi
 
-    local exch_output=$(curl -sSL -w "%{http_code}" ${cert_flag} ${HZN_EXCHANGE_URL}/orgs/IBM/AgentFileVersion -u ${exch_creds} 2>&1) || true
+    local exch_output=$(curl -sSL -w "%{http_code}" ${CURL_RETRY_PARMS} ${cert_flag} ${HZN_EXCHANGE_URL}/orgs/IBM/AgentFileVersion -u ${exch_creds} 2>&1) || true
     log_debug "GET AgentFileVersion: $exch_output"
 
     if [[ -n $exch_output ]]; then
@@ -657,7 +660,7 @@ function download_css_file() {
 
         # Cert from a previous install, see if that works
         log_info "Attempting to download file $remote_cert_path using $PERMANENT_CERT_PATH ..."
-        httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" --cacert "$PERMANENT_CERT_PATH" -o "$AGENT_CERT_FILE" $remote_cert_path 2>/dev/null || true)
+        httpCode=$(curl -sSL -w "%{http_code}" ${CURL_RETRY_PARMS} -u "$exch_creds" --cacert "$PERMANENT_CERT_PATH" -o "$AGENT_CERT_FILE" $remote_cert_path 2>/dev/null || true)
         if [[ $? -eq 0 && $httpCode -eq 200 ]]; then
             cert_flag="--cacert $AGENT_CERT_FILE"   # we got it
         fi
@@ -676,7 +679,7 @@ function download_css_file() {
 
         log_info "Downloading file $remote_cert_path using --insecure ..."
         #echo "DEBUG: curl -sSL -w \"%{http_code}\" -u \"$exch_creds\" --insecure -o \"$AGENT_CERT_FILE\" $remote_cert_path || true"   # log_debug isn't set up yet
-        httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" --insecure -o "$AGENT_CERT_FILE" $remote_cert_path || true)
+        httpCode=$(curl -sSL -w "%{http_code}" ${CURL_RETRY_PARMS} -u "$exch_creds" --insecure -o "$AGENT_CERT_FILE" $remote_cert_path || true)
         if [[ $? -ne 0 || $httpCode -ne 200 ]]; then
             local err_msg=$(cat $AGENT_CERT_FILE 2>/dev/null)
             rm -f "$AGENT_CERT_FILE"   # this probably has the error msg from the previous curl in it
@@ -688,8 +691,7 @@ function download_css_file() {
     # Get the file they asked for
     if [[ $local_file != $AGENT_CERT_FILE ]]; then   # if they asked for the cert, we already got that
         log_info "Downloading file $remote_path ..."
-        httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" $cert_flag -o "$local_file" $remote_path)
-        chkHttp $? $httpCode 200 "downloading $remote_path" $local_file
+        download_with_retry $remote_path $local_file "$cert_flag" $exch_creds
     fi
 
     local version_from_cert_file
@@ -711,6 +713,40 @@ function download_css_file() {
     fi
 
     log_debug "download_css_file() end"
+}
+
+function download_with_retry() {
+    log_debug "download_with_retry() begin"
+    local url=$1
+    local outputFile=$2
+    local certFlag=$3
+    local cred=$4
+    retry=0
+
+    set +e
+    while [[ $retry -le $MAX_HTTP_RETRY ]]; do
+        if [[ -n "$cred" && -n "$outputFile" ]]; then
+            # download from CSS
+            httpCode=$(curl -sSL -w "%{http_code}" -u "$cred" $certFlag -o "$outputFile" $url 2>/dev/null)
+        else
+            # download from github release
+            httpCode=$(curl -sSLO -w "%{http_code}" $url 2>/dev/null)
+        fi
+
+        curlCode=$?
+        if [[ $curlCode -ne 0 || $httpCode =~ .*(503|504).* ]]; then
+            log_debug "retry downloading $retry because curlCode is $curlCode, httpCode is $httpCode..."
+            count=$((retry + 1))
+            retry=$count
+            sleep $SLEEP_SECONDS_BETWEEN_RETRY
+            continue
+        else
+            break
+        fi
+    done
+    set -e
+    chkHttp $curlCode $httpCode 200 "downloading $url" $outputFile
+    log_debug "download_with_retry() end"
 }
 
 # returns the cert version from certificate file
@@ -740,8 +776,7 @@ function download_anax_release_file() {
     local anax_release_path=$1   # should be like: https://github.com/open-horizon/anax/releases/latest/download/<file>
     local local_file="${anax_release_path##*/}"   # get base name
     log_info "Downloading file $anax_release_path ..."
-    httpCode=$(curl -sSLO -w "%{http_code}" $anax_release_path)
-    chkHttp $? $httpCode 200 "downloading $anax_release_path" $local_file
+    download_with_retry $anax_release_path $local_file
     log_debug "download_anax_release_file() end"
 }
 
@@ -1544,8 +1579,7 @@ function download_pkgs_from_anax_release() {
 
     # Download and unpack the package tar file
     log_info "Downloading and unpacking package tar file $remote_path ..."
-    httpCode=$(curl -sSLO -w "%{http_code}" $remote_path)
-    chkHttp $? $httpCode 200 "downloading $remote_path" $tar_file_name
+    download_with_retry $remote_path $tar_file_name
     log_verbose "Download of $remote_path successful, now unpacking it..."
     rm -f horizon*.$(get_pkg_type)   # remove older pkgs so there is no confusion about what is being installed
     tar -zxf $tar_file_name
@@ -2932,8 +2966,8 @@ function add_node_to_ha_group() {
     fi
 
     log_info "Getting HA group $ha_group_name..."
-    echo "curl -sSL -w %{http_code} $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/hagroups/$ha_group_name -u '*****'"
-    local exch_output=$(curl -sSL -w %{http_code} $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/hagroups/$ha_group_name -u "$exch_creds" 2>&1) || true
+    echo "curl -sSL -w %{http_code} ${CURL_RETRY_PARMS} $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/hagroups/$ha_group_name -u '*****'"
+    local exch_output=$(curl -sSL -w %{http_code} ${CURL_RETRY_PARMS} $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/hagroups/$ha_group_name -u "$exch_creds" 2>&1) || true
 
     if [[ -n "$exch_output" ]]; then
         local http_code="${exch_output: -3}"
@@ -3190,7 +3224,7 @@ function check_existing_exch_node_is_correct_type() {
     if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
         cert_flag="--cacert $AGENT_CERT_FILE"
     fi
-    local exch_output=$(curl -fsS $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u "$exch_creds" 2>/dev/null) || true
+    local exch_output=$(curl -fsS ${CURL_RETRY_PARMS} $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u "$exch_creds" 2>/dev/null) || true
 
     if [[ -n "$exch_output" ]]; then
         local exch_node_type=$(echo $exch_output | jq -re '.nodes | .[].nodeType')
@@ -3216,7 +3250,7 @@ function check_exch_url_and_cert() {
         cert_flag="--cacert $AGENT_CERT_FILE"
     fi
 
-    local output=$(curl -w %{http_code} -fsS $cert_flag $HZN_EXCHANGE_URL/admin/version 2>/dev/null) || true
+    local output=$(curl -w %{http_code} -fsS ${CURL_RETRY_PARMS} $cert_flag $HZN_EXCHANGE_URL/admin/version 2>/dev/null) || true
 
     local httpCode="${output: -3}"
     if [ $httpCode -ne 200 ]; then
