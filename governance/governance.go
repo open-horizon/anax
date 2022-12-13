@@ -523,12 +523,6 @@ func (w *GovernanceWorker) governAgreements() {
 						// The proposal for this agreement is no longer compatible with the node's policy, so cancel the agreement.
 						glog.V(3).Infof(logString(fmt.Sprintf("current proposal for %v is out of policy: %v", ag.CurrentAgreementId, err)))
 
-						reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED)
-						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-							persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
-							persistence.EC_CANCEL_AGREEMENT_POLICY_CHANGED, ag)
-						w.cancelGovernedAgreement(&ag, reason)
-
 					} else {
 						glog.V(5).Infof(logString(fmt.Sprintf("agreement %v is still in policy.", ag.CurrentAgreementId)))
 					}

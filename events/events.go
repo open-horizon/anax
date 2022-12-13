@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"time"
 )
 
@@ -507,6 +508,7 @@ type PolicyChangedMessage struct {
 	event    Event
 	fileName string
 	name     string
+	oldPolicy *policy.Policy
 	policy   string
 	org      string
 }
@@ -539,8 +541,11 @@ func (e *PolicyChangedMessage) PolicyString() string {
 	return e.policy
 }
 
-func NewPolicyChangedMessage(id EventId, policyFileName string, policyName string, org string, policy string) *PolicyChangedMessage {
+func (e *PolicyChangedMessage) OldPolicy() *policy.Policy {
+	return e.oldPolicy
+}
 
+func NewPolicyChangedMessage(id EventId, policyFileName string, policyName string, org string, policy string, oldPolicy *policy.Policy) *PolicyChangedMessage {
 	return &PolicyChangedMessage{
 		event: Event{
 			Id: id,
@@ -549,6 +554,7 @@ func NewPolicyChangedMessage(id EventId, policyFileName string, policyName strin
 		name:     policyName,
 		policy:   policy,
 		org:      org,
+		oldPolicy: oldPolicy,
 	}
 }
 

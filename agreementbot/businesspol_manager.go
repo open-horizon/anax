@@ -607,6 +607,7 @@ func (pm *BusinessPolicyManager) updateBusinessPolicy(org string, polId string, 
 			}
 
 			if !bytes.Equal(pe.Hash, newHash) {
+				oldPolicy := pe.Policy
 				// update the cache
 				glog.V(5).Infof("Updating policy entry for %v of org %v because it is changed. ", polId, org)
 				newPol, err := pe.UpdateEntry(pol, polId, newHash)
@@ -622,7 +623,7 @@ func (pm *BusinessPolicyManager) updateBusinessPolicy(org string, polId string, 
 				if policyString, err := policy.MarshalPolicy(newPol); err != nil {
 					glog.Errorf(fmt.Sprintf("Error trying to marshal policy %v error: %v", newPol, err))
 				} else {
-					pm.eventChannel <- events.NewPolicyChangedMessage(events.CHANGED_POLICY, "", newPol.Header.Name, org, policyString)
+					pm.eventChannel <- events.NewPolicyChangedMessage(events.CHANGED_POLICY, "", newPol.Header.Name, org, policyString, oldPolicy)
 				}
 			}
 		}
@@ -643,7 +644,7 @@ func (pm *BusinessPolicyManager) updateBusinessPolicy(org string, polId string, 
 			if policyString, err := policy.MarshalPolicy(newPE.Policy); err != nil {
 				glog.Errorf(fmt.Sprintf("Error trying to marshal policy %v error: %v", newPE.Policy, err))
 			} else {
-				pm.eventChannel <- events.NewPolicyChangedMessage(events.CHANGED_POLICY, "", newPE.Policy.Header.Name, org, policyString)
+				pm.eventChannel <- events.NewPolicyChangedMessage(events.CHANGED_POLICY, "", newPE.Policy.Header.Name, org, policyString, nil)
 			}
 
 		}
