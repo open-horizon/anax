@@ -229,13 +229,18 @@ func validOpValuePair(name string, op string, opType rune, val interface{}, valT
 	return nil
 }
 
+// the unicode character ranges are:
+// \u4E00-\u9FFF common chinese characters
+// \u00A0-\u00FF latin 1 supplement
+// \u3040-\u309F hiragana (japanese)
+// \u1100-\u11FF and \uAC00-\uD7AF hangul (korean)
 func getLexer() lexer.Definition {
 	return lexer.Must(ebnf.New(`
 	  alphanumeric = digit | alpha .
 
 	  vers = {digit} "." {digit} "." {digit} .
 	  digit = "0"…"9" .
-	  alpha = "a"…"z" | "A"…"Z" .
+	  alpha = "a"…"z" | "A"…"Z" | "\u4E00"…"\u9FFF" | "\u00A0"…"\u00FF" | "\u3040"…"\u309F" | "\u1100"…"\u11FF" | "\uAC00"…"\uD7AF" .
 
 	  InStr = "in" {"in"} (alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | ".") {alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | "."} .
 
