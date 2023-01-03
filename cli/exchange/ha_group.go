@@ -162,14 +162,13 @@ func HAGroupMemberAdd(org, credToUse, haGroupName string, nodeNames []string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	// get the current members for the group
-	var haGroupResp exchangecommon.GetHAGroupResponse
-	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+haGroupOrg+"/hagroups"+cliutils.AddSlash(haGroupName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &haGroupResp)
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+haGroupOrg+"/hagroups"+cliutils.AddSlash(haGroupName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, nil)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("HA group %s is not found in org %s", haGroupName, haGroupOrg))
 	}
-	members := haGroupResp.NodeGroups[0].Members
-	nodesToAdd := []string{}
+
+	addedNodes := []string{}
+	failedNodes := []string{}
 
 	// make sure the given node names exist in the exchange and the node is not already in the group
 	for _, nodeName := range nodeNames {
@@ -182,46 +181,30 @@ func HAGroupMemberAdd(org, credToUse, haGroupName string, nodeNames []string) {
 		}
 
 		var nodes ExchangeNodes
-		httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(nodeName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+		httpCode = cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(nodeName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 		if httpCode == 404 {
 			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%s' not found in org %s", nodeName, nodeOrg))
 		}
 
-		found := false
-		for _, oldNode := range members {
-			_, oldNode := cliutils.TrimOrg(haGroupOrg, oldNode)
-			if oldNode == nodeName {
-				found = true
-				break
-			}
-		}
+		key := cliutils.AddOrg(org, nodeName)
+		currentHAGroup := nodes.Nodes[key].HAGroup
 
-		if found {
+		if currentHAGroup == haGroupName {
 			msgPrinter.Printf("Node %s is already in HA group %s/%s. Skipping the node.", nodeName, haGroupOrg, haGroupName)
 			msgPrinter.Println()
+		} else if currentHAGroup != "" && currentHAGroup != haGroupName {
+			failedNodes = append(failedNodes, nodeName)
 		} else {
-			nodesToAdd = append(nodesToAdd, nodeName)
+			cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/hagroups/"+haGroupName+"/nodes/"+nodeName, cliutils.OrgAndCreds(org, credToUse), []int{201}, nil, nil)
+			addedNodes = append(addedNodes, nodeName)
 		}
 	}
 
-	if len(nodesToAdd) > 0 {
-		// add members to the group
-		haGroupRequest := exchangecommon.HAGroupPutPostRequest{
-			Description: haGroupResp.NodeGroups[0].Description,
-			Members:     append(members, nodesToAdd...),
-		}
+	msgPrinter.Printf("The following nodes are added to HA group %v/%v: \"%v\"", haGroupOrg, haGroupName, strings.Join(addedNodes, ","))
+	msgPrinter.Println()
 
-		var resp struct {
-			Code string `json:"code"`
-			Msg  string `json:"msg"`
-		}
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+haGroupOrg+"/hagroups"+cliutils.AddSlash(haGroupName), cliutils.OrgAndCreds(org, credToUse), []int{201}, haGroupRequest, &resp)
-
-		if len(nodesToAdd) > 1 {
-			msgPrinter.Printf("Nodes \"%v\" are added to HA group %v/%v in the Horizon Exchange", strings.Join(nodesToAdd, ","), haGroupOrg, haGroupName)
-		} else {
-			msgPrinter.Printf("Node \"%v\" is added to HA group %v/%v in the Horizon Exchange", strings.Join(nodesToAdd, ","), haGroupOrg, haGroupName)
-		}
+	if len(failedNodes) > 0 {
+		msgPrinter.Printf("Warning: the following nodes cannot be added to the group because they are in different groups: \"%v\"", strings.Join(failedNodes, ","))
 		msgPrinter.Println()
 	}
 }
@@ -276,28 +259,15 @@ func HAGroupMemberRemove(org, credToUse, haGroupName string, nodeNames []string,
 			msgPrinter.Println()
 		} else {
 			nodesToRemove = append(nodesToRemove, nodeName)
+			cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/hagroups/"+haGroupName+"/nodes/"+nodeName, cliutils.OrgAndCreds(org, credToUse), []int{204})
 		}
+
 	}
-
-	if len(nodesToRemove) > 0 {
-		// remove members from the group
-		haGroupRequest := exchangecommon.HAGroupPutPostRequest{
-			Description: haGroupResp.NodeGroups[0].Description,
-			Members:     members,
-		}
-
-		var resp struct {
-			Code string `json:"code"`
-			Msg  string `json:"msg"`
-		}
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+haGroupOrg+"/hagroups"+cliutils.AddSlash(haGroupName), cliutils.OrgAndCreds(org, credToUse), []int{201}, haGroupRequest, &resp)
-
-		if len(nodesToRemove) > 1 {
-			msgPrinter.Printf("Nodes \"%v\" are removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
-		} else {
-			msgPrinter.Printf("Node \"%v\" is removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
-		}
-		msgPrinter.Println()
-	}
+	if len(nodesToRemove) > 1 {
+		msgPrinter.Printf("Nodes \"%v\" are removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
+        } else {
+                msgPrinter.Printf("Node \"%v\" is removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
+        }
+	msgPrinter.Println()
 
 }
