@@ -460,18 +460,9 @@ func AddNodeToHAGroup(org, nodeId, haGroupName, userPw string) {
 		msgPrinter.Printf("Adding node %v to HA group %v/%v ...", nodeId, org, haGroupName)
 		msgPrinter.Println()
 
-		newMembers := []string{}
-		if haGroupResp.NodeGroups[0].Members != nil {
-			newMembers = append(haGroupResp.NodeGroups[0].Members, nodeId)
-		} else {
-			newMembers = append(newMembers, nodeId)
-		}
-		haGroupReq := exchangecommon.HAGroupPutPostRequest{
-			Description: haGroupResp.NodeGroups[0].Description,
-			Members:     newMembers,
-		}
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/hagroups/"+haGroupName, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, haGroupReq, &resp)
-		msgPrinter.Printf("Node %v is added to HA group %v.", nodeId, haGroupName)
+		cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/hagroups/"+haGroupName+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, nil, &resp)
+
+		msgPrinter.Printf("Node %v is added to HA group %v by POST (Lily).", nodeId, haGroupName)
 		msgPrinter.Println()
 	}
 }
