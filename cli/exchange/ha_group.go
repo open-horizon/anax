@@ -35,7 +35,8 @@ func HAGroupList(org, credToUse, haGroupName string, namesOnly bool) {
 	} else if namesOnly && haGroupName == "" {
 		nameList := []string{}
 		for _, hagr := range haGroups.NodeGroups {
-			nameList = append(nameList, hagr.Name)
+			hagroupEntry := fmt.Sprintf("%v/%v", haGroupOrg, hagr.Name)
+			nameList = append(nameList, hagroupEntry)
 		}
 		jsonBytes, err := json.MarshalIndent(nameList, "", cliutils.JSON_INDENT)
 		if err != nil {
@@ -43,7 +44,13 @@ func HAGroupList(org, credToUse, haGroupName string, namesOnly bool) {
 		}
 		fmt.Println(string(jsonBytes))
 	} else {
-		output := cliutils.MarshalIndent(haGroups.NodeGroups, "exchange hagroup list")
+		hagrMap := make(map[string]exchangecommon.HAGroup)
+		for _, hagr := range haGroups.NodeGroups {
+			hagroupKey := fmt.Sprintf("%v/%v", haGroupOrg, hagr.Name)
+			hagrMap[hagroupKey] = hagr
+		}
+
+		output := cliutils.MarshalIndent(hagrMap, "exchange hagroup list")
 		fmt.Println(output)
 	}
 }
