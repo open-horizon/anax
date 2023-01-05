@@ -207,12 +207,13 @@ func HAGroupMemberAdd(org, credToUse, haGroupName string, nodeNames []string) {
 		}
 	}
 
-	msgPrinter.Printf("The following nodes are added to HA group %v/%v: \"%v\"", haGroupOrg, haGroupName, strings.Join(addedNodes, ","))
-	msgPrinter.Println()
+	if len(addedNodes) > 0 {
+		msgPrinter.Printf("The following nodes are added to HA group %v/%v: \"%v\"", haGroupOrg, haGroupName, strings.Join(addedNodes, ","))
+		msgPrinter.Println()
+	}
 
 	if len(failedNodes) > 0 {
-		msgPrinter.Printf("Warning: the following nodes cannot be added to the group because they are in different groups: \"%v\"", strings.Join(failedNodes, ","))
-		msgPrinter.Println()
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the following nodes cannot be added to the group because they are in different groups: \"%v\"", strings.Join(failedNodes, ",")))
 	}
 }
 
@@ -272,9 +273,9 @@ func HAGroupMemberRemove(org, credToUse, haGroupName string, nodeNames []string,
 	}
 	if len(nodesToRemove) > 1 {
 		msgPrinter.Printf("Nodes \"%v\" are removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
-        } else {
+		msgPrinter.Println()
+        } else if len(nodesToRemove) == 1 {
                 msgPrinter.Printf("Node \"%v\" is removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
+		msgPrinter.Println()
         }
-	msgPrinter.Println()
-
 }
