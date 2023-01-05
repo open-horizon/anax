@@ -14947,67 +14947,51 @@
             "fuzzy": true
         },
         {
-            "id": "Nodes \"{JoinnodesToAdd_}\" are added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
-            "message": "Nodes \"{JoinnodesToAdd_}\" are added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
-            "translation": "Nodes \"{JoinnodesToAdd_}\" are added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+            "id": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+            "message": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+            "translation": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "JoinnodesToAdd_",
+                    "id": "HaGroupOrg",
                     "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "strings.Join(nodesToAdd, \",\")"
-                },
-                {
-                    "id": "HaGroupOrg",
-                    "string": "%[2]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
                     "expr": "haGroupOrg"
                 },
                 {
                     "id": "HaGroupName",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "haGroupName"
+                },
+                {
+                    "id": "JoinaddedNodes_",
                     "string": "%[3]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 3,
-                    "expr": "haGroupName"
+                    "expr": "strings.Join(addedNodes, \",\")"
                 }
             ],
             "fuzzy": true
         },
         {
-            "id": "Node \"{JoinnodesToAdd_}\" is added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
-            "message": "Node \"{JoinnodesToAdd_}\" is added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
-            "translation": "Node \"{JoinnodesToAdd_}\" is added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+            "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+            "message": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+            "translation": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "JoinnodesToAdd_",
+                    "id": "JoinfailedNodes_",
                     "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "strings.Join(nodesToAdd, \",\")"
-                },
-                {
-                    "id": "HaGroupOrg",
-                    "string": "%[2]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "haGroupOrg"
-                },
-                {
-                    "id": "HaGroupName",
-                    "string": "%[3]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 3,
-                    "expr": "haGroupName"
+                    "expr": "strings.Join(failedNodes, \",\")"
                 }
             ],
             "fuzzy": true
