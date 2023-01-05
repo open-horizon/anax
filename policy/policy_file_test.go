@@ -118,7 +118,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	var errorDetected = 0
 	var checkInterval = 1
 
-	changeNotify := func(org string, fileName string, policy *Policy) {
+	changeNotify := func(org string, fileName string, policy *Policy, oldPolicy *Policy) {
 		if org != "testorg" {
 			errorDetected += 1
 			fmt.Printf("Error for %v %v, wrong org\n", org, fileName)
@@ -206,7 +206,7 @@ func Test_PolicyFileChangeWatcher_Empty(t *testing.T) {
 	var changeDetected = 0
 	var errorDetected = 0
 
-	changeNotify := func(org string, fileName string, policy *Policy) {
+	changeNotify := func(org string, fileName string, policy *Policy, oldPolicy *Policy) {
 		changeDetected += 1
 		// fmt.Printf("Change to %v\n", fileName)
 	}
@@ -244,7 +244,7 @@ func Test_PolicyFileChangeWatcher_NoDir(t *testing.T) {
 	var changeDetected = 0
 	var errorDetected = 0
 
-	changeNotify := func(org string, fileName string, policy *Policy) {
+	changeNotify := func(org string, fileName string, policy *Policy, oldPolicy *Policy) {
 		changeDetected += 1
 		// fmt.Printf("Change to %v\n", fileName)
 	}

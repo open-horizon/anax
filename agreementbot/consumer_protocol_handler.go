@@ -298,14 +298,17 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 					continue
 				} else if err := b.pm.MatchesMine(cmd.Msg.Org(), pol); err != nil {
 					agStillValid := false
+					policyMatches := true
+					noNewPriority := false
+
 					if ag.Pattern == "" {
-						policyMatches, noNewPriority := b.HandlePolicyChangeForAgreement(ag, cmd.Msg.OldPolicy(), cph)
+						policyMatches, noNewPriority = b.HandlePolicyChangeForAgreement(ag, cmd.Msg.OldPolicy(), cph)
 						agStillValid = policyMatches && noNewPriority
 					}
 
 					if !agStillValid {
 						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed incompatibly. Cancelling agreement: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
-						b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+						b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph, policyMatches)
 					} else {
 						stillValidAgs = append(stillValidAgs, ag.CurrentAgreementId)
 					}
@@ -319,13 +322,13 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 		}
 
 		AgNotKept := func(validAgs []string) persistence.WUFilter {
-			return func (w persistence.WorkloadUsage) bool { return !cutil.SliceContains(validAgs, w.CurrentAgreementId) }
+			return func(w persistence.WorkloadUsage) bool { return !cutil.SliceContains(validAgs, w.CurrentAgreementId) }
 		}
 
 		// Remove the workloadusage that has the same policy name and does not have the agreement id associated.
 		// This will allow the highest serice version be tried under the new policy.
 		// For the ones with the agreement id, the agreements will get canceled and the workload usage will be removed anyway.
-		if wlu_array, err := b.db.FindWorkloadUsages([]persistence.WUFilter{persistence.PNoAWUFilter(eventPol.Header.Name),AgNotKept(stillValidAgs)}); err != nil {
+		if wlu_array, err := b.db.FindWorkloadUsages([]persistence.WUFilter{persistence.PNoAWUFilter(eventPol.Header.Name), AgNotKept(stillValidAgs)}); err != nil {
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Failed to get the workload usages with policy name: %v, %v", eventPol.Header.Name, err)))
 		} else {
 			for _, wlu := range wlu_array {
@@ -349,7 +352,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	for _, svcId := range ag.ServiceId {
 		if svcPol, err := exchange.GetServicePolicyWithId(b, svcId); err != nil {
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get service policy for %v from the exchange: %v", svcId, err)))
-			return false, false 
+			return false, false
 		} else if svcPol != nil {
 			svcAllPol.MergeWith(&svcPol.ExternalPolicy, false)
 		}
@@ -361,14 +364,14 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	_, busPol, err := compcheck.GetBusinessPolicy(busPolHandler, ag.PolicyName, true, msgPrinter)
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get business policy %v/%v from the exchange: %v", ag.Org, ag.PolicyName, err)))
-		return false, false 
+		return false, false
 	}
 
 	nodePolHandler := exchange.GetHTTPNodePolicyHandler(b)
 	_, nodePol, err := compcheck.GetNodePolicy(nodePolHandler, ag.DeviceId, msgPrinter)
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get node policy for %v from the exchange.", ag.DeviceId)))
-		return false, false 
+		return false, false
 	}
 	dev, err := exchange.GetExchangeDevice(b.GetHTTPFactory(), ag.DeviceId, b.GetExchangeId(), b.GetExchangeToken(), b.GetExchangeURL())
 	if err != nil {
@@ -378,35 +381,38 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 
 	match, _, producerPol, consumerPol, err := compcheck.CheckPolicyCompatiblility(nodePol, busPol, &svcAllPol, dev.Arch, nil)
 
-	if !match { 
+	if !match {
 		return false, true
-	} 
+	}
 
 	if oldPolicy != nil {
 		wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName)
 		if err != nil {
-			return false, false 
-		} 
+			return false, false
+		}
 
-		if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsage.Priority); currentWL == nil {
-			// the current workload priority is no longer in the deployment policy
-			glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsage.Priority, ag.CurrentAgreementId)))
-			return true, false
-		} 
+		if wlUsage != nil {
 
-		// for every priority (in order highest to lowest) in the new policy with priority lower than the current wl
-		// if it's not in the old policy, cancel
-		choice := -1
-		nextPriority := policy.GetNextWorkloadChoice(busPol.Workloads, choice)
-
-		for choice <= wlUsage.Priority && nextPriority != nil {
-			choice = nextPriority.Priority.PriorityValue
-			matchingWL := policy.GetWorkloadWithPriority(oldPolicy.Workloads, choice)
-			if matchingWL == nil || !matchingWL.IsSame(*nextPriority) {
-				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Higher priority version added or modified. Cancelling agreement %v", ag.CurrentAgreementId)))
+			if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsage.Priority); currentWL == nil {
+				// the current workload priority is no longer in the deployment policy
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsage.Priority, ag.CurrentAgreementId)))
 				return true, false
 			}
-			nextPriority = policy.GetNextWorkloadChoice(busPol.Workloads, choice)
+
+			// for every priority (in order highest to lowest) in the new policy with priority lower than the current wl
+			// if it's not in the old policy, cancel
+			choice := -1
+			nextPriority := policy.GetNextWorkloadChoice(busPol.Workloads, choice)
+
+			for choice <= wlUsage.Priority && nextPriority != nil {
+				choice = nextPriority.Priority.PriorityValue
+				matchingWL := policy.GetWorkloadWithPriority(oldPolicy.Workloads, choice)
+				if matchingWL == nil || !matchingWL.IsSame(*nextPriority) {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Higher priority version added or modified. Cancelling agreement %v", ag.CurrentAgreementId)))
+					return true, false
+				}
+				nextPriority = policy.GetNextWorkloadChoice(busPol.Workloads, choice)
+			}
 		}
 	}
 
@@ -415,7 +421,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	newTsCs, err := policy.Create_Terms_And_Conditions(producerPol, consumerPol, &wl, ag.CurrentAgreementId, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, basicprotocol.PROTOCOL_CURRENT_VERSION)
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error creating new terms and conditions: %v", err)))
-		return false, false 
+		return false, false
 	}
 
 	ag.LastPolicyUpdateTime = uint64(time.Now().Unix())
@@ -427,6 +433,24 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 
 func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), "received policy deleted command."))
+
+	// Remove the workloadusage that has the same policy name and does not have the agreement id associated.
+	// For the ones with the agreement id, the agreements will get canceled and the workload usage will be removed anyway.
+	if eventPol, err := policy.DemarshalPolicy(cmd.Msg.PolicyString()); err != nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error demarshalling change policy event %v, error: %v", cmd.Msg.PolicyString(), err)))
+	} else {
+		if wlu_array, err := b.db.FindWorkloadUsages([]persistence.WUFilter{persistence.PNoAWUFilter(eventPol.Header.Name)}); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Failed to get the workload usages with policy name: %v, %v", eventPol.Header.Name, err)))
+		} else {
+			for _, wlu := range wlu_array {
+				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("deleting workload usage %v.", wlu)))
+
+				if err := b.db.DeleteWorkloadUsage(wlu.DeviceId, wlu.PolicyName); err != nil {
+					glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Failed to delete the workload usages with device id: %v, policy name: %v, %v", wlu.DeviceId, wlu.PolicyName, err)))
+				}
+			}
+		}
+	}
 
 	InProgress := func() persistence.AFilter {
 		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
@@ -473,7 +497,7 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePol
 				agStillValid := policyMatches && noNewPriority
 				if !agStillValid {
 					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
-					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph, policyMatches)
 				}
 			}
 		}
@@ -491,12 +515,12 @@ func (b *BaseConsumerProtocolHandler) HandleNodePolicyChanged(cmd *NodePolicyCha
 
 	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
 		for _, ag := range agreements {
-			if ag.Pattern == "" && ag.DeviceId == cutil.FormOrgSpecUrl(cmd.Msg.NodeId,cmd.Msg.NodePolOrg) {
+			if ag.Pattern == "" && ag.DeviceId == cutil.FormOrgSpecUrl(cmd.Msg.NodeId, cmd.Msg.NodePolOrg) {
 				policyMatches, noNewPriority := b.HandlePolicyChangeForAgreement(ag, nil, cph)
 				agStillValid := policyMatches && noNewPriority
 				if !agStillValid {
 					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a node policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
-					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph, policyMatches)
 				}
 			}
 		}
@@ -544,13 +568,13 @@ func (b *BaseConsumerProtocolHandler) HandleMMSObjectPolicy(cmd *MMSObjectPolicy
 //
 //	Table workloadusage is partitioned. So one agbot could only see the workloadusage in
 //	its own partition. Table ha_workload_upgrade is not partitioned.
-func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, reason string, cph ConsumerProtocolHandler) {
+func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, reason string, cph ConsumerProtocolHandler, policyMatches bool) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Canceling Agreement: %v, reason: %v", ag, reason)))
 	// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
 	// if the consumer policy does not specify the workload priority section.
 	if wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
 		glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error retreiving workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
-	} else if wlUsage != nil {
+	} else if wlUsage != nil && policyMatches {
 		theDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), ag.DeviceId, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken())
 		if err != nil {
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error getting device %v, error: %v", ag.DeviceId, err)))

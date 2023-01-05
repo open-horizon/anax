@@ -35,26 +35,27 @@ func Test_Validate_Succeed1(t *testing.T) {
 }
 
 func Test_Validate_Succeed_Special_Characters(t *testing.T) {
-        textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
-        constraintStrings := []string{
-                "でんしゃのりば == 京都",
-                "火车站 == 上海",
-                "estación_de_tren = Nochistlán",
-                "기차역== 서울시",
-        } 
-        ce := constraintStrings
+	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
+	constraintStrings := []string{
+		"でんしゃのりば == 京都",
+		"火车站 == 上海",    // simplified Chinese
+		"車號 == 漢54321", // traditional Chinese
+		"estación_de_tren = Nochistlán",
+		"기차역== 서울시",
+	}
+	ce := constraintStrings
 
-        t.Log("ce: ", ce)
+	t.Log("ce: ", ce)
 
-        var validated bool
-        var err error
+	var validated bool
+	var err error
 
-        validated, _, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
-        if validated == false {
-                t.Errorf("Should validate successfully but not, err: %v", err)
-        } else if err != nil {
-                t.Errorf("Should validate without err, but returned err: %v", err)
-        }
+	validated, _, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
+	if validated == false {
+		t.Errorf("Should validate successfully but not, err: %v", err)
+	} else if err != nil {
+		t.Errorf("Should validate without err, but returned err: %v", err)
+	}
 }
 
 func Test_Validate_Failed1(t *testing.T) {

@@ -505,12 +505,12 @@ func NewUpdatePolicyMessage(id EventId) *UpdatePolicyMessage {
 
 // This event indicates that a policy file has changed. It might also be a new policy file in the agbot.
 type PolicyChangedMessage struct {
-	event    Event
-	fileName string
-	name     string
+	event     Event
+	fileName  string
+	name      string
 	oldPolicy *policy.Policy
-	policy   string
-	org      string
+	policy    string
+	org       string
 }
 
 func (e PolicyChangedMessage) String() string {
@@ -550,10 +550,10 @@ func NewPolicyChangedMessage(id EventId, policyFileName string, policyName strin
 		event: Event{
 			Id: id,
 		},
-		fileName: policyFileName,
-		name:     policyName,
-		policy:   policy,
-		org:      org,
+		fileName:  policyFileName,
+		name:      policyName,
+		policy:    policy,
+		org:       org,
 		oldPolicy: oldPolicy,
 	}
 }

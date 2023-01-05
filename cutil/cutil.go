@@ -32,7 +32,7 @@ const (
 	ANAX_SVC_MISSING_CONFIG   = "service config for version %v of %v is missing."
 	ANAX_SVC_WRONG_TYPE       = "variable %v for service %v is "
 
-	CERT_COMMENT              = "-----"
+	CERT_COMMENT       = "-----"
 	CERT_VERSION_TITLE = "OpenHorizon Version"
 )
 

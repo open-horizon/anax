@@ -1648,6 +1648,9 @@ func (w *AgreementBotWorker) handleHAGroupChange(msg *events.ExchangeChangeMessa
 				glog.Errorf("Error deleting group entry %v/%v from nmp update table: %v", haGroupChange.OrgID, haGroupChange.ID, err)
 			}
 		}
+		w.updateWorkloadUsageForHAGroup(haGroupChange.OrgID, haGroupChange.ID)
+	} else if haGroupChange.Operation == exchange.CHANGE_OPERATION_CREATED || haGroupChange.Operation == exchange.CHANGE_OPERATION_MODIFIED {
+		w.updateWorkloadUsageForHAGroup(haGroupChange.OrgID, haGroupChange.ID)
 	} else if haGroupChange.Operation == exchange.CHANGE_OPERATION_DELETED {
 		glog.V(5).Infof(AWlogString(fmt.Sprintf("HA group %v/%v is deleted", haGroupChange.OrgID, haGroupChange.ID)))
 
@@ -1659,10 +1662,61 @@ func (w *AgreementBotWorker) handleHAGroupChange(msg *events.ExchangeChangeMessa
 
 		// delete from the upgrading nmp table
 		if err := persistence.DeleteHAUpgradeNodeByGroup(w.db, haGroupChange.OrgID, haGroupChange.ID); err != nil {
-			glog.Errorf("Error deleting group entry %v/%v from nmp update table: %v", haGroupChange.OrgID, haGroupChange.ID, err)
+			glog.Errorf(AWlogString(fmt.Sprintf("Error deleting group entry %v/%v from nmp update table: %v", haGroupChange.OrgID, haGroupChange.ID, err)))
 		}
 	}
 	return nil
+}
+
+// For each node in the given HA group, make sure each agreements has a workload usage in order for service upgrade working for this HA group.
+func (w *AgreementBotWorker) updateWorkloadUsageForHAGroup(org string, groupName string) {
+	glog.V(3).Info(AWlogString(fmt.Sprintf("AgreementBot start to update workload usages after HA group change for %v/%v", org, groupName)))
+
+	// get hs group node IDs
+	haGroup, err := GetHAGroup(org, groupName, w.GetHTTPFactory().NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
+	if err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("Failed to get HA group %v/%v from the exchange. %v", org, groupName, err)))
+		return
+	}
+
+	if haGroup == nil || haGroup.Members == nil || len(haGroup.Members) == 0 {
+		glog.V(5).Infof(AWlogString(fmt.Sprintf("HA group %v/%v is does not exist or no nodes in the group. Do nothing", org, groupName)))
+		return
+	}
+
+	stableAgDeviceFilter := func(deviceId string) persistence.AFilter {
+		return func(a persistence.Agreement) bool {
+			return a.DeviceId == deviceId && a.AgreementFinalizedTime > 0 && a.AgreementTimedout == 0 && a.TerminatedReason == 0
+		}
+	}
+	for _, agp := range policy.AllAgreementProtocols() {
+		for _, node := range haGroup.Members {
+			nodeOrg := exchange.GetOrg(node)
+			if nodeOrg == "" {
+				nodeOrg = org
+			}
+			deviceId := fmt.Sprintf("%s/%s", nodeOrg, exchange.GetId(node))
+			if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), stableAgDeviceFilter(deviceId)}, agp); err != nil {
+				glog.Errorf(AWlogString(fmt.Sprintf("unable to read agreements from database, error: %v", err)))
+				return
+			} else if agreements != nil {
+				for _, ag := range agreements {
+					// check if workload usage exists
+					if wlu, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(deviceId, ag.PolicyName); err != nil {
+						glog.Errorf(AWlogString(fmt.Sprintf("Failed to get workload usage for device %v with policy %v. %v", deviceId, ag.PolicyName, err)))
+					} else if wlu == nil {
+						// create new workload usage for this device and policy. This is the case where service priority is 0 because
+						// if priority is greater than 0, the workload usage is always created.
+						glog.V(3).Info(AWlogString(fmt.Sprintf("AgreementBot adding workload usage for device %v, policy %v", deviceId, ag.PolicyName)))
+						if err := w.db.NewWorkloadUsage(deviceId, ag.Policy, ag.PolicyName, 0, 0, 0, false, ag.CurrentAgreementId); err != nil {
+							// may not be an error, multiple agbot could be trying to add it at the same time.
+							glog.Warningf(AWlogString(fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", deviceId, ag.PolicyName, err)))
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 // Check each given UpgradingHAGroupWorkload object, make sure the node id and the ha group name matches.
