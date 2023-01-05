@@ -4556,12 +4556,12 @@
     "translation": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node."
   },
   {
-    "id": "Nodes \"{JoinnodesToAdd_}\" are added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
-    "translation": "Nodes \"{JoinnodesToAdd_}\" are added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange"
+    "id": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+    "translation": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\""
   },
   {
-    "id": "Node \"{JoinnodesToAdd_}\" is added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
-    "translation": "Node \"{JoinnodesToAdd_}\" is added to HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange"
+    "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+    "translation": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\""
   },
   {
     "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
