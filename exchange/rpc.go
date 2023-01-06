@@ -274,6 +274,9 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 					case *NodeStatus:
 						return nil, nil
 
+					case *DeviceStatus:
+						return nil, nil
+
 					case *VaultSecretExistsResponse:
 						return nil, nil
 

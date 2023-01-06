@@ -23,6 +23,7 @@ import (
 const (
 	WORKLOAD_STATUS_UPGRADING = 1
 	WORKLOAD_STATUS_UPGRADED  = 2
+	WORKLOAD_STATUS_ERROR     = -1
 )
 
 func (w *AgreementBotWorker) GovernAgreements() int {
@@ -310,7 +311,9 @@ func (w *AgreementBotWorker) governHAPartners() {
 	//         - hagroup == ""
 	//              - upgrade this workload: delete workload from db, cancel agreement if there is one
 
-	glog.V(5).Infof(logString("checking for HA partners needing a workload upgrade."))
+	if glog.V(5) {
+		glog.Infof(logString("checking for HA partners needing a workload upgrade."))
+	}
 
 	// check if current workload is upgraded.
 	// remove it from the ha_workload_upgrade table if upgraded.
@@ -320,16 +323,24 @@ func (w *AgreementBotWorker) governHAPartners() {
 		return
 	}
 	if haWorkloads == nil || len(haWorkloads) == 0 {
-		glog.V(5).Infof(AWlogString(fmt.Sprintf("No rentires in the HA_workload_upgrade table.")))
+		if glog.V(5) {
+			glog.Infof(AWlogString(fmt.Sprintf("No rentires in the HA_workload_upgrade table.")))
+		}
 	} else {
-		glog.V(5).Infof(AWlogString(fmt.Sprintf("There are %v entries in the HA_workload_upgrade table.", len(haWorkloads))))
+		if glog.V(5) {
+			glog.Infof(AWlogString(fmt.Sprintf("There are %v entries in the HA_workload_upgrade table.", len(haWorkloads))))
+		}
 
 		for _, ha_wlu := range haWorkloads {
 			statusCode := w.checkWorkloadStatus(ha_wlu.NodeId, ha_wlu.PolicyName)
-			glog.V(5).Infof(AWlogString(fmt.Sprintf("Upgrade status code is %v for %v", statusCode, ha_wlu)))
+			if glog.V(5) {
+				glog.Infof(AWlogString(fmt.Sprintf("Upgrade status code is %v for %v", statusCode, ha_wlu)))
+			}
 
 			if statusCode == WORKLOAD_STATUS_UPGRADED {
-				glog.V(5).Infof(AWlogString(fmt.Sprintf("Upgrade completed. Removing HA upgrading record %v", ha_wlu)))
+				if glog.V(5) {
+					glog.Infof(AWlogString(fmt.Sprintf("Upgrade completed. Removing HA upgrading record %v", ha_wlu)))
+				}
 				// remove the entry from the ha_workload_upgrade table for the ones that are done
 				if err := w.db.DeleteHAUpgradingWorkload(ha_wlu); err != nil {
 					// might not be an error if the entry is deleted by another agbot
@@ -348,7 +359,9 @@ func (w *AgreementBotWorker) governHAPartners() {
 		return
 	} else if len(upgrades) != 0 {
 		for _, wlu := range upgrades {
-			glog.V(5).Infof(logString(fmt.Sprintf("checking for workload usage %v that are waiting for upgrading", wlu.String())))
+			if glog.V(5) {
+				glog.Infof(logString(fmt.Sprintf("checking for workload usage %v that are waiting for upgrading", wlu.String())))
+			}
 			// Setup variables to track the state of the HA group that the current workload usage record belongs to.
 			device, err := GetDevice(w.GetHTTPFactory().NewHTTPClient(nil), wlu.DeviceId, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 			if err != nil {
@@ -359,10 +372,14 @@ func (w *AgreementBotWorker) governHAPartners() {
 				continue
 			} else if device.HAGroup == "" {
 				// update this workload:
-				glog.V(5).Infof(logString(fmt.Sprintf("device %v does not belong to hagroup, update workload %v.", device, wlu.String())))
+				if glog.V(5) {
+					glog.Infof(logString(fmt.Sprintf("device %v does not belong to hagroup, update workload %v.", device, wlu.String())))
+				}
 				w.UpgradeWorkload(wlu)
 			} else { // device != nil && device.HAGroup != ""
-				glog.V(5).Infof(logString(fmt.Sprintf("device %v belongs to hagroup %v.", device, device.HAGroup)))
+				if glog.V(5) {
+					glog.Infof(logString(fmt.Sprintf("device %v belongs to hagroup %v.", device, device.HAGroup)))
+				}
 				haGroupName := device.HAGroup
 				org := exchange.GetOrg(wlu.DeviceId)
 				currentUpgradingWorkloadForGroup, err := w.db.GetHAUpgradingWorkload(org, haGroupName, wlu.PolicyName)
@@ -370,8 +387,10 @@ func (w *AgreementBotWorker) governHAPartners() {
 					glog.Errorf(logString(fmt.Sprintf("error getting ha upgrading workload for %v/%v/%v, error: %v", org, haGroupName, wlu.PolicyName, err)))
 					return
 				} else if currentUpgradingWorkloadForGroup == nil {
-					glog.V(5).Infof(logString(fmt.Sprintf("no workload is upgrading for hagroup %v, now upgrade the workload: %v.", device.HAGroup, wlu.String())))
-					// insert a row for the org, haGroupName, wlu.PolicyName, if there is no row exists.
+					if glog.V(5) {
+						glog.Infof(logString(fmt.Sprintf("no workload is upgrading for hagroup %v, now upgrade the workload: %v.", device.HAGroup, wlu.String())))
+					}
+					// insert this workload into ha workload upgrade table, then upgrade this workload
 					if currentNodeId, err := w.db.InsertHAUpgradingWorkloadForGroupAndPolicy(org, haGroupName, wlu.PolicyName, wlu.DeviceId); err != nil {
 						glog.Warningf(logString(fmt.Sprintf("unable to insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v. %v", haGroupName, org, wlu.PolicyName, wlu.DeviceId, err)))
 					} else if currentNodeId == wlu.DeviceId {
@@ -431,14 +450,18 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence
 		} else if len(dev.LastHeartbeat) != 0 && (uint64(cutil.TimeInSeconds(dev.LastHeartbeat, cutil.ExchangeTimeFormat)+300) > uint64(time.Now().Unix())) {
 			// If the device is still alive (heart beat received in the last 5 mins), then assume this partner is trying to make an
 			// agreement. Exit the partner loop because no one else can safely upgrade right now. The upgrade might be bad.
-			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is upgrading.", partnerWLU.DeviceId)))
+			if glog.V(5) {
+				glog.Infof(logString(fmt.Sprintf("HA group member %v is upgrading.", partnerWLU.DeviceId)))
+			}
 			partnerUpgrading = partnerWLU.DeviceId
 		} else {
 			// If the device is not alive then ignore it. We dont want this failed device to hold up the workload
 			// upgrade of other devices.
-			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is not heartbeating.", partnerWLU.DeviceId)))
+			if glog.V(5) {
+				glog.Infof(logString(fmt.Sprintf("HA group member %v is not heartbeating.", partnerWLU.DeviceId)))
+			}
 		}
-	} else if ag.DataVerifiedTime != ag.AgreementCreationTime && ag.AgreementTimedout == 0 {
+	} else if ag.AgreementFinalizedTime != 0 && ag.AgreementTimedout == 0 {
 		// If we find a partner with an agreement where data has been verified and that is also not being cancelled,
 		// then we have found a partner who is upgraded. Now we just need to make sure this partner is running the highest
 		// priority workload. If not, then it is not considered to be upgraded.
@@ -448,8 +471,14 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence
 		} else {
 			workload := pol.NextHighestPriorityWorkload(0, 0, 0)
 			if partnerWLU.Priority == workload.Priority.PriorityValue {
-				glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v has upgraded.", partnerWLU.DeviceId)))
-				upgradedPartnerFound = partnerWLU.DeviceId
+				if svcRunning, err := w.WorkloadRunningOnDevice(partnerWLU.DeviceId, ag.CurrentAgreementId); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("Failed to get workload status for device %v. %v", partnerWLU.DeviceId, err)))
+				} else if svcRunning {
+					if glog.V(5) {
+						glog.Infof(logString(fmt.Sprintf("HA group member %v has upgraded.", partnerWLU.DeviceId)))
+					}
+					upgradedPartnerFound = partnerWLU.DeviceId
+				}
 			}
 		}
 	} else {
@@ -459,6 +488,52 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence
 	}
 
 	return partnerUpgrading, upgradedPartnerFound
+}
+
+// Check the workload status on the node for a given agreement.
+// It returns true if the service is running.
+func (w *AgreementBotWorker) WorkloadRunningOnDevice(deviceId string, agId string) (bool, error) {
+	if glog.V(5) {
+		glog.Infof(logString(fmt.Sprintf("Getting service status for device %v, agreement %v", deviceId, agId)))
+	}
+
+	status, err := exchange.GetNodeFullStatus(w, deviceId)
+	if err != nil {
+		return false, fmt.Errorf("Failed to get the node status: %v", err)
+	}
+
+	if status != nil {
+		if status.Services != nil {
+			for _, ss := range status.Services {
+				// check the top level service only for an agreement
+				if ss.AgreementId == agId {
+					if ss.Containers != nil && len(ss.Containers) != 0 {
+						runningContainers := 0
+
+						// for both device and edge cluster cases, "ContainerStatus" will be populated with
+						// the state of the containers.
+						for _, container := range ss.Containers {
+							containerState := container.State
+							if strings.ToLower(containerState) == "running" {
+								runningContainers += 1
+							}
+						}
+
+						if runningContainers == len(ss.Containers) {
+							return true, nil
+						}
+					}
+				}
+			}
+		}
+
+		// not running yet
+		return false, nil
+	} else {
+		// no node status found, this means that the status reporting is not turned on for the node.
+		// the HA cannot only be done by AgreementFinalizedTime.
+		return true, nil
+	}
 }
 
 func (w *AgreementBotWorker) UpgradeWorkload(wlu persistence.WorkloadUsage) {
@@ -473,7 +548,9 @@ func (w *AgreementBotWorker) UpgradeWorkload(wlu persistence.WorkloadUsage) {
 
 		// Cancel the agreement if there is one
 		if ag == nil {
-			glog.V(5).Infof(logString(fmt.Sprintf("agreement for %v already terminated.", wlu.DeviceId)))
+			if glog.V(5) {
+				glog.Infof(logString(fmt.Sprintf("agreement for %v already terminated.", wlu.DeviceId)))
+			}
 
 		} else {
 			w.TerminateAgreement(ag, w.consumerPH.Get(ag.AgreementProtocol).GetTerminationCode(TERM_REASON_POLICY_CHANGED))
@@ -493,7 +570,9 @@ func (w *AgreementBotWorker) VerifyNodeHealth(ag *persistence.Agreement, cph Con
 		return exchange.GetNodeHealthStatus(w.Config.Collaborators.HTTPClientFactory, pattern, org, nodeOrgs, lastCallTime, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 	}
 
-	glog.V(5).Infof("AgreementBot Governance checking node health for %v.", ag.CurrentAgreementId)
+	if glog.V(5) {
+		glog.Infof("AgreementBot Governance checking node health for %v.", ag.CurrentAgreementId)
+	}
 
 	// Make sure the Node Health Manager has updated info for this agreement's pattern.
 	if err := w.NHManager.SetUpdatedStatus(ag.Pattern, ag.Org, nodeHealthHandler); err != nil {
@@ -526,7 +605,9 @@ func (w *AgreementBotWorker) TerminateAgreement(ag *persistence.Agreement, reaso
 
 func GetDevice(httpClient *http.Client, deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
 
-	glog.V(5).Infof(logString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
+	if glog.V(5) {
+		glog.Infof(logString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
+	}
 
 	cachedDevice := exchange.GetNodeFromCache(exchange.GetOrg(deviceId), exchange.GetId(deviceId))
 	if cachedDevice != nil {
@@ -549,7 +630,9 @@ func GetDevice(httpClient *http.Client, deviceId string, url string, agbotId str
 			if dev, there := devs[deviceId]; !there {
 				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
-				glog.V(5).Infof(logString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				if glog.V(5) {
+					glog.Infof(logString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				}
 				exchange.UpdateCache(exchange.NodeCacheMapKey(exchange.GetOrg(deviceId), exchange.GetId(deviceId)), exchange.NODE_DEF_TYPE_CACHE, dev)
 				return &dev, nil
 			}
@@ -569,7 +652,9 @@ func (w *AgreementBotWorker) GovernArchivedAgreements() int {
 		glog.Info(logString(fmt.Sprintf("archive purge using default age limit of %v hour.", ageLimit)))
 	}
 
-	glog.V(5).Infof(logString(fmt.Sprintf("archive purge scanning for agreements archived more than %v hour(s) ago.", ageLimit)))
+	if glog.V(5) {
+		glog.Infof(logString(fmt.Sprintf("archive purge scanning for agreements archived more than %v hour(s) ago.", ageLimit)))
+	}
 
 	// A filter for limiting the returned set of agreements to just those that are too old.
 	agedOutFilter := func(now int64, limitH int) persistence.AFilter {

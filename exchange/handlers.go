@@ -303,6 +303,14 @@ func GetHTTPNodeStatusHandler(ec ExchangeContext) NodeStatusHandler {
 	}
 }
 
+type NodeFullStatusHandler func(deviceId string) (*DeviceStatus, error)
+
+func GetHTTPNodeFullStatusHandler(ec ExchangeContext) NodeFullStatusHandler {
+	return func(deviceId string) (*DeviceStatus, error) {
+		return GetNodeFullStatus(ec, deviceId)
+	}
+}
+
 // Two handlers for getting the service policy from the exchange.
 type ServicePolicyWithIdHandler func(service_id string) (*ExchangeServicePolicy, error)
 

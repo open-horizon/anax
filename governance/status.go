@@ -18,62 +18,6 @@ import (
 	"time"
 )
 
-type ContainerStatus struct {
-	Name    string `json:"name"`
-	Image   string `json:"image"`
-	Created int64  `json:"created"`
-	State   string `json:"state"`
-}
-
-func (w ContainerStatus) String() string {
-	return fmt.Sprintf("Name: %v, "+
-		"Image: %v, "+
-		"Created: %v, "+
-		"State: %v",
-		w.Name, w.Image, w.Created, w.State)
-}
-
-type WorkloadStatus struct {
-	AgreementId    string            `json:"agreementId"`
-	ServiceURL     string            `json:"serviceUrl,omitempty"`
-	Org            string            `json:"orgid,omitempty"`
-	Version        string            `json:"version,omitempty"`
-	Arch           string            `json:"arch,omitempty"`
-	Containers     []ContainerStatus `json:"containerStatus"`
-	OperatorStatus interface{}       `json:"operatorStatus,omitempty"`
-	ConfigState    string            `json:"configState,omitempty"`
-}
-
-func (w WorkloadStatus) String() string {
-	return fmt.Sprintf("AgreementId: %v, "+
-		"ServiceURL: %v, "+
-		"Org: %v, "+
-		"Version: %v, "+
-		"Arch: %v, "+
-		"Containers: %v"+
-		"OperatorStatus: %v"+
-		"ConfigState: %v",
-		w.AgreementId, w.ServiceURL, w.Org, w.Version, w.Arch, w.Containers, w.OperatorStatus, w.ConfigState)
-}
-
-type DeviceStatus struct {
-	Connectivity map[string]bool  `json:"connectivity,omitempty"` //  hosts and whether this device can reach them or not
-	Services     []WorkloadStatus `json:"services"`
-	LastUpdated  string           `json:"lastUpdated,omitempty"`
-}
-
-func (w DeviceStatus) String() string {
-	return fmt.Sprintf(
-		"Connectivity: %v, "+
-			"Services: %v,"+
-			"LastUpdated: %v",
-		w.Connectivity, w.Services, w.LastUpdated)
-}
-
-func NewDeviceStatus() *DeviceStatus {
-	return &DeviceStatus{}
-}
-
 // Report the containers status and connectivity status to the exchange.
 func (w *GovernanceWorker) ReportDeviceStatus() int {
 	return w.reportDeviceStatus(nil)
@@ -94,7 +38,7 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 	glog.Info("started the status report to the exchange.")
 
 	w.deviceStatus = nil
-	var device_status DeviceStatus
+	var device_status exchange.DeviceStatus
 
 	// get docker containers
 	containers := make([]docker.APIContainers, 0)
@@ -152,7 +96,7 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 			// add the new suspended ones
 			if cfs == exchange.SERVICE_CONFIGSTATE_SUSPENDED && !found {
 				// service has been suspended so it wasn't found, adding it to the status
-				device_status.Services = append(device_status.Services, WorkloadStatus{
+				device_status.Services = append(device_status.Services, exchange.WorkloadStatus{
 					ServiceURL:  cfgState.Url,
 					Org:         cfgState.Org,
 					Version:     cfgState.Version,
@@ -164,8 +108,8 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 	}
 
 	// only save the ones that have non empty containers or config state as suspended
-	var device_status_new DeviceStatus
-	device_status_new.Services = make([]WorkloadStatus, 0)
+	var device_status_new exchange.DeviceStatus
+	device_status_new.Services = make([]exchange.WorkloadStatus, 0)
 	for i, workload := range device_status.Services {
 		if workload.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED || len(workload.Containers) > 0 {
 			device_status_new.Services = append(device_status_new.Services, device_status.Services[i])
@@ -204,8 +148,8 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 }
 
 // Update the services with configstate of the old suspended services.
-func updateWithOldSuspendedServices(updatedServices []WorkloadStatus, oldServices []persistence.WorkloadStatus) []WorkloadStatus {
-	newStatus := make([]WorkloadStatus, len(updatedServices))
+func updateWithOldSuspendedServices(updatedServices []exchange.WorkloadStatus, oldServices []persistence.WorkloadStatus) []exchange.WorkloadStatus {
+	newStatus := make([]exchange.WorkloadStatus, len(updatedServices))
 	copy(newStatus, updatedServices)
 	for _, svc := range oldServices {
 		if svc.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
@@ -222,7 +166,7 @@ func updateWithOldSuspendedServices(updatedServices []WorkloadStatus, oldService
 			}
 
 			// if not found, add to the new list
-			newStatus = append(newStatus, WorkloadStatus{
+			newStatus = append(newStatus, exchange.WorkloadStatus{
 				ServiceURL:  svc.ServiceURL,
 				Org:         svc.Org,
 				Version:     svc.Version,
@@ -235,19 +179,19 @@ func updateWithOldSuspendedServices(updatedServices []WorkloadStatus, oldService
 }
 
 // Find the status for all the Services.
-func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) ([]WorkloadStatus, error) {
-	status := make([]WorkloadStatus, 0)
+func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) ([]exchange.WorkloadStatus, error) {
+	status := make([]exchange.WorkloadStatus, 0)
 
 	if msdefs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service definitions from database, error: %v", err)))
 	} else if msdefs != nil {
 		for _, msdef := range msdefs {
-			var msdef_status WorkloadStatus
+			var msdef_status exchange.WorkloadStatus
 			msdef_status.ServiceURL = msdef.SpecRef
 			msdef_status.Org = msdef.Org
 			msdef_status.Version = msdef.Version
 			msdef_status.Arch = msdef.Arch
-			msdef_status.Containers = make([]ContainerStatus, 0)
+			msdef_status.Containers = make([]exchange.ContainerStatus, 0)
 			deployment := ""
 			if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
 				deployment, _ = msdef.GetDeployment()
@@ -292,8 +236,8 @@ func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) (
 }
 
 // find container status
-func GetContainerStatus(deployment string, key string, infrastructure bool, containers []docker.APIContainers) ([]ContainerStatus, error) {
-	status := make([]ContainerStatus, 0)
+func GetContainerStatus(deployment string, key string, infrastructure bool, containers []docker.APIContainers) ([]exchange.ContainerStatus, error) {
+	status := make([]exchange.ContainerStatus, 0)
 
 	if deploymentDesc, err := containermessage.GetNativeDeployment(deployment); err == nil {
 		label := container.LABEL_PREFIX + ".agreement_id"
@@ -302,7 +246,7 @@ func GetContainerStatus(deployment string, key string, infrastructure bool, cont
 		}
 
 		for serviceName, s_details := range deploymentDesc.Services {
-			var container_status ContainerStatus
+			var container_status exchange.ContainerStatus
 			container_status.Name = serviceName
 			container_status.Image = s_details.Image
 			container_status.State = "not started"
@@ -322,7 +266,7 @@ func GetContainerStatus(deployment string, key string, infrastructure bool, cont
 			status = append(status, container_status)
 		}
 	} else if hdc, err := persistence.GetHelmDeployment(deployment); err == nil {
-		var container_status ContainerStatus
+		var container_status exchange.ContainerStatus
 		container_status.Name = fmt.Sprintf("Helm release: %v", hdc.ReleaseName)
 
 		hc := helm.NewHelmClient()
@@ -338,7 +282,7 @@ func GetContainerStatus(deployment string, key string, infrastructure bool, cont
 		container_status.State = releaseState
 		status = append(status, container_status)
 	} else if kdc, err := persistence.GetKubeDeployment(deployment); err == nil {
-		var container_status ContainerStatus
+		var container_status exchange.ContainerStatus
 
 		if kc, err := kube_operator.NewKubeClient(); err != nil {
 			container_status.State = fmt.Sprintf("Unknown, error: %v", err)
@@ -381,7 +325,7 @@ func GetOperatorStatus(deployment string) (interface{}, error) {
 }
 
 // write to the exchange
-func (w *GovernanceWorker) writeStatusToExchange(device_status *DeviceStatus) error {
+func (w *GovernanceWorker) writeStatusToExchange(device_status *exchange.DeviceStatus) error {
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
 
@@ -509,7 +453,7 @@ func changeInContainerStatuses(newContainers []persistence.ContainerStatus, oldC
 	return false
 }
 
-func convertToPersistenceType(workload []WorkloadStatus) []persistence.WorkloadStatus {
+func convertToPersistenceType(workload []exchange.WorkloadStatus) []persistence.WorkloadStatus {
 	persistentWls := []persistence.WorkloadStatus{}
 	for _, wlStatus := range workload {
 		newPersistentWlStatus := persistence.WorkloadStatus{AgreementId: wlStatus.AgreementId,
@@ -521,7 +465,7 @@ func convertToPersistenceType(workload []WorkloadStatus) []persistence.WorkloadS
 	return persistentWls
 }
 
-func converContainerStatusToPersistenceType(containers []ContainerStatus) []persistence.ContainerStatus {
+func converContainerStatusToPersistenceType(containers []exchange.ContainerStatus) []persistence.ContainerStatus {
 	persistentCStatuses := []persistence.ContainerStatus{}
 	for _, cStatus := range containers {
 		persistentCStatuses = append(persistentCStatuses, persistence.ContainerStatus{Name: cStatus.Name, Image: cStatus.Image, Created: cStatus.Created, State: cStatus.State})
