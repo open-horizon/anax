@@ -2,28 +2,162 @@
   "language": "es",
   "messages": [
     {
+      "id": "Error node authentication credentials do not match requesting node.",
+      "message": "Error node authentication credentials do not match requesting node.",
+      "translation": "Las credenciales de autenticación del nodo de error no coinciden con el nodo solicitante.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to retrieve node from the exchange.",
+      "message": "Unable to retrieve node from the exchange.",
+      "translation": "No se puede recuperar el nodo de Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+      "message": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+      "translation": "El grupo HA del nodo de error {HAGroup} no coincide con el nombre de grupo de la solicitud {GroupName}.",
+      "placeholders": [
+        {
+          "id": "HAGroup",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "dev.HAGroup"
+        },
+        {
+          "id": "GroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "groupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error handling node upgrade request: {Error}",
+      "message": "Error handling node upgrade request: {Error}",
+      "translation": "Error al procesar la solicitud de actualización de nodo: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+      "message": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+      "translation": "El nodo {Org}/{Node} puede empezar a ejecutar la NMP {NmpId}.",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        },
+        {
+          "id": "NmpId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nmpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+      "message": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+      "translation": "El nodo {Org}/{Node} no puede empezar a ejecutar la NMP {NmpId}.",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        },
+        {
+          "id": "NmpId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nmpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "No input found.",
       "message": "No input found.",
       "translation": "No se ha encontrado ninguna entrada.",
       "fuzzy": true
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "message": "Unauthorized. No exchange user id is supplied.",
-      "translation": "No tiene autorización. No se proporciona ningún ID de usuario de Exchange.",
+      "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+      "message": "Unauthorized. No exchange {AuthType} id is supplied.",
+      "translation": "No autorizado. No se ha proporcionado ningún ID {AuthType} de Exchange.",
+      "placeholders": [
+        {
+          "id": "AuthType",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "authType"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "message": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "No se ha podido autenticar el usuario con Exchange. {Err}",
+      "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+      "message": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+      "translation": "No se ha podido autenticar {AuthType} con Exchange. {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "AuthType",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "authType"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -128,15 +262,40 @@
       "fuzzy": true
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "message": "Wrong organization id, user id or password.",
-      "translation": "ID de organización, ID de usuario o contraseña no válidos.",
+      "id": "Wrong organization id, {Arg_1} id or password.",
+      "message": "Wrong organization id, {Arg_1} id or password.",
+      "translation": "ID de organización, ID de {Arg_1} o contraseña incorrectos.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]s",
+          "type": "",
+          "underlyingType": "string",
+          "argNum": 1
+        }
+      ],
       "fuzzy": true
     },
     {
       "id": "Exchange user {Key} is not in the correct format, should be org/username.",
       "message": "Exchange user {Key} is not in the correct format, should be org/username.",
       "translation": "El usuario de Exchange {Key} no tiene el formato correcto, debe ser org/username.",
+      "placeholders": [
+        {
+          "id": "Key",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "key"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+      "message": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+      "translation": "El dispositivo de Exchange {Key} no está en el formato correcto; tiene que ser org/nombrenodo.",
       "placeholders": [
         {
           "id": "Key",
@@ -1615,10 +1774,10 @@
     {
       "id": [
         "EL_API_NMP_STATUS_CHANGE",
-        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}."
       ],
-      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-      "translation": "El estado de gestión de nodos para {Arg_1}/{Arg_2} ha cambiado a {Arg_3}",
+      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+      "translation": "El estado de gestión de nodos de {Arg_1}/{Arg_2} ha cambiado a {Arg_3}.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -1705,9 +1864,9 @@
       "fuzzy": true
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Interfaz de línea de mandatos para el agente de Horizon. La mayoría de los submandatos utilizan la API de Agente de Horizon como ubicación predeterminada http://localhost (consulte la sección Variables de entorno para alterar temporalmente esto).\n \nDescripción de submandatos: \n agbot: listar y gestionar recursos de bot de acuerdo de Horizon.\n agreement: listar o gestionar los acuerdos activos o archivados que este nodo periférico ha realizado con un bot de acuerdo de Horizon.\n architecture: mostrar la arquitectura de esta máquina (según lo definido por Horizon y golang). \n attribute: listar o gestionar los atributos globales que están actualmente registrados en este nodo periférico de Horizon.\n deploycheck: comprobar la compatibilidad del despliegue.\n dev: herramientas de desarrollo para la creación de servicios.\n env: mostrar las variables de entorno de Horizon.\n eventlog: listar los registros de sucesos para el registro actual o todos los registros.\n Exchange: listar y gestionar recursos de Horizon Exchange.\n key: listar y gestionar claves para firmar y verificar servicios. \n metering: listar o gestionar la información de calibración (pago) para los acuerdos activos o archivados.\n mms: listar y gestionar recursos del servicio de gestión de modelos de Horizon.\n node: listar y gestionar información general sobre este nodo periférico de Horizon.\n policy: listar y gestionar la política para este nodo periférico de Horizon. \n reginput: crear una plantilla de archivo de entrada para este patrón que se puede utilizar para el mandato 'hzn register' (una vez rellenado). \n Esto examina los servicios que utiliza el patrón especificado y determina la entrada del propietario del nodo que se necesita para ellos. \n register: registrar este nodo periférico con el centro de gestión.\n service: listar o gestionar los servicios que están actualmente registrados en este nodo periférico de Horizon.\n status: visualizar el estado interno actual de Horizon para el nodo.\n unregister: anular el registro del nodo periférico de Horizon y y restablecerlo de forma que esté listo para ser registrado de nuevo.\n userinput: listar o gestionar las entradas de usuario de servicio que están actualmente registradas en este nodo periférico de Horizon.\n util: mandatos de programa de utilidad.\n version: mostrar la versión de Horizon.\n sdo: Listar y gestionar cupones y claves de propiedad de SDO de Horizon.\n\nVariables de entorno:\n  HORIZON_URL:  Alterar temporalmente el URL en el que hzn contacta con la API de Agente de Horizon.\n      Esto puede facilitar la utilización de un agente de Horizon remoto a través de un túnel ssh.\n  HZN_EXCHANGE_URL:  Alterar temporalmente el URL que los submandatos 'hzn exchange' utilizan\n      para comunicarse con el Horizon Exchange, por ejemplo\n      https://exchange.bluehorizon.network/api/v1. (De forma predeterminada hzn preguntará al\n      agente de Horizon por el URL).\n  HZN_ORG_ID:  Valor predeterminado para el distintivo 'hzn exchange -o',\n      para especificar el ID de organización'.\n  HZN_EXCHANGE_USER_AUTH:  Valor predeterminado para el distintivo 'hzn exchange -u' o 'hzn\n\t  register -u' con el formato '[org/]user:pw'. Tenga en cuenta que HZN_ORG_ID se puede establecer \n\t  si se omite org cuando se establece HZN_EXCHANGE_USER_AUTH.\n  HZN_FSS_CSSURL:  Alterar temporalmente el URL que los submandatos 'hzn mms' utilizan\n      para comunicarse con el Servicio de gestión de modelos de Horizon, por ejemplo\n      https://exchange.bluehorizon.network/css/. (De forma predeterminada hzn preguntará al\n      agente de Horizon por el URL).\n HZN_SDO_SVC_URL: Alterar temporalmente el URL que los submandatos 'hzn sdo' utilizan \n \t para comunicarse con los servicios de propietario de SDO. (De forma predeterminada hzn preguntará al\n\t\tagente de Horizon por el URL).\n\n  Todas estas variables de entorno y las mencionadas en la ayuda del mandato se pueden\n  especificar en el archivo de configuración del usuario: ~/.hzn/hzn.json con formato JSON.\n  Por ejemplo:\n  {Com____}",
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "translation": "Interfaz de línea de comandos del agente de Horizon. La mayoría de los subcomandos usan el API de the Horizon Agent en la ubicaciòn predeterminada http://localhost (consulte la sección de variables de entorno para cambiar esto).\n\nDescripción de los subcomandos:\n  agbot: Listar y gestionar los recursos de bot de Horizon.\n  agreement: Listar o gestionar los acuerdos que este nodo perimetral ha hecho con un bot de acuerdos de Horizon.\n  architecture: Mostrar la arquitectura de este máquina. \n  attribute: Listar o gestionar los atributos globales registrados actualmente en este nodo perimetral de Horizon.\n  deploycheck: Comprobar la compatibilidad del despliegue.\n  dev: Herramientas de desarrollo para la creación de servicios.\n  env: Mostrar las variables de entorno de Horizon.\n  eventlog: Listar los registros cronológicos de sucesos del registro actual o de todos los registros.\n  exchange: Listar y gestionar los recursos de Horizon Exchange.\n  key: Listar y gestionar las claves de firma y verificación de servicios. \n  mms: Listar y gestionar los recursos del servicio de gestión de modelos de Horizon.\n  nmstatus: Listar y gestionar el estado de gestión del nodo local.\n  node: Listar y gestionar la información general de este nodo perimetral de Horizon.\n  nodemanagement: Listar y gestionar los manifiestos y los archivos de agente de la gestión de nodos.\n  policy: Listar y gestionar la política de este nodo perimetral de Horizon. \n  reginput: Crear una plantilla de archivo de entrada para este patrón que se pueda usar en el comando 'hzn register'. \n  register: Registrar este nodo perimetral en el hub de gestión.\n  secretsmanager: Listar y gestionar secretos en el gestor de secretos.\n  service: Listar o gestionar los servicios registrados actualmente en este nodo perimetral de Horizon.\n  status: Mostrar el estado interno de Horizon del nodo.\n  unregister: Anular el registro y restablecer este nodo perimetral de Horizon.\n  userinput: Listar o gestionar las entradas de usuario de servicio registradas actualmente en este nodo perimetral de Horizon.\n  util: Comandos de utilidad.\n  version: Mostrar la versión de Horizon.\n  sdo: Listar y gestionar las claves y comprobantes de propiedad SDO de Horizon.\n\nVariables de entorno:\n  HORIZON_URL:  Sustituir el URL a través del cual hzn se comunica con el API del agente de Horizon.\n      Esto puede facilitar el uso de un agente remoto de Horizon a través de un túnel SSH.\n  HZN_EXCHANGE_URL:  Sustituir el URL que usan los subcomandos de 'hzn exchange'\n      para comunicarse con Horizon Exchange, por ejemplo\n      https://exchange.bluehorizon.network/api/v1. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n HZN_ORG_ID: Valor predeterminado del distintivo 'hzn exchange -o', \n para especificar el ID de organización '. \n HZN_EXCHANGE_USER_AUTH: Valor predeterminado de los distintivos 'hzn exchange -u' o 'hzn\n register -u ', con el formato' [org/]usuario:cont'. Observe que HZN_ORG_ID se puede definir\n si se omite org cuando HZN_EXCHANGE_USER_AUTH está definido. \n HZN_FSS_CSSURL: Sustituir el URL que utilizan los subcomandos 'hzn mms' \n para comunicarse con el servicio de gestión de modelos de Horizon; por ejemplo \n https://exchange.bluehorizon.network/css/. (De forma predeterminada hzn solicitará al \n agente de Horizon el URL). \n HZN_SDO_SVC_URL: Sustituir el URL que utilizan los subcomandos 'hzn sdo' \n para comunicarse con los servicios de propietario de SDO. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n \n Todas estas variables de entorno y las mencionadas en la ayuda del comando se pueden \n especificar en el archivo de configuración del usuario: ~/.hzn/hzn.json en formato JSON. \n Por ejemplo: \n {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -1985,21 +2144,27 @@
       "fuzzy": true
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "message": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "El ID nodo de Horizon Exchange. Mutuamente excluyente con --node-pol y --node-ui. Si se omite, se utilizará el ID de nodo con el que está registrado el dispositivo actual. Si no se ha añadido como prefijo el ID de organización, se añadirá automáticamente el valor -o.",
+      "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "message": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "ID del nodo de Horizon Exchange. Es mutuamente excluyente con --ha-group, --node-pol y --node-ui. Si se omite, se utilizará el ID de nodo con el que esté registrado el dispositivo actual. Este distintivo se puede repetir para especificar más de un nodo. Si no se prefija un ID de nodo con el ID de organización, se prefijará automáticamente el valor -o.",
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-      "translation": "El nombre de archivo de entrada JSON que contiene la política de nodo. Mutuamente excluyente con -n, -p y -P.",
+      "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "message": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "translation": "Nombre de un grupo HA. Es mutuamente excluyente con -n, --node-pol y --node-ui.",
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-      "message": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-      "translation": "El nombre de archivo de entrada JSON que contiene la entrada de usuario de nodo. Mutuamente excluyente con un -n.",
+      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
+      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
+      "translation": "El nombre del archivo de entrada JSON que contiene la política de nodo. Es mutuamente excluyente con -n, --ha-group, -p y -P.",
+      "fuzzy": true
+    },
+    {
+      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
+      "message": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
+      "translation": "Nombre del archivo de entrada JSON que contiene la entrada de usuario de nodo. Es mutuamente excluyente con -n, --ha-group.",
       "fuzzy": true
     },
     {
@@ -2051,15 +2216,21 @@
       "fuzzy": true
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "message": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "El ID nodo de Horizon Exchange. Mutuamente excluyente con --node-pol. Si se omite, se utilizará el ID de nodo con el que está registrado el dispositivo actual. Si no se ha añadido como prefijo el ID de organización, se añadirá automáticamente el valor -o.",
+      "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "message": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "ID del nodo de Horizon Exchange. Es mutuamente excluyente con --ha-group y --node-pol. Si se omite, se utilizará el ID de nodo con el que esté registrado el dispositivo actual. Este distintivo se puede repetir para especificar más de un nodo. Si no se prefija un ID de nodo con el ID de organización, se prefijará automáticamente el valor -o.",
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-      "translation": "El nombre de archivo de entrada JSON que contiene la política de nodo. Mutuamente excluyente con un -n.",
+      "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
+      "message": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
+      "translation": "Nombre de un grupo HA. Es mutuamente excluyente con -n y --node-pol.",
+      "fuzzy": true
+    },
+    {
+      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
+      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
+      "translation": "El nombre del archivo de entrada JSON que contiene la política de nodo. Es mutuamente excluyente con -n, --ha-group.",
       "fuzzy": true
     },
     {
@@ -2120,6 +2291,12 @@
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "message": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "translation": "El ID nodo de Horizon Exchange. Mutuamente excluyente con --node-ui. Si se omite, se utilizará el ID de nodo con el que está registrado el dispositivo actual. Si no se ha añadido como prefijo el ID de organización, se añadirá automáticamente el valor -o.",
+      "fuzzy": true
+    },
+    {
+      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
+      "message": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
+      "translation": "El nombre de archivo de entrada JSON que contiene la entrada de usuario de nodo. Mutuamente excluyente con un -n.",
       "fuzzy": true
     },
     {
@@ -2763,6 +2940,12 @@
       "fuzzy": true
     },
     {
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "translation": "El ID de nodo y la señal de Horizon Exchange que se van a utilizar como credenciales para consultar y modificar los recursos de nodo si no se especifica el distintivo -u. Se utilizará HZN_EXCHANGE_NODE_AUTH como valor predeterminado para -n. Si no se ha añadido como prefijo la organización del nodo, se añadirá automáticamente el valor -o.",
+      "fuzzy": true
+    },
+    {
       "id": "Display detailed output about the node management policies.",
       "message": "Display detailed output about the node management policies.",
       "translation": "Visualizar la salida detallada sobre las políticas de gestión de nodos.",
@@ -2847,6 +3030,42 @@
       "fuzzy": true
     },
     {
+      "id": "Enable a node management policy in the Horizon Exchange.",
+      "message": "Enable a node management policy in the Horizon Exchange.",
+      "translation": "Habilitar una política de gestión de nodos en Horizon Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to enable.",
+      "message": "The name of the node management policy to enable.",
+      "translation": "Nombre de la política de gestión de nodos que se va a habilitar.",
+      "fuzzy": true
+    },
+    {
+      "id": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
+      "message": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
+      "translation": "Hora de inicio de la política de gestión de nodos habilitada. La hora de inicio tiene que una indicación de fecha y hora RFC3339 o bien \"now\" (ahora).",
+      "fuzzy": true
+    },
+    {
+      "id": "The start window of the enabled node management policy.",
+      "message": "The start window of the enabled node management policy.",
+      "translation": "Ventana de inicio de la política de gestión de nodos habilitada.",
+      "fuzzy": true
+    },
+    {
+      "id": "Disable a node management policy in the Horizon Exchange.",
+      "message": "Disable a node management policy in the Horizon Exchange.",
+      "translation": "Inhabilitar una política de gestión de nodos en Horizon Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to disable.",
+      "message": "The name of the node management policy to disable.",
+      "translation": "Nombre de la política de gestión de nodos que se va a inhabilitar.",
+      "fuzzy": true
+    },
+    {
       "id": "List and manage nodes in the Horizon Exchange",
       "message": "List and manage nodes in the Horizon Exchange",
       "translation": "Listar y gestionar nodos en Horizon Exchange",
@@ -2856,12 +3075,6 @@
       "id": "Add or replace the node policy in the Horizon Exchange.",
       "message": "Add or replace the node policy in the Horizon Exchange.",
       "translation": "Añadir o sustituir la política de nodo en Horizon Exchange.",
-      "fuzzy": true
-    },
-    {
-      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "El ID de nodo y la señal de Horizon Exchange que se van a utilizar como credenciales para consultar y modificar los recursos de nodo si no se especifica el distintivo -u. Se utilizará HZN_EXCHANGE_NODE_AUTH como valor predeterminado para -n. Si no se ha añadido como prefijo la organización del nodo, se añadirá automáticamente el valor -o.",
       "fuzzy": true
     },
     {
@@ -3036,6 +3249,24 @@
       "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
       "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
       "translation": "Filtre la salida para incluir solo esta política de gestión de nodos. Utilice el distintivo --long para visualizar el contenido completo de un único objeto de estado de política de gestión de nodos.",
+      "fuzzy": true
+    },
+    {
+      "id": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "message": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "translation": "Vuelva a evaluar la política de gestión de nodos (NMP) en este nodo. Ejecute este comando para reintentar una NMP cuando la actualización haya fallado y se haya solucionado el problema. No ejecute este comando cuando el nodo se esté actualizando.",
+      "fuzzy": true
+    },
+    {
+      "id": "Re-evaluate node management policy for this node.",
+      "message": "Re-evaluate node management policy for this node.",
+      "translation": "Reevaluar la política de gestión de este nodo.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
+      "message": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
+      "translation": "Nombre de la política de gestión de nodos que se va a reevaluar. Si se omite, se reevaluarán todas las políticas de gestión de este nodo.",
       "fuzzy": true
     },
     {
@@ -3709,6 +3940,102 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage high availability (HA) groups in the Horizon Exchange",
+      "message": "List and manage high availability (HA) groups in the Horizon Exchange",
+      "translation": "Listar y gestionar grupos de alta disponibilidad (HA) en Horizon Exchange",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the HA group resources from the Horizon Exchange.",
+      "message": "Display the HA group resources from the Horizon Exchange.",
+      "translation": "Visualizar los recursos de grupo HA de Horizon Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "List just this one HA group.",
+      "message": "List just this one HA group.",
+      "translation": "Listar solo este grupo HA.",
+      "fuzzy": true
+    },
+    {
+      "id": "When listing all of the HA groups, show the entire resource of each group, instead of just the name.",
+      "message": "When listing all of the HA groups, show the entire resource of each group, instead of just the name.",
+      "translation": "Al listar todos los grupos HA, mostrar el recurso completo de cada grupo y no so solo el nombre.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display an empty HA group template that can be filled in.",
+      "message": "Display an empty HA group template that can be filled in.",
+      "translation": "Visualizar una plantilla de grupo HA vacía que se puede rellenar.",
+      "fuzzy": true
+    },
+    {
+      "id": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
+      "message": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
+      "translation": "Añadir o sustituir un grupo HA en Horizon Exchange. Utilice 'hzn exchange hagroup new' para una plantilla de grupo HA vacía.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
+      "message": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
+      "translation": "Nombre del grupo HA que se va a añadir o sobrescribir. Si se omite, se utilizará el atributo de nombre en el archivo de entrada.",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
+      "message": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "Ruta del archivo JSON que contiene los metadatos necesarios para crear/actualizar el grupo HA en Horizon Exchange. Especifique -f- para leer de stdin.",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove the HA group in the Horizon Exchange.",
+      "message": "Remove the HA group in the Horizon Exchange.",
+      "translation": "Eliminar el grupo HA en Horizon Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group to be removed.",
+      "message": "The name of the HA group to be removed.",
+      "translation": "Nombre del grupo HA que se va a eliminar.",
+      "fuzzy": true
+    },
+    {
+      "id": "Manage HA group members in the Horizon Exchange",
+      "message": "Manage HA group members in the Horizon Exchange",
+      "translation": "Gestionar miembros de grupo HA en Horizon Exchange",
+      "fuzzy": true
+    },
+    {
+      "id": "Add nodes to the HA group in the Horizon Exchange.",
+      "message": "Add nodes to the HA group in the Horizon Exchange.",
+      "translation": "Añadir nodos al grupo HA en Horizon Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group.",
+      "message": "The name of the HA group.",
+      "translation": "Nombre del grupo HA.",
+      "fuzzy": true
+    },
+    {
+      "id": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
+      "message": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
+      "translation": "Nodo que se va a añadir al grupo HA. Este distintivo se puede repetir para especificar nodos distintos.",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove nodes from the HA group in the Horizon Exchange.",
+      "message": "Remove nodes from the HA group in the Horizon Exchange.",
+      "translation": "Eliminar nodos del grupo HA en Horizon Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
+      "message": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
+      "translation": "Nodo que se va a eliminar del grupo HA. Este distintivo se puede repetir para especificar nodos distintos.",
+      "fuzzy": true
+    },
+    {
       "id": "Display the status of the Horizon Exchange.",
       "message": "Display the status of the Horizon Exchange.",
       "translation": "Visualizar el estado de Horizon Exchange.",
@@ -4207,6 +4534,12 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage manifests and agent files for node management.",
+      "message": "List and manage manifests and agent files for node management.",
+      "translation": "Listar y gestionar manifiestos y archivos de agente para la gestión de nodos.",
+      "fuzzy": true
+    },
+    {
       "id": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
       "message": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
       "translation": "Credenciales de usuario de Horizon para consultar y crear recursos de Gestión de nodos. Si no se especifica, se utilizará HZN_EXCHANGE_USER_AUTH como valor predeterminado. Si no se le antepone la organización del usuario, automáticamente se antepondrá el valor -o.",
@@ -4240,6 +4573,30 @@
       "id": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
       "translation": "La vía de acceso de un archivo JSON que contiene los datos de manifiesto. Especifique -f- para leer de stdin.",
+      "fuzzy": true
+    },
+    {
+      "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+      "message": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+      "translation": "Algoritmo de hash que se usa para hacer un hash de datos del manifiesto antes de firmarlo, garantizando así la integridad de los datos durante la carga y descarga. Los algoritmos de hash soportados son SHA1 o SHA256; el valor predeterminado es SHA1. Se excluye mutuamente con el distintivo --noIntegrity",
+      "fuzzy": true
+    },
+    {
+      "id": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+      "message": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+      "translation": "Hash de los datos del manifiesto que se cargan o descargan. Utilice este distintivo si desea proporcionar el hash en lugar de permitir que el mandato calcule automáticamente el hash. El hash se tiene que generar con los algoritmos SHA1 o SHA256. Si el hash se ha generado con SHA256, hay que especificar el distintivo -a. Este distintivo se excluye mutuamente con --noIntegrity.",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+      "message": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+      "translation": "Ruta del archivo de clave privada que se va a usar para firmar el manifiesto. Se almacenará la correspondiente clave pública en el MMS para garantizar la integridad del manifiesto. Si no se especifica, se utilizará la variable de entorno HZN_PRIVATE_KEY_FILE para encontrar una clave privada. Si no se establece, se utilizará ~/.hzn/keys/service.private.key. Si no existe, solo se genera un par de claves RSA para esta operación de publicación y, a continuación, se descarta la clave privada.",
+      "fuzzy": true
+    },
+    {
+      "id": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
+      "message": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
+      "translation": "El comando de publicación no comprobará la integridad de los datos de manifiesto cargados. Mutuamente excluyente con --hashAlgo y --hash",
       "fuzzy": true
     },
     {
@@ -4505,6 +4862,12 @@
       "fuzzy": true
     },
     {
+      "id": "The name of the HA group that this node will be added to.",
+      "message": "The name of the HA group that this node will be added to.",
+      "translation": "Nombre del grupo HA al que se va a añadir este nodo.",
+      "fuzzy": true
+    },
+    {
       "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
       "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
       "translation": "Espere a que el servicio mencionado se empiece a ejecutar en este nodo. Al registrarse con un patrón, utilice '*' para vigilar todos los servicios del patrón. Al registrarse con una política, '*' no es un valor válido para -s. Este distintivo no está soportado en nodos de clúster periférico.",
@@ -4724,6 +5087,42 @@
       "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
       "message": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
       "translation": "La vía de acceso de archivo al archivo json con el objeto de entrada de usuario actualizado. Especifique -f- para leer de la entrada estándar.",
+      "fuzzy": true
+    },
+    {
+      "id": "List and manage node management status for the local node.",
+      "message": "List and manage node management status for the local node.",
+      "translation": "Listar y gestionar el estado de gestión del nodo local.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the node managment status for the local node.",
+      "message": "Display the node managment status for the local node.",
+      "translation": "Visualizar el estado de gestión del nodo local.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
+      "message": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
+      "translation": "Nombre de la política de gestión de nodos. Si se omite, se mostrará el estado de todas las políticas de gestión de este nodo.",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the entire contents of each node management status object.",
+      "message": "Show the entire contents of each node management status object.",
+      "translation": "Mostrar todo el contenido de cada objeto de estado de gestión de nodos.",
+      "fuzzy": true
+    },
+    {
+      "id": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "message": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "translation": "Vuelva a evaluar la política de gestión de nodos (NMP). Ejecute este comando para reintentar una NMP cuando la actualización haya fallado y se haya solucionado el problema. No ejecute este comando cuando el nodo se esté actualizando.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
+      "message": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
+      "translation": "Nombre de la política de gestión de nodos. Si se omite, se reevaluarán todas las políticas de gestión de este nodo.",
       "fuzzy": true
     },
     {
@@ -5030,6 +5429,18 @@
       "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
       "message": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
       "translation": "El nombre de patrón de despliegue a utilizar para el dispositivo periférico asociado a este cupón. Si el patrón es de una organización distinta que el nodo, utilice el formato 'otra_org/patrón'. Se excluye mutuamente con -e y --policy.",
+      "fuzzy": true
+    },
+    {
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
+      "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
+      "translation": "Se desplegará un archivo JSON que define o sustituye las variables de entrada de usuario que necesitan los servicios que se van a desplegar en el dispositivo perimetral asociado a este comprobante. Utilice 'hzn userinput new' para ver el formato.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
+      "message": "The name of the HA group that the edge device associated with this voucher will be added to.",
+      "translation": "Nombre del grupo HA al que se se va a añadir el dispositivo perimetral asociado a este comprobante.",
       "fuzzy": true
     },
     {
@@ -7447,6 +7858,12 @@
       "fuzzy": true
     },
     {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+      "message": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+      "translation": "La autenticación de Exchange tiene que especificarse con uno de los siguientes: el distintivo -u o HZN_EXCHANGE_USER_AUTH",
+      "fuzzy": true
+    },
+    {
       "id": "Verifying public key file ...",
       "message": "Verifying public key file ...",
       "translation": "Verificando el archivo de clave pública...",
@@ -7952,6 +8369,22 @@
       "fuzzy": true
     },
     {
+      "id": "Problem validating org name: {Err}",
+      "message": "Problem validating org name: {Err}",
+      "translation": "Problema al validar el nombre de la organización: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error creating StdoutPipe for command: {Err}",
       "message": "Error creating StdoutPipe for command: {Err}",
       "translation": "Se ha producido un error al crear StdoutPipe para el mandato: {Err}",
@@ -8168,6 +8601,40 @@
       "fuzzy": true
     },
     {
+      "id": "-n and --ha-group are mutually exclusive.",
+      "message": "-n and --ha-group are mutually exclusive.",
+      "translation": "-n y --ha-group son mutuamente excluyentes.",
+      "fuzzy": true
+    },
+    {
+      "id": "--ha-group and --node-pol are mutually exclusive.",
+      "message": "--ha-group and --node-pol are mutually exclusive.",
+      "translation": "-- ha-group y --node-pol son mutuamente excluyentes.",
+      "fuzzy": true
+    },
+    {
+      "id": "--ha-group and --node-ui are mutually exclusive.",
+      "message": "--ha-group and --node-ui are mutually exclusive.",
+      "translation": "--ha-group y --node-ui son mutuamente excluyentes.",
+      "fuzzy": true
+    },
+    {
+      "id": "The HA group {HaGroupName} does not have members.",
+      "message": "The HA group {HaGroupName} does not have members.",
+      "translation": "El grupo HA {HaGroupName} no tiene miembros.",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "-n and --node-pol are mutually exclusive.",
       "message": "-n and --node-pol are mutually exclusive.",
       "translation": "-n y --node-pol son mutuamente excluyentes.",
@@ -8189,28 +8656,6 @@
       "id": "-p and -P are mutually exclusive.",
       "message": "-p and -P are mutually exclusive.",
       "translation": "-p y -P son mutuamente excluyentes.",
-      "fuzzy": true
-    },
-    {
-      "id": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-      "message": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-      "translation": "Especifique la credencial de Exchange con -u para consultar el nodo, la política de despliegue y la política de servicio.",
-      "fuzzy": true
-    },
-    {
-      "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
-      "message": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
-      "translation": "Especifique la organización con -o para las credenciales de Exchange: {CredToUse}.",
-      "placeholders": [
-        {
-          "id": "CredToUse",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "*credToUse"
-        }
-      ],
       "fuzzy": true
     },
     {
@@ -8356,6 +8801,30 @@
       "fuzzy": true
     },
     {
+      "id": "HA group {HaGroupName} does not exist in org {HaGroupOrg}.",
+      "message": "HA group {HaGroupName} does not exist in org {HaGroupOrg}.",
+      "translation": "El grupo HA {HaGroupName} no existe en la organización {HaGroupOrg}.",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to unmarshal json input file {FilePath}: {Err}",
       "message": "failed to unmarshal json input file {FilePath}: {Err}",
       "translation": "No se ha podido desordenar el archivo de entrada json {FilePath}: {Err}",
@@ -8411,6 +8880,22 @@
       "id": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
       "message": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
       "translation": "Especifique la credencial de Exchange con -u para consultar el nodo, la política de despliegue, el servicio y la política de servicio.",
+      "fuzzy": true
+    },
+    {
+      "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
+      "message": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
+      "translation": "Especifique la organización con -o para las credenciales de Exchange: {CredToUse}.",
+      "placeholders": [
+        {
+          "id": "CredToUse",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "credToUse"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -13013,6 +13498,492 @@
       "fuzzy": true
     },
     {
+      "id": "HA group {HaGroupName} not found in org {HaGroupOrg}",
+      "message": "HA group {HaGroupName} not found in org {HaGroupOrg}",
+      "translation": "El grupo HA {HaGroupName} no se ha encontrado en la organización {HaGroupOrg}",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'hzn exchange hagroup list' output: {Err}",
+      "message": "failed to marshal 'hzn exchange hagroup list' output: {Err}",
+      "translation": "No se ha podido serializar la salida de 'hzn exchange hagroup list': {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Optional. The name of the HA group.",
+      "message": "Optional. The name of the HA group.",
+      "translation": "Opcional. Nombre del grupo HA.",
+      "fuzzy": true
+    },
+    {
+      "id": "A description of the HA group.",
+      "message": "A description of the HA group.",
+      "translation": "Descripción del grupo HA.",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of node names that are members of this group.",
+      "message": "A list of node names that are members of this group.",
+      "translation": "Lista de los nombres de nodo que son miembros de este grupo.",
+      "fuzzy": true
+    },
+    {
+      "id": "HA group name is not specified.",
+      "message": "HA group name is not specified.",
+      "translation": "No se ha especificado el nombre del grupo HA.",
+      "fuzzy": true
+    },
+    {
+      "id": "HA group description cannot be empty.",
+      "message": "HA group description cannot be empty.",
+      "translation": "La descripción del grupo HA no puede estar vacía.",
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
+      "message": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
+      "translation": "Grupo HA {HaGroupOrg}/{HaGroupName} actualizado en Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName}: {Msg}",
+      "message": "Cannot create HA group {HaGroupOrg}/{HaGroupName}: {Msg}",
+      "translation": "No se puede crear el grupo HA {HaGroupOrg}/{HaGroupName}: {Msg}",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "Msg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
+      "message": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
+      "translation": "Se ha añadido el grupo HA {HaGroupOrg}/{HaGroupName} en Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
+      "translation": "¿Seguro que desea eliminar el grupo HA {HaGroupName} de la organización {HaGroupOrg} de Horizon Exchange?",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
+      "message": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
+      "translation": "El grupo HA {HaGroupName} no se ha encontrado en la organización {HaGroupOrg}",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupOrg}/{HaGroupName} removed from the Horizon Exchange.",
+      "message": "HA group {HaGroupOrg}/{HaGroupName} removed from the Horizon Exchange.",
+      "translation": "El grupo HA {HaGroupOrg}/{HaGroupName} se ha eliminado de Horizon Exchange.",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
+      "message": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
+      "translation": "la organización del nodo es diferente de la organización del grupo {HaGroupOrg} en el nodo '{NodeOrg}/{NodeName}'",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "node '{NodeName}' not found in org {NodeOrg}",
+      "message": "node '{NodeName}' not found in org {NodeOrg}",
+      "translation": "no se ha encontrado el nodo '{NodeName}' en la organización {NodeOrg}",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
+      "message": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
+      "translation": "El nodo {NodeName} ya está en el grupo HA {HaGroupOrg}/{HaGroupName}. Omitiendo el nodo.",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+      "message": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+      "translation": "Se han añadido los nodos siguientes al grupo HA {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "JoinaddedNodes_",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "strings.Join(addedNodes, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+      "message": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+      "translation": "Aviso: Los nodos siguientes no se pueden añadir al grupo porque están en grupos diferentes: \"{JoinfailedNodes_}\"",
+      "placeholders": [
+        {
+          "id": "JoinfailedNodes_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(failedNodes, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
+      "message": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
+      "translation": "¿Seguro que desea eliminar los nodos {NodeNames} del grupo HA {HaGroupName} de la organización {HaGroupOrg} en Horizon Exchange?",
+      "placeholders": [
+        {
+          "id": "NodeNames",
+          "string": "%[1]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "nodeNames"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} is not in HA group {HaGroupOrg}/{HaGroupName}.",
+      "message": "Node {NodeName} is not in HA group {HaGroupOrg}/{HaGroupName}.",
+      "translation": "El nodo {NodeName} no está en el grupo HA {HaGroupOrg}/{HaGroupName}.",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "message": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "translation": "Los nodos \"{JoinnodesToRemove_}\" se han eliminado del grupo HA {HaGroupOrg}/{HaGroupName} en Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "JoinnodesToRemove_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(nodesToRemove, \",\")"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "message": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "translation": "El nodo \"{JoinnodesToRemove_}\" se ha eliminado del grupo HA {HaGroupOrg}/{HaGroupName} en Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "JoinnodesToRemove_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(nodesToRemove, \",\")"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "NMP {NmpName} not found in org {NmpOrg}",
       "message": "NMP {NmpName} not found in org {NmpOrg}",
       "translation": "NMP {NmpName} no se ha encontrado en la organización {NmpOrg}",
@@ -13059,27 +14030,21 @@
       "fuzzy": true
     },
     {
-      "id": "(Optional) A much longer description of the policy.",
-      "message": "(Optional) A much longer description of the policy.",
-      "translation": "(Opcional) Una descripción mucho más detallada de la política.",
+      "id": "A much longer description of the policy.",
+      "message": "A much longer description of the policy.",
+      "translation": "Descripción mucho más larga de la política.",
       "fuzzy": true
     },
     {
-      "id": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
-      "message": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
-      "translation": "(Opcional) Una lista de expresiones de restricción con la forma <property name> <operator> <property value>,",
+      "id": "A list of policy properties that describe this policy.",
+      "message": "A list of policy properties that describe this policy.",
+      "translation": "Lista de propiedades que describen esta política.",
       "fuzzy": true
     },
     {
-      "id": "(Optional) A list of policy properties that describe this policy.",
-      "message": "(Optional) A list of policy properties that describe this policy.",
-      "translation": "(Opcional) Una lista de propiedades de política que describen esta política.",
-      "fuzzy": true
-    },
-    {
-      "id": "(Optional) This policy applies to nodes using one of these patterns.",
-      "message": "(Optional) This policy applies to nodes using one of these patterns.",
-      "translation": "(Opcional) Esta política se aplica a los nodos que utilizan uno de estos patrones.",
+      "id": "This policy applies to nodes using one of these patterns.",
+      "message": "This policy applies to nodes using one of these patterns.",
+      "translation": "Esta política se aplica a los nodos que utilizan uno de estos patrones.",
       "fuzzy": true
     },
     {
@@ -13101,9 +14066,9 @@
       "fuzzy": true
     },
     {
-      "id": "(Optional) Assertions on how the agent should update itself.",
-      "message": "(Optional) Assertions on how the agent should update itself.",
-      "translation": "(Opcional) Las aserciones sobre cómo debe actualizarse el agente.",
+      "id": "Assertions on how the agent should update itself.",
+      "message": "Assertions on how the agent should update itself.",
+      "translation": "Aserciones sobre cómo tiene que actualizarse el agente a si mismo.",
       "fuzzy": true
     },
     {
@@ -13146,6 +14111,36 @@
       "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
       "message": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
       "translation": "La política de gestión de nodos no tiene restricciones que puedan dar lugar a que la política de gestión se despliegue en todos los nodos. Especifique --no-constraints para confirmar que esto es aceptable.",
+      "fuzzy": true
+    },
+    {
+      "id": "An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy.",
+      "message": "An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy.",
+      "translation": "Se ha definido una AgentAutoUpgradePolicy, pero no un manifiesto. Especifique un manifiesto que esté almacenado en la CSS antes de intentar añadir una NMP con una AgentAutoUpgradePolicy.",
+      "fuzzy": true
+    },
+    {
+      "id": "An AgentAutoUpgradePolicy was defined with manifest '{FullManifest}' which does not exist in org {ManOrg}.",
+      "message": "An AgentAutoUpgradePolicy was defined with manifest '{FullManifest}' which does not exist in org {ManOrg}.",
+      "translation": "Se ha definido una AgentAutoUpgradePolicy con el manifiesto '{FullManifest}', que no existe en la organización {ManOrg}.",
+      "placeholders": [
+        {
+          "id": "FullManifest",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fullManifest"
+        },
+        {
+          "id": "ManOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manOrg"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -13381,9 +14376,9 @@
       "fuzzy": true
     },
     {
-      "id": "failed to marshal 'exchange node list' output: {Err}",
-      "message": "failed to marshal 'exchange node list' output: {Err}",
-      "translation": "No se ha podido ordenar la salida de 'exchange node list': {Err}",
+      "id": "Failed to parse start time: {Err}. The start time must be in RFC3339 format or set to \"now\".",
+      "message": "Failed to parse start time: {Err}. The start time must be in RFC3339 format or set to \"now\".",
+      "translation": "No se ha podido analizar la hora de inicio: {Err}. La hora de inicio tiene que estar en formato RFC3339 o establecerse a \"now\" (ahora).",
       "placeholders": [
         {
           "id": "Err",
@@ -13397,25 +14392,145 @@
       "fuzzy": true
     },
     {
-      "id": "node '{Node}' not found in org {NodeOrg}",
-      "message": "node '{Node}' not found in org {NodeOrg}",
-      "translation": "No se ha encontrado el nodo '{Node}' en la organización {NodeOrg}",
+      "id": "Failed to parse start window: {Err}. The start window must be Integer.",
+      "message": "Failed to parse start window: {Err}. The start window must be Integer.",
+      "translation": "No se ha podido analizar la ventana de inicio: {Err}. La ventana de inicio tiene que ser un entero.",
       "placeholders": [
         {
-          "id": "Node",
-          "string": "%[1]s",
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
+      "translation": "La política de gestión de nodos {NmpFullName} ya está habilitada en Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "node"
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
+      "translation": "Política de gestión de nodos {NmpFullName} habilitada en Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot enable node management policy {NmpFullName}: {Msg}",
+      "message": "Cannot enable node management policy {NmpFullName}: {Msg}",
+      "translation": "No se puede habilitar la política de gestión de nodos {NmpFullName}: {Msg}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
         },
         {
-          "id": "NodeOrg",
-          "string": "%[2]s",
+          "id": "Msg",
+          "string": "%[2]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
-          "expr": "nodeOrg"
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
+      "translation": "La política de gestión de nodos {NmpFullName} ya está inhabilitada en Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
+      "translation": "Política de gestión de nodos {NmpFullName} inhabilitada en Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot disable node management policy {NmpFullName}: {Msg}",
+      "message": "Cannot disable node management policy {NmpFullName}: {Msg}",
+      "translation": "No se puede inhabilitar la política de gestión de nodos {NmpFullName}: {Msg}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        },
+        {
+          "id": "Msg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'exchange node list' output: {Err}",
+      "message": "failed to marshal 'exchange node list' output: {Err}",
+      "translation": "No se ha podido ordenar la salida de 'exchange node list': {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -13749,7 +14864,7 @@
           "id": "Device",
           "string": "%[1]s",
           "type": "github.com/open-horizon/anax/exchange.Device",
-          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
+          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; HAGroup string \"json:\\\"ha_group\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "v"
         },
@@ -14329,6 +15444,70 @@
       "fuzzy": true
     },
     {
+      "id": "No management status found for node {NodeName} in org {NodeOrg}",
+      "message": "No management status found for node {NodeName} in org {NodeOrg}",
+      "translation": "No se ha encontrado ningún estado de gestión para el nodo {NodeName} en la organización {NodeOrg}",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management status for {NmpStatusNameNoOrg} is reset.",
+      "message": "Node management status for {NmpStatusNameNoOrg} is reset.",
+      "translation": "Se ha restablecido el estado de gestión de nodos de {NmpStatusNameNoOrg}.",
+      "placeholders": [
+        {
+          "id": "NmpStatusNameNoOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpStatusNameNoOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The the Horizon agent for node {NodeOrg}/{NodeName} will re-evaluate the management policies.",
+      "message": "The the Horizon agent for node {NodeOrg}/{NodeName} will re-evaluate the management policies.",
+      "translation": "El agente de Horizon del nodo {NodeOrg}/{NodeName} reevaluará las políticas de gestión.",
+      "placeholders": [
+        {
+          "id": "NodeOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeOrg"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Verifying userInputs with the node pattern {Pattern}.",
       "message": "Verifying userInputs with the node pattern {Pattern}.",
       "translation": "Verificando userInputs con el patrón de nodo {Pattern}.",
@@ -14544,6 +15723,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid organization. Organization cannot contain: [ _ , <space> ' ?]",
+      "message": "Invalid organization. Organization cannot contain: [ _ , <space> ' ?]",
+      "translation": "Organización no válida. La organización no puede contener: [ _ , <space> ' ?]",
       "fuzzy": true
     },
     {
@@ -15905,15 +17090,15 @@
       "fuzzy": true
     },
     {
-      "id": "The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch",
-      "message": "The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch",
-      "translation": "Se alterará temporalmente el valor de propiedad siguiente: service.url, service.name, service.org, service.version, service.arch",
+      "id": "The following property values will be overridden: service.url, service.name, service.org, service.version, service.arch",
+      "message": "The following property values will be overridden: service.url, service.name, service.org, service.version, service.arch",
+      "translation": "Se sustituirán los siguientes valores de propiedad: service.url, service.name, service.org, service.version, service.arch",
       "fuzzy": true
     },
     {
-      "id": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Actualizando la política de servicio y volviendo a evaluar todos los acuerdos según esta política de servicio. Los acuerdos existentes se cancelarán y se volverán a negociar.",
+      "id": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+      "message": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "Actualizando la política de servicio y reevaluando todos los acuerdos basados en esta política de servicio. Los acuerdos existentes podrían cancelarse y renegociarse.",
       "fuzzy": true
     },
     {
@@ -17147,6 +18332,60 @@
       "fuzzy": true
     },
     {
+      "id": "failed to marshal 'hzn nmp status' output: {Err}",
+      "message": "failed to marshal 'hzn nmp status' output: {Err}",
+      "translation": "no se ha podido serializar la salida de 'hzn nmp status': {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The following node management policy will be re-evaluated: {NmpName}.",
+      "message": "The following node management policy will be re-evaluated: {NmpName}.",
+      "translation": "Se reevaluará la siguiente política de gestión de nodos: {NmpName}.",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No node management policy for this node.",
+      "message": "No node management policy for this node.",
+      "translation": "No hay ninguna política de gestión para este nodo.",
+      "fuzzy": true
+    },
+    {
+      "id": "The following node management policies will be re-evaluated: {JoinallIDs_}.",
+      "message": "The following node management policies will be re-evaluated: {JoinallIDs_}.",
+      "translation": "Se reevaluarán las siguientes políticas de gestión de nodos: {JoinallIDs_}.",
+      "placeholders": [
+        {
+          "id": "JoinallIDs_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(allIDs, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Failed to get proper response from Horizon agent",
       "message": "Failed to get proper response from Horizon agent",
       "translation": "No se ha podido obtener la respuesta adecuada del agente de Horizon",
@@ -17370,6 +18609,70 @@
       "id": "must specify --type and --id with --long",
       "message": "must specify --type and --id with --long",
       "translation": "debe especificar --type e --id con --long",
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot specify --skipDigitalSig with --hash",
+      "message": "Cannot specify --skipDigitalSig with --hash",
+      "translation": "No se puede especificar --skipDigitalSig con --hash",
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot specify --skipDigitalSig with --hashAlgo",
+      "message": "Cannot specify --skipDigitalSig with --hashAlgo",
+      "translation": "No se puede especificar --skipDigitalSig con --hashAlgo",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
+      "message": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
+      "translation": "Valor no válido para --hashAlgo, utilice SHA1 o SHA256",
+      "fuzzy": true
+    },
+    {
+      "id": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
+      "message": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
+      "translation": "Se firmará digitalmente con {HashAlgorithm} para preservar la integridad de los datos.",
+      "placeholders": [
+        {
+          "id": "HashAlgorithm",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "hashAlgorithm"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
+      "message": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
+      "translation": "No se ha podido firmar digitalmente el manifiesto {ManifestFile}. Error: {Err}",
+      "placeholders": [
+        {
+          "id": "ManifestFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manifestFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Digital sign finished.",
+      "message": "Digital sign finished.",
+      "translation": "Firma digital terminada.",
       "fuzzy": true
     },
     {
@@ -18367,6 +19670,78 @@
       "fuzzy": true
     },
     {
+      "id": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
+      "message": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
+      "translation": "No se puede proceder con el grupo HA especificado {HaGroupName} porque el nodo está en un grupo HA diferente {ExistingHagrName}.",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "ExistingHagrName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "existingHagrName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node is already in the HA group '{HaGroupName}'.",
+      "message": "The node is already in the HA group '{HaGroupName}'.",
+      "translation": "El nodo ya está en el grupo HA '{HaGroupName}'.",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
+      "message": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
+      "translation": "El nodo {Org}/{NodeId} está en el grupo HA {HaGroupName}.",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeId"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Updating the node policy...",
       "message": "Updating the node policy...",
       "translation": "Actualizando la política de nodo...",
@@ -18486,6 +19861,142 @@
       "id": "Horizon node is registered. Workload services should begin executing shortly.",
       "message": "Horizon node is registered. Workload services should begin executing shortly.",
       "translation": "El nodo de Horizon está registrado. Los servicios de carga de trabajo deberían empezar a ejecutares en breve.",
+      "fuzzy": true
+    },
+    {
+      "id": "Please specify the user credentials with -u flag in order to create or update the HA group {Org}/{HaGroupName}.",
+      "message": "Please specify the user credentials with -u flag in order to create or update the HA group {Org}/{HaGroupName}.",
+      "translation": "Especifique las credenciales de usuario con el distintivo -u para crear o actualizar el grupo HA {Org}/{HaGroupName}.",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Creating HA group {Org}/{HaGroupName} ...",
+      "message": "Creating HA group {Org}/{HaGroupName} ...",
+      "translation": "Creando el grupo HA {Org}/{HaGroupName}...",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {Org}/{HaGroupName} created with node {NodeId} as the member.",
+      "message": "HA group {Org}/{HaGroupName} created with node {NodeId} as the member.",
+      "translation": "Se ha creado el grupo HA {Org}/{HaGroupName} con el nodo {NodeId} como miembro.",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Adding node {NodeId} to HA group {Org}/{HaGroupName} ...",
+      "message": "Adding node {NodeId} to HA group {Org}/{HaGroupName} ...",
+      "translation": "Añadiendo nodo {NodeId} al grupo HA {Org}/{HaGroupName}...",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeId} is added to HA group {HaGroupName}.",
+      "message": "Node {NodeId} is added to HA group {HaGroupName}.",
+      "translation": "El nodo {NodeId} se ha añadido al grupo HA {HaGroupName}.",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -18709,39 +20220,87 @@
       "fuzzy": true
     },
     {
-      "id": "could not validate node ID '{NodeId}': {Err}",
-      "message": "could not validate node ID '{NodeId}': {Err}",
-      "translation": "no se ha podido validar el ID de nodo '{NodeId}': {Err}",
+      "id": "invalid node ID: {Err}",
+      "message": "invalid node ID: {Err}",
+      "translation": "ID de nodo no válido: {Err}",
       "placeholders": [
         {
-          "id": "NodeId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nodeId"
-        },
-        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[1]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 1,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "message": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "translation": "ID de nodo no válido: Solo se permiten caracteres A-Z, a-z, 0-9, unicode y símbolos especiales !-*+()?.,:&@",
+      "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+      "message": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+      "translation": "El ID de organización de grupo HA '{HaGroupOrg}' es distinto del ID de organización de nodo '{Org}'.",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "invalid node ID: Whitespace is not permitted",
-      "message": "invalid node ID: Whitespace is not permitted",
-      "translation": "ID de nodo no válido: no se permite el espacio en blanco",
+      "id": "invalid HA group ID: {Err}",
+      "message": "invalid HA group ID: {Err}",
+      "translation": "ID de grupo HA no válido: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Could not validate. {Err}",
+      "message": "Could not validate. {Err}",
+      "translation": "No se ha podido validar. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed.",
+      "message": "A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed.",
+      "translation": "Solo se permiten A-Za-z0-9, los caracteres unicode y los símbolos especiales !-*+()?.,:&@.",
+      "fuzzy": true
+    },
+    {
+      "id": "Whitespace is not permitted.",
+      "message": "Whitespace is not permitted.",
+      "translation": "El espacio en blanco no está permitido.",
       "fuzzy": true
     },
     {
@@ -20517,6 +22076,30 @@
       "fuzzy": true
     },
     {
+      "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+      "message": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+      "translation": "Leyendo el archivo de entrada de usuario de configuración de servicio {UserInputFileName}: {Err}",
+      "placeholders": [
+        {
+          "id": "UserInputFileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "userInputFileName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
       "message": "failed to unmarshal json string '{PolicyStr}': {Err}",
       "translation": "no se ha podido desordenar serie json '{PolicyStr}': {Err}",
@@ -21529,22 +23112,6 @@
       "fuzzy": true
     },
     {
-      "id": "no objects found in org {Org}",
-      "message": "no objects found in org {Org}",
-      "translation": "No se han encontrado objetos en la organización {Org}",
-      "placeholders": [
-        {
-          "id": "Org",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "org"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
       "message": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
       "translation": "No se ha encontrado el detalle de destino para el objeto '{ObjectID}' de tipo '{ObjectType}' en la organización {Org}",
@@ -21711,9 +23278,9 @@
       "fuzzy": true
     },
     {
-      "id": "Set to '*' to indcate services of any hardware architecture.",
-      "message": "Set to '*' to indcate services of any hardware architecture.",
-      "translation": "Se establece en '*' para indicar los servicios de cualquier arquitectura de hardware.",
+      "id": "Set to '*' to indicate services of any hardware architecture.",
+      "message": "Set to '*' to indicate services of any hardware architecture.",
+      "translation": "Establézcalo a '*' para indicar los servicios de cualquier arquitectura de hardware.",
       "fuzzy": true
     },
     {
@@ -21850,12 +23417,6 @@
           "expr": "err"
         }
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "Digital sign finished.",
-      "message": "Digital sign finished.",
-      "translation": "Firma digital terminada.",
       "fuzzy": true
     },
     {
@@ -26489,9 +28050,9 @@
       "fuzzy": true
     },
     {
-      "id": "Label, or Enabled is empty.",
-      "message": "Label, or Enabled is empty.",
-      "translation": "La etiqueta o Habilitado está vacío.",
+      "id": "The start time must be in RFC3339 format or set to \"now\".",
+      "message": "The start time must be in RFC3339 format or set to \"now\".",
+      "translation": "La hora de inicio tiene que estar en formato RFC3339 o establecerse a \"now\" (ahora).",
       "fuzzy": true
     },
     {
@@ -26698,6 +28259,49 @@
       "id": "The constraint expression contains unmatched parentheses.",
       "message": "The constraint expression contains unmatched parentheses.",
       "translation": "La expresión de restricción contiene paréntesis desemparejados.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CREATED",
+        "New node management policy status created for policy {Arg_1}."
+      ],
+      "message": "New node management policy status created for policy {Arg_1}.",
+      "translation": "Nuevo estado de política de gestión de nodos creado para la política {Arg_1}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED",
+        "Node management status for {Arg_1} changed to {Arg_2}."
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}.",
+      "translation": "El estado de gestión de nodos de {Arg_1} ha cambiado a {Arg_2}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
       "fuzzy": true
     },
     {

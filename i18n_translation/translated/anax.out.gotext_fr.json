@@ -68,16 +68,40 @@
     "translation": "Anax est en cours d'arrêt. Impossible de terminer la synchronisation de l'accord. {Arg_1}"
   },
   {
+    "id": "Error node authentication credentials do not match requesting node.",
+    "translation": "Erreur : les données d'authentification du noeud ne correspondent pas au noeud demandeur."
+  },
+  {
+    "id": "Unable to retrieve node from the exchange.",
+    "translation": "Impossible d'extraire le noeud de l'échange."
+  },
+  {
+    "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+    "translation": "Erreur : le groupe de noeuds ha {HAGroup} ne correspond pas au nom de groupe dans la demande {GroupName}."
+  },
+  {
+    "id": "Error handling node upgrade request: {Error}",
+    "translation": "Erreur lors du traitement de la demande de mise à niveau du noeud : {Error}"
+  },
+  {
+    "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+    "translation": "Le noeud {Org}/{Node} peut commencer à exécuter nmp {NmpId}."
+  },
+  {
+    "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+    "translation": "Le noeud {Org}/{Node} ne peut pas démarrer l'exécution de nmp {NmpId}."
+  },
+  {
     "id": "No input found.",
     "translation": "Aucune entrée trouvée."
   },
   {
-    "id": "Unauthorized. No exchange user id is supplied.",
-    "translation": "Non autorisé. Aucun ID utilisateur Exchange n'est fourni."
+    "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+    "translation": "Non autorisé. Aucun ID {AuthType} Exchange n'est fourni."
   },
   {
-    "id": "Failed to authenticate the user with the Exchange. {Err}",
-    "translation": "Echec d'authentification de l'utilisateur avec Exchange. {Err}"
+    "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+    "translation": "Echec de l'authentification de {AuthType} avec Exchange. {Err}"
   },
   {
     "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -112,12 +136,16 @@
     "translation": "Aucun mot de passe utilisateur Exchange ni aucune clé d'API n'est fourni."
   },
   {
-    "id": "Wrong organization id, user id or password.",
-    "translation": "Mauvais ID organisation, ID utilisateur ou de mot de passe."
+    "id": "Wrong organization id, {Arg_1} id or password.",
+    "translation": "ID d'organisation, ID {Arg_1} ou mot de passe incorrect."
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
     "translation": "L'utilisateur Exchange {Key} n'est pas au format correct, il doit être org/nom_utilisateur."
+  },
+  {
+    "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+    "translation": "L'appareil {Key} Exchange n'est pas au format correct : doit être org/nodename."
   },
   {
     "id": "Internal server error",
@@ -173,7 +201,7 @@
   },
   {
     "id": "Secrets provider received a bad request, please check all the provided inputs.",
-    "translation": "Le fournisseur de secrets a reçu une demande incorrecte, vérifiez toutes les entrées fournies."
+    "translation": "Le fournisseur de secrets a reçu une demande incorrecte, veuillez cocher toutes les entrées fournies."
   },
   {
     "id": "Response: {Response}",
@@ -432,8 +460,8 @@
     "translation": "Fin de changement d'état de configuration du service de {Arg_1} en {Arg_2} pour le noeud."
   },
   {
-    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-    "translation": "Le statut de gestion de noeud pour {Arg_1}/{Arg_2} a été changé en {Arg_3}"
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+    "translation": "Le statut de gestion des noeuds pour {Arg_1}/{Arg_2} a été remplacé par {Arg_3}."
   },
   {
     "id": "Error converting the selections into Selectors: {Err}",
@@ -784,6 +812,10 @@
     "translation": "L'authentification Exchange doit être spécifiée avec l'une des valeurs suivantes : indicateur -u ou -n, variable HZN_EXCHANGE_USER_AUTH ou HZN_EXCHANGE_NODE_AUTH"
   },
   {
+    "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+    "translation": "L'authentification Exchange doit être spécifiée avec l'un des éléments suivants : indicateur -u ou HZN_EXCHANGE_USER_AUTH"
+  },
+  {
     "id": "Verifying public key file ...",
     "translation": "Vérification du fichier de clé publique..."
   },
@@ -873,7 +905,7 @@
   },
   {
     "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-    "translation": "Le fichier {FileName} existe déjà. Indiquez un nom ou un chemin d'accès au fichier différent. Pour remplacer le fichier existant, utilisez l'indicateur '--overwrite'."
+    "translation": "Le fichier {FileName} existe déjà. Veuillez indiquer un nom ou un chemin d'accès au fichier différent. Pour remplacer le fichier existant, utilisez l'indicateur '--overwrite'."
   },
   {
     "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",
@@ -894,6 +926,10 @@
   {
     "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
     "translation": "Le pilote de journal fourni ({LogDriver}) ne prend pas en charge l'affichage des journaux. Les journaux sont disponibles uniquement sur les pilotes suivants : {DockerDriversWithLoggingSupport}"
+  },
+  {
+    "id": "Problem validating org name: {Err}",
+    "translation": "Problème lors de la validation du nom d'organisation : {Err}"
   },
   {
     "id": "Error creating StdoutPipe for command: {Err}",
@@ -1528,8 +1564,8 @@
     "translation": "L'algorithme de hachage {HashAlgo} n'est pas pris en charge"
   },
   {
-    "id": "Label, or Enabled is empty.",
-    "translation": "Le libellé ou la zone Activé est vide."
+    "id": "The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "L'heure de début doit être au format RFC3339 ou définie sur \"now\"."
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1553,7 +1589,7 @@
   },
   {
     "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-    "translation": "La valeur {Value} de la propriété {Name} n'est pas une chaîne valide. Définissez le type ou modifiez la valeur en chaîne."
+    "translation": "La valeur {Value} de la propriété {Name} n'est pas une chaîne valide. Veuillez définir le type ou modifier la valeur en chaîne."
   },
   {
     "id": "Property {Name} with value {Value} is not a valid verion string",
@@ -1900,8 +1936,8 @@
     "translation": "Un nouveau statut de règle de gestion des nœuds a été créé pour la règle {Arg_1}."
   },
   {
-    "id": "Node management status for {Arg_1} changed to {Arg_2}",
-    "translation": "Le statut de gestion des nœuds de {Arg_1} a été remplacé par {Arg_2}"
+    "id": "Node management status for {Arg_1} changed to {Arg_2}.",
+    "translation": "Le statut de la gestion des noeuds pour {Arg_1} a été remplacé par {Arg_2}."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

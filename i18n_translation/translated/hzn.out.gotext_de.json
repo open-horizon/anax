@@ -1,15 +1,39 @@
 [
   {
+    "id": "Error node authentication credentials do not match requesting node.",
+    "translation": "Die Berechtigungsnachweise für die Knotenauthentifizierung stimmen nicht mit dem anfordernden Knoten überein."
+  },
+  {
+    "id": "Unable to retrieve node from the exchange.",
+    "translation": "Knoten kann nicht aus Exchange abgerufen werden."
+  },
+  {
+    "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+    "translation": "Die HA-Gruppe {HAGroup} des Knotens stimmt nicht mit dem Gruppennamen in der Anforderung {GroupName} überein."
+  },
+  {
+    "id": "Error handling node upgrade request: {Error}",
+    "translation": "Fehlerbehandlung bei Anforderung für Knoten-Upgrade: {Error}"
+  },
+  {
+    "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+    "translation": "Knoten {Org}/{Node} kann die Ausführung von nmp {NmpId} starten."
+  },
+  {
+    "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+    "translation": "Knoten {Org}/{Node} kann die Ausführung von nmp {NmpId} nicht starten."
+  },
+  {
     "id": "No input found.",
     "translation": "Keine Eingabe gefunden."
   },
   {
-    "id": "Unauthorized. No exchange user id is supplied.",
-    "translation": "Nicht autorisiert. Es wurde keine Exchange-Benutzer-ID angegeben."
+    "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+    "translation": "Keine Berechtigung. Es wurde keine Exchange-{AuthType}-ID angegeben."
   },
   {
-    "id": "Failed to authenticate the user with the Exchange. {Err}",
-    "translation": "Die Authentifizierung des Benutzers mit dem Exchange ist fehlgeschlagen. {Err}"
+    "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+    "translation": "{AuthType} konnte nicht mit Exchange authentifiziert werden. {Err}"
   },
   {
     "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -44,12 +68,16 @@
     "translation": "Es wurde kein Kennwort oder kein API-Schlüssel für den Exchange-Benutzer angegeben."
   },
   {
-    "id": "Wrong organization id, user id or password.",
-    "translation": "Falsche Organisations-ID, falsche Benutzer-ID oder falsches Kennwort."
+    "id": "Wrong organization id, {Arg_1} id or password.",
+    "translation": "Falsche Organisations-ID, {Arg_1}-ID oder Kennwort."
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
     "translation": "Der Exchange-Benutzer {Key} hat nicht das korrekte Format. Es sollte 'Organisation/Benutzername' (org/username) sein."
+  },
+  {
+    "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+    "translation": "Exchange-Einheit {Key} hat nicht das richtige Format, sollte org/nodename sein."
   },
   {
     "id": "Internal server error",
@@ -364,8 +392,8 @@
     "translation": "Änderung des Servicekonfigurationsstatus in {Arg_1} für {Arg_2} für den Knoten abgeschlossen."
   },
   {
-    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-    "translation": "Der Knotenmanagementstatus für {Arg_1}/{Arg_2} wurde in {Arg_3} geändert"
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+    "translation": "Der Knotenmanagementstatus für {Arg_1}/{Arg_2} wurde in {Arg_3} geändert."
   },
   {
     "id": "Error converting the selections into Selectors: {Err}",
@@ -388,8 +416,8 @@
     "translation": "Die Eigenschaft {PROPSVCPRIVILEGED} muss einen booleschen Wert haben ('true' oder 'false')."
   },
   {
-    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Die Befehlszeilenschnittstelle für Horizon Agent. Von den meisten Unterbefehlen wird die API des Horizon-Agenten an der Standardposition http://localhost verwendet (Informationen zum Überschreiben dieser Einstellung finden Sie im Abschnitt zu den Umgebungsvariablen). \n\nBeschreibung der Unterbefehle:\n  agbot: Listet die Ressourcen eines Horizon-Vereinbarungs-Bots auf und verwaltet sie. \n  agreement: Listet die aktiven bzw. archivierten Vereinbarungen auf, die von diesem Edge-Knoten mit einem Horizon-Vereinbarungs-Bot erstellt wurden, oder verwaltet sie. \n  architecture: Zeigt die Architektur dieser Maschine an (wie von Horizon und golang definiert). \n  attribute: Listet die globalen Attribute auf, die derzeit auf diesem Horizon-Edge-Knoten registriert sind, oder verwaltet sie. \n  deploycheck: Überprüft die Kompatibilität der Bereitstellung. \n  dev: Entwicklungstools für die Erstellung von Dienstleistungen. \n  env: Zeigt die Umgebungsvariablen für Horizon an. \n  eventlog: Listet die Ereignisprotokolle für die aktuelle Registrierung oder alle Registrierungen auf. \n  exchange: Listet die Ressourcen von Horizon Exchange auf und verwaltet sie. \n  key: Listet die Schlüssel zum Signieren und Überprüfen von Services auf und verwaltet sie. \n  metering: Listet die Informationen zur Nutzungsmessung (für die Zahlung) für die aktiven oder archivierten Vereinbarungen auf oder verwaltet diese. \n  mms: Listet die Ressourcen des Horizon Model Management Service auf und verwaltet sie. \n  node: Listet die allgemeinen Informationen zu diesem Horizon-Edge-Knoten auf und verwaltet sie. \n  policy: Listet die Richtlinie für diesen Horizon-Edge-Knoten auf und verwaltet sie. \n  reginput: Erstellt eine Eingabedateivorlage für dieses Muster, die für den Befehl 'hzn register' (sobald angegeben) verwendet werden kann. \n            Auf diese Art werden die vom Muster verwendeten Services untersucht und die Knoteneignereingabe ermittelt, die für sie erforderlich ist. \n  register: Registriert diesen Edge-Knoten beim Management-Hub. \n  service: Listet die Services auf, die derzeit auf diesem Horizon-Edge-Knoten registriert sind, oder verwaltet sie. \n  status: Zeigt den aktuellen internen Horizon-Status für den Knoten an. \n  unregister: Hebt die Registrierung dieses Horizon-Edge-Knotens auf und setzt ihn zurück, damit er wieder registriert werden kann. \n  userinput: Listet die Servicebenutzereingaben auf, die derzeit auf diesem Horizon-Edge-Knoten registriert sind, oder verwaltet sie. \n  util: Dienstprogrammbefehle. \n  version: Zeigt die Horizon-Version an. \n  sdo: Listet Horizon SDO-Ownership Vouchers (Eigentumsnachweise) und Schlüssel auf und verwaltet sie. \n\nUmgebungsvariablen:\n HORIZON_URL: Überschreiben Sie die URL für den Kontakt zwischen 'hzn' und der API des Horizon-Agenten. \n Dies kann die Verwendung eines fernen Horizon-Agenten über einen SSH-Tunnel erleichtern.\n HZN_EXCHANGE_URL: Überschreiben Sie die URL, die von Unterbefehlen des Typs 'hzn exchange' verwendet wird,\num mit Horizon Exchange zu kommunizieren, zum Beispiel unter Verwendung von\nhttps://exchange.bluehorizon.network/api/v1. (Standardmäßig wird der Horizon-Agent von 'hzn'\nzum Angeben der URL aufgefordert.) \n HZN_ORG_ID: Standardwert für das Flag 'hzn exchange -o'\nzum Angeben der Organisations-ID. \n HZN_EXCHANGE_USER_AUTH: Standardwert für das Flag 'hzn exchange -u' oder 'hzn \n\t register -u' im Format '[org/]user:pw'. Beachten Sie, dass für HZN_ORG_ID ein Wert festgelegt werden kann,\n\tfalls für die Organisation kein Wert angegeben wurde, wenn HZN_EXCHANGE_USER_AUTH festgelegt wird. \n HZN_FSS_CSSURL: Überschreiben Sie die URL, die von Unterbefehlen des Typs 'hzn mms' verwendet wird,\num mit dem Horizon Model Management Service zu kommunizieren, zum Beispiel\ndurch https://exchange.bluehorizon.network/css/. (Standardmäßig wird der Horizon-Agent von 'hzn'\nzum Angeben der URL aufgefordert.) \n HZN_SDO_SVC_URL: Überschreiben Sie die URL, die von Unterbefehlen des Typs 'hzn sdo' verwendet wird,\n\t um mit den SDO-Eignerservices zu kommunizieren. (Standardmäßig wird der Horizon-Agent von 'hzn'\n\t\tzum Angeben der URL aufgefordert.) \n\n Alle diese Umgebungsvariablen und die in der Hilfe für Befehle aufgeführten können\nin der Konfigurationsdatei des Benutzers (~/.hzn/hzn.json) im JSON-Format angegeben werden. \n Beispiel: \n {Com____}"
+    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+    "translation": "Befehlszeilenschnittstelle für Horizon Agent. Die meisten Unterbefehle verwenden die Horizon-Agenten-API an der Standardposition http://localhost (siehe Abschnitt zu Umgebungsvariablen, um dies zu überschreiben).\n\nBeschreibung der Unterbefehle:\n agbot: Listet die Ressourcen des Horizon-Vereinbarungs-Bots auf und verwaltet sie.\n agreement: Listet die Vereinbarungen auf, die dieser Edge-Knoten mit einem Horizon-Vereinbarungs-Bot getroffen hat, und verwaltet sie.\n architecture: Zeigt die Architektur dieser Maschine an.\n attribute: Listet die globalen Attribute auf, die derzeit auf diesem Horizon-Edge-Knoten registriert sind, oder verwaltet sie.\n deploycheck: Prüft die Bereitstellungskompatibilität.\n dev: Entwicklungstools für die Erstellung von Services. \n env: Zeigt die Horizon-Umgebungsvariablen an.\n eventlog: Listet die Ereignisprotokolle für die aktuellen oder alle Registrierungen auf.\n exchange: Listet die Horizon Exchange-Ressourcen auf und verwaltet sie.\n key: Listet Schlüssel für das Signieren und Prüfen von Services auf und verwaltet sie.\n mms: Listet die Ressourcen des Horizon Model Management Service auf und verwaltet sie. \n nmstatus: Listet den Knotenmanagementstatus für den lokalen Knoten auf und verwaltet ihn.\n node: Listet allgemeine Informationen zu diesem Horizon-Edge-Knoten auf und verwaltet sie.\n nodemanagement: Listet Manifeste und Agentendateien für die Knotenverwaltung auf.\n policy: Listet die Richtlinie für diesen Horizon-Edge-Knoten auf und verwaltet sie.\n reginput: Erstellt eine Eingabedateivorlage für dieses Muster, die für den Befehl 'hzn register' verwendet werden kann.\n register: Registriert diesen Edge-Knoten beim Management-Hub.\n secretsmanager: Listet geheime Schlüssel im Secrets Manager auf und verwaltet sie.\n service: Listet die Services auf, die derzeit auf diesem Horizon-Edge-Knoten registriert sind, oder verwaltet sid.\n status: Zeigt den aktuellen internen Horizon-Status für den Knoten an.\n unregister: Hebt die Registrierung des Horizon-Edge-Knotens auf und setzt ihn zurück.\n userinput: Listet die Servicebenutzereingaben auf, die derzeit auf diesem Horizon-Edge-Knoten registriert sind.\n util: Dienstprogrammbefehle.\n version: Zeigt die Horizon-Version an.\n sdo: Listet die SDO-Eigentumsbelege und -Schlüssel für Horizon auf und verwaltet sie.\n\nUmgebungsvariablen:\n HORIZON_URL: Überschreibt die URL, unter der hzn die Horizon-Agenten-API kontaktiert.\n Dies kann die Verwendung eines fernen Horizon-Agenten über einen SSH-Tunnel erleichtern.\n HZN_EXCHANGE_URL: Überschreibt die URL, die von den 'hzn exchange '-Unterbefehlen\n für die Kommunikation mit Horizon Exchange verwendet wird, z. B.\n https://exchange.bluehorizon.network/api/v1. (Standardmäßig fragt hzn den\n Horizon-Agenten nach der URL.)\n HZN_ORG_ID: Standardwert für das Flag 'hzn exchange -o',\n um die Organisations-ID anzugeben.\n HZN_EXCHANGE_USER_AUTH: Standardwert für das Flag 'hzn exchange -u' oder 'hzn \n register -u' im Format '[org/] user:pw'. Beachten Sie, dass HZN_ORG_ID festgelegt werden kann,\n wenn beim Festlegen von HZN_EXCHANGE_USER_AUTH die Organisation weggelassen wird.\n HZN_FSS_CSSURL: Überschreiben Sie die URL, die die ' hzn mms'-Unterbefehle\n für die Kommunikation mit dem Horizon Model Management Service verwenden, z. B.\n https://exchange.bluehorizon.network/css/. (Standardmäßig fragt hzn den\n Horizon-Agenten nach der URL.)\n HZN_SDO_SVC_URL: Überschreiben Sie die URL, die die 'hzn sdo'-Unterbefehle\n für die Kommunikation mit SDO-Eignerservices verwenden. (Standardmäßig fragt hzn den\n Horizon-Agenten nach der URL.)\n\n Alle diese Umgebungsvariablen und die in der Hilfe für den Befehl genannten Umgebungsvariablen können\n in der Konfigurationsdatei des Benutzers angegeben werden: ~/.hzn/hzn.json mit JSON-Format.\n Beispiel:\n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -568,16 +596,20 @@
     "translation": "Die Organisation des Knotens. Der Standardwert ist der durch '-n' angegebene Typ der Organisation oder der Typ der momentan registrierten Einheit, falls keine Angabe gemacht wurde."
   },
   {
-    "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Die Knoten-ID von Horizon Exchange. Diese Angabe und --node-pol sowie --node-ui schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
+    "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+    "translation": "Die Horizon Exchange-Knoten-ID. Diese Angabe und --ha-group, --node-pol und --node-ui schließen sich gegenseitig aus. Erfolgt keine Angabe, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Dieses Flag kann wiederholt werden, um mehrere Knoten anzugeben. Wenn Sie einer Knoten-ID nicht die Organisations-ID voranstellen, wird ihr automatisch der Wert -o vorangestellt."
   },
   {
-    "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-    "translation": "Der Name der JSON-Eingabedatei, in der die Knotenrichtlinie enthalten ist. Diese Angabe und -n, -p und -P schließen sich gegenseitig aus."
+    "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+    "translation": "Der Name einer HA-Gruppe. Diese Angabe und -n, --node-pol und --node-ui schließen sich gegenseitig aus."
   },
   {
-    "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-    "translation": "Der Name der JSON-Eingabedatei, in der die Eingabe des Knotenbenutzers enthalten ist. Diese Angabe und -n schließen sich gegenseitig aus."
+    "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
+    "translation": "Der Name der JSON-Eingabedatei, die die Knotenrichtlinie enthält. Diese Angabe und -n, --ha-group, -p und -P schließen sich gegenseitig aus."
+  },
+  {
+    "id": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
+    "translation": "Der Name der JSON-Eingabedatei, die die Benutzereingabe für den Knoten enthält. Diese Angabe und -n und --ha-group schließen sich gegenseitig aus."
   },
   {
     "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -612,12 +644,16 @@
     "translation": "Die Architektur des Knotens. Diese Angabe ist erforderlich, wenn -n nicht angegeben wird. Wird diese Option nicht angegeben, wird der Service aller in der Bereitstellungsrichtlinie referenzierten Architekturen auf Kompatibilität überprüft."
   },
   {
-    "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Die Knoten-ID von Horizon Exchange. Diese Angabe und --node-pol schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
+    "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+    "translation": "Die Horizon Exchange-Knoten-ID. Diese Angabe und --ha-group und --node-pol schließen sich gegenseitig aus. Erfolgt keine Angabe, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Dieses Flag kann wiederholt werden, um mehrere Knoten anzugeben. Wenn Sie einer Knoten-ID nicht die Organisations-ID voranstellen, wird ihr automatisch der Wert -o vorangestellt."
   },
   {
-    "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-    "translation": "Der Name der JSON-Eingabedatei, in der die Knotenrichtlinie enthalten ist. Diese Angabe und -n schließen sich gegenseitig aus."
+    "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
+    "translation": "Der Name einer HA-Gruppe. Diese Angabe und -n und -- node-pol schließen sich gegenseitig aus."
+  },
+  {
+    "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
+    "translation": "Der Name der JSON-Eingabedatei, die die Knotenrichtlinie enthält. Diese Angabe und -n und --ha-group schließen sich gegenseitig aus."
   },
   {
     "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -658,6 +694,10 @@
   {
     "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
     "translation": "Die Knoten-ID von Horizon Exchange. Diese Angabe und --node-ui schließen sich gegenseitig aus. Wird diese Option nicht angegeben, wird die Knoten-ID verwendet, mit der die aktuelle Einheit registriert ist. Wenn Sie nicht die Organisations-ID als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
+  },
+  {
+    "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
+    "translation": "Der Name der JSON-Eingabedatei, in der die Eingabe des Knotenbenutzers enthalten ist. Diese Angabe und -n schließen sich gegenseitig aus."
   },
   {
     "id": "Development tools for creation of services.",
@@ -1060,6 +1100,10 @@
     "translation": "Nur diese Managementrichtlinie für einen Knoten auflisten."
   },
   {
+    "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+    "translation": "Die Knoten-ID und das Token von Horizon Exchange, die als Berechtigungsnachweise zum Abfragen und Ändern der Knotenressourcen verwendet werden sollen, wenn das Flag -u nicht angegeben ist. Als Standardwert für -n wird HZN_EXCHANGE_NODE_AUTH verwendet. Wenn Sie nicht die Organisation des Knotens als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
+  },
+  {
     "id": "Display detailed output about the node management policies.",
     "translation": "Ausführliche Ausgabe zu den Richtlinien für das Knotenmanagement anzeigen."
   },
@@ -1116,16 +1160,36 @@
     "translation": "Den gesamten Inhalt jedes Maßnahmenstatusobjekts für die Knotenverwaltung anzeigen."
   },
   {
+    "id": "Enable a node management policy in the Horizon Exchange.",
+    "translation": "Aktivieren Sie eine Knotenmanagementrichtlinie in Horizon Exchange."
+  },
+  {
+    "id": "The name of the node management policy to enable.",
+    "translation": "Der Name der zu aktivierenden Knotenmanagementrichtlinie."
+  },
+  {
+    "id": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
+    "translation": "Die Startzeit der aktivierten Knotenmanagementrichtlinie. Die Startzeit muss eine Zeitmarke im Format RFC3339 oder \"Jetzt\" sein."
+  },
+  {
+    "id": "The start window of the enabled node management policy.",
+    "translation": "Das Startfenster der aktivierten Knotenmanagementrichtlinie."
+  },
+  {
+    "id": "Disable a node management policy in the Horizon Exchange.",
+    "translation": "Inaktivieren Sie eine Knotenmanagementrichtlinie in Horizon Exchange."
+  },
+  {
+    "id": "The name of the node management policy to disable.",
+    "translation": "Der Name der zu inaktivierenden Knotenmanagementrichtlinie."
+  },
+  {
     "id": "List and manage nodes in the Horizon Exchange",
     "translation": "Listet die Knoten in Horizon Exchange auf und verwaltet sie."
   },
   {
     "id": "Add or replace the node policy in the Horizon Exchange.",
     "translation": "Fügt die Knotenrichtlinie in Horizon Exchange hinzu oder ersetzt sie."
-  },
-  {
-    "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-    "translation": "Die Knoten-ID und das Token von Horizon Exchange, die als Berechtigungsnachweise zum Abfragen und Ändern der Knotenressourcen verwendet werden sollen, wenn das Flag -u nicht angegeben ist. Als Standardwert für -n wird HZN_EXCHANGE_NODE_AUTH verwendet. Wenn Sie nicht die Organisation des Knotens als Präfix hinzufügen, wird automatisch der Wert -o vorangestellt."
   },
   {
     "id": "Add or replace policy for this node.",
@@ -1242,6 +1306,18 @@
   {
     "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
     "translation": "Ausgabe so filtern, dass nur diese eine Knotenverwaltungsrichtlinie eingeschlossen wird. Verwenden Sie diese Option mit dem Flag --long, um den gesamten Inhalt eines einzelnen Statusobjekts für die Knotenverwaltungsrichtlinie anzuzeigen."
+  },
+  {
+    "id": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+    "translation": "Bewerten Sie die Knotenmanagementrichtlinie (nmp) für diesen Knoten erneut. Führen Sie diesen Befehl aus, um eine Knotenmanagementrichtlinie zu wiederholen, wenn das Upgrade fehlgeschlagen ist und das Problem behoben ist. Führen Sie den Befehl nicht aus, wenn sich der Knoten noch mitten in einem Upgrade befindet."
+  },
+  {
+    "id": "Re-evaluate node management policy for this node.",
+    "translation": "Bewerten Sie die Knotenmanagementrichtlinie für diesen Knoten erneut."
+  },
+  {
+    "id": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
+    "translation": "Der Name der neu zu bewertenden Knotenmanagementrichtlinie. Erfolgt keine Angabe, werden alle Knotenmanagementrichtlinie für diesen Knoten erneut bewertet."
   },
   {
     "id": "List the run-time status of the node.",
@@ -1672,6 +1748,70 @@
     "translation": "Der Pfad zur Datei mit dem öffentlichen Schlüssel im PEM-Format zur Überprüfung des Service. Wenn kein Wert angegeben ist, wird die Umgebungsvariable HZN_PUBLIC_KEY_FILE verwendet. Wenn für beides kein Wert festgelegt wurde, wird ~/.hzn/keys/service.public.pem als Standardwert verwendet."
   },
   {
+    "id": "List and manage high availability (HA) groups in the Horizon Exchange",
+    "translation": "HA-Gruppen in Horizon Exchange auflisten und verwalten"
+  },
+  {
+    "id": "Display the HA group resources from the Horizon Exchange.",
+    "translation": "Zeigen Sie die HA-Gruppenressourcen aus Horizon Exchange an."
+  },
+  {
+    "id": "List just this one HA group.",
+    "translation": "Listen Sie nur diese eine HA-Gruppe auf."
+  },
+  {
+    "id": "When listing all of the HA groups, show the entire resource of each group, instead of just the name.",
+    "translation": "Wenn Sie alle HA-Gruppen auflisten, zeigen Sie die gesamte Ressource jeder Gruppe an und nicht nur den Namen."
+  },
+  {
+    "id": "Display an empty HA group template that can be filled in.",
+    "translation": "Zeigen Sie eine leere HA-Gruppenvorlage an, die ausgefüllt werden kann."
+  },
+  {
+    "id": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
+    "translation": "Fügen Sie eine HA-Gruppe in Horizon Exchange hinzu oder ersetzen Sie sie. Verwenden Sie 'hzn exchange hagroup new' für eine leere HA-Gruppenvorlage."
+  },
+  {
+    "id": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
+    "translation": "Der Name der HA-Gruppe, die hinzugefügt oder überschrieben werden soll. Erfolgt keine Angabe, wird das Namensattribut in der Eingabedatei verwendet."
+  },
+  {
+    "id": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
+    "translation": "Der Pfad einer JSON-Datei mit den Metadaten, die zum Erstellen/Aktualisieren der HA-Gruppe in Horizon Exchange erforderlich sind. Geben Sie -f- an, um aus der Standardeingabe zu lesen."
+  },
+  {
+    "id": "Remove the HA group in the Horizon Exchange.",
+    "translation": "Entfernen Sie die HA-Gruppe in Horizon Exchange."
+  },
+  {
+    "id": "The name of the HA group to be removed.",
+    "translation": "Der Name der HA-Gruppe, die entfernt werden soll."
+  },
+  {
+    "id": "Manage HA group members in the Horizon Exchange",
+    "translation": "HA-Gruppenmitglieder in Horizon Exchange verwalten"
+  },
+  {
+    "id": "Add nodes to the HA group in the Horizon Exchange.",
+    "translation": "Fügen Sie Knoten zur HA-Gruppe in Horizon Exchange hinzu."
+  },
+  {
+    "id": "The name of the HA group.",
+    "translation": "Der Name der HA-Gruppe."
+  },
+  {
+    "id": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
+    "translation": "Der Knoten, der der HA-Gruppe hinzugefügt werden soll. Dieses Flag kann wiederholt werden, um verschiedene Knoten anzugeben."
+  },
+  {
+    "id": "Remove nodes from the HA group in the Horizon Exchange.",
+    "translation": "Entfernen Sie Knoten aus der HA-Gruppe in Horizon Exchange."
+  },
+  {
+    "id": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
+    "translation": "Knoten, der aus der HA-Gruppe entfernt werden soll. Dieses Flag kann wiederholt werden, um verschiedene Knoten anzugeben."
+  },
+  {
     "id": "Display the status of the Horizon Exchange.",
     "translation": "Zeigt den Status von Horizon Exchange an."
   },
@@ -2004,6 +2144,10 @@
     "translation": "Zeigt die allgemeinen Informationen zu diesem Horizon-Edge-Knoten an."
   },
   {
+    "id": "List and manage manifests and agent files for node management.",
+    "translation": "Listen Sie Manifeste und Agentendateien für das Knotenmanagement auf und verwalten Sie sie."
+  },
+  {
     "id": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
     "translation": "Horizon-Benutzerberechtigungsnachweise zum Abfragen und Erstellen von Knotenmanagementressourcen. Erfolgt keine Angabe, wird HZN_EXCHANGE_USER_AUTH als Standardwert verwendet. Wenn Sie der Organisation des Benutzers kein Präfix voranstellen, wird ihr automatisch der Wert -o vorangestellt."
   },
@@ -2026,6 +2170,22 @@
   {
     "id": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
     "translation": "Der Pfad einer JSON-Datei, die die Manifestdaten enthält. Geben Sie -f- an, um aus der Standardeingabe zu lesen."
+  },
+  {
+    "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+    "translation": "Der Hashalgorithmus, der zum Hashing der Manifestdaten vor dem Signieren verwendet wird, um die Datenintegrität beim Hoch- und Herunterladen sicherzustellen. Unterstützte Hashalgorithmen sind SHA1 oder SHA256. Der Standardwert ist SHA1. Diese Angabe und das Flag --noIntegrity schließen sich gegenseitig aus."
+  },
+  {
+    "id": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+    "translation": "Der Hashwert der Manifestdaten, die hoch- oder heruntergeladen werden. Verwenden Sie dieses Flag, wenn Sie den Hashwert angeben möchten, anstatt zuzulassen, dass der Befehl den Hashwert automatisch berechnet. Der Hashwert muss mit dem Algorithmus SHA1 oder SHA256 generiert werden. Das Flag -a muss angegeben werden, wenn der Hashwert mit SHA256 generiert wurde. Dieses Flag und --noIntegrity schließen sich gegenseitig aus."
+  },
+  {
+    "id": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+    "translation": "Der Pfad einer privaten Schlüsseldatei, die zum Signieren des Manifests verwendet werden soll. Der entsprechende öffentliche Schlüssel wird im MMS gespeichert, um die Integrität des Manifests sicherzustellen. Wenn keine Angabe erfolgt, wird die Umgebungsvariable HZN_PRIVATE_KEY_FILE zur Suche nach einem privaten Schlüssel verwendet. Wenn keine Angabe erfolgt, wird ~/.hzn/keys/service.private.key verwendet. Wenn es nicht vorhanden ist, wird nur für diese Veröffentlichungsoperation ein RSA-Schlüsselpaar generiert und der private Schlüssel wird gelöscht."
+  },
+  {
+    "id": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
+    "translation": "Der Veröffentlichungsbefehl führt keine Datenintegritätsprüfung für die hochgeladenen Manifestdaten durch. Diese Angabe und --hashAlgo und --hash schließen sich gegenseitig aus."
   },
   {
     "id": "Display a list of manifest files stored in the management hub.",
@@ -2184,6 +2344,10 @@
     "translation": "Das Horizon Exchange-Muster, von dem die Workloads beschrieben werden, die auf diesem Knoten bereitgestellt werden müssen. Wenn das Muster zu einer anderen Organisation als der Knoten gehört, verwenden Sie das Format 'other_org/pattern'.Diese Angabe und -o und -p schließen sich gegenseitig aus."
   },
   {
+    "id": "The name of the HA group that this node will be added to.",
+    "translation": "Der Name der HA-Gruppe, der dieser Knoten hinzugefügt wird."
+  },
+  {
     "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
     "translation": "Warten, bis die Ausführung des benannten Service auf diesem Knoten gestartet wird. Verwenden Sie bei der Registrierung mit einem Muster die Angabe '*' , um alle Services im Muster zu beobachten. Bei der Registrierung mit einer Richtlinie ist '*' kein gültiger Wert für '-s'. Dieses Flag wird für Edge-Clusterknoten nicht unterstützt."
   },
@@ -2330,6 +2494,30 @@
   {
     "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
     "translation": "Der Dateipfad zur JSON-Datei mit dem aktualisierten Benutzereingabeobjekt. Geben Sie -f- an, damit die Standardeingabe gelesen wird."
+  },
+  {
+    "id": "List and manage node management status for the local node.",
+    "translation": "Listen Sie den Knotenmanagementstatus für den lokalen Knoten auf und verwaltem Sie ihn."
+  },
+  {
+    "id": "Display the node managment status for the local node.",
+    "translation": "Zeigen Sie den Knotenmanagementstatus für den lokalen Knoten an."
+  },
+  {
+    "id": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
+    "translation": "Der Name der Knotenmanagementrichtlinie. Wenn keine Angabe erfolgt, wird der Status aller Knotenmanagementrichtlinien angezeigt."
+  },
+  {
+    "id": "Show the entire contents of each node management status object.",
+    "translation": "Zeigen Sie den gesamten Inhalt jedes Objekts für den Knotenmanagementstatus an."
+  },
+  {
+    "id": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+    "translation": "Bewerten Sie die Knotenmanagementrichtlinie (nmp) erneut. Führen Sie diesen Befehl aus, um eine Knotenmanagementrichtlinie zu wiederholen, wenn das Upgrade fehlgeschlagen ist und das Problem behoben ist. Führen Sie den Befehl nicht aus, wenn sich der Knoten noch mitten in einem Upgrade befindet."
+  },
+  {
+    "id": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
+    "translation": "Der Name der Knotenmanagementrichtlinie. Wenn keine Angabe erfolgt, werden alle Knotenmanagementrichtlinien erneut bewertet."
   },
   {
     "id": "Utility commands.",
@@ -2534,6 +2722,14 @@
   {
     "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
     "translation": "Der Name des Bereitstellungsmusters, das für Edge-Einheit verwendet werden soll, die diesem Voucher zugeordnet ist. Wenn das Muster zu einer anderen Organisation als der Knoten gehört, verwenden Sie das Format 'other_org/pattern'.Diese Angabe und -e und --policy schließen sich gegenseitig aus."
+  },
+  {
+    "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
+    "translation": "Eine JSON-Datei, die Benutzereingabevariablen festlegt oder überschreibt, die von den Services benötigt werden, die auf der Edge-Einheit bereitgestellt werden, die diesem Beleg zugeordnet ist. Verwenden Sie 'hzn userinput new', um das Format anzuzeigen."
+  },
+  {
+    "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
+    "translation": "Der Name der HA-Gruppe, der die Edge-Einheit, die diesem Beleg zugeordnet ist, hinzugefügt wird."
   },
   {
     "id": "Download the specified SDO ownership voucher from SDO owner services.",
@@ -3060,6 +3256,10 @@
     "translation": "Für die Exchange-Authentifizierung muss einer der folgenden Werte angegeben werden: das Flag -u, das Flag -n, HZN_EXCHANGE_USER_AUTH oder HZN_EXCHANGE_NODE_AUTH."
   },
   {
+    "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+    "translation": "Exchange-Authentifizierung muss mit einem der folgenden Werte angegeben werden: Flag -u oder HZN_EXCHANGE_USER_AUTH"
+  },
+  {
     "id": "Verifying public key file ...",
     "translation": "Datei mit dem öffentlichen Schlüssel wird verifiziert..."
   },
@@ -3172,6 +3372,10 @@
     "translation": "Der angegebene Protokolltreiber ({LogDriver}) unterstützt die Anzeige von Protokollen nicht. Protokolle sind nur mit den folgenden Treibern verfügbar: {DockerDriversWithLoggingSupport}"
   },
   {
+    "id": "Problem validating org name: {Err}",
+    "translation": "Problem beim Prüfen des Organisationsnamens: {Err}"
+  },
+  {
     "id": "Error creating StdoutPipe for command: {Err}",
     "translation": "Fehler beim Erstellen von 'StdoutPipe' für den Befehl. {Err}"
   },
@@ -3228,6 +3432,22 @@
     "translation": "Eines der folgenden Flags muss angegeben werden: -b, -B, -p, or -P."
   },
   {
+    "id": "-n and --ha-group are mutually exclusive.",
+    "translation": "-n und --ha-group schließen sich gegenseitig aus."
+  },
+  {
+    "id": "--ha-group and --node-pol are mutually exclusive.",
+    "translation": "--ha-group und --node-pol schließen sich gegenseitig aus."
+  },
+  {
+    "id": "--ha-group and --node-ui are mutually exclusive.",
+    "translation": "--ha-group und --node-ui schließen sich gegenseitig aus."
+  },
+  {
+    "id": "The HA group {HaGroupName} does not have members.",
+    "translation": "Die HA-Gruppe {HaGroupName} hat keine Mitglieder."
+  },
+  {
     "id": "-n and --node-pol are mutually exclusive.",
     "translation": "-n und --node-pol schließen sich gegenseitig aus."
   },
@@ -3242,14 +3462,6 @@
   {
     "id": "-p and -P are mutually exclusive.",
     "translation": "-p und -P schließen sich gegenseitig aus."
-  },
-  {
-    "id": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-    "translation": "Geben Sie den Exchange-Berechtigungsnachweis mit -u an, um den Knoten, die Bereitstellungsrichtlinie und die Servicerichtlinie abzufragen."
-  },
-  {
-    "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
-    "translation": "Geben Sie die Organisation mit -o für die Exchange-Berechtigungsnachweise an: {CredToUse}."
   },
   {
     "id": "Cannot use the local node because it is not registered.",
@@ -3280,6 +3492,10 @@
     "translation": "Falscher Knotentyp angegeben: {NodeType}. Der Typ muss 'device' oder 'cluster' sein."
   },
   {
+    "id": "HA group {HaGroupName} does not exist in org {HaGroupOrg}.",
+    "translation": "HA-Gruppe {HaGroupName} ist in Organisation {HaGroupOrg} nicht vorhanden."
+  },
+  {
     "id": "failed to unmarshal json input file {FilePath}: {Err}",
     "translation": "Unmarshalling der JSON-Eingabedatei {FilePath} fehlgeschlagen: {Err}"
   },
@@ -3298,6 +3514,10 @@
   {
     "id": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
     "translation": "Geben Sie den Exchange-Berechtigungsnachweis mit -u an, um den Knoten, die Bereitstellungsrichtlinie, den Service und die Servicerichtlinie abzufragen."
+  },
+  {
+    "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
+    "translation": "Geben Sie die Organisation mit -o für die Exchange-Berechtigungsnachweise an: {CredToUse}."
   },
   {
     "id": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
@@ -4272,6 +4492,94 @@
     "translation": "Marshalling der Ausgabe von 'hzn exchange catalog patternlist' ist fehlgeschlagen: {Err}"
   },
   {
+    "id": "HA group {HaGroupName} not found in org {HaGroupOrg}",
+    "translation": "HA-Gruppe {HaGroupName} nicht in Organisation {HaGroupOrg} gefunden"
+  },
+  {
+    "id": "failed to marshal 'hzn exchange hagroup list' output: {Err}",
+    "translation": "Marshalling der Ausgabe von 'hzn exchange hagroup list' ist fehlgeschlagen: {Err}"
+  },
+  {
+    "id": "Optional. The name of the HA group.",
+    "translation": "Optional. Der Name der HA-Gruppe."
+  },
+  {
+    "id": "A description of the HA group.",
+    "translation": "Eine Beschreibung der HA-Gruppe."
+  },
+  {
+    "id": "A list of node names that are members of this group.",
+    "translation": "Eine Liste mit Knotennamen, die Mitglieder dieser Gruppe sind."
+  },
+  {
+    "id": "HA group name is not specified.",
+    "translation": "Der Name der HA-Gruppe wurde nicht angegeben."
+  },
+  {
+    "id": "HA group description cannot be empty.",
+    "translation": "HA-Gruppenbeschreibung darf nicht leer sein."
+  },
+  {
+    "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
+    "translation": "HA-Gruppe {HaGroupOrg}/{HaGroupName} in Horizon Exchange aktualisiert"
+  },
+  {
+    "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName}: {Msg}",
+    "translation": "Die HA-Gruppe {HaGroupOrg}/{HaGroupName} kann nicht erstellt werden: {Msg}"
+  },
+  {
+    "id": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
+    "translation": "HA-Gruppe {HaGroupOrg}/{HaGroupName} in Horizon Exchange hinzugefügt"
+  },
+  {
+    "id": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
+    "translation": "Möchten Sie die HA-Gruppe {HaGroupName} für Organisation {HaGroupOrg} wirklich aus Horizon Exchange entfernen?"
+  },
+  {
+    "id": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
+    "translation": "HA-Gruppe {HaGroupName} wurde in Organisation {HaGroupOrg} nicht gefunden"
+  },
+  {
+    "id": "HA group {HaGroupOrg}/{HaGroupName} removed from the Horizon Exchange.",
+    "translation": "HA-Gruppe {HaGroupOrg}/{HaGroupName} aus Horizon Exchange entfernt."
+  },
+  {
+    "id": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
+    "translation": "Knotenorganisation unterscheidet sich von der Gruppenorganisation {HaGroupOrg} für Knoten '{NodeOrg}/{NodeName}'"
+  },
+  {
+    "id": "node '{NodeName}' not found in org {NodeOrg}",
+    "translation": "Knoten '{NodeName}' nicht in Organisation {NodeOrg} gefunden"
+  },
+  {
+    "id": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
+    "translation": "Knoten {NodeName} ist bereits in HA-Gruppe {HaGroupOrg}/{HaGroupName} vorhanden. Der Knoten wird übersprungen."
+  },
+  {
+    "id": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+    "translation": "Die folgenden Knoten werden zur HA-Gruppe {HaGroupOrg}/{HaGroupName}hinzugefügt: \"{JoinaddedNodes_}\""
+  },
+  {
+    "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+    "translation": "Warnung: Die folgenden Knoten können der Gruppe nicht hinzugefügt werden, da sie sich in verschiedenen Gruppen befinden:\"{JoinfailedNodes_}\""
+  },
+  {
+    "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
+    "translation": "Möchten Sie die Knoten {NodeNames} aus der HA-Gruppe {HaGroupName} für die Organisation {HaGroupOrg} in Horizon Exchange wirklich entfernen?"
+  },
+  {
+    "id": "Node {NodeName} is not in HA group {HaGroupOrg}/{HaGroupName}.",
+    "translation": "Knoten {NodeName} befindet sich nicht in HA-Gruppe {HaGroupOrg}/{HaGroupName}."
+  },
+  {
+    "id": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+    "translation": "Die Knoten \"{JoinnodesToRemove_}\" werden aus der HA-Gruppe {HaGroupOrg}/{HaGroupName} in Horizon Exchange entfernt"
+  },
+  {
+    "id": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+    "translation": "Knoten \"{JoinnodesToRemove_}\" wird aus HA-Gruppe {HaGroupOrg}/{HaGroupName} in Horizon Exchange entfernt"
+  },
+  {
     "id": "NMP {NmpName} not found in org {NmpOrg}",
     "translation": "NMP {NmpName} in Organisation {NmpOrg} nicht gefunden"
   },
@@ -4284,20 +4592,16 @@
     "translation": "Eine Kurzbeschreibung der Richtlinie."
   },
   {
-    "id": "(Optional) A much longer description of the policy.",
-    "translation": "(Optional) Eine viel längere Beschreibung der Richtlinie."
+    "id": "A much longer description of the policy.",
+    "translation": "Eine viel längere Beschreibung der Richtlinie."
   },
   {
-    "id": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
-    "translation": "(Optional) Eine Liste von Bedingungsausdrücken im Format <property name> <operator> <property value>,"
+    "id": "A list of policy properties that describe this policy.",
+    "translation": "Eine Liste der Richtlinieneigenschaften, die diese Richtlinie beschreiben."
   },
   {
-    "id": "(Optional) A list of policy properties that describe this policy.",
-    "translation": "(Optional) Eine Liste der Richtlinieneigenschaften, die diese Richtlinie beschreiben."
-  },
-  {
-    "id": "(Optional) This policy applies to nodes using one of these patterns.",
-    "translation": "(Optional) Diese Richtlinie gilt für Knoten, die eines dieser Muster verwenden."
+    "id": "This policy applies to nodes using one of these patterns.",
+    "translation": "Diese Richtlinie gilt für Knoten, die eines dieser Muster verwenden."
   },
   {
     "id": "Is this policy enabled or disabled.",
@@ -4312,8 +4616,8 @@
     "translation": "Aktivieren Sie Agenten, um die Startzeit des Upgrades innerhalb von \"start + startWindow\"-Sekunden zu randomisieren. Der Standardwert ist 0."
   },
   {
-    "id": "(Optional) Assertions on how the agent should update itself.",
-    "translation": "(Optional) Zusicherungen, wie der Agent sich selbst aktualisieren soll."
+    "id": "Assertions on how the agent should update itself.",
+    "translation": "Assertionen, wie der Agent sich selbst aktualisieren soll."
   },
   {
     "id": "The manifest file containing the software, config and cert files to upgrade.",
@@ -4330,6 +4634,14 @@
   {
     "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
     "translation": "Die Knotenmanagementrichtlinie hat keine Einschränkungen, die dazu führen können, dass die Managementrichtlinie auf allen Knoten implementiert wird. Geben Sie -- no-constraints an, um zu bestätigen, dass dies zulässig ist."
+  },
+  {
+    "id": "An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy.",
+    "translation": "Es wurde eine Richtlinie zum automatischen Upgrade des Agenten definiert, jedoch kein Manifest. Geben Sie ein Manifest an, das im CSS gespeichert ist, bevor Sie versuchen, eine Knotenmanagementrichtlinie mit einer Richtlinie zum automatischen Upgrade des Agenten hinzuzufügen."
+  },
+  {
+    "id": "An AgentAutoUpgradePolicy was defined with manifest '{FullManifest}' which does not exist in org {ManOrg}.",
+    "translation": "Es wurde eine Richtlinie zum automatischen Upgrade des Agenten mit Manifest '{FullManifest}' definiert, das in der Organisation {ManOrg} nicht vorhanden ist."
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
@@ -4368,12 +4680,40 @@
     "translation": "Status für NMP {NmpName} wurde nicht für Knoten {NodeName} in Organisation {NmpOrg} gefunden"
   },
   {
-    "id": "failed to marshal 'exchange node list' output: {Err}",
-    "translation": "Marshalling der Ausgabe von 'exchange node list' ist fehlgeschlagen: {Err}"
+    "id": "Failed to parse start time: {Err}. The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "Fehler beim Parsen der Startzeit: {Err}. Die Startzeit muss das Format RFC3339 aufweisen oder auf \"Jetzt\" gesetzt sein."
   },
   {
-    "id": "node '{Node}' not found in org {NodeOrg}",
-    "translation": "Knoten '{Node}' nicht in Organisation {NodeOrg} gefunden"
+    "id": "Failed to parse start window: {Err}. The start window must be Integer.",
+    "translation": "Fehler beim Parsen des Startfensters: {Err}. Das Startfenster muss eine ganze Zahl sein."
+  },
+  {
+    "id": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
+    "translation": "Die Knotenmanagementrichtlinie {NmpFullName} ist bereits in Horizon Exchange aktiviert."
+  },
+  {
+    "id": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
+    "translation": "Knotenmanagementrichtlinie {NmpFullName} in Horizon Exchange aktiviert"
+  },
+  {
+    "id": "Cannot enable node management policy {NmpFullName}: {Msg}",
+    "translation": "Die Knotenmanagementrichtlinie {NmpFullName} kann nicht aktiviert werden: {Msg}"
+  },
+  {
+    "id": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
+    "translation": "Die Knotenmanagementrichtlinie {NmpFullName} ist in Horizon Exchange bereits inaktiviert."
+  },
+  {
+    "id": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
+    "translation": "Knotenmanagementrichtlinie {NmpFullName} in Horizon Exchange inaktiviert"
+  },
+  {
+    "id": "Cannot disable node management policy {NmpFullName}: {Msg}",
+    "translation": "Knotenmanagementrichtlinie {NmpFullName} kann nicht inaktiviert werden: {Msg}"
+  },
+  {
+    "id": "failed to marshal 'exchange node list' output: {Err}",
+    "translation": "Marshalling der Ausgabe von 'exchange node list' ist fehlgeschlagen: {Err}"
   },
   {
     "id": "if node or token are specified then they both must be specified",
@@ -4580,6 +4920,18 @@
     "translation": "Knoten {NodeName} enthält keinen Status für {NmpName} in Organisation {NodeOrg}"
   },
   {
+    "id": "No management status found for node {NodeName} in org {NodeOrg}",
+    "translation": "Kein Managementstatus für Knoten {NodeName} in Organisation {NodeOrg} gefunden"
+  },
+  {
+    "id": "Node management status for {NmpStatusNameNoOrg} is reset.",
+    "translation": "Der Knotenmanagementstatus für {NmpStatusNameNoOrg} wird zurückgesetzt."
+  },
+  {
+    "id": "The the Horizon agent for node {NodeOrg}/{NodeName} will re-evaluate the management policies.",
+    "translation": "Der Horizon-Agent für Knoten {NodeOrg}/{NodeName} bewertet die Managementrichtlinien erneut."
+  },
+  {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
     "translation": "Die Benutzereingaben ('userInputs') werden mit dem Knotenmuster {Pattern} verifiziert."
   },
@@ -4630,6 +4982,10 @@
   {
     "id": "failed to marshal 'exchange org list' output: {Err}",
     "translation": "Marshalling der Ausgabe von 'exchange org list' ist fehlgeschlagen: {Err}"
+  },
+  {
+    "id": "Invalid organization. Organization cannot contain: [ _ , <space> ' ?]",
+    "translation": "Ungültige Organisation. Organisation darf Folgendes nicht enthalten: [ _ , <space> ' ?]"
   },
   {
     "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
@@ -4964,12 +5320,12 @@
     "translation": "Integrierte Eigenschaftswerte werden hinzugefügt..."
   },
   {
-    "id": "The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch",
-    "translation": "Der folgende Eigenschaftswert wird überschrieben: service.url, service.name, service.org, service.version, service.arch"
+    "id": "The following property values will be overridden: service.url, service.name, service.org, service.version, service.arch",
+    "translation": "Die folgenden Eigenschaftswerte werden überschrieben: service.url, service.name, service.org, service.version, service.arch"
   },
   {
-    "id": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-    "translation": "Die Servicerichtlinie wird aktualisiert und alle Vereinbarungen werden auf Basis dieser Servicerichtlinie erneut ausgewertet. Vorhandene Vereinbarungen werden möglicherweise beendet und erneut ausgehandelt."
+    "id": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+    "translation": "Servicerichtlinie wird aktualisiert und alle Vereinbarungen werden auf der Basis dieser Servicerichtlinie erneut bewertet. Vorhandene Vereinbarungen können gelöscht und neu verhandelt werden."
   },
   {
     "id": "Service policy updated.",
@@ -5244,6 +5600,22 @@
     "translation": "Service gestoppt."
   },
   {
+    "id": "failed to marshal 'hzn nmp status' output: {Err}",
+    "translation": "Marshalling der Ausgabe von 'hzn nmp status' ist fehlgeschlagen: {Err}"
+  },
+  {
+    "id": "The following node management policy will be re-evaluated: {NmpName}.",
+    "translation": "Die folgende Knotenmanagementrichtlinie wird erneut bewertet: {NmpName}."
+  },
+  {
+    "id": "No node management policy for this node.",
+    "translation": "Keine Knotenmanagementrichtlinie für diesen Knoten."
+  },
+  {
+    "id": "The following node management policies will be re-evaluated: {JoinallIDs_}.",
+    "translation": "Die folgenden Knotenmanagementrichtlinien werden erneut bewertet: {JoinallIDs_}."
+  },
+  {
     "id": "Failed to get proper response from Horizon agent",
     "translation": "Abrufen der richtigen Antwort von Horizon-Agent fehlgeschlagen"
   },
@@ -5314,6 +5686,30 @@
   {
     "id": "must specify --type and --id with --long",
     "translation": "--type und --id müssen zusammen mit --long angeben werden"
+  },
+  {
+    "id": "Cannot specify --skipDigitalSig with --hash",
+    "translation": "--skipDigitalSig kann nicht mit --hash angegeben werden"
+  },
+  {
+    "id": "Cannot specify --skipDigitalSig with --hashAlgo",
+    "translation": "--skipDigitalSig kann nicht mit --hashAlgo angegeben werden"
+  },
+  {
+    "id": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
+    "translation": "Ungültiger Wert für --hashAlgo. Verwenden Sie SHA1 oder SHA256."
+  },
+  {
+    "id": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
+    "translation": "Digitale Signierung mit {HashAlgorithm} wird für die Datenintegrität ausgeführt."
+  },
+  {
+    "id": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
+    "translation": "Fehler beim digitalen Signieren des Manifests {ManifestFile}, Fehler: {Err}"
+  },
+  {
+    "id": "Digital sign finished.",
+    "translation": "Digitale Signatur abgeschlossen"
   },
   {
     "id": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
@@ -5628,6 +6024,18 @@
     "translation": "Fährt mit dem angegebenen Muster {Pattern} fort."
   },
   {
+    "id": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
+    "translation": "Mit der angegebene HA-Gruppe {HaGroupName} kann nicht fortgefahren werden, weil sich der Knoten in einer anderen HA-Gruppe befindet {ExistingHagrName}."
+  },
+  {
+    "id": "The node is already in the HA group '{HaGroupName}'.",
+    "translation": "Der Knoten ist bereits in der HA-Gruppe '{HaGroupName}' enthalten."
+  },
+  {
+    "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
+    "translation": "Knoten {Org}/{NodeId} ist in HA-Gruppe {HaGroupName} enthalten."
+  },
+  {
     "id": "Updating the node policy...",
     "translation": "Die Knotenrichtlinie wird aktualisiert..."
   },
@@ -5674,6 +6082,26 @@
   {
     "id": "Horizon node is registered. Workload services should begin executing shortly.",
     "translation": "Der Horizon-Knoten wurde registriert. Die Ausführung der Workload-Services beginnt in Kürze."
+  },
+  {
+    "id": "Please specify the user credentials with -u flag in order to create or update the HA group {Org}/{HaGroupName}.",
+    "translation": "Geben Sie die Benutzerberechtigungsnachweise mit dem Flag -u an, um die HA-Gruppe {Org}/{HaGroupName}zu erstellen oder zu aktualisieren."
+  },
+  {
+    "id": "Creating HA group {Org}/{HaGroupName} ...",
+    "translation": "HA-Gruppe {Org}/{HaGroupName} wird erstellt ..."
+  },
+  {
+    "id": "HA group {Org}/{HaGroupName} created with node {NodeId} as the member.",
+    "translation": "Die HA-Gruppe {Org}/{HaGroupName} wurde mit dem Knoten {NodeId} als Mitglied erstellt."
+  },
+  {
+    "id": "Adding node {NodeId} to HA group {Org}/{HaGroupName} ...",
+    "translation": "Knoten {NodeId} wird zur HA-Gruppe {Org}/{HaGroupName} hinzugefügt ..."
+  },
+  {
+    "id": "Node {NodeId} is added to HA group {HaGroupName}.",
+    "translation": "Knoten {NodeId} wird der HA-Gruppe {HaGroupName} hinzugefügt."
   },
   {
     "id": "Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.",
@@ -5760,16 +6188,28 @@
     "translation": "Wenn '-s' bei der Registrierung mit einem Muster '*' ist (d. h., wenn alle Services der höchsten Ebene überwacht werden), muss '--serviceorg' weggelassen werden."
   },
   {
-    "id": "could not validate node ID '{NodeId}': {Err}",
-    "translation": "Die Knoten-ID '{NodeId}' konnte nicht validiert werden: {Err}"
+    "id": "invalid node ID: {Err}",
+    "translation": "Ungültige Knoten-ID: {Err}"
   },
   {
-    "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-    "translation": "Ungültige Knoten-ID: Nur die Zeichen A-Z a-z 0-9, Unicode-Zeichen und die Sonderzeichen ! - * + ( ) ? . , : & @ sind zulässig."
+    "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+    "translation": "Die Organisations-ID '{HaGroupOrg}' der HA-Gruppe unterscheidet sich von der Organisations-ID '{Org}' des Knotens."
   },
   {
-    "id": "invalid node ID: Whitespace is not permitted",
-    "translation": "Ungültige Knoten-ID: Leerzeichen sind nicht zulässig."
+    "id": "invalid HA group ID: {Err}",
+    "translation": "Ungültige HA-Gruppen-ID: {Err}"
+  },
+  {
+    "id": "Could not validate. {Err}",
+    "translation": "Validierung nicht möglich. {Err}"
+  },
+  {
+    "id": "A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed.",
+    "translation": "Nur A-Za-z0-9, Unicode-Zeichen und die Sonderzeichen !-*+()?.,:&@ sind zulässig."
+  },
+  {
+    "id": "Whitespace is not permitted.",
+    "translation": "Leerzeichen sind nicht zulässig."
   },
   {
     "id": "invalid version range '{Vr}': {Err}",
@@ -6188,6 +6628,10 @@
     "translation": "Knoten wird hinzugefügt/aktualisiert..."
   },
   {
+    "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+    "translation": "Die Benutzereingabedatei {UserInputFileName} für die Servicekonfiguration wird gelesen: {Err}"
+  },
+  {
     "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
     "translation": "Unmarshalling der JSON-Zeichenfolge '{PolicyStr}' ist fehlgeschlagen: {Err}"
   },
@@ -6444,10 +6888,6 @@
     "translation": "Ungültiger Wert für --deleted: {WithData}, --data muss 'true' oder ' false' sein"
   },
   {
-    "id": "no objects found in org {Org}",
-    "translation": "Keine Objekte in Organisation {Org} gefunden"
-  },
-  {
     "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
     "translation": "Zieldetails für Objekt '{ObjectID}' des Typs '{ObjectType}' nicht in Organisation {Org} gefunden"
   },
@@ -6528,8 +6968,8 @@
     "translation": "Der Service bzw. die Services, von dem/denen dieses Objekt verwendet wird."
   },
   {
-    "id": "Set to '*' to indcate services of any hardware architecture.",
-    "translation": "Legen Sie '*' fest, um Services mit beliebiger Hardwarearchitektur anzugeben."
+    "id": "Set to '*' to indicate services of any hardware architecture.",
+    "translation": "Ist auf '*' gesetzt, um Services einer Hardwarearchitektur anzugeben."
   },
   {
     "id": "A version range.",
@@ -6590,10 +7030,6 @@
   {
     "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
     "translation": "Die Datei {ObjFile} konnte nicht digital signiert werden. Fehler: {Err}"
-  },
-  {
-    "id": "Digital sign finished.",
-    "translation": "Digitale Signatur abgeschlossen"
   },
   {
     "id": "Upload object in chunk, chunk size is: {ChunkSize}",
@@ -7684,8 +8120,8 @@
     "translation": "Die digitale Signatur konnte nicht verifiziert werden, da die Signaturzeichenfolge leer ist"
   },
   {
-    "id": "Label, or Enabled is empty.",
-    "translation": "Bezeichnung oder Aktiviert ist leer."
+    "id": "The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "Die Startzeit muss das Format RFC3339 aufweisen oder auf \"Jetzt\" gesetzt sein."
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -7726,6 +8162,14 @@
   {
     "id": "The constraint expression contains unmatched parentheses.",
     "translation": "Der Bedingungsausdruck enthält nicht übereinstimmende runde Klammern."
+  },
+  {
+    "id": "New node management policy status created for policy {Arg_1}.",
+    "translation": "Neuer Status der Knotenmanagementrichtlinie für Richtlinie {Arg_1} erstellt."
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}.",
+    "translation": "Der Knotenmanagementstatus für {Arg_1} wurde in {Arg_2} geändert."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

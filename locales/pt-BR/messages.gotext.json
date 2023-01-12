@@ -346,28 +346,162 @@
       "fuzzy": true
     },
     {
+      "id": "Error node authentication credentials do not match requesting node.",
+      "message": "Error node authentication credentials do not match requesting node.",
+      "translation": "As credenciais de autenticação do nó de erro não correspondem ao nó solicitante.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to retrieve node from the exchange.",
+      "message": "Unable to retrieve node from the exchange.",
+      "translation": "Não é possível recuperar o nó da troca.",
+      "fuzzy": true
+    },
+    {
+      "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+      "message": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+      "translation": "O grupo de alta disponibilidade {HAGroup} do nó de erro não corresponde ao nome do grupo na solicitação{GroupName}.",
+      "placeholders": [
+        {
+          "id": "HAGroup",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "dev.HAGroup"
+        },
+        {
+          "id": "GroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "groupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error handling node upgrade request: {Error}",
+      "message": "Error handling node upgrade request: {Error}",
+      "translation": "Erro ao manipular a solicitação de upgrade do nó: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+      "message": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+      "translation": "O nó {Org}/{Node} pode começar a executar a nmp {NmpId}.",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        },
+        {
+          "id": "NmpId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nmpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+      "message": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+      "translation": "O nó {Org}/{Node} não pode começar a executar a nmp {NmpId}.",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        },
+        {
+          "id": "NmpId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nmpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "No input found.",
       "message": "No input found.",
       "translation": "Nenhuma entrada localizada.",
       "fuzzy": true
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "message": "Unauthorized. No exchange user id is supplied.",
-      "translation": "Desautorizado. Nenhum ID do usuário de troca é fornecido.",
+      "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+      "message": "Unauthorized. No exchange {AuthType} id is supplied.",
+      "translation": "Não autorizado. Nenhum ID {AuthType} do Exchange foi fornecido.",
+      "placeholders": [
+        {
+          "id": "AuthType",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "authType"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "message": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "Falha ao autenticar o usuário com o Exchange. {Err}",
+      "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+      "message": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+      "translation": "Falha ao autenticar o {AuthType} com o Exchange. {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "AuthType",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "authType"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -472,15 +606,40 @@
       "fuzzy": true
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "message": "Wrong organization id, user id or password.",
-      "translation": "ID da organização, ID do usuário ou senha errada.",
+      "id": "Wrong organization id, {Arg_1} id or password.",
+      "message": "Wrong organization id, {Arg_1} id or password.",
+      "translation": "ID da organização, ID {Arg_1} ou senha errado.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]s",
+          "type": "",
+          "underlyingType": "string",
+          "argNum": 1
+        }
+      ],
       "fuzzy": true
     },
     {
       "id": "Exchange user {Key} is not in the correct format, should be org/username.",
       "message": "Exchange user {Key} is not in the correct format, should be org/username.",
       "translation": "O usuário do Exchange {Key} não está no formato correto, deve ser organização/nome de usuário.",
+      "placeholders": [
+        {
+          "id": "Key",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "key"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+      "message": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+      "translation": "O dispositivo {Key} do Exchange não está no formato correto, deve ser organização/nome do nó.",
       "placeholders": [
         {
           "id": "Key",
@@ -1959,10 +2118,10 @@
     {
       "id": [
         "EL_API_NMP_STATUS_CHANGE",
-        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}."
       ],
-      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-      "translation": "Status de gerenciamento de nó para {Arg_1}/{Arg_2} mudado para {Arg_3}",
+      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+      "translation": "Status de gerenciamento do nó para {Arg_1}/{Arg_2} mudado para {Arg_3}.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -3782,6 +3941,12 @@
       "fuzzy": true
     },
     {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+      "message": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+      "translation": "a autenticação do Exchange deve ser especificada com um dos seguintes: a sinalização -u ou HZN_EXCHANGE_USER_AUTH",
+      "fuzzy": true
+    },
+    {
       "id": "Verifying public key file ...",
       "message": "Verifying public key file ...",
       "translation": "Verificando o arquivo de chave pública...",
@@ -4282,6 +4447,22 @@
           "underlyingType": "[]string",
           "argNum": 2,
           "expr": "dockerDriversWithLoggingSupport"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Problem validating org name: {Err}",
+      "message": "Problem validating org name: {Err}",
+      "translation": "Problema ao validar o nome da organização: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -7087,9 +7268,9 @@
       "fuzzy": true
     },
     {
-      "id": "Label, or Enabled is empty.",
-      "message": "Label, or Enabled is empty.",
-      "translation": "Rótulo ou Ativado está vazio.",
+      "id": "The start time must be in RFC3339 format or set to \"now\".",
+      "message": "The start time must be in RFC3339 format or set to \"now\".",
+      "translation": "O horário de início deve estar no formato RFC3339 ou configurado como \"agora\".",
       "fuzzy": true
     },
     {
@@ -9456,10 +9637,10 @@
     {
       "id": [
         "EL_NMP_STATUS_CHANGED",
-        "Node management status for {Arg_1} changed to {Arg_2}"
+        "Node management status for {Arg_1} changed to {Arg_2}."
       ],
-      "message": "Node management status for {Arg_1} changed to {Arg_2}",
-      "translation": "Status de gerenciamento de nó para {Arg_1} mudado para {Arg_2}",
+      "message": "Node management status for {Arg_1} changed to {Arg_2}.",
+      "translation": "Status de gerenciamento do nó para {Arg_1} mudado para {Arg_2}.",
       "placeholders": [
         {
           "id": "Arg_1",

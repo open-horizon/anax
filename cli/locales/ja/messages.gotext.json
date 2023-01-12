@@ -2,28 +2,162 @@
   "language": "ja",
   "messages": [
     {
+      "id": "Error node authentication credentials do not match requesting node.",
+      "message": "Error node authentication credentials do not match requesting node.",
+      "translation": "エラー・ノード認証資格情報が要求側ノードと一致しません。",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to retrieve node from the exchange.",
+      "message": "Unable to retrieve node from the exchange.",
+      "translation": "Exchange からノードを取得できません。",
+      "fuzzy": true
+    },
+    {
+      "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+      "message": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+      "translation": "エラー・ノード ha group {HAGroup} は、要求{GroupName}内のグループ名と一致しません。",
+      "placeholders": [
+        {
+          "id": "HAGroup",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "dev.HAGroup"
+        },
+        {
+          "id": "GroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "groupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error handling node upgrade request: {Error}",
+      "message": "Error handling node upgrade request: {Error}",
+      "translation": "ノードのアップグレード要求の処理中にエラーが発生しました: {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+      "message": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+      "translation": "ノード {Org}/{Node} は nmp {NmpId}の実行を開始できます。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        },
+        {
+          "id": "NmpId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nmpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+      "message": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+      "translation": "ノード {Org}/{Node} は nmp {NmpId}の実行を開始できません。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        },
+        {
+          "id": "NmpId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nmpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "No input found.",
       "message": "No input found.",
       "translation": "入力が見つかりません。",
       "fuzzy": true
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "message": "Unauthorized. No exchange user id is supplied.",
-      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。",
+      "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+      "message": "Unauthorized. No exchange {AuthType} id is supplied.",
+      "translation": "許可されませんでした。 交換 {AuthType} ID が指定されていません。",
+      "placeholders": [
+        {
+          "id": "AuthType",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "authType"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "message": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "ユーザーを Exchange で認証できませんでした。 {Err}",
+      "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+      "message": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+      "translation": "{AuthType} を Exchange で認証できませんでした。{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "AuthType",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "authType"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -128,15 +262,40 @@
       "fuzzy": true
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "message": "Wrong organization id, user id or password.",
-      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。",
+      "id": "Wrong organization id, {Arg_1} id or password.",
+      "message": "Wrong organization id, {Arg_1} id or password.",
+      "translation": "組織 ID、{Arg_1} ID、またはパスワードが正しくありません。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]s",
+          "type": "",
+          "underlyingType": "string",
+          "argNum": 1
+        }
+      ],
       "fuzzy": true
     },
     {
       "id": "Exchange user {Key} is not in the correct format, should be org/username.",
       "message": "Exchange user {Key} is not in the correct format, should be org/username.",
       "translation": "Exchange ユーザー {Key} の形式が正しくありません。org/username でなければなりません。",
+      "placeholders": [
+        {
+          "id": "Key",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "key"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+      "message": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+      "translation": "Exchange デバイス {Key} の形式が正しくありません。org/nodename でなければなりません。",
       "placeholders": [
         {
           "id": "Key",
@@ -691,7 +850,7 @@
         "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}"
       ],
       "message": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
-      "translation": "ノード・ポリシー・パッチの入力を解析中にエラーが発生しました。 入力本文に 'properties'、'constraints '、'deployment'、または 'management' 属性が含まれていません: {Arg_1}",
+      "translation": "ノード・ポリシー・パッチで入力されたエラー解析。 入力本文に 'properties'、'constraints '、'deployment'、または 'management' 属性が含まれていません: {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -1615,10 +1774,10 @@
     {
       "id": [
         "EL_API_NMP_STATUS_CHANGE",
-        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}."
       ],
-      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} のノード管理状況が {Arg_3} に変更されました",
+      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+      "translation": "{Arg_1}/{Arg_2} のノード管理状況が {Arg_3}に変更されました。",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -1705,9 +1864,9 @@
       "fuzzy": true
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルトのロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには、環境の環境変数セクションを参照してください)。\n\nサブコマンドの説明:\n  agbot: Horizon 契約 bot のリソースをリストおよび管理します。\n  agreement: このエッジ・ノードで Horizon 契約 bot との間で締結されたアクティブな契約またはアーカイブ済み契約をリストまたは管理します。\n  architecture: このマシンのアーキテクチャー (Horizon および golang によって定義されているとおり) を表示します。 \n  attribute: この Horizon エッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n  deploycheck: デプロイメント互換性を検査します。\n  dev: サービス作成用開発ツール。\n  env: Horizon 環境変数を表示します。\n  eventlog: 現在の登録またはすべての登録のイベント・ログをリストします。\n  exchange: Horizon Exchange のリソースをリストおよび管理します。\n  key: サービスの署名および検査に使用する鍵をリストおよび管理します。 \n  metering: アクティブな契約またはアーカイブ済み契約の課金 (支払) 情報をリストまたは管理します。\n  mms: Horizon モデル管理サービスのリソースをリストおよび管理します。\n  node: この Horizon エッジ・ノードに関する一般情報をリストおよび管理します。\n  policy: この Horizon エッジ・ノードのポリシーをリストおよび管理します。 \n  reginput: (入力した後)「hzn register」コマンドで使用できるこのパターン用の入力ファイル・テンプレートを作成します。 \n            これは、指定されたパターンが使用するサービスを調査して、それらに必要なノード所有者入力を判別します。 \n  register: このエッジ・ノードを管理ハブに登録します。\n  service: この Horizon エッジ・ノードに現在登録されているサービスをリストまたは管理します。\n  status: ノードの現在の Horizon 内部状況を表示します。\n  unregister: この Horizon エッジ・ノードを登録抹消し、再登録できるようにリセットします。\n  userinput: この Horizon エッジ・ノードに現在登録されているサービス利用者の入力をリストまたは管理します。\n  util: ユーティリティー・コマンド。\n  version: Horizon バージョンを表示します。\n  sdo: Horizon SDO 所有権証明書および鍵をリストおよび管理します。\n\n環境変数:\n  HORIZON_URL:  hzn が Horizon エージェント API に接続する URL をオーバーライドします。\n      これによって、ssh トンネルを介したリモート Horizon エージェントの使用が容易になります。\n  HZN_EXCHANGE_URL: 「hzn exhchange」サブコマンドが Horizon Exchange と通信するために\n使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/api/v1。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n  HZN_ORG_ID:  「hzn exchange -o」フラグのデフォルト値。\n      組織 ID を指定するためのものです。\n  HZN_EXCHANGE_USER_AUTH:  「hzn exchange -u」または「hzn\n\t  register -u」フラグのデフォルト値。形式は、「[org/]user:pw」。 HZN_EXCHANGE_USER_AUTH を設定した時に\n\t org を省略した場合は、HZN_ORG_ID を設定できることに注意してください。\n  HZN_FSS_CSSURL: 「hzn mms」サブコマンドが Horizon モデル管理サービスと\n     通信するために使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/css/。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n  HZN_SDO_SVC_URL:  「hzn sdo」サブコマンドが SDO 所有者サービスと通信するために\n\t 使用する URL をオーバーライドします。 (デフォルトで hzn は Horizon エージェントに\n\t\tURL を要求します。)\n\n  これらすべての環境変数およびコマンド・ヘルプに記載されている変数は、\n  ユーザーの構成ファイル: ~/.hzn/hzn.json に JSON フォーマットで指定できます。\n  例えば、\n  {Com____}",
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルト・ロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには「環境変数」セクションを参照してください)。\n \n サブコマンド説明: \n agbot: Horizon 契約ボット・リソースをリストおよび管理します。\n 契約: このエッジ・ノードが Horizon 契約ボットで作成した契約をリストまたは管理します。\n マシン・アーキテクチャーを表示します。\n 属性: この Horizon エッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n deploycheck: デプロイメントの互換性を確認します。\n dev: サービスの作成のための開発ツール。\n env: Horizon 環境変数を表示します。\n eventlog: 現行またはすべての登録のイベント・ログをリストします。\n exchange: リスト、Horizon キーを管理します。\n mms: Horizon モデル管理サービス・リソースをリストおよび管理します。\n nmstatus: ローカル・ノードのノード管理状況をリストおよび管理します。\n node: この Horizon エッジ・ノードに関する一般情報をリストおよび管理します。\n nodemanagement: ノード管理のマニフェストとエージェント・ファイルをリストおよび管理します。\n policy: この Horizon ノードのポリシーをリストおよび管理します。\n reginput:「hzn register」コマンドに使用できる、このパターンの入力ファイル・テンプレートを作成します。\n register: このエッジ・ノードを管理ハブに登録します。\n secretsmanager: シークレット・マネージャー内のシークレットをリストして管理します。\n service: この Horizon エッジ・ノードに現在登録されているサービスをリストまたは管理します。\n status: このノードの現在の horizon 内部状況を表示します。\n unregister: この Horizon 入力エッジ・ノードを登録解除およびリセットします。\n Horizon バージョンを表示します。\n sdo: Horizon SDO 所有権 voucher およびキーをリストおよび管理します。\n \n 環境変数: \n HORIZON_URL: hzn が Horizon Agent API に接続する URL をオーバーライドします。\n これにより、ssh トンネル経由でリモート Horizon エージェントを使用できます。\n HZN_EXCHANGE_URL:「hzn exchange」サブコマンドが\nHorizon Exchange との通信に使用する URL をオーバーライドします。たとえば、\n https://exchange.bluehorizon.network/api/v1。 (デフォルトでは、hzn は Horizon エージェントに \n URL を要求します。) \n HZN_ORG_ID: 'hzn exchange -o' フラグのデフォルト値。\n 組織 ID 'を指定します。\n HZN_EXCHANGE_USER_AUTH:'[org/]user:pw' の形式の 'hzn exchange -u' または 'hzn\n  register -u' フラグのデフォルト値。 HZN_EXCHANGE_USER_AUTH が設定されているときに \n 組織が省略された場合は、HZN_ORG_ID を設定できます。\n HZN_FSS_CSSURL:「hzn mms」サブコマンドが Horizon モデル管理サービスとの通信に \n 使用する URL をオーバーライドします。\n 例: \n https://exchange.bluehorizon.network/css/ (デフォルトでは、\n hzn は Horizon エージェントに URL を要求します。) \n HZN_SDO_SVC_URL:「hzn sdo」サブコマンドが SDO 所有者サービスとの通信に \n 使用する URL をオーバーライドします。 (デフォルトでは、hzn は Horizon エージェントに URL を要求します。) \n \n これらすべての環境変数と、コマンド・ヘルプに記載されている環境変数は、\n ユーザーの構成ファイル ~/.hzn/hzn.json に JSON 形式で指定できます。\n 例: \n {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -1985,21 +2144,27 @@
       "fuzzy": true
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "message": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange ノード ID。 --node-pol および --node-ui とは同時に指定することはできません。 省略された場合、現行デバイスの登録に使用されているノード ID が使用されます。 組織 ID を前に付加していない場合、-o の値が自動的に前に付加されます。",
+      "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "message": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange ノード ID。 --ha-group、--node-pol、および --node-ui と同時に指定することはできません。 省略した場合は、現在のデバイスが登録されているノード ID が使用されます。 このフラグは、複数のノードを指定するために繰り返すことができます。 ノード ID の前に組織 ID を付加しない場合は、自動的に -o 値が前に付加されます。",
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-      "translation": "ノード・ポリシーを含んだ JSON 入力ファイルの名前。 -n、-p、および -P とは同時に指定することはできません。",
+      "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "message": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "translation": "HA グループの名前です。 -n、--node-pol、および --node-ui と同時に指定することはできません。",
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-      "message": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-      "translation": "ノードのユーザー入力を含んだ JSON 入力ファイルの名前。 -n とは同時に指定することはできません。",
+      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
+      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
+      "translation": "ノード・ポリシーを含む JSON 入力ファイル名。 -n、--ha-group、-p、および -P と同時に指定することはできません。",
+      "fuzzy": true
+    },
+    {
+      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
+      "message": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
+      "translation": "ノード・ユーザー入力を含む JSON 入力ファイル名。 -n, --ha-group と同時に指定することはできません。",
       "fuzzy": true
     },
     {
@@ -2051,15 +2216,21 @@
       "fuzzy": true
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "message": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange ノード ID。 --node-pol とは同時に指定することはできません。 省略された場合、現行デバイスの登録に使用されているノード ID が使用されます。 組織 ID を前に付加していない場合、-o の値が自動的に前に付加されます。",
+      "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "message": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange ノード ID。 --ha-group および --node-pol と同時に指定することはできません。 省略した場合は、現在のデバイスが登録されているノード ID が使用されます。 このフラグは、複数のノードを指定するために繰り返すことができます。 ノード ID の前に組織 ID を付加しない場合は、自動的に -o 値が前に付加されます。",
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-      "translation": "ノード・ポリシーを含んだ JSON 入力ファイルの名前。 -n とは同時に指定することはできません。",
+      "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
+      "message": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
+      "translation": "HA グループの名前です。 -n および --node-pol と同時に指定することはできません。",
+      "fuzzy": true
+    },
+    {
+      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
+      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
+      "translation": "ノード・ポリシーを含む JSON 入力ファイル名。 -n, --ha-group と同時に指定することはできません。",
       "fuzzy": true
     },
     {
@@ -2120,6 +2291,12 @@
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "message": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "translation": "Horizon Exchange ノード ID。 --node-ui とは同時に指定することはできません。 省略された場合、現行デバイスの登録に使用されているノード ID が使用されます。 組織 ID を前に付加していない場合、-o の値が自動的に前に付加されます。",
+      "fuzzy": true
+    },
+    {
+      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
+      "message": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
+      "translation": "ノードのユーザー入力を含んだ JSON 入力ファイルの名前。 -n とは同時に指定することはできません。",
       "fuzzy": true
     },
     {
@@ -2763,6 +2940,12 @@
       "fuzzy": true
     },
     {
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "translation": "-u フラグが指定されていない場合にノード・リソースを照会して変更するために資格情報として使用する Horizon Exchange ノード ID および トークン。 -n のデフォルトとして HZN_EXCHANGE_NODE_AUTH が使用されます。 ノードの組織を前に付加していない場合、-o の値が自動的に前に付加されます。",
+      "fuzzy": true
+    },
+    {
       "id": "Display detailed output about the node management policies.",
       "message": "Display detailed output about the node management policies.",
       "translation": "ノード管理ポリシーに関する詳細出力を表示します。",
@@ -2847,6 +3030,42 @@
       "fuzzy": true
     },
     {
+      "id": "Enable a node management policy in the Horizon Exchange.",
+      "message": "Enable a node management policy in the Horizon Exchange.",
+      "translation": "Horizon Exchange でノード管理ポリシーを有効にします。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to enable.",
+      "message": "The name of the node management policy to enable.",
+      "translation": "使用可能にするノード管理ポリシーの名前。",
+      "fuzzy": true
+    },
+    {
+      "id": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
+      "message": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
+      "translation": "使用可能にされたノード管理ポリシーの開始時刻。 開始時刻は RFC3339 タイム・スタンプまたは「now」でなければなりません。",
+      "fuzzy": true
+    },
+    {
+      "id": "The start window of the enabled node management policy.",
+      "message": "The start window of the enabled node management policy.",
+      "translation": "使用可能にされたノード管理ポリシーの開始ウィンドウ。",
+      "fuzzy": true
+    },
+    {
+      "id": "Disable a node management policy in the Horizon Exchange.",
+      "message": "Disable a node management policy in the Horizon Exchange.",
+      "translation": "Horizon Exchange 内のノード管理ポリシーを無効にします。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to disable.",
+      "message": "The name of the node management policy to disable.",
+      "translation": "使用不可にするノード管理ポリシーの名前。",
+      "fuzzy": true
+    },
+    {
       "id": "List and manage nodes in the Horizon Exchange",
       "message": "List and manage nodes in the Horizon Exchange",
       "translation": "Horizon Exchange のノードをリストおよび管理します。",
@@ -2856,12 +3075,6 @@
       "id": "Add or replace the node policy in the Horizon Exchange.",
       "message": "Add or replace the node policy in the Horizon Exchange.",
       "translation": "Horizon Exchange 内のノード・ポリシーを追加または置換します。",
-      "fuzzy": true
-    },
-    {
-      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "-u フラグが指定されていない場合にノード・リソースを照会して変更するために資格情報として使用する Horizon Exchange ノード ID および トークン。 -n のデフォルトとして HZN_EXCHANGE_NODE_AUTH が使用されます。 ノードの組織を前に付加していない場合、-o の値が自動的に前に付加されます。",
       "fuzzy": true
     },
     {
@@ -3036,6 +3249,24 @@
       "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
       "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
       "translation": "この 1 つのノード管理ポリシーのみを含めるように出力をフィルタリングします。 単一ノード管理ポリシー状況オブジェクトの内容全体を表示するには、--long フラグと一緒に使用してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "message": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "translation": "このノードのノード管理ポリシー (nmp) を再評価してください。 アップグレードが失敗して問題が修正されたときに nmp を再試行するには、このコマンドを実行します。 ノードがまだアップグレード中の場合は、このコマンドを実行しないでください。",
+      "fuzzy": true
+    },
+    {
+      "id": "Re-evaluate node management policy for this node.",
+      "message": "Re-evaluate node management policy for this node.",
+      "translation": "このノードのノード管理ポリシーを再評価してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
+      "message": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
+      "translation": "再評価の対象となるノード管理ポリシーの名前。 省略すると、このノードのすべてのノード管理ポリシーが再評価されます。",
       "fuzzy": true
     },
     {
@@ -3709,6 +3940,102 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage high availability (HA) groups in the Horizon Exchange",
+      "message": "List and manage high availability (HA) groups in the Horizon Exchange",
+      "translation": "Horizon Exchange 内の高可用性 (HA) グループをリストおよび管理します。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the HA group resources from the Horizon Exchange.",
+      "message": "Display the HA group resources from the Horizon Exchange.",
+      "translation": "Horizon Exchange から HA グループ・リソースを表示します。",
+      "fuzzy": true
+    },
+    {
+      "id": "List just this one HA group.",
+      "message": "List just this one HA group.",
+      "translation": "この HA グループを 1 つだけリストします。",
+      "fuzzy": true
+    },
+    {
+      "id": "When listing all of the HA groups, show the entire resource of each group, instead of just the name.",
+      "message": "When listing all of the HA groups, show the entire resource of each group, instead of just the name.",
+      "translation": "すべての HA グループをリストする場合は、名前だけではなく、各グループのリソース全体を表示します。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display an empty HA group template that can be filled in.",
+      "message": "Display an empty HA group template that can be filled in.",
+      "translation": "入力可能な空の HA グループ・テンプレートを表示します。",
+      "fuzzy": true
+    },
+    {
+      "id": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
+      "message": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
+      "translation": "Horizon Exchange 内の HA グループを追加または置換します。 空の HA グループ・テンプレートには「hzn exchange hagroup new」を使用します。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
+      "message": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
+      "translation": "追加または上書きする HA グループの名前です。 省略した場合は、入力ファイルの名前属性が使用されます。",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
+      "message": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "Horizon Exchange 内の HA グループを作成/更新するために必要なメタデータを含む JSON ファイルのパス。 標準入力から読み取るには -f- を指定します。",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove the HA group in the Horizon Exchange.",
+      "message": "Remove the HA group in the Horizon Exchange.",
+      "translation": "Horizon Exchange 内の HA グループを削除します。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group to be removed.",
+      "message": "The name of the HA group to be removed.",
+      "translation": "除去する HA グループの名前です。",
+      "fuzzy": true
+    },
+    {
+      "id": "Manage HA group members in the Horizon Exchange",
+      "message": "Manage HA group members in the Horizon Exchange",
+      "translation": "Horizon Exchange 内の HA グループ・メンバーを管理します",
+      "fuzzy": true
+    },
+    {
+      "id": "Add nodes to the HA group in the Horizon Exchange.",
+      "message": "Add nodes to the HA group in the Horizon Exchange.",
+      "translation": "Horizon Exchange 内の HA グループにノードを追加します。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group.",
+      "message": "The name of the HA group.",
+      "translation": "HA グループの名前です。",
+      "fuzzy": true
+    },
+    {
+      "id": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
+      "message": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
+      "translation": "HA グループに追加されるノード。 このフラグは、異なるノードを指定するために繰り返すことができます。",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove nodes from the HA group in the Horizon Exchange.",
+      "message": "Remove nodes from the HA group in the Horizon Exchange.",
+      "translation": "Horizon Exchange 内の HA グループからノードを削除します。",
+      "fuzzy": true
+    },
+    {
+      "id": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
+      "message": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
+      "translation": "HA グループから削除されるノード。 このフラグは、異なるノードを指定するために繰り返すことができます。",
+      "fuzzy": true
+    },
+    {
       "id": "Display the status of the Horizon Exchange.",
       "message": "Display the status of the Horizon Exchange.",
       "translation": "Horizon Exchange の状況を表示します。",
@@ -4207,6 +4534,12 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage manifests and agent files for node management.",
+      "message": "List and manage manifests and agent files for node management.",
+      "translation": "ノード管理用のマニフェストとエージェント・ファイルをリストして管理します。",
+      "fuzzy": true
+    },
+    {
       "id": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
       "message": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
       "translation": "ノード管理リソースを照会および作成するための Horizon ユーザー資格情報。 指定しない場合、HZN_EXCHANGE_USER_AUTH がデフォルトとして使用されます。 ユーザーの組織の前に付加しない場合は、自動的に -o 値が前に付加されます。",
@@ -4240,6 +4573,30 @@
       "id": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
       "translation": "マニフェスト・データを含む JSON ファイルのパス。 標準入力から読み取るには -f- を指定します。",
+      "fuzzy": true
+    },
+    {
+      "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+      "message": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+      "translation": "署名する前にマニフェスト・データをハッシュするために使用されるハッシュ・アルゴリズム。これにより、アップロードおよびダウンロード時のデータ保全性が確保されます。 サポートされるハッシュ・アルゴリズムは SHA1 または SHA256で、デフォルトは SHA1です。 --noIntegrity フラグと同時に指定することはできません",
+      "fuzzy": true
+    },
+    {
+      "id": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+      "message": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+      "translation": "アップロードまたはダウンロードされるマニフェスト・データのハッシュ。 コマンドがハッシュを自動的に計算できるようにするのではなく、ハッシュを指定する場合は、このフラグを使用します。 ハッシュは、SHA1 または SHA256 アルゴリズムを使用して生成する必要があります。 ハッシュが SHA256 を使用して生成された場合は、-a フラグを指定する必要があります。 このフラグは、--noIntegrity と同時に指定することはできません。",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+      "message": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+      "translation": "マニフェストへの署名に使用される秘密鍵ファイルのパス。 マニフェストの保全性を確保するために、対応する公開鍵が MMS に保管されます。 指定しない場合は、環境変数 HZN_PRIVATE_KEY_FILE を使用して秘密鍵が検出されます。 設定しない場合は、~/.hzn/keys/service.private.key が使用されます。 存在しない場合は、この公開操作に対してのみ RSA 鍵ペアが生成され、秘密鍵は破棄されます。",
+      "fuzzy": true
+    },
+    {
+      "id": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
+      "message": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
+      "translation": "公開コマンドは、アップロードされたマニフェスト・データに対してデータ保全性検査を実行しません。 --hashAlgo および --hash と同時に指定することはできません",
       "fuzzy": true
     },
     {
@@ -4505,6 +4862,12 @@
       "fuzzy": true
     },
     {
+      "id": "The name of the HA group that this node will be added to.",
+      "message": "The name of the HA group that this node will be added to.",
+      "translation": "このノードが追加される先の HA グループの名前。",
+      "fuzzy": true
+    },
+    {
       "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
       "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
       "translation": "指定されたサービスの実行がこのノード上で開始されるまで待機します。 パターンへの登録時に、パターン内のすべてのサービスを監視するには「*」を使用します。 ポリシーへの登録時には、「*」は -s に対して有効な値ではありません。 このフラグはエッジ・クラスター・ノードではサポートされません。",
@@ -4724,6 +5087,42 @@
       "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
       "message": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
       "translation": "更新済みユーザー入力オブジェクトを含む JSON ファイルへのファイル・パス。 標準入力から読み取るには、-f- を指定します。",
+      "fuzzy": true
+    },
+    {
+      "id": "List and manage node management status for the local node.",
+      "message": "List and manage node management status for the local node.",
+      "translation": "ローカル・ノードのノード管理状況をリストおよび管理します。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the node managment status for the local node.",
+      "message": "Display the node managment status for the local node.",
+      "translation": "ローカル・ノードのノード管理状況を表示します。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
+      "message": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
+      "translation": "ノード管理ポリシーの名前です。 省略すると、このノードのすべての管理ポリシーの状況が表示されます。",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the entire contents of each node management status object.",
+      "message": "Show the entire contents of each node management status object.",
+      "translation": "各ノード管理状況オブジェクトの内容全体を表示します。",
+      "fuzzy": true
+    },
+    {
+      "id": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "message": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "translation": "ノード管理ポリシー (nmp) を再評価してください。 アップグレードが失敗して問題が修正されたときに nmp を再試行するには、このコマンドを実行します。 ノードがまだアップグレード中の場合は、このコマンドを実行しないでください。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
+      "message": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
+      "translation": "ノード管理ポリシーの名前です。 省略すると、このノードのすべての管理ポリシーが再評価されます。",
       "fuzzy": true
     },
     {
@@ -5030,6 +5429,18 @@
       "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
       "message": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
       "translation": "この証明書に関連付けられたエッジ・デバイスに使用するデプロイメント・パターン名。 パターンがノードとは異なる組織のものである場合は、「other_org/pattern」の形式を使用します。 これは、-e および --policy とは同時に指定することはできません。",
+      "fuzzy": true
+    },
+    {
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
+      "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
+      "translation": "このバウチャーに関連付けられたエッジ・デバイスにデプロイされるサービスに必要なユーザー入力変数を設定またはオーバーライドする JSON ファイル。 形式を確認するには、「hzn userinput new」を使用してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
+      "message": "The name of the HA group that the edge device associated with this voucher will be added to.",
+      "translation": "このバウチャーに関連付けられているエッジ・デバイスが追加される HA グループの名前。",
       "fuzzy": true
     },
     {
@@ -7447,6 +7858,12 @@
       "fuzzy": true
     },
     {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+      "message": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+      "translation": "-u フラグまたは HZN_EXCHANGE_USER_AUTH のいずれかを使用して Exchange 認証を指定する必要があります。",
+      "fuzzy": true
+    },
+    {
       "id": "Verifying public key file ...",
       "message": "Verifying public key file ...",
       "translation": "公開鍵ファイルを検証中 ...",
@@ -7952,6 +8369,22 @@
       "fuzzy": true
     },
     {
+      "id": "Problem validating org name: {Err}",
+      "message": "Problem validating org name: {Err}",
+      "translation": "組織名の検証中に問題が発生しました: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error creating StdoutPipe for command: {Err}",
       "message": "Error creating StdoutPipe for command: {Err}",
       "translation": "コマンドの StdoutPipe を作成しているときにエラーが発生しました: {Err}",
@@ -8168,6 +8601,40 @@
       "fuzzy": true
     },
     {
+      "id": "-n and --ha-group are mutually exclusive.",
+      "message": "-n and --ha-group are mutually exclusive.",
+      "translation": "-n と --ha-group は同時に指定できません。",
+      "fuzzy": true
+    },
+    {
+      "id": "--ha-group and --node-pol are mutually exclusive.",
+      "message": "--ha-group and --node-pol are mutually exclusive.",
+      "translation": "--ha-group と --node-pol は相互に排他的です。",
+      "fuzzy": true
+    },
+    {
+      "id": "--ha-group and --node-ui are mutually exclusive.",
+      "message": "--ha-group and --node-ui are mutually exclusive.",
+      "translation": "--ha-group と --node-ui は同時に指定することはできません。",
+      "fuzzy": true
+    },
+    {
+      "id": "The HA group {HaGroupName} does not have members.",
+      "message": "The HA group {HaGroupName} does not have members.",
+      "translation": "HA グループ {HaGroupName} にはメンバーがありません。",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "-n and --node-pol are mutually exclusive.",
       "message": "-n and --node-pol are mutually exclusive.",
       "translation": "-n と --node-pol は同時に指定することはできません。",
@@ -8189,28 +8656,6 @@
       "id": "-p and -P are mutually exclusive.",
       "message": "-p and -P are mutually exclusive.",
       "translation": "-p と -P は同時に指定することはできません。",
-      "fuzzy": true
-    },
-    {
-      "id": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-      "message": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-      "translation": "ノード、デプロイメント・ポリシー、およびサービス・ポリシーを照会する場合、-u を使用して Exchange 資格情報を指定してください。",
-      "fuzzy": true
-    },
-    {
-      "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
-      "message": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
-      "translation": "Exchange 資格情報用の組織を -o を使用して指定してください: {CredToUse}。",
-      "placeholders": [
-        {
-          "id": "CredToUse",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "*credToUse"
-        }
-      ],
       "fuzzy": true
     },
     {
@@ -8356,6 +8801,30 @@
       "fuzzy": true
     },
     {
+      "id": "HA group {HaGroupName} does not exist in org {HaGroupOrg}.",
+      "message": "HA group {HaGroupName} does not exist in org {HaGroupOrg}.",
+      "translation": "HA グループ {HaGroupName} が組織 {HaGroupOrg}に存在しません。",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to unmarshal json input file {FilePath}: {Err}",
       "message": "failed to unmarshal json input file {FilePath}: {Err}",
       "translation": "JSON 入力ファイル {FilePath} のアンマーシャルに失敗しました: {Err}",
@@ -8411,6 +8880,22 @@
       "id": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
       "message": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
       "translation": "ノード、デプロイメント・ポリシー、サービス、およびサービス・ポリシーを照会する場合、-u を使用して Exchange 資格情報を指定してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
+      "message": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
+      "translation": "Exchange 資格情報用の組織を -o を使用して指定してください: {CredToUse}。",
+      "placeholders": [
+        {
+          "id": "CredToUse",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "credToUse"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -13013,6 +13498,492 @@
       "fuzzy": true
     },
     {
+      "id": "HA group {HaGroupName} not found in org {HaGroupOrg}",
+      "message": "HA group {HaGroupName} not found in org {HaGroupOrg}",
+      "translation": "HA グループ {HaGroupName} が組織 {HaGroupOrg} に見つかりません",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'hzn exchange hagroup list' output: {Err}",
+      "message": "failed to marshal 'hzn exchange hagroup list' output: {Err}",
+      "translation": "「hzn exchange hagroup list」の出力のマーシャルに失敗しました: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Optional. The name of the HA group.",
+      "message": "Optional. The name of the HA group.",
+      "translation": "オプション。 HA グループの名前です。",
+      "fuzzy": true
+    },
+    {
+      "id": "A description of the HA group.",
+      "message": "A description of the HA group.",
+      "translation": "HA グループの説明です。",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of node names that are members of this group.",
+      "message": "A list of node names that are members of this group.",
+      "translation": "このグループのメンバーになっているノード名のリスト。",
+      "fuzzy": true
+    },
+    {
+      "id": "HA group name is not specified.",
+      "message": "HA group name is not specified.",
+      "translation": "HA グループ名が指定されていません。",
+      "fuzzy": true
+    },
+    {
+      "id": "HA group description cannot be empty.",
+      "message": "HA group description cannot be empty.",
+      "translation": "HA グループの説明を空にすることはできません。",
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
+      "message": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
+      "translation": "Horizon Exchange で HA グループ {HaGroupOrg}/{HaGroupName} が更新されました",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName}: {Msg}",
+      "message": "Cannot create HA group {HaGroupOrg}/{HaGroupName}: {Msg}",
+      "translation": "HA グループ {HaGroupOrg}/{HaGroupName}を作成できません: {Msg}",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "Msg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
+      "message": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
+      "translation": "Horizon Exchange に追加された HA グループ {HaGroupOrg}/{HaGroupName}",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
+      "translation": "組織 {HaGroupOrg} の HA グループ {HaGroupName} を Horizon Exchange から削除してもよろしいですか?",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
+      "message": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
+      "translation": "HA グループ {HaGroupName} が組織 {HaGroupOrg} に見つかりません",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupOrg}/{HaGroupName} removed from the Horizon Exchange.",
+      "message": "HA group {HaGroupOrg}/{HaGroupName} removed from the Horizon Exchange.",
+      "translation": "HA グループ {HaGroupOrg}/{HaGroupName} が Horizon Exchange から削除されました。",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
+      "message": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
+      "translation": "ノード組織は、ノード「{NodeOrg}/{NodeName}」のグループ組織 {HaGroupOrg} と異なります",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "node '{NodeName}' not found in org {NodeOrg}",
+      "message": "node '{NodeName}' not found in org {NodeOrg}",
+      "translation": "ノード「{NodeName}」が組織 {NodeOrg} に見つかりません",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
+      "message": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
+      "translation": "ノード {NodeName} は既に HA グループ {HaGroupOrg}/{HaGroupName}に含まれています。 ノードをスキップしています。",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+      "message": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+      "translation": "以下のノードが HA グループ {HaGroupOrg}/{HaGroupName}に追加されます:「{JoinaddedNodes_}」",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "JoinaddedNodes_",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "strings.Join(addedNodes, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+      "message": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+      "translation": "警告: 以下のノードは異なるグループに属しているため、グループに追加できません:「{JoinfailedNodes_}」",
+      "placeholders": [
+        {
+          "id": "JoinfailedNodes_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(failedNodes, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
+      "message": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
+      "translation": "Horizon Exchange 内の組織 {HaGroupOrg} について、HA グループ {HaGroupName} からノード {NodeNames} を削除しますか?",
+      "placeholders": [
+        {
+          "id": "NodeNames",
+          "string": "%[1]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "nodeNames"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} is not in HA group {HaGroupOrg}/{HaGroupName}.",
+      "message": "Node {NodeName} is not in HA group {HaGroupOrg}/{HaGroupName}.",
+      "translation": "ノード {NodeName} は HA グループ {HaGroupOrg}/{HaGroupName} にありません。",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "message": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "translation": "Horizon Exchange 内の HA グループ {HaGroupOrg}/{HaGroupName} からノード「{JoinnodesToRemove_}」が削除されます。",
+      "placeholders": [
+        {
+          "id": "JoinnodesToRemove_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(nodesToRemove, \",\")"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "message": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "translation": "Horizon Exchange 内の HA グループ {HaGroupOrg}/{HaGroupName} からノード「{JoinnodesToRemove_}」が削除されます。",
+      "placeholders": [
+        {
+          "id": "JoinnodesToRemove_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(nodesToRemove, \",\")"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "NMP {NmpName} not found in org {NmpOrg}",
       "message": "NMP {NmpName} not found in org {NmpOrg}",
       "translation": "NMP {NmpName} が組織 {NmpOrg} に見つかりません",
@@ -13059,27 +14030,21 @@
       "fuzzy": true
     },
     {
-      "id": "(Optional) A much longer description of the policy.",
-      "message": "(Optional) A much longer description of the policy.",
-      "translation": "(オプション) ポリシーの長い説明。",
+      "id": "A much longer description of the policy.",
+      "message": "A much longer description of the policy.",
+      "translation": "ポリシーの説明がはるかに長くなっています。",
       "fuzzy": true
     },
     {
-      "id": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
-      "message": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
-      "translation": "(オプション) <property name> <operator> <property value> の形式の制約リストであり、",
+      "id": "A list of policy properties that describe this policy.",
+      "message": "A list of policy properties that describe this policy.",
+      "translation": "このポリシーを記述するポリシー・プロパティーのリスト。",
       "fuzzy": true
     },
     {
-      "id": "(Optional) A list of policy properties that describe this policy.",
-      "message": "(Optional) A list of policy properties that describe this policy.",
-      "translation": "(オプション) このポリシーを記述するポリシー・プロパティーのリスト。",
-      "fuzzy": true
-    },
-    {
-      "id": "(Optional) This policy applies to nodes using one of these patterns.",
-      "message": "(Optional) This policy applies to nodes using one of these patterns.",
-      "translation": "(オプション) このポリシーは、これらのパターンのいずれかを使用するノードに適用されます。",
+      "id": "This policy applies to nodes using one of these patterns.",
+      "message": "This policy applies to nodes using one of these patterns.",
+      "translation": "このポリシーは、これらのパターンのいずれかを使用するノードに適用されます。",
       "fuzzy": true
     },
     {
@@ -13101,9 +14066,9 @@
       "fuzzy": true
     },
     {
-      "id": "(Optional) Assertions on how the agent should update itself.",
-      "message": "(Optional) Assertions on how the agent should update itself.",
-      "translation": "(オプション) エージェントが自身を更新する方法についてのアサーション。",
+      "id": "Assertions on how the agent should update itself.",
+      "message": "Assertions on how the agent should update itself.",
+      "translation": "エージェントが自身を更新する方法についてのアサーション。",
       "fuzzy": true
     },
     {
@@ -13146,6 +14111,36 @@
       "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
       "message": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
       "translation": "ノード管理ポリシーに制約がないため、管理ポリシーがすべてのノードにデプロイされる可能性があります。 --no-constraint を指定して、これが受け入れ可能であることを確認してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy.",
+      "message": "An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy.",
+      "translation": "AgentAutoUpgradePolicy が定義されましたが、マニフェストが定義されていませんでした。 AgentAutoUpgradePolicy を使用して NMP を追加する前に、CSS に保管されているマニフェストを指定してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "An AgentAutoUpgradePolicy was defined with manifest '{FullManifest}' which does not exist in org {ManOrg}.",
+      "message": "An AgentAutoUpgradePolicy was defined with manifest '{FullManifest}' which does not exist in org {ManOrg}.",
+      "translation": "AgentAutoUpgradePolicy は、組織 {ManOrg}に存在しないマニフェスト「{FullManifest}」を使用して定義されました。",
+      "placeholders": [
+        {
+          "id": "FullManifest",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fullManifest"
+        },
+        {
+          "id": "ManOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manOrg"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -13381,9 +14376,9 @@
       "fuzzy": true
     },
     {
-      "id": "failed to marshal 'exchange node list' output: {Err}",
-      "message": "failed to marshal 'exchange node list' output: {Err}",
-      "translation": "「exchange node list」の出力のマーシャルに失敗しました: {Err}",
+      "id": "Failed to parse start time: {Err}. The start time must be in RFC3339 format or set to \"now\".",
+      "message": "Failed to parse start time: {Err}. The start time must be in RFC3339 format or set to \"now\".",
+      "translation": "開始時刻を解析できませんでした: {Err}。 開始時刻は RFC3339 形式であるか、「now」に設定する必要があります。",
       "placeholders": [
         {
           "id": "Err",
@@ -13397,25 +14392,145 @@
       "fuzzy": true
     },
     {
-      "id": "node '{Node}' not found in org {NodeOrg}",
-      "message": "node '{Node}' not found in org {NodeOrg}",
-      "translation": "ノード「{Node}」は組織 {NodeOrg} 内で検出されませんでした",
+      "id": "Failed to parse start window: {Err}. The start window must be Integer.",
+      "message": "Failed to parse start window: {Err}. The start window must be Integer.",
+      "translation": "開始ウィンドウを解析できませんでした: {Err}。 開始ウィンドウは整数でなければなりません。",
       "placeholders": [
         {
-          "id": "Node",
-          "string": "%[1]s",
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
+      "translation": "ノード管理ポリシー {NmpFullName} は Horizon Exchange で既に有効になっています",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "node"
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
+      "translation": "Horizon Exchange で有効になっているノード管理ポリシー {NmpFullName}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot enable node management policy {NmpFullName}: {Msg}",
+      "message": "Cannot enable node management policy {NmpFullName}: {Msg}",
+      "translation": "ノード管理ポリシー {NmpFullName}を有効にできません: {Msg}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
         },
         {
-          "id": "NodeOrg",
-          "string": "%[2]s",
+          "id": "Msg",
+          "string": "%[2]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
-          "expr": "nodeOrg"
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
+      "translation": "ノード管理ポリシー {NmpFullName} は Horizon Exchange で既に無効になっています",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
+      "translation": "ノード管理ポリシー {NmpFullName} が Horizon Exchange で無効になっています",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot disable node management policy {NmpFullName}: {Msg}",
+      "message": "Cannot disable node management policy {NmpFullName}: {Msg}",
+      "translation": "ノード管理ポリシー {NmpFullName}を無効にできません: {Msg}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        },
+        {
+          "id": "Msg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'exchange node list' output: {Err}",
+      "message": "failed to marshal 'exchange node list' output: {Err}",
+      "translation": "「exchange node list」の出力のマーシャルに失敗しました: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -13749,7 +14864,7 @@
           "id": "Device",
           "string": "%[1]s",
           "type": "github.com/open-horizon/anax/exchange.Device",
-          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
+          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; HAGroup string \"json:\\\"ha_group\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "v"
         },
@@ -14329,6 +15444,70 @@
       "fuzzy": true
     },
     {
+      "id": "No management status found for node {NodeName} in org {NodeOrg}",
+      "message": "No management status found for node {NodeName} in org {NodeOrg}",
+      "translation": "組織 {NodeOrg} 内のノード {NodeName} の管理状況が見つかりません",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management status for {NmpStatusNameNoOrg} is reset.",
+      "message": "Node management status for {NmpStatusNameNoOrg} is reset.",
+      "translation": "{NmpStatusNameNoOrg} のノード管理状況がリセットされます。",
+      "placeholders": [
+        {
+          "id": "NmpStatusNameNoOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpStatusNameNoOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The the Horizon agent for node {NodeOrg}/{NodeName} will re-evaluate the management policies.",
+      "message": "The the Horizon agent for node {NodeOrg}/{NodeName} will re-evaluate the management policies.",
+      "translation": "ノード {NodeOrg}/{NodeName} の Horizon エージェントは、管理ポリシーを再評価します。",
+      "placeholders": [
+        {
+          "id": "NodeOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeOrg"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Verifying userInputs with the node pattern {Pattern}.",
       "message": "Verifying userInputs with the node pattern {Pattern}.",
       "translation": "ノード・パターン {Pattern} を使用して userInputs を検証しています。",
@@ -14544,6 +15723,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid organization. Organization cannot contain: [ _ , <space> ' ?]",
+      "message": "Invalid organization. Organization cannot contain: [ _ , <space> ' ?]",
+      "translation": "組織が無効です。 組織に [ _ , <space> ' ?] を含めることはできません",
       "fuzzy": true
     },
     {
@@ -15905,15 +17090,15 @@
       "fuzzy": true
     },
     {
-      "id": "The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch",
-      "message": "The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch",
-      "translation": "次のプロパティー値はオーバーライドされます: service.url、service.name、service.org、service.version、service.arch",
+      "id": "The following property values will be overridden: service.url, service.name, service.org, service.version, service.arch",
+      "message": "The following property values will be overridden: service.url, service.name, service.org, service.version, service.arch",
+      "translation": "次のプロパティー値がオーバーライドされます: service.url、service.name、service.org、service.version、service.arch",
       "fuzzy": true
     },
     {
-      "id": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "サービス・ポリシーを更新中です。このサービス・ポリシーに基づいてすべての契約が再評価されます。 既存の契約は解除および再交渉される場合があります。",
+      "id": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+      "message": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "サービス・ポリシーを更新し、このサービス・ポリシーに基づいてすべての契約を再評価します。 既存の契約はキャンセルされ、再交渉される可能性があります。",
       "fuzzy": true
     },
     {
@@ -17147,6 +18332,60 @@
       "fuzzy": true
     },
     {
+      "id": "failed to marshal 'hzn nmp status' output: {Err}",
+      "message": "failed to marshal 'hzn nmp status' output: {Err}",
+      "translation": "「hzn nmp status」出力のマーシャルに失敗しました: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The following node management policy will be re-evaluated: {NmpName}.",
+      "message": "The following node management policy will be re-evaluated: {NmpName}.",
+      "translation": "次のノード管理ポリシーが再評価されます: {NmpName}。",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No node management policy for this node.",
+      "message": "No node management policy for this node.",
+      "translation": "このノードのノード管理ポリシーがありません。",
+      "fuzzy": true
+    },
+    {
+      "id": "The following node management policies will be re-evaluated: {JoinallIDs_}.",
+      "message": "The following node management policies will be re-evaluated: {JoinallIDs_}.",
+      "translation": "次のノード管理ポリシーが再評価されます: {JoinallIDs_}。",
+      "placeholders": [
+        {
+          "id": "JoinallIDs_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(allIDs, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Failed to get proper response from Horizon agent",
       "message": "Failed to get proper response from Horizon agent",
       "translation": "Horizon エージェントから適切な応答を取得できませんでした",
@@ -17370,6 +18609,70 @@
       "id": "must specify --type and --id with --long",
       "message": "must specify --type and --id with --long",
       "translation": "--type および --id を --long と一緒に指定する必要があります",
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot specify --skipDigitalSig with --hash",
+      "message": "Cannot specify --skipDigitalSig with --hash",
+      "translation": "--hash と一緒に --skipDigitalSig を指定することはできません",
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot specify --skipDigitalSig with --hashAlgo",
+      "message": "Cannot specify --skipDigitalSig with --hashAlgo",
+      "translation": "--hashAlgo と一緒に --skipDigitalSig を指定することはできません",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
+      "message": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
+      "translation": "--hashAlgo の値が無効です。SHA1 または SHA256 を使用してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
+      "message": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
+      "translation": "データ保全性のために、{HashAlgorithm} によるデジタル署名が実行されます。",
+      "placeholders": [
+        {
+          "id": "HashAlgorithm",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "hashAlgorithm"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
+      "message": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
+      "translation": "マニフェスト {ManifestFile}のデジタル署名に失敗しました。エラー: {Err}",
+      "placeholders": [
+        {
+          "id": "ManifestFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manifestFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Digital sign finished.",
+      "message": "Digital sign finished.",
+      "translation": "デジタル署名が完了しました。",
       "fuzzy": true
     },
     {
@@ -18367,6 +19670,78 @@
       "fuzzy": true
     },
     {
+      "id": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
+      "message": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
+      "translation": "ノードが別の HA グループ {ExistingHagrName}にあるため、指定された HA グループ {HaGroupName} を続行できません。",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "ExistingHagrName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "existingHagrName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node is already in the HA group '{HaGroupName}'.",
+      "message": "The node is already in the HA group '{HaGroupName}'.",
+      "translation": "ノードは既に HA グループ「{HaGroupName}」に含まれています。",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
+      "message": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
+      "translation": "ノード {Org}/{NodeId} は HA グループ {HaGroupName}にあります。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeId"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Updating the node policy...",
       "message": "Updating the node policy...",
       "translation": "ノード・ポリシーを更新中...",
@@ -18486,6 +19861,142 @@
       "id": "Horizon node is registered. Workload services should begin executing shortly.",
       "message": "Horizon node is registered. Workload services should begin executing shortly.",
       "translation": "Horizon ノードが登録されました。 間もなくワークロード・サービスの実行が始まります。",
+      "fuzzy": true
+    },
+    {
+      "id": "Please specify the user credentials with -u flag in order to create or update the HA group {Org}/{HaGroupName}.",
+      "message": "Please specify the user credentials with -u flag in order to create or update the HA group {Org}/{HaGroupName}.",
+      "translation": "HA グループ {Org}/{HaGroupName}を作成または更新するには、-u フラグを使用してユーザー資格情報を指定してください。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Creating HA group {Org}/{HaGroupName} ...",
+      "message": "Creating HA group {Org}/{HaGroupName} ...",
+      "translation": "HA グループ {Org}/{HaGroupName} を作成しています ...",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {Org}/{HaGroupName} created with node {NodeId} as the member.",
+      "message": "HA group {Org}/{HaGroupName} created with node {NodeId} as the member.",
+      "translation": "HA グループ {Org}/{HaGroupName} は、メンバーとしてノード {NodeId} を使用して作成されました。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Adding node {NodeId} to HA group {Org}/{HaGroupName} ...",
+      "message": "Adding node {NodeId} to HA group {Org}/{HaGroupName} ...",
+      "translation": "ノード {NodeId} を HA グループ {Org}/{HaGroupName} に追加しています ...",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeId} is added to HA group {HaGroupName}.",
+      "message": "Node {NodeId} is added to HA group {HaGroupName}.",
+      "translation": "ノード {NodeId} が HA グループ {HaGroupName}に追加されました。",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -18709,39 +20220,87 @@
       "fuzzy": true
     },
     {
-      "id": "could not validate node ID '{NodeId}': {Err}",
-      "message": "could not validate node ID '{NodeId}': {Err}",
-      "translation": "ノード ID「{NodeId}」を検証できませんでした: {Err}",
+      "id": "invalid node ID: {Err}",
+      "message": "invalid node ID: {Err}",
+      "translation": "無効なノード ID: {Err}",
       "placeholders": [
         {
-          "id": "NodeId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nodeId"
-        },
-        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[1]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 1,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "message": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "translation": "無効なノード ID: A-Za-z0-9、Unicode 文字、および特殊記号の !-*+()?.,:&@ のみ使用できます",
+      "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+      "message": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+      "translation": "HA グループ組織 ID「{HaGroupOrg}」が、ノード組織 ID「{Org}」と異なります。",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "invalid node ID: Whitespace is not permitted",
-      "message": "invalid node ID: Whitespace is not permitted",
-      "translation": "無効なノード ID: 空白文字は使用できません",
+      "id": "invalid HA group ID: {Err}",
+      "message": "invalid HA group ID: {Err}",
+      "translation": "無効な HA グループ ID: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Could not validate. {Err}",
+      "message": "Could not validate. {Err}",
+      "translation": "検証できませんでした。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed.",
+      "message": "A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed.",
+      "translation": "A-Za-z0-9、Unicode 文字および特殊記号 !-*+()?.,:&@ のみが許可されます。",
+      "fuzzy": true
+    },
+    {
+      "id": "Whitespace is not permitted.",
+      "message": "Whitespace is not permitted.",
+      "translation": "空白は許可されません。",
       "fuzzy": true
     },
     {
@@ -20517,6 +22076,30 @@
       "fuzzy": true
     },
     {
+      "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+      "message": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+      "translation": "サービス構成ユーザー入力ファイル {UserInputFileName}の読み取り: {Err}",
+      "placeholders": [
+        {
+          "id": "UserInputFileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "userInputFileName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
       "message": "failed to unmarshal json string '{PolicyStr}': {Err}",
       "translation": "JSON ストリング「{PolicyStr}」のアンマーシャルに失敗しました。{Err}",
@@ -21529,22 +23112,6 @@
       "fuzzy": true
     },
     {
-      "id": "no objects found in org {Org}",
-      "message": "no objects found in org {Org}",
-      "translation": "組織「{Org}」 内でオブジェクトは検出されませんでした",
-      "placeholders": [
-        {
-          "id": "Org",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "org"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
       "message": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
       "translation": "タイプ「{ObjectType}」のオブジェクト「{ObjectID}」の宛先詳細は、組織「{Org}」 内で検出されませんでした",
@@ -21711,9 +23278,9 @@
       "fuzzy": true
     },
     {
-      "id": "Set to '*' to indcate services of any hardware architecture.",
-      "message": "Set to '*' to indcate services of any hardware architecture.",
-      "translation": "あらゆるハードウェア・アーキテクチャーのサービスを示すには、「*」に設定します。",
+      "id": "Set to '*' to indicate services of any hardware architecture.",
+      "message": "Set to '*' to indicate services of any hardware architecture.",
+      "translation": "任意のハードウェア・アーキテクチャーのサービスを示すには、「*」に設定します。",
       "fuzzy": true
     },
     {
@@ -21850,12 +23417,6 @@
           "expr": "err"
         }
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "Digital sign finished.",
-      "message": "Digital sign finished.",
-      "translation": "デジタル署名が完了しました。",
       "fuzzy": true
     },
     {
@@ -26489,9 +28050,9 @@
       "fuzzy": true
     },
     {
-      "id": "Label, or Enabled is empty.",
-      "message": "Label, or Enabled is empty.",
-      "translation": "Label または Enabled が空です。",
+      "id": "The start time must be in RFC3339 format or set to \"now\".",
+      "message": "The start time must be in RFC3339 format or set to \"now\".",
+      "translation": "開始時刻は RFC3339 形式であるか、「now」に設定する必要があります。",
       "fuzzy": true
     },
     {
@@ -26698,6 +28259,49 @@
       "id": "The constraint expression contains unmatched parentheses.",
       "message": "The constraint expression contains unmatched parentheses.",
       "translation": "制約式に対応しない括弧が含まれています。",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CREATED",
+        "New node management policy status created for policy {Arg_1}."
+      ],
+      "message": "New node management policy status created for policy {Arg_1}.",
+      "translation": "ポリシー {Arg_1} の新規ノード管理ポリシー状況が作成されました。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED",
+        "Node management status for {Arg_1} changed to {Arg_2}."
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}.",
+      "translation": "{Arg_1}のノード管理状況が {Arg_2}に変更されました。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
       "fuzzy": true
     },
     {

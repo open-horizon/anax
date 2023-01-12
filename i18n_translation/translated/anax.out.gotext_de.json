@@ -68,16 +68,40 @@
     "translation": "Anax wird beendet; die Synchronisation der Vereinbarungen kann nicht ausgeführt werden. {Arg_1}"
   },
   {
+    "id": "Error node authentication credentials do not match requesting node.",
+    "translation": "Die Berechtigungsnachweise für die Knotenauthentifizierung stimmen nicht mit dem anfordernden Knoten überein."
+  },
+  {
+    "id": "Unable to retrieve node from the exchange.",
+    "translation": "Knoten kann nicht aus Exchange abgerufen werden."
+  },
+  {
+    "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+    "translation": "Die HA-Gruppe {HAGroup} des Knotens stimmt nicht mit dem Gruppennamen in der Anforderung {GroupName} überein."
+  },
+  {
+    "id": "Error handling node upgrade request: {Error}",
+    "translation": "Fehlerbehandlung bei Anforderung für Knoten-Upgrade: {Error}"
+  },
+  {
+    "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+    "translation": "Knoten {Org}/{Node} kann die Ausführung von nmp {NmpId} starten."
+  },
+  {
+    "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+    "translation": "Knoten {Org}/{Node} kann die Ausführung von nmp {NmpId} nicht starten."
+  },
+  {
     "id": "No input found.",
     "translation": "Keine Eingabe gefunden."
   },
   {
-    "id": "Unauthorized. No exchange user id is supplied.",
-    "translation": "Nicht autorisiert. Es wurde keine Exchange-Benutzer-ID angegeben."
+    "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+    "translation": "Keine Berechtigung. Es wurde keine Exchange-{AuthType}-ID angegeben."
   },
   {
-    "id": "Failed to authenticate the user with the Exchange. {Err}",
-    "translation": "Die Authentifizierung des Benutzers mit dem Exchange ist fehlgeschlagen. {Err}"
+    "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+    "translation": "Die Authentifizierung von {AuthType} mit Exchange ist fehlgeschlagen. {Err}"
   },
   {
     "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -112,12 +136,16 @@
     "translation": "Es wurde kein Kennwort oder kein API-Schlüssel für den Exchange-Benutzer angegeben."
   },
   {
-    "id": "Wrong organization id, user id or password.",
-    "translation": "Falsche Organisations-ID, falsche Benutzer-ID oder falsches Kennwort."
+    "id": "Wrong organization id, {Arg_1} id or password.",
+    "translation": "Falsche Organisations-ID, {Arg_1}-ID oder Kennwort."
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
     "translation": "Der Exchange-Benutzer {Key} hat nicht das korrekte Format. Es sollte 'Organisation/Benutzername' (org/username) sein."
+  },
+  {
+    "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+    "translation": "Exchange-Einheit {Key} hat nicht das richtige Format, sollte org/nodename sein."
   },
   {
     "id": "Internal server error",
@@ -432,8 +460,8 @@
     "translation": "Änderung des Servicekonfigurationsstatus in {Arg_1} für {Arg_2} für den Knoten abgeschlossen."
   },
   {
-    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-    "translation": "Der Knotenmanagementstatus für {Arg_1}/{Arg_2} wurde in {Arg_3} geändert"
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+    "translation": "Der Knotenmanagementstatus für {Arg_1}/{Arg_2} wurde in {Arg_3} geändert."
   },
   {
     "id": "Error converting the selections into Selectors: {Err}",
@@ -784,6 +812,10 @@
     "translation": "Für die Exchange-Authentifizierung muss einer der folgenden Werte angegeben werden: das Flag -u, das Flag -n, HZN_EXCHANGE_USER_AUTH oder HZN_EXCHANGE_NODE_AUTH."
   },
   {
+    "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+    "translation": "Exchange-Authentifizierung muss mit einem der folgenden Werte angegeben werden: Flag -u oder HZN_EXCHANGE_USER_AUTH"
+  },
+  {
     "id": "Verifying public key file ...",
     "translation": "Datei mit dem öffentlichen Schlüssel wird verifiziert..."
   },
@@ -894,6 +926,10 @@
   {
     "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
     "translation": "Der angegebene Protokolltreiber ({LogDriver}) unterstützt die Anzeige von Protokollen nicht. Protokolle sind nur mit den folgenden Treibern verfügbar: {DockerDriversWithLoggingSupport}"
+  },
+  {
+    "id": "Problem validating org name: {Err}",
+    "translation": "Problem beim Prüfen des Organisationsnamens: {Err}"
   },
   {
     "id": "Error creating StdoutPipe for command: {Err}",
@@ -1528,8 +1564,8 @@
     "translation": "Hashalgorithmus {HashAlgo} wird nicht unterstützt"
   },
   {
-    "id": "Label, or Enabled is empty.",
-    "translation": "Bezeichnung oder Aktiviert ist leer."
+    "id": "The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "Die Startzeit muss das Format RFC3339 aufweisen oder auf \"Jetzt\" gesetzt sein."
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1900,8 +1936,8 @@
     "translation": "Neuer Status der Knotenmanagementrichtlinie für Richtlinie {Arg_1} erstellt."
   },
   {
-    "id": "Node management status for {Arg_1} changed to {Arg_2}",
-    "translation": "Der Knotenmanagementstatus für {Arg_1} wurde in {Arg_2} geändert"
+    "id": "Node management status for {Arg_1} changed to {Arg_2}.",
+    "translation": "Der Knotenmanagementstatus für {Arg_1} wurde in {Arg_2} geändert."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
