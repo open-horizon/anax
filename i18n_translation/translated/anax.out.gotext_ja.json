@@ -68,16 +68,40 @@
     "translation": "anax を終了します。契約の同期を実行できません。 {Arg_1}"
   },
   {
+    "id": "Error node authentication credentials do not match requesting node.",
+    "translation": "エラー・ノード認証資格情報が要求側ノードと一致しません。"
+  },
+  {
+    "id": "Unable to retrieve node from the exchange.",
+    "translation": "Exchange からノードを取得できません。"
+  },
+  {
+    "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+    "translation": "エラー・ノード ha group {HAGroup} は、要求{GroupName}内のグループ名と一致しません。"
+  },
+  {
+    "id": "Error handling node upgrade request: {Error}",
+    "translation": "ノードのアップグレード要求の処理中にエラーが発生しました: {Error}"
+  },
+  {
+    "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+    "translation": "ノード {Org}/{Node} は nmp {NmpId}の実行を開始できます。"
+  },
+  {
+    "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+    "translation": "ノード {Org}/{Node} は nmp {NmpId}の実行を開始できません。"
+  },
+  {
     "id": "No input found.",
     "translation": "入力が見つかりません。"
   },
   {
-    "id": "Unauthorized. No exchange user id is supplied.",
-    "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。"
+    "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+    "translation": "許可されませんでした。 交換 {AuthType} ID が指定されていません。"
   },
   {
-    "id": "Failed to authenticate the user with the Exchange. {Err}",
-    "translation": "ユーザーを Exchange で認証できませんでした。 {Err}"
+    "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+    "translation": "Exchangeで {AuthType} を認証できませんでした。 {Err}"
   },
   {
     "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -112,12 +136,16 @@
     "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。"
   },
   {
-    "id": "Wrong organization id, user id or password.",
-    "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
+    "id": "Wrong organization id, {Arg_1} id or password.",
+    "translation": "組織 ID、{Arg_1} ID、またはパスワードが正しくありません。"
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
     "translation": "Exchange ユーザー {Key} の形式が正しくありません。org/username でなければなりません。"
+  },
+  {
+    "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+    "translation": "Exchange デバイス {Key} の形式が正しくありません。org/nodename でなければなりません。"
   },
   {
     "id": "Internal server error",
@@ -241,7 +269,7 @@
   },
   {
     "id": "Error parsing input for node policy patch. Input body does not contain 'properties', 'constraints', 'deployment' or 'management' attribute: {Arg_1}",
-    "translation": "ノード・ポリシー・パッチの入力を解析中にエラーが発生しました。 入力本文に 'properties'、'constraints '、'deployment'、または 'management' 属性が含まれていません: {Arg_1}"
+    "translation": "ノード・ポリシー・パッチで入力されたエラー解析。 入力本文に 'properties'、'constraints '、'deployment'、または 'management' 属性が含まれていません: {Arg_1}"
   },
   {
     "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
@@ -432,8 +460,8 @@
     "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を完了します。"
   },
   {
-    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-    "translation": "{Arg_1}/{Arg_2} のノード管理状況が {Arg_3} に変更されました"
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+    "translation": "{Arg_1}/{Arg_2} のノード管理状況が {Arg_3}に変更されました。"
   },
   {
     "id": "Error converting the selections into Selectors: {Err}",
@@ -784,6 +812,10 @@
     "translation": "Exchange 認証は次のいずれかで指定する必要があります: -u フラグ、-n フラグ、HZN_EXCHANGE_USER_AUTH、または HZN_EXCHANGE_NODE_AUTH"
   },
   {
+    "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+    "translation": "-u フラグまたは HZN_EXCHANGE_USER_AUTH のいずれかを使用して Exchange 認証を指定する必要があります。"
+  },
+  {
     "id": "Verifying public key file ...",
     "translation": "公開鍵ファイルを検証中 ..."
   },
@@ -894,6 +926,10 @@
   {
     "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
     "translation": "提供されたログ・ドライバー ({LogDriver}) はログの表示をサポートしません。 ログが使用可能なドライバーは {DockerDriversWithLoggingSupport} だけです。"
+  },
+  {
+    "id": "Problem validating org name: {Err}",
+    "translation": "組織名の検証中に問題が発生しました: {Err}"
   },
   {
     "id": "Error creating StdoutPipe for command: {Err}",
@@ -1528,8 +1564,8 @@
     "translation": "ハッシュ・アルゴリズム {HashAlgo} はサポートされていません"
   },
   {
-    "id": "Label, or Enabled is empty.",
-    "translation": "Label または Enabled が空です。"
+    "id": "The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "開始時刻は RFC3339 形式であるか、「now」に設定する必要があります。"
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1900,8 +1936,8 @@
     "translation": "ポリシー {Arg_1} の新規ノード管理ポリシー状況が作成されました。"
   },
   {
-    "id": "Node management status for {Arg_1} changed to {Arg_2}",
-    "translation": "{Arg_1} のノード管理状況が {Arg_2} に変更されました"
+    "id": "Node management status for {Arg_1} changed to {Arg_2}.",
+    "translation": "{Arg_1}のノード管理状況が {Arg_2}に変更されました。"
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

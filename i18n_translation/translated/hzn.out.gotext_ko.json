@@ -1,15 +1,39 @@
 [
   {
+    "id": "Error node authentication credentials do not match requesting node.",
+    "translation": "오류 노드 인증 신임 정보가 요청 노드와 일치하지 않습니다."
+  },
+  {
+    "id": "Unable to retrieve node from the exchange.",
+    "translation": "Exchange에서 노드를 검색할 수 없습니다."
+  },
+  {
+    "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+    "translation": "오류 노드 HA 그룹 {HAGroup}이(가) {GroupName} 요청의 그룹 이름과 일치하지 않습니다."
+  },
+  {
+    "id": "Error handling node upgrade request: {Error}",
+    "translation": "노드 업그레이드 요청을 처리하는 중에 오류 발생: {Error}"
+  },
+  {
+    "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+    "translation": "노드 {Org}/{Node}에서 nmp {NmpId} 실행을 시작할 수 있습니다."
+  },
+  {
+    "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+    "translation": "노드 {Org}/{Node}에서 nmp {NmpId}실행을 시작할 수 없습니다."
+  },
+  {
     "id": "No input found.",
     "translation": "입력을 찾을 수 없습니다."
   },
   {
-    "id": "Unauthorized. No exchange user id is supplied.",
-    "translation": "권한이 없습니다. exchange 사용자 ID가 제공되지 않았습니다."
+    "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+    "translation": "권한 없음. Exchange {AuthType} ID가 제공되지 않았습니다."
   },
   {
-    "id": "Failed to authenticate the user with the Exchange. {Err}",
-    "translation": "사용자를 Exchange에 인증하는 데 실패했습니다. {Err}"
+    "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+    "translation": "Exchange에서 {AuthType}을(를) 인증하는 데 실패했습니다. {Err}"
   },
   {
     "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -44,12 +68,16 @@
     "translation": "exchange 사용자 비밀번호 또는 API 키가 제공되지 않았습니다."
   },
   {
-    "id": "Wrong organization id, user id or password.",
-    "translation": "조직 ID, 사용자 ID 또는 비밀번호가 잘못되었습니다."
+    "id": "Wrong organization id, {Arg_1} id or password.",
+    "translation": "조직 ID, {Arg_1} ID 또는 비밀번호가 잘못되었습니다."
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
     "translation": "Exchange 사용자 {Key}은(는) 올바른 형식이 아닙니다. org/username이어야 합니다."
+  },
+  {
+    "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+    "translation": "Exchange 디바이스 {Key}의 형식이 올바르지 않습니다. org/nodename이어야 합니다."
   },
   {
     "id": "Internal server error",
@@ -364,8 +392,8 @@
     "translation": "노드의 {Arg_2}에 대해 {Arg_1}(으)로의 서비스 구성 상태 변경을 완료합니다."
   },
   {
-    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-    "translation": "{Arg_1}/{Arg_2}에 대한 노드 관리 상태가 {Arg_3}(으)로 변경됨"
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+    "translation": "{Arg_1}/{Arg_2}에 대한 노드 관리 상태가 {Arg_3}(으)로 변경되었습니다."
   },
   {
     "id": "Error converting the selections into Selectors: {Err}",
@@ -388,8 +416,8 @@
     "translation": "{PROPSVCPRIVILEGED} 특성은 부울 값(true 또는 false)을 가져야 합니다."
   },
   {
-    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Horizon 에이전트의 명령행 인터페이스입니다. 대부분의 하위 명령은 기본 위치 http://localhost(이를 겹쳐쓰려면 환경 변수 섹션 참조)의 Horizon 에이전트 API를 사용합니다.\n\n하위 명령 설명:\n  agbot: Horizon 계약 봇(agbot) 리소스를 나열하고 관리합니다.\n  agreement: 이 에지 노드가 Horizon 계약 봇(agbot)과 맺은 활성 또는 아카이브된 계약을 나열하거나 관리합니다.\n  architecture: 이 시스템의 아키텍처를 표시합니다(Horizon 및 golang에서 정의된 대로). \n  attribute: 이 Horizon 에지 노드에 현재 등록된 글로벌 속성을 나열하거나 관리합니다.\n  deploycheck: 배치 호환성을 확인합니다.\n  dev: 서비스 작성을 위한 개발 도구입니다.\n  env: Horizon 환경 변수를 표시합니다.\n  eventlog: 현재 또는 모든 등록에 대한 이벤트 로그를 나열합니다.\n  exchange: Horizon Exchange 리소스를 나열하고 관리합니다.\n  key: 서비스를 서명하고 확인하기 위한 키를 나열하고 관리합니다. \n  metering: 활성 또는 아카이브된 계약에 대한 비용 측정(지불) 정보를 나열하거나 관리합니다.\n  mms: Horizon 모델 관리 서비스 리소스를 나열하고 관리합니다.\n  node: 이 Horizon 에지 노드에 대한 일반 정보를 나열하고 관리합니다.\n  policy: 이 Horizon 에지 노드에 대한 정책을 나열하고 관리합니다. \n  reginput: (일단 입력되면) 'hzn register' 명령에 사용할 수 있는 이 패턴의 입력 파일 템플리트를 작성합니다. \n            이는 지정된 패턴이 사용하는 서비스를 검토하고 이 서비스에 필요한 노드 소유자 입력을 판별합니다. \n  register: 관리 허브에 이 에지 노드를 등록합니다.\n  service: 이 Horizon 에지 노드에 현재 등록된 서비스를 나열하거나 관리합니다.\n  status: 노드에 대한 현재 horizon 내부 상태를 표시합니다.\n  unregister: 다시 등록할 수 있도록 이 Horizon 에지 노드를 등록 취소하고 재설정합니다.\n  userinput: 이 Horizon 에지 노드에 현재 등록된 서비스 사용자 입력을 나열하거나 관리합니다.\n  util: 유틸리티 명령입니다.\n  version: Horizon 버전을 표시합니다.\n  sdo: Horizon SDO 소유권 바우처와 키를 나열하고 관리합니다.\n\n환경 변수:\n  HORIZON_URL:  hzn이 Horizon 에이전트 API에 접속하는 URL을 겹쳐씁니다.\n      이렇게 하면 ssh 터널을 통해 원격 Horizon 에이전트 사용이 용이하게 됩니다.\n  HZN_EXCHANGE_URL:  'hzn exchange' 하위 명령이 Horizon Exchange와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/api/v1. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n  HZN_ORG_ID:  'hzn exchange -o' 플래그의 기본값이며,\n      조직 ID를 지정합니다.\n  HZN_EXCHANGE_USER_AUTH:  'hzn exchange -u' 또는 'hzn\n\t  register -u' 플래그의 기본값이며, 양식은 '[org/]user:pw'입니다. HZN_EXCHANGE_USER_AUTH가 설정될 때 \n\t  조직이 생략되면 HZN_ORG_ID를 설정할 수 있습니다.\n  HZN_FSS_CSSURL:  'hzn mms' 하위 명령이 Horizon 모델 관리 서비스와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/css/. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n  HZN_SDO_SVC_URL:  'hzn sdo' 하위 명령에서 SDO 소유자 서비스와 통신하는 데\n\t  사용하는 URL을 대체합니다.(기본적으로 hzn은 URL의\n\t\t      Horizon 에이전트를 요청합니다.)\n\n  이러한 모든 환경 변수와 명령 도움말에 언급된 변수를\n  사용자의 구성 파일 ~/.hzn/hzn.json에 JSON 형식으로 지정할 수 있습니다.\n  예:\n  {Com____}"
+    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+    "translation": "Horizon Agent에 대한 명령행 인터페이스입니다. 대부분의 하위 명령은 기본 위치(http://localhost)에서 Horizon Agent API를 사용합니다(재정의하려면 해당 환경의 환경 변수 섹션 참조).\n\n하위 명령에 대한 설명:\n  agbot: Horizon 계약 봇 리소스를 나열하고 관리합니다.:\n  agreement: 이 에지 노드에서 Horizon 계약 봇으로 만든 계약을 나열하거나 관리합니다.\n  architecture: 이 시스템의 아키텍처를 표시합니다.\n  attribute: 현재 이 Horizon 에지 노드에 등록되어 있는 글로벌 속성을 나열하거나 관리합니다.\n  deploycheck: 배치 호환성을 확인합니다.\n  dev: 서비스 작성을 위한 개발 도구.\n  env: Horizon 환경 변수를 표시합니다.\n  eventlog: 현재 또는 모든 등록에 대한 이벤트 로그를 나열합니다.\n  exchange: Horizon Exchange 리소스를 나열하고 관리합니다.\n  key: 서비스 서명 및 확인을 위한 키를 나열하고 관리합니다.\n  mms: Horizon Model Management Service 리소스를 나열하고 관리합니다.\n  nmstatus: 로컬 노드에 대한 노드 관리 상태를 나열하고 관리합니다.\n  node: 이 Horizon 에지 노드에 대한 일반 정보를 나열하고 관리합니다.\n  nodemanagement: 노드 관리를 위한 Manifest 및 에이전트 파일을 나열하고 관리합니다.\n  policy: 이 Horizon 에지 노드에 대한 정책을 나열하고 관리합니다.\n  reginput: 'hzn register' 명령에 사용할 수 있는 이 패턴에 대한 입력 파일 템플리트를 작성합니다.\n  register: 이 에지 노드를 관리 허브에 등록합니다.\n  secretsmanager: Secrets Manager에서 시크릿을 나열하고 관리합니다.\n  service: 이 Horizon 에지 노드에 현재 등록되어 있는 서비스를 나열하거나 관리합니다.\n  status: 노드의 현재 Horizon 내부 상태를 표시합니다.\n  unregister: 이 Horizon 에지 노드를 등록 취소 및 재설정합니다.\n  userinput: 이 Horizon 에지 노드에 현재 등록되어 있는 서비스 사용자 입력을 나열하거나 관리합니다.\n  util: 유틸리티 명령.\n  version: Horizon 버전을 표시합니다.\n  sdo: Horizon SDO 소유권 바우처 및 키를 나열하고 관리합니다.\n\n환경 변수:\n  HORIZON_URL: hzn에서 Horizon Agent API에 접속하는 URL을 대체합니다.\n      이를 사용하면 ssh 터널을 통해 원격 Horizon Agent를 쉽게 사용할 수 있습니다.\n  HZN_EXCHANGE_URL: Horizon Exchange와 통신하기 위해\n      'hzn exchange' 하위 명령이 사용하는 URL을 재정의합니다\n(예: https://exchange.bluehorizon.network/api/v1). (기본적으로, hzn은\n      Horizon Agent에 URL을 요청합니다.)\n  HZN_ORG_ID:  조직 ID를 지정하기 위한\n      'hzn exchange -o' 플래그의 기본값.\n  HZN_EXCHANGE_USER_AUTH:  '[org/]user:pw' 양식에서 'hzn exchange -u' 또는\n  'hzn register -u' 플래그의 기본값. HZN_EXCHANGE_USER_AUTH를\n  설정할 때 조직이 생략된 경우 HZN_ORG_ID를 설정할 수 있습니다.\n  HZN_FSS_CSSURL:  'hzn mms' 하위 명령이 Horizon Model Management Service와\n      통신하는 데 사용하는 URL을 재정의합니다\n      (예: https://exchange.bluehorizon.network/css/). (기본적으로, hzn은\n      Horizon Agent에 URL을 요청합니다.)\n  HZN_SDO_SVC_URL:  'hzn sdo' 하위 명령이 SDO 소유자 서비스와 통신하는 데\n  사용하는 URL을 재정의합니다. (기본적으로, hzn은\nHorizon Agent에 URL을 요청합니다.)\n\n이러한 모든 환경 변수 및 명령 도움말에 언급된 변수는 사용자 구성 파일에\n  지정할 수 있습니다(~/.hzn/hzn.json, JSON 형식의 경우).\n  예:\n  {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -568,16 +596,20 @@
     "translation": "노드의 조직입니다. 생략 시, 기본값은 현재 등록된 디바이스 또는 -n에서 제공한 노드의 조직입니다."
   },
   {
-    "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Horizon exchange 노드 ID입니다. --node-pol 및 --node-ui와 상호 배타적입니다. 생략된 경우에는 현재 디바이스의 등록에 사용된 노드 ID가 사용됩니다. 조직 ID를 접두부로 추가하지 않으면 -o 값이 자동으로 접두부로 추가됩니다."
+    "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+    "translation": "Horizon Exchange 노드 ID. --ha-group, --node-pol 및 --node-ui와 함께 사용할 수 없습니다. 생략된 경우 현재 디바이스가 등록된 노드 ID가 사용됩니다. 이 플래그를 반복하여 둘 이상의 노드를 지정할 수 있습니다. 조직 ID를 사용하여 노드 ID를 앞에 추가하지 않는 경우 자동으로 -o 값이 앞에 추가됩니다."
   },
   {
-    "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-    "translation": "노드 정책이 포함된 JSON 입력 파일 이름입니다. -n, -p 및 -P와 상호 배타적입니다."
+    "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+    "translation": "HA 그룹의 이름입니다. -n, --node-pol 및 --node-ui와 함께 사용할 수 없습니다."
   },
   {
-    "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-    "translation": "노드 사용자 입력이 포함된 JSON 입력 파일 이름입니다. -n과 상호 배타적입니다."
+    "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
+    "translation": "노드 정책을 포함하는 JSON 입력 파일 이름입니다. -n, --ha-group, -p 및 -P를 함께 사용할 수 없습니다."
+  },
+  {
+    "id": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
+    "translation": "노드 사용자 입력을 포함하는 JSON 입력 파일 이름입니다. -n, --ha-group은 함께 사용할 수 없습니다."
   },
   {
     "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -612,12 +644,16 @@
     "translation": "노드의 아키텍처입니다. -n이 지정되지 않은 경우에는 필수입니다. 생략된 경우에는 배치 정책에서 참조된 모든 아키텍처의 서비스에 대해 호환성이 확인됩니다."
   },
   {
-    "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Horizon exchange 노드 ID입니다. --node-pol과 상호 배타적입니다. 생략된 경우에는 현재 디바이스의 등록에 사용된 노드 ID가 사용됩니다. 조직 ID를 접두부로 추가하지 않으면 -o 값이 자동으로 접두부로 추가됩니다."
+    "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+    "translation": "Horizon Exchange 노드 ID. --ha-group 및 --node-pol은 함께 사용할 수 없습니다. 생략된 경우 현재 디바이스가 등록된 노드 ID가 사용됩니다. 이 플래그를 반복하여 둘 이상의 노드를 지정할 수 있습니다. 조직 ID를 사용하여 노드 ID를 앞에 추가하지 않는 경우 자동으로 -o 값이 앞에 추가됩니다."
   },
   {
-    "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-    "translation": "노드 정책이 포함된 JSON 입력 파일 이름입니다. -n과 상호 배타적입니다."
+    "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
+    "translation": "HA 그룹의 이름입니다. -n 및 --node-pol은 함께 사용할 수 없습니다."
+  },
+  {
+    "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
+    "translation": "노드 정책을 포함하는 JSON 입력 파일 이름입니다. -n, --ha-group은 함께 사용할 수 없습니다."
   },
   {
     "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -658,6 +694,10 @@
   {
     "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
     "translation": "Horizon exchange 노드 ID입니다. --node-ui와 상호 배타적입니다. 생략된 경우에는 현재 디바이스의 등록에 사용된 노드 ID가 사용됩니다. 조직 ID를 접두부로 추가하지 않으면 -o 값이 자동으로 접두부로 추가됩니다."
+  },
+  {
+    "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
+    "translation": "노드 사용자 입력이 포함된 JSON 입력 파일 이름입니다. -n과 상호 배타적입니다."
   },
   {
     "id": "Development tools for creation of services.",
@@ -1060,6 +1100,10 @@
     "translation": "이 하나의 노드 관리 정책만 나열합니다."
   },
   {
+    "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+    "translation": "-u 플래그가 지정되지 않은 경우 노드 리소스를 조회하고 수정하기 위해 인증 정보로 사용할 Horizon Exchange 노드 ID 및 토큰입니다. HZN_EXCHANGE_NODE_AUTH가 -n에 대해 기본값으로 사용됩니다. 노드의 조직을 접두부로 추가하지 않으면 -o 값이 자동으로 접두부로 추가됩니다."
+  },
+  {
     "id": "Display detailed output about the node management policies.",
     "translation": "노드 관리 정책에 대한 자세한 출력을 표시합니다."
   },
@@ -1116,16 +1160,36 @@
     "translation": "각 노드 관리 정책 상태 오브젝트의 전체 컨텐츠를 표시합니다."
   },
   {
+    "id": "Enable a node management policy in the Horizon Exchange.",
+    "translation": "Horizon Exchange에서 노드 관리 정책을 사용합니다."
+  },
+  {
+    "id": "The name of the node management policy to enable.",
+    "translation": "사용할 노드 관리 정책의 이름입니다."
+  },
+  {
+    "id": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
+    "translation": "활성화된 노드 관리 정책의 시작 시간입니다. 시작 시간은 RFC3339 시간소인 또는 \"now\"여야 합니다."
+  },
+  {
+    "id": "The start window of the enabled node management policy.",
+    "translation": "활성화된 노드 관리 정책의 시작 기간입니다."
+  },
+  {
+    "id": "Disable a node management policy in the Horizon Exchange.",
+    "translation": "Horizon Exchange에서 노드 관리 정책을 사용하지 않습니다."
+  },
+  {
+    "id": "The name of the node management policy to disable.",
+    "translation": "사용 안함으로 설정할 노드 관리 정책의 이름입니다."
+  },
+  {
     "id": "List and manage nodes in the Horizon Exchange",
     "translation": "Horizon Exchange에서 노드를 나열하고 관리합니다."
   },
   {
     "id": "Add or replace the node policy in the Horizon Exchange.",
     "translation": "Horizon Exchange에서 노드 정책을 추가하거나 바꿉니다."
-  },
-  {
-    "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-    "translation": "-u 플래그가 지정되지 않은 경우 노드 리소스를 조회하고 수정하기 위해 인증 정보로 사용할 Horizon Exchange 노드 ID 및 토큰입니다. HZN_EXCHANGE_NODE_AUTH가 -n에 대해 기본값으로 사용됩니다. 노드의 조직을 접두부로 추가하지 않으면 -o 값이 자동으로 접두부로 추가됩니다."
   },
   {
     "id": "Add or replace policy for this node.",
@@ -1242,6 +1306,18 @@
   {
     "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
     "translation": "이 하나의 노드 관리 정책만 포함하도록 출력을 필터링합니다. --long 플래그와 함께 사용하여 단일 노드 관리 정책 상태 오브젝트의 전체 컨텐츠를 표시합니다."
+  },
+  {
+    "id": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+    "translation": "이 노드에 대한 노드 관리 정책(nmp)을 다시 평가합니다. 업그레이드에 실패하고 문제점이 수정되면 이 명령을 실행하여 nmp를 재시도하십시오. 노드가 여전히 업그레이드 중일 때에는 이 명령을 실행하지 마십시오."
+  },
+  {
+    "id": "Re-evaluate node management policy for this node.",
+    "translation": "이 노드에 대한 노드 관리 정책을 다시 평가합니다."
+  },
+  {
+    "id": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
+    "translation": "다시 평가할 노드 관리 정책의 이름입니다. 생략된 경우 모든 노드 관리 정책이 이 노드에 대해 재평가됩니다."
   },
   {
     "id": "List the run-time status of the node.",
@@ -1672,6 +1748,70 @@
     "translation": "서비스를 확인하는 데 사용할 pem 공개 키 파일의 경로입니다. 지정하지 않으면 환경 변수 HZN_PUBLIC_KEY_FILE이 사용됩니다. 아무 것도 설정하지 않으면 ~/.hzn/keys/service.public.pem이 기본값이 됩니다."
   },
   {
+    "id": "List and manage high availability (HA) groups in the Horizon Exchange",
+    "translation": "Horizon Exchange에서 고가용성(HA) 그룹 나열 및 관리"
+  },
+  {
+    "id": "Display the HA group resources from the Horizon Exchange.",
+    "translation": "Horizon Exchange의 HA 그룹 리소스를 표시합니다."
+  },
+  {
+    "id": "List just this one HA group.",
+    "translation": "이 하나의 HA 그룹을 나열합니다."
+  },
+  {
+    "id": "When listing all of the HA groups, show the entire resource of each group, instead of just the name.",
+    "translation": "모든 HA 그룹을 나열하는 경우 이름만 표시하는 대신 각 그룹의 전체 리소스를 표시합니다."
+  },
+  {
+    "id": "Display an empty HA group template that can be filled in.",
+    "translation": "채워 넣을 수 있는 빈 HA 그룹 템플리트를 표시합니다."
+  },
+  {
+    "id": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
+    "translation": "Horizon Exchange의 HA 그룹을 추가하거나 대체합니다. 빈 HA 그룹 템플리트에 'hzn exchange hagroup new'를 사용합니다."
+  },
+  {
+    "id": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
+    "translation": "추가하거나 겹쳐 쓸 HA 그룹의 이름입니다. 생략된 경우 입력 파일의 이름 속성이 사용됩니다."
+  },
+  {
+    "id": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
+    "translation": "Horizon Exchange에서 HA 그룹을 작성/업데이트하는 데 필요한 메타데이터를 포함하는 JSON 파일의 경로입니다. stdin에서 읽을 수 있는 -f-를 지정하십시오."
+  },
+  {
+    "id": "Remove the HA group in the Horizon Exchange.",
+    "translation": "Horizon Exchange에서 HA 그룹을 제거하십시오."
+  },
+  {
+    "id": "The name of the HA group to be removed.",
+    "translation": "제거할 HA 그룹의 이름입니다."
+  },
+  {
+    "id": "Manage HA group members in the Horizon Exchange",
+    "translation": "Horizon Exchange에서 HA 그룹 멤버 관리"
+  },
+  {
+    "id": "Add nodes to the HA group in the Horizon Exchange.",
+    "translation": "Horizon Exchange의 HA 그룹에 노드를 추가합니다."
+  },
+  {
+    "id": "The name of the HA group.",
+    "translation": "HA 그룹의 이름."
+  },
+  {
+    "id": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
+    "translation": "HA 그룹에 추가될 노드입니다. 이 플래그를 반복하여 다른 노드를 지정할 수 있습니다."
+  },
+  {
+    "id": "Remove nodes from the HA group in the Horizon Exchange.",
+    "translation": "Horizon Exchange의 HA 그룹에서 노드를 제거합니다."
+  },
+  {
+    "id": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
+    "translation": "HA 그룹에서 제거할 노드입니다. 이 플래그를 반복하여 다른 노드를 지정할 수 있습니다."
+  },
+  {
     "id": "Display the status of the Horizon Exchange.",
     "translation": "Horizon Exchange의 상태를 표시합니다."
   },
@@ -2004,6 +2144,10 @@
     "translation": "이 Horizon 에지 노드에 대한 일반 정보를 표시합니다."
   },
   {
+    "id": "List and manage manifests and agent files for node management.",
+    "translation": "노드 관리를 위한 Manifest 및 에이전트 파일을 나열하고 관리합니다."
+  },
+  {
     "id": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
     "translation": "노드 관리 리소스를 조회하고 생성할 수 있는 Horizon 사용자 신임 정보입니다. 지정하지 않으면 HZN_EXCHANGE_USER_AUTH가 기본값으로 사용됩니다. 사용자의 조직 앞에 추가하지 않으면 -o 값이 자동으로 추가됩니다."
   },
@@ -2026,6 +2170,22 @@
   {
     "id": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
     "translation": "매니페스트 데이터를 포함하는 JSON 파일의 경로입니다. stdin에서 읽을 수 있는 -f-를 지정하십시오."
+  },
+  {
+    "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+    "translation": "서명하기 전에 Manifest 데이터를 해시하는 데 사용되는 해시 알고리즘은 업로드 및 다운로드 중에 데이터 무결성을 보장합니다. 지원되는 해시 알고리즘은 SHA1 또는 SHA256이며, 기본값은 SHA1입니다. --noIntegrity 플래그와 함께 사용할 수 없음"
+  },
+  {
+    "id": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+    "translation": "업로드 또는 다운로드 중인 Manifest 데이터의 해시입니다. 명령이 해시를 자동으로 계산하도록 허용하는 대신 해시를 제공하려면 이 플래그를 사용하십시오. 해시는 SHA1 또는 SHA256 알고리즘을 사용하여 생성해야 합니다. SHA256을 사용하여 해시가 생성된 경우 -a 플래그를 지정해야 합니다. 이 플래그는 --noIntegrity와 함께 사용할 수 없습니다."
+  },
+  {
+    "id": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+    "translation": "Manifest 파일을 서명하는 데 사용할 개인 키 파일의 경로입니다. 해당하는 공개 키는 Manifest의 무결성을 보장하기 위해 MMS에 저장됩니다. 지정되지 않은 경우, 환경 변수 HZN_PRIVATE_KEY_FILE이 개인 키를 찾는 데 사용됩니다. 설정되지 않은 경우, ~/.hzn/keys/service.private.key가 사용됩니다. 만약 없다면, 이 공개 조작에 대해서만 RSA 키 쌍이 생성된 후 개인 키는 삭제됩니다."
+  },
+  {
+    "id": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
+    "translation": "공개 명령은 업로드된 Manifest 데이터에 대해 데이터 무결성 검사를 수행하지 않습니다. --hashAlgo 및 --hash를 함께 사용할 수 없음"
   },
   {
     "id": "Display a list of manifest files stored in the management hub.",
@@ -2184,6 +2344,10 @@
     "translation": "이 노드에 배치해야 하는 워크로드를 설명하는 Horizon exchange 패턴입니다. 패턴이 노드와 다른 조직에서 제공되면 'other_org/pattern' 형식을 사용하십시오. -o 및 --p와 상호 배타적입니다."
   },
   {
+    "id": "The name of the HA group that this node will be added to.",
+    "translation": "이 노드가 추가될 HA 그룹의 이름입니다."
+  },
+  {
     "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
     "translation": "이름 지정된 서비스가 이 노드에서 실행되기 시작할 때까지 대기하십시오. 패턴으로 등록하는 경우 패턴의 모든 서비스를 보려면 '*'를 사용하십시오. 정책으로 등록하는 경우 '*'는 -s에 올바른 값이 아닙니다. 이 플래그는 에지 클러스터 노드에 지원되지 않습니다."
   },
@@ -2330,6 +2494,30 @@
   {
     "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
     "translation": "업데이트된 사용자 입력 오브젝트가 포함된 JSON 파일의 파일 경로입니다. stdin에서 읽으려면 -f-를 지정하십시오."
+  },
+  {
+    "id": "List and manage node management status for the local node.",
+    "translation": "로컬 노드의 노드 관리 상태를 나열하고 관리합니다."
+  },
+  {
+    "id": "Display the node managment status for the local node.",
+    "translation": "로컬 노드에 대한 노드 관리 상태를 표시합니다."
+  },
+  {
+    "id": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
+    "translation": "노드 관리 정책의 이름입니다. 생략된 경우, 이 노드에 대한 모든 관리 정책의 상태가 표시됩니다."
+  },
+  {
+    "id": "Show the entire contents of each node management status object.",
+    "translation": "각 노드 관리 상태 오브젝트의 전체 컨텐츠를 표시합니다."
+  },
+  {
+    "id": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+    "translation": "노드 관리 정책(nmp)을 다시 평가합니다. 업그레이드에 실패하고 문제점이 수정되면 이 명령을 실행하여 nmp를 재시도하십시오. 노드가 여전히 업그레이드 중일 때에는 이 명령을 실행하지 마십시오."
+  },
+  {
+    "id": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
+    "translation": "노드 관리 정책의 이름입니다. 생략된 경우, 이 노드에 대한 모든 관리 정책이 다시 평가됩니다."
   },
   {
     "id": "Utility commands.",
@@ -2534,6 +2722,14 @@
   {
     "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
     "translation": "이 바우처와 연관된 에지 디바이스에 사용할 배치 패턴 이름입니다. 패턴이 노드와 다른 조직에서 제공되면 'other_org/pattern' 형식을 사용하십시오. -e 및 --policy와 상호 배타적입니다."
+  },
+  {
+    "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
+    "translation": "이 바우처와 연관된 에지 디바이스에 배치될 서비스에 필요한 사용자 입력 변수를 설정하거나 대체하는 JSON 파일입니다. 'hzn userinput new'를 사용하여 형식을 확인하십시오."
+  },
+  {
+    "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
+    "translation": "이 바우처와 연관된 에지 디바이스가 추가될 HA 그룹의 이름입니다."
   },
   {
     "id": "Download the specified SDO ownership voucher from SDO owner services.",
@@ -3060,6 +3256,10 @@
     "translation": "exchange 인증은 다음 중 하나와 함께 지정해야 합니다. -u 플래그, -n 플래그, HZN_EXCHANGE_USER_AUTH 또는 HZN_EXCHANGE_NODE_AUTH"
   },
   {
+    "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+    "translation": "-u 플래그 또는 HZN_EXCHANGE_USER_AUTH 중 하나를 사용하여 Exchange 인증을 지정해야 합니다."
+  },
+  {
     "id": "Verifying public key file ...",
     "translation": "공개 키 파일 확인 중..."
   },
@@ -3172,6 +3372,10 @@
     "translation": "제공된 로그 드라이버({LogDriver})에서 로그 보기를 지원하지 않습니다. 로그는 다음 드라이버에서만 제공됩니다. {DockerDriversWithLoggingSupport}"
   },
   {
+    "id": "Problem validating org name: {Err}",
+    "translation": "조직 이름의 유효성을 검증하는 중에 문제 발생: {Err}"
+  },
+  {
     "id": "Error creating StdoutPipe for command: {Err}",
     "translation": "명령에 대한 StdoutPipe를 작성하는 중에 오류가 발생함: {Err}"
   },
@@ -3228,6 +3432,22 @@
     "translation": "다음 플래그 중 하나를 지정해야 합니다. -b, -B, -p, -P."
   },
   {
+    "id": "-n and --ha-group are mutually exclusive.",
+    "translation": "-n 및 -- ha-group은 함께 사용할 수 없습니다."
+  },
+  {
+    "id": "--ha-group and --node-pol are mutually exclusive.",
+    "translation": "--ha-group 및 --node-pol은 함께 사용할 수 없습니다."
+  },
+  {
+    "id": "--ha-group and --node-ui are mutually exclusive.",
+    "translation": "--ha-group 및 --node-ui를 함께 사용할 수 없습니다."
+  },
+  {
+    "id": "The HA group {HaGroupName} does not have members.",
+    "translation": "HA 그룹 {HaGroupName}에 멤버가 없습니다."
+  },
+  {
     "id": "-n and --node-pol are mutually exclusive.",
     "translation": "-n과 --node-pol은 상호 배타적입니다."
   },
@@ -3242,14 +3462,6 @@
   {
     "id": "-p and -P are mutually exclusive.",
     "translation": "-p 및 -P는 상호 배타적입니다."
-  },
-  {
-    "id": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-    "translation": "노드, 배치 정책 및 서비스 정책을 조회하려면 -u를 사용하여 Exchange 인증 정보를 지정하십시오."
-  },
-  {
-    "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
-    "translation": "Exchange 인증 정보 {CredToUse}에 대해 -o로 조직을 지정하십시오."
   },
   {
     "id": "Cannot use the local node because it is not registered.",
@@ -3280,6 +3492,10 @@
     "translation": "잘못된 노드 유형 지정: {NodeType}. 'device' 또는 'cluster'여야 합니다."
   },
   {
+    "id": "HA group {HaGroupName} does not exist in org {HaGroupOrg}.",
+    "translation": "HA 그룹 {HaGroupName}이(가) {HaGroupOrg} 조직에 없습니다."
+  },
+  {
     "id": "failed to unmarshal json input file {FilePath}: {Err}",
     "translation": "JSON 입력 파일 {FilePath}을(를) 역마샬링하는 데 실패함: {Err}"
   },
@@ -3298,6 +3514,10 @@
   {
     "id": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
     "translation": "노드, 배치 정책, 서비스 및 서비스 정책을 조회하려면 -u를 사용하여 Exchange 인증 정보를 지정하십시오."
+  },
+  {
+    "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
+    "translation": "Exchange 인증 정보 {CredToUse}에 대해 -o로 조직을 지정하십시오."
   },
   {
     "id": "Node architecture, organization or type is not specified and node ID is not specified. Getting the node information from the local node.",
@@ -4272,6 +4492,94 @@
     "translation": "'hzn exchange catalog patternlist' 출력을 마샬링하는 데 실패함: {Err}"
   },
   {
+    "id": "HA group {HaGroupName} not found in org {HaGroupOrg}",
+    "translation": "HA 그룹 {HaGroupName}을(를) {HaGroupOrg} 조직에서 찾을 수 없음"
+  },
+  {
+    "id": "failed to marshal 'hzn exchange hagroup list' output: {Err}",
+    "translation": "'hzn exchange hagroup list' 출력을 마샬링하는 데 실패함: {Err}"
+  },
+  {
+    "id": "Optional. The name of the HA group.",
+    "translation": "선택사항. HA 그룹의 이름."
+  },
+  {
+    "id": "A description of the HA group.",
+    "translation": "HA 그룹에 대한 설명입니다."
+  },
+  {
+    "id": "A list of node names that are members of this group.",
+    "translation": "이 그룹의 멤버인 노드 이름 목록입니다."
+  },
+  {
+    "id": "HA group name is not specified.",
+    "translation": "HA 그룹 이름이 지정되지 않았습니다."
+  },
+  {
+    "id": "HA group description cannot be empty.",
+    "translation": "HA 그룹 설명은 비워 둘 수 없습니다."
+  },
+  {
+    "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
+    "translation": "Horizon Exchange에서 HA 그룹 {HaGroupOrg}/{HaGroupName} 업데이트됨"
+  },
+  {
+    "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName}: {Msg}",
+    "translation": "HA 그룹 {HaGroupOrg}/{HaGroupName}을(를) 작성할 수 없음: {Msg}"
+  },
+  {
+    "id": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
+    "translation": "HA 그룹 {HaGroupOrg}/{HaGroupName}이(가) Horizon Exchange에 추가되었습니다."
+  },
+  {
+    "id": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
+    "translation": "{HaGroupOrg} 조직의 HA 그룹 {HaGroupName}을(를) Horizon Exchange에서 제거하시겠습니까?"
+  },
+  {
+    "id": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
+    "translation": "HA 그룹 {HaGroupName}을(를) {HaGroupOrg} 조직에서 찾을 수 없음"
+  },
+  {
+    "id": "HA group {HaGroupOrg}/{HaGroupName} removed from the Horizon Exchange.",
+    "translation": "HA 그룹 {HaGroupOrg}/{HaGroupName}이(가) Horizon Exchange에서 제거되었습니다."
+  },
+  {
+    "id": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
+    "translation": "노드 조직이 노드 '{NodeOrg}/{NodeName}'의 그룹 조직 {HaGroupOrg}(과)와 다릅니다."
+  },
+  {
+    "id": "node '{NodeName}' not found in org {NodeOrg}",
+    "translation": "'{NodeName}' 노드를 {NodeOrg} 조직에서 찾을 수 없음"
+  },
+  {
+    "id": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
+    "translation": "{NodeName} 노드가 이미 HA 그룹 {HaGroupOrg}/{HaGroupName}에 있습니다. 노드를 건너뛰는 중입니다."
+  },
+  {
+    "id": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+    "translation": "다음 노드가 HA 그룹 {HaGroupOrg}/{HaGroupName}에 추가됨: \"{JoinaddedNodes_}\""
+  },
+  {
+    "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+    "translation": "경고: 노드가 다른 그룹에 있기 때문에 다음 노드를 그룹에 추가할 수 없음: \"{JoinfailedNodes_}\""
+  },
+  {
+    "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
+    "translation": "Horizon Exchange의 {HaGroupOrg} 조직에 대한 HA 그룹 {HaGroupName}에서 {NodeNames} 노드를 제거하시겠습니까?"
+  },
+  {
+    "id": "Node {NodeName} is not in HA group {HaGroupOrg}/{HaGroupName}.",
+    "translation": "노드 {NodeName}이(가) HA 그룹 {HaGroupOrg}/{HaGroupName}에 없습니다."
+  },
+  {
+    "id": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+    "translation": "\"{JoinnodesToRemove_}\" 노드가 Horizon Exchange의 HA 그룹 {HaGroupOrg}/{HaGroupName}에서 제거되었습니다."
+  },
+  {
+    "id": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+    "translation": "\"{JoinnodesToRemove_}\" 노드가 Horizon Exchange의 HA 그룹 {HaGroupOrg}/{HaGroupName}에서 제거되었습니다."
+  },
+  {
     "id": "NMP {NmpName} not found in org {NmpOrg}",
     "translation": "NMP {NmpName}이(가) {NmpOrg} 조직에서 발견되지 않음"
   },
@@ -4284,20 +4592,16 @@
     "translation": "정책에 대한 간단한 설명입니다."
   },
   {
-    "id": "(Optional) A much longer description of the policy.",
-    "translation": "(선택사항) 정책에 대한 자세한 설명입니다."
+    "id": "A much longer description of the policy.",
+    "translation": "정책에 대한 자세한 설명입니다."
   },
   {
-    "id": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
-    "translation": "(선택사항) 양식의 제약 조건 표현식 목록 <property name> <operator> <property value>,"
+    "id": "A list of policy properties that describe this policy.",
+    "translation": "이 정책을 설명하는 정책 특성 목록입니다."
   },
   {
-    "id": "(Optional) A list of policy properties that describe this policy.",
-    "translation": "(선택사항) 이 정책을 설명하는 정책 특성 목록입니다."
-  },
-  {
-    "id": "(Optional) This policy applies to nodes using one of these patterns.",
-    "translation": "(선택사항) 이 정책은 이러한 패턴 중 하나를 사용하는 노드에 적용됩니다."
+    "id": "This policy applies to nodes using one of these patterns.",
+    "translation": "이 정책은 다음 패턴 중 하나를 사용하여 노드에 적용됩니다."
   },
   {
     "id": "Is this policy enabled or disabled.",
@@ -4312,8 +4616,8 @@
     "translation": "에이전트가 시작 + 시작 창(기본값 0) 내에서 업그레이드 시작 시간을 임의로 지정할 수 있습니다."
   },
   {
-    "id": "(Optional) Assertions on how the agent should update itself.",
-    "translation": "(선택사항) 에이전트가 자체적으로 업데이트해야 하는 방법에 대한 어설션입니다."
+    "id": "Assertions on how the agent should update itself.",
+    "translation": "에이전트가 자체적으로 업데이트해야 하는 방법에 대한 어설션입니다."
   },
   {
     "id": "The manifest file containing the software, config and cert files to upgrade.",
@@ -4330,6 +4634,14 @@
   {
     "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
     "translation": "노드 관리 정책에는 관리 정책이 모든 노드에 배치될 수 있는 제한조건이 없습니다. --no-constraints를 지정하여 이것이 허용되는지 확인하십시오."
+  },
+  {
+    "id": "An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy.",
+    "translation": "AgentAutoUpgradePolicy가 정의되었지만 Manifest가 정의되지 않았습니다. AgentAutoUpgradePolicy를 사용하여 NMP를 추가하기 전에 CSS에 저장되어 있는 Manifest를 지정하십시오."
+  },
+  {
+    "id": "An AgentAutoUpgradePolicy was defined with manifest '{FullManifest}' which does not exist in org {ManOrg}.",
+    "translation": "AgentAutoUpgradePolicy가 {ManOrg} 조직에 없는 Manifest '{FullManifest}'을(를) 사용하여 정의되었습니다."
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
@@ -4368,12 +4680,40 @@
     "translation": "{NmpOrg} 조직의 노드 {NodeName}에 대해 NMP {NmpName}의 상태를 찾을 수 없음"
   },
   {
-    "id": "failed to marshal 'exchange node list' output: {Err}",
-    "translation": "'exchange node list' 출력을 마샬링하는 데 실패함: {Err}"
+    "id": "Failed to parse start time: {Err}. The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "시작 시간을 구문 분석하는 데 실패함: {Err}. 시작 시간은 RFC3339 형식이거나 \"now\"로 설정되어 있어야 합니다."
   },
   {
-    "id": "node '{Node}' not found in org {NodeOrg}",
-    "translation": "'{Node}' 노드를 {NodeOrg} 조직에서 찾을 수 없음"
+    "id": "Failed to parse start window: {Err}. The start window must be Integer.",
+    "translation": "시작 기간을 구문 분석하는 데 실패함: {Err}. 시작 기간은 정수여야 합니다."
+  },
+  {
+    "id": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
+    "translation": "{NmpFullName} 노드 관리 정책이 Horizon Exchange에서 이미 활성화됨"
+  },
+  {
+    "id": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
+    "translation": "{NmpFullName} 노드 관리 정책이 Horizon Exchange에서 활성화됨"
+  },
+  {
+    "id": "Cannot enable node management policy {NmpFullName}: {Msg}",
+    "translation": "노드 관리 정책 {NmpFullName}을(를) 활성화할 수 없음: {Msg}"
+  },
+  {
+    "id": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
+    "translation": "노드 관리 정책 {NmpFullName}이(가) Horizon Exchange에서 이미 비활성화됨"
+  },
+  {
+    "id": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
+    "translation": "노드 관리 정책 {NmpFullName}이(가) Horizon Exchange에서 비활성화됨"
+  },
+  {
+    "id": "Cannot disable node management policy {NmpFullName}: {Msg}",
+    "translation": "노드 관리 정책 {NmpFullName}을(를) 비활성화할 수 없음: {Msg}"
+  },
+  {
+    "id": "failed to marshal 'exchange node list' output: {Err}",
+    "translation": "'exchange node list' 출력을 마샬링하는 데 실패함: {Err}"
   },
   {
     "id": "if node or token are specified then they both must be specified",
@@ -4580,6 +4920,18 @@
     "translation": "{NodeName} 노드에 {NodeOrg} 조직의 {NmpName}에 대한 상태가 포함되지 않음"
   },
   {
+    "id": "No management status found for node {NodeName} in org {NodeOrg}",
+    "translation": "{NodeOrg} 조직의 {NodeName} 노드에 대한 관리 상태를 찾을 수 없음"
+  },
+  {
+    "id": "Node management status for {NmpStatusNameNoOrg} is reset.",
+    "translation": "{NmpStatusNameNoOrg}에 대한 노드 관리 상태가 재설정되었습니다."
+  },
+  {
+    "id": "The the Horizon agent for node {NodeOrg}/{NodeName} will re-evaluate the management policies.",
+    "translation": "노드 {NodeOrg}/{NodeName}에 대한 Horizon Agent가 관리 정책을 재평가합니다."
+  },
+  {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
     "translation": "노드 패턴 {Pattern}(으)로 사용자 입력을 확인하는 중입니다."
   },
@@ -4630,6 +4982,10 @@
   {
     "id": "failed to marshal 'exchange org list' output: {Err}",
     "translation": "'exchange org list' 출력을 마샬링하는 데 실패함: {Err}"
+  },
+  {
+    "id": "Invalid organization. Organization cannot contain: [ _ , <space> ' ?]",
+    "translation": "올바르지 않은 조직. 조직에는 다음이 포함될 수 없음: [ _ , <space> ' ?]"
   },
   {
     "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
@@ -4964,12 +5320,12 @@
     "translation": "기본 제공 특성 값 추가 중..."
   },
   {
-    "id": "The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch",
-    "translation": "다음 특성 값을 겹쳐씁니다. service.url, service.name, service.org, service.version, service.arch"
+    "id": "The following property values will be overridden: service.url, service.name, service.org, service.version, service.arch",
+    "translation": "다음 특성 값이 대체됨: service.url, service.name, service.org, service.version, service.arch"
   },
   {
-    "id": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-    "translation": "서비스 정책을 업데이트하고 이 서비스 정책을 기반으로 모든 계약을 재평가하는 중입니다. 기존 계약을 취소하고 재협상할 수 있습니다."
+    "id": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+    "translation": "서비스 정책을 업데이트하고 이 서비스 정책을 기반으로 모든 계약을 재평가합니다. 기존 계약이 취소되고 재조정될 수 있습니다."
   },
   {
     "id": "Service policy updated.",
@@ -5244,6 +5600,22 @@
     "translation": "서비스를 중지했습니다."
   },
   {
+    "id": "failed to marshal 'hzn nmp status' output: {Err}",
+    "translation": "'hzn nmp status' 출력을 마샬링하는 데 실패함: {Err}"
+  },
+  {
+    "id": "The following node management policy will be re-evaluated: {NmpName}.",
+    "translation": "다음 노드 관리 정책이 재평가됨: {NmpName}."
+  },
+  {
+    "id": "No node management policy for this node.",
+    "translation": "이 노드에 대한 노드 관리 정책이 없습니다."
+  },
+  {
+    "id": "The following node management policies will be re-evaluated: {JoinallIDs_}.",
+    "translation": "다음 노드 관리 정책이 재평가됨: {JoinallIDs_}."
+  },
+  {
     "id": "Failed to get proper response from Horizon agent",
     "translation": "Horizon 에이전트에서 적절한 응답을 가져오는 데 실패함"
   },
@@ -5314,6 +5686,30 @@
   {
     "id": "must specify --type and --id with --long",
     "translation": "--type 및 --id with --long을 지정해야 합니다."
+  },
+  {
+    "id": "Cannot specify --skipDigitalSig with --hash",
+    "translation": "--hash를 사용하여 --skipDigitalSig를 지정할 수 없음"
+  },
+  {
+    "id": "Cannot specify --skipDigitalSig with --hashAlgo",
+    "translation": "--hashAlgo를 사용하여 --skipDigitalSig를 지정할 수 없음"
+  },
+  {
+    "id": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
+    "translation": "--hashAlgo에 대한 올바르지 않은 값. SHA1 또는 SHA256을 사용하십시오."
+  },
+  {
+    "id": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
+    "translation": "데이터 무결성을 위해 {HashAlgorithm}(으)로 디지털 서명이 수행됩니다."
+  },
+  {
+    "id": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
+    "translation": "Manifest {ManifestFile} 디지털 서명에 실패함, 오류: {Err}"
+  },
+  {
+    "id": "Digital sign finished.",
+    "translation": "디지털 서명이 완료되었습니다."
   },
   {
     "id": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
@@ -5628,6 +6024,18 @@
     "translation": "제공된 패턴 {Pattern}(으)로 진행합니다."
   },
   {
+    "id": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
+    "translation": "노드가 다른 HA 그룹 {ExistingHagrName}에 있기 때문에 제공된 HA 그룹 {HaGroupName}을(를) 계속할 수 없습니다."
+  },
+  {
+    "id": "The node is already in the HA group '{HaGroupName}'.",
+    "translation": "노드가 이미 HA 그룹 '{HaGroupName}'에 있습니다."
+  },
+  {
+    "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
+    "translation": "노드 {Org}/{NodeId}은(는) HA 그룹 {HaGroupName}에 있습니다."
+  },
+  {
     "id": "Updating the node policy...",
     "translation": "노드 정책 업데이트 중..."
   },
@@ -5674,6 +6082,26 @@
   {
     "id": "Horizon node is registered. Workload services should begin executing shortly.",
     "translation": "Horizon 노드가 등록되었습니다. 워크로드 서비스가 곧 실행됩니다."
+  },
+  {
+    "id": "Please specify the user credentials with -u flag in order to create or update the HA group {Org}/{HaGroupName}.",
+    "translation": "HA 그룹 {Org}/{HaGroupName}을(를) 작성하거나 업데이트하려면, -u 플래그를 사용하여 사용자 신임 정보를 지정하십시오."
+  },
+  {
+    "id": "Creating HA group {Org}/{HaGroupName} ...",
+    "translation": "HA 그룹 {Org}/{HaGroupName} 작성 중..."
+  },
+  {
+    "id": "HA group {Org}/{HaGroupName} created with node {NodeId} as the member.",
+    "translation": "HA 그룹 {Org}/{HaGroupName}이(가) 멤버로 {NodeId} 노드를 사용하여 작성되었습니다."
+  },
+  {
+    "id": "Adding node {NodeId} to HA group {Org}/{HaGroupName} ...",
+    "translation": "HA 그룹 {Org}/{HaGroupName}에 {NodeId} 노드 추가 중..."
+  },
+  {
+    "id": "Node {NodeId} is added to HA group {HaGroupName}.",
+    "translation": "{NodeId} 노드가 HA 그룹 {HaGroupName}에 추가되었습니다."
   },
   {
     "id": "Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.",
@@ -5760,16 +6188,28 @@
     "translation": "패턴으로 등록하는 경우 -s가 '*'(즉, 패턴의 모든 최상위 레벨 서비스가 모니터됨)이면 --serviceorg를 생략해야 합니다."
   },
   {
-    "id": "could not validate node ID '{NodeId}': {Err}",
-    "translation": "노드 ID '{NodeId}'의 유효성 검증 실패: {Err}"
+    "id": "invalid node ID: {Err}",
+    "translation": "올바르지 않은 노드 ID: {Err}"
   },
   {
-    "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-    "translation": "올바르지 않은 노드 ID: A-Za-z0-9, 유니코드 문자 및 특수 기호 !-*+()?.,:&@만 허용됨"
+    "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+    "translation": "HA 그룹 조직 ID '{HaGroupOrg}'이(가) 노드 조직 ID '{Org}'과(와) 다릅니다."
   },
   {
-    "id": "invalid node ID: Whitespace is not permitted",
-    "translation": "올바르지 않은 노드 ID: 공백이 허용되지 않음"
+    "id": "invalid HA group ID: {Err}",
+    "translation": "올바르지 않은 HA 그룹 ID: {Err}"
+  },
+  {
+    "id": "Could not validate. {Err}",
+    "translation": "유효성을 검증할 수 없습니다. {Err}"
+  },
+  {
+    "id": "A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed.",
+    "translation": "A-Za-z0-9, 유니코드 문자 및 특수 기호 !-*+()?.,:&@만 허용됩니다."
+  },
+  {
+    "id": "Whitespace is not permitted.",
+    "translation": "공백은 허용되지 않습니다."
   },
   {
     "id": "invalid version range '{Vr}': {Err}",
@@ -6188,6 +6628,10 @@
     "translation": "노드 추가/업데이트 중..."
   },
   {
+    "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+    "translation": "서비스 구성 사용자 입력 파일 {UserInputFileName}을(를) 읽는 중: {Err}"
+  },
+  {
     "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
     "translation": "JSON 문자열 '{PolicyStr}'을(를) 역마샬링하는 데 실패함: {Err}"
   },
@@ -6444,10 +6888,6 @@
     "translation": "올바르지 않은 --deleted 값: {WithData}, --data는 true 또는 false이어야 함"
   },
   {
-    "id": "no objects found in org {Org}",
-    "translation": "조직 {Org}에서 오브젝트를 찾을 수 없음"
-  },
-  {
     "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
     "translation": "조직 {Org}에서 유형이 '{ObjectType}'인 오브젝트 '{ObjectID}'에 대한 대상 세부사항을 찾을 수 없음"
   },
@@ -6528,7 +6968,7 @@
     "translation": "이 오브젝트를 사용할 서비스입니다."
   },
   {
-    "id": "Set to '*' to indcate services of any hardware architecture.",
+    "id": "Set to '*' to indicate services of any hardware architecture.",
     "translation": "하드웨어 아키텍처의 서비스를 표시하려면 '*'로 설정하십시오."
   },
   {
@@ -6590,10 +7030,6 @@
   {
     "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
     "translation": "{ObjFile} 파일에 대한 디지털 서명에 실패함. 오류: {Err}"
-  },
-  {
-    "id": "Digital sign finished.",
-    "translation": "디지털 서명이 완료되었습니다."
   },
   {
     "id": "Upload object in chunk, chunk size is: {ChunkSize}",
@@ -7684,8 +8120,8 @@
     "translation": "서명 문자열이 비어 있기 때문에 디지털 서명을 확인하는 데 실패했습니다."
   },
   {
-    "id": "Label, or Enabled is empty.",
-    "translation": "레이블 또는 사용 가능이 비어 있습니다."
+    "id": "The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "시작 시간은 RFC3339 형식이거나 \"now\"로 설정되어 있어야 합니다."
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -7726,6 +8162,14 @@
   {
     "id": "The constraint expression contains unmatched parentheses.",
     "translation": "제한조건 표현식에 짝이 맞지 않는 소괄호가 포함되어 있습니다."
+  },
+  {
+    "id": "New node management policy status created for policy {Arg_1}.",
+    "translation": "{Arg_1}정책에 대해 새 노드 관리 정책 상태가 작성되었습니다."
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}.",
+    "translation": "{Arg_1}에 대한 노드 관리 상태가 {Arg_2}(으)로 변경되었습니다."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

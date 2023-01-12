@@ -68,16 +68,40 @@
     "translation": "anax 正在終止，無法完成合約同步化。 {Arg_1}"
   },
   {
+    "id": "Error node authentication credentials do not match requesting node.",
+    "translation": "錯誤節點鑑別認證不符合要求端節點。"
+  },
+  {
+    "id": "Unable to retrieve node from the exchange.",
+    "translation": "無法從 Exchange 擷取節點。"
+  },
+  {
+    "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+    "translation": "錯誤節點 HA 群組 {HAGroup} 不符合要求 {GroupName} 中的群組名稱。"
+  },
+  {
+    "id": "Error handling node upgrade request: {Error}",
+    "translation": "處理節點升級要求時發生錯誤：{Error}"
+  },
+  {
+    "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+    "translation": "節點 {Org}/{Node} 可以開始執行 nmp {NmpId}。"
+  },
+  {
+    "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+    "translation": "節點 {Org}/{Node} 無法開始執行 nmp {NmpId}。"
+  },
+  {
     "id": "No input found.",
     "translation": "找不到輸入。"
   },
   {
-    "id": "Unauthorized. No exchange user id is supplied.",
-    "translation": "未獲授權。 未提供任何 Exchange 使用者 ID。"
+    "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+    "translation": "未獲授權。 未提供 Exchange {AuthType} ID。"
   },
   {
-    "id": "Failed to authenticate the user with the Exchange. {Err}",
-    "translation": "無法向 Exchange 鑑別使用者。 {Err}"
+    "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+    "translation": "無法向 Exchange 鑑別 {AuthType}。{Err}"
   },
   {
     "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -112,12 +136,16 @@
     "translation": "未提供任何 Exchange 使用者密碼或 API 金鑰。"
   },
   {
-    "id": "Wrong organization id, user id or password.",
-    "translation": "錯誤的組織 ID、使用者 ID 或密碼。"
+    "id": "Wrong organization id, {Arg_1} id or password.",
+    "translation": "錯誤的組織 ID、{Arg_1} ID 或密碼。"
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
     "translation": "Exchange 使用者 {Key} 未採用正確格式，應該採用 org/username 格式。"
+  },
+  {
+    "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+    "translation": "Exchange 裝置{Key}的格式不正確，應該是 org/nodename。"
   },
   {
     "id": "Internal server error",
@@ -432,8 +460,8 @@
     "translation": "完成將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
   },
   {
-    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-    "translation": "{Arg_1}/{Arg_2} 的節點管理狀態已變更為 {Arg_3}"
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+    "translation": "{Arg_1}/{Arg_2} 的節點管理狀態已變更為 {Arg_3}。"
   },
   {
     "id": "Error converting the selections into Selectors: {Err}",
@@ -784,6 +812,10 @@
     "translation": "必須使用下列其中一項指定 Exchange 鑑別：-u 旗標、-n 旗標、HZN_EXCHANGE_USER_AUTH 或 HZN_EXCHANGE_NODE_AUTH"
   },
   {
+    "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+    "translation": "必須使用下列其中一項來指定 Exchange 鑑別：-u 旗標或 HZN_EXCHANGE_USER_AUTH"
+  },
+  {
     "id": "Verifying public key file ...",
     "translation": "正在驗證公開金鑰檔..."
   },
@@ -894,6 +926,10 @@
   {
     "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
     "translation": "所提供的 log-driver ({LogDriver}) 不支援日誌檢視。 僅在下列驅動程式上提供日誌：{DockerDriversWithLoggingSupport}"
+  },
+  {
+    "id": "Problem validating org name: {Err}",
+    "translation": "驗證組織名稱時發生問題：{Err}"
   },
   {
     "id": "Error creating StdoutPipe for command: {Err}",
@@ -1528,8 +1564,8 @@
     "translation": "不支援雜湊演算法 {HashAlgo}"
   },
   {
-    "id": "Label, or Enabled is empty.",
-    "translation": "Label 或 Enabled 是空的。"
+    "id": "The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "開始時間必須採用 RFC3339 格式或設為 \"now\"。"
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1900,8 +1936,8 @@
     "translation": "已為原則 {Arg_1} 建立新的節點管理原則狀態。"
   },
   {
-    "id": "Node management status for {Arg_1} changed to {Arg_2}",
-    "translation": "{Arg_1} 的節點管理狀態已變更為 {Arg_2}"
+    "id": "Node management status for {Arg_1} changed to {Arg_2}.",
+    "translation": "{Arg_1} 的節點管理狀態已變更為 {Arg_2}。"
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

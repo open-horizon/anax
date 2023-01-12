@@ -2,28 +2,162 @@
   "language": "zh-CN",
   "messages": [
     {
+      "id": "Error node authentication credentials do not match requesting node.",
+      "message": "Error node authentication credentials do not match requesting node.",
+      "translation": "错误节点认证凭证与请求节点不匹配。",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to retrieve node from the exchange.",
+      "message": "Unable to retrieve node from the exchange.",
+      "translation": "无法从 Exchange 中检索节点。",
+      "fuzzy": true
+    },
+    {
+      "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+      "message": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+      "translation": "错误节点 HA 组 {HAGroup} 与请求 {GroupName} 中的组名不匹配。",
+      "placeholders": [
+        {
+          "id": "HAGroup",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "dev.HAGroup"
+        },
+        {
+          "id": "GroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "groupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error handling node upgrade request: {Error}",
+      "message": "Error handling node upgrade request: {Error}",
+      "translation": "处理节点升级请求时出错：{Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+      "message": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+      "translation": "节点 {Org}/{Node} 可以开始执行 nmp {NmpId}。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        },
+        {
+          "id": "NmpId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nmpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+      "message": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+      "translation": "节点 {Org}/{Node} 无法开始执行 nmp {NmpId}。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "Node",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "node"
+        },
+        {
+          "id": "NmpId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nmpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "No input found.",
       "message": "No input found.",
       "translation": "找不到输入。",
       "fuzzy": true
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "message": "Unauthorized. No exchange user id is supplied.",
-      "translation": "未获授权。 未提供 Exchange 用户标识。",
+      "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+      "message": "Unauthorized. No exchange {AuthType} id is supplied.",
+      "translation": "未经授权。 未提供 Exchange {AuthType} 标识。",
+      "placeholders": [
+        {
+          "id": "AuthType",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "authType"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "message": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "未能使用 Exchange 认证用户。 {Err}",
+      "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+      "message": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+      "translation": "无法向 Exchange 认证 {AuthType}。{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "AuthType",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "authType"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -128,15 +262,40 @@
       "fuzzy": true
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "message": "Wrong organization id, user id or password.",
-      "translation": "组织标识、用户标识或密码错误。",
+      "id": "Wrong organization id, {Arg_1} id or password.",
+      "message": "Wrong organization id, {Arg_1} id or password.",
+      "translation": "错误的组织标识、{Arg_1} 标识或密码。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]s",
+          "type": "",
+          "underlyingType": "string",
+          "argNum": 1
+        }
+      ],
       "fuzzy": true
     },
     {
       "id": "Exchange user {Key} is not in the correct format, should be org/username.",
       "message": "Exchange user {Key} is not in the correct format, should be org/username.",
       "translation": "Exchange 用户 {Key} 不是正确的格式，应该为“组织/用户名”。",
+      "placeholders": [
+        {
+          "id": "Key",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "key"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+      "message": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+      "translation": "Exchange 设备 {Key} 的格式不正确，其格式应该为 org/nodename。",
       "placeholders": [
         {
           "id": "Key",
@@ -1615,10 +1774,10 @@
     {
       "id": [
         "EL_API_NMP_STATUS_CHANGE",
-        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}"
+        "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}."
       ],
-      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} 的节点管理状态已更改为 {Arg_3}",
+      "message": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+      "translation": "{Arg_1}/{Arg_2} 的节点管理状态已更改为 {Arg_3}。",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -1705,9 +1864,9 @@
       "fuzzy": true
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine (as defined by Horizon and golang). \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  metering: List or manage the metering (payment) information for the active or archived agreements.\n  mms: List and manage Horizon Model Management Service resources.\n  node: List and manage general information about this Horizon edge node.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). \n            This examines the services that the specified pattern uses, and determines the node owner input that is required for them. \n  register: Register this edge node with the management hub.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon 代理程序的命令行界面。大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅 '环境变量' 一节以覆盖该位置）。\n\n子命令描述：\n  agbot：列出和管理 Horizon 协议 bot 资源。\n  agreement：列出或管理此边缘节点与 Horizon 协议 bot 议定的活动协议或存档协议。\n  architecture：显示此机器的体系结构（由 Horizon 和 golang 定义）。\n  attribute：列出或管理当前在此 Horizon 边缘节点上注册的全局属性。\n  deploycheck：检查部署兼容性。\n  dev：用于创建服务的开发工具。\n  env：显示 Horizon 环境变量。\n  eventlog：列示当前注册或所有注册的事件日志。\n  exchange：列出和管理 Horizon Exchange 资源。\n  key：列出和管理用于签署和验证服务的密钥。 \n  metering：列出或管理活动协议或存档协议的测量（付款）信息。\n  mms：列出和管理 Horizon 模型管理服务资源。\n  node：列出和管理有关此 Horizon 边缘节点的常规信息。\n  policy：列出和管理此 Horizon 边缘节点的策略。\n  reginput：为此模式创建输入文件模板，该模板填写后即可用于“hzn register”命令。\n  这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。\n  register：向管理中心注册此边缘节点。\n  service：列出或管理当前在此 Horizon 边缘节点上注册的服务。\n  status：显示节点的当前 Horizon 内部状态。\n  unregister：注销并重置此 Horizon 边缘节点，以使其可以再次注册。\n  userinput：列出或管理当前在此 Horizon 边缘节点上注册的服务用户输入。\n  util：实用程序命令。\n  version：显示 Horizon 版本。\n  sdo：列出并管理 Horizon SDO 所有权凭单和密钥。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n  这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供 'hzn exchange' 子命令用来与 Horizon Exchange\n通信的 URL，例如，\n https://exchange.bluehorizon.network/api/v1。（缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID：'hzn exchange -o' 标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH：'hzn exchange -u' 或 'hzn\n  register -u' 标志的缺省值，其格式为 '[org/]user:pw'。请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供 'hzn mms' 子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n  https://exchange.bluehorizon.network/css/。（缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_SDO_SVC_URL：覆盖“hzn sdo”子命令用来\n与 SDO 所有者服务通信的 URL。（缺省情况下，hzn 将向\n Horizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}",
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "translation": "Horizon 代理程序的命令行界面。 大多数子命令都在缺省位置 http://localhost（请参阅“环境变量”部分以覆盖此位置）中使用 Horizon 代理程序 API。\n \n 子命令描述：\n agbot：列出和管理 Horizon 协议机器人资源。\n agreement：列出或管理此边缘节点与 Horizon 协议机器人达成的协议。\n architecture：显示此机器的体系结构。 \n attribute：列出或管理当前在此 Horizon 边缘节点上注册的全局属性。\n deploycheck：检查部署兼容性。\n dev：用于创建服务的开发工具。\n env：显示 Horizon 环境变量。\n eventlog：列出当前或所有注册的事件日志。\n exchange：列出和管理 Horizon Exchange 资源。\n key：列出和管理用于签署和验证服务的密钥。 \n mms：列出和管理 Horizon 模型管理服务资源。\n nmstatus：列出和管理本地节点的节点管理状态。\n node：列出和管理有关此 Horizon 边缘节点的常规信息。\n nodemanagement：列出和管理用于节点管理的清单和代理程序文件。\n policy：列出和管理此 Horizon 边缘节点的策略。 \n reginput：为此模式创建可用于“hzn register”命令的输入文件模板。 \n register：向管理中心注册此边缘节点。\n secretsmanager：在私钥管理器中列出和管理私钥。\n service：列出或管理当前在此 Horizon 边缘节点上注册的服务。\n status：显示节点的当前 Horizon 内部状态。\n unregister：注销并重置此 Horizon 边缘节点。\n userinput：列出或管理当前在此 Horizon 边缘节点上注册的服务用户输入。\n util：Utility 命令。\n version：显示 Horizon 版本。\n sdo：列出和管理 Horizon SDO 所有权凭单和密钥。\n \n 环境变量：\n HORIZON_URL：覆盖 hzn 与 Horizon 代理程序 API 联系时所用的 URL。\n 这有助于通过 ssh 隧道使用远程 Horizon 代理程序。\n HZN_EXCHANGE_URL：覆盖“hzn exchange”子命令 \n 与 Horizon Exchange 通信时所用的 URL，例如 \n      https://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 会向 Horizon 代理程序请求 URL。）\n HZN_ORG_ID：“hzn exchange -o”标志的缺省值， \n 用于指定组织标识。\n HZN_EXCHANGE_USER_AUTH：“hzn exchange -u”或“hzn \n register -u”标志的缺省值，格式为“[org/]user:pw”。 请注意，如果在设置 HZN_EXCHANGE_USER_AUTH 时省略了 org，\n 那么可以设置 HZN_ORG_ID。\n HZN_FSS_CSSURL：覆盖“hzn mms”子命令 \n 与 Horizon 模型管理服务通信时所用的 URL，例如 \n https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 会向 Horizon 代理程序请求 URL。）\n HZN_SDO_SVC_URL：覆盖“hzn sdo”子命令与 SDO 所有者服务通信时所用\n的 URL。 （缺省情况下，hzn 会向 \n Horizon 代理程序请求 URL。） \n \n 可以在用户配置文件 ~/.hzn/hzn.json 中使用 JSON 格式指定所有这些环境变量以及命令帮助中提到的\n环境变量。\n 例如：\n {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -1985,21 +2144,27 @@
       "fuzzy": true
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "message": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange 节点标识。 与 --node-pol 和 --node-ui 互斥。 如果省略此项，那么将使用用来注册当前设备的节点标识。 如果未附加组织标识作为前缀，那么将自动附加 -o 值作为前缀。",
+      "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "message": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange 节点标识。 与 --ha-group、--node-pol 和 --node-ui 互斥。 如果省略了此选项，那么将使用用于注册当前设备的节点标识。 可重复使用此标志来指定多个节点。 如果未在节点标识前面加上组织标识，则会自动在节点标识前面加上 -o 值。",
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-      "translation": "包含节点策略的 JSON 输入文件的名称。 与 -n、-p 和 -P 互斥。",
+      "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "message": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "translation": "HA 组的名称。 与 -n、--node-pol 和 --node-ui 互斥。",
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-      "message": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-      "translation": "节点用户输入所在 JSON 输入文件的名称。 与 -n 互斥。",
+      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
+      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
+      "translation": "包含节点策略的 JSON 输入文件名称。 与 -n、--ha-group、-p 和 -P 互斥。",
+      "fuzzy": true
+    },
+    {
+      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
+      "message": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
+      "translation": "包含节点用户输入的 JSON 输入文件名。 与 -n 和 --ha-group 互斥。",
       "fuzzy": true
     },
     {
@@ -2051,15 +2216,21 @@
       "fuzzy": true
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "message": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange 节点标识。 与 --node-pol 互斥。 如果省略此项，那么将使用用来注册当前设备的节点标识。 如果未附加组织标识作为前缀，那么将自动附加 -o 值作为前缀。",
+      "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "message": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange 节点标识。 与 --ha-group 和 --node-pol 互斥。 如果省略了此选项，那么将使用用于注册当前设备的节点标识。 可重复使用此标志来指定多个节点。 如果未在节点标识前面加上组织标识，则会自动在节点标识前面加上 -o 值。",
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-      "translation": "包含节点策略的 JSON 输入文件的名称。 与 -n 互斥。",
+      "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
+      "message": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
+      "translation": "HA 组的名称。 与 -n 和 --node-pol 互斥。",
+      "fuzzy": true
+    },
+    {
+      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
+      "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
+      "translation": "包含节点策略的 JSON 输入文件名称。 与 -n 和 --ha-group 互斥。",
       "fuzzy": true
     },
     {
@@ -2120,6 +2291,12 @@
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "message": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "translation": "Horizon Exchange 节点标识。 与 --node-ui 互斥。 如果省略此项，那么将使用用来注册当前设备的节点标识。 如果未附加组织标识作为前缀，那么将自动附加 -o 值作为前缀。",
+      "fuzzy": true
+    },
+    {
+      "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
+      "message": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
+      "translation": "节点用户输入所在 JSON 输入文件的名称。 与 -n 互斥。",
       "fuzzy": true
     },
     {
@@ -2763,6 +2940,12 @@
       "fuzzy": true
     },
     {
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+      "translation": "要用作凭证的 Horizon Exchange 节点标识和令牌，用于查询和修改节点资源（如果未指定 -u 标志）。 HZN_EXCHANGE_NODE_AUTH 将用作 -n 的缺省值。 如果未附加节点的组织作为前缀，那么将自动附加 -o 值作为前缀。",
+      "fuzzy": true
+    },
+    {
       "id": "Display detailed output about the node management policies.",
       "message": "Display detailed output about the node management policies.",
       "translation": "显示有关节点管理策略的详细输出。",
@@ -2837,13 +3020,49 @@
     {
       "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
       "message": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
-      "translation": "过滤输出以仅包含这一个节点。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的完整内容。",
+      "translation": "过滤输出以仅包含这一个节点。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的整个内容。",
       "fuzzy": true
     },
     {
       "id": "Show the entire contents of each node management policy status object.",
       "message": "Show the entire contents of each node management policy status object.",
       "translation": "显示每个节点管理策略状态对象的完整内容。",
+      "fuzzy": true
+    },
+    {
+      "id": "Enable a node management policy in the Horizon Exchange.",
+      "message": "Enable a node management policy in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中启用节点管理策略。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to enable.",
+      "message": "The name of the node management policy to enable.",
+      "translation": "要启用的节点管理策略的名称。",
+      "fuzzy": true
+    },
+    {
+      "id": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
+      "message": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
+      "translation": "已启用的节点管理策略的开始时间。 开始时间应为 RFC3339 时间戳记或“now”",
+      "fuzzy": true
+    },
+    {
+      "id": "The start window of the enabled node management policy.",
+      "message": "The start window of the enabled node management policy.",
+      "translation": "已启用的节点管理策略的启动窗口。",
+      "fuzzy": true
+    },
+    {
+      "id": "Disable a node management policy in the Horizon Exchange.",
+      "message": "Disable a node management policy in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中禁用节点管理策略。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy to disable.",
+      "message": "The name of the node management policy to disable.",
+      "translation": "要禁用的节点管理策略的名称。",
       "fuzzy": true
     },
     {
@@ -2856,12 +3075,6 @@
       "id": "Add or replace the node policy in the Horizon Exchange.",
       "message": "Add or replace the node policy in the Horizon Exchange.",
       "translation": "在 Horizon Exchange 中添加或替换节点策略。",
-      "fuzzy": true
-    },
-    {
-      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "message": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "要用作凭证的 Horizon Exchange 节点标识和令牌，用于查询和修改节点资源（如果未指定 -u 标志）。 HZN_EXCHANGE_NODE_AUTH 将用作 -n 的缺省值。 如果未附加节点的组织作为前缀，那么将自动附加 -o 值作为前缀。",
       "fuzzy": true
     },
     {
@@ -3035,7 +3248,25 @@
     {
       "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
       "message": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
-      "translation": "过滤输出以仅包含这一个节点管理策略。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的完整内容。",
+      "translation": "过滤输出以仅包含这一个节点管理策略。 与 -- long 标志配合使用以显示单个节点管理策略状态对象的整个内容。",
+      "fuzzy": true
+    },
+    {
+      "id": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "message": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "translation": "重新评估此节点的节点管理策略 (nmp)。 运行此命令以在升级失败且问题得到解决时重试 nmp。 如果节点仍处于升级过程中，请勿运行此命令。",
+      "fuzzy": true
+    },
+    {
+      "id": "Re-evaluate node management policy for this node.",
+      "message": "Re-evaluate node management policy for this node.",
+      "translation": "重新评估此节点的节点管理策略。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
+      "message": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
+      "translation": "要重新评估的节点管理策略的名称。 如果省略了此选项，那么将重新评估此节点的所有节点管理策略。",
       "fuzzy": true
     },
     {
@@ -3709,6 +3940,102 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage high availability (HA) groups in the Horizon Exchange",
+      "message": "List and manage high availability (HA) groups in the Horizon Exchange",
+      "translation": "在 Horizon Exchange 中列出和管理高可用性 (HA) 组",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the HA group resources from the Horizon Exchange.",
+      "message": "Display the HA group resources from the Horizon Exchange.",
+      "translation": "显示 Horizon Exchange 中的 HA 组资源。",
+      "fuzzy": true
+    },
+    {
+      "id": "List just this one HA group.",
+      "message": "List just this one HA group.",
+      "translation": "仅列出这一个 HA 组。",
+      "fuzzy": true
+    },
+    {
+      "id": "When listing all of the HA groups, show the entire resource of each group, instead of just the name.",
+      "message": "When listing all of the HA groups, show the entire resource of each group, instead of just the name.",
+      "translation": "在列出所有 HA 组时，将显示每个组的全部资源，而不是仅显示名称。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display an empty HA group template that can be filled in.",
+      "message": "Display an empty HA group template that can be filled in.",
+      "translation": "显示可填充的空 HA 组模板。",
+      "fuzzy": true
+    },
+    {
+      "id": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
+      "message": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
+      "translation": "在 Horizon Exchange 中添加或替换 HA 组。 对于空的 HA 组模板，请使用“hzn exchange hagroup new”。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
+      "message": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
+      "translation": "要添加或覆盖的 HA 组的名称。 如果省略了此选项，那么将使用输入文件中的 name 属性。",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
+      "message": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
+      "translation": "含有在 Horizon Exchange 中创建/更新 HA 组所需的元数据的 JSON 文件的路径。 指定 -f- 以从 stdin 读取。",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove the HA group in the Horizon Exchange.",
+      "message": "Remove the HA group in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中移除 HA 组。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group to be removed.",
+      "message": "The name of the HA group to be removed.",
+      "translation": "要移除的 HA 组的名称。",
+      "fuzzy": true
+    },
+    {
+      "id": "Manage HA group members in the Horizon Exchange",
+      "message": "Manage HA group members in the Horizon Exchange",
+      "translation": "在 Horizon Exchange 中管理 HA 组成员",
+      "fuzzy": true
+    },
+    {
+      "id": "Add nodes to the HA group in the Horizon Exchange.",
+      "message": "Add nodes to the HA group in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中将节点添加到 HA 组。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group.",
+      "message": "The name of the HA group.",
+      "translation": "HA 组的名称。",
+      "fuzzy": true
+    },
+    {
+      "id": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
+      "message": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
+      "translation": "要添加到 HA 组的节点。 可重复使用此标志来指定不同的节点。",
+      "fuzzy": true
+    },
+    {
+      "id": "Remove nodes from the HA group in the Horizon Exchange.",
+      "message": "Remove nodes from the HA group in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中从 HA 组中移除节点。",
+      "fuzzy": true
+    },
+    {
+      "id": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
+      "message": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
+      "translation": "要从 HA 组中移除的节点。 可重复使用此标志来指定不同的节点。",
+      "fuzzy": true
+    },
+    {
       "id": "Display the status of the Horizon Exchange.",
       "message": "Display the status of the Horizon Exchange.",
       "translation": "显示 Horizon Exchange 的状态。",
@@ -4207,6 +4534,12 @@
       "fuzzy": true
     },
     {
+      "id": "List and manage manifests and agent files for node management.",
+      "message": "List and manage manifests and agent files for node management.",
+      "translation": "列出和管理用于节点管理的清单和代理程序文件。",
+      "fuzzy": true
+    },
+    {
       "id": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
       "message": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
       "translation": "用于查询和创建节点管理资源的 Horizon 用户凭证。 如果未指定，那么将使用 HZN_EXCHANGE_USER_AUTH 作为缺省值。 如果您不使用用户的组织作为前缀，那么它将自动以 -o 值作为前缀。",
@@ -4240,6 +4573,30 @@
       "id": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin.",
       "translation": "这是包含清单数据的 JSON 文件的路径。 指定 -f- 以从 stdin 读取。",
+      "fuzzy": true
+    },
+    {
+      "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+      "message": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+      "translation": "用于在签名之前对清单数据进行散列处理的散列算法，可确保上载和下载期间的数据完整性。 受支持的散列算法包括 SHA1 或 SHA256，缺省值为 SHA1。 它与 --noIntegrity 标志互斥",
+      "fuzzy": true
+    },
+    {
+      "id": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+      "message": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
+      "translation": "要上载或下载的清单数据的散列。 如果您希望提供散列（而不是允许命令自动计算散列），请使用此标志。 必须使用 SHA1 或 SHA256 算法来生成散列。 如果使用 SHA256 生成散列，那么必须指定 -a 标志。 此标志与 --noIntegrity 互斥。",
+      "fuzzy": true
+    },
+    {
+      "id": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+      "message": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
+      "translation": "要用于对清单进行签名的专用密钥文件的路径。 相应的公用密钥将存储在 MMS 中，这可以确保清单的完整性。 如果未指定此选项，那么将使用环境变量 HZN_PRIVATE_KEY_FILE 来查找专用密钥。 如果未设置此选项，那么将使用 ~/.hzn/keys/service.private.key。 如果不存在此密钥，那么将仅针对此发布操作生成 RSA 密钥对，然后废弃该专用密钥。",
+      "fuzzy": true
+    },
+    {
+      "id": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
+      "message": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
+      "translation": "此发布命令不会对上载的清单数据执行数据完整性检查。 它与 --hashAlgo 和 --hash 互斥",
       "fuzzy": true
     },
     {
@@ -4505,6 +4862,12 @@
       "fuzzy": true
     },
     {
+      "id": "The name of the HA group that this node will be added to.",
+      "message": "The name of the HA group that this node will be added to.",
+      "translation": "要将此节点添加到的 HA 组的名称。",
+      "fuzzy": true
+    },
+    {
       "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
       "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
       "translation": "等待指定的服务在此节点上开始执行。 使用模式注册时，使用“*”来监视此模式中的所有服务。 使用策略注册时，“*”不是 -s 的有效值。 边缘集群节点不支持此标志。",
@@ -4724,6 +5087,42 @@
       "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
       "message": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
       "translation": "更新后的用户输入对象所在 JSON 文件的文件路径。 指定 -f- 可从 stdin 读取。",
+      "fuzzy": true
+    },
+    {
+      "id": "List and manage node management status for the local node.",
+      "message": "List and manage node management status for the local node.",
+      "translation": "列出和管理本地节点的节点管理状态。",
+      "fuzzy": true
+    },
+    {
+      "id": "Display the node managment status for the local node.",
+      "message": "Display the node managment status for the local node.",
+      "translation": "显示本地节点的节点管理状态。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
+      "message": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
+      "translation": "节点管理策略的名称。 如果省略了此选项，那么将显示此节点的所有管理策略的状态。",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the entire contents of each node management status object.",
+      "message": "Show the entire contents of each node management status object.",
+      "translation": "显示每个节点管理状态对象的全部内容。",
+      "fuzzy": true
+    },
+    {
+      "id": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "message": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
+      "translation": "重新评估节点管理策略 (nmp)。 运行此命令以在升级失败且问题得到解决时重试 nmp。 如果节点仍处于升级过程中，请勿运行此命令。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
+      "message": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
+      "translation": "节点管理策略的名称。 如果省略了此选项，那么将重新评估此节点的所有管理策略。",
       "fuzzy": true
     },
     {
@@ -5033,6 +5432,18 @@
       "fuzzy": true
     },
     {
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
+      "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
+      "translation": "一个 JSON 文件，用于设置或覆盖要部署到与此凭单关联的边缘设备的服务所需的用户输入变量。 请使用“hzn userinput new”来查看格式。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
+      "message": "The name of the HA group that the edge device associated with this voucher will be added to.",
+      "translation": "要将与此凭单关联的边缘设备添加到的 HA 组的名称。",
+      "fuzzy": true
+    },
+    {
       "id": "Download the specified SDO ownership voucher from SDO owner services.",
       "message": "Download the specified SDO ownership voucher from SDO owner services.",
       "translation": "从 SDO 所有者服务下载指定的 SDO 所有权凭单。",
@@ -5053,25 +5464,25 @@
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher' to list and manage Horizon SDO ownership vouchers.",
-      "translation": "（不推荐）不推荐使用此命令。请使用\"hzn sdo voucher\"来列出和管理 Horizon SDO 所有权凭单。",
+      "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher”来列出和管理 Horizon SDO 所有权凭单。",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher list' to list the imported SDO ownership vouchers.",
-      "translation": "（不推荐）不推荐使用此命令。请使用\"hzn sdo voucher list\"来列出导入的 SDO 所有权凭单。",
+      "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher list”来列出导入的 SDO 所有权凭单。",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher inspect' to display properties of the SDO ownership voucher.",
-      "translation": "（不推荐）不推荐使用此命令。请使用\"hzn sdo voucher inspect\"来显示 SDO 所有权凭单的属性。",
+      "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher inspect”来显示 SDO 所有权凭单的属性。",
       "fuzzy": true
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn sdo voucher import' to import the SDO ownership voucher",
-      "translation": "（不推荐）不推荐使用此命令。请使用\"hzn sdo voucher import\"以导入 SDO 所有权凭单。",
+      "translation": "（不推荐）不推荐使用此命令。请使用“hzn sdo voucher import”以导入 SDO 所有权凭单。",
       "fuzzy": true
     },
     {
@@ -7447,6 +7858,12 @@
       "fuzzy": true
     },
     {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+      "message": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+      "translation": "必须使用以下某个项来指定 Exchange 认证：-u 标志或 HZN_EXCHANGE_USER_AUTH",
+      "fuzzy": true
+    },
+    {
       "id": "Verifying public key file ...",
       "message": "Verifying public key file ...",
       "translation": "正在验证公用密钥文件...",
@@ -7952,6 +8369,22 @@
       "fuzzy": true
     },
     {
+      "id": "Problem validating org name: {Err}",
+      "message": "Problem validating org name: {Err}",
+      "translation": "验证组织名称时出现问题：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error creating StdoutPipe for command: {Err}",
       "message": "Error creating StdoutPipe for command: {Err}",
       "translation": "为命令创建 StdoutPipe 出错：{Err}",
@@ -8168,6 +8601,40 @@
       "fuzzy": true
     },
     {
+      "id": "-n and --ha-group are mutually exclusive.",
+      "message": "-n and --ha-group are mutually exclusive.",
+      "translation": "-n 与 --ha-group 互斥。",
+      "fuzzy": true
+    },
+    {
+      "id": "--ha-group and --node-pol are mutually exclusive.",
+      "message": "--ha-group and --node-pol are mutually exclusive.",
+      "translation": "--ha-group 与 --node-pol 互斥。",
+      "fuzzy": true
+    },
+    {
+      "id": "--ha-group and --node-ui are mutually exclusive.",
+      "message": "--ha-group and --node-ui are mutually exclusive.",
+      "translation": "--ha-group 与 --node-ui 互斥。",
+      "fuzzy": true
+    },
+    {
+      "id": "The HA group {HaGroupName} does not have members.",
+      "message": "The HA group {HaGroupName} does not have members.",
+      "translation": "HA 组 {HaGroupName} 没有成员。",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "-n and --node-pol are mutually exclusive.",
       "message": "-n and --node-pol are mutually exclusive.",
       "translation": "-n 与 --node-pol 互斥。",
@@ -8189,28 +8656,6 @@
       "id": "-p and -P are mutually exclusive.",
       "message": "-p and -P are mutually exclusive.",
       "translation": "-p 与 -P 互斥。",
-      "fuzzy": true
-    },
-    {
-      "id": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-      "message": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-      "translation": "请使用 -u 指定 Exchange 凭证，以查询节点、部署策略和服务策略。",
-      "fuzzy": true
-    },
-    {
-      "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
-      "message": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
-      "translation": "请使用 -o 指定 Exchange 凭证 {CredToUse} 的组织。",
-      "placeholders": [
-        {
-          "id": "CredToUse",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "*credToUse"
-        }
-      ],
       "fuzzy": true
     },
     {
@@ -8356,6 +8801,30 @@
       "fuzzy": true
     },
     {
+      "id": "HA group {HaGroupName} does not exist in org {HaGroupOrg}.",
+      "message": "HA group {HaGroupName} does not exist in org {HaGroupOrg}.",
+      "translation": "组织 {HaGroupOrg} 中不存在 HA 组 {HaGroupName}。",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "failed to unmarshal json input file {FilePath}: {Err}",
       "message": "failed to unmarshal json input file {FilePath}: {Err}",
       "translation": "对 JSON 输入文件 {FilePath} 进行取消序列化失败：{Err}",
@@ -8411,6 +8880,22 @@
       "id": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
       "message": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
       "translation": "请使用 -u 指定 Exchange 凭证，以查询节点、部署策略、服务和服务策略。",
+      "fuzzy": true
+    },
+    {
+      "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
+      "message": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
+      "translation": "请使用 -o 指定 Exchange 凭证 {CredToUse} 的组织。",
+      "placeholders": [
+        {
+          "id": "CredToUse",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "credToUse"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -13013,6 +13498,492 @@
       "fuzzy": true
     },
     {
+      "id": "HA group {HaGroupName} not found in org {HaGroupOrg}",
+      "message": "HA group {HaGroupName} not found in org {HaGroupOrg}",
+      "translation": "在组织 {HaGroupOrg} 中找不到 HA 组 {HaGroupName}",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'hzn exchange hagroup list' output: {Err}",
+      "message": "failed to marshal 'hzn exchange hagroup list' output: {Err}",
+      "translation": "无法对“hzn exchange hagroup list”输出进行编组：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Optional. The name of the HA group.",
+      "message": "Optional. The name of the HA group.",
+      "translation": "可选。 HA 组的名称。",
+      "fuzzy": true
+    },
+    {
+      "id": "A description of the HA group.",
+      "message": "A description of the HA group.",
+      "translation": "HA 组的描述。",
+      "fuzzy": true
+    },
+    {
+      "id": "A list of node names that are members of this group.",
+      "message": "A list of node names that are members of this group.",
+      "translation": "属于此组的节点名的列表。",
+      "fuzzy": true
+    },
+    {
+      "id": "HA group name is not specified.",
+      "message": "HA group name is not specified.",
+      "translation": "未指定 HA 组名。",
+      "fuzzy": true
+    },
+    {
+      "id": "HA group description cannot be empty.",
+      "message": "HA group description cannot be empty.",
+      "translation": "HA 组描述不能为空。",
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
+      "message": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中更新 HA 组 {HaGroupOrg}/{HaGroupName}",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName}: {Msg}",
+      "message": "Cannot create HA group {HaGroupOrg}/{HaGroupName}: {Msg}",
+      "translation": "无法创建 HA 组 {HaGroupOrg}/{HaGroupName}：{Msg}",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "Msg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
+      "message": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
+      "translation": "在 Horizon Exchange 中添加了 HA 组 {HaGroupOrg}/{HaGroupName}",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
+      "translation": "确定要从 Horizon Exchange 中移除组织 {HaGroupOrg} 的 HA 组 {HaGroupName} 吗？",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
+      "message": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
+      "translation": "在组织 {HaGroupOrg} 中找不到 HA 组 {HaGroupName}",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {HaGroupOrg}/{HaGroupName} removed from the Horizon Exchange.",
+      "message": "HA group {HaGroupOrg}/{HaGroupName} removed from the Horizon Exchange.",
+      "translation": "已从 Horizon Exchange 中移除 HA 组 {HaGroupOrg}/{HaGroupName}。",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
+      "message": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
+      "translation": "节点组织与节点“{NodeOrg}/{NodeName}”的组组织 {HaGroupOrg} 不同",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "node '{NodeName}' not found in org {NodeOrg}",
+      "message": "node '{NodeName}' not found in org {NodeOrg}",
+      "translation": "在组织 {NodeOrg} 中找不到节点“{NodeName}”",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
+      "message": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
+      "translation": "节点 {NodeName} 已在 HA 组 {HaGroupOrg}/{HaGroupName} 中。 正在跳过该节点。",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+      "message": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
+      "translation": "以下节点已添加到 HA 组 {HaGroupOrg}/{HaGroupName}：“{JoinaddedNodes_}”",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "JoinaddedNodes_",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "strings.Join(addedNodes, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+      "message": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+      "translation": "警告：无法将以下节点添加到该组中，因为它们位于不同的组中：“{JoinfailedNodes_}”",
+      "placeholders": [
+        {
+          "id": "JoinfailedNodes_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(failedNodes, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
+      "message": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
+      "translation": "确定要从 Horizon Exchange 中的组织 {HaGroupOrg} 的 HA 组 {HaGroupName} 中移除节点 {NodeNames} 吗？",
+      "placeholders": [
+        {
+          "id": "NodeNames",
+          "string": "%[1]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "nodeNames"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeName} is not in HA group {HaGroupOrg}/{HaGroupName}.",
+      "message": "Node {NodeName} is not in HA group {HaGroupOrg}/{HaGroupName}.",
+      "translation": "节点 {NodeName} 不在 HA 组 {HaGroupOrg}/{HaGroupName} 中。",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "message": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "translation": "已从 Horizon Exchange 中的 HA 组 {HaGroupOrg}/{HaGroupName} 中移除节点“{JoinnodesToRemove_}”",
+      "placeholders": [
+        {
+          "id": "JoinnodesToRemove_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(nodesToRemove, \",\")"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "message": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
+      "translation": "已从 Horizon Exchange 中的 HA 组 {HaGroupOrg}/{HaGroupName} 中移除节点“{JoinnodesToRemove_}”",
+      "placeholders": [
+        {
+          "id": "JoinnodesToRemove_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(nodesToRemove, \",\")"
+        },
+        {
+          "id": "HaGroupOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "NMP {NmpName} not found in org {NmpOrg}",
       "message": "NMP {NmpName} not found in org {NmpOrg}",
       "translation": "在组织 {NmpOrg} 中找不到 NMP {NmpName}",
@@ -13059,27 +14030,21 @@
       "fuzzy": true
     },
     {
-      "id": "(Optional) A much longer description of the policy.",
-      "message": "(Optional) A much longer description of the policy.",
-      "translation": "（可选）对策略的更详细描述。",
+      "id": "A much longer description of the policy.",
+      "message": "A much longer description of the policy.",
+      "translation": "策略的更详细描述。",
       "fuzzy": true
     },
     {
-      "id": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
-      "message": "(Optional) A list of constraint expressions of the form <property name> <operator> <property value>,",
-      "translation": "（可选）格式为 <property name> <operator> <property value> 的约束表达式列表，这些表达式",
+      "id": "A list of policy properties that describe this policy.",
+      "message": "A list of policy properties that describe this policy.",
+      "translation": "用于描述此策略的策略属性的列表。",
       "fuzzy": true
     },
     {
-      "id": "(Optional) A list of policy properties that describe this policy.",
-      "message": "(Optional) A list of policy properties that describe this policy.",
-      "translation": "（可选）用于描述此策略的策略属性列表。",
-      "fuzzy": true
-    },
-    {
-      "id": "(Optional) This policy applies to nodes using one of these patterns.",
-      "message": "(Optional) This policy applies to nodes using one of these patterns.",
-      "translation": "（可选）此策略适用于使用其中一个模式的节点。",
+      "id": "This policy applies to nodes using one of these patterns.",
+      "message": "This policy applies to nodes using one of these patterns.",
+      "translation": "此策略适用于使用其中一种模式的节点。",
       "fuzzy": true
     },
     {
@@ -13101,9 +14066,9 @@
       "fuzzy": true
     },
     {
-      "id": "(Optional) Assertions on how the agent should update itself.",
-      "message": "(Optional) Assertions on how the agent should update itself.",
-      "translation": "（可选）关于代理程序应如何更新自身的断言。",
+      "id": "Assertions on how the agent should update itself.",
+      "message": "Assertions on how the agent should update itself.",
+      "translation": "关于代理程序应如何自行更新的断言。",
       "fuzzy": true
     },
     {
@@ -13146,6 +14111,36 @@
       "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
       "message": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
       "translation": "该节点管理策略没有任何约束，这可能导致将该管理策略部署到所有节点。 请指定 --no-constraints 以确认这是可接受的。",
+      "fuzzy": true
+    },
+    {
+      "id": "An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy.",
+      "message": "An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy.",
+      "translation": "已定义 AgentAutoUpgradePolicy，但未定义清单。 在尝试使用 AgentAutoUpgradePolicy 添加 NMP 之前，请指定 CSS 中存储的清单。",
+      "fuzzy": true
+    },
+    {
+      "id": "An AgentAutoUpgradePolicy was defined with manifest '{FullManifest}' which does not exist in org {ManOrg}.",
+      "message": "An AgentAutoUpgradePolicy was defined with manifest '{FullManifest}' which does not exist in org {ManOrg}.",
+      "translation": "使用组织 {ManOrg} 中不存在的清单“{FullManifest}”定义了 AgentAutoUpgradePolicy。",
+      "placeholders": [
+        {
+          "id": "FullManifest",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fullManifest"
+        },
+        {
+          "id": "ManOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "manOrg"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -13381,9 +14376,9 @@
       "fuzzy": true
     },
     {
-      "id": "failed to marshal 'exchange node list' output: {Err}",
-      "message": "failed to marshal 'exchange node list' output: {Err}",
-      "translation": "对“exchange node list”输出进行序列化失败：{Err}",
+      "id": "Failed to parse start time: {Err}. The start time must be in RFC3339 format or set to \"now\".",
+      "message": "Failed to parse start time: {Err}. The start time must be in RFC3339 format or set to \"now\".",
+      "translation": "无法解析开始时间：{Err}。 开始时间必须采用 RFC3339 格式或设置为“now”。",
       "placeholders": [
         {
           "id": "Err",
@@ -13397,25 +14392,145 @@
       "fuzzy": true
     },
     {
-      "id": "node '{Node}' not found in org {NodeOrg}",
-      "message": "node '{Node}' not found in org {NodeOrg}",
-      "translation": "在组织 {NodeOrg} 中找不到节点 '{Node}'",
+      "id": "Failed to parse start window: {Err}. The start window must be Integer.",
+      "message": "Failed to parse start window: {Err}. The start window must be Integer.",
+      "translation": "无法解析启动窗口：{Err}。 启动窗口必须为整数。",
       "placeholders": [
         {
-          "id": "Node",
-          "string": "%[1]s",
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中启用节点管理策略 {NmpFullName}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "node"
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中启用节点管理策略 {NmpFullName}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot enable node management policy {NmpFullName}: {Msg}",
+      "message": "Cannot enable node management policy {NmpFullName}: {Msg}",
+      "translation": "无法启用节点管理策略 {NmpFullName}：{Msg}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
         },
         {
-          "id": "NodeOrg",
-          "string": "%[2]s",
+          "id": "Msg",
+          "string": "%[2]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
-          "expr": "nodeOrg"
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中禁用节点管理策略 {NmpFullName}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
+      "message": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中禁用节点管理策略 {NmpFullName}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot disable node management policy {NmpFullName}: {Msg}",
+      "message": "Cannot disable node management policy {NmpFullName}: {Msg}",
+      "translation": "无法禁用节点管理策略 {NmpFullName}：{Msg}",
+      "placeholders": [
+        {
+          "id": "NmpFullName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpFullName"
+        },
+        {
+          "id": "Msg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "resp.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'exchange node list' output: {Err}",
+      "message": "failed to marshal 'exchange node list' output: {Err}",
+      "translation": "对“exchange node list”输出进行序列化失败：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -13749,7 +14864,7 @@
           "id": "Device",
           "string": "%[1]s",
           "type": "github.com/open-horizon/anax/exchange.Device",
-          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
+          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; HAGroup string \"json:\\\"ha_group\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "v"
         },
@@ -13879,7 +14994,7 @@
     {
       "id": "Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.",
       "message": "Note: No properties and constraints are specified under 'deployment' attribute. The top level properties and constraints will be used.",
-      "translation": "注：在“部署”属性下未指定任何属性和约束。 将使用顶级属性和约束。",
+      "translation": "注：在“部署”属性下未指定任何属性和约束。 将使用最高级别的属性和约束。",
       "fuzzy": true
     },
     {
@@ -14329,6 +15444,70 @@
       "fuzzy": true
     },
     {
+      "id": "No management status found for node {NodeName} in org {NodeOrg}",
+      "message": "No management status found for node {NodeName} in org {NodeOrg}",
+      "translation": "在组织 {NodeOrg} 中找不到节点 {NodeName} 的管理状态",
+      "placeholders": [
+        {
+          "id": "NodeName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeName"
+        },
+        {
+          "id": "NodeOrg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node management status for {NmpStatusNameNoOrg} is reset.",
+      "message": "Node management status for {NmpStatusNameNoOrg} is reset.",
+      "translation": "已重置 {NmpStatusNameNoOrg} 的节点管理状态。",
+      "placeholders": [
+        {
+          "id": "NmpStatusNameNoOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpStatusNameNoOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The the Horizon agent for node {NodeOrg}/{NodeName} will re-evaluate the management policies.",
+      "message": "The the Horizon agent for node {NodeOrg}/{NodeName} will re-evaluate the management policies.",
+      "translation": "节点 {NodeOrg}/{NodeName} 的 Horizon 代理程序将重新评估管理策略。",
+      "placeholders": [
+        {
+          "id": "NodeOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeOrg"
+        },
+        {
+          "id": "NodeName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Verifying userInputs with the node pattern {Pattern}.",
       "message": "Verifying userInputs with the node pattern {Pattern}.",
       "translation": "正在使用节点模式 {Pattern} 验证用户输入。",
@@ -14544,6 +15723,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid organization. Organization cannot contain: [ _ , <space> ' ?]",
+      "message": "Invalid organization. Organization cannot contain: [ _ , <space> ' ?]",
+      "translation": "组织无效。 组织不能包含：[ _ , <space> ' ?]",
       "fuzzy": true
     },
     {
@@ -15905,15 +17090,15 @@
       "fuzzy": true
     },
     {
-      "id": "The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch",
-      "message": "The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch",
-      "translation": "将覆盖下列属性值：service.url、service.name、service.org、service.version、service.arch",
+      "id": "The following property values will be overridden: service.url, service.name, service.org, service.version, service.arch",
+      "message": "The following property values will be overridden: service.url, service.name, service.org, service.version, service.arch",
+      "translation": "将覆盖以下属性值：service.url、service.name、service.org、service.version、service.arch",
       "fuzzy": true
     },
     {
-      "id": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "正在更新服务策略，以及重新评估所有基于此服务策略的协议。 现有协议可能已取消并重新协商。",
+      "id": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+      "message": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "正在更新服务策略，并基于此服务策略重新评估所有协议。 现有协议可能会被取消并重新协商。",
       "fuzzy": true
     },
     {
@@ -17147,6 +18332,60 @@
       "fuzzy": true
     },
     {
+      "id": "failed to marshal 'hzn nmp status' output: {Err}",
+      "message": "failed to marshal 'hzn nmp status' output: {Err}",
+      "translation": "无法对“hzn nmp status”输出进行编组：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The following node management policy will be re-evaluated: {NmpName}.",
+      "message": "The following node management policy will be re-evaluated: {NmpName}.",
+      "translation": "将重新评估以下节点管理策略：{NmpName}。",
+      "placeholders": [
+        {
+          "id": "NmpName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nmpName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No node management policy for this node.",
+      "message": "No node management policy for this node.",
+      "translation": "此节点没有节点管理策略。",
+      "fuzzy": true
+    },
+    {
+      "id": "The following node management policies will be re-evaluated: {JoinallIDs_}.",
+      "message": "The following node management policies will be re-evaluated: {JoinallIDs_}.",
+      "translation": "将重新评估以下节点管理策略：{JoinallIDs_}。",
+      "placeholders": [
+        {
+          "id": "JoinallIDs_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(allIDs, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Failed to get proper response from Horizon agent",
       "message": "Failed to get proper response from Horizon agent",
       "translation": "从 Horizon 代理程序获取正确的响应失败",
@@ -17373,6 +18612,70 @@
       "fuzzy": true
     },
     {
+      "id": "Cannot specify --skipDigitalSig with --hash",
+      "message": "Cannot specify --skipDigitalSig with --hash",
+      "translation": "不能同时指定 --skipDigitalSig 和 --hash",
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot specify --skipDigitalSig with --hashAlgo",
+      "message": "Cannot specify --skipDigitalSig with --hashAlgo",
+      "translation": "不能同时指定 --skipDigitalSig 和 --hashAlgo",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
+      "message": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
+      "translation": "--hashAlgo 的值无效，请使用 SHA1 或 SHA256",
+      "fuzzy": true
+    },
+    {
+      "id": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
+      "message": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
+      "translation": "将执行带有 {HashAlgorithm} 的数字签名以确保数据完整性。",
+      "placeholders": [
+        {
+          "id": "HashAlgorithm",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "hashAlgorithm"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
+      "message": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
+      "translation": "无法对清单 {ManifestFile} 进行数字签名，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "ManifestFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "manifestFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Digital sign finished.",
+      "message": "Digital sign finished.",
+      "translation": "数字签名已完成。",
+      "fuzzy": true
+    },
+    {
       "id": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
       "message": "Manifest {ManOrg}/{ObjectID} updated in the Management Hub",
       "translation": "已在管理中心中更新清单 {ManOrg}/{ObjectID}",
@@ -17549,7 +18852,7 @@
     {
       "id": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
       "message": "Run 'hzn nodemanagement agentfiles list' to get a list of valid files.",
-      "translation": "运行\"hzn nodemanagement agentfiles list\"以获取有效文件的列表。",
+      "translation": "运行“hzn nodemanagement agentfiles list”以获取有效文件的列表。",
       "fuzzy": true
     },
     {
@@ -17671,7 +18974,7 @@
     {
       "id": "Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.",
       "message": "Run 'hzn nm agentfiles list -t agent_cert_files' to get a list of available files.",
-      "translation": "运行\"hzn nm agentfiles list -t agent_cert_files\"以获取可用文件的列表。",
+      "translation": "运行“hzn nm agentfiles list -t agent_cert_files”以获取可用文件的列表。",
       "fuzzy": true
     },
     {
@@ -17957,7 +19260,7 @@
     {
       "id": "Note: No properties and constraints are specified under 'deployment' attribute in the node policy file {NodepolicyFlag}. The top level properties and constraints will be used.",
       "message": "Note: No properties and constraints are specified under 'deployment' attribute in the node policy file {NodepolicyFlag}. The top level properties and constraints will be used.",
-      "translation": "注：在节点策略文件 {NodepolicyFlag} 中的“deployment”属性下未指定任何属性和约束。 将使用顶级属性和约束。",
+      "translation": "注：在节点策略文件 {NodepolicyFlag} 中的“deployment”属性下未指定任何属性和约束。 将使用最高级别的属性和约束。",
       "placeholders": [
         {
           "id": "NodepolicyFlag",
@@ -18367,6 +19670,78 @@
       "fuzzy": true
     },
     {
+      "id": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
+      "message": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
+      "translation": "无法继续使用给定的 HA 组 {HaGroupName}，因为该节点位于不同的 HA 组 {ExistingHagrName} 中。",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "ExistingHagrName",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "existingHagrName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node is already in the HA group '{HaGroupName}'.",
+      "message": "The node is already in the HA group '{HaGroupName}'.",
+      "translation": "节点已在 HA 组“{HaGroupName}”中。",
+      "placeholders": [
+        {
+          "id": "HaGroupName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
+      "message": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
+      "translation": "节点 {Org}/{NodeId} 位于 HA 组 {HaGroupName} 中。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeId"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Updating the node policy...",
       "message": "Updating the node policy...",
       "translation": "正在更新节点策略...",
@@ -18486,6 +19861,142 @@
       "id": "Horizon node is registered. Workload services should begin executing shortly.",
       "message": "Horizon node is registered. Workload services should begin executing shortly.",
       "translation": "Horizon 节点已注册。 工作负载服务应该很快开始执行。",
+      "fuzzy": true
+    },
+    {
+      "id": "Please specify the user credentials with -u flag in order to create or update the HA group {Org}/{HaGroupName}.",
+      "message": "Please specify the user credentials with -u flag in order to create or update the HA group {Org}/{HaGroupName}.",
+      "translation": "请使用 -u 标志指定用户凭证，以便创建或更新 HA 组 {Org}/{HaGroupName}。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Creating HA group {Org}/{HaGroupName} ...",
+      "message": "Creating HA group {Org}/{HaGroupName} ...",
+      "translation": "正在创建 HA 组 {Org}/{HaGroupName}...",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HA group {Org}/{HaGroupName} created with node {NodeId} as the member.",
+      "message": "HA group {Org}/{HaGroupName} created with node {NodeId} as the member.",
+      "translation": "以节点 {NodeId} 作为成员创建了 HA 组 {Org}/{HaGroupName}。",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Adding node {NodeId} to HA group {Org}/{HaGroupName} ...",
+      "message": "Adding node {NodeId} to HA group {Org}/{HaGroupName} ...",
+      "translation": "正在将节点 {NodeId} 添加到 HA 组 {Org}/{HaGroupName}...",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "haGroupName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Node {NodeId} is added to HA group {HaGroupName}.",
+      "message": "Node {NodeId} is added to HA group {HaGroupName}.",
+      "translation": "节点 {NodeId} 已添加到 HA 组 {HaGroupName}。",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "HaGroupName",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "haGroupName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -18709,39 +20220,87 @@
       "fuzzy": true
     },
     {
-      "id": "could not validate node ID '{NodeId}': {Err}",
-      "message": "could not validate node ID '{NodeId}': {Err}",
-      "translation": "无法验证节点标识“{NodeId}”：{Err}",
+      "id": "invalid node ID: {Err}",
+      "message": "invalid node ID: {Err}",
+      "translation": "无效节点标识：{Err}",
       "placeholders": [
         {
-          "id": "NodeId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nodeId"
-        },
-        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[1]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 1,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "message": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "translation": "无效的节点标识：A-Za-z0-9，仅允许使用 Unicode 字符和特殊符号 !-*+()?.,:&@",
+      "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+      "message": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+      "translation": "HA 组组织标识“{HaGroupOrg}”与节点组织标识“{Org}”不同。",
+      "placeholders": [
+        {
+          "id": "HaGroupOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "haGroupOrg"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "invalid node ID: Whitespace is not permitted",
-      "message": "invalid node ID: Whitespace is not permitted",
-      "translation": "无效的节点标识：不允许使用空格",
+      "id": "invalid HA group ID: {Err}",
+      "message": "invalid HA group ID: {Err}",
+      "translation": "无效 HA 组标识：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Could not validate. {Err}",
+      "message": "Could not validate. {Err}",
+      "translation": "无法验证。 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed.",
+      "message": "A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed.",
+      "translation": "A-Za-z0-9，仅允许使用 Unicode 字符和特殊符号 !-*+()?.,:&@。",
+      "fuzzy": true
+    },
+    {
+      "id": "Whitespace is not permitted.",
+      "message": "Whitespace is not permitted.",
+      "translation": "不允许使用空格。",
       "fuzzy": true
     },
     {
@@ -19163,7 +20722,7 @@
     {
       "id": "Failed",
       "message": "Failed",
-      "translation": "失败",
+      "translation": "已失败",
       "fuzzy": true
     },
     {
@@ -20207,7 +21766,7 @@
     {
       "id": "failed to marshal 'hzn sdo voucher list' output: {Err}",
       "message": "failed to marshal 'hzn sdo voucher list' output: {Err}",
-      "translation": "对\"hzn sdo voucher list\"输出进行序列化失败：{Err}",
+      "translation": "对“hzn sdo voucher list”输出进行序列化失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -20514,6 +22073,30 @@
       "id": "Adding/updating node...",
       "message": "Adding/updating node...",
       "translation": "正在添加/更新节点...",
+      "fuzzy": true
+    },
+    {
+      "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+      "message": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+      "translation": "正在读取服务配置用户输入文件 {UserInputFileName}：{Err}",
+      "placeholders": [
+        {
+          "id": "UserInputFileName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "userInputFileName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -21529,22 +23112,6 @@
       "fuzzy": true
     },
     {
-      "id": "no objects found in org {Org}",
-      "message": "no objects found in org {Org}",
-      "translation": "在组织 {Org} 中找不到对象",
-      "placeholders": [
-        {
-          "id": "Org",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "org"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
       "message": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
       "translation": "在组织 {Org} 中找不到类型为 '{ObjectType}' 的对象 '{ObjectID}' 的目标详细信息",
@@ -21711,9 +23278,9 @@
       "fuzzy": true
     },
     {
-      "id": "Set to '*' to indcate services of any hardware architecture.",
-      "message": "Set to '*' to indcate services of any hardware architecture.",
-      "translation": "设置为 '*' 表示任何硬件体系结构的服务。",
+      "id": "Set to '*' to indicate services of any hardware architecture.",
+      "message": "Set to '*' to indicate services of any hardware architecture.",
+      "translation": "设置为“*”表示任何硬件体系结构的服务。",
       "fuzzy": true
     },
     {
@@ -21850,12 +23417,6 @@
           "expr": "err"
         }
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "Digital sign finished.",
-      "message": "Digital sign finished.",
-      "translation": "数字签名已完成。",
       "fuzzy": true
     },
     {
@@ -26489,9 +28050,9 @@
       "fuzzy": true
     },
     {
-      "id": "Label, or Enabled is empty.",
-      "message": "Label, or Enabled is empty.",
-      "translation": "“标签”或“已启用”为空。",
+      "id": "The start time must be in RFC3339 format or set to \"now\".",
+      "message": "The start time must be in RFC3339 format or set to \"now\".",
+      "translation": "开始时间必须采用 RFC3339 格式或设置为“now”。",
       "fuzzy": true
     },
     {
@@ -26698,6 +28259,49 @@
       "id": "The constraint expression contains unmatched parentheses.",
       "message": "The constraint expression contains unmatched parentheses.",
       "translation": "约束表达式包含未配对的圆括号。",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CREATED",
+        "New node management policy status created for policy {Arg_1}."
+      ],
+      "message": "New node management policy status created for policy {Arg_1}.",
+      "translation": "已为策略 {Arg_1} 创建新的节点管理策略状态。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED",
+        "Node management status for {Arg_1} changed to {Arg_2}."
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}.",
+      "translation": "{Arg_1} 的节点管理状态已更改为 {Arg_2}。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
       "fuzzy": true
     },
     {

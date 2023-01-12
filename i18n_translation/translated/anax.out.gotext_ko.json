@@ -68,16 +68,40 @@
     "translation": "anax 종료 중, 계약 동기화를 완료할 수 없습니다. {Arg_1}"
   },
   {
+    "id": "Error node authentication credentials do not match requesting node.",
+    "translation": "오류 노드 인증 신임 정보가 요청 노드와 일치하지 않습니다."
+  },
+  {
+    "id": "Unable to retrieve node from the exchange.",
+    "translation": "Exchange에서 노드를 검색할 수 없습니다."
+  },
+  {
+    "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+    "translation": "오류 노드 HA 그룹 {HAGroup}이(가) {GroupName} 요청의 그룹 이름과 일치하지 않습니다."
+  },
+  {
+    "id": "Error handling node upgrade request: {Error}",
+    "translation": "노드 업그레이드 요청을 처리하는 중에 오류 발생: {Error}"
+  },
+  {
+    "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+    "translation": "노드 {Org}/{Node}에서 nmp {NmpId} 실행을 시작할 수 있습니다."
+  },
+  {
+    "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+    "translation": "노드 {Org}/{Node}에서 nmp {NmpId}실행을 시작할 수 없습니다."
+  },
+  {
     "id": "No input found.",
     "translation": "입력을 찾을 수 없습니다."
   },
   {
-    "id": "Unauthorized. No exchange user id is supplied.",
-    "translation": "권한이 없습니다. exchange 사용자 ID가 제공되지 않았습니다."
+    "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+    "translation": "권한 없음. Exchange {AuthType} ID가 제공되지 않았습니다."
   },
   {
-    "id": "Failed to authenticate the user with the Exchange. {Err}",
-    "translation": "사용자를 Exchange에 인증하는 데 실패했습니다. {Err}"
+    "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+    "translation": "Exchange에서 {AuthType}을(를) 인증하는 데 실패했습니다. {Err}"
   },
   {
     "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -112,12 +136,16 @@
     "translation": "exchange 사용자 비밀번호 또는 API 키가 제공되지 않았습니다."
   },
   {
-    "id": "Wrong organization id, user id or password.",
-    "translation": "조직 ID, 사용자 ID 또는 비밀번호가 잘못되었습니다."
+    "id": "Wrong organization id, {Arg_1} id or password.",
+    "translation": "조직 ID, {Arg_1} ID 또는 비밀번호가 잘못되었습니다."
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
     "translation": "Exchange 사용자 {Key}은(는) 올바른 형식이 아닙니다. org/username이어야 합니다."
+  },
+  {
+    "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+    "translation": "Exchange 디바이스 {Key}의 형식이 올바르지 않습니다. org/nodename이어야 합니다."
   },
   {
     "id": "Internal server error",
@@ -432,8 +460,8 @@
     "translation": "노드의 {Arg_2}에 대해 {Arg_1}(으)로의 서비스 구성 상태 변경을 완료합니다."
   },
   {
-    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-    "translation": "{Arg_1}/{Arg_2}에 대한 노드 관리 상태가 {Arg_3}(으)로 변경됨"
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+    "translation": "{Arg_1}/{Arg_2}에 대한 노드 관리 상태가 {Arg_3}(으)로 변경되었습니다."
   },
   {
     "id": "Error converting the selections into Selectors: {Err}",
@@ -784,6 +812,10 @@
     "translation": "exchange 인증은 다음 중 하나와 함께 지정해야 합니다. -u 플래그, -n 플래그, HZN_EXCHANGE_USER_AUTH 또는 HZN_EXCHANGE_NODE_AUTH"
   },
   {
+    "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+    "translation": "-u 플래그 또는 HZN_EXCHANGE_USER_AUTH 중 하나를 사용하여 Exchange 인증을 지정해야 합니다."
+  },
+  {
     "id": "Verifying public key file ...",
     "translation": "공개 키 파일 확인 중..."
   },
@@ -894,6 +926,10 @@
   {
     "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
     "translation": "제공된 로그 드라이버({LogDriver})에서 로그 보기를 지원하지 않습니다. 로그는 다음 드라이버에서만 제공됩니다. {DockerDriversWithLoggingSupport}"
+  },
+  {
+    "id": "Problem validating org name: {Err}",
+    "translation": "조직 이름의 유효성을 검증하는 중에 문제 발생: {Err}"
   },
   {
     "id": "Error creating StdoutPipe for command: {Err}",
@@ -1528,8 +1564,8 @@
     "translation": "해시 알고리즘 {HashAlgo}이(가) 지원되지 않습니다."
   },
   {
-    "id": "Label, or Enabled is empty.",
-    "translation": "레이블 또는 사용 가능이 비어 있습니다."
+    "id": "The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "시작 시간은 RFC3339 형식이거나 \"now\"로 설정되어 있어야 합니다."
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1900,8 +1936,8 @@
     "translation": "{Arg_1}정책에 대해 새 노드 관리 정책 상태가 작성되었습니다."
   },
   {
-    "id": "Node management status for {Arg_1} changed to {Arg_2}",
-    "translation": "{Arg_1}에 대한 노드 관리 상태가 {Arg_2}(으)로 변경됨"
+    "id": "Node management status for {Arg_1} changed to {Arg_2}.",
+    "translation": "{Arg_1}에 대한 노드 관리 상태가 {Arg_2}(으)로 변경되었습니다."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

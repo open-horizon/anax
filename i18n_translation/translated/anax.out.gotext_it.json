@@ -68,16 +68,40 @@
     "translation": "anax è in fase di interruzione, impossibile completare la sincronizzazione dell'accordo. {Arg_1}"
   },
   {
+    "id": "Error node authentication credentials do not match requesting node.",
+    "translation": "Le credenziali di autenticazione del nodo di errore non corrispondono al nodo richiedente."
+  },
+  {
+    "id": "Unable to retrieve node from the exchange.",
+    "translation": "Impossibile recuperare il nodo da exchange."
+  },
+  {
+    "id": "Error node ha group {HAGroup} does not match group name in request {GroupName}.",
+    "translation": "Errore nodo gruppo ha {HAGroup} non corrisponde al nome del gruppo nella richiesta {GroupName}."
+  },
+  {
+    "id": "Error handling node upgrade request: {Error}",
+    "translation": "Errore nella gestione della richiesta di aggiornamento del nodo: {Error}"
+  },
+  {
+    "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
+    "translation": "Il nodo {Org}/{Node} può avviare l'esecuzione di nmp {NmpId}."
+  },
+  {
+    "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
+    "translation": "Il nodo {Org}/{Node} non può avviare l'esecuzione di nmp {NmpId}."
+  },
+  {
     "id": "No input found.",
     "translation": "Nessun input trovato."
   },
   {
-    "id": "Unauthorized. No exchange user id is supplied.",
-    "translation": "Non autorizzato. Nessun id utente exchange fornito."
+    "id": "Unauthorized. No exchange {AuthType} id is supplied.",
+    "translation": "Non autorizzato. Non è stato fornito alcun ID {AuthType} exchange."
   },
   {
-    "id": "Failed to authenticate the user with the Exchange. {Err}",
-    "translation": "Impossibile autenticare l'utente con Exchange. {Err}"
+    "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
+    "translation": "Impossibile autenticare {AuthType} con Exchange. {Err}"
   },
   {
     "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -112,12 +136,16 @@
     "translation": "Nessuna password utente exchange o chiave API fornita."
   },
   {
-    "id": "Wrong organization id, user id or password.",
-    "translation": "Id organizzazione, id utente o password errati."
+    "id": "Wrong organization id, {Arg_1} id or password.",
+    "translation": "ID organizzazione, ID {Arg_1} o password non corretti."
   },
   {
     "id": "Exchange user {Key} is not in the correct format, should be org/username.",
     "translation": "La chiave {Key} dell'utente Exchange non è nel formato corretto, deve essere org/username."
+  },
+  {
+    "id": "Exchange device {Key} is not in the correct format, should be org/nodename.",
+    "translation": "Il dispositivo Exchange {Key} non è nel formato corretto, deve essere org/nodename."
   },
   {
     "id": "Internal server error",
@@ -432,8 +460,8 @@
     "translation": "Completamento della modifica dello stato di configurazione del servizio in {Arg_1} per {Arg_2} per il nodo."
   },
   {
-    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}",
-    "translation": "Lo stato di gestione del nodo per {Arg_1}/{Arg_2} è stato modificato in {Arg_3}"
+    "id": "Node management status for {Arg_1}/{Arg_2} changed to {Arg_3}.",
+    "translation": "Lo stato di gestione del nodo per {Arg_1}/{Arg_2} è stato modificato in {Arg_3}."
   },
   {
     "id": "Error converting the selections into Selectors: {Err}",
@@ -784,6 +812,10 @@
     "translation": "L'autenticazione exchange deve essere specificata con uno tra: indicatore -u, indicatore -n, HZN_EXCHANGE_USER_AUTH o HZN_EXCHANGE_NODE_AUTH"
   },
   {
+    "id": "exchange authentication must be specified with one of the following: the -u flag, or HZN_EXCHANGE_USER_AUTH",
+    "translation": "l'autenticazione exchange deve essere specificata con uno dei seguenti valori: l'indicatore -u o HZN_EXCHANGE_USER_AUTH"
+  },
+  {
     "id": "Verifying public key file ...",
     "translation": "Verifica del file di chiave pubblica..."
   },
@@ -894,6 +926,10 @@
   {
     "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
     "translation": "Il log-driver fornito ({LogDriver}) non supporta la visualizzazione dei log. I log sono disponibili solo sui seguenti driver: {DockerDriversWithLoggingSupport}"
+  },
+  {
+    "id": "Problem validating org name: {Err}",
+    "translation": "Problema durante la convalida del nome organizzazione: {Err}"
   },
   {
     "id": "Error creating StdoutPipe for command: {Err}",
@@ -1528,8 +1564,8 @@
     "translation": "L'algoritmo di hash {HashAlgo} non è supportato"
   },
   {
-    "id": "Label, or Enabled is empty.",
-    "translation": "I campi Etichetta o Abilitato sono vuoti."
+    "id": "The start time must be in RFC3339 format or set to \"now\".",
+    "translation": "L'ora di inizio deve essere in formato RFC3339 o deve essere impostata su \"now\"."
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1900,8 +1936,8 @@
     "translation": "Nuovo stato della politica di gestione del nodo creato per la politica {Arg_1}."
   },
   {
-    "id": "Node management status for {Arg_1} changed to {Arg_2}",
-    "translation": "Lo stato della gestione del nodo per {Arg_1} è stato modificato in {Arg_2}"
+    "id": "Node management status for {Arg_1} changed to {Arg_2}.",
+    "translation": "Lo stato di gestione del nodo per {Arg_1} è stato modificato in {Arg_2}."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
