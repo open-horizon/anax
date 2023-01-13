@@ -5,6 +5,7 @@ import (
 	"github.com/go-ini/ini"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/semanticversion"
 	"os"
 	"runtime"
 )
@@ -50,8 +51,38 @@ func ListReadOnlyProperties() []string {
 	return []string{PROP_NODE_CPU, PROP_NODE_ARCH, PROP_NODE_MEMORY, PROP_NODE_HARDWAREID, PROP_NODE_K8S_VERSION, PROP_NODE_OS, PROP_NODE_CONTAINERIZED}
 }
 
+// returns a map of all the built-in properties used by the given node type
+// the property name is the key and the value is the first anax version where that property was included
+func NodeBuiltInPropMap(nodeType string) map[string]string {
+	if nodeType == "device" {
+		return map[string]string{PROP_NODE_CPU: "2.23.4", PROP_NODE_MEMORY: "2.23.4", PROP_NODE_ARCH: "2.23.4", PROP_NODE_HARDWAREID: "2.24.5", PROP_NODE_PRIVILEGED: "2.24.10",
+			PROP_NODE_OS: "2.30.0", PROP_NODE_CONTAINERIZED: "2.30.0"}
+	} else if nodeType == "cluster" {
+		return map[string]string{PROP_NODE_K8S_VERSION: "2.26.4", PROP_NODE_CPU: "2.23.4", PROP_NODE_MEMORY: "2.23.4", PROP_NODE_ARCH: "2.23.4", PROP_NODE_PRIVILEGED: "2.24.10"}
+	}
+
+	return map[string]string{}
+}
+
 func ListSupportedOperatingSystems() []string {
 	return []string{OS_UBUNTU, OS_DEBIAN, OS_RASPBIAN, OS_RHEL, OS_MAC, OS_CENTOS, OS_FEDORA, OS_SUSE}
+}
+
+func ContainsAllBuiltInNodeProps(propList *PropertyList, agentVersion string, nodeType string) bool {
+	if propList == nil {
+		return false
+	}
+
+	builtInPropList := NodeBuiltInPropMap(nodeType)
+	for prop, vers := range builtInPropList {
+		if comp, err := semanticversion.CompareVersions(agentVersion, vers); err != nil {
+			glog.Errorf("Failed to compare agent version: %v", err)
+			return false
+		} else if comp >= 0 && !propList.HasProperty(prop) {
+			return false
+		}
+	}
+	return true
 }
 
 // CreateNodeBuiltInPolicy returns 2 externalpolicies.
@@ -148,14 +179,12 @@ func createDeviceNodeBuiltInPolicy(availableMem bool, omitGenHwId bool, existing
 			if err != nil {
 				glog.V(2).Infof("Failed to read device serial number: %v. Omitting hardwareId property.", err)
 			} else {
-				glog.V(2).Infof("Device serial number not found. Omitting hardwareId property.")
+				glog.V(2).Infof("Device serial number not found.")
 			}
 		}
 	}
 
-	if hwId != "" {
-		nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_HARDWAREID, hwId), false)
-	}
+	nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_HARDWAREID, hwId), false)
 
 	edgeOS, containerized, err := ProfileEdgeOS()
 	if err != nil {
