@@ -373,37 +373,43 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get node policy for %v from the exchange.", ag.DeviceId)))
 		return false, false
 	}
+
 	dev, err := exchange.GetExchangeDevice(b.GetHTTPFactory(), ag.DeviceId, b.GetExchangeId(), b.GetExchangeToken(), b.GetExchangeURL())
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get node %v from the exchange.", ag.DeviceId)))
 		return false, false
+	} else if dev == nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Device %v does not exist in the exchange.", ag.DeviceId)))
+		return false, false
 	}
+	nodeArch := dev.Arch
 
-	match, _, producerPol, consumerPol, err := compcheck.CheckPolicyCompatiblility(nodePol, busPol, &svcAllPol, dev.Arch, nil)
+	match, _, producerPol, consumerPol, err := compcheck.CheckPolicyCompatiblility(nodePol, busPol, &svcAllPol, nodeArch, nil)
 
 	if !match {
 		return false, true
 	}
 
-	if oldPolicy != nil {
-		wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName)
-		if err != nil {
-			return false, false
+	// for every priority (in order highest to lowest) in the new policy with priority lower than the current wl
+	// if it's not in the old policy, cancel
+	choice := -1
+	nextPriority := policy.GetNextWorkloadChoice(busPol.Workloads, choice)
+	wl := nextPriority
+
+	wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName)
+	if err != nil {
+		return false, false
+	}
+	if wlUsage != nil {
+		if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsage.Priority); currentWL == nil {
+			// the current workload priority is no longer in the deployment policy
+			glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsage.Priority, ag.CurrentAgreementId)))
+			return true, false
+		} else {
+			wl = currentWL
 		}
 
-		if wlUsage != nil {
-
-			if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsage.Priority); currentWL == nil {
-				// the current workload priority is no longer in the deployment policy
-				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsage.Priority, ag.CurrentAgreementId)))
-				return true, false
-			}
-
-			// for every priority (in order highest to lowest) in the new policy with priority lower than the current wl
-			// if it's not in the old policy, cancel
-			choice := -1
-			nextPriority := policy.GetNextWorkloadChoice(busPol.Workloads, choice)
-
+		if oldPolicy != nil {
 			for choice <= wlUsage.Priority && nextPriority != nil {
 				choice = nextPriority.Priority.PriorityValue
 				matchingWL := policy.GetWorkloadWithPriority(oldPolicy.Workloads, choice)
@@ -416,9 +422,28 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		}
 	}
 
-	wl := consumerPol.Workloads[0]
+	if wl.Arch == "" || wl.Arch == "*" {
+		wl.Arch = nodeArch
+	}
 
-	newTsCs, err := policy.Create_Terms_And_Conditions(producerPol, consumerPol, &wl, ag.CurrentAgreementId, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, basicprotocol.PROTOCOL_CURRENT_VERSION)
+	// populate the workload with the deployment string
+	if svcDef, _, err := exchange.GetHTTPServiceHandler(b)(wl.WorkloadURL, wl.Org, wl.Version, wl.Arch); err != nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error getting service '%v' from the exchange, error: %v", wl, err)))
+		return false, false
+	} else if svcDef == nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Service %v not found in the exchange.", wl)))
+		return false, false
+	} else {
+		if dev.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+			wl.ClusterDeployment = svcDef.GetClusterDeploymentString()
+			wl.ClusterDeploymentSignature = svcDef.GetClusterDeploymentSignature()
+		} else {
+			wl.Deployment = svcDef.GetDeploymentString()
+			wl.DeploymentSignature = svcDef.GetDeploymentSignature()
+		}
+	}
+
+	newTsCs, err := policy.Create_Terms_And_Conditions(producerPol, consumerPol, wl, ag.CurrentAgreementId, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, basicprotocol.PROTOCOL_CURRENT_VERSION)
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error creating new terms and conditions: %v", err)))
 		return false, false

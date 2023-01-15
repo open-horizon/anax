@@ -139,7 +139,7 @@ func (wl Workload) IsSame(compare Workload) bool {
 		if wl.Org != compare.Org {
 			return false
 		}
-		if wl.Arch != "" && compare.Arch != "" && wl.Arch != compare.Arch {
+		if wl.Arch != "" && wl.Arch != "*" && compare.Arch != "" && compare.Arch != "*" && wl.Arch != compare.Arch {
 			return false
 		}
 		if wl.DeploymentOverrides != compare.DeploymentOverrides {
