@@ -44,6 +44,7 @@ func NewKubeClient() (*KubeClient, error) {
 	HZN_FSS_CSSURL=https://host-url/edge-css
 	HZN_AGBOT_URL=https://host-url/edge-agbot/
 	HZN_SDO_SVC_URL=https://host-url/edge-sdo-ocs/api
+	HZN_FDO_SVC_URL=https://host-url/edge-fdo-ocs/api
 	HZN_DEVICE_ID=my-node-id
 	HZN_NODE_ID=my-node-id
 	HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/agent-install.crt
@@ -81,6 +82,7 @@ func parseAgentConfigMap(configMap *v1.ConfigMap) (map[string]string, error) {
 		HZN_FSS_CSSURL=https://host-url/edge-css
 		HZN_AGBOT_URL=https://host-url/edge-agbot/
 		HZN_SDO_SVC_URL=https://host-url/edge-sdo-ocs/api
+		HZN_FDO_SVC_URL=https://host-url/edge-fdo-ocs/api
 		HZN_DEVICE_ID=my-node-id
 		HZN_NODE_ID=my-node-id
 		HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/agent-install.crt

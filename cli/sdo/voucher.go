@@ -339,7 +339,7 @@ func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyF
 
 	// Determine voucher file type, and handle it accordingly
 	if strings.HasSuffix(voucherFile.Name(), ".json") {
-		import1Voucher(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, patternName, userInputFileName, haGroupName, false)
+		import1Voucher(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, patternName, userInputFileName, haGroupName, true)
 	} else if strings.HasSuffix(voucherFile.Name(), ".tar") {
 		importTar(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, patternName, userInputFileName, haGroupName)
 	} else if strings.HasSuffix(voucherFile.Name(), ".tar.gz") || strings.HasSuffix(voucherFile.Name(), ".tgz") {
