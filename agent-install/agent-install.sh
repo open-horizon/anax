@@ -699,17 +699,19 @@ function download_css_file() {
     getCertVersionFromCertFile version_from_cert_file
 
     if [[ -n $AGENT_CERT_VERSION ]]; then
-        if [[ -z $version_from_cert_file ]]; then
-            # write AGENT_CERT_VERSION in file comment as ------OpenHorizon Version x.x.x-----
-            version_to_add="-----OpenHorizon Version $AGENT_CERT_VERSION-----"
-            log_debug "add this line $version_to_add to cert file"
+        if is_linux; then  # Skip writing comment to cert file for MacOS since it failed on M1 machine in mac_trust_cert step
+            if [[ -z $version_from_cert_file ]]; then
+                # write AGENT_CERT_VERSION in file comment as ------OpenHorizon Version x.x.x-----
+                version_to_add="-----OpenHorizon Version $AGENT_CERT_VERSION-----"
+                log_debug "add this line $version_to_add to cert file"
             
-            echo "-----OpenHorizon Version $AGENT_CERT_VERSION-----" > tmp-agent-install.crt
-            cat $AGENT_CERT_FILE_DEFAULT >> tmp-agent-install.crt
-            mv tmp-agent-install.crt $AGENT_CERT_FILE_DEFAULT
-        elif [[ "$AGENT_CERT_VERSION" != "$version_from_cert_file" ]]; then
-            # if version in cert != version in css filename, overwrite to use version in css filename
-            sed -i "s#$version_from_cert_file#${AGENT_CERT_VERSION}#g" $AGENT_CERT_FILE_DEFAULT 
+                echo "-----OpenHorizon Version $AGENT_CERT_VERSION-----" > tmp-agent-install.crt
+                cat $AGENT_CERT_FILE_DEFAULT >> tmp-agent-install.crt
+                mv tmp-agent-install.crt $AGENT_CERT_FILE_DEFAULT
+            elif [[ "$AGENT_CERT_VERSION" != "$version_from_cert_file" ]]; then
+                # if version in cert != version in css filename, overwrite to use version in css filename
+                sed -i "s#$version_from_cert_file#${AGENT_CERT_VERSION}#g" $AGENT_CERT_FILE_DEFAULT 
+            fi
         fi
     fi
 
@@ -2512,9 +2514,17 @@ function install_mac_horizon-cli() {
 
     # Get horizon-cli pkg file they gave us to install
     local pkg_file_name=$(ls -1 horizon-cli*.pkg | sort -V | tail -n 1)
-    # pkg_file_name is something like horizon-cli-2.27.0-89.pkg
     local pkg_file_version=${pkg_file_name#horizon-cli-}   # this removes the 1st part
-    pkg_file_version=${pkg_file_version%.pkg}   # remove the ending part
+    set +e
+    ls  horizon-cli*.$ARCH.pkg
+    if [[ $? -eq 0  ]]; then
+        # pkg_file_name might be like horizon-cli-*.arm64.pkg
+        pkg_file_version=${pkg_file_version%.$ARCH.pkg}   # remove the ending part
+    else
+        # or pkg_file_name might be like horizon-cli-*.kg
+        pkg_file_version=${pkg_file_version%.pkg}   # remove the ending part
+    fi
+    set -e
     local pkg_file_version_only=${pkg_file_version%-*}
     local pkg_file_bld_num=${pkg_file_version##*-}
     log_verbose "The package version to be installed: ${pkg_file_version_only}, the build number: $pkg_file_bld_num"
@@ -2554,6 +2564,9 @@ function install_mac_horizon-cli() {
             log_info "The installed horizon-cli package is already up to date ($installed_version)"
         fi
     else
+        # have macos trust the horizon-cli pkg cert
+        mac_trust_cert "${PACKAGES}/${MAC_PACKAGE_CERT}" "the horizon-cli package certificate"
+
         # hzn not installed
         log_info "Installing $PACKAGES/$pkg_file_name ..."
         sudo installer -pkg ${PACKAGES}/$pkg_file_name -target /
@@ -3129,7 +3142,7 @@ function get_arch() {
             uname -m
         fi
     elif is_macos; then
-        uname -m   # e.g. x86_64. We don't currently use ARCH on macos
+        uname -m   # e.g. x86_64 or arm64
     fi
 }
 

@@ -5,7 +5,7 @@
 function getHznVersion() { local hzn_version=$(hzn version | grep "^Horizon CLI"); echo ${hzn_version##* }; }
 
 # Global constants
-SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM x86_64-macOS x86_64-Cluster ppc64le-RPM ppc64le-Cluster ALL'
+SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM arm64-macOS x86_64-macOS x86_64-Cluster ppc64le-RPM ppc64le-Cluster ALL'
 EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
 
 # Note: arch must prepend the following 2 variables when used - currently only amd64 and arm64 are built and pushed
@@ -661,11 +661,20 @@ function putHorizonPkgsInCss() {
         pkgVersion=${pkgVersion#horizon-}
         pkgVersion=${pkgVersion%%.$arch.$pkgtype}
     elif [[ $opsys == 'macos' ]]; then
-        pkgWildcard="horizon-cli.crt horizon-cli-*.$pkgtype"
         tarFile="horizon-agent-${opsys}-${pkgtype}-$arch.tar.gz"
-        pkgVersion=$(ls horizon-cli-*.$pkgtype)
-        pkgVersion=${pkgVersion#horizon-cli-}
-        pkgVersion=${pkgVersion%%.$pkgtype}
+        # mac pkg might be *.$arch.$pkgtype or just *.$pkgtype
+        ls horizon-cli-*.$arch.$pkgtype > /dev/null 2>&1 
+        if [[ $? -eq 0 ]]; then
+            pkgWildcard="horizon-cli.crt horizon-cli-*.$arch.$pkgtype"
+            pkgVersion=$(ls horizon-cli-*.$arch.$pkgtype)
+            pkgVersion=${pkgVersion#horizon-cli-}
+            pkgVersion=${pkgVersion%%.$arch.$pkgtype}
+        else
+            pkgWildcard="horizon-cli.crt horizon-cli-*.$pkgtype"
+            pkgVersion=$(ls horizon-cli-*.$pkgtype)
+            pkgVersion=${pkgVersion#horizon-cli-}
+            pkgVersion=${pkgVersion%%.$pkgtype}
+        fi
     fi
 
     # Create the pkg tar file
@@ -710,9 +719,17 @@ function getHorizonPackageFiles() {
     fi
 
     if [[ $opsys == 'macos' ]]; then   #future: do this for all amd64/x86_64
+
+        # Set architectures to match what agent will use
+        if [[ $arch == "x86_64" ]]; then
+                put_ARCH="amd64"
+        else
+                put_ARCH=$arch
+        fi
+
         if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
-            tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/amd64${AGENT_IMAGE_TAR_FILE}"
-            chk $? "extracting $pkgBaseName/docker/amd64${AGENT_IMAGE_TAR_FILE} from $PACKAGE_NAME.tar.gz"
+            tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/${put_ARCH}${AGENT_IMAGE_TAR_FILE}"
+            chk $? "extracting $pkgBaseName/docker/${put_ARCH}${AGENT_IMAGE_TAR_FILE} from $PACKAGE_NAME.tar.gz"
         else
             if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
                 echo "Logging into $PULL_REGISTRY ..."
@@ -721,29 +738,25 @@ function getHorizonPackageFiles() {
                 ALREADY_LOGGED_INTO_REGISTRY='true'
             fi
 
-            for ARCH in amd64 arm64; do
-                echo "Pulling $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG ..."
-                docker pull $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG
-                chk $? "pulling $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG"
+            echo "Pulling $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG ..."
+            docker pull $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG
+            chk $? "pulling $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG"
 
-                echo "Saving ${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG to ${ARCH}$AGENT_IMAGE_TAR_FILE ..."
-                docker save $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG | gzip > ${ARCH}${AGENT_IMAGE_TAR_FILE}
-                chk $? "saving $PULL_REGISTRY/${ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG"
-	    done
+            echo "Saving ${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG to ${put_ARCH}$AGENT_IMAGE_TAR_FILE ..."
+            docker save $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG | gzip > ${put_ARCH}${AGENT_IMAGE_TAR_FILE}
+            chk $? "saving $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG"
         fi
 
         if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
 
-            for ARCH in amd64 arm64; do
-                echo "Extracting version from ${ARCH}${AGENT_IMAGE_TAR_FILE} ..."
-                local version=$(tar -zxOf "${ARCH}${AGENT_IMAGE_TAR_FILE}" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
-                version=${version##*:}   # strip the path and image name from the front
-                echo "Version/tag of ${ARCH}${AGENT_IMAGE_TAR_FILE} is: $version"
-                putOneFileInCss "${ARCH}${AGENT_IMAGE_TAR_FILE}" agent_files false $version
-                putOneFileInCss "${ARCH}${AGENT_IMAGE_TAR_FILE}" "agent_software_files-${version}" true $version
+            echo "Extracting version from ${put_ARCH}${AGENT_IMAGE_TAR_FILE} ..."
+            local version=$(tar -zxOf "${put_ARCH}${AGENT_IMAGE_TAR_FILE}" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
+            version=${version##*:}   # strip the path and image name from the front
+            echo "Version/tag of ${put_ARCH}${AGENT_IMAGE_TAR_FILE} is: $version"
+            putOneFileInCss "${put_ARCH}${AGENT_IMAGE_TAR_FILE}" agent_files false $version
+            putOneFileInCss "${put_ARCH}${AGENT_IMAGE_TAR_FILE}" "agent_software_files-${version}" true $version
 
-                addElementToArray $softwareFiles "${ARCH}${AGENT_IMAGE_TAR_FILE}"
-            done
+            addElementToArray $softwareFiles "${put_ARCH}${AGENT_IMAGE_TAR_FILE}"
         fi
     fi
 }
@@ -768,6 +781,9 @@ function gatherHorizonPackageFiles() {
     fi
     if [[ $EDGE_NODE_TYPE == 'x86_64-macOS' || $EDGE_NODE_TYPE == 'ALL' ]]; then
         getHorizonPackageFiles $agentSoftwareFiles 'macos' 'pkg' 'x86_64'
+    fi
+    if [[ $EDGE_NODE_TYPE == 'arm64-macOS' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        getHorizonPackageFiles $agentSoftwareFiles 'macos' 'pkg' 'arm64'
     fi
     if [[ $EDGE_NODE_TYPE == 'ppc64le-RPM' || $EDGE_NODE_TYPE == 'ALL' ]]; then
         getHorizonPackageFiles $agentSoftwareFiles 'linux' 'rpm' 'ppc64le'
