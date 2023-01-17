@@ -51,7 +51,7 @@ type GovernanceWorker struct {
 	deviceType        string
 	pm                *policy.PolicyManager
 	producerPH        map[string]producer.ProducerProtocolHandler
-	deviceStatus      *DeviceStatus
+	deviceStatus      *exchange.DeviceStatus
 	ShuttingDownCmd   *NodeShutdownCommand
 	patternChange     ChangePattern
 	limitedRetryEC    exchange.ExchangeContext
@@ -80,7 +80,7 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 		devicePattern:   pattern,
 		deviceType:      deviceType,
 		producerPH:      make(map[string]producer.ProducerProtocolHandler),
-		deviceStatus:    NewDeviceStatus(),
+		deviceStatus:    exchange.NewDeviceStatus(),
 		ShuttingDownCmd: nil,
 		limitedRetryEC:  lrec,
 		exchErrors:      cache.NewSimpleMapCache(),

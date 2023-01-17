@@ -376,6 +376,64 @@ func keyBytes() []byte {
 
 // ----------- for node status ---------------------- //
 
+type ContainerStatus struct {
+	Name    string `json:"name"`
+	Image   string `json:"image"`
+	Created int64  `json:"created"`
+	State   string `json:"state"`
+}
+
+func (w ContainerStatus) String() string {
+	return fmt.Sprintf("Name: %v, "+
+		"Image: %v, "+
+		"Created: %v, "+
+		"State: %v",
+		w.Name, w.Image, w.Created, w.State)
+}
+
+type WorkloadStatus struct {
+	AgreementId    string            `json:"agreementId"`
+	ServiceURL     string            `json:"serviceUrl,omitempty"`
+	Org            string            `json:"orgid,omitempty"`
+	Version        string            `json:"version,omitempty"`
+	Arch           string            `json:"arch,omitempty"`
+	Containers     []ContainerStatus `json:"containerStatus"`
+	OperatorStatus interface{}       `json:"operatorStatus,omitempty"`
+	ConfigState    string            `json:"configState,omitempty"`
+}
+
+func (w WorkloadStatus) String() string {
+	return fmt.Sprintf("AgreementId: %v, "+
+		"ServiceURL: %v, "+
+		"Org: %v, "+
+		"Version: %v, "+
+		"Arch: %v, "+
+		"Containers: %v"+
+		"OperatorStatus: %v"+
+		"ConfigState: %v",
+		w.AgreementId, w.ServiceURL, w.Org, w.Version, w.Arch, w.Containers, w.OperatorStatus, w.ConfigState)
+}
+
+type DeviceStatus struct {
+	Connectivity    map[string]bool  `json:"connectivity,omitempty"` //  hosts and whether this device can reach them or not
+	Services        []WorkloadStatus `json:"services"`
+	RunningServices *string          `json:"runningServices,omitempty"`
+	LastUpdated     *string          `json:"lastUpdated,omitempty"`
+}
+
+func (w DeviceStatus) String() string {
+	return fmt.Sprintf(
+		"Connectivity: %v, "+
+			"Services: %v,"+
+			"RunningServices: %v,"+
+			"LastUpdated: %v",
+		w.Connectivity, w.Services, w.RunningServices, w.LastUpdated)
+}
+
+func NewDeviceStatus() *DeviceStatus {
+	return &DeviceStatus{}
+}
+
 type NodeStatus struct {
 	RunningServices string `json:"runningServices,omitempty"`
 }
@@ -419,6 +477,44 @@ func GetNodeStatus(ec ExchangeContext, deviceId string) (*NodeStatus, error) {
 				glog.Infof(rpclogString(fmt.Sprintf("returning node status %v for %v.", resp, deviceId)))
 			}
 			nodeStatus := resp.(*NodeStatus)
+			return nodeStatus, nil
+		}
+	}
+}
+
+func GetNodeFullStatus(ec ExchangeContext, deviceId string) (*DeviceStatus, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting node full status for %v.", deviceId)))
+
+	// Get the node status object. There should only be 1.
+	var resp interface{}
+	resp = new(DeviceStatus)
+
+	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/status", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
+
+	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
+		} else {
+			if glog.V(5) {
+				glog.Infof(rpclogString(fmt.Sprintf("returning node status %v for %v.", resp, deviceId)))
+			}
+			nodeStatus := resp.(*DeviceStatus)
 			return nodeStatus, nil
 		}
 	}

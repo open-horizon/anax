@@ -111,8 +111,8 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		}
 	} else {
 		// Remove any left over node status.
-		ds := NewDeviceStatus()
-		ds.Services = make([]WorkloadStatus, 0)
+		ds := exchange.NewDeviceStatus()
+		ds.Services = make([]exchange.WorkloadStatus, 0)
 		if err := w.writeStatusToExchange(ds); err != nil {
 			w.continueWithError(logString(err.Error()))
 			errorMessage = fmt.Sprintf("Unable to delete node status from the Exchange. Please use 'hzn exchange node remove %v' to remove it. The error was: %v", w.GetExchangeId(), err)
