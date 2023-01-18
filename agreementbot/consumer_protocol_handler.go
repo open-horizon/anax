@@ -167,7 +167,9 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 
 	// Grab the exchange ID of the message receiver
 	glog.V(3).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, cutil.TruncateDisplayString(string(pay), 300))))
-	glog.V(5).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, logMsg)))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, logMsg)))
+	}
 
 	// Get my own keys
 	myPubKey, myPrivKey, keyErr := exchange.GetKeys(w.config.AgreementBot.MessageKeyPath)
@@ -218,7 +220,9 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 				time.Sleep(10 * time.Second)
 				continue
 			} else {
-				glog.V(5).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sent message for %v to exchange.", messageTarget.ReceiverExchangeId)))
+				if glog.V(5) {
+					glog.Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sent message for %v to exchange.", messageTarget.ReceiverExchangeId)))
+				}
 				return nil
 			}
 		}
@@ -228,17 +232,23 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 
 func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMessageCommand, cph ConsumerProtocolHandler) error {
 
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received inbound exchange message.")))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received inbound exchange message.")))
+	}
 
 	// Figure out what kind of message this is
 	if reply, rerr := cph.AgreementProtocolHandler("", "", "").ValidateReply(string(cmd.Message)); rerr == nil {
 		agreementWork := NewHandleReply(reply, cmd.From, cmd.PubKey, cmd.MessageId)
 		cph.WorkQueue().InboundHigh() <- &agreementWork
-		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued reply message")))
+		if glog.V(5) {
+			glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued reply message")))
+		}
 	} else if _, aerr := cph.AgreementProtocolHandler("", "", "").ValidateDataReceivedAck(string(cmd.Message)); aerr == nil {
 		agreementWork := NewHandleDataReceivedAck(string(cmd.Message), cmd.From, cmd.PubKey, cmd.MessageId)
 		cph.WorkQueue().InboundHigh() <- &agreementWork
-		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
+		if glog.V(5) {
+			glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
+		}
 	} else if can, cerr := cph.AgreementProtocolHandler("", "", "").ValidateCancel(string(cmd.Message)); cerr == nil {
 		// Before dispatching the cancel to a worker thread, make sure it's a valid cancel
 		if ag, err := b.db.FindSingleAgreementByAgreementId(can.AgreementId(), can.Protocol(), []persistence.AFilter{}); err != nil {
@@ -250,12 +260,16 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 		} else {
 			agreementWork := NewCancelAgreement(can.AgreementId(), can.Protocol(), can.Reason(), cmd.MessageId)
 			cph.WorkQueue().InboundHigh() <- &agreementWork
-			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued cancel message")))
+			if glog.V(5) {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued cancel message")))
+			}
 		}
 	} else if exerr := cph.HandleExtensionMessage(cmd); exerr == nil {
 		// nothing to do
 	} else {
-		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v because it is an unknown type", string(cmd.Message))))
+		if glog.V(5) {
+			glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v because it is an unknown type", string(cmd.Message))))
+		}
 		return errors.New(BCPHlogstring(b.Name(), fmt.Sprintf("unexpected protocol msg %v", cmd.Message)))
 	}
 	return nil
@@ -264,16 +278,22 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 
 func (b *BaseConsumerProtocolHandler) HandleAgreementTimeout(cmd *AgreementTimeoutCommand, cph ConsumerProtocolHandler) {
 
-	glog.V(5).Infof(BCPHlogstring(b.Name(), "received agreement cancellation."))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), "received agreement cancellation."))
+	}
 	agreementWork := NewCancelAgreement(cmd.AgreementId, cmd.Protocol, cmd.Reason, 0)
 	cph.WorkQueue().InboundHigh() <- &agreementWork
-	glog.V(5).Infof(BCPHlogstring(b.Name(), "queued agreement cancellation"))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), "queued agreement cancellation"))
+	}
 
 }
 
 func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedCommand, cph ConsumerProtocolHandler) {
 
-	glog.V(5).Infof(BCPHlogstring(b.Name(), "received policy changed command."))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), "received policy changed command."))
+	}
 
 	if eventPol, err := policy.DemarshalPolicy(cmd.Msg.PolicyString()); err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error demarshalling change policy event %v, error: %v", cmd.Msg.PolicyString(), err)))
@@ -294,7 +314,9 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 
 				} else if eventPol.Header.Name != pol.Header.Name {
 					// This agreement is using a policy different from the one that changed.
-					glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("policy change handler skipping agreement %v because it is using a policy that did not change.", ag.CurrentAgreementId)))
+					if glog.V(5) {
+						glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("policy change handler skipping agreement %v because it is using a policy that did not change.", ag.CurrentAgreementId)))
+					}
 					continue
 				} else if err := b.pm.MatchesMine(cmd.Msg.Org(), pol); err != nil {
 					agStillValid := false
@@ -313,7 +335,9 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 						stillValidAgs = append(stillValidAgs, ag.CurrentAgreementId)
 					}
 				} else {
-					glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement %v, no policy content differences detected", ag.CurrentAgreementId)))
+					if glog.V(5) {
+						glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement %v, no policy content differences detected", ag.CurrentAgreementId)))
+					}
 				}
 
 			}
@@ -332,7 +356,9 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Failed to get the workload usages with policy name: %v, %v", eventPol.Header.Name, err)))
 		} else {
 			for _, wlu := range wlu_array {
-				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("deleting workload usage %v.", wlu)))
+				if glog.V(5) {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("deleting workload usage %v.", wlu)))
+				}
 
 				if err := b.db.DeleteWorkloadUsage(wlu.DeviceId, wlu.PolicyName); err != nil {
 					glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Failed to delete the workload usages with device id: %v, policy name: %v, %v", wlu.DeviceId, wlu.PolicyName, err)))
@@ -346,7 +372,15 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 // second bool is true unless a higher priority workload than the current one has been added or changed
 // if an error occurs, both will be false
 func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persistence.Agreement, oldPolicy *policy.Policy, cph ConsumerProtocolHandler) (bool, bool) {
-	glog.V(5).Infof("attempting to update agreement %v due to change in policy", ag.CurrentAgreementId)
+	if glog.V(5) {
+		glog.Infof("attempting to update agreement %v due to change in policy", ag.CurrentAgreementId)
+	}
+
+	// cancel the agreement if the agreement is not finalized yet
+	if ag.AgreementFinalizedTime == 0 {
+		return false, false
+	}
+
 	svcAllPol := externalpolicy.ExternalPolicy{}
 
 	for _, svcId := range ag.ServiceId {
@@ -457,7 +491,9 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 }
 
 func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler) {
-	glog.V(5).Infof(BCPHlogstring(b.Name(), "received policy deleted command."))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), "received policy deleted command."))
+	}
 
 	// Remove the workloadusage that has the same policy name and does not have the agreement id associated.
 	// For the ones with the agreement id, the agreements will get canceled and the workload usage will be removed anyway.
@@ -468,7 +504,9 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedComm
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Failed to get the workload usages with policy name: %v, %v", eventPol.Header.Name, err)))
 		} else {
 			for _, wlu := range wlu_array {
-				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("deleting workload usage %v.", wlu)))
+				if glog.V(5) {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("deleting workload usage %v.", wlu)))
+				}
 
 				if err := b.db.DeleteWorkloadUsage(wlu.DeviceId, wlu.PolicyName); err != nil {
 					glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Failed to delete the workload usages with device id: %v, policy name: %v, %v", wlu.DeviceId, wlu.PolicyName, err)))
@@ -509,7 +547,9 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedComm
 
 func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePolicyChangedCommand, cph ConsumerProtocolHandler) {
 
-	glog.V(5).Infof(BCPHlogstring(b.Name(), "received service policy changed command: %v. cmd"))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), "received service policy changed command: %v. cmd"))
+	}
 
 	InProgress := func() persistence.AFilter {
 		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
@@ -532,7 +572,9 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePol
 }
 
 func (b *BaseConsumerProtocolHandler) HandleNodePolicyChanged(cmd *NodePolicyChangedCommand, cph ConsumerProtocolHandler) {
-	glog.V(5).Infof(BCPHlogstring(b.Name(), "recieved node policy change command."))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), "recieved node policy change command."))
+	}
 
 	InProgress := func() persistence.AFilter {
 		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
@@ -555,7 +597,9 @@ func (b *BaseConsumerProtocolHandler) HandleNodePolicyChanged(cmd *NodePolicyCha
 }
 
 func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePolicyDeletedCommand, cph ConsumerProtocolHandler) {
-	glog.V(5).Infof(BCPHlogstring(b.Name(), "received policy deleted command."))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), "received policy deleted command."))
+	}
 
 	InProgress := func() persistence.AFilter {
 		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
@@ -583,10 +627,14 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePol
 }
 
 func (b *BaseConsumerProtocolHandler) HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventCommand, cph ConsumerProtocolHandler) {
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received object policy change command.")))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received object policy change command.")))
+	}
 	agreementWork := NewObjectPolicyChange(cmd.Msg)
 	cph.WorkQueue().InboundHigh() <- &agreementWork
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued object policy change command.")))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued object policy change command.")))
+	}
 }
 
 // Note: Multiple agbot could call this function at the same time (for different agreement).
@@ -594,7 +642,9 @@ func (b *BaseConsumerProtocolHandler) HandleMMSObjectPolicy(cmd *MMSObjectPolicy
 //	Table workloadusage is partitioned. So one agbot could only see the workloadusage in
 //	its own partition. Table ha_workload_upgrade is not partitioned.
 func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, reason string, cph ConsumerProtocolHandler, policyMatches bool) {
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Canceling Agreement: %v, reason: %v", ag, reason)))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Canceling Agreement: %v, reason: %v", ag, reason)))
+	}
 	// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
 	// if the consumer policy does not specify the workload priority section.
 	if wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
@@ -608,7 +658,9 @@ func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, 
 
 		if theDev != nil && theDev.HAGroup != "" {
 			// update pending upgrade for itself. So that governerHA won't think this device has finish upgrade
-			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("setting workloadusage pending for %v using policy %v", ag.DeviceId, ag.PolicyName)))
+			if glog.V(5) {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("setting workloadusage pending for %v using policy %v", ag.DeviceId, ag.PolicyName)))
+			}
 			if _, err := b.db.UpdatePendingUpgrade(ag.DeviceId, ag.PolicyName); err != nil {
 				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to set workloadusage pending for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 			}
@@ -619,17 +671,23 @@ func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, 
 				return
 			} else if upgradingWorkload != nil {
 				// there is a upgrading workload, let the govenance handle the status and order
-				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("upgrading workload: %v", upgradingWorkload)))
+				if glog.V(5) {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("upgrading workload: %v", upgradingWorkload)))
+				}
 				return
 			}
 
 			// put this workload in HA workload upgrading table
-			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("inserting HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId)))
+			if glog.V(5) {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("inserting HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId)))
+			}
 			if currentNodeId, err := b.db.InsertHAUpgradingWorkloadForGroupAndPolicy(deviceAndGroupOrg, theDev.HAGroup, ag.PolicyName, ag.DeviceId); err != nil {
 				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to insert HA upgrading workloads with hagroup %v, org: %v, policyName: %v deviceId: %v, error: %v", theDev.HAGroup, ag.Org, ag.PolicyName, ag.DeviceId, err)))
 				return
 			} else if currentNodeId == ag.DeviceId {
-				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("delete workloadusage and cancel agreement for: org: %v, hagroup: %v, policyName: %v deviceId: %v", ag.Org, theDev.HAGroup, ag.PolicyName, ag.DeviceId)))
+				if glog.V(5) {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("delete workloadusage and cancel agreement for: org: %v, hagroup: %v, policyName: %v deviceId: %v", ag.Org, theDev.HAGroup, ag.PolicyName, ag.DeviceId)))
+				}
 				if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 				}
@@ -643,7 +701,9 @@ func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, 
 		}
 	}
 
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("delete non-HA workloadusage and cancel agreement for: org: %v, policyName: %v deviceId: %v", ag.Org, ag.PolicyName, ag.DeviceId)))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("delete non-HA workloadusage and cancel agreement for: org: %v, policyName: %v deviceId: %v", ag.Org, ag.PolicyName, ag.DeviceId)))
+	}
 	// reach here when it is a non-HA workload:
 	// 1) wlUsage == nil
 	// 2) theDev == nil || theDev.HAGroup == ""
@@ -657,28 +717,40 @@ func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, 
 }
 
 func (b *BaseConsumerProtocolHandler) HandleWorkloadUpgrade(cmd *WorkloadUpgradeCommand, cph ConsumerProtocolHandler) {
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received workload upgrade command.")))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received workload upgrade command.")))
+	}
 	upgradeWork := NewHandleWorkloadUpgrade(cmd.Msg.AgreementId, cmd.Msg.AgreementProtocol, cmd.Msg.DeviceId, cmd.Msg.PolicyName)
 	cph.WorkQueue().InboundHigh() <- &upgradeWork
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued workload upgrade command.")))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued workload upgrade command.")))
+	}
 }
 
 func (b *BaseConsumerProtocolHandler) HandleMakeAgreement(cmd *MakeAgreementCommand, cph ConsumerProtocolHandler) {
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received make agreement command.")))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received make agreement command.")))
+	}
 	agreementWork := NewInitiateAgreement(cmd.ProducerPolicy, cmd.ConsumerPolicy, cmd.Org, cmd.Device, cmd.ConsumerPolicyName, cmd.ServicePolicies)
 	cph.WorkQueue().InboundLow() <- &agreementWork
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued make agreement command.")))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued make agreement command.")))
+	}
 }
 
 func (b *BaseConsumerProtocolHandler) HandleStopProtocol(cph ConsumerProtocolHandler) {
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received stop protocol command.")))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received stop protocol command.")))
+	}
 
 	for ix := 0; ix < b.config.AgreementBot.AgreementWorkers; ix++ {
 		work := NewStopWorker()
 		cph.WorkQueue().InboundHigh() <- &work
 	}
 
-	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued %x stop protocol commands.", b.config.AgreementBot.AgreementWorkers)))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued %x stop protocol commands.", b.config.AgreementBot.AgreementWorkers)))
+	}
 }
 
 func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement, proposal abstractprotocol.Proposal, workerID string, hash string, sig string) error {
@@ -712,8 +784,9 @@ func (b *BaseConsumerProtocolHandler) RecordConsumerAgreementState(agreementId s
 
 	workload := pol.Workloads[0].WorkloadURL
 
-	glog.V(5).Infof(BCPHlogstring2(workerID, fmt.Sprintf("setting agreement %v for workload %v/%v state to %v", agreementId, org, workload, state)))
-
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring2(workerID, fmt.Sprintf("setting agreement %v for workload %v/%v state to %v", agreementId, org, workload, state)))
+	}
 	as := new(exchange.PutAgbotAgreementState)
 	as.Service = exchange.WorkloadAgreement{
 		Org:     org,
@@ -734,7 +807,9 @@ func (b *BaseConsumerProtocolHandler) RecordConsumerAgreementState(agreementId s
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
-			glog.V(5).Infof(BCPHlogstring2(workerID, fmt.Sprintf("set agreement %v to state %v", agreementId, state)))
+			if glog.V(5) {
+				glog.Infof(BCPHlogstring2(workerID, fmt.Sprintf("set agreement %v to state %v", agreementId, state)))
+			}
 			return nil
 		}
 	}
@@ -790,14 +865,18 @@ func (b *BaseConsumerProtocolHandler) UpdateAgreement(ag *persistence.Agreement,
 
 func (b *BaseConsumerProtocolHandler) GetDeviceMessageEndpoint(deviceId string, workerId string) (string, []byte, error) {
 
-	glog.V(5).Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieving device %v msg endpoint from exchange", deviceId)))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieving device %v msg endpoint from exchange", deviceId)))
+	}
 
 	if dev, err := b.getDevice(deviceId, workerId); err != nil {
 		return "", nil, err
 	} else if publicKeyBytes, err := base64.StdEncoding.DecodeString(dev.PublicKey); err != nil {
 		return "", nil, errors.New(fmt.Sprintf("Error decoding device publicKey for %s, %v", deviceId, err))
 	} else {
-		glog.V(5).Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieved device %v msg endpoint from exchange %v", deviceId, dev.MsgEndPoint)))
+		if glog.V(5) {
+			glog.Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieved device %v msg endpoint from exchange %v", deviceId, dev.MsgEndPoint)))
+		}
 		return dev.MsgEndPoint, publicKeyBytes, nil
 	}
 
@@ -805,7 +884,9 @@ func (b *BaseConsumerProtocolHandler) GetDeviceMessageEndpoint(deviceId string, 
 
 func (b *BaseConsumerProtocolHandler) getDevice(deviceId string, workerId string) (*exchange.Device, error) {
 
-	glog.V(5).Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieving device %v from exchange", deviceId)))
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieving device %v from exchange", deviceId)))
+	}
 
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
@@ -823,7 +904,9 @@ func (b *BaseConsumerProtocolHandler) getDevice(deviceId string, workerId string
 			if dev, there := devs[deviceId]; !there {
 				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
-				glog.V(5).Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				if glog.V(5) {
+					glog.Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				}
 				return &dev, nil
 			}
 		}
