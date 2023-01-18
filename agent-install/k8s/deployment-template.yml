@@ -24,6 +24,20 @@ spec:
       - name: agent-pvc-storage
         persistentVolumeClaim:
           claimName: openhorizon-agent-pvc
+      initContainers:
+      - name: initcontainer
+        image: alpine:latest
+        command:
+        - sh
+        - -c
+        - (chown -R 1000:1000 /horizon /policy)
+        volumeMounts:
+        - mountPath: /policy
+          name: agent-pvc-storage
+          subPath: policy
+        - mountPath: /horizon
+          name: agent-pvc-storage
+          subPath: horizon
       containers:
       - name: anax
         image: __ImagePath__

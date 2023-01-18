@@ -1177,19 +1177,22 @@ function get_all_variables() {
             local default_auto_upgrade_cronjob_image_registry_on_edge_cluster
             if [[ $KUBECTL == "microk8s.kubectl" ]]; then
                 default_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/amd64_anax_k8s"
-                default_auto_upgrade_cronjob_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/amd64_auto-upgrade-cronjob_k8s"
             elif [[ $KUBECTL == "k3s kubectl" ]]; then
                 local image_arch=$(get_image_arch)
                 local k3s_registry_endpoint=$($KUBECTL get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
                 default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
-                default_auto_upgrade_cronjob_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/${image_arch}_auto-upgrade-cronjob_k8s"
-            else
+            elif is_ocp_cluster; then
                 local ocp_registry_endpoint=$($KUBECTL get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
                 default_image_registry_on_edge_cluster="$ocp_registry_endpoint/$AGENT_NAMESPACE/amd64_anax_k8s"
-                default_auto_upgrade_cronjob_image_registry_on_edge_cluster="$ocp_registry_endpoint/$AGENT_NAMESPACE/amd64_auto-upgrade-cronjob_k8s"
+            else
+		isImageVariableRequired=true
             fi
 
-            get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_image_registry_on_edge_cluster"
+            get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_image_registry_on_edge_cluster" ${isImageVariableRequired}
+	    log_debug "default_image_registry_on_edge_cluster: $default_image_registry_on_edge_cluster, IMAGE_ON_EDGE_CLUSTER_REGISTRY: $IMAGE_ON_EDGE_CLUSTER_REGISTRY"
+	    # set $default_auto_upgrade_cronjob_image_registry_on_edge_cluster from IMAGE_ON_EDGE_CLUSTER_REGISTRY
+            default_auto_upgrade_cronjob_image_registry_on_edge_cluster="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%/*}/${image_arch}_auto-upgrade-cronjob_k8s"
+	    log_debug "default_auto_upgrade_cronjob_image_registry_on_edge_cluster: $default_auto_upgrade_cronjob_image_registry_on_edge_cluster"
             get_variable CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_auto_upgrade_cronjob_image_registry_on_edge_cluster"
             get_variable EDGE_CLUSTER_REGISTRY_USERNAME
             get_variable EDGE_CLUSTER_REGISTRY_TOKEN
@@ -1412,6 +1415,12 @@ function is_cluster() {
 function is_small_kube() {
     if $KUBECTL cluster-info | grep -q -E 'Kubernetes .* is running at .*//(127|172|10|192.168)\.'; then return 0
     else return 1; fi
+}
+
+function is_ocp_cluster() {
+    $KUBECTL get routes default-route -n openshift-image-registry >/dev/null 2>&1
+    if [[ $? -ne 0 ]]; then return 1 # we couldn't get the default route in openshift-image-registry namespace, so the current cluster is not ocp
+    else return 0; fi
 }
 
 function is_anax_in_container() {
@@ -3577,13 +3586,11 @@ function prepare_k8s_deployment_file() {
 
         local image_full_path_on_edge_cluster_registry_internal_url
         if [[ "$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY" == "" ]]; then
-            # check if using local cluster or remote ocp
-            if is_small_kube; then
-                # using small kube
-                image_full_path_on_edge_cluster_registry_internal_url="$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
-            else
+            if is_ocp_cluster; then
                 # using ocp
                 image_full_path_on_edge_cluster_registry_internal_url=$DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY/$EDGE_CLUSTER_REGISTRY_PROJECT_NAME/$EDGE_CLUSTER_AGENT_IMAGE_AND_TAG
+            else
+                image_full_path_on_edge_cluster_registry_internal_url="$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
             fi
         else
             image_full_path_on_edge_cluster_registry_internal_url=$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY/$EDGE_CLUSTER_REGISTRY_PROJECT_NAME/$EDGE_CLUSTER_AGENT_IMAGE_AND_TAG
@@ -3631,12 +3638,10 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
         local auto_upgrade_cronjob_image_full_path_on_edge_cluster_registry_internal_url
         if [[ "$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY" == "" ]]; then
             # check if using local cluster or remote ocp
-            if is_small_kube; then
-                # using small kube
-                auto_upgrade_cronjob_image_full_path_on_edge_cluster_registry_internal_url="$CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
-            else
-                # using ocp
+            if is_ocp_cluster; then
                 auto_upgrade_cronjob_image_full_path_on_edge_cluster_registry_internal_url=$DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY/$EDGE_CLUSTER_REGISTRY_PROJECT_NAME/$EDGE_CLUSTER_CRONJOB_AUTO_UPGRADE_IMAGE_AND_TAG
+            else
+                auto_upgrade_cronjob_image_full_path_on_edge_cluster_registry_internal_url="$CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
             fi
         else
             auto_upgrade_cronjob_image_full_path_on_edge_cluster_registry_internal_url=$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY/$EDGE_CLUSTER_REGISTRY_PROJECT_NAME/$EDGE_CLUSTER_AGENT_IMAGE_AND_TAG
@@ -3654,9 +3659,10 @@ function prepare_k8s_pvc_file() {
     log_debug "prepare_k8s_pvc_file() begin"
 
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
-    local pvc_mode="ReadWriteMany"
-    if is_small_kube; then
-        pvc_mode="ReadWriteOnce"
+    local pvc_mode="ReadWriteOnce"
+    number_of_nodes=$($KUBECTL get node | grep "Ready" -c)
+    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]]); then
+        pvc_mode="ReadWriteMany"
     fi
 
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" -e "s#__PVCAccessMode__#${pvc_mode}#g" persistentClaim-template.yml >persistentClaim.yml
@@ -4145,7 +4151,7 @@ function install_update_cluster() {
 
     # push agent and cronjob images to cluster's registry
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
-        if ! is_small_kube; then
+        if is_ocp_cluster; then
             create_namespace
             create_image_stream
         fi
@@ -4185,7 +4191,7 @@ function install_cluster() {
     create_deployment
     check_deployment_status
 
-    if ! is_small_kube; then
+    if is_ocp_cluster; then
         # setup image registry cert. This will patch the running deployment
         local isUpdate='false'
         setup_cluster_image_registry_cert $isUpdate
@@ -4225,7 +4231,7 @@ function update_cluster() {
 
     update_deployment
     check_deployment_status
-    if ! is_small_kube; then
+    if is_ocp_cluster; then
         # setup image registry cert. This will patch the running deployment
         local isUpdate='true'
         setup_cluster_image_registry_cert $isUpdate
