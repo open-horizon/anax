@@ -12,7 +12,6 @@ import (
 	"github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/cutil"
 	anaxExchange "github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
@@ -28,7 +27,8 @@ import (
 // Sub-commands for inspecting and importing an Intel FDO ownership voucher for an FDO device.
 
 type ImportResponse struct {
-	NodeId string `json:"deviceUuid"`
+	NodeId    string `json:"deviceUuid"`
+	NodeToken string `json:"nodeToken"`
 }
 
 // list the all the uploaded FDO vouchers, or a single voucher
@@ -232,19 +232,13 @@ func import1Voucher(org string, userCreds string, voucherFileReader io.Reader, v
 	importResponse := ImportResponse{}
 	FdoPostVoucher(creds, org, voucherBytes, &importResponse)
 	if !quieter {
-		msgPrinter.Printf("Voucher imported. Node id: %s", importResponse.NodeId)
+		msgPrinter.Printf("Voucher imported. Node id: %s, token: %s", importResponse.NodeId, importResponse.NodeToken)
 		msgPrinter.Println()
 	}
 
 	// Pre-create the node resource in the exchange, so it is already there when hzn register is run on the FDO device
-	// Doing the equivalent of: hzn exchange node create -org "org" -n "$nodeId" -u "user:pw" (with optional pattern)
-	// todo: try to get the device arch from the voucher
-	// exchange.NodeCreate(org, "", importResponse.NodeId, importResponse.NodeToken, userCreds, "amd64", "", persistence.DEVICE_TYPE_DEVICE, true)
-	nodeToken, err := cutil.SecureRandomString()
-	if err != nil {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("could not create a random token"))
-	}
-	NodeAddDevice(org, importResponse.NodeId, nodeToken, userCreds, "", patternName, userInputFileName, quieter)
+	// Doing the equivalent of: hzn exchange node create -org "org" -n "$nodeId" -u "user:pw" (with optional pattern etc.)
+	NodeAddDevice(org, importResponse.NodeId, importResponse.NodeToken, userCreds, "", patternName, userInputFileName, quieter)
 
 	// Create the node policy in the exchange, if they specified it
 	var policyStr string
@@ -318,7 +312,10 @@ func FdoPostVoucher(creds, org string, requestBodyBytes []byte, response *Import
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, string(respBodyBytes)))
 	}
 
-	response.NodeId = fmt.Sprintf("%s", respBodyBytes)
+	err = json.Unmarshal(respBodyBytes, response)
+	if err != nil {
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
+	}
 }
 
 // This is similar to exchange.NodeCreate(), except it can optionally set a pattern
