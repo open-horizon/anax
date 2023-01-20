@@ -1616,7 +1616,7 @@ func (w *AgreementBotWorker) monitorHAGroupNMPUpdates() int {
 			if err != nil {
 				glog.Errorf(AWlogString(fmt.Sprintf("error deleting nmp status %v/%v/%v: %v", node.OrgId, node.NodeId, node.NMPName, err)))
 			} else {
-				glog.Errorf("removed %v/%v/%v", node.OrgId, node.NodeId, node.NMPName)
+				glog.V(3).Infof(AWlogString(fmt.Sprintf("removed %v/%v/%v from ha nmp upgrade table", node.OrgId, node.NodeId, node.NMPName)))
 			}
 		}
 	}

@@ -307,6 +307,8 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 					case *exchangecommon.NodeManagementPolicyStatus:
 						return nil, nil
 
+					case *exchangecommon.ExchangeNMPStatus:
+						return nil, nil
 					default:
 						return errors.New(fmt.Sprintf("Unknown type of response object %v (%T) passed to invocation of %v at %v with %v", *resp, *resp, method, urlPath, requestBody)), nil
 					}
