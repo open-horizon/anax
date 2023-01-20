@@ -899,7 +899,7 @@ function read_config_file() {
             echo "HZN_CONFIG_VERSION=$AGENT_CONFIG_VERSION" >> $AGENT_CFG_FILE
         elif [[ "$AGENT_CONFIG_VERSION" != "$config_version_in_file" ]]; then
             # replace, overwrite with the agent config file version in css filename
-            sed -i "s#HZN_CONFIG_VERSION=${config_version_in_file}#HZN_CONFIG_VERSION=${AGENT_CONFIG_VERSION}#g" $AGENT_CFG_FILE
+            sed -i -e "s#HZN_CONFIG_VERSION=${config_version_in_file}#HZN_CONFIG_VERSION=${AGENT_CONFIG_VERSION}#g" $AGENT_CFG_FILE
         fi
     fi
 
@@ -1036,6 +1036,11 @@ function get_local_horizon_version() {
 function get_all_variables() {
     log_debug "get_all_variables() begin"
 
+    OS=$(get_os)
+    detect_distro   # if linux, sets: DISTRO, DISTRO_VERSION_NUM, CODENAME
+    ARCH=$(get_arch)
+    log_info "OS: $OS, Distro: $DISTRO, Distro Release: $DISTRO_VERSION_NUM, Distro Code Name: $CODENAME, Architecture: $ARCH"
+
     get_variable AGENT_IN_CONTAINER 'false'
     get_variable AGENT_CONTAINER_NUMBER '1'
     get_variable AGENT_AUTO_UPGRADE 'false'
@@ -1117,11 +1122,6 @@ function get_all_variables() {
     get_variable AGENT_DEPLOY_TYPE 'device'
     get_variable AGENT_WAIT_MAX_SECONDS '30'
 
-    OS=$(get_os)
-    detect_distro   # if linux, sets: DISTRO, DISTRO_VERSION_NUM, CODENAME
-    ARCH=$(get_arch)
-    log_info "OS: $OS, Distro: $DISTRO, Distro Release: $DISTRO_VERSION_NUM, Distro Code Name: $CODENAME, Architecture: $ARCH"
-
     if is_cluster; then
         # check kubectl is available
         if [ "${KUBECTL}" != "" ]; then   # If user set KUBECTL env variable, check that it exists
@@ -1176,14 +1176,13 @@ function get_all_variables() {
             local default_image_registry_on_edge_cluster
             local default_auto_upgrade_cronjob_image_registry_on_edge_cluster
             if [[ $KUBECTL == "microk8s.kubectl" ]]; then
-                default_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/amd64_anax_k8s"
+                default_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
             elif [[ $KUBECTL == "k3s kubectl" ]]; then
-                local image_arch=$(get_image_arch)
                 local k3s_registry_endpoint=$($KUBECTL get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
                 default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
             elif is_ocp_cluster; then
                 local ocp_registry_endpoint=$($KUBECTL get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
-                default_image_registry_on_edge_cluster="$ocp_registry_endpoint/$AGENT_NAMESPACE/amd64_anax_k8s"
+                default_image_registry_on_edge_cluster="$ocp_registry_endpoint/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
             else
 		isImageVariableRequired=true
             fi
