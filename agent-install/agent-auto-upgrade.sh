@@ -619,7 +619,7 @@ script_dir=$(cd "$(dirname "$0")" &> /dev/null && pwd)
 
 # sets the PATH environmental variable
 if [[ $OSTYPE == darwin* ]]; then
-    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/Users/Shared/horizon-cli/bin 
+    export PATH=/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/Users/Shared/horizon-cli/bin
 else
     export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/horizon/bin
 fi
