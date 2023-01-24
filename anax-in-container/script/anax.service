@@ -8,15 +8,9 @@ trap trapHandler SIGTERM
 # Note: the check for dont-unregister-on-exit is so we can do a restart/update of anax w/o unregistering.
 trapHandler() {
 	touch $HOME/container-stopping
-	if [[ -f "/root/dont-unregister-on-exit" ]]; then
-		echo "Exiting without unregistering, because in the process of a restart/update..."
-		exit 0
-	else
-		echo "Unregistering..."
-		/usr/bin/hzn unregister -f
-		echo "Done. Exiting..."
-		exit 0
-	fi
+
+	echo "Exiting without unregistering..."
+	exit 0
 }
 
 ANAX_LOG_LEVEL=${ANAX_LOG_LEVEL:-3}
