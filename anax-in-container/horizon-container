@@ -378,6 +378,8 @@ stop() {
 
 	# Stop the anax container
 	echo "Unregistering the node, then stopping/removing the horizon container (this may take a minute)..."
+	export HORIZON_URL=http://localhost:$HORIZON_AGENT_PORT
+	hzn unregister -f
 	${DOCKER_ENGINE} stop -t 120 $DOCKER_NAME  # give it time to unregister and stop the service containers
 	if [[ $? -ne 0 ]]; then
 		echo "Error stopping container: $DOCKER_NAME. Resuming stop procedures."
