@@ -1,14 +1,31 @@
-# Policy based deployment
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2023-01-24"
+description: Policy based deployment enables containerized workloads (aka services) to be deployed to edge nodes
+---
 
-The policy based deployment support in Open Horizon enables containerized workloads (aka services) to be deployed to edge nodes that are running the Open Horizon agent and which are registered to an Open Horizon Management Hub.
-The deployment engine (implemented inside the Open Horizon Agbot) uses policy to autonomously determine where services should be deployed, undeployed or re-deployed.
+{:new_window: target="blank"}
+{:shortdesc: .shortdesc}
+{:screen: .screen}
+{:codeblock: .codeblock}
+{:pre: .pre}
+{:child: .link .ulchildlink}
+{:childlinks: .ullinks}
+
+# Policy based deployment
+{: #policy-deployment}
+
+The policy based deployment support in {{site.data.keyword.edge_notm}} enables containerized workloads (aka services) to be deployed to edge nodes that are running the {{site.data.keyword.edge_notm}} agent and which are registered to an {{site.data.keyword.edge_notm}} Management Hub.
+The deployment engine (implemented inside the {{site.data.keyword.edge_notm}} Agbot) uses policy to autonomously determine where services should be deployed, undeployed or re-deployed.
 As nodes, models, services and deployment policies are added, updated or removed from the management hub, the deployment engine will automatically react to the change.
 An adminstrator never has to interact directly with the deployment engine, it just works quietly in the background ensuring that the edge computing environment it is managing has services deployed where they should be.
 
-To accomplish this there are four kinds of policy in Open Horizon; node policy, deployment policy, service policy, and model policy.
+To accomplish this there are four kinds of policy in {{site.data.keyword.edge_notm}}; node policy, deployment policy, service policy, and model policy.
 Each kind of policy is composed of properties and constraints which are described in more detail [here](./properties_and_constraints.md).
 
 ## Node policy
+{: #node-policy}
 
 Policy can be attached to a node.
 The node owner can provide this at registration time, and it can be changed at any time directly on the node or centrally by a management hub administrator.
@@ -22,6 +39,7 @@ Each node has only one policy that contains all the properties and constraints t
 The JSON representation of node policy and details of how it is used are elaborated [here](./node_policy.md):
 
 ## Service policy
+{: #service-policy}
 
 Service policy is an optional feature.
 
@@ -29,7 +47,7 @@ Like nodes, services can express policy and have some [built-in properties](buil
 This policy is created by the service developer and published to the exchange when the service is published.
 Service policy properties could state characteristics of the service code that node policy authors might find relevant.
 Service policy constraints can be used to restrict where, and on what type of devices, this service can run.
-For example, the service developer can assert that this service requires a particular hardware setup such as CPU/GPU constraints, memory constraints, specific sensors, actuators, or other peripheral devices.
+For example, the service developer can assert that this service requires a particular hardware setup such as CPU / GPU constraints, memory constraints, specific sensors, actuators, or other peripheral devices.
 Typically, properties and constraints remain static for the life of the service because they describe aspects of the service implementation.
 In expected usage scenarios, a change to one of these is usually coincident with code changes that necessitate a new service version.
 Deployment policies are used to capture the more dynamic aspects of service deployment that arise from business requirements.
@@ -42,15 +60,17 @@ The JSON representation of service policy contains properties and constraints as
  "constraints": []
 }
 ```
+{: codeblock}
 
 ## Deployment policy
+{: #deploy-policy}
 
 Deployment policy drives service deployment.
 Like the other policy types, it contains a set of properties and constraints, but it also contains other things.
 For example, it explicitly identifies a service to be deployed, and it can optionally contain configuration variable values, service rollback versions, and node health configuration information.
 The Deployment policy approach for configuration values is powerful because this operation can be performed centrally, with no need to connect directly to the edge node.
 
-Administrators create deployment policies, and the Open Horizon deployment engine uses that policy to locate all of the nodes that match the defined constraints and deploys the specified service to those nodes.
+Administrators create deployment policies, and the {{site.data.keyword.edge_notm}} deployment engine uses that policy to locate all of the nodes that match the defined constraints and deploys the specified service to those nodes.
 Service rollback versions instruct the deployment engine which service versions should be deployed if a higher version of the service fails to deploy.
 The node health configuration indicates how the deployment engine should gauge the health (heartbeats and management hub communication) of a node before determining if the node is out of policy.
 
@@ -60,9 +80,10 @@ The deployment engine merges service policy and deployment policy (by performing
 The JSON representation of deployment policy is more complex than node and service policy, as shown [here](./deployment_policy.md).
 
 ## Model policy
+{: #model-policy}
 
 Machine learning (ML)-based services require specific trained models to operate correctly.
-Open Horizon provides the ability to deploy models independently from services.
+{{site.data.keyword.edge_notm}} provides the ability to deploy models independently from services.
 In ML use cases, the model tends to be large and change more more often than the algorithmic code which uses the model to analyze data.
 Model policy enables the administrator to deploy specific models on the same, or a subset of, nodes where the services that use the mode have been placed.
 The purpose of model policy is to further narrow the set of nodes where a given service is deployed, which enables a subset of those nodes to receive a specific model object.

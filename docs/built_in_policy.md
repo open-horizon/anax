@@ -1,4 +1,20 @@
-# Policy Properties
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2023-01-24"
+description: Built in Policy Properties
+---
+
+{:new_window: target="blank"}
+{:shortdesc: .shortdesc}
+{:screen: .screen}
+{:codeblock: .codeblock}
+{:pre: .pre}
+{:child: .link .ulchildlink}
+{:childlinks: .ullinks}
+
+# Policy properties
+{: #builtin}
 
 There are built-in property names that can be used in the policies.
 See [Properties and Constraints](./properties_and_constraints.md) for an explanation of properties and constraints in general.
@@ -6,6 +22,7 @@ For the node properties, the agent will introspect the node for the values of th
 The user defined policies (deployment policy, model policy, service policy) need to add constraints on these properties if needed.
 
 ## Built-in properties
+{: #builtin-props}
 
 * for node policy
 
@@ -19,6 +36,7 @@ openhorizon.allowPrivileged| Property set to determine if privileged services ma
 openhorizon.kubernetesVersion| Kubernetes version of the cluster the agent is running in| `string` e.g. 1.18
 openhorizon.operatingSystem | The operating system the agent is running on. If the agent is containerized, this will be the host os | `string` e.g. ubuntu
 openhorizon.containerized | This indicates if the agent is running in a container or natively | `boolean`
+{: caption="Table 1. {{site.data.keyword.edge_notm}} built-in node properties" caption-side="top"}
 
 **Note:Provided properties (except for allowPrivileged) are read-only, the system will ignore updating of the node policy and changing any of the built-in properties*
 
@@ -32,3 +50,4 @@ openhorizon.service.org| The multi-tenant org where the service is defined (come
 openhorizon.service.version| The version of a service using the same semantic version syntax (comes from `version` field of service definition)| `string` e.g. 1.1.1
 openhorizon.service.arch| The hardware architecture of the node this service can run on (comes from `arch` field of service definition)| `string` e.g. amd64
 openhorizon.allowPrivileged| Does the service use workloads that require privileged mode or net==host to run. Can be set by user. It is an error to set it to false if service introspection indicates that the service uses privileged features. (comes from `deployment.services.someServiceName.privileged` field of service definition) | `boolean`
+{: caption="Table 2. {{site.data.keyword.edge_notm}} built-in service properties" caption-side="top"}
