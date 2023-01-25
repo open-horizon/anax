@@ -195,6 +195,11 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		nodeType = persistence.DEVICE_TYPE_CLUSTER
 	}
 
+	// make sure the node type is not "cluster" if --ha-group is specified
+	if haGroupName != "" && nodeType == persistence.DEVICE_TYPE_CLUSTER {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--ha-group flag does not support 'cluster' type agent or node."))
+	}
+
 	// See if the node exists in the exchange, and create if it doesn't
 	var devicesResp exchange.GetDevicesResponse
 	exchangePattern := ""
@@ -230,6 +235,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 				}
 				existingNodeName = n.Name
 				existingHagrName = n.HAGroup
+
+				// make sure that the node is not in any HA group for cluster agent.
+				// This should not happen, but check just in case.
+				if n.HAGroup != "" && nodeType == persistence.DEVICE_TYPE_CLUSTER {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node %v is in the HA group %v but the agent is 'cluster' type. HA group does not support 'cluster' type members. Please remove the node from the HA group or choose a different node id with -n flag.", nId, n.HAGroup))
+				}
 				break
 			}
 		}
@@ -245,6 +256,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			}
 			existingNodeName = n.Name
 			existingHagrName = n.HAGroup
+
+			// make sure that the node is not in any HA group for cluster agent.
+			// This should not happen, but check just in case.
+			if n.HAGroup != "" && nodeType == persistence.DEVICE_TYPE_CLUSTER {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node %v is in the HA group %v but the agent is 'cluster' type. HA group does not support 'cluster' type members. Please remove the node from the HA group or choose a different node id with -n flag.", nId, n.HAGroup))
+			}
 			break
 		}
 	}
