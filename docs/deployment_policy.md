@@ -1,6 +1,22 @@
-# Deployment Policy
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2023-01-24"
+description: Description of Deployment policy json fields
+---
 
-The Open Horizon policy based, autonomous deployment capability is described [here](./policy.md).
+{:new_window: target="blank"}
+{:shortdesc: .shortdesc}
+{:screen: .screen}
+{:codeblock: .codeblock}
+{:pre: .pre}
+{:child: .link .ulchildlink}
+{:childlinks: .ullinks}
+
+# Deployment Policy
+{: #deployment-policy}
+
+The {{site.data.keyword.edge_notm}} policy based, autonomous deployment capability is described [here](./policy.md).
 A deployment policy is just one aspect of the deployment capability, and is described here in detail.
 
 Use the `hzn exchange deployment new` command to generate an empty deployment policy.
@@ -12,14 +28,14 @@ Following are the fields in the JSON representation of a deployment policy:
 
 - `label`: A short description of the deployment policy suitable to be displayed in a UI. This field is not required.
 - `description`: A longer description of the deployment policy. This field is not required.
-- `services`: A list of service to be deployed. There MUST be at least one service in the list.
+- `services`: A list of services to be deployed. There MUST be at least one service in the list.
   - `name`: The name (URL) of a service to be deployed. This is the same value as found in the `url` field [here](./service_def.md).
   - `org`: The organization in which the service in `name` is defined.
   - `arch`: The hardware architecture of the service in `name`, or `*` to indicate any compatible architecture. This is the same value as found in the `arch` field [here](./service_def.md).
   - `serviceVersions`: A list of versions of the service. At least 1 version MUST be specified.
     - `version`: One of the versions of the service in `name`. This is the same value as found in the `version` field [here](./service_def.md).
     - `priority`: The relative priority of deploying this version over another version in the list of service versions.
-      - `priority_value`: The priority value assigned to this version. Priority is expressed in human terms, where a lower ordinal value means higher priority. Priority values within the list are not required to be sequential, just unique within the list. When deploying a service, Open Horizon will attempt to deploy the highest priority version first. If the service is not successfully started, the next highest version will be attempted.
+      - `priority_value`: The priority value assigned to this version. Priority is expressed in human terms, where a lower ordinal value means higher priority. Priority values within the list are not required to be sequential, just unique within the list. When deploying a service, {{site.data.keyword.edge_notm}} will attempt to deploy the highest priority version first. If the service is not successfully started, the next highest version will be attempted.
       - `retries`: The number of times to retry starting a failed service.
       - `retry_durations`: The number of seconds (i.e. elapsed time) in which the indicated number of `retries` must occur before giving up and moving on to the next highest priority service version.
   - `nodeHealth`: For nodes that are expected to remain network connected to the management, these setting indicate how aggressive the Agbot should be in determining if a node is out of policy.
@@ -119,3 +135,4 @@ Both `2.3.0` and `2.3.1` versions of the services have a secret `ai_secret` defi
   ]
 }
 ```
+{: codeblock}
