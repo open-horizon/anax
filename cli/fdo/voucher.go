@@ -37,13 +37,24 @@ func VoucherList(org, userCreds, voucher string) {
 	cliutils.Verbose(msgPrinter.Sprintf("Listing imported FDO vouchers."))
 
 	// call the ocs-api to get the uploaded vouchers
-	respBodyBytes, _ := getVouchers(org, userCreds, voucher)
+	respBodyBytes, apiMsg := getVouchers(org, userCreds, voucher)
 
-	fmt.Printf("%s", respBodyBytes)
+	if voucher == "" {
+		output := []string{}
+		err := json.Unmarshal(respBodyBytes, &output)
+		if err != nil {
+			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
+		}
 
-	// add a new line for voucher returned with content
-	if voucher != "" {
-		msgPrinter.Println()
+		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn fdo voucher list' output: %v", err))
+		}
+
+		fmt.Printf("%s\n", jsonBytes)
+
+	} else { // list full details of all imported vouchers
+		fmt.Printf("%s\n", respBodyBytes)
 	}
 }
 
