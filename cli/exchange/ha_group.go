@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/persistence"
 	"net/http"
 	"strings"
 )
@@ -113,6 +114,12 @@ func HAGroupAdd(org, credToUse, haGroupName, jsonFilePath string) {
 		Members:     haGroupFile.Members,
 	}
 
+	// make sure that the nodes added are of "device" type.
+	clusterNode := CheckNodesForClusterType(org, credToUse, haGroupFile.Members)
+	if clusterNode != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot create HA group %v/%v because node %v is 'cluster' type. HA group does not support 'cluster' type members.", haGroupOrg, haGroupName, clusterNode))
+	}
+
 	var resp struct {
 		Code string `json:"code"`
 		Msg  string `json:"msg"`
@@ -172,6 +179,12 @@ func HAGroupMemberAdd(org, credToUse, haGroupName string, nodeNames []string) {
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+haGroupOrg+"/hagroups"+cliutils.AddSlash(haGroupName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, nil)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("HA group %s is not found in org %s", haGroupName, haGroupOrg))
+	}
+
+	// make sure that the nodes added are of "device" type.
+	clusterNode := CheckNodesForClusterType(org, credToUse, nodeNames)
+	if clusterNode != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot add node %v to HA group %v/%v because it has 'cluster' type. HA group does not support 'cluster' type members.", clusterNode, haGroupOrg, haGroupName))
 	}
 
 	addedNodes := []string{}
@@ -278,4 +291,36 @@ func HAGroupMemberRemove(org, credToUse, haGroupName string, nodeNames []string,
 		msgPrinter.Printf("Node \"%v\" is removed from HA group %v/%v in the Horizon Exchange", strings.Join(nodesToRemove, ","), haGroupOrg, haGroupName)
 		msgPrinter.Println()
 	}
+}
+
+// This function makes sure that all the given nodes are of "device" types.
+// It returns the first node that has "cluster" type.
+func CheckNodesForClusterType(org string, credToUse string, nodes []string) string {
+	if nodes == nil {
+		return ""
+	}
+
+	for _, node := range nodes {
+		// get node org
+		nodeOrg, nodeName := cliutils.TrimOrg(org, node)
+
+		if node == "" {
+			continue
+		}
+
+		var nodeResponse ExchangeNodes
+		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(nodeName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodeResponse)
+		if httpCode == 404 {
+			cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s' not found in org %s", nodeName, nodeOrg))
+		}
+
+		if nodeResponse.Nodes != nil {
+			exNode := nodeResponse.Nodes[fmt.Sprintf("%s/%s", nodeOrg, nodeName)]
+			if exNode.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+				return node
+			}
+		}
+	}
+
+	return ""
 }
