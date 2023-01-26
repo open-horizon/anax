@@ -12,7 +12,7 @@ func GetNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId stri
 	glog.V(3).Infof("Getting node management policy status for node %v/%v and policy %v", orgId, nodeId, policyName)
 
 	var resp interface{}
-	resp = new(exchangecommon.NodeManagementPolicyStatus)
+	resp = new(exchangecommon.ExchangeNMPStatus)
 
 	_, policyName = cutil.SplitOrgSpecUrl(policyName)
 
@@ -23,7 +23,12 @@ func GetNodeManagementPolicyStatus(ec ExchangeContext, orgId string, nodeId stri
 		return nil, err
 	}
 
-	nmpStatus := resp.(*exchangecommon.NodeManagementPolicyStatus)
+	nmpStatusMap := resp.(*exchangecommon.ExchangeNMPStatus)
+	nmpStatus, ok := nmpStatusMap.ManagementStatus[fmt.Sprintf("%v/%v", orgId, policyName)]
+	if !ok {
+		return nil, fmt.Errorf("Error: status for policy %v/%v not found in exchange status list %v", orgId, policyName, resp)
+	}
+
 	return nmpStatus, nil
 }
 
