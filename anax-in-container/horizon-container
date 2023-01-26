@@ -414,9 +414,6 @@ restart() {
 			checkrc $? "docker start"
 		fi
 
-		# now the container is running, set the dont-unregister-on-exit falg
-		${DOCKER_ENGINE} exec $DOCKER_NAME touch /root/dont-unregister-on-exit
-		checkrc $? "docker dont-unregister-on-exit"
 		${DOCKER_ENGINE} stop $DOCKER_NAME
 		checkrc $? "docker stop"
 		${DOCKER_ENGINE} rm $DOCKER_NAME
