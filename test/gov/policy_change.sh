@@ -10,10 +10,14 @@ pws_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_p
 netspeed_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_netspeed")).current_agreement_id' )
 while [[ "$pws_ag" == "" || "$netspeed_ag" == "" ]]; do
 	sleep 5s
-	pws_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_pws")).current_agreement_id' )
-	netspeed_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_netspeed")).current_agreement_id' )
+	if [[ $(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_pws")).agreement_execution_start_time') != "" ]]; then
+		pws_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_pws")).current_agreement_id' )
+	fi
+	if [[ $(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_netspeed")).agreement_execution_start_time' ) != "" ]]; then
+		netspeed_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_netspeed")).current_agreement_id' )
+	fi
 	let timeout=$timeout-1
-	if [ $timeout == 0 ]; then
+	if [[ $timeout == 0 ]]; then
 		echo "timed out waiting for agreements to be formed before starting test."
 		echo "$(hzn agreement list)"
 		exit 1

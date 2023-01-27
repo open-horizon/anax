@@ -111,6 +111,10 @@ func (m Microservice) DeepCopy() *Microservice {
 	return &svcCopy
 }
 
+const AGENT_VERSION = "horizon"
+const CERT_VERSION = "certificate"
+const CONFIG_VERSION = "config"
+
 type SoftwareVersion map[string]string
 
 func (s SoftwareVersion) DeepCopy() *SoftwareVersion {

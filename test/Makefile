@@ -206,6 +206,7 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "VAULT_ADDR"="$(VAULT_ADDR)" \
 		-e "HZN_SDO_SVC_URL"="$(HZN_SDO_SVC_URL)" \
 		-e "HZN_AGBOT_URL"="$(AGBOT_SAPI_URL)" \
+		-e "TEST_PATTERNS"="$(TEST_PATTERNS)" \
 		-t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)
 	docker cp $(E2EDEVTEST_TEMPFS)/. $(DOCKER_TEST_CNAME):/
 
@@ -236,6 +237,7 @@ run-dockerreg: test-network
 		-e REGISTRY_AUTH=htpasswd \
 		-e REGISTRY_AUTH_HTPASSWD_REALM=RegistryRealm \
 		-e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+		-e "TEST_PATTERNS"="$(TEST_PATTERNS)" \
 		-t $(DOCKER_REG_INAME)@$(DOCKER_REG_TAG)
 	@echo "Docker $(DOCKER_REG_CNAME) container running with TLS"
 	docker run --name $(DOCKER_REG_PW_CNAME) \

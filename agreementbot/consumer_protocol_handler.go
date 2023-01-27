@@ -376,11 +376,6 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		glog.Infof("attempting to update agreement %v due to change in policy", ag.CurrentAgreementId)
 	}
 
-	// cancel the agreement if the agreement is not finalized yet
-	if ag.AgreementFinalizedTime == 0 {
-		return false, false
-	}
-
 	svcAllPol := externalpolicy.ExternalPolicy{}
 
 	for _, svcId := range ag.ServiceId {
@@ -416,13 +411,34 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Device %v does not exist in the exchange.", ag.DeviceId)))
 		return false, false
 	}
-	nodeArch := dev.Arch
 
-	match, _, producerPol, consumerPol, err := compcheck.CheckPolicyCompatiblility(nodePol, busPol, &svcAllPol, nodeArch, nil)
+	nodeArch := dev.Arch
+	if canArch := b.config.ArchSynonyms.GetCanonicalArch(dev.Arch); canArch != "" {
+		nodeArch = canArch
+	}
+
+	swVers, ok := dev.SoftwareVersions[exchange.AGENT_VERSION]
+	if !ok {
+		swVers = "0.0.0"
+	}
+
+	// skip for now if not all built-in properties are in the node policy
+	// this will get called again after the node updates its policy with the built-ins
+	if !externalpolicy.ContainsAllBuiltInNodeProps(&nodePol.Properties, swVers, dev.GetNodeType()) {
+		return true, true
+	}
+
+	match, reason, producerPol, consumerPol, err := compcheck.CheckPolicyCompatiblility(nodePol, busPol, &svcAllPol, nodeArch, nil)
 
 	if !match {
+		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v is not longer in policy. Reason is: %v", ag.CurrentAgreementId, reason)))
 		return false, true
 	}
+
+        // don't send an update if the agreement is not finalized yet
+        if ag.AgreementFinalizedTime == 0 {
+                return true, true
+        }
 
 	// for every priority (in order highest to lowest) in the new policy with priority lower than the current wl
 	// if it's not in the old policy, cancel
