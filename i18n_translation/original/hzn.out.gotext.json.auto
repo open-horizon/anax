@@ -1968,9 +1968,9 @@
             "fuzzy": true
         },
         {
-            "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-            "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-            "translation": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+            "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+            "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+            "translation": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5931,6 +5931,13 @@
             "fuzzy": true
         },
         {
+            "id": "Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+            "message": "Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+            "translation": "Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "List and manage Horizon SDO ownership keys.",
             "message": "List and manage Horizon SDO ownership keys.",
             "translation": "List and manage Horizon SDO ownership keys.",
@@ -6186,6 +6193,90 @@
             "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
             "message": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
             "translation": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List and manage resources in FDO owner services",
+            "message": "List and manage resources in FDO owner services",
+            "translation": "List and manage resources in FDO owner services",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+            "message": "Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+            "translation": "Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List FDO ownership public keys.",
+            "message": "List FDO ownership public keys.",
+            "translation": "List FDO ownership public keys.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List a public key from the FDO Owner services using the device alias from the manufacturer.",
+            "message": "List a public key from the FDO Owner services using the device alias from the manufacturer.",
+            "translation": "List a public key from the FDO Owner services using the device alias from the manufacturer.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The device alias received from the manufacturer. It can be one of the following: SECP256R1, SECP384R1, RSAPKCS3072, RSAPKCS2048, RSA2048RESTR which are all cryptography standards.",
+            "message": "The device alias received from the manufacturer. It can be one of the following: SECP256R1, SECP384R1, RSAPKCS3072, RSAPKCS2048, RSA2048RESTR which are all cryptography standards.",
+            "translation": "The device alias received from the manufacturer. It can be one of the following: SECP256R1, SECP384R1, RSAPKCS3072, RSAPKCS2048, RSA2048RESTR which are all cryptography standards.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List and manage Horizon FDO ownership vouchers.",
+            "message": "List and manage Horizon FDO ownership vouchers.",
+            "translation": "List and manage Horizon FDO ownership vouchers.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List the imported FDO ownership vouchers.",
+            "message": "List the imported FDO ownership vouchers.",
+            "translation": "List the imported FDO ownership vouchers.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List the full details of this FDO ownership voucher.",
+            "message": "List the full details of this FDO ownership voucher.",
+            "translation": "List the full details of this FDO ownership voucher.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Imports the FDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+            "message": "Imports the FDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+            "translation": "Imports the FDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).",
+            "message": "The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).",
+            "translation": "The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Download the specified FDO ownership voucher from FDO owner services.",
+            "message": "Download the specified FDO ownership voucher from FDO owner services.",
+            "translation": "Download the specified FDO ownership voucher from FDO owner services.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The FDO ownership voucher to download.",
+            "message": "The FDO ownership voucher to download.",
+            "translation": "The FDO ownership voucher to download.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -8281,6 +8372,82 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "sdoUrl"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+            "message": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+            "translation": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ANAXOVERWRITEFILE",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ANAX_OVERWRITE_FILE"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+            "message": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+            "translation": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ANAXOVERWRITEFILE",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ANAX_OVERWRITE_FILE"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+            "message": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+            "translation": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ANAXOVERWRITEFILE",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ANAX_OVERWRITE_FILE"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The FDO service url: {FdoUrl}",
+            "message": "The FDO service url: {FdoUrl}",
+            "translation": "The FDO service url: {FdoUrl}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "FdoUrl",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "fdoUrl"
                 }
             ],
             "fuzzy": true
@@ -14698,6 +14865,39 @@
             "fuzzy": true
         },
         {
+            "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName} because node {ClusterNode} is 'cluster' type. HA group does not support 'cluster' type members.",
+            "message": "Cannot create HA group {HaGroupOrg}/{HaGroupName} because node {ClusterNode} is 'cluster' type. HA group does not support 'cluster' type members.",
+            "translation": "Cannot create HA group {HaGroupOrg}/{HaGroupName} because node {ClusterNode} is 'cluster' type. HA group does not support 'cluster' type members.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "HaGroupOrg",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "haGroupOrg"
+                },
+                {
+                    "id": "HaGroupName",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "haGroupName"
+                },
+                {
+                    "id": "ClusterNode",
+                    "string": "%[3]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "clusterNode"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
             "message": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
             "translation": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
@@ -14856,6 +15056,39 @@
             "fuzzy": true
         },
         {
+            "id": "Cannot add node {ClusterNode} to HA group {HaGroupOrg}/{HaGroupName} because it has 'cluster' type. HA group does not support 'cluster' type members.",
+            "message": "Cannot add node {ClusterNode} to HA group {HaGroupOrg}/{HaGroupName} because it has 'cluster' type. HA group does not support 'cluster' type members.",
+            "translation": "Cannot add node {ClusterNode} to HA group {HaGroupOrg}/{HaGroupName} because it has 'cluster' type. HA group does not support 'cluster' type members.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ClusterNode",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "clusterNode"
+                },
+                {
+                    "id": "HaGroupOrg",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "haGroupOrg"
+                },
+                {
+                    "id": "HaGroupName",
+                    "string": "%[3]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "haGroupName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
             "message": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
             "translation": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
@@ -14980,9 +15213,9 @@
             "fuzzy": true
         },
         {
-            "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
-            "message": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
-            "translation": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+            "id": "the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+            "message": "the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+            "translation": "the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -18796,6 +19029,668 @@
             "fuzzy": true
         },
         {
+            "id": "Please sepcify the device alias received from the manufacturer. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+            "message": "Please sepcify the device alias received from the manufacturer. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+            "translation": "Please sepcify the device alias received from the manufacturer. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "JoinsupportedAliases_",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "strings.Join(supportedAliases, \",\")"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+            "message": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+            "translation": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "JoinsupportedAliases_",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "strings.Join(supportedAliases, \",\")"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Listing FDO keys.",
+            "message": "Listing FDO keys.",
+            "translation": "Listing FDO keys.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid alias name. The key for device alias \"{KeyName}\" does not exist in organization \"{Org}\".",
+            "message": "Invalid alias name. The key for device alias \"{KeyName}\" does not exist in organization \"{Org}\".",
+            "translation": "Invalid alias name. The key for device alias \"{KeyName}\" does not exist in organization \"{Org}\".",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "KeyName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "keyName"
+                },
+                {
+                    "id": "Org",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "org"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid credentials. The user cannot access the public key for device alias \"{KeyName}\" in organization \"{Org}\" with the given credentials.",
+            "message": "Invalid credentials. The user cannot access the public key for device alias \"{KeyName}\" in organization \"{Org}\" with the given credentials.",
+            "translation": "Invalid credentials. The user cannot access the public key for device alias \"{KeyName}\" in organization \"{Org}\" with the given credentials.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "KeyName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "keyName"
+                },
+                {
+                    "id": "Org",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "org"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Listing imported FDO vouchers.",
+            "message": "Listing imported FDO vouchers.",
+            "translation": "Listing imported FDO vouchers.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
+            "message": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
+            "translation": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "StringrespBodyBytes",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "string(respBodyBytes)"
+                },
+                {
+                    "id": "ApiMsg",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "apiMsg"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[3]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 3,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "failed to marshal 'hzn fdo voucher list' output: {Err}",
+            "message": "failed to marshal 'hzn fdo voucher list' output: {Err}",
+            "translation": "failed to marshal 'hzn fdo voucher list' output: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the FDO owner services.",
+            "message": "Voucher \"{Device}\" successfully downloaded to {FileName} from the FDO owner services.",
+            "translation": "Voucher \"{Device}\" successfully downloaded to {FileName} from the FDO owner services.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Device",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "device"
+                },
+                {
+                    "id": "FileName",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "fileName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Importing voucher file name: {Name}",
+            "message": "Importing voucher file name: {Name}",
+            "translation": "Importing voucher file name: {Name}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "voucherFile.Name()"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
+            "message": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
+            "translation": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "accessing {PolicyFilePath}: {Err}",
+            "message": "accessing {PolicyFilePath}: {Err}",
+            "translation": "accessing {PolicyFilePath}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PolicyFilePath",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "policyFilePath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+            "message": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+            "translation": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "HaGroupOrg",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "haGroupOrg"
+                },
+                {
+                    "id": "Org",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "org"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "reading voucher file {Name}: {Err}",
+            "message": "reading voucher file {Name}: {Err}",
+            "translation": "reading voucher file {Name}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "voucherFile.Name()"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+            "message": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+            "translation": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Voucher",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "voucher"
+                },
+                {
+                    "id": "Org",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "org"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid credentials. The user cannot access vouchers in org \"{Org}\" with given credentials.",
+            "message": "Invalid credentials. The user cannot access vouchers in org \"{Org}\" with given credentials.",
+            "translation": "Invalid credentials. The user cannot access vouchers in org \"{Org}\" with given credentials.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Org",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "org"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid credentials. The user cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+            "message": "Invalid credentials. The user cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+            "translation": "Invalid credentials. The user cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Voucher",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "voucher"
+                },
+                {
+                    "id": "Org",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "org"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "reading the bytes from {VoucherFileName}: {Err}",
+            "message": "reading the bytes from {VoucherFileName}: {Err}",
+            "translation": "reading the bytes from {VoucherFileName}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "VoucherFileName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "voucherFileName"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "creating zip reader for {Name}: {Err}",
+            "message": "creating zip reader for {Name}: {Err}",
+            "translation": "creating zip reader for {Name}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "voucherFile.Name()"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "opening file {Name} within zip for {Name_1}: {Err}",
+            "message": "opening file {Name} within zip for {Name_1}: {Err}",
+            "translation": "opening file {Name} within zip for {Name_1}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "fileInfo.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "voucherFile.Name()"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[3]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 3,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
+            "message": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
+            "translation": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NodeId",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "importResponse.NodeId"
+                },
+                {
+                    "id": "NodeToken",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "importResponse.NodeToken"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "reading the policy file {PolicyFilePath}: {Err}",
+            "message": "reading the policy file {PolicyFilePath}: {Err}",
+            "translation": "reading the policy file {PolicyFilePath}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PolicyFilePath",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "policyFilePath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Using node policy: {PolicyStr}",
+            "message": "Using node policy: {PolicyStr}",
+            "translation": "Using node policy: {PolicyStr}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PolicyStr",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "policyStr"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Cannot proceed with node {NodeId} because the node is in a different HA group: {ExistingHagrName}.",
+            "message": "Cannot proceed with node {NodeId} because the node is in a different HA group: {ExistingHagrName}.",
+            "translation": "Cannot proceed with node {NodeId} because the node is in a different HA group: {ExistingHagrName}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NodeId",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "importResponse.NodeId"
+                },
+                {
+                    "id": "ExistingHagrName",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "existingHagrName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The node is already in the HA group '{HaGroupName}'",
+            "message": "The node is already in the HA group '{HaGroupName}'",
+            "translation": "The node is already in the HA group '{HaGroupName}'",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "HaGroupName",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "haGroupName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid voucher file format: {StringrespBodyBytes}.",
+            "message": "Invalid voucher file format: {StringrespBodyBytes}.",
+            "translation": "Invalid voucher file format: {StringrespBodyBytes}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "StringrespBodyBytes",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "string(respBodyBytes)"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+            "message": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+            "translation": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "User",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "user"
+                },
+                {
+                    "id": "Org",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "org"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Adding/updating node...",
+            "message": "Adding/updating node...",
+            "translation": "Adding/updating node...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+            "message": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+            "translation": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "UserInputFileName",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "userInputFileName"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
+            "message": "failed to unmarshal json string '{PolicyStr}': {Err}",
+            "translation": "failed to unmarshal json string '{PolicyStr}': {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PolicyStr",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "policyStr"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Incorrect policy format in '{PolicyStr}': {Err}",
+            "message": "Incorrect policy format in '{PolicyStr}': {Err}",
+            "translation": "Incorrect policy format in '{PolicyStr}': {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PolicyStr",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "policyStr"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Adding/updating node policy...",
+            "message": "Adding/updating node policy...",
+            "translation": "Adding/updating node policy...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "failed to marshal 'key list' output: {Err}",
             "message": "failed to marshal 'key list' output: {Err}",
             "translation": "failed to marshal 'key list' output: {Err}",
@@ -20939,6 +21834,13 @@
             "fuzzy": true
         },
         {
+            "id": "--ha-group flag does not support 'cluster' type agent or node.",
+            "message": "--ha-group flag does not support 'cluster' type agent or node.",
+            "translation": "--ha-group flag does not support 'cluster' type agent or node.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "node '{Org}/{NodeId}' does not exist in the Exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
             "message": "node '{Org}/{NodeId}' does not exist in the Exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
             "translation": "node '{Org}/{NodeId}' does not exist in the Exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
@@ -21024,6 +21926,31 @@
                     "underlyingType": "string",
                     "argNum": 3,
                     "expr": "nId"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The node {NId} is in the HA group {HAGroup} but the agent is 'cluster' type. HA group does not support 'cluster' type members. Please remove the node from the HA group or choose a different node id with -n flag.",
+            "message": "The node {NId} is in the HA group {HAGroup} but the agent is 'cluster' type. HA group does not support 'cluster' type members. Please remove the node from the HA group or choose a different node id with -n flag.",
+            "translation": "The node {NId} is in the HA group {HAGroup} but the agent is 'cluster' type. HA group does not support 'cluster' type members. Please remove the node from the HA group or choose a different node id with -n flag.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NId",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "nId"
+                },
+                {
+                    "id": "HAGroup",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "n.HAGroup"
                 }
             ],
             "fuzzy": true
@@ -21779,31 +22706,6 @@
                     "underlyingType": "interface{Error() string}",
                     "argNum": 1,
                     "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
-            "message": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
-            "translation": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "HaGroupOrg",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "haGroupOrg"
-                },
-                {
-                    "id": "Org",
-                    "string": "%[2]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "org"
                 }
             ],
             "fuzzy": true
@@ -22718,39 +23620,6 @@
             "fuzzy": true
         },
         {
-            "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
-            "message": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
-            "translation": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "StringrespBodyBytes",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "string(respBodyBytes)"
-                },
-                {
-                    "id": "ApiMsg",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "apiMsg"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[3]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 3,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "SDO key name {KeyName} not found",
             "message": "SDO key name {KeyName} not found",
             "translation": "SDO key name {KeyName} not found",
@@ -23007,31 +23876,6 @@
                     "underlyingType": "string",
                     "argNum": 3,
                     "expr": "org"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "reading the bytes from {KeyFileName}: {Err}",
-            "message": "reading the bytes from {KeyFileName}: {Err}",
-            "translation": "reading the bytes from {KeyFileName}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "KeyFileName",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "keyFileName"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
                 }
             ],
             "fuzzy": true
@@ -23321,56 +24165,6 @@
             "fuzzy": true
         },
         {
-            "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
-            "message": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
-            "translation": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Voucher",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "voucher"
-                },
-                {
-                    "id": "Org",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "org"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
-            "message": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
-            "translation": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "User",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "user"
-                },
-                {
-                    "id": "Org",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "org"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
             "message": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
             "translation": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
@@ -23453,80 +24247,6 @@
             "fuzzy": true
         },
         {
-            "id": "Importing voucher file name: {Name}",
-            "message": "Importing voucher file name: {Name}",
-            "translation": "Importing voucher file name: {Name}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "voucherFile.Name()"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
-            "message": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
-            "translation": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "accessing {PolicyFilePath}: {Err}",
-            "message": "accessing {PolicyFilePath}: {Err}",
-            "translation": "accessing {PolicyFilePath}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "PolicyFilePath",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "policyFilePath"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "reading voucher file {Name}: {Err}",
-            "message": "reading voucher file {Name}: {Err}",
-            "translation": "reading voucher file {Name}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "voucherFile.Name()"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "unsupported voucher file type extension: {Name}",
             "message": "unsupported voucher file type extension: {Name}",
             "translation": "unsupported voucher file type extension: {Name}",
@@ -23548,64 +24268,6 @@
             "message": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
             "translation": "WARNING: \"hzn voucher import\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher import\" instead.",
             "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "creating zip reader for {Name}: {Err}",
-            "message": "creating zip reader for {Name}: {Err}",
-            "translation": "creating zip reader for {Name}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "voucherFile.Name()"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "opening file {Name} within zip for {Name_1}: {Err}",
-            "message": "opening file {Name} within zip for {Name_1}: {Err}",
-            "translation": "opening file {Name} within zip for {Name_1}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "fileInfo.Name"
-                },
-                {
-                    "id": "Name_1",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "voucherFile.Name()"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[3]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 3,
-                    "expr": "err"
-                }
-            ],
             "fuzzy": true
         },
         {
@@ -23639,179 +24301,6 @@
                     "expr": "strings.Join(outStruct.Voucher.RendezvousUrls, \", \")"
                 }
             ],
-            "fuzzy": true
-        },
-        {
-            "id": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
-            "message": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
-            "translation": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "NodeId",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "importResponse.NodeId"
-                },
-                {
-                    "id": "NodeToken",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "importResponse.NodeToken"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "reading the policy file {PolicyFilePath}: {Err}",
-            "message": "reading the policy file {PolicyFilePath}: {Err}",
-            "translation": "reading the policy file {PolicyFilePath}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "PolicyFilePath",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "policyFilePath"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Using node policy: {PolicyStr}",
-            "message": "Using node policy: {PolicyStr}",
-            "translation": "Using node policy: {PolicyStr}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "PolicyStr",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "policyStr"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Invalid voucher file format: {StringrespBodyBytes}.",
-            "message": "Invalid voucher file format: {StringrespBodyBytes}.",
-            "translation": "Invalid voucher file format: {StringrespBodyBytes}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "StringrespBodyBytes",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "string(respBodyBytes)"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Adding/updating node...",
-            "message": "Adding/updating node...",
-            "translation": "Adding/updating node...",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
-            "message": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
-            "translation": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "UserInputFileName",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "userInputFileName"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
-            "message": "failed to unmarshal json string '{PolicyStr}': {Err}",
-            "translation": "failed to unmarshal json string '{PolicyStr}': {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "PolicyStr",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "policyStr"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Incorrect policy format in '{PolicyStr}': {Err}",
-            "message": "Incorrect policy format in '{PolicyStr}': {Err}",
-            "translation": "Incorrect policy format in '{PolicyStr}': {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "PolicyStr",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "policyStr"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Adding/updating node policy...",
-            "message": "Adding/updating node policy...",
-            "translation": "Adding/updating node policy...",
-            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
