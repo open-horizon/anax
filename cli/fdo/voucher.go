@@ -168,13 +168,12 @@ func getVouchers(org, userCreds, voucher string) ([]byte, string) {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
 	if httpCode == 404 || httpCode == 403 {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid voucher name. Voucher \"%s\" does not exist in org \"%s\".\n", voucher, org))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid voucher name. Voucher \"%s\" does not exist in org \"%s\".", voucher, org))
 	} else if httpCode == 401 {
-		user, _ := cliutils.SplitIdToken(userCreds)
 		if voucher == "" {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid credentials. User \"%s\" cannot access vouchers in org \"%s\" with given credentials.\n", user, org))
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid credentials. The user cannot access vouchers in org \"%s\" with given credentials.", org))
 		} else {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid credentials. User \"%s\" cannot access voucher \"%s\" in org \"%s\" with given credentials.\n", user, voucher, org))
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Invalid credentials. The user cannot access voucher \"%s\" in org \"%s\" with given credentials.", voucher, org))
 		}
 	} else if httpCode != 200 {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, string(respBodyBytes)))

@@ -870,7 +870,12 @@ Environment Variables:
 
 	fdoCmd := app.Command("fdo", msgPrinter.Sprintf("List and manage resources in FDO owner services"))
 	fdoOrg := fdoCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
-	fdoUserPw := fdoCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query FDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
+	fdoUserPw := fdoCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
+
+	fdoKeyCmd := fdoCmd.Command("key", msgPrinter.Sprintf("List FDO ownership public keys."))
+
+	fdoKeyListCmd := fdoKeyCmd.Command("list | ls", msgPrinter.Sprintf("List a public key from the FDO Owner services using the device alias from the manufacturer.")).Alias("ls").Alias("list")
+	fdoKeyToList := fdoKeyListCmd.Arg("alias", msgPrinter.Sprintf("The device alias received from the manufacturer. It can be one of the following: SECP256R1, SECP384R1, RSAPKCS3072, RSAPKCS2048, RSA2048RESTR which are all cryptography standards.")).String()
 
 	fdoVoucherCmd := fdoCmd.Command("voucher", msgPrinter.Sprintf("List and manage Horizon FDO ownership vouchers."))
 
@@ -1108,6 +1113,10 @@ Environment Variables:
 
 	// For the fdo command family, make sure that org and exchange credentials are specified in some way.
 	if strings.HasPrefix(fullCmd, "fdo voucher") {
+		fdoOrg = cliutils.RequiredWithDefaultEnvVar(fdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		fdoUserPw = cliutils.RequiredWithDefaultEnvVar(fdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+	}
+	if strings.HasPrefix(fullCmd, "fdo key") {
 		fdoOrg = cliutils.RequiredWithDefaultEnvVar(fdoOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		fdoUserPw = cliutils.RequiredWithDefaultEnvVar(fdoUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
@@ -1481,6 +1490,8 @@ Environment Variables:
 	case sdoVoucherDownloadCmd.FullCommand():
 		sdo.VoucherDownload(*sdoOrg, *sdoUserPw, *sdoVoucherDownloadDevice, *sdoVoucherDownloadFile, *sdoVoucherDownloadOverwrite)
 
+	case fdoKeyListCmd.FullCommand():
+		fdo.KeyList(*fdoOrg, *fdoUserPw, *fdoKeyToList)
 	case fdoVoucherImportCmd.FullCommand():
 		fdo.VoucherImport(*fdoOrg, *fdoUserPw, *fdoVoucherImportFile, *fdoVoucherImportExample, *fdoVoucherImportPolicy, *fdoVoucherImportPattern, *fdoVoucherImportUI, *fdoVoucherImportHAGroup)
 	case fdoVoucherListCmd.FullCommand():
