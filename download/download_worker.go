@@ -182,7 +182,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 		return exchangecommon.STATUS_PRECHECK_FAILED, fmt.Errorf("Failed to get device from the local db: %v", err)
 	}
 
-	objIds, err := w.formAgentUpgradePackageNames(dev)
+	objIds, osType, err := w.formAgentUpgradePackageNames(dev)
 	if err != nil {
 		return exchangecommon.STATUS_PRECHECK_FAILED, err
 	}
@@ -270,9 +270,14 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 				return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, certType, HZN_CERT_FILE, err)
 			}
 
-			if err = insertVersionToCert(filePath, nmpName, upgradeVersions.CertVersion); err != nil {
-				return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error to write version %v in cert file, error was: %v", upgradeVersions.CertVersion, err)
+			// if it is not macos, then insert version to cert
+			if osType != externalpolicy.OS_MAC {
+				if err = insertVersionToCert(filePath, nmpName, upgradeVersions.CertVersion); err != nil {
+					return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error to write version %v in cert file, error was: %v", upgradeVersions.CertVersion, err)
+				}
 			}
+
+
 		} else {
 			glog.Errorf(dwlog(fmt.Sprintf("No cert upgrade object found of expected type %v found in manifest list.", HZN_CERT_FILE)))
 			missingPkgs = append(missingPkgs, HZN_CERT_FILE)
@@ -473,33 +478,33 @@ func findBestMatchingVersion(availibleVers []string, preferredVers string) (stri
 }
 
 // Create the package names from the system information
-func (w *DownloadWorker) formAgentUpgradePackageNames(dev *persistence.ExchangeDevice) (*[]string, error) {
+func (w *DownloadWorker) formAgentUpgradePackageNames(dev *persistence.ExchangeDevice) (*[]string, string, error) {
 	pol, err := persistence.FindNodePolicy(w.db)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to retrieve node policy from local db: %v", err)
+		return nil, "", fmt.Errorf("Failed to retrieve node policy from local db: %v", err)
 	} else if pol == nil {
-		return nil, fmt.Errorf("No node policy found in the local db.")
+		return nil, "", fmt.Errorf("No node policy found in the local db.")
 	}
 
 	if dev.GetNodeType() == persistence.DEVICE_TYPE_CLUSTER {
-		return &[]string{HZN_CLUSTER_FILE, HZN_CLUSTER_IMAGE}, nil
+		return &[]string{HZN_CLUSTER_FILE, HZN_CLUSTER_IMAGE}, "", nil
 	}
 
 	installTypeProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_OS)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to find node os property: %v", err)
+		return nil, "", fmt.Errorf("Failed to find node os property: %v", err)
 	}
 
 	archProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_ARCH)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	allFiles := []string{}
 
 	containerizedProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_CONTAINERIZED)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	if containPropBool, ok := containerizedProp.Value.(bool); ok && containPropBool {
@@ -511,7 +516,7 @@ func (w *DownloadWorker) formAgentUpgradePackageNames(dev *persistence.ExchangeD
 	if osProp != "" {
 		pkgType := getPkgTypeForInstallType(osProp)
 		if pkgType == "" {
-			return &allFiles, fmt.Errorf("Failed to find package type for install type %v", installTypeProp)
+			return &allFiles, "", fmt.Errorf("Failed to find package type for install type %v", installTypeProp)
 		}
 
 		osType := "linux"
@@ -523,10 +528,10 @@ func (w *DownloadWorker) formAgentUpgradePackageNames(dev *persistence.ExchangeD
 		pkgArch := getPkgArch(pkgType, archPropVal)
 		allFiles = append(allFiles, fmt.Sprintf(HZN_EDGE_FILE, osType, pkgType, pkgArch))
 
-		return &allFiles, nil
+		return &allFiles, osType, nil
 	}
 
-	return &allFiles, nil
+	return &allFiles, "", nil
 }
 
 func checkForLatestKeywords(manifest *exchangecommon.UpgradeManifest) *exchangecommon.AgentUpgradeLatest {
