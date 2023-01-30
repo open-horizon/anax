@@ -2,7 +2,10 @@
 copyright:
 years: 2022 - 2023
 lastupdated: "2023-01-24"
+title: "Node management policy"
 description: Automatic agent upgrade using policy based node management
+parent: Agent (anax)
+nav_order: 13
 ---
 
 {:new_window: target="blank"}

@@ -2,7 +2,10 @@
 copyright:
 years: 2022 - 2023
 lastupdated: "2023-01-24"
+title: "Node Management Policy"
 description: Every registered node has a node policy.
+parent: Agent (anax)
+nav_order: 15
 ---
 
 {:new_window: target="blank"}

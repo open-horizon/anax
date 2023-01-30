@@ -1,3 +1,12 @@
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2023-01-24"
+title: "How to set-up the Open Horizon All-in-1 Horizon Management Hub for edge clusters"
+
+parent: Agent (anax)
+nav_order: 19
+---
 # How to set-up the Open Horizon All-in-1 Horizon Management Hub for edge clusters
 
 ## Deploy the Open Horizon All-in-1 Horizon Management Hub
@@ -9,18 +18,21 @@
    ```bash
    export HZN_LISTEN_IP=<your-external-ip>
    ```
+   {: codeblock}
 
    b. Enable SSL connections by setting HZN_TRANSPORT to https. This step is optional but recommended to ensure the traffic between the cluster agent and the Hub is secure.
 
    ```bash
    export HZN_TRANSPORT=https
    ```
+   {: codeblock}
 
    c. Install the management hub
 
    ```bash
    curl -sSL https://raw.githubusercontent.com/open-horizon/devops/master/mgmt-hub/deploy-mgmt-hub.sh | bash -s -- -A
    ```
+   {: codeblock}
 
 2. The end of the command output will include a summary of steps performed. In step 2, you will find a list of passwords and tokens that were automatically generated. These include the exchange root password and Hub admin password, so it is important you write these down somewhere safe.
 

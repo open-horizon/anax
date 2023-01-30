@@ -2,7 +2,11 @@
 copyright:
 years: 2022 - 2023
 lastupdated: "2023-01-24"
+title: "Deployment Strings"
 description: Description of deployment strings
+
+parent: Agent (anax)
+nav_order: 9
 ---
 
 {:new_window: target="blank"}

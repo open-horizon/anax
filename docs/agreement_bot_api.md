@@ -1,28 +1,42 @@
-# Horizon Agreement Bot APIs
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2023-01-30"
+description: Agreement Bot APIs
+title: "Agreement Bot APIs"
 
-This document contains the Horizon JSON APIs for the horizon system running an Agreement Bot. The output of the APIs is in JSON compact format. To get a better view, you can use JSONView extension in your web browser or use `jq` command from the command line interface. For example:
+parent: Agent (anax)
+nav_order: 4
+---
+
+# {{site.data.keyword.horizon}} Agreement Bot APIs
+{: #agbot-apis}
+
+This document contains the {{site.data.keyword.horizon}} JSON APIs for the {{site.data.keyword.horizon}} system running an Agreement Bot. The output of the APIs is in JSON compact format. To get a better view, you can use JSONView extension in your web browser or use `jq` command from the command line interface. For example:
 
 ```bash
 curl -s http://<ip>/agreement | jq '.'
 ```
+{: codeblock}
 
-## 1. Horizon Agreement Bot Remote APIs
+## 1. {{site.data.keyword.horizon}} Agreement Bot Remote APIs
 
 The following APIs can be run from a remote node. They are secure APIs, which means you need to run with HTTPS and with a CA certificate file that is provided by the Agreenent Bot. You also need to provide your user name and password (or API key) from the Exchange for verification and authentication. For example:
 
 ```bash
 curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/deploycompatible
 ```
+{: codeblock}
 
-### 1.1 Deployment Compatibility Check
+## 1.1 Deployment Compatibility Check
 
-#### **API:** GET  /deploycheck/deploycompatible
+### **API:** GET  /deploycheck/deploycompatible
 
 ---
 
 This API does compatibility check for the given business policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
 
-**Parameters:**
+#### Parameters
 
 query paramters:
 
@@ -37,16 +51,17 @@ body:
 | ---- | ---- | ---------------- |
 | node_id | string | the exchange id of the node. Mutually exclusive with node_policy and node_user_input.|
 | node_arch | string | (optional) the architecture of the node. |
-| node_policy | json | the node policy that will be put in the exchange. Mutually exclusive with node_id. Please refer to [node policy sample](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json) for the format. |
-| node_user_input | json | the user input that will be put in the exchange for the services. Mutually exclusive with node_id. Please refer to [node user input sample](https://github.com/open-horizon/anax/blob/master/cli/samples/user_input.json) for the format. |
+| node_policy | json | the node policy that will be put in the exchange. Mutually exclusive with node_id. Please refer to [node policy sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json){:target="_blank"}{: .externalLink} for the format. |
+| node_user_input | json | the user input that will be put in the exchange for the services. Mutually exclusive with node_id. Please refer to [node user input sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/user_input.json){:target="_blank"}{: .externalLink} for the format. |
 | business_policy_id   | string | the exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.|
-| business_policy | json | the defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern. Please refer to [business policy sample](https://github.com/open-horizon/anax/blob/master/cli/samples/business_policy.json) for the format. |
+| business_policy | json | the defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern. Please refer to [business policy sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/business_policy.json){:target="_blank"}{: .externalLink} for the format. |
 | pattern_id | string | the exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy. |
-| pattern | json | the pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy. Please refer to [pattern sample](https://github.com/open-horizon/anax/blob/master/cli/samples/pattern.json) for the format. |
-| service_policy   | json | (optional) the service policy that will be put in the exchange for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy. Please refer to [node policy sample](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json) for the format. |
-| service | json array | (optional) an array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json) for the format. |
+| pattern | json | the pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy. Please refer to [pattern sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/pattern.json){:target="_blank"}{: .externalLink} for the format. |
+| service_policy   | json | (optional) the service policy that will be put in the exchange for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy. Please refer to [node policy sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json){:target="_blank"}{: .externalLink} for the format. |
+| service | json array | (optional) an array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json){:target="_blank"}{: .externalLink} for the format. |
 
-**Response:**
+#### Response
+
 code:
 
 * 200 -- success
@@ -59,7 +74,7 @@ body:
 | reason | map | the key is the exchange id for a service and the value is the reason why this service is not compatible. It lists reasons for all the service versions referenced in the business policy (or pattern) if checkAll=1 is set in the url. |
 | input | json | the input which is used to come up with the compatibility check result. It has the same structure as the paramter body above but with details filled by the code. For example, if a business policy id is given, the business policy will be retrieved from the exchange and set in the input field. The input is only shown when the API is called with long=1 in the url. |
 
-**Examples :**
+#### Example
 
 ```bash
 read -d '' comp_input <<EOF
@@ -125,8 +140,8 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
     ]
   }
 }
-
 ```
+{: codeblock}
 
 ```bash
 # three different ways of getting definitions of the resource:
@@ -168,14 +183,15 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
   }
 }
 ```
+{: codeblock}
 
-#### **API:** GET  /deploycheck/policycompatible
+### **API:** GET  /deploycheck/policycompatible
 
 ---
 
 This API does the policy compatibility check for the given business policy, node policy and service policy. The business policy and the service policy will be merged to check against the node policy. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
 
-**Parameters:**
+#### Parameters
 
 query paramters:
 
@@ -190,12 +206,13 @@ body:
 | ---- | ---- | ---------------- |
 | node_id | string | the exchange id of the node. Mutually exclusive with node_policy. |
 | node_arch | string | (optional) the architecture of the node. |
-| node_policy | json | the node policy that will be put in the exchange. Mutually exclusive with node_id. Please refer to [node policy sample](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json) for the format. |
+| node_policy | json | the node policy that will be put in the exchange. Mutually exclusive with node_id. Please refer to [node policy sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json){:target="_blank"}{: .externalLink} for the format. |
 | business_policy_id   | string | the exchange id of the business policy. Mutually exclusive with business_policy. |
-| business_policy | json | the defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id.  Please refer to [business policy sample](https://github.com/open-horizon/anax/blob/master/cli/samples/business_policy.json) for the format. |
-| service_policy   | json | (optional) the service policy that will be put in the exchange. They are for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy. Please refer to [node policy sample](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json) for the format. |
+| business_policy | json | the defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id.  Please refer to [business policy sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/business_policy.json){:target="_blank"}{: .externalLink} for the format. |
+| service_policy   | json | (optional) the service policy that will be put in the exchange. They are for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy. Please refer to [node policy sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json){:target="_blank"}{: .externalLink} for the format. |
 
-**Response:**
+#### Response
+
 code:
 
 * 200 -- success
@@ -208,7 +225,7 @@ body:
 | reason | map | the key is the exchange id for a service and the value is the reason why this service is not compatible. It lists reasons for all the service versions referenced in the business policy (or pattern) if checkAll=1 is set in the url. |
 | input | json | the input which is used to come up with the compatibility check result. It has the same structure as the paramter body above but with details filled by the code. For example, if a business policy id is given, the business policy will be retrieved from the exchange and set in the input field. The input is only shown when the API is called with long=1 in the url. |
 
-**Examples :**
+#### Example
 
 ```bash
 read -d '' comp_input <<EOF
@@ -227,8 +244,8 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
     "e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64": "Policy Incompatible: Compatibility Error: Properties do not satisfy node constraint."
   }
 }
-
 ```
+{: codeblock}
 
 ```bash
 bp_location=$(</user/me/input_files/compcheck/business_pol_location.json)
@@ -251,14 +268,15 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
   }
 }
 ```
+{: codeblock}
 
-#### **API:** GET  /deploycheck/userinputcompatible
+### **API:** GET  /deploycheck/userinputcompatible
 
 ---
 
 This API does the user input compatibility check for the given business policy (or a pattern), service definition and node user input. The user input values in the business policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
 
-**Parameters:**
+#### Parameters
 
 query paramters:
 
@@ -273,14 +291,15 @@ body:
 | ---- | ---- | ---------------- |
 | node_id | string | the exchange id of the node. Mutually exclusive with node_user_input.|
 | node_arch | string | (optional) the architecture of the node. |
-| node_user_input | json | the user input that will be put in the exchange for the services. Mutually exclusive with node_id. Please refer to [node user input sample](https://github.com/open-horizon/anax/blob/master/cli/samples/user_input.json) for the format. |
+| node_user_input | json | the user input that will be put in the exchange for the services. Mutually exclusive with node_id. Please refer to [node user input sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/user_input.json){:target="_blank"}{: .externalLink} for the format. |
 | business_policy_id   | string | the exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.|
-| business_policy | json | the defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern. Please refer to [business policy sample](https://github.com/open-horizon/anax/blob/master/cli/samples/business_policy.json) for the format. |
+| business_policy | json | the defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern. Please refer to [business policy sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/business_policy.json){:target="_blank"}{: .externalLink} for the format. |
 | pattern_id | string | the exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy. |
-| pattern | json | the pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy. Please refer to [pattern sample](https://github.com/open-horizon/anax/blob/master/cli/samples/pattern.json) for the format. |
-| service | json array | (optional) an array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json) for the format. |
+| pattern | json | the pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy. Please refer to [pattern sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/pattern.json){:target="_blank"}{: .externalLink} for the format. |
+| service | json array | (optional) an array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json){:target="_blank"}{: .externalLink} for the format. |
 
-**Response:**
+#### Response
+
 code:
 
 * 200 -- success
@@ -293,7 +312,7 @@ body:
 | reason | map | the key is the exchange id for a service and the value is the reason why this service is not compatible. It lists reasons for all the service versions referenced in the business policy (or pattern) if checkAll=1 is set in the url. |
 | input | json | the input which is used to come up with the compatibility check result. It has the same structure as the paramter body above but with details filled by the code. For example, if a business policy id is given, the business policy will be retrieved from the exchange and set in the input field. The input is only shown when the API is called with long=1 in the url. |
 
-**Examples :**
+#### Example
 
 ```bash
 read -d '' comp_input <<EOF
@@ -311,8 +330,8 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
     "e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64": "UserInput Incompatible: Failed to verify user input for dependent service e2edev@somecomp.com/bluehorizon.network-services-locgps_2.0.4_amd64. Failed to validate the user input type for variable HZN_LAT. type string, expecting float."
   }
 }
-
 ```
+{: codeblock}
 
 ```bash
 bp_location=`cat /user/me/input_files/compcheck/business_pol_location.json`
@@ -333,23 +352,26 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
   }
 }
 ```
+{: codeblock}
 
-## 2. Horizon Agreement Bot Local APIs
+## 2. {{site.data.keyword.horizon}} Agreement Bot Local APIs
 
 The following APIs should be run on same node where agbot is running.
 
-### 2.1 Agreement
+## 2.1 Agreement
 
-#### **API:** GET  /agreement
+### **API:** GET  /agreement
 
 ---
 
 Get all the active and archived agreements made on this agbot. The agreements that are being terminated but not yet archived are treated as archived in this API. Please note that the archived agreements get purged after a period of time which is defined by PurgeArchivedAgreementHours in the agbot configuration file. The purged agreements will not be shown by this API.
 
-**Parameters:**
+#### Parameters
+
 none
 
-**Response:**
+#### Response
+
 code:
 
 * 200 -- success
@@ -364,7 +386,7 @@ body:
 
 See the GET /agreement/{id} API for documentation of the fields in an agreement.
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost/agreement | jq '.'
@@ -392,20 +414,22 @@ curl -s http://localhost/agreement | jq '.'
   }
 }
 ```
+{: codeblock}
 
-#### **API:** GET  /agreement/{id}
+### **API:** GET  /agreement/{id}
 
 ---
 
 Get detailed information for an agreement.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ---------------- |
 | id   | string | the id of the agreement to be retrieved. |
 
-**Response:**
+#### Response
+
 code:
 
 * 200 -- success
@@ -438,7 +462,7 @@ body:
 | terminated_reason | json | the termination reason code |
 | terminated_description | json | the textual description of the terminated_reason code |
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost/agreement/93bcddde28f43cf59761e948ebff45f0ad9e060e3081dcd76e9cc94235d73a90 | jq -r '.'
@@ -470,20 +494,21 @@ curl -s http://localhost/agreement/93bcddde28f43cf59761e948ebff45f0ad9e060e3081d
   "terminated_description": ""
 }
 ```
+{: codeblock}
 
-#### **API:** DELETE  /agreement/{id}
+### **API:** DELETE  /agreement/{id}
 
 ---
 
 Delete an agreement. The agbot will start new agreement negotiation with the device after the agreement deletion.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ---------------- |
 | id   | string | the id of the agreement to be deleted. |
 
-**Response:**
+#### Response
 code:
 
 * 200 -- success
@@ -492,25 +517,26 @@ code:
 body:
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d024895cadd2162a0768687ed55533
 ```
+{: codeblock}
 
-### 2.2 Policy
+## 2.2 Policy
 
-#### **API:** GET  /policy
+### **API:** GET  /policy
 
 ---
 
 Get all the names of policies that this agbot hosts.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 code:
 
 * 200 -- success
@@ -521,7 +547,7 @@ body:
 | ---- | ---- | ---------------- |
 | {org} | json | The key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot.  |
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8046/policy | jq
@@ -541,22 +567,22 @@ curl -s http://localhost:8046/policy | jq
     "location x86_64"
   ]
 }
-
 ```
+{: codeblock}
 
-#### **API:** GET  /policy/{org}
+### **API:** GET  /policy/{org}
 
 ---
 
 Get all name of the policies this agbot hosts for a organization.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ---------------- |
 | org | string | the name of the organization.  |
 
-**Response:**
+#### Response
 code:
 
 * 200 -- success
@@ -567,7 +593,7 @@ body:
 | ---- | ---- | ---------------- |
 | {org} | json | The key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot.  |
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8046/policy/test | jq
@@ -577,23 +603,24 @@ curl -s http://localhost:8046/policy/test | jq
     "location x86_64"
   ]
 }
-
 ```
+{: codeblock}
 
-#### **API:** GET  /policy/{org}/{name}
+### **API:** GET  /policy/{org}/{name}
 
 ---
 
 Get a specific policy.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ---------------- |
 | org | string | the name of the organization.  |
 | name | string | the name of the policy.  |
 
-**Response:**
+#### Response
+
 code:
 
 * 200 -- success
@@ -610,7 +637,7 @@ body:
 | dataVerification | json | contains information on how data gets verified. |
 | nodeHealth | json | contains information on how to determine  the health of the node. |
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-workloads-location_IBM_arm |jq
@@ -660,14 +687,15 @@ curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-
   }
 }
 ```
+{: codeblock}
 
-#### **API:** POST  /policy/{policy name}/upgrade
+### **API:** POST  /policy/{policy name}/upgrade
 
 ---
 
 Force a device to attempt a workload upgrade for the given device and given policy.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ----------- |
@@ -683,7 +711,7 @@ body:
 
 Note: At least one of agreementId or device MUST be specified. Organization is always required.
 
-**Response:**
+#### Response
 code:
 
 * 200 -- success
@@ -692,24 +720,25 @@ body:
 
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -X POST -H "Content-Type: application/json" -d '{"device":"12345678"}' http://localhost/policy/netspeed%20policy/upgrade
 ```
+{: codeblock}
 
-### 2.3 Workload Usage
+## 2.3 Workload Usage
 
-#### **API:** GET  /workloadusage
+### **API:** GET  /workloadusage
 
 ---
 
 Get current workload usage information for the agreements whose agbot policies have more than one workload priorities.
 
-**Parameters:**
+#### Parameters
 none
 
-**Response:**
+#### Response
 code:
 
 * 200 -- success
@@ -732,7 +761,7 @@ body:
 | verified_durations | number | the number of seconds of successful data verification before disabling workload rollback retries |
 | current_agreement_id | string | the agreement id which forms the agreement between the consumer (agbot) and the device |
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost/workloadusage | jq '.'
@@ -754,19 +783,20 @@ curl -s http://localhost/workloadusage | jq '.'
   }
 ]
 ```
+{: codeblock}
 
-### 2.4 Status
+## 2.4 Status
 
-#### **API:** GET  /status
+### **API:** GET  /status
 
 ---
 
 Get the connectivity, configuration, and blockchain status on the agbot. The output includes the status of all blockchain containers, agent configuration and the agbot host's connectivity.
 
-**Parameters:**
+#### Parameters
 none
 
-**Response:**
+#### Response
 code:
 
 * 200 -- success
@@ -776,14 +806,14 @@ body:
 | name | type | description |
 | ---- | ---- | ---------------- |
 | configuration| json| the configuration data.  |
-| configuration.exchange_api | string | the url for the exchange being used by the Horizon agent. |
+| configuration.exchange_api | string | the url for the exchange being used by the {{site.data.keyword.horizon}} agent. |
 | configuration.exchange_version | string | the current version of the exchange being used. |
-| configuration.preferred_exchange_version | string | the preferred version for the exchange in order to use all the horizon functions. |
+| configuration.preferred_exchange_version | string | the preferred version for the exchange in order to use all the {{site.data.keyword.horizon}} functions. |
 | configuration.required_minimum_exchange_version | string | the required minimum version for the exchange. |
 | configuration.architecture | string | the hardware architecture of the node as returned from the Go language API runtime.GOARCH. |
 | connectivity | json | whether or not the node has network connectivity with some remote sites. |
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8046/status |jq '.'
@@ -801,17 +831,18 @@ curl -s http://localhost:8046/status |jq '.'
   }
 }
 ```
+{: codeblock}
 
-#### **API:** GET  /status/workers
+### **API:** GET  /status/workers
 
 ---
 
-Get the current Horizon agent worker status and the status trasition logs.
+Get the current {{site.data.keyword.horizon}} agent worker status and the status trasition logs.
 
-**Parameters:**
+#### Parameters
 none
 
-**Response:**
+#### Response
 code:
 
 * 200 -- success
@@ -823,7 +854,7 @@ body:
 | workers   | json | the current status of each worker and its subworkers. |
 | worker_status_log | string array |  the history of the worker status changes. |
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8046/status/workers |jq
@@ -870,5 +901,5 @@ curl -s http://localhost:8046/status/workers |jq
     "2018-05-02 19:25:13 Worker AgBot: subworker AgBotPolicyGenerator started."
   ]
 }
-
 ```
+{: codeblock}

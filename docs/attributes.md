@@ -1,7 +1,19 @@
-## Horizon Attributes
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2023-01-30"
+title: "Horizon Attributes"
+description: Horizon Edge Services details
+
+parent: Agent (anax)
+nav_order: 6
+---
+
+## {{site.data.keyword.horizon}} Attributes
+{: #attributes}
 
 This document contains the definition for each attribute that can be set on the [POST /attribute](./api.md#api-post--attribute) API or the [POST /service/config](./api.md#api-post--serviceconfig) API.
-Attributes are used to condition the behavior of the Horizon agent and/or services running on the agent.
+Attributes are used to condition the behavior of the {{site.data.keyword.horizon_agent}} and/or services running on the agent.
 
 The body of the attribute section always follows the following form:
 
@@ -16,6 +28,7 @@ The body of the attribute section always follows the following form:
         }
     }
 ```
+{: codeblock}
 
 The `type` field is a string that indicates which attribute you would like to set.
 Valid values are:
@@ -28,16 +41,17 @@ Valid values are:
 
 Each attribute type is described in it's own section below.
 
-The `label` field is a string that is displayed in the Horizon user interface when working with this attribute.
+The `label` field is a string that is displayed in the {{site.data.keyword.horizon}} user interface when working with this attribute.
 
 The `publishable` field is a boolean that indicates whether or not the variables in the mapping section are published for the workload to see.
 
-The `host_only` field is a boolean that indicates whether or not this attribute should be applied to the Horizon agent runtime, not to a specific service.
+The `host_only` field is a boolean that indicates whether or not this attribute should be applied to the {{site.data.keyword.horizon_agent}} runtime, not to a specific service.
 
 The `mappings` field is a map of variables and values that are specific to the type of the attribute.
 If an attribute type has any specific variables to be set, they are described in the type's section below.
 
 ### <a name="uia"></a>UserInputAttributes
+{: #userinputattributes}
 
 This attribute is used to set user input variables from a service definition.
 Every service can define variables that the node user can configure.
@@ -70,6 +84,7 @@ Suppose the service definition contained the following userInputs section:
         }
     ]
 ```
+{: codeblock}
 
 The `test` variable has no default so it needs to be set through a UserInputAttributes attribute.
 The `testDefault` variable has a default, so it can be optionally set by the same attribute.
@@ -93,8 +108,10 @@ For example:
         }
     }
 ```
+{: codeblock}
 
 ### <a name="httpsa"></a>HTTPSBasicAuthAttributes
+{: #authattributes}
 
 This attribute is used to set a host wide basic auth user and password for HTTPS communication.
 The `url` variable sets the HTTP network domain and path to which this attribute applies.
@@ -123,10 +140,12 @@ For example:
         }
     }
 ```
+{: codeblock}
 
 ### <a name="bxa"></a>DockerRegistryAuthAttributes
+{: #regattributes}
 
-This attribute is used to set a docker authentication user name and password or token that enables the Horizon agent to access a docker repository when downloading images for services and workloads.
+This attribute is used to set a docker authentication user name and password or token that enables the {{site.data.keyword.horizon_agent}} to access a docker repository when downloading images for services and workloads.
 
 The value for `publishable` should be `false`.
 
@@ -187,8 +206,10 @@ For example:
         }
     }
 ```
+{: codeblock}
 
 ### <a name="ma"></a>MeteringAttributes
+{: #meteringattributes}
 
 This attribute is used to configure how the service wants to be metered as part of an agreement.
 
@@ -228,13 +249,15 @@ For example, the service wants the agbot to grant 2 tokens per hour, and notify 
     }
 }
 ```
+{: codeblock}
 
 ### <a name="agpa"></a>AgreementProtocolAttributes
+{: #protocolattributes}
 
 This attribute is used when service has a specific requirement for an agreement protocol.
 An agreement protocol is a pre-defined mechanism for enabling 2 entities (a node and an agbot) to agree on which services and workloads to run.
-The Horizon system supports 1 protocol; "Basic".
-By default, the Horizon system uses the "Basic" protocol (which requires nothing more than a TCP network) and therefore this attribute should only be used in advanced situations where more than 1 protocol is available.
+The {{site.data.keyword.horizon}} system supports 1 protocol; "Basic".
+By default, the {{site.data.keyword.horizon}} system uses the "Basic" protocol (which requires nothing more than a TCP network) and therefore this attribute should only be used in advanced situations where more than 1 protocol is available.
 
 Agreement protocols are chosen by the agbot based on the order they appear in the node's service's attributes.
 
@@ -261,3 +284,4 @@ The `service_specs` specifies what services the attribute applies to. If the `ur
         }
     }
 ```
+{: codeblock}

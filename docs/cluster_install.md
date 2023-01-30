@@ -1,3 +1,13 @@
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2022-01-29"
+
+title: "All-in-One cluster agent"
+
+parent: Agent (anax)
+nav_order: 20
+---
 # How to install an edge cluster agent and register with the All-in-1 Management Hub
 
 This guide is for installing a microk8s or k3s cluster agent and registering the agent with a previously installed All-in-1 Management Hub. For more information on installing the Hub, see the guide [here](./all-in-1-setup.md). This guide assumes the Management Hub is already running, and was configured to use SSL transport and is listening on an external IP that can be reached outside of the local network.
