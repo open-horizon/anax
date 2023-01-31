@@ -21,7 +21,7 @@ curl -s http://<ip>/agreement | jq '.'
 
 ## 1. {{site.data.keyword.horizon}} Agreement Bot Remote APIs
 
-The following APIs can be run from a remote node. They are secure APIs, which means you need to run with HTTPS and with a CA certificate file that is provided by the Agreenent Bot. You also need to provide your user name and password (or API key) from the Exchange for verification and authentication. For example:
+The following APIs can be run from a remote node. They are secure APIs, which means you need to run with HTTPS and with a CA certificate file that is provided by the Agreement Bot. You also need to provide your user name and password (or API key) from the Exchange for verification and authentication. For example:
 
 ```bash
 curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/deploycompatible
@@ -59,7 +59,7 @@ body:
 | pattern_id | string | the exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy. |
 | pattern | json | the pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy. Please refer to [pattern sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/pattern.json){:target="_blank"}{: .externalLink} for the format. |
 | service_policy | json | (optional) the service policy that will be put in the exchange for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy. Please refer to [node policy sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/node_policy_input.json){:target="_blank"}{: .externalLink} for the format. |
-| service | json array | (optional) an array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json){:target="_blank"}{: .externalLink} for the format. |
+| service | json array | (optional) an array of the top level services that will be put in the exchange. They are referenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json){:target="_blank"}{: .externalLink} for the format. |
 {: caption="Table 2. GET /deploymentcheck/deploycompatible JSON parameter fields" caption-side="top"}
 
 #### Response
@@ -280,7 +280,7 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 
 ---
 
-This API does the user input compatibility check for the given business policy (or a pattern), service definition and node user input. The user input values in the business policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
+This API does the user input compatibility check for the given business policy (or a pattern), service definition and node user input. The user input values in the business policy and the node will be merged to check against the service user input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
 
 #### Parameters
 
@@ -303,7 +303,7 @@ body:
 | business_policy | json | the defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern. Please refer to [business policy sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/business_policy.json){:target="_blank"}{: .externalLink} for the format. |
 | pattern_id | string | the exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy. |
 | pattern | json | the pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy. Please refer to [pattern sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/pattern.json){:target="_blank"}{: .externalLink} for the format. |
-| service | json array | (optional) an array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json){:target="_blank"}{: .externalLink} for the format. |
+| service | json array | (optional) an array of the top level services that will be put in the exchange. They are referenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange. Please refer to [service sample ](https://github.com/open-horizon/anax/blob/master/cli/samples/service.json){:target="_blank"}{: .externalLink} for the format. |
 {: caption="Table 8. GET /deploymentcheck/userinputcompatible JSON parameter fields" caption-side="top"}
 
 #### Response
@@ -437,7 +437,7 @@ Get detailed information for an agreement.
 | name | type | description |
 | ---- | ---- | ---------------- |
 | id   | string | the id of the agreement to be retrieved. |
-{: caption="Table 11. GET /agreement/{id} JSON parameter fields" caption-side="top"}
+{: caption="Table 11. GET /agreement/\{id\} JSON parameter fields" caption-side="top"}
 
 #### Response
 
@@ -472,7 +472,7 @@ body:
 | archived | json | false when the agreement is active, true when it is being terminated or has already terminated |
 | terminated_reason | json | the termination reason code |
 | terminated_description | json | the textual description of the terminated_reason code |
-{: caption="Table 12. GET /agreement/{id} JSON response fields" caption-side="top"}
+{: caption="Table 12. GET /agreement/\{id\} JSON response fields" caption-side="top"}
 
 #### Example
 
@@ -519,7 +519,7 @@ Delete an agreement. The agbot will start new agreement negotiation with the dev
 | name | type | description |
 | ---- | ---- | ---------------- |
 | id   | string | the id of the agreement to be deleted. |
-{: caption="Table 13. DELETE /agreement/{id} JSON parameter fields" caption-side="top"}
+{: caption="Table 13. DELETE /agreement/\{id\} JSON parameter fields" caption-side="top"}
 
 #### Response
 code:
@@ -558,7 +558,7 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| {org} | json | The key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot. |
+| {org} | json | the key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot. |
 {: caption="Table 14. GET /policy JSON response fields" caption-side="top"}
 
 #### Example
@@ -595,7 +595,7 @@ Get all name of the policies this agbot hosts for a organization.
 | name | type | description |
 | ---- | ---- | ---------------- |
 | org | string | the name of the organization. |
-{: caption="Table 15. GET /policy/{org} JSON parameter fields" caption-side="top"}
+{: caption="Table 15. GET /policy/\{org\} JSON parameter fields" caption-side="top"}
 
 #### Response
 code:
@@ -606,8 +606,8 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| {org} | json | The key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot. |
-{: caption="Table 16. GET /policy/{org} JSON response fields" caption-side="top"}
+| {org} | json | the key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot. |
+{: caption="Table 16. GET /policy/\{org\} JSON response fields" caption-side="top"}
 
 #### Example
 
@@ -634,7 +634,7 @@ Get a specific policy.
 | ---- | ---- | ---------------- |
 | org | string | the name of the organization. |
 | name | string | the name of the policy. |
-{: caption="Table 17. GET /policy/{org}/{name} JSON parameter fields" caption-side="top"}
+{: caption="Table 17. GET /policy/\{org\}/{name} JSON parameter fields" caption-side="top"}
 
 #### Response
 
@@ -653,7 +653,7 @@ body:
 | properties | array | an array of name value pairs that the current party have. |
 | dataVerification | json | contains information on how data gets verified. |
 | nodeHealth | json | contains information on how to determine  the health of the node. |
-{: caption="Table 18. GET /policy/{org}/{name} JSON response fields" caption-side="top"}
+{: caption="Table 18. GET /policy/\{org\}/{name} JSON response fields" caption-side="top"}
 
 #### Example
 
@@ -718,7 +718,7 @@ Force a device to attempt a workload upgrade for the given device and given poli
 | name | type | description |
 | ---- | ---- | ----------- |
 | policy name | string | the name of the policy or file name of the policy containing the workload to upgrade. |
-{: caption="Table 19. POST /policy/{policy name}/upgrade JSON parameter fields" caption-side="top"}
+{: caption="Table 19. POST /policy/\{policy name\}/upgrade JSON parameter fields" caption-side="top"}
 
 body:
 
@@ -727,7 +727,7 @@ body:
 | agreementId | string | the agreement id of an agreement between the given policy and the device to be upgraded. |
 | org         | string | the organization in which the policy exists that you want to upgrade. |
 | device      | string | the device id of the device to be upgraded. |
-{: caption="Table 20. POST /policy/{policy name}/upgrade JSON parameter fields" caption-side="top"}
+{: caption="Table 20. POST /policy/\{policy name\}/upgrade JSON parameter fields" caption-side="top"}
 
 Note: At least one of agreementId or device MUST be specified. Organization is always required.
 
