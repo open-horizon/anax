@@ -554,7 +554,7 @@ body:
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
 | service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes:  MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
-{: caption="Table 12. GET /attribute/{id} JSON response fields" caption-side="top"}
+{: caption="Table 12. GET /attribute/\{id\} JSON response fields" caption-side="top"}
 
 #### Example
 
@@ -604,7 +604,7 @@ body:
 | name | type | description |
 | ---- | ---- | ---------------- |
 | attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute. |
-{: caption="Table 13. PUT /attribute/{id} JSON parameter fields" caption-side="top"}
+{: caption="Table 13. PUT /attribute/\{id\} JSON parameter fields" caption-side="top"}
 
 #### Response
 
@@ -617,7 +617,7 @@ body:
 | name | type | description |
 | ---- | ---- | ---------------- |
 | attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute. |
-{: caption="Table 14. POST /attribute/{id} JSON response fields" caption-side="top"}
+{: caption="Table 14. POST /attribute/\{id\} JSON response fields" caption-side="top"}
 
 #### Example
 
@@ -662,7 +662,7 @@ body:
 | name | type | description |
 | ---- | ---- | ---------------- |
 | attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute. |
-{: caption="Table 15. DELETE /attribute/{id} JSON response fields" caption-side="top"}
+{: caption="Table 15. DELETE /attribute/\{id\} JSON response fields" caption-side="top"}
 
 #### Example
 
@@ -1427,7 +1427,7 @@ Delete an agreement. The agbot will start a new agreement negotiation with the a
 | name | type | description |
 | ---- | ---- | ---------------- |
 | id   | string | the id of the agreement to be deleted. |
-{: caption="Table 25. DELETE /agreement/{id} JSON parameter fields" caption-side="top"}
+{: caption="Table 25. DELETE /agreement/\{id\} JSON parameter fields" caption-side="top"}
 
 #### Response
 
@@ -1545,7 +1545,7 @@ Get the content of a trusted x509 cert from a file that has been previously stor
 | name | type | description |
 | -----| ---- | ---------------- |
 | filename | string | the name of the x509 cert file to retrieve. |
-{: caption="Table 28. GET /trust/{filename} JSON parameter fields" caption-side="top"}
+{: caption="Table 28. GET /trust/\{filename\} JSON parameter fields" caption-side="top"}
 
 #### Response
 
@@ -1575,7 +1575,7 @@ Trust an x509 cert; used in service container image verification.
 | name | type | description |
 | ---- | ---- | ---------------- |
 | filename | string | the name of the x509 cert file to upload. |
-{: caption="Table 29. PUT /trust/{filename} JSON parameter fields" caption-side="top"}
+{: caption="Table 29. PUT /trust/\{filename\} JSON parameter fields" caption-side="top"}
 
 #### Response
 
@@ -1605,7 +1605,7 @@ Delete an x509 cert from the agent; this is a revocation of trust for a particul
 | name | type | description |
 | ---- | ---- | ---------------- |
 | filename | string | the name of the x509 cert file to remove. |
-{: caption="Table 30. DELETE /trust/{filename} JSON parameter fields" caption-side="top"}
+{: caption="Table 30. DELETE /trust/\{filename\} JSON parameter fields" caption-side="top"}
 
 #### Response
 
@@ -2403,7 +2403,7 @@ body:
 | status | | string | a string message that lists the current state of the upgrade job. |
 | errorMessage | | string | a string message containing any possible error messages that occur during the job. |
 | workingDirectory | | string | the directory that the upgrade job will be reading and writing files to. |
-{: caption="Table 44. GET /nodemanagement/status/{nmpname} JSON response fields" caption-side="top"}
+{: caption="Table 44. GET /nodemanagement/status/\{nmpname\} JSON response fields" caption-side="top"}
 
 **agentUpgradeInternal**:
 
@@ -2418,7 +2418,7 @@ body:
 | | softwareLatest | boolean | a boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
 | | configLatest | boolean | a boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
 | | certLatest | boolean | a boolean value that designates if the certificate should stay up-to-date with the latest available version. |
-{: caption="Table 45. GET /nodemanagement/status/{nmpname} JSON response fields" caption-side="top"}
+{: caption="Table 45. GET /nodemanagement/status/\{nmpname\} JSON response fields" caption-side="top"}
 
 #### Example
 
@@ -2475,7 +2475,7 @@ body:
 | endTime | string | a RFC3339 timestamp designating when the upgrade job actually started. This field can only be updated if it has not been previously set and the status field is also changed to "successful". |
 | status | string | a string message that lists the current state of the upgrade job. |
 | errorMessage | string | a string message containing any possible error messages that occur during the job. This field can only be updated if the status field is also changed. |
-{: caption="Table 46. PUT /nodemanagement/status/{nmpname} JSON parameter fields" caption-side="top"}
+{: caption="Table 46. PUT /nodemanagement/status/\{nmpname\} JSON parameter fields" caption-side="top"}
 
 #### Response
 

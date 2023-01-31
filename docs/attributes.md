@@ -145,7 +145,7 @@ For example:
 ### <a name="bxa"></a>DockerRegistryAuthAttributes
 {: #regattributes}
 
-This attribute is used to set a docker authentication user name and password or token that enables the {{site.data.keyword.horizon_agent}} to access a docker repository when downloading images for services and workloads.
+This attribute is used to set a container registry authentication user name and password or token that enables the {{site.data.keyword.horizon_agent}} to access a container registry when downloading images for services and workloads.
 
 The value for `publishable` should be `false`.
 
@@ -255,8 +255,8 @@ For example, the service wants the agbot to grant 2 tokens per hour, and notify 
 {: #protocolattributes}
 
 This attribute is used when service has a specific requirement for an agreement protocol.
-An agreement protocol is a pre-defined mechanism for enabling 2 entities (a node and an agbot) to agree on which services and workloads to run.
-The {{site.data.keyword.horizon}} system supports 1 protocol; "Basic".
+An agreement protocol is a pre-defined mechanism for enabling two entities (a node and an agbot) to agree on which services and workloads to run.
+The {{site.data.keyword.horizon}} system supports one protocol; "Basic".
 By default, the {{site.data.keyword.horizon}} system uses the "Basic" protocol (which requires nothing more than a TCP network) and therefore this attribute should only be used in advanced situations where more than 1 protocol is available.
 
 Agreement protocols are chosen by the agbot based on the order they appear in the node's service's attributes.

@@ -6,7 +6,7 @@ layout: page
 title: "Agent (anax)"
 description: "Open Horizon Anax Documentation"
 
-nav_order: 1
+nav_order: 5
 has_children: true
 has_toc: false
 ---
