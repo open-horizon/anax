@@ -79,7 +79,7 @@ Service rollback versions instruct the deployment engine which service versions 
 The node health configuration indicates how the deployment engine should gauge the health (heartbeats and management hub communication) of a node before determining if the node is out of policy.
 
 Because deployment policies capture the more dynamic, business-like service properties and constraints, they are expected to change more often than service policy. Their lifecycle is independent from the service they refer to, which gives the policy administrator the ability to state a specific service version or a version range.
-The deployment engine merges service policy and deployment policy (by performing a logical AND of the 2 policies), and then attempts to find nodes whose policy is compatible with that merged policy.
+The deployment engine merges service policy and deployment policy (by performing a logical AND of the two policies), and then attempts to find nodes whose policy is compatible with that merged policy.
 
 The JSON representation of deployment policy is more complex than node and service policy, as shown [here](./deployment_policy.md).
 
