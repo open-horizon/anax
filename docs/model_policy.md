@@ -2,7 +2,11 @@
 copyright:
 years: 2022 - 2023
 lastupdated: "2023-01-24"
+title: "Model Object"
 description: Model Policies deploy application metadata objects to edge nodes
+
+parent: Agent (anax)
+nav_order: 11
 ---
 
 {:new_window: target="blank"}

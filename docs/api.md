@@ -1,24 +1,37 @@
-## Horizon APIs
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2023-01-30"
+title: "Horizon APIs"
+description: Horizon APIs
 
-This document contains the Horizon REST APIs for the Horizon agent running on an edge node. The output of the APIs is in JSON compact format. To get a better view, you can use the JSONView extension in your web browser or use the `jq` command from the command line interface. For example:
+parent: Agent (anax)
+nav_order: 5
+---
+
+## {{site.data.keyword.horizon}} APIs
+{: #agent-apis}
+
+This document contains the {{site.data.keyword.horizon}} REST APIs for the {{site.data.keyword.horizon}} agent running on an edge node. The output of the APIs is in JSON compact format. To get a better view, you can use the JSONView extension in your web browser or use the `jq` command from the command line interface. For example:
 
 ```bash
 curl -s http://<ip>/status | jq '.'
 ```
+{: codeblock}
 
-### 1. Horizon Agent
+## 1. {{site.data.keyword.horizon}} Agent
 
-#### **API:** GET  /status
+### **API:** GET /status
 
 ---
 
 Get the connectivity, and configuration, status on the node. The output includes the status of the agent configuration and the node's connectivity.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -28,17 +41,18 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- |----| ---------------- |
-| configuration||json| the configuration data.  |
-| |exchange_api| string | the url for the exchange being used by the Horizon agent. |
+| configuration||json| the configuration data. |
+| |exchange_api| string | the url for the exchange being used by the {{site.data.keyword.horizon}} agent. |
 | |exchange_version | string | the current version of the exchange being used. |
 | |required_minimum_exchange_version | string | the required minimum version for the exchange. |
-| |preferred_exchange_version | string | the preferred version for the exchange in order to use all the horizon functions. |
+| |preferred_exchange_version | string | the preferred version for the exchange in order to use all the {{site.data.keyword.horizon}} functions. |
 | |mms_api| string | the url for the model management system. |
 | |architecture | string | the hardware architecture of the node as returned from the Go language API runtime.GOARCH. |
 | |horizon_version | string | The current version of the horiozn running on this node. |
 | connectivity || json | whether or not the node has network connectivity with some remote sites. |
+{: caption="Table 1. GET /status JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/status | jq '.'
@@ -55,17 +69,19 @@ curl -s http://localhost:8510/status | jq '.'
   "liveHealth": null
 }
 ```
+{: codeblock}
 
-#### **API:** GET  /status/workers
+### **API:** GET /status/workers
 
 ---
 
-Get the current Horizon agent worker status and the status trasition logs.
-**Parameters:**
+Get the current {{site.data.keyword.horizon}} agent worker status and the status trasition logs.
+
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -75,13 +91,14 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- |----| ---------------- |
-| workers  | | json | the current status of each worker and its subworkers. |
+| workers | | json | the current status of each worker and its subworkers. |
 | | name | string | the name of the worker. |
-| | status | string | the status of the worker. The valid values are: added, started, initialized, initialization failed, terminating, t erminated. |
+| | status | string | the status of the worker. The valid values are: added, started, initialized, initialization failed, terminating, terminated. |
 | | subworker_status | json | the name and the status of the subworkers that are created by this worker. |
 | worker_status_log | | string array |  the history of the worker status changes. |
+{: caption="Table 2. GET /status/workers JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s  http://localhost:8510/status/workers |jq
@@ -165,22 +182,22 @@ curl -s  http://localhost:8510/status/workers |jq
     "2020-03-27 19:19:32 Worker Governance: initialized."
   ]
 }
-
 ```
+{: codeblock}
 
-### 2. Node
+## 2. Node
 
-#### **API:** GET  /node
+### **API:** GET /node
 
 ---
 
-Get the Horizon platform configuration of the Horizon agent. The configuration includes the agent's exchange id, organization, configuration state, and whether or not the agent is using a pattern configuration.
+Get the {{site.data.keyword.horizon}} platform configuration of the {{site.data.keyword.horizon}} agent. The configuration includes the agent's exchange id, organization, configuration state, and whether or not the agent is using a pattern configuration.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -193,14 +210,15 @@ body:
 | id   | string | the agent's unique exchange id. |
 | organization | string | the agent's organization. |
 | pattern | string | the pattern that will be deployed on the node. |
-| name | string | the user readable name for the agent.  |
-| nodeType | string | the node type. Valid values are 'device' and 'cluster'.  |
+| name | string | the user readable name for the agent. |
+| nodeType | string | the node type. Valid values are 'device' and 'cluster'. |
 | token_valid | bool| whether the agent's exchange token is valid or not. |
 | token_last_valid_time | uint64 | the time stamp when the agent's token was last valid. |
-| ha_group | string | The name of the HA group that node is in. |
+| ha_group | string | the name of the HA group that node is in. |
 | configstate | json | the current configuration state of the agent. It contains the state and the last_update_time. The valid values for the state are "configuring", "configured", "unconfiguring", and "unconfigured". |
+{: caption="Table 3. GET /node JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/node | jq '.'
@@ -218,16 +236,16 @@ curl -s http://localhost:8510/node | jq '.'
     "last_update_time": 1508174348
   }
 }
-
 ```
+{: codeblock}
 
-#### **API:** POST  /node
+### **API:** POST /node
 
 ---
 
-Configure the Horizon agent. This API assumes that the agent's node has already been registered in the exchange. The configstate of the agent is changed to "configuring" after calling this API.
+Configure the {{site.data.keyword.horizon}} agent. This API assumes that the agent's node has already been registered in the exchange. The configstate of the agent is changed to "configuring" after calling this API.
 
-**Parameters:**
+#### Parameters
 
 body:
 
@@ -237,15 +255,16 @@ body:
 | token | string | the agent's authentication token for the exchange. |
 | organization | string | the agent's organization. |
 | pattern | string | the pattern that will be deployed on the node. |
-| name | string | the user readable name for the agent.  |
+| name | string | the user readable name for the agent. |
+{: caption="Table 4. POST /node JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
 * 201 -- success
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
@@ -255,16 +274,16 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
       "name": "mydevice",
       "token": "dfjskjdsfkj"
     }'  http://localhost:8510/node
-
 ```
+{: codeblock}
 
-#### **API:** PATCH  /node
+### **API:** PATCH /node
 
 ---
 
 Update the agent's exchange token. This API can only be called when configstate is "configuring".
 
-**Parameters:**
+#### Parameters
 
 body:
 
@@ -272,14 +291,15 @@ body:
 | ---- | ---- | ---------------- |
 | id   | string | the agent's unique exchange id. |
 | token | string | the agent's authentication token for the exchange. |
+{: caption="Table 5. PATCH /node JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
 * 200 -- success
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '{
@@ -288,22 +308,24 @@ curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '{
     }'  http://localhost:8510/node
 
 ```
+{: codeblock}
 
-#### **API:** DELETE  /node
+### **API:** DELETE /node
 
 ---
 
 Unconfigure the agent so that it can be re-configured. All agreements are cancelled, and workloads are stopped. The API could take minutes to send a response if invoked with block=true. This API can only be called when configstate is "configured" or "configuring". After calling this API, configstate will be changed to "unconfiguring" while the agent quiesces, and then it will become "unconfigured".
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ---------------- |
 | block | bool | If true (the default), the API blocks until the agent is quiesced. If false, the caller will get control back quickly while the quiesce happens in the background. While this is occurring, the caller should invoke GET /node until they receive an HTTP status 404. |
 | removeNode | bool | If true, the node’s entry in the exchange is also deleted, instead of just being cleared. The default is false. |
 | deepClean | bool | If true, all the history of the previous registration will be removed. The default is false. |
+{: caption="Table 6. DELETE /node JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -313,23 +335,24 @@ body:
 
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X DELETE "http://localhost:8510/node?block=true&removeNode=false"
 ```
+{: codeblock}
 
-#### **API:** GET  /node/configstate
+### **API:** GET /node/configstate
 
 ---
 
 Get the current configuration state of the agent.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -341,8 +364,9 @@ body:
 | ---- | ---- | ---------------- |
 | state   | string | Current configuration state of the agent. Valid values are "configuring", "configured", "unconfiguring", and "unconfigured". |
 | last_update_time | uint64 | timestamp when the state was last updated. |
+{: caption="Table 7. GET /node/configstate JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/node/configstate |jq '.'
@@ -351,22 +375,24 @@ curl -s http://localhost:8510/node/configstate |jq '.'
   "last_update_time": 1510174292
 }
 ```
+{: codeblock}
 
-#### **API:** PUT  /node/configstate
+### **API:** PUT /node/configstate
 
 ---
 
 Change the configuration state of the agent. The valid values for the state are "configuring" and "configured". The "unconfigured" state is not settable through this API. The agent starts in the "configuring" state. You can change the state to "configured" after you have set the agent's pattern through the /node API, and have configured all the service user input variables through the /service/config API. The agent will advertise itself as available for services once it enters the "configured" state.
 
-**Parameters:**
+#### Parameters
 
 body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| state  | string | the agent configuration state. The valid values are "configuring" and "configured".|
+| state  | string | the agent configuration state. The valid values are "configuring" and "configured". |
+{: caption="Table 8. PUT /node/configstate JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -376,28 +402,28 @@ body:
 
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json'  -d '{
        "state": "configured"
     }'  http://localhost:8510/node/configstate
-
 ```
+{: codeblock}
 
-### 3. Attributes
+## 3. Attributes
 
-#### **API:** GET  /attribute
+### **API:** GET /attribute
 
 ---
 
 Get all the attributes for the edge node and registered services.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -408,6 +434,7 @@ body:
 | name | type | description |
 | ---- | ---- | ---------------- |
 | attributes | array | an array of all the attributes for all the services. The fields of an attribute are defined in the following. |
+{: caption="Table 9. GET /attribute JSON response fields" caption-side="top"}
 
 attribute
 
@@ -420,8 +447,9 @@ attribute
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
 | service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes:  MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
+{: caption="Table 10. GET /attribute JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/attribute | jq '.'
@@ -449,24 +477,25 @@ curl -s http://localhost:8510/attribute | jq '.'
     }
   ]
 }
-
 ```
+{: codeblock}
 
-#### **API:** POST  /attribute
+### **API:** POST /attribute
 
 ---
 
 Register an attribute for a service. If the service_specs is omitted, the attribute applies to all the services.
 
-**Parameters:**
+#### Parameters
 
 body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| attribute | json | Please refer to [Attribute Definitions](./attributes.md) for a description of all attributes.  |
+| attribute | json | Please refer to [Attribute Definitions](./attributes.md) for a description of all attributes. |
+{: caption="Table 11. POST /attribute JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -476,7 +505,7 @@ body:
 
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
@@ -495,20 +524,20 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
     ]
   }
 }'  http://localhost:8510/attribute
-
 ```
+{: codeblock}
 
-#### **API:** GET  /attribute/{id}
+### **API:** GET /attribute/{id}
 
 ---
 
 Get the attribute with the given id
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -525,8 +554,9 @@ body:
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
 | service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes:  MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
+{: caption="Table 12. GET /attribute/{id} JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" http://localhost:8510/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f | jq '.'
@@ -558,24 +588,25 @@ curl -s -w "%{http_code}" http://localhost:8510/attribute/0d5762bf-67a6-49ff-8ff
   ]
 }
 200
-
 ```
+{: codeblock}
 
-#### **API:** PUT, PATCH  /attribute/{id}
+### **API:** PUT, PATCH /attribute/{id}
 
 ---
 
 Modify an attribute for a service. If the service_specs is omitted, the attribute applies to all the services.
 
-**Parameters:**
+#### Parameters
 
 body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute.  |
+| attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute. |
+{: caption="Table 13. PUT /attribute/{id} JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -585,9 +616,10 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute.  |
+| attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute. |
+{: caption="Table 14. POST /attribute/{id} JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X PUT -d '{
@@ -606,20 +638,20 @@ curl -s -w "%{http_code}" -X PUT -d '{
         "foo": "bar"
       }
     }' http://localhost:8510/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f | jq '.'
-
 ```
+{: codeblock}
 
-#### **API:** DELETE /attribute/{id}
+### **API:** DELETE /attribute/{id}
 
 ---
 
 Modify an attribute for a service. If the service_specs is omitted, the attribute applies to all the services.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -629,28 +661,29 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute.  |
+| attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute. |
+{: caption="Table 15. DELETE /attribute/{id} JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X DELETE http://localhost:8510/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f | jq '.'
-
 ```
+{: codeblock}
 
-### 4. Service
+## 4. Service
 
-#### **API:** GET  /service
+### **API:** GET  /service
 
 ---
 
 Get the definition, the instance information and the configuration information for all the services.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -662,11 +695,12 @@ body:
 | ---- | ---- |----| ---------------- |
 | config | | array of json | all the services and the associated configuration attributes. For the pattern case, these are the top level services and their dependent services the pattern references to. For the non-pattern case, thses are the registered dependent services and any top level services that use has configured. |
 | definitions | | json | the definition of all the related services. |
-| | active  | array of json | an array of service definitions that are actively in use. Please refer to the following table for the fields of a service definition object. |
-| | archived  | array of json | an array of service definitions that are archived. Please refer to the following table for the fields of a service definition object. |
-| instances | | json | the instances of all the running services. It contains the information about the running service containers.|
-| | active  | array of json | an array of service instances that are active. Please refer to the following table for the fields of a service instance object. |
-| | archived  | array of json | an array of service instances that are archived. Please refer to the following table for the fields of a service instance object. |
+| | active | array of json | an array of service definitions that are actively in use. Please refer to the following table for the fields of a service definition object. |
+| | archived | array of json | an array of service definitions that are archived. Please refer to the following table for the fields of a service definition object. |
+| instances | | json | the instances of all the running services. It contains the information about the running service containers. |
+| | active | array of json | an array of service instances that are active. Please refer to the following table for the fields of a service instance object. |
+| | archived | array of json | an array of service instances that are archived. Please refer to the following table for the fields of a service instance object. |
+{: caption="Table 16. GET /service JSON response fields" caption-side="top"}
 
 service configuration:
 
@@ -676,11 +710,12 @@ service configuration:
 | sensor_org | | string | the organization of the service. |
 | sensor_version | | string | the version of the service. |
 | auto_upgrade | | boolean | if the service should be automatically upgraded when a new version becomes available. |
-| active_upgrade | | boolean | if the horizon agent should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. |
+| active_upgrade | | boolean | if the {{site.data.keyword.horizon}} agent should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. |
 | attributes  | | array of json | an array of attributes that are associated with the service. |
 | | meta | json | the meta data for an attribute. It includes id, type, lable etc. |
 | | {key1} | string | key value pairs to be used to configure the service. |
 | | {key2} | string | key value pairs to be used to configure the service. |
+{: caption="Table 17. GET /service configuration JSON response fields" caption-side="top"}
 
 service definition:
 
@@ -701,7 +736,7 @@ service definition:
 | | type | json | the data type of the variable. |
 | | defaultValue | json | the default value of the variable. If it is set, then the user does not have to configure this variable. |
 | public | | boolean | whether the service can be refenced outside the organization. |
-| requiredServices  | | array of json | an array of services that this service depends on. |
+| requiredServices | | array of json | an array of services that this service depends on. |
 | | url | string | the url of the dependent service. |
 | | org | string | the organization of the dependent service.  |
 | | version | string | the version of the dependent service. |
@@ -713,7 +748,7 @@ service definition:
 | name | | string | the name of the service. |
 | requested_arch | | string | the architecture from user input or from a service that refrences this service. It can be a synonym of the node architecture. |
 | auto_upgrade | | boolean | if the service should be automatically upgraded when a new version becomes available. |
-| active_upgrade | | boolean | if the horizon agent should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. |
+| active_upgrade | | boolean | if the {{site.data.keyword.horizon}} agent should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. |
 | upgrade_start_time | | uint64 | the time when the service upgrade is started. |
 | upgrade_ms_unregistered_time | | uint64 |  the time when the service is unregistered during the upgrade process. |
 | upgrade_agreements_cleared_time | | uint64 | the time when all the associated agreements are cleared during the upgrade process. |
@@ -724,6 +759,7 @@ service definition:
 | upgrade_failure_description | | sting | the description for the service upgrade failure. |
 | upgrade_new_ms_id | | string | the record_id of the new service that this service is upgrading to. |
 | metadata_hash | | string | the hash for the service defined in the exchange. |
+{: caption="Table 18. GET /service definition JSON response fields" caption-side="top"}
 
 service instance:
 
@@ -752,8 +788,9 @@ service instance:
 | current_retry_count | | uint | the current retry count. |
 | retry_start_time | | uint64 | the time when the service retry is started. |
 | containers | | json | the info for the running docker containers for this service. |
+{: caption="Table 19. GET /service instance JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl http://localhost:8510/service |jq '.config'
@@ -795,6 +832,7 @@ curl http://localhost:8510/service |jq '.config'
   ...
 ]
 ```
+{: codeblock}
 
 ```bash
 curl http://localhost:8510/service |jq '.definitions.active'
@@ -858,6 +896,7 @@ curl http://localhost:8510/service |jq '.definitions.active'
   ...
 ]
 ```
+{: codeblock}
 
 ```bash
 curl http://localhost:8510/service |jq '.instances.active'
@@ -943,27 +982,28 @@ curl http://localhost:8510/service |jq '.instances.active'
   ...
 ]
 ```
+{: codeblock}
 
-#### **API:** GET  /service/config
+### **API:** GET  /service/config
 
 ---
 
 Get the service configuration for all services.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
 * 200 -- success
 
 body:
-  Please refer to the service configuration table of `GET /serve` api for the field definitions.
+  Please refer to the service configuration table of `GET /service` api for the field definitions.
 
-**Example:**
+#### Example
 
 ```bash
 curl http://localhost:8510/service/config |jq
@@ -1004,16 +1044,16 @@ curl http://localhost:8510/service/config |jq
   },
   ...
 ]
-
 ```
+{: codeblock}
 
-#### **API:** POST /service/config
+### **API:** POST /service/config
 
 ---
 
 Configure attributes for a service.
 
-**Parameters:**
+#### Parameters
 
 body:
 
@@ -1025,21 +1065,22 @@ body:
 | arch | | string | architecture of the service to be configured, could be a synonym. The default is the current node architecture. |
 | versionRange | | string | the version range of the service that the configuration applies to. The versionRange is in OSGI version format. The default is [0.0.0,INFINITY) |
 | auto_upgrade | | boolean | whether the service should be automatically upgraded or not when a new version becomes available. The default is true. |
-| active_upgrade | | boolean | whether the horizon agent should actively terminate agreements or not when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. The default is false. |
+| active_upgrade | | boolean | whether the {{site.data.keyword.horizon}} agent should actively terminate agreements or not when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. The default is false. |
 | attributes  | | array of json | an array of attributes that will be applied to the the service. |
 | | type | string | the type of the attribute. Most commonly used type is UserInputAttributes. |
 | | label | string | a short description for this configuration. |
 | | publishable| bool | whether the attribute can be made public or not. |
 | | host_only | bool | whether or not the attribute will be passed to the service containers. |
 | | mappings | json | a list of name and value pairs of configuration data for the service. |
+{: caption="Table 20. POST /service/config JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
 * 200 -- success
 
-**Example:**
+#### Example
 
 ```bash
 read -d '' nsconfig <<EOF
@@ -1068,20 +1109,20 @@ read -d '' nsconfig <<EOF
 EOF
 
 echo "$nsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- http://localhost:8510/service/config
-
 ```
+{: codeblock}
 
-#### **API:** GET  /service/configstate
+### **API:** GET  /service/configstate
 
 ---
 
 Get the service configuration state for all services.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -1095,8 +1136,9 @@ body:
 | | url | string | the url for the service. |
 | | org | string | the organization for the service. |
 | | configstate | string | the current configuration state for the service. The valid values are "active" and "suspended". |
+{: caption="Table 21. GET /service/configstate JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl http://localhost:8510/service/configstate |jq
@@ -1115,16 +1157,16 @@ curl http://localhost:8510/service/configstate |jq
    ...
   ]
 }
-
 ```
+{: codeblock}
 
-#### **API:** POST /service/configstate
+### **API:** POST /service/configstate
 
 ---
 
 Configure attributes for a service.
 
-**Parameters:**
+#### Parameters
 
 body:
 
@@ -1133,31 +1175,32 @@ body:
 | url | string | the url of the service to be configured. If it is an empty string and the org is also an empty string, the new configuration state will apply to all the services. If it is an empty string and the org is not an empty string, the new configuration state will apply to all the services within the organization. |
 | org | string | the organization of the service to be configured. |
 | configstate | string | the new configuration state for the service. |
+{: caption="Table 22. POST /service/configstate JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
 * 200 -- success
 
-**Example:**
+#### Example
 
 ```bash
 curl -sS -X POST -H "Content-Type: application/json" --data '{"url": "myservice", "org": "myorg", "configstate": "suspended"}' http://localhost:8510/service/configstate
-
 ```
+{: codeblock}
 
-#### **API:** GET  /service/policy
+### **API:** GET  /service/policy
 
 ---
 
 Get the current list of policies for each registered service.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -1171,11 +1214,12 @@ body:
 | | header | json|  the header of the policy. It includes the name and the version of the policy. |
 | | apiSpec | array | an array of api specifications. Each one includes a URL pointing to the definition of the API spec, the version of the API spec in OSGI version format, the organization that implements the API spec, whether or not exclusive access to this API spec is required and the hardware architecture of the API spec implementation. |
 | | properties | array | an array of name value pairs that the current party have. |
-| | agreementProtocols | array | an array of agreement protocols. Each one includes the name of the agreement protocol.|
+| | agreementProtocols | array | an array of agreement protocols. Each one includes the name of the agreement protocol. |
+{: caption="Table 23. GET /service/policy JSON response fields" caption-side="top"}
 
 Note: The policy also contains other fields that are unused and therefore not documented.
 
-**Example:**
+#### Example
 
 ```bash
 curl http://localhost:8510/service/policy | jq '.'
@@ -1214,20 +1258,21 @@ curl http://localhost:8510/service/policy | jq '.'
   ...
 ]
 ```
+{: codeblock}
 
-### 5. Agreement
+## 5. Agreement
 
-#### **API:** GET  /agreement
+### **API:** GET  /agreement
 
 ---
 
 Get all the active and archived agreements ever made by the agent. The agreements that are being terminated but not yet archived are treated as archived in this api.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -1242,21 +1287,21 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- |----| ---------------- |
-| name || string |  the name of the policies used to make the agreement.  |
-| dependent_services || array of json |  the organizations and urls of the services that the agreement workload depend on.  |
-| | url | string | the url for a service.  |
-| | organization | string | the organization for a service.  |
-| archived | | bool |  if the agreement is archived or not.  |
+| name | | string | the name of the policies used to make the agreement. |
+| dependent_services || array of json | the organizations and urls of the services that the agreement workload depend on. |
+| | url | string | the url for a service. |
+| | organization | string | the organization for a service. |
+| archived | | bool | if the agreement is archived or not. |
 | current_agreement_id | | string | the id of the agreement. |
-| consumer_id | | string |  the id of the agbot that proposed the agreement. |
-| counterparty_address | | string |  the name of the agbot that proposed the agreement. |
+| consumer_id | | string | the id of the agbot that proposed the agreement. |
+| counterparty_address | | string | the name of the agbot that proposed the agreement. |
 | agreement_creation_time | | uint64 | the time when the agent received the agreement proposal from the agbot. The negotiation process starts. |
 | agreement_accepted_time | | uint64 | the time when the agbot and the agent have come to agreement on the terms. Workload downloading starts. |
 | agreement_finalized_time | | uint64 | the time when the agbot and the agent have finalized the agreement. Workloads are running and data is verified by the agbot. |
 | agreement_execution_start_time | | uint64 | the time when the agent starts running the workloads. |
 | agreement_data_received_time | | uint64 | the time when the agbot has verified that data was received from the workload. |
 | agreement_terminated_time| | uint64 | the time when the agreement is terminated. |
-| agreement_force_terminated_time| | uint64 | the time when the agreement is forced to be terminated by the horizon agent initialization process. |
+| agreement_force_terminated_time| | uint64 | the time when the agreement is forced to be terminated by the {{site.data.keyword.horizon}} agent initialization process. |
 | terminated_reason| | uint64 | the reason code for the agreement termination. |
 | terminated_description | | string | the description of the agreement termination. |
 | agreement_protocol_terminated_time | | uint64 | the time when the agreement protocol terminated. |
@@ -1266,15 +1311,16 @@ body:
 | agreement_protocol | | string | the name of the agreement protocol being used. |
 | protocol_version | | int | the version of the agreement protocol being used. |
 | current_deployment | | json | contains the deployment configuration for the workload. The key is the name of the workload and the value is the result of the [/containers/\<id\> docker remote API call](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-container) for the workload container. Please refer to the link for details. |
-| extended_deployment | | json | contains the deployment configuration for the cluster node. It contains the image and the operator for deploying a Kubernetes application.  |
-| metering_notification | | json |  the most recent metering notification received. It includes the amount, metering start time, data missed time, consumer address, consumer signature etc. |
-| workload_to_run | | json |  the service to run for this agreement.  |
-| | url | json |  the url of the service. |
-| | org | json |  the organization of the service. |
-| | version | json |  the version of the service. |
-| | arch | json |  the architecture of the edge node the service can run on. |
+| extended_deployment | | json | contains the deployment configuration for the cluster node. It contains the image and the operator for deploying a Kubernetes application. |
+| metering_notification | | json | the most recent metering notification received. It includes the amount, metering start time, data missed time, consumer address, consumer signature etc. |
+| workload_to_run | | json | the service to run for this agreement. |
+| | url | json | the url of the service. |
+| | org | json | the organization of the service. |
+| | version | json | the version of the service. |
+| | arch | json | the architecture of the edge node the service can run on. |
+{: caption="Table 24. GET /agreement JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/agreement | jq '.'
@@ -1368,20 +1414,22 @@ curl -s http://localhost:8510/agreement | jq '.'
   }
 }
 ```
+{: codeblock}
 
-#### **API:** DELETE  /agreement/{id}
+### **API:** DELETE  /agreement/{id}
 
 ---
 
 Delete an agreement. The agbot will start a new agreement negotiation with the agent after the agreement is deleted.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ---------------- |
 | id   | string | the id of the agreement to be deleted. |
+{: caption="Table 25. DELETE /agreement/{id} JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -1392,28 +1440,29 @@ body:
 
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -X DELETE -s http://localhost:8510/agreement/a70042dd17d2c18fa0c9f354bf1b560061d024895cadd2162a0768687ed55533
-
 ```
+{: codeblock}
 
-### 6. Trusted Certs for Service Image Verification
+## 6. Trusted Certs for Service Image Verification
 
-#### **API:** GET  /trust[?verbose=true]
+### **API:** GET  /trust[?verbose=true]
 
 ---
 
 Get the user stored x509 certificates for service container image verification.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | -----| ---- | ---------------- |
 | (query) verbose | string | (optional) parameter expands output type to include more detail about trusted certificates. Note, bare RSA PSS public keys (if trusted) are not included in detail output. |
+{: caption="Table 26. POST /service/config JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -1424,8 +1473,9 @@ body:
 | name | type | description |
 | ---- | ---- | ---------------- |
 | pem  | json | an array of x509 certs or public keys (if the 'verbose' query param is not supplied) that are trusted by the agent. A cert can be trusted using the PUT method in an HTTP request to the trust/ path). |
+{: caption="Table 27. GET /trust JSON response fields" caption-side="top"}
 
-**Examples:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/trust | jq  '.'
@@ -1436,6 +1486,7 @@ curl -s http://localhost:8510/trust | jq  '.'
   ]
 }
 ```
+{: codeblock}
 
 Verbose output:
 
@@ -1460,6 +1511,7 @@ curl -s 'http://localhost:8510/trust?verbose=true' | jq  '.'
   ]
 }
 ```
+{: codeblock}
 
 Retrieve RSA PSS public key from a particular enclosing x509 certificate suitable for shell redirection to a .pem file:
 
@@ -1480,20 +1532,22 @@ swRnEsXZy1Ssvmi9myJrKWc8GrkhotweVkAyAJFHJjusIR8Wm8lusZB2IFxwiuFI
 NzGgG2JMPK4=
 -----END CERTIFICATE-----
 ```
+{: codeblock}
 
-#### **API:** GET  /trust/{filename}
+### **API:** GET  /trust/{filename}
 
 ---
 
 Get the content of a trusted x509 cert from a file that has been previously stored by the agent.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | -----| ---- | ---------------- |
 | filename | string | the name of the x509 cert file to retrieve. |
+{: caption="Table 28. GET /trust/{filename} JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -1503,25 +1557,27 @@ body:
 
 The contents of the requested file.
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/trust/Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem > Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem
 ```
+{: codeblock}
 
-#### **API:** PUT  /trust/{filename}
+### **API:** PUT  /trust/{filename}
 
 ---
 
 Trust an x509 cert; used in service container image verification.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ---------------- |
 | filename | string | the name of the x509 cert file to upload. |
+{: caption="Table 29. PUT /trust/{filename} JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -1531,26 +1587,27 @@ body:
 
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -T ~/.rsapsstool/keypairs/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem http://localhost:8510/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
-
 ```
+{: codeblock}
 
-#### **API:** DELETE  /trust/{filename}
+### **API:** DELETE  /trust/{filename}
 
 ---
 
 Delete an x509 cert from the agent; this is a revocation of trust for a particular certificate and enclosing RSA PSS key.
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ---------------- |
 | filename | string | the name of the x509 cert file to remove. |
+{: caption="Table 30. DELETE /trust/{filename} JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -1560,26 +1617,26 @@ body:
 
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -X DELETE http://localhost:8510/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
-
 ```
+{: codeblock}
 
-### 7. Event Log
+## 7. Event Log
 
-#### **API:** GET  /eventlog
+### **API:** GET  /eventlog
 
 ---
 
-Get event logs for the Horizon agent for the current registration. It supports selection strings. The selections can be made against the attributes.
+Get event logs for the {{site.data.keyword.horizon}} agent for the current registration. It supports selection strings. The selections can be made against the attributes.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -1593,11 +1650,12 @@ body:
 | timestamp | uint64 | the time when the event log was saved. |
 | severity | string | the severity for this event. It can be 'info', 'warning' or 'error'. |
 | message | string | a human consumable the event message.  |
-| event_code | string| an event code that can be used by programs.|
+| event_code | string| an event code that can be used by programs. |
 | source_type | string | the source for the event. It can be 'agreement', 'service', 'exchange', 'node' etc. |
 | event_source | json | a structure that holds the event source object. |
+{: caption="Table 31. GET /eventlog JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/eventlog | jq '.'
@@ -1656,8 +1714,8 @@ curl -s http://localhost:8510/eventlog | jq '.'
   }
   ....
 ]
-
 ```
+{: codeblock}
 
 ```bash
 curl -s http://localhost:8510/eventlog?source_type=node&message=~Complete | jq '.'
@@ -1677,20 +1735,20 @@ curl -s http://localhost:8510/eventlog?source_type=node&message=~Complete | jq '
     }
   }
 ]
-
 ```
+{: codeblock}
 
-#### **API:** GET  /eventlog/all
+### **API:** GET  /eventlog/all
 
 ---
 
-Get all the event logs including the previous regstrations for the Horizon agent. It supports selection strings. The selections can be made against the attributes.
+Get all the event logs including the previous regstrations for the {{site.data.keyword.horizon}} agent. It supports selection strings. The selections can be made against the attributes.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -1700,15 +1758,16 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| record_id   | string | the record id in the data base. |
+| record_id  | string | the record id in the data base. |
 | timestamp | uint64 | the time when the event log was saved. |
 | severity | string | the severity for this event. It can be 'info', 'warning' or 'error'. |
-| message | string | a human consumable the event message.  |
-| event_code | string| an event code that can be used by programs.|
+| message | string | a human consumable the event message. |
+| event_code | string| an event code that can be used by programs. |
 | source_type | string | the source for the event. It can be 'agreement', 'service', 'exchange', 'node' etc. |
 | event_source | json | a structure that holds the event source object. |
+{: caption="Table 32. GET /eventlog/all JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/eventlog/all | jq '.'
@@ -1742,22 +1801,22 @@ curl -s http://localhost:8510/eventlog/all | jq '.'
     }
   },
   ....
-
 ```
+{: codeblock}
 
-### 8. Node User Input
+## 8. Node User Input
 
-#### **API:** GET  /node/userinput
+### **API:** GET  /node/userinput
 
 ---
 
 Get the node's user input for the service configurations. The user input on the local node is alway in sync with the user input for the node on the exchange.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -1767,13 +1826,14 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| serviceOrgid   | string | the organization of the service. |
+| serviceOrgid  | string | the organization of the service. |
 | serviceUrl | string | the url of the service. |
 | serviceArch | string | the architecture of the service. |
 | serviceVersionRange | string | the version range of the service that the configuration applies to. The serviceVersionRange is in OSGI version format. The default is [0.0.0,INFINITY). |
 | inputs | json| an array of name and value pairs where the name is the variable name and the value is the variable value for service configuration. |
+{: caption="Table 33. GET /node/userinput JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/node/userinput |jq
@@ -1808,14 +1868,15 @@ curl -s http://localhost:8510/node/userinput |jq
   }
 ]
 ```
+{: codeblock}
 
-#### **API:** POST  /node/userinput
+### **API:** POST  /node/userinput
 
 ---
 
 Set the node's user input for the service configuration. The node on the exchange will be updated too with the new user input.
 
-**Parameters:**
+#### Parameters
 
 body:
 
@@ -1823,19 +1884,20 @@ The body is an array of the following:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| serviceOrgid   | string | the organization of the service. |
+| serviceOrgid | string | the organization of the service. |
 | serviceUrl | string | the url of the service. |
 | serviceArch | string | the architecture of the service. |
 | serviceVersionRange | string | the version range of the service that the configuration applies to. The serviceVersionRange is in OSGI version format. The default is [0.0.0,INFINITY). |
-| inputs | json| an array of name and value pairs where the name is the variable name and the value is the variable value for service configuration. |
+| inputs | json | an array of name and value pairs where the name is the variable name and the value is the variable value for service configuration. |
+{: caption="Table 34. POST /node/userinput JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
 * 201 -- success
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '[
@@ -1852,16 +1914,16 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '[
     ]
   }
 ]'  http://localhost:8510/node/userinput |jq '.'
-
 ```
+{: codeblock}
 
-#### **API:** PATCH  /node/userinput
+### **API:** PATCH  /node/userinput
 
 ---
 
 Patch the node's user input for the service configuration. The node on the exchange will be updated too with the new user input.
 
-**Parameters:**
+#### Parameters
 
 body:
 
@@ -1869,19 +1931,20 @@ The body is an array of the following:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| serviceOrgid   | string | the organization of the service. |
+| serviceOrgid | string | the organization of the service. |
 | serviceUrl | string | the url of the service. |
 | serviceArch | string | the architecture of the service. |
 | serviceVersionRange | string | the version range of the service that the configuration applies to. The serviceVersionRange is in OSGI version format. The default is [0.0.0,INFINITY). |
-| inputs | json| an array of name and value pairs where the name is the variable name and the value is the variable value for service configuration. |
+| inputs | json | an array of name and value pairs where the name is the variable name and the value is the variable value for service configuration. |
+{: caption="Table 35. PUT /node/userinput JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
 * 201 -- success
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '[
@@ -1897,22 +1960,21 @@ curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '[
       }
     ]
   }
-
 ]'  http://localhost:8510/node/userinput | jq '.'
-
 ```
+{: codeblock}
 
-#### **API:** DELETE  /node/usrinput
+### **API:** DELETE  /node/usrinput
 
 ---
 
 Delete the node's user input for service configuration. The exchange copy of the node's user input will also be deleted.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -1922,26 +1984,27 @@ body:
 
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X DELETE "http://localhost:8510/node/userinput" | jq '.'
 204
 ```
+{: codeblock}
 
-### 9. Node Policy
+## 9. Node Policy
 
-#### **API:** GET  /node/policy
+### **API:** GET  /node/policy
 
 ---
 
 Get the node policy. The local node policy is alway in sync with the node policy on the exchange.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -1951,10 +2014,11 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| properties   | array | an array of the name-value pairs to describe the policy properties. |
+| properties | array | an array of the name-value pairs to describe the policy properties. |
 | constraints | string | an array of constraint expressions of the form \<property name\> \<operator\> \<property value\>, separated by boolean operators AND (&&) or OR (\|\|). |
+{: caption="Table 36. GET /node/policy JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/node/policy |jq '.'
@@ -1994,16 +2058,16 @@ curl -s http://localhost:8510/node/policy |jq '.'
     "prop1 == value && prop2 == 2"
   ]
 }
-
 ```
+{: codeblock}
 
-#### **API:** POST  /node/policy
+### **API:** POST  /node/policy
 
 ---
 
-Set the node policy. The node on the exchange will be updated too with the new policy. Properties openhorizon.cpu, openhorizon.arch, openhorizon.memory, penhorizon.hardwareId are buit-in properties which cannot be changed. When openhorizon.allowPrivileged is set to true the service container is allowed to run in the 'privileged' mode if it chooses to. The default value for openhorizon.allowPrivileged is false.
+Set the node policy. The node on the exchange will be updated too with the new policy. Properties openhorizon.cpu, openhorizon.arch, openhorizon.memory, openhorizon.hardwareId are buit-in properties which cannot be changed. When openhorizon.allowPrivileged is set to true the service container is allowed to run in the 'privileged' mode if it chooses to. The default value for openhorizon.allowPrivileged is false.
 
-**Parameters:**
+#### Parameters
 
 body:
 
@@ -2011,16 +2075,17 @@ The body is an array of the following:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| properties   | array | an array of the name-value pairs to describe the policy properties. |
+| properties | array | an array of the name-value pairs to describe the policy properties. |
 | constraints | string | an array of constraint expressions of the form \<property name\> \<operator\> \<property value\>, separated by boolean operators AND (&&) or OR (\|\|). |
+{: caption="Table 37. POST /node/policy JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
 * 201 -- success
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
@@ -2039,16 +2104,16 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
     "MyVar==2"
   ]
 }'  http://localhost:8510/node/policy  | jq '.'
-
 ```
+{: codeblock}
 
-#### **API:** PATCH  /node/policy
+### **API:** PATCH  /node/policy
 
 ---
 
 Patch the properties or the constraints for the node policy. The node on the exchange will be updated too with the new patch. Properties openhorizon.cpu, openhorizon.arch, openhorizon.memory, penhorizon.hardwareId are buit-in properties which cannot be changed. When openhorizon.allowPrivileged is set to true the service container is allowed to run in the 'privileged' mode if it chooses to. The default value for openhorizon.allowPrivileged is false.
 
-**Parameters:**
+#### Parameters
 
 body:
 
@@ -2056,16 +2121,17 @@ The body is an array of the following:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| properties   | array | an array of the name-value pairs to describe the policy properties. |
+| properties | array | an array of the name-value pairs to describe the policy properties. |
 | constraints | string | an array of constraint expressions of the form \<property name\> \<operator\> \<property value\>, separated by boolean operators AND (&&) or OR (\|\|). |
+{: caption="Table 38. PATCH /node/policy JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
 * 201 -- success
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '{
@@ -2074,20 +2140,20 @@ curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '{
     "MyVar==3"
   ]
 }'  http://localhost:8510/node/policy | jq '.'
-
 ```
+{: codeblock}
 
-#### **API:** DELETE  /node/policy
+### **API:** DELETE  /node/policy
 
 ---
 
 Delete the node policy. The exchange copy of the node policy will also be deleted.
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -2097,29 +2163,31 @@ body:
 
 none
 
-**Example:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X DELETE "http://localhost:8510/node/policy" | jq '.'
 204
 ```
+{: codeblock}
 
-### 10. Node Management
+## 10. Node Management
 
-#### **API:** GET  /nodemanagement/nextjob
+### **API:** GET  /nodemanagement/nextjob
 
 ---
 
 Get the status object of the next scheduled node management job. A node management job has a status object once its node management policy is picked up by the node management worker and matched to a node. If there are multiple NMP's running on the node, the earliest scheduled NMP is returned. A guide to what each status value means can be found here: [node_management_status.md](./node_management_status.md)
 
-**Parameters:**
+#### Parameters
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| type | string | The type of job to query. Currently, the only type of job is "agentUpgrade" for agent auto upgrade jobs. If this filter is omitted, all statuses will be queried regardless of type. |
-| ready | boolean | If true, only statuses that are in the "downloaded" state (upgrade packages have been downloaded to the node) will be queried. If false, only statuses that are in the "waiting" state (upgrade packages have **not** been downloaded to the node) will be queried. If this filter is omitted, all statuses will be queried regardless of state. |
+| type | string | the type of job to query. Currently, the only type of job is "agentUpgrade" for agent auto upgrade jobs. If this filter is omitted, all statuses will be queried regardless of type. |
+| ready | boolean | if true, only statuses that are in the "downloaded" state (upgrade packages have been downloaded to the node) will be queried. If false, only statuses that are in the "waiting" state (upgrade packages have **not** been downloaded to the node) will be queried. If this filter is omitted, all statuses will be queried regardless of state. |
+{: caption="Table 39. GET /nodemanagement/nextjob JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
@@ -2133,16 +2201,17 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- | ---- | ---------------- |
-| scheduledTime | | string | An RFC3339 timestamp designating when the upgrade job should start. |
-| startTime | | string | An RFC3339 timestamp designating when the upgrade job actually started. This field is populated when the agent auto upgrade cronjob picks up this job and changes the status to "initiated". |
-| endTime | | string | An RFC3339 timestamp designating when the upgrade job completed successfully. This field is populated when the agent auto upgrade cronjob changes the status to "successful". |
-| upgradedVersions | | json | A json structure that defines the versions being upgraded/downgraded to. |
-| | softwareVersion | string | The version that the agent software packages are to be upgraded/downgraded to. |
-| | certVersion | string | The version of the certificate file to be upgraded/downgraded to. |
-| | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
-| status | | string | A string message that lists the current state of the upgrade job. |
-| errorMessage | | string | A string message containing any possible error messages that occur during the job. |
-| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |
+| scheduledTime | | string | a RFC3339 timestamp designating when the upgrade job should start. |
+| startTime | | string | a RFC3339 timestamp designating when the upgrade job actually started. This field is populated when the agent auto upgrade cronjob picks up this job and changes the status to "initiated". |
+| endTime | | string | a RFC3339 timestamp designating when the upgrade job completed successfully. This field is populated when the agent auto upgrade cronjob changes the status to "successful". |
+| upgradedVersions | | json | a json structure that defines the versions being upgraded/downgraded to. |
+| | softwareVersion | string | the version that the agent software packages are to be upgraded/downgraded to. |
+| | certVersion | string | the version of the certificate file to be upgraded/downgraded to. |
+| | configVersion | string | the version of the configuration file to be upgraded/downgraded to. |
+| status | | string | a string message that lists the current state of the upgrade job. |
+| errorMessage | | string | a string message containing any possible error messages that occur during the job. |
+| workingDirectory | | string | the directory that the upgrade job will be reading and writing files to. |
+{: caption="Table 40. GET /nodemanagement/nextjob JSON response fields" caption-side="top"}
 
 **agentUpgradeInternal**:
 
@@ -2150,15 +2219,16 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- | ---- | ---------------- |
-| allowDowngrade | | boolean | A boolean value that designates if a downgrade to a previous version is allowed to occur. |
-| manifest | | string | A string value that corresponds to an upgrade manifest in the Exchange. |
-| scheduledUnixTime | | string | An RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
-| latestMap | | json | A json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
-| | softwareLatest | boolean | A boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
-| | configLatest | boolean | A boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
-| | certLatest | boolean | A boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+| allowDowngrade | | boolean | a boolean value that designates if a downgrade to a previous version is allowed to occur. |
+| manifest | | string | a string value that corresponds to an upgrade manifest in the Exchange. |
+| scheduledUnixTime | | string | a RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
+| latestMap | | json | a json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
+| | softwareLatest | boolean | a boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
+| | configLatest | boolean | a boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
+| | certLatest | boolean | a boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+{: caption="Table 41. GET /nodemanagement/nextjob JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/nodemanagement/nextjob?type=agentUpgrade&ready=true | jq '.'
@@ -2188,20 +2258,20 @@ curl -s http://localhost:8510/nodemanagement/nextjob?type=agentUpgrade&ready=tru
     }
   }
 }
-
 ```
+{: codeblock}
 
-#### **API:** GET  /nodemanagement/status
+### **API:** GET  /nodemanagement/status
 
 ---
 
 Get a map of all status objects that apply to the node. Each status object corresponds to a node management policy that has been matched to the node and picked up by the node management worker. A guide to what each status value means can be found here: [node_management_status.md](node_management_status.md)
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -2215,16 +2285,17 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- | ---- | ---------------- |
-| scheduledTime | | string | An RFC3339 timestamp designating when the upgrade job should start. |
-| startTime | | string | An RFC3339 timestamp designating when the upgrade job actually started. This field is populated when the agent auto upgrade cronjob picks up this job and changes the status to "initiated". |
-| endTime | | string | An RFC3339 timestamp designating when the upgrade job completed successfully. This field is populated when the agent auto upgrade cronjob changes the status to "successful". |
-| upgradedVersions | | json | A json structure that defines the versions being upgraded/downgraded to. |
-| | softwareVersion | string | The version that the agent software packages are to be upgraded/downgraded to. |
-| | certVersion | string | The version of the certificate file to be upgraded/downgraded to. |
-| | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
-| status | | string | A string message that lists the current state of the upgrade job. |
-| errorMessage | | string | A string message containing any possible error messages that occur during the job. |
-| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |
+| scheduledTime | | string | a RFC3339 timestamp designating when the upgrade job should start. |
+| startTime | | string | a RFC3339 timestamp designating when the upgrade job actually started. This field is populated when the agent auto upgrade cronjob picks up this job and changes the status to "initiated". |
+| endTime | | string | a RFC3339 timestamp designating when the upgrade job completed successfully. This field is populated when the agent auto upgrade cronjob changes the status to "successful". |
+| upgradedVersions | | json | a json structure that defines the versions being upgraded/downgraded to. |
+| | softwareVersion | string | the version that the agent software packages are to be upgraded/downgraded to. |
+| | certVersion | string | the version of the certificate file to be upgraded/downgraded to. |
+| | configVersion | string | the version of the configuration file to be upgraded/downgraded to. |
+| status | | string | a string message that lists the current state of the upgrade job. |
+| errorMessage | | string | a string message containing any possible error messages that occur during the job. |
+| workingDirectory | | string | the directory that the upgrade job will be reading and writing files to. |
+{: caption="Table 42. GET /nodemanagement/status JSON response fields" caption-side="top"}
 
 **agentUpgradeInternal**:
 
@@ -2232,15 +2303,16 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- | ---- | ---------------- |
-| allowDowngrade | | boolean | A boolean value that designates if a downgrade to a previous version is allowed to occur. |
-| manifest | | string | A string value that corresponds to an upgrade manifest in the Exchange. |
-| scheduledUnixTime | | string | An RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
-| latestMap | | json | A json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
-| | softwareLatest | boolean | A boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
-| | configLatest | boolean | A boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
-| | certLatest | boolean | A boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+| allowDowngrade | | boolean | a boolean value that designates if a downgrade to a previous version is allowed to occur. |
+| manifest | | string | a string value that corresponds to an upgrade manifest in the Exchange. |
+| scheduledUnixTime | | string | a RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
+| latestMap | | json | a json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
+| | softwareLatest | boolean | a boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
+| | configLatest | boolean | a boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
+| | certLatest | boolean | a boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+{: caption="Table 43. GET /nodemanagement/status JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/nodemanagement/status | jq '.'
@@ -2295,18 +2367,19 @@ curl -s http://localhost:8510/nodemanagement/status | jq '.'
   }
 }
 ```
+{: codeblock}
 
-#### **API:** GET  /nodemanagement/status/{nmpName}
+### **API:** GET  /nodemanagement/status/{nmpName}
 
 ---
 
 Get the status objects that corresponds to the given node management policy name. The org that the NMP and node belong to can be optionally prepended (i.e. `/nodemanagement/status/nmp-name` and `/nodemanagement/status/org/nmp-name` refer to the same object, so long as the node is part of the given org) A guide to what each status value means can be found here: [node_management_status.md](node_management_status.md)
 
-**Parameters:**
+#### Parameters
 
 none
 
-**Response:**
+#### Response
 
 code:
 
@@ -2320,16 +2393,17 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- | ---- | ---------------- |
-| scheduledTime | | string | An RFC3339 timestamp designating when the upgrade job should start. |
-| startTime | | string | An RFC3339 timestamp designating when the upgrade job actually started. This field is populated when the agent auto upgrade cronjob picks up this job and changes the status to "initiated". |
-| endTime | | string | An RFC3339 timestamp designating when the upgrade job completed successfully. This field is populated when the agent auto upgrade cronjob changes the status to "successful". |
-| upgradedVersions | | json | A json structure that defines the versions being upgraded/downgraded to. |
-| | softwareVersion | string | The version that the agent software packages are to be upgraded/downgraded to. |
-| | certVersion | string | The version of the certificate file to be upgraded/downgraded to. |
-| | configVersion | string | The version of the configuration file to be upgraded/downgraded to. |
-| status | | string | A string message that lists the current state of the upgrade job. |
-| errorMessage | | string | A string message containing any possible error messages that occur during the job. |
-| workingDirectory | | string | The directory that the upgrade job will be reading and writing files to. |
+| scheduledTime | | string | a RFC3339 timestamp designating when the upgrade job should start. |
+| startTime | | string | a RFC3339 timestamp designating when the upgrade job actually started. This field is populated when the agent auto upgrade cronjob picks up this job and changes the status to "initiated". |
+| endTime | | string | a RFC3339 timestamp designating when the upgrade job completed successfully. This field is populated when the agent auto upgrade cronjob changes the status to "successful". |
+| upgradedVersions | | json | a json structure that defines the versions being upgraded/downgraded to. |
+| | softwareVersion | string | the version that the agent software packages are to be upgraded/downgraded to. |
+| | certVersion | string | the version of the certificate file to be upgraded/downgraded to. |
+| | configVersion | string | the version of the configuration file to be upgraded/downgraded to. |
+| status | | string | a string message that lists the current state of the upgrade job. |
+| errorMessage | | string | a string message containing any possible error messages that occur during the job. |
+| workingDirectory | | string | the directory that the upgrade job will be reading and writing files to. |
+{: caption="Table 44. GET /nodemanagement/status/{nmpname} JSON response fields" caption-side="top"}
 
 **agentUpgradeInternal**:
 
@@ -2337,15 +2411,16 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- | ---- | ---------------- |
-| allowDowngrade | | boolean | A boolean value that designates if a downgrade to a previous version is allowed to occur. |
-| manifest | | string | A string value that corresponds to an upgrade manifest in the Exchange. |
-| scheduledUnixTime | | string | An RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
-| latestMap | | json | A json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
-| | softwareLatest | boolean | A boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
-| | configLatest | boolean | A boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
-| | certLatest | boolean | A boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+| allowDowngrade | | boolean | a boolean value that designates if a downgrade to a previous version is allowed to occur. |
+| manifest | | string | a string value that corresponds to an upgrade manifest in the Exchange. |
+| scheduledUnixTime | | string | a RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
+| latestMap | | json | a json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
+| | softwareLatest | boolean | a boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
+| | configLatest | boolean | a boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
+| | certLatest | boolean | a boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+{: caption="Table 45. GET /nodemanagement/status/{nmpname} JSON response fields" caption-side="top"}
 
-**Example:**
+#### Example
 
 ```bash
 curl -s http://localhost:8510/nodemanagement/status/sample-nmp | jq '.'
@@ -2376,8 +2451,9 @@ curl -s http://localhost:8510/nodemanagement/status/sample-nmp | jq '.'
   }
 }
 ```
+{: codeblock}
 
-#### **API:** PUT  /nodemanagement/status/{nmpName}
+### **API:** PUT  /nodemanagement/status/{nmpName}
 
 ---
 
@@ -2385,7 +2461,7 @@ Update the status object that corresponds to the given node management policy na
 
 Currently, the only supported update to the status object is the agentUpgradePolicyStatus structure.
 
-**Parameters:**
+#### Parameters
 
 body:
 
@@ -2395,18 +2471,19 @@ body:
 
 | name  | type | description |
 | ----  | ---- | ---------------- |
-| startTime | string | An RFC3339 timestamp designating when the upgrade job actually started. This field can only be set if it has not been previously set and the status field is also changed to "initiated". |
-| endTime | string | An RFC3339 timestamp designating when the upgrade job actually started. This field can only be updated if it has not been previously set and the status field is also changed to "successful". |
-| status | string | A string message that lists the current state of the upgrade job. |
-| errorMessage | string | A string message containing any possible error messages that occur during the job. This field can only be updated if the status field is also changed. |
+| startTime | string | a RFC3339 timestamp designating when the upgrade job actually started. This field can only be set if it has not been previously set and the status field is also changed to "initiated". |
+| endTime | string | a RFC3339 timestamp designating when the upgrade job actually started. This field can only be updated if it has not been previously set and the status field is also changed to "successful". |
+| status | string | a string message that lists the current state of the upgrade job. |
+| errorMessage | string | a string message containing any possible error messages that occur during the job. This field can only be updated if the status field is also changed. |
+{: caption="Table 46. PUT /nodemanagement/status/{nmpname} JSON parameter fields" caption-side="top"}
 
-**Response:**
+#### Response
 
 code:
 
 * 201 -- success
 
-**Examples:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
@@ -2416,6 +2493,7 @@ curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
   }
 }'  http://localhost:8510/nodemanagement/status/sample-nmp
 ```
+{: codeblock}
 
 ```bash
 curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
@@ -2425,6 +2503,7 @@ curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
   }
 }'  http://localhost:8510/nodemanagement/status/sample-nmp
 ```
+{: codeblock}
 
 ```bash
 curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
@@ -2434,41 +2513,44 @@ curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' -d '{
   }
 }'  http://localhost:8510/nodemanagement/status/sample-nmp
 ```
+{: codeblock}
 
-#### **API:** PUT  /nodemanagement/reset
+### **API:** PUT  /nodemanagement/reset
 
 ---
 
 Reset all of the NMP status objects that are stored on the node to the "waiting" state.
 
-**Response:**
+#### Response
 
 code:
 
 * 201 -- success
 
-**Examples:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' http://localhost:8510/nodemanagement/reset
 ```
+{: codeblock}
 
-#### **API:** PUT  /nodemanagement/reset/{nmpName}
+### **API:** PUT  /nodemanagement/reset/{nmpName}
 
 ---
 
 Reset all of the NMP status objects that are stored on the node to the "waiting" state.
 
-Reset the status object that corresponds to the given node management policy name to the "waiting" state. The org that the NMP and node belong to can be optionally prepended (i.e. `/nodemanagement/status/nmp-name` and `/nodemanagement/status/org/nmp-name` refer to the same object, so long as the node is part of the given org)(node_management_status.md)
+Reset the status object that corresponds to the given node management policy name to the "waiting" state. The org that the NMP and node belong to can be optionally prepended (i.e. `/nodemanagement/status/nmp-name` and `/nodemanagement/status/org/nmp-name` refer to the same object, so long as the node is part of the given org)
 
-**Response:**
+#### Response
 
 code:
 
 * 201 -- success
 
-**Examples:**
+#### Example
 
 ```bash
 curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json' http://localhost:8510/nodemanagement/reset/sample-nmp
 ```
+{: codeblock}

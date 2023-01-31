@@ -1,18 +1,32 @@
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2023-01-30"
+description: Instructions for starting an agent in a container on Linux
+
+parent: Agent (anax)
+nav_order: 2
+---
+
 ## Instructions for starting an agent in a container on Linux
+{: #container-agent}
 
 These instructions assume that the agent container you wish to deploy already exists and is in a container image repository somewhere.
 
 ### Usage
+{: #container-usage}
 
-These instructions are for the user who wants to start the agent in a container with finer control over the details than that allowed by the horizon-container script. For a simplified process to getting an agent running see the [agent-install instructions](https://github.com/open-horizon/anax/tree/master/agent-install).
+These instructions are for the user who wants to start the agent in a container with finer control over the details than that allowed by the horizon-container script. For a simplified process to getting an agent running see the [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink}.
 
 ### Prerequisites
+{: #container-prereqs}
 
-Docker needs to be installed on the host device. For instructions on installing Docker on Linux see [here](https://docs.docker.com/engine/install/).
+Docker needs to be installed on the host device. For instructions on installing Docker on Linux see [here ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink}.
 
 If the management hub you are using uses SSL, then you need to have the SSL certificate from the management hub.
 
 ### Starting the agent
+{: #container-start}
 
 Before starting the container, create a config file for the agent. This should include the following:
 
@@ -54,12 +68,14 @@ HZN_MGMT_HUB_CERT_PATH=/etc/default/horizon/agent.crt
 DOCKER_NAME=horizon1
 HORIZON_AGENT_PORT=8081
 ```
+{: codeblock}
 
 ```bash
 docker run $DOCKER_ADD_HOSTS -d --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:8510 -e DOCKER_NAME=$DOCKER_NAME -v /var/run/docker.sock:/var/run/docker.sock -v $CONFIG_FILE:/etc/default/horizon:ro $HZN_MGMT_HUB_CERT_MOUNT -v $DOCKER_NAME_var:/var/horizon/ -v $DOCKER_NAME_etc:/etc/horizon/ -v $DOCKER_NAME_fss:/var/tmp/horizon/$DOCKER_NAME $HZN_AGENT_IMAGE:$HZN_AGENT_IMAGE_TAG
 
 export HORIZON_URL=http://localhost:$HORIZON_AGENT_PORT
 ```
+{: codeblock}
 
 The docker run command uses the following arguments. Here is what they are for:
 
@@ -95,6 +111,7 @@ To register the agent with a policy, run `hzn policy new > node_pol.json`, then 
 source $CONFIG_FILE
 hzn register --policy node_pol.json
 ```
+{: codeblock}
 
 To register the agent with a pattern
 
@@ -102,3 +119,4 @@ To register the agent with a pattern
 source $CONFIG_FILE
 hzn register -p <pattern name>
 ```
+{: codeblock}

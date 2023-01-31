@@ -1,15 +1,28 @@
-## Horizon Edge Service Detail
+---
+copyright:
+years: 2022 - 2023
+lastupdated: "2023-01-30"
+description: Horizon Edge Services details
+title: "Horizon Edge Service Detail"
 
-Horizon manages the lifecycle, connectivity, and other features of services it launches on a device. This document is intended for service developers' consumption.
+parent: Agent (anax)
+nav_order: 10
+---
+
+## {{site.data.keyword.horizon}} Edge Service Details
+{: #edge-services}
+
+{{site.data.keyword.edge_notm}} manages the lifecycle, connectivity, and other features of services it launches on a device. This document is intended for service developers' consumption.
 
 ### Service Environment Variables
+{: #edge-service-vars}
 
-Horizon sets these environment variables when starting a service container:
+{{site.data.keyword.horizon}} sets these environment variables when starting a service container:
 
 * `HZN_NODE_ID`: The unique identifier for the edge node.
 * `HZN_DEVICE_ID` (DEPRECATED): The unique identifier for the edge node.
 * `HZN_ORGANIZATION`: The organization the edge node is part of.
-* `HZN_EXCHANGE_URL`: The Horizon Exchange being used by this edge node.
+* `HZN_EXCHANGE_URL`: The {{site.data.keyword.horizon}} Exchange being used by this edge node.
 * `HZN_HOST_IPS`: The IP addresses configured on this edge node host.
 * `HZN_ARCH`: A machine architecture designation for the host device. (This is retrieved by the golang runtime using the function `runtime.GOARCH`. Note: in the future, this may be modified to align with Ubuntu architecture designations: armel (Pi Zero), armhf (Pi 2, Odroid Xu4), arm64 (Pi 3, Odroid c2), or amd64.
 * `HZN_RAM`: The quantity of RAM (in MB) that the container is restricted to use.

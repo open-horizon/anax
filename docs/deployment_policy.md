@@ -2,7 +2,11 @@
 copyright:
 years: 2022 - 2023
 lastupdated: "2023-01-24"
+title: "Deployment Policy"
 description: Description of Deployment policy json fields
+
+parent: Agent (anax)
+nav_order: 8
 ---
 
 {:new_window: target="blank"}

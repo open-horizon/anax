@@ -2,7 +2,11 @@
 copyright:
 years: 2022 - 2023
 lastupdated: "2023-01-24"
+title: "Policy based deployment"
 description: Policy based deployment enables containerized workloads (aka services) to be deployed to edge nodes
+
+parent: Agent (anax)
+nav_order: 16
 ---
 
 {:new_window: target="blank"}
