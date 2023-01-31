@@ -2,6 +2,7 @@
 copyright:
 years: 2022 - 2023
 lastupdated: "2023-01-30"
+title: "Agent in a Container"
 description: Instructions for starting an agent in a container on Linux
 
 parent: Agent (anax)
@@ -21,7 +22,7 @@ These instructions are for the user who wants to start the agent in a container 
 ### Prerequisites
 {: #container-prereqs}
 
-Docker needs to be installed on the host device. For instructions on installing Docker on Linux see [here ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink}.
+Docker needs to be installed on the host device. Review [instructions on installing Docker on Linux](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink}.
 
 If the management hub you are using uses SSL, then you need to have the SSL certificate from the management hub.
 
