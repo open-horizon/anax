@@ -277,7 +277,6 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 				}
 			}
 
-
 		} else {
 			glog.Errorf(dwlog(fmt.Sprintf("No cert upgrade object found of expected type %v found in manifest list.", HZN_CERT_FILE)))
 			missingPkgs = append(missingPkgs, HZN_CERT_FILE)

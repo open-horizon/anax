@@ -435,10 +435,10 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		return false, true
 	}
 
-        // don't send an update if the agreement is not finalized yet
-        if ag.AgreementFinalizedTime == 0 {
-                return true, true
-        }
+	// don't send an update if the agreement is not finalized yet
+	if ag.AgreementFinalizedTime == 0 {
+		return true, true
+	}
 
 	// for every priority (in order highest to lowest) in the new policy with priority lower than the current wl
 	// if it's not in the old policy, cancel

@@ -272,9 +272,11 @@ func GetChangedServices(oldUserInput, newUserInput []policy.UserInput) persisten
 		for i_new, newUi := range newUserInput {
 			if oldUi.ServiceUrl == newUi.ServiceUrl && oldUi.ServiceOrgid == newUi.ServiceOrgid {
 				comparedIndexes[i_new] = 1
-				if reflect.DeepEqual(newUi, oldUi) {
-					found = true
-					break
+				if len(newUi.Inputs) == len(oldUi.Inputs) {
+					if len(newUi.Inputs) == 0 || reflect.DeepEqual(newUi, oldUi) {
+						found = true
+						break
+					}
 				}
 			}
 		}
