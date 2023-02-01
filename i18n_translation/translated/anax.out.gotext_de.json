@@ -764,6 +764,22 @@
     "translation": "URL des SDO-Service: {SdoUrl}"
   },
   {
+    "id": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+    "translation": "HZN_FDO_SVC_URL ist nicht festgelegt. Abrufen aus {ANAXOVERWRITEFILE}."
+  },
+  {
+    "id": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+    "translation": "Fehler beim Abrufen von HZN_FDO_SVC_URL aus {ANAXOVERWRITEFILE}: {Err}"
+  },
+  {
+    "id": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+    "translation": "Der Wert für HZN_FDO_SVC_URL konnte nicht aus der Umgebung, aus {ANAXOVERWRITEFILE} oder aus einer der hzn.json-Dateien abgerufen werden."
+  },
+  {
+    "id": "The FDO service url: {FdoUrl}",
+    "translation": "FDO-Service-URL: {FdoUrl}"
+  },
+  {
     "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
     "translation": "Verbindung zu REST-API von Horizon {HorizonService} zum Ausführen von {ApiMethod} kann nicht hergestellt werden. Legen Sie für {ServiceEnvVarName} fest, dass {Article} {HorizonService_1} und nicht derjenige verwendet werden soll, der derzeit für den Horizon-Agenten konfiguriert ist. Spezifischer Fehler ist: {Err}"
   },

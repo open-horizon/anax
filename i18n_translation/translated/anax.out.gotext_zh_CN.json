@@ -764,6 +764,22 @@
     "translation": "SDO 服务 URL：{SdoUrl}"
   },
   {
+    "id": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+    "translation": "未设置 HZN_FDO_SVC_URL，请从 {ANAXOVERWRITEFILE} 中获取。"
+  },
+  {
+    "id": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+    "translation": "从 {ANAXOVERWRITEFILE} 中获取 HZN_FDO_SVC_URL 时出错：{Err}"
+  },
+  {
+    "id": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+    "translation": "无法从环境 {ANAXOVERWRITEFILE} 或其中一个 hzn.json 文件中获取 HZN_FDO_SVC_URL 值"
+  },
+  {
+    "id": "The FDO service url: {FdoUrl}",
+    "translation": "FRO 服务 URL：{FdoUrl}"
+  },
+  {
     "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
     "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。 特定的错误为：{Err}"
   },

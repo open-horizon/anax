@@ -416,8 +416,8 @@
     "translation": "A propriedade {PROPSVCPRIVILEGED} deve ter um valor booleano (true ou false)."
   },
   {
-    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Interface da linha de comandos para o Horizon Agent. A maioria dos subcomandos usa a API do Horizon Agent no local padrão http://localhost (consulte a seção Váriáveis de ambiente para substituir isso).\n\nDescrição dos subcomandos:\n  agbot: listar e gerenciar os recursos de robô de contrato do Horizon.\n  agreement: listar ou gerenciar os contratos feitos por este nó de borda com um robô de contrato do Horizon.\n  architecture: mostrar a arquitetura desta máquina.\n  attribute: listar ou gerenciar os atributos globais atualmente registrados neste nó de borda do Horizon.\n  deploycheck: verificar a compatibilidade de implementação.\n  dev: ferramentas de desenvolvimento para criação de serviços.\n  env: mostrar as Variáveis de ambiente do Horizon.\n  eventlog: listar os logs de evento dos registros atuais ou de todos os registros.\n  exchange: listar e gerenciar os recursos do Horizon Exchange.\n  key: listar e gerenciar as chaves para assinar e verificar os serviços.\n  mms: listar e gerenciar os recursos do Serviço de gerenciamento de modelo do Horizon.\n  nmstatus: listar e gerenciar o status do gerenciamento de nó do nó local.\n  node: listar e gerenciar as informações gerais sobre este nó de borda do Horizon.\n  nodemanagement: listar e gerenciar os manifests e os arquivos do agente de gerenciamento de nó.\n  policy: listar e gerenciar a política deste nó de borda do Horizon.\n  reginput: criar um modelo de arquivo de entrada para este padrão que possa ser usado para o comando 'hzn register'.\n  register: registrar este nó de borda com o hub de gerenciamento.\n  secretsmanager: listar e gerenciar os segredos no gerenciador de segredos.\n  service: listar ou gerenciar os serviços atualmente registrados neste nó de borda do Horizon.\n  status: exibir o status interno atual do Horizon para o nó.\n  unregister: cancelar o registro e reconfigurar este nó de borda do Horizon.\n  userinput: listar ou gerenciar as entradas do usuário de serviço atualmente registradas neste nó de borda do Horizon.\n  util: comandos do utilitário.\n  version: mostrar a versão do Horizon.\n  sdo: listar e gerenciar os vouchers e as chaves de propriedade do Horizon SDO.\n\nVariáveis de ambiente:\n  HORIZON_URL:  substituir a URL na qual o hzn entra em contato com a API do Horizon Agent.\n      Isso pode facilitar o uso de um Horizon Agent remoto por meio de um túnel ssh.\n  HZN_EXCHANGE_URL:  substituir a URL usada pelos subcomandos 'hzn exchange'\n      para se comunicar com o Horizon Exchange, por exemplo:\n https://exchange.bluehorizon.network/api/v1. (Por padrão, o hzn solicitará\n a URL ao Horizon Agent.)\n HZN_ORG_ID: valor padrão da sinalização 'hzn exchange -o',\n para especificar o ID da organização'.\n HZN_EXCHANGE_USER_AUTH: valor padrão da sinalização 'hzn exchange -u' ou 'hzn\n register -u', no formato '[org/]user:pw'. Observe que HZN_ORG_ID poderá ser configurado\n se org for omitido quando HZN_EXCHANGE_USER_AUTH estiver configurado.\n HZN_FSS_CSSURL: substitua a URL usada pelos subcomandos 'hzn mms'\n para se comunicar com o Serviço de gerenciamento de modelo do Horizon, por exemplo:\n https://exchange.bluehorizon.network/css/. (Por padrão, o hzn solicitará\n a URL ao Horizon Agent.)\n HZN_SDO_SVC_URL: substitua a URL usada pelos subcomandos 'hzn sdo'\n para se comunicar com os serviços do proprietário SDO. (Por padrão, o hzn solicitará\n a URL ao Horizon Agent.)\n\n Todas essas variáveis de ambiente e aquelas mencionadas na ajuda do comando podem ser\n especificadas no arquivo de configuração do usuário: ~/.hzn/hzn.json com o formato JSON.\n Por exemplo:\n {Com____}"
+    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+    "translation": "Interface da linha de comandos para o Horizon Agent. A maioria dos subcomandos usa a API do Horizon Agent no local padrão http://localhost (consulte a seção Variáveis de ambiente para substituir isso).\n\nDescrição dos subcomandos:\n agbot: listar e gerenciar os recursos de robô de contrato do Horizon.\n agreement: listar ou gerenciar os contratos feitos por este nó de borda com um robô de contrato do Horizon.\n architecture: mostrar a arquitetura desta máquina.\n attribute: listar ou gerenciar os atributos globais atualmente registrados neste nó de borda do Horizon.\n deploycheck: verificar a compatibilidade de implementação.\n dev: ferramentas de desenvolvimento para criação de serviços.\n env: mostrar as Variáveis de ambiente do Horizon.\n eventlog: listar os logs de evento dos registros atuais ou de todos os registros.\n exchange: listar e gerenciar os recursos do Horizon Exchange.\n key: listar e gerenciar as chaves para assinar e verificar os serviços. \n mms: listar e gerenciar os recursos do Serviço de gerenciamento de modelo do Horizon.\n nmstatus: listar e gerenciar o status do gerenciamento de nó do nó local.\n node: listar e gerenciar as informações gerais sobre este nó de borda do Horizon.\n nodemanagement: listar e gerenciar os manifests e os arquivos do agente de gerenciamento de nó.\n policy: listar e gerenciar a política deste nó de borda do Horizon. \n reginput: criar um modelo de arquivo de entrada para este padrão que possa ser usado para o comando 'hzn register'. \n register: registrar este nó de borda com o hub de gerenciamento.\n secretsmanager: listar e gerenciar os segredos no gerenciador de segredos.\n service: listar ou gerenciar os serviços atualmente registrados neste nó de borda do Horizon.\n status: exibir o status interno atual do Horizon para o nó.\n unregister: cancelar o registro e reconfigurar este nó de borda do Horizon.\n userinput: listar ou gerenciar as entradas do usuário de serviço atualmente registradas neste nó de borda do Horizon.\n util: comandos do utilitário.\n version: mostrar a versão do Horizon.\n sdo: listar e gerenciar os vouchers e as chaves de propriedade do Horizon SDO.\n fdo: listar e gerenciar os vouchers e as chaves de propriedade do Horizon FDO.\n\nVariáveis de ambiente:\n HORIZON_URL: substituir a URL na qual o hzn entra em contato com a API do Horizon Agent.\n Isso pode facilitar o uso de um Horizon Agent remoto por meio de um túnel ssh.\n HZN_EXCHANGE_URL: substituir a URL usada pelos subcomandos 'hzn exchange'\n para se comunicar com o Horizon Exchange, por exemplo:\n https://exchange.bluehorizon.network/api/v1. (Por padrão, o hzn solicitará\n a URL ao Horizon Agent.)\n HZN_ORG_ID: valor padrão da sinalização 'hzn exchange -o',\n para especificar o ID da organização'.\n HZN_EXCHANGE_USER_AUTH: valor padrão da sinalização 'hzn exchange -u' ou 'hzn\n register -u', no formato '[org/]user:pw'. Observe que HZN_ORG_ID poderá ser configurado\n se org for omitido quando HZN_EXCHANGE_USER_AUTH estiver configurado.\n HZN_FSS_CSSURL: substitua a URL usada pelos subcomandos 'hzn mms'\n para se comunicar com o Serviço de gerenciamento de modelo do Horizon, por exemplo:\n https://exchange.bluehorizon.network/css/. (Por padrão, o hzn solicitará\n a URL ao Horizon Agent.)\n HZN_SDO_SVC_URL: substitua a URL usada pelos subcomandos 'hzn sdo'\n para se comunicar com os serviços do proprietário SDO. (Por padrão, o hzn solicitará a URL ao\n Horizon Agent.)\n HZN_FDO_SVC_URL: substitua a URL usada pelos subcomandos 'hzn fdo'\n para se comunicar com os serviços do proprietário FDO. (Por padrão, o hzn solicitará\n a URL ao Horizon Agent.)\n\n Todas essas variáveis de ambiente e aquelas mencionadas na ajuda do comando podem ser\n especificadas no arquivo de configuração do usuário: ~/.hzn/hzn.json com o formato JSON.\n Por exemplo:\n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -2620,6 +2620,10 @@
     "translation": "Listar e gerenciar recursos em serviços de propriedade SDO"
   },
   {
+    "id": "Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+    "translation": "Credenciais do Horizon Exchange para os recursos de serviço do proprietário SDO O padrão é a variável de ambiente HZN_EXCHANGE_USER_AUTH. Se não for pré-anexada à organização do usuário, ela será pré-anexada automaticamente ao valor da variável de ambiente HZN_ORG_ID."
+  },
+  {
     "id": "List and manage Horizon SDO ownership keys.",
     "translation": "Listar e gerenciar chaves de propriedade Horizon SDO."
   },
@@ -2766,6 +2770,54 @@
   {
     "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
     "translation": "O arquivo de políticas de nó a ser usado para o dispositivo de borda associado a esse voucher. É mutuamente exclusivo com -e e -p."
+  },
+  {
+    "id": "List and manage resources in FDO owner services",
+    "translation": "Listar e gerenciar recursos em serviços do proprietário FDO"
+  },
+  {
+    "id": "Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+    "translation": "Credenciais do Horizon Exchange para consultar os recursos de serviço do proprietário FDO O padrão é a variável de ambiente HZN_EXCHANGE_USER_AUTH. Se não for pré-anexada à organização do usuário, ela será pré-anexada automaticamente ao valor da variável de ambiente HZN_ORG_ID."
+  },
+  {
+    "id": "List FDO ownership public keys.",
+    "translation": "Listar chaves públicas de propriedade do FDO."
+  },
+  {
+    "id": "List a public key from the FDO Owner services using the device alias from the manufacturer.",
+    "translation": "Listar uma chave pública dos serviços do proprietário FDO usando o alias do dispositivo do fabricante."
+  },
+  {
+    "id": "The device alias received from the manufacturer. It can be one of the following: SECP256R1, SECP384R1, RSAPKCS3072, RSAPKCS2048, RSA2048RESTR which are all cryptography standards.",
+    "translation": "O alias do dispositivo recebido do fabricante. Pode ser um dos seguintes: SECP256R1, SECP384R1, RSAPKCS3072, RSAPKCS2048, RSA2048RESTR, que são todos padrões de criptografia."
+  },
+  {
+    "id": "List and manage Horizon FDO ownership vouchers.",
+    "translation": "Listar e gerenciar vouchers de propriedade do Horizon FDO."
+  },
+  {
+    "id": "List the imported FDO ownership vouchers.",
+    "translation": "Listar os vouchers importados de propriedade do FDO."
+  },
+  {
+    "id": "List the full details of this FDO ownership voucher.",
+    "translation": "Listar os detalhes completos deste voucher de propriedade do FDO."
+  },
+  {
+    "id": "Imports the FDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+    "translation": "Importa o voucher de propriedade do FDO para que o dispositivo correspondente possa ser inicializado, configurado e registrado."
+  },
+  {
+    "id": "The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).",
+    "translation": "O arquivo de voucher de propriedade do FDO. Deve ter a extensão de tipo de arquivo: txt, tar, tar.gz, tgz ou zip. Se for algum dos formatos tar/zip, todos os arquivos .txt contidos serão importados (outros arquivos/diretórios serão silenciosamente ignorados)."
+  },
+  {
+    "id": "Download the specified FDO ownership voucher from FDO owner services.",
+    "translation": "Faça download do voucher de propriedade do FDO especificado por meio dos serviços do proprietário FDO."
+  },
+  {
+    "id": "The FDO ownership voucher to download.",
+    "translation": "O voucher de propriedade do FDO para download."
   },
   {
     "id": "organization ID must be specified with either the -o flag or HZN_ORG_ID",
@@ -3206,6 +3258,22 @@
   {
     "id": "The SDO service url: {SdoUrl}",
     "translation": "A URL do serviço SDO: {SdoUrl}"
+  },
+  {
+    "id": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+    "translation": "HZN_FDO_SVC_URL não está configurado, obtenha-o por meio de {ANAXOVERWRITEFILE}."
+  },
+  {
+    "id": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+    "translation": "Erro ao obter HZN_FDO_SVC_URL de {ANAXOVERWRITEFILE}: {Err}"
+  },
+  {
+    "id": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+    "translation": "Não foi possível obter o valor HZN_FDO_SVC_URL por meio do ambiente, de {ANAXOVERWRITEFILE}, ou de um dos arquivos hzn.json"
+  },
+  {
+    "id": "The FDO service url: {FdoUrl}",
+    "translation": "A URL de serviço de FDO: {FdoUrl}"
   },
   {
     "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
@@ -4520,6 +4588,10 @@
     "translation": "A descrição do grupo de alta disponibilidade não pode estar vazia."
   },
   {
+    "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName} because node {ClusterNode} is 'cluster' type. HA group does not support 'cluster' type members.",
+    "translation": "Não é possível criar o grupo de alta disponibilidade {HaGroupOrg}/{HaGroupName} porque o nó {ClusterNode} é do tipo 'cluster'. O grupo de alta disponibilidade não suporta membros do tipo 'cluster'."
+  },
+  {
     "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
     "translation": "Grupo de alta disponibilidade {HaGroupOrg}/{HaGroupName} atualizado no Horizon Exchange"
   },
@@ -4544,6 +4616,10 @@
     "translation": "Grupo de alta disponibilidade {HaGroupOrg}/{HaGroupName} removido do Horizon Exchange."
   },
   {
+    "id": "Cannot add node {ClusterNode} to HA group {HaGroupOrg}/{HaGroupName} because it has 'cluster' type. HA group does not support 'cluster' type members.",
+    "translation": "Não é possível incluir o nó {ClusterNode} no grupo de alta disponibilidade {HaGroupOrg}/{HaGroupName} porque ele tem o tipo 'cluster'. O grupo de alta disponibilidade não suporta membros do tipo 'cluster'."
+  },
+  {
     "id": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
     "translation": "organização do nó é diferente da organização do grupo {HaGroupOrg} para o nó '{NodeOrg}/{NodeName}'"
   },
@@ -4560,8 +4636,8 @@
     "translation": "Os nós a seguir foram incluídos no grupo de alta disponibilidade {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\""
   },
   {
-    "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
-    "translation": "Aviso: os nós a seguir não podem ser incluídos no grupo porque estão em grupos diferentes: \"{JoinfailedNodes_}\""
+    "id": "the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+    "translation": "os nós a seguir não podem ser incluídos no grupo porque estão em grupos diferentes: \"{JoinfailedNodes_}\""
   },
   {
     "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
@@ -5416,6 +5492,134 @@
     "translation": "Falha ao comparar as versões. {Err}"
   },
   {
+    "id": "Please sepcify the device alias received from the manufacturer. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+    "translation": "Especifique o alias do dispositivo recebido do fabricante. Os aliases de dispositivo suportados são: {JoinsupportedAliases_}, que são todos padrões de criptografia."
+  },
+  {
+    "id": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+    "translation": "Alias inválido. Os aliases de dispositivo suportados são: {JoinsupportedAliases_}, que são todos padrões de criptografia."
+  },
+  {
+    "id": "Listing FDO keys.",
+    "translation": "Listando chaves FDO."
+  },
+  {
+    "id": "Invalid alias name. The key for device alias \"{KeyName}\" does not exist in organization \"{Org}\".",
+    "translation": "Nome de alias inválido. A chave para o alias de dispositivo \"{KeyName}\" não existe na organização \"{Org}\"."
+  },
+  {
+    "id": "Invalid credentials. The user cannot access the public key for device alias \"{KeyName}\" in organization \"{Org}\" with the given credentials.",
+    "translation": "Credenciais inválidas. O usuário não pode acessar a chave pública para o alias de dispositivo \"{KeyName}\" na organização \"{Org}\" com as credenciais fornecidas."
+  },
+  {
+    "id": "Listing imported FDO vouchers.",
+    "translation": "Listando vouchers FDO importados."
+  },
+  {
+    "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
+    "translation": "json desserializando a resposta de HTTP '{StringrespBodyBytes}' de {ApiMsg}: {Err}"
+  },
+  {
+    "id": "failed to marshal 'hzn fdo voucher list' output: {Err}",
+    "translation": "falha ao serializar a saída 'hzn fdo voucher list': {Err}"
+  },
+  {
+    "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the FDO owner services.",
+    "translation": "Voucher \"{Device}\" transferido por download com sucesso para {FileName} por meio dos serviços do proprietário FDO."
+  },
+  {
+    "id": "Importing voucher file name: {Name}",
+    "translation": "Importando o nome do arquivo de voucher: {Name}"
+  },
+  {
+    "id": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
+    "translation": "-e, --policy e -p são todos mutuamente exclusivos (pode especificar um deles)"
+  },
+  {
+    "id": "accessing {PolicyFilePath}: {Err}",
+    "translation": "acessando {PolicyFilePath}: {Err}"
+  },
+  {
+    "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+    "translation": "O ID da organização '{HaGroupOrg}' do grupo de alta disponibilidade é diferente do ID da organização '{Org}' do nó."
+  },
+  {
+    "id": "reading voucher file {Name}: {Err}",
+    "translation": "lendo o arquivo de voucher {Name}: {Err}"
+  },
+  {
+    "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+    "translation": "Nome do voucher inválido. O voucher \"{Voucher}\" não existe na organização \"{Org}\"."
+  },
+  {
+    "id": "Invalid credentials. The user cannot access vouchers in org \"{Org}\" with given credentials.",
+    "translation": "Credenciais inválidas. O usuário não pode acessar os vouchers na organização \"{Org}\" com as credenciais fornecidas."
+  },
+  {
+    "id": "Invalid credentials. The user cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+    "translation": "Credenciais inválidas. O usuário não pode acessar o voucher \"{Voucher}\" na organização \"{Org}\" com as credenciais fornecidas."
+  },
+  {
+    "id": "reading the bytes from {VoucherFileName}: {Err}",
+    "translation": "lendo os bytes por meio de {VoucherFileName}: {Err}"
+  },
+  {
+    "id": "creating zip reader for {Name}: {Err}",
+    "translation": "criando o leitor de zip para {Name}: {Err}"
+  },
+  {
+    "id": "opening file {Name} within zip for {Name_1}: {Err}",
+    "translation": "abrindo o arquivo {Name} dentro do zip para {Name_1}: {Err}"
+  },
+  {
+    "id": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
+    "translation": "Voucher importado. ID do nó: {NodeId}, token: {NodeToken}"
+  },
+  {
+    "id": "reading the policy file {PolicyFilePath}: {Err}",
+    "translation": "lendo o arquivo de políticas {PolicyFilePath}: {Err}"
+  },
+  {
+    "id": "Using node policy: {PolicyStr}",
+    "translation": "Usando a política de nó: {PolicyStr}"
+  },
+  {
+    "id": "Cannot proceed with node {NodeId} because the node is in a different HA group: {ExistingHagrName}.",
+    "translation": "Não é possível continuar com o nó {NodeId} porque ele está em um grupo de alta disponibilidade diferente: {ExistingHagrName}."
+  },
+  {
+    "id": "The node is already in the HA group '{HaGroupName}'",
+    "translation": "O nó já está no grupo de alta disponibilidade '{HaGroupName}'"
+  },
+  {
+    "id": "Invalid voucher file format: {StringrespBodyBytes}.",
+    "translation": "Formato de arquivo de comprovante inválido: {StringrespBodyBytes}."
+  },
+  {
+    "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+    "translation": "Credenciais inválidas. O usuário \"{User}\" não pode acessar os vouchers na organização \"{Org}\" com as credenciais fornecidas."
+  },
+  {
+    "id": "Adding/updating node...",
+    "translation": "Incluindo/atualizando o nó..."
+  },
+  {
+    "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+    "translation": "lendo o arquivo de entrada do usuário de configuração de serviço {UserInputFileName}: {Err}"
+  },
+  {
+    "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
+    "translation": "falha ao desserializar a sequência json '{PolicyStr}': {Err}"
+  },
+  {
+    "id": "Incorrect policy format in '{PolicyStr}': {Err}",
+    "translation": "Formato de política incorreto em '{PolicyStr}': {Err}"
+  },
+  {
+    "id": "Adding/updating node policy...",
+    "translation": "Incluindo/atualizando a política de nó..."
+  },
+  {
     "id": "failed to marshal 'key list' output: {Err}",
     "translation": "Falha ao serializar a saída 'key list': {Err}"
   },
@@ -5972,6 +6176,10 @@
     "translation": "Token do nó aleatório gerado"
   },
   {
+    "id": "--ha-group flag does not support 'cluster' type agent or node.",
+    "translation": "a sinalização --ha-group não suporta o agente ou o nó do tipo 'cluster'."
+  },
+  {
     "id": "node '{Org}/{NodeId}' does not exist in the Exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
     "translation": "o nó '{Org}/{NodeId}' não existe no Exchange com o token especificado e a sinalização -u não foi especificada para fornecer credenciais do usuário do Exchange para criá-lo/atualizá-lo."
   },
@@ -5986,6 +6194,10 @@
   {
     "id": "Node type mismatch. The node type '{NodeType}' does not match the node type '{NodeType_1}' of the Exchange node {NId}.",
     "translation": "Incompatibilidade de tipo de nó. O tipo de nó '{NodeType}' não corresponde ao tipo de nó '{NodeType_1}' do nó do Exchange {NId}."
+  },
+  {
+    "id": "The node {NId} is in the HA group {HAGroup} but the agent is 'cluster' type. HA group does not support 'cluster' type members. Please remove the node from the HA group or choose a different node id with -n flag.",
+    "translation": "O nó {NId} está no grupo de alta disponibilidade {HAGroup}, mas o agente é do tipo 'cluster'. O grupo de alta disponibilidade não suporta membros do tipo 'cluster'. Remova o nó do grupo de alta disponibilidade ou escolha um ID de nó diferente com a sinalização -n."
   },
   {
     "id": "Node {Org}/{NodeId} exists in the Exchange",
@@ -6190,10 +6402,6 @@
   {
     "id": "invalid node ID: {Err}",
     "translation": "ID do nó inválido: {Err}"
-  },
-  {
-    "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
-    "translation": "O ID da organização '{HaGroupOrg}' do grupo de alta disponibilidade é diferente do ID da organização '{Org}' do nó."
   },
   {
     "id": "invalid HA group ID: {Err}",
@@ -6416,10 +6624,6 @@
     "translation": "Listando chaves SDO."
   },
   {
-    "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
-    "translation": "json desserializando a resposta de HTTP '{StringrespBodyBytes}' de {ApiMsg}: {Err}"
-  },
-  {
     "id": "SDO key name {KeyName} not found",
     "translation": "Nome da chave SDO {KeyName} não encontrado"
   },
@@ -6470,10 +6674,6 @@
   {
     "id": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
     "translation": "Credenciais inválidas. O usuário \"{User}\" não pode acessar a chave \"{KeyName}\" na organização \"{Org}\" com as credenciais fornecidas."
-  },
-  {
-    "id": "reading the bytes from {KeyFileName}: {Err}",
-    "translation": "lendo os bytes do {KeyFileName}: {Err}"
   },
   {
     "id": "parsing the json from {KeyFileName}: {Err}",
@@ -6548,14 +6748,6 @@
     "translation": "Listando vouchers do SDO importados."
   },
   {
-    "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
-    "translation": "Nome do voucher inválido. O voucher \"{Voucher}\" não existe na organização \"{Org}\"."
-  },
-  {
-    "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
-    "translation": "Credenciais inválidas. O usuário \"{User}\" não pode acessar os vouchers na organização \"{Org}\" com as credenciais fornecidas."
-  },
-  {
     "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
     "translation": "Credenciais inválidas. O usuário \"{User}\" não pode acessar o voucher \"{Voucher}\" na organização \"{Org}\" com as credenciais fornecidas."
   },
@@ -6572,22 +6764,6 @@
     "translation": "Voucher \"{Device}\" transferido por download com sucesso para {FileName} por meio dos serviços do proprietário SDO."
   },
   {
-    "id": "Importing voucher file name: {Name}",
-    "translation": "Importando o nome do arquivo de voucher: {Name}"
-  },
-  {
-    "id": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
-    "translation": "-e, --policy e -p são todos mutuamente exclusivos (pode especificar um deles)"
-  },
-  {
-    "id": "accessing {PolicyFilePath}: {Err}",
-    "translation": "acessando {PolicyFilePath}: {Err}"
-  },
-  {
-    "id": "reading voucher file {Name}: {Err}",
-    "translation": "lendo o arquivo de voucher {Name}: {Err}"
-  },
-  {
     "id": "unsupported voucher file type extension: {Name}",
     "translation": "extensão de tipo de arquivo de voucher não suportada: {Name}"
   },
@@ -6596,52 +6772,8 @@
     "translation": "AVISO: \"hzn voucher import\" foi descontinuado e será removido em uma liberação futura. Use \"hzn sdo voucher import\" como alternativa."
   },
   {
-    "id": "creating zip reader for {Name}: {Err}",
-    "translation": "criando o leitor de zip para {Name}: {Err}"
-  },
-  {
-    "id": "opening file {Name} within zip for {Name_1}: {Err}",
-    "translation": "abrindo o arquivo {Name} dentro do zip para {Name_1}: {Err}"
-  },
-  {
     "id": "Importing {VoucherFileName} for device {Uuid}, using rendezvous servers {RendezvousUrls__} ...",
     "translation": "Importando {VoucherFileName} para o dispositivo {Uuid}, usando servidores rendezvous {RendezvousUrls__} ..."
-  },
-  {
-    "id": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
-    "translation": "Voucher importado. ID do nó: {NodeId}, token: {NodeToken}"
-  },
-  {
-    "id": "reading the policy file {PolicyFilePath}: {Err}",
-    "translation": "lendo o arquivo de políticas {PolicyFilePath}: {Err}"
-  },
-  {
-    "id": "Using node policy: {PolicyStr}",
-    "translation": "Usando a política de nó: {PolicyStr}"
-  },
-  {
-    "id": "Invalid voucher file format: {StringrespBodyBytes}.",
-    "translation": "Formato de arquivo de comprovante inválido: {StringrespBodyBytes}."
-  },
-  {
-    "id": "Adding/updating node...",
-    "translation": "Incluindo/atualizando o nó..."
-  },
-  {
-    "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
-    "translation": "lendo o arquivo de entrada do usuário de configuração de serviço {UserInputFileName}: {Err}"
-  },
-  {
-    "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
-    "translation": "falha ao desserializar a sequência json '{PolicyStr}': {Err}"
-  },
-  {
-    "id": "Incorrect policy format in '{PolicyStr}': {Err}",
-    "translation": "Formato de política incorreto em '{PolicyStr}': {Err}"
-  },
-  {
-    "id": "Adding/updating node policy...",
-    "translation": "Incluindo/atualizando a política de nó..."
   },
   {
     "id": "failed to unmarshal REST API response: {Perr}",
