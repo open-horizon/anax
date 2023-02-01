@@ -330,7 +330,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		}
 	} else if existingHagrName != "" {
 		// if the node is in a ha group and the user did not specify --hagroup
-		msgPrinter.Printf("Node %v/%v is in HA group %v.", org, nodeId, haGroupName)
+		msgPrinter.Printf("Node %v/%v is in HA group %v.", org, nodeId, existingHagrName)
 		msgPrinter.Println()
 	}
 
