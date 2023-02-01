@@ -416,8 +416,8 @@
     "translation": "內容 {PROPSVCPRIVILEGED} 必須具有布林值（true 或 false）。"
   },
   {
-    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Horizon 代理程式的指令行介面。 大部分次指令都使用位於預設位置 http://localhost 的 Horizon 代理程式 API（請參閱環境「環境變數」區段來置換此項目）。\n \n 次指令說明：\n agbot：列出並管理 Horizon 合約機器人資源。\n agreement：列出或管理此邊緣節點與 Horizon 合約機器人建立的合約。\n architecture：顯示此機器的架構。 \n attribute：列出或管理目前在此 Horizon 邊緣節點上登錄的廣域屬性。\n deploycheck：檢查部署相容性。\n dev：用於建立服務的開發工具。\n env：顯示 Horizon 環境變數。\n eventlog：列出現行或所有登錄的事件日誌。\n exchange：列出並管理 Horizon Exchange 資源。\n key：列出並管理用於簽署及驗證服務的金鑰。 \n mms：列出並管理 Horizon 模型管理服務資源。\n mmstatus：列出並管理本端節點的節點管理狀態。\n node：列出並管理此 Horizon 邊緣節點的一般資訊。\n nodemanagement：列出並管理用於節點管理的資訊清單和代理程式檔案。\n policy：列出並管理此 Horizon 邊緣節點的原則。 \n reginput：為此型樣建立可用於 'hzn register' 指令的輸入檔範本。 \n register：向管理中心登錄此邊緣節點。\n secretsmanager：列出並管理密鑰管理程式中的密鑰。\n service：列出或管理目前在此 Horizon 邊緣節點上登錄的服務。\n status：顯示節點的現行 Horizon 內部狀態。\n unregister：取消登錄並重設此 Horizon 邊緣節點。\n userinput：列出或管理目前在此 Horizon 邊緣節點上登錄的服務使用者輸入。\n util：公用程式指令。\n version：顯示 Horizon 版本。\n sdo：列出並管理 Horizon SDO 所有權憑單和金鑰。\n\n 環境變數：\n HORIZON_URL：置換 hzn 聯絡 Horizon 代理程式 API 的 URL。\n 這有助於透過 ssh 通道使用遠端 Horizon 代理程式。\n HZN_EXCHANGE_URL：置換 'hzn exchange' 次指令用來 \n 與 Horizon Exchange 通訊的 URL，例如 \n https://exchange.bluehorizon.network/api/v1。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_ORG_ID：'hzn exchange -o' 旗標的預設值，\n 用以指定組織 ID。\n HZN_EXCHANGE_USER_AUTH：'hzn exchange -u' 或 'hzn\n  register -u' 旗標的預設值，格式為 '[org/] user:pw'。 請注意，如果在設定 HZN_EXCHANGE_USER_AUTH 時\n省略組織，則可以設定 HZN_ORG_ID。\n HZN_FSS_CSSURL：置換 'hzn mms' 次指令用來\n與 Horizon 模型管理服務通訊的 URL，例如 \n https://exchange.bluehorizon.network/css/。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_SDO_SVC_URL：置換 'hzn sdo' 次指令用來 \n 與 SDO 擁有者服務通訊的 URL。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n\n 所有這些環境變數以及指令說明中提及的環境變數\n都可以在使用者配置檔中以 JSON 格式指定：~/.hzn/hzn.json。\n 例如：\n {Com____}"
+    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+    "translation": "Horizon 代理程式的指令行介面。 大部分次指令都使用位於預設位置 http://localhost 的 Horizon 代理程式 API（請參閱環境「環境變數」區段來置換此項目）。\n\n 次指令說明：\n agbot：列出並管理 Horizon 合約機器人資源。\n agreement：列出或管理此邊緣節點與 Horizon 合約機器人建立的合約。\n architecture：顯示此機器的架構。 \n attribute：列出或管理目前在此 Horizon 邊緣節點上登錄的廣域屬性。\n deploycheck：檢查部署相容性。\n dev：用於建立服務的開發工具。\n env：顯示 Horizon 環境變數。\n eventlog：列出現行或所有登錄的事件日誌。\n exchange：列出並管理 Horizon Exchange 資源。\n key：列出並管理用於簽署及驗證服務的金鑰。 \n mms：列出並管理 Horizon 模型管理服務資源。\n mmstatus：列出並管理本端節點的節點管理狀態。\n node：列出並管理此 Horizon 邊緣節點的一般資訊。\n nodemanagement：列出並管理用於節點管理的資訊清單和代理程式檔案。\n policy：列出並管理此 Horizon 邊緣節點的原則。 \n reginput：為此型樣建立可用於 'hzn register' 指令的輸入檔範本。 \n register：向管理中心登錄此邊緣節點。\n secretsmanager：列出並管理密鑰管理程式中的密鑰。\n service：列出或管理目前在此 Horizon 邊緣節點上登錄的服務。\n status：顯示節點的現行 Horizon 內部狀態。\n unregister：取消登錄並重設此 Horizon 邊緣節點。\n userinput：列出或管理目前在此 Horizon 邊緣節點上登錄的服務使用者輸入。\n util：公用程式指令。\n version：顯示 Horizon 版本。\n sdo：列出並管理 Horizon SDO 所有權憑單和金鑰。\n fdo：列出並管理 Horizon FDO 所有權憑單和金鑰。\n\n 環境變數：\n HORIZON_URL：置換 hzn 聯絡 Horizon 代理程式 API 的 URL。\n 這有助於透過 ssh 通道使用遠端 Horizon 代理程式。\n HZN_EXCHANGE_URL：置換 'hzn exchange' 次指令用來 \n 與 Horizon Exchange 通訊的 URL，例如 \n https://exchange.bluehorizon.network/api/v1。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_ORG_ID：'hzn exchange -o' 旗標的預設值，\n 用以指定組織 ID。\n HZN_EXCHANGE_USER_AUTH：'hzn exchange -u' 或 'hzn\n  register -u' 旗標的預設值，格式為 '[org/] user:pw'。 請注意，如果在設定 HZN_EXCHANGE_USER_AUTH 時\n省略組織，則可以設定 HZN_ORG_ID。\n HZN_FSS_CSSURL：置換 'hzn mms' 次指令用來\n與 Horizon 模型管理服務通訊的 URL，例如 \n https://exchange.bluehorizon.network/css/。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_SDO_SVC_URL：置換 'hzn sdo' 次指令用來 \n 與 SDO 擁有者服務通訊的 URL。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_FDO_SVC_URL：置換 'hzn fdo' 次指令用來 \n 與 FDO 擁有者服務通訊的 URL。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n\n 所有這些環境變數以及指令說明中提及的環境變數\n都可以在使用者配置檔中以 JSON 格式指定：~/.hzn/hzn.json。\n 例如：\n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -2620,6 +2620,10 @@
     "translation": "列出並管理 SDO 擁有者服務中的資源"
   },
   {
+    "id": "Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+    "translation": "SDO 擁有者服務資源的 Horizon Exchange 認證。 預設值為 HZN_EXCHANGE_USER_AUTH 環境變數。 如果您未在其前面附加使用者組織，則會自動在其前面附加 HZN_ORG_ID 環境變數的值。"
+  },
+  {
     "id": "List and manage Horizon SDO ownership keys.",
     "translation": "列出並管理 Horizon SDO 所有權金鑰。"
   },
@@ -2766,6 +2770,54 @@
   {
     "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
     "translation": "與此憑證相關聯的邊緣裝置使用的節點原則檔案。 與 -e 及 -p 互斥。"
+  },
+  {
+    "id": "List and manage resources in FDO owner services",
+    "translation": "列出並管理 FDO 擁有者服務中的資源"
+  },
+  {
+    "id": "Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+    "translation": "用來查詢 FDO 擁有者服務資源的 Horizon Exchange 認證。 預設值為 HZN_EXCHANGE_USER_AUTH 環境變數。 如果您未在其前面附加使用者組織，則會自動在其前面附加 HZN_ORG_ID 環境變數的值。"
+  },
+  {
+    "id": "List FDO ownership public keys.",
+    "translation": "列出 FDO 所有權公開金鑰。"
+  },
+  {
+    "id": "List a public key from the FDO Owner services using the device alias from the manufacturer.",
+    "translation": "使用製造商的裝置別名，列出 FDO 擁有者服務中的公開金鑰。"
+  },
+  {
+    "id": "The device alias received from the manufacturer. It can be one of the following: SECP256R1, SECP384R1, RSAPKCS3072, RSAPKCS2048, RSA2048RESTR which are all cryptography standards.",
+    "translation": "從製造商收到的裝置別名。 它可以是下列其中一項：SECP256R1、SECP384R1、RSAPKCS3072、RSAPKCS2048、RSA2048RESTR，這些都是加密法標準。"
+  },
+  {
+    "id": "List and manage Horizon FDO ownership vouchers.",
+    "translation": "列出並管理 Horizon FDO 所有權憑證。"
+  },
+  {
+    "id": "List the imported FDO ownership vouchers.",
+    "translation": "列出匯入的 FDO 所有權憑證。"
+  },
+  {
+    "id": "List the full details of this FDO ownership voucher.",
+    "translation": "列出此 FDO 所有權憑證的完整詳細資料。"
+  },
+  {
+    "id": "Imports the FDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+    "translation": "匯入 FDO 所有權憑證，以便可以啟動、配置及登錄對應的裝置。"
+  },
+  {
+    "id": "The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).",
+    "translation": "FDO 所有權憑證檔案。 必須是檔案類型副檔名：txt、tar、tar.gz、tgz 或 zip。 如果它是任何 tar/zip 格式，則會匯入其中的所有 .txt 檔案（將無聲自動忽略其他檔案/目錄）。"
+  },
+  {
+    "id": "Download the specified FDO ownership voucher from FDO owner services.",
+    "translation": "從 FDO 擁有者服務下載指定的 FDO 所有權憑證。"
+  },
+  {
+    "id": "The FDO ownership voucher to download.",
+    "translation": "要下載的 FDO 所有權憑證。"
   },
   {
     "id": "organization ID must be specified with either the -o flag or HZN_ORG_ID",
@@ -3206,6 +3258,22 @@
   {
     "id": "The SDO service url: {SdoUrl}",
     "translation": "SDO 服務 URL：{SdoUrl}"
+  },
+  {
+    "id": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+    "translation": "未設定 HZN_FDO_SVC_URL，請從 {ANAXOVERWRITEFILE} 取得它。"
+  },
+  {
+    "id": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+    "translation": "從 {ANAXOVERWRITEFILE} 取得 HZN_FDO_SVC_URL 時發生錯誤：{Err}"
+  },
+  {
+    "id": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+    "translation": "無法從環境、{ANAXOVERWRITEFILE} 或其中一個 hzn.json 檔案取得 HZN_FDO_SVC_URL 值"
+  },
+  {
+    "id": "The FDO service url: {FdoUrl}",
+    "translation": "FDO 服務 URL：{FdoUrl}"
   },
   {
     "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
@@ -4520,6 +4588,10 @@
     "translation": "HA 群組說明不能為空。"
   },
   {
+    "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName} because node {ClusterNode} is 'cluster' type. HA group does not support 'cluster' type members.",
+    "translation": "無法建立 HA 群組 {HaGroupOrg}/{HaGroupName}，因為節點 {ClusterNode} 是 'cluster' 類型。 HA 群組不支援 'cluster' 類型成員。"
+  },
+  {
     "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
     "translation": "在 Horizon Exchange 中更新了 HA 群組 {HaGroupOrg}/{HaGroupName}"
   },
@@ -4544,6 +4616,10 @@
     "translation": "HA 群組 {HaGroupOrg}/{HaGroupName} 已從 Horizon Exchange 中移除。"
   },
   {
+    "id": "Cannot add node {ClusterNode} to HA group {HaGroupOrg}/{HaGroupName} because it has 'cluster' type. HA group does not support 'cluster' type members.",
+    "translation": "無法將節點 {ClusterNode} 新增至 HA 群組 {HaGroupOrg}/{HaGroupName}，因為它具有 'cluster' 類型。 HA 群組不支援 'cluster' 類型成員。"
+  },
+  {
     "id": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
     "translation": "節點組織與節點 '{NodeOrg}/{NodeName}' 的群組組織 {HaGroupOrg} 不同"
   },
@@ -4560,8 +4636,8 @@
     "translation": "下列節點已新增至 HA 群組 {HaGroupOrg}/{HaGroupName}：\"{JoinaddedNodes_}\""
   },
   {
-    "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
-    "translation": "警告：無法將下列節點新增至群組，因為它們位於不同的群組中：\"{JoinfailedNodes_}\""
+    "id": "the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+    "translation": "下列節點無法新增至群組，因為它們位於不同的群組中：\"{JoinfailedNodes_}\""
   },
   {
     "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
@@ -5416,6 +5492,134 @@
     "translation": "無法比較版本。{Err}"
   },
   {
+    "id": "Please sepcify the device alias received from the manufacturer. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+    "translation": "請指定從製造商收到的裝置別名。 支援的裝置別名為：{JoinsupportedAliases_}，它們都是加密法標準。"
+  },
+  {
+    "id": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+    "translation": "別名無效。 支援的裝置別名為：{JoinsupportedAliases_}，它們都是加密法標準。"
+  },
+  {
+    "id": "Listing FDO keys.",
+    "translation": "列出 FDO 金鑰。"
+  },
+  {
+    "id": "Invalid alias name. The key for device alias \"{KeyName}\" does not exist in organization \"{Org}\".",
+    "translation": "別名無效。 裝置別名 \"{KeyName}\" 的金鑰不存在於組織 \"{Org}\" 中。"
+  },
+  {
+    "id": "Invalid credentials. The user cannot access the public key for device alias \"{KeyName}\" in organization \"{Org}\" with the given credentials.",
+    "translation": "認證無效。 使用者無法使用給定的認證來存取組織 \"{Org}\" 中裝置別名 \"{KeyName}\" 的公開金鑰。"
+  },
+  {
+    "id": "Listing imported FDO vouchers.",
+    "translation": "列出匯入的 FDO 憑證。"
+  },
+  {
+    "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
+    "translation": "json 解除配置 {ApiMsg} 的 HTTP 回應 {StringrespBodyBytes} 時發生錯誤：{Err}"
+  },
+  {
+    "id": "failed to marshal 'hzn fdo voucher list' output: {Err}",
+    "translation": "無法配置 'hzn fdo poucher list' 輸出：{Err}"
+  },
+  {
+    "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the FDO owner services.",
+    "translation": "憑證 \"{Device}\" 已順利從 FDO 擁有者服務下載至 {FileName}。"
+  },
+  {
+    "id": "Importing voucher file name: {Name}",
+    "translation": "匯入憑證檔名：{Name}"
+  },
+  {
+    "id": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
+    "translation": "-e、--policy 及 -p 互斥（可以指定其中一個）"
+  },
+  {
+    "id": "accessing {PolicyFilePath}: {Err}",
+    "translation": "存取 {PolicyFilePath} 時發生錯誤：{Err}"
+  },
+  {
+    "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+    "translation": "HA 群組組織 ID '{HaGroupOrg}' 與節點組織 ID '{Org}' 不同。"
+  },
+  {
+    "id": "reading voucher file {Name}: {Err}",
+    "translation": "讀取檔案名稱 {Name} 時發生錯誤：{Err}"
+  },
+  {
+    "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+    "translation": "憑證名稱無效。 憑證 \"{Voucher}\" 未存在於組織 \"{Org}\" 中。"
+  },
+  {
+    "id": "Invalid credentials. The user cannot access vouchers in org \"{Org}\" with given credentials.",
+    "translation": "認證無效。 使用者無法使用給定的認證來存取組織 \"{Org}\" 中的憑證。"
+  },
+  {
+    "id": "Invalid credentials. The user cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+    "translation": "認證無效。 使用者無法使用給定的認證來存取組織 \"{Org}\" 中的憑證 \"{Voucher}\"。"
+  },
+  {
+    "id": "reading the bytes from {VoucherFileName}: {Err}",
+    "translation": "從 {VoucherFileName} 讀取位元組：{Err}"
+  },
+  {
+    "id": "creating zip reader for {Name}: {Err}",
+    "translation": "建立 {Name} 的壓縮讀取器時發生錯誤：{Err}"
+  },
+  {
+    "id": "opening file {Name} within zip for {Name_1}: {Err}",
+    "translation": "在 {Name_1} 的壓縮檔中開啟檔案 {Name} 時發生錯誤：{Err}"
+  },
+  {
+    "id": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
+    "translation": "已匯入憑證。 節點 ID：{NodeId}，記號：{NodeToken}"
+  },
+  {
+    "id": "reading the policy file {PolicyFilePath}: {Err}",
+    "translation": "讀取原則檔案 {PolicyFilePath} 時發生錯誤：{Err}"
+  },
+  {
+    "id": "Using node policy: {PolicyStr}",
+    "translation": "使用節點原則：{PolicyStr}"
+  },
+  {
+    "id": "Cannot proceed with node {NodeId} because the node is in a different HA group: {ExistingHagrName}.",
+    "translation": "無法繼續使用節點 {NodeId}，因為節點位於不同的 HA 群組：{ExistingHagrName}。"
+  },
+  {
+    "id": "The node is already in the HA group '{HaGroupName}'",
+    "translation": "節點已在 HA 群組 '{HaGroupName}' 中"
+  },
+  {
+    "id": "Invalid voucher file format: {StringrespBodyBytes}.",
+    "translation": "憑證檔案格式無效：{StringrespBodyBytes}。"
+  },
+  {
+    "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+    "translation": "認證無效。 使用者 \"{User}\" 無法使用給定的認證存取組織 \"{Org}\" 中的憑證。"
+  },
+  {
+    "id": "Adding/updating node...",
+    "translation": "正在新增/更新節點..."
+  },
+  {
+    "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+    "translation": "正在讀取服務配置使用者輸入檔 {UserInputFileName}：{Err}"
+  },
+  {
+    "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
+    "translation": "無法解除配置 JSON 字串 {PolicyStr}：{Err}"
+  },
+  {
+    "id": "Incorrect policy format in '{PolicyStr}': {Err}",
+    "translation": "{PolicyStr} 中的原則格式不正確：{Err}"
+  },
+  {
+    "id": "Adding/updating node policy...",
+    "translation": "正在新增/更新節點原則..."
+  },
+  {
     "id": "failed to marshal 'key list' output: {Err}",
     "translation": "無法配置 'key list' 輸出：{Err}"
   },
@@ -5972,6 +6176,10 @@
     "translation": "已產生隨機節點記號"
   },
   {
+    "id": "--ha-group flag does not support 'cluster' type agent or node.",
+    "translation": "--ha-group 旗標不支援 'cluster' 類型代理程式或節點。"
+  },
+  {
     "id": "node '{Org}/{NodeId}' does not exist in the Exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
     "translation": "在具有指定記號的 Exchange 中不存在節點 '{Org}/{NodeId}'，並且未指定 -u 標示以提供 Exchange 使用者認證來建立/更新該節點。"
   },
@@ -5986,6 +6194,10 @@
   {
     "id": "Node type mismatch. The node type '{NodeType}' does not match the node type '{NodeType_1}' of the Exchange node {NId}.",
     "translation": "節點類型不符。 節點類型 '{NodeType}' 不符合 Exchange 節點 {NId} 中的節點類型 '{NodeType_1}'。"
+  },
+  {
+    "id": "The node {NId} is in the HA group {HAGroup} but the agent is 'cluster' type. HA group does not support 'cluster' type members. Please remove the node from the HA group or choose a different node id with -n flag.",
+    "translation": "節點 {NId} 在 HA 群組 {HAGroup} 中，但代理程式是 'cluster' 類型。 HA 群組不支援 'cluster' 類型成員。 請從 HA 群組中移除節點，或使用 -n 旗標選擇不同的節點 ID。"
   },
   {
     "id": "Node {Org}/{NodeId} exists in the Exchange",
@@ -6190,10 +6402,6 @@
   {
     "id": "invalid node ID: {Err}",
     "translation": "無效的節點 ID：{Err}"
-  },
-  {
-    "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
-    "translation": "HA 群組組織 ID '{HaGroupOrg}' 與節點組織 ID '{Org}' 不同。"
   },
   {
     "id": "invalid HA group ID: {Err}",
@@ -6416,10 +6624,6 @@
     "translation": "正在列出 SDO 金鑰。"
   },
   {
-    "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
-    "translation": "json 解除配置 {ApiMsg} 的 HTTP 回應 {StringrespBodyBytes} 時發生錯誤：{Err}"
-  },
-  {
     "id": "SDO key name {KeyName} not found",
     "translation": "找不到 SDO 金鑰名稱 {KeyName}"
   },
@@ -6470,10 +6674,6 @@
   {
     "id": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
     "translation": "認證無效。 使用者 \"{User}\" 無法使用給定的認證存取組織 \"{Org}\" 中的金鑰 \"{KeyName}\"。"
-  },
-  {
-    "id": "reading the bytes from {KeyFileName}: {Err}",
-    "translation": "正在從 {KeyFileName} 中讀取位元組：{Err}"
   },
   {
     "id": "parsing the json from {KeyFileName}: {Err}",
@@ -6548,14 +6748,6 @@
     "translation": "正在列出所匯入的 SDO 憑證。"
   },
   {
-    "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
-    "translation": "憑證名稱無效。 憑證 \"{Voucher}\" 未存在於組織 \"{Org}\" 中。"
-  },
-  {
-    "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
-    "translation": "認證無效。 使用者 \"{User}\" 無法使用給定的認證存取組織 \"{Org}\" 中的憑證。"
-  },
-  {
     "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
     "translation": "認證無效。 使用者 \"{User}\" 無法使用給定的認證存取組織 \"{Org}\" 中的憑證 \"{Voucher}\"。"
   },
@@ -6572,22 +6764,6 @@
     "translation": "憑單 \"{Device}\" 已順利從 SDO 擁有者服務下載至 {FileName}。"
   },
   {
-    "id": "Importing voucher file name: {Name}",
-    "translation": "匯入憑證檔名：{Name}"
-  },
-  {
-    "id": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
-    "translation": "-e、--policy 及 -p 互斥（可以指定其中一個）"
-  },
-  {
-    "id": "accessing {PolicyFilePath}: {Err}",
-    "translation": "存取 {PolicyFilePath} 時發生錯誤：{Err}"
-  },
-  {
-    "id": "reading voucher file {Name}: {Err}",
-    "translation": "讀取檔案名稱 {Name} 時發生錯誤：{Err}"
-  },
-  {
     "id": "unsupported voucher file type extension: {Name}",
     "translation": "不受支援的憑證檔案類型副檔名：{Name}"
   },
@@ -6596,52 +6772,8 @@
     "translation": "警告：\"hzn voucher import\" 已淘汰，將在未來版本中移除。 請改用 \"hzn sdo voucher import\"。"
   },
   {
-    "id": "creating zip reader for {Name}: {Err}",
-    "translation": "建立 {Name} 的壓縮讀取器時發生錯誤：{Err}"
-  },
-  {
-    "id": "opening file {Name} within zip for {Name_1}: {Err}",
-    "translation": "在 {Name_1} 的壓縮檔中開啟檔案 {Name} 時發生錯誤：{Err}"
-  },
-  {
     "id": "Importing {VoucherFileName} for device {Uuid}, using rendezvous servers {RendezvousUrls__} ...",
     "translation": "匯入裝置 {Uuid} 的 {VoucherFileName}，使用會合伺服器 {RendezvousUrls__} ..."
-  },
-  {
-    "id": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
-    "translation": "已匯入憑證。 節點 ID：{NodeId}，記號：{NodeToken}"
-  },
-  {
-    "id": "reading the policy file {PolicyFilePath}: {Err}",
-    "translation": "讀取原則檔案 {PolicyFilePath} 時發生錯誤：{Err}"
-  },
-  {
-    "id": "Using node policy: {PolicyStr}",
-    "translation": "使用節點原則：{PolicyStr}"
-  },
-  {
-    "id": "Invalid voucher file format: {StringrespBodyBytes}.",
-    "translation": "憑證檔案格式無效：{StringrespBodyBytes}。"
-  },
-  {
-    "id": "Adding/updating node...",
-    "translation": "正在新增/更新節點..."
-  },
-  {
-    "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
-    "translation": "正在讀取服務配置使用者輸入檔 {UserInputFileName}：{Err}"
-  },
-  {
-    "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
-    "translation": "無法解除配置 JSON 字串 {PolicyStr}：{Err}"
-  },
-  {
-    "id": "Incorrect policy format in '{PolicyStr}': {Err}",
-    "translation": "{PolicyStr} 中的原則格式不正確：{Err}"
-  },
-  {
-    "id": "Adding/updating node policy...",
-    "translation": "正在新增/更新節點原則..."
   },
   {
     "id": "failed to unmarshal REST API response: {Perr}",

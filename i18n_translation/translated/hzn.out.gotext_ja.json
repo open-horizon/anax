@@ -416,8 +416,8 @@
     "translation": "プロパティー {PROPSVCPRIVILEGED} にはブール値 (true または false) が必要です。"
   },
   {
-    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルト・ロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには「環境変数」セクションを参照してください)。\n \n サブコマンド説明: \n agbot: Horizon 契約ボット・リソースをリストおよび管理します。\n 契約: このエッジ・ノードが Horizon 契約ボットで作成した契約をリストまたは管理します。\n マシン・アーキテクチャーを表示します。\n 属性: この Horizon エッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n deploycheck: デプロイメントの互換性を確認します。\n dev: サービスの作成のための開発ツール。\n env: Horizon 環境変数を表示します。\n eventlog: 現行またはすべての登録のイベント・ログをリストします。\n exchange: リスト、Horizon キーを管理します。\n mms: Horizon モデル管理サービス・リソースをリストおよび管理します。\n nmstatus: ローカル・ノードのノード管理状況をリストおよび管理します。\n node: この Horizon エッジ・ノードに関する一般情報をリストおよび管理します。\n nodemanagement: ノード管理のマニフェストとエージェント・ファイルをリストおよび管理します。\n policy: この Horizon ノードのポリシーをリストおよび管理します。\n reginput:「hzn register」コマンドに使用できる、このパターンの入力ファイル・テンプレートを作成します。\n register: このエッジ・ノードを管理ハブに登録します。\n secretsmanager: シークレット・マネージャー内のシークレットをリストして管理します。\n service: この Horizon エッジ・ノードに現在登録されているサービスをリストまたは管理します。\n status: このノードの現在の horizon 内部状況を表示します。\n unregister: この Horizon 入力エッジ・ノードを登録解除およびリセットします。\n Horizon バージョンを表示します。\n sdo: Horizon SDO 所有権 voucher およびキーをリストおよび管理します。\n \n 環境変数: \n HORIZON_URL: hzn が Horizon Agent API に接続する URL をオーバーライドします。\n これにより、ssh トンネル経由でリモート Horizon エージェントを使用できます。\n HZN_EXCHANGE_URL:「hzn exchange」サブコマンドが\nHorizon Exchange との通信に使用する URL をオーバーライドします。たとえば、\n https://exchange.bluehorizon.network/api/v1。 (デフォルトでは、hzn は Horizon エージェントに \n URL を要求します。) \n HZN_ORG_ID: 'hzn exchange -o' フラグのデフォルト値。\n 組織 ID 'を指定します。\n HZN_EXCHANGE_USER_AUTH:'[org/]user:pw' の形式の 'hzn exchange -u' または 'hzn\n  register -u' フラグのデフォルト値。 HZN_EXCHANGE_USER_AUTH が設定されているときに \n 組織が省略された場合は、HZN_ORG_ID を設定できます。\n HZN_FSS_CSSURL:「hzn mms」サブコマンドが Horizon モデル管理サービスとの通信に \n 使用する URL をオーバーライドします。\n 例: \n https://exchange.bluehorizon.network/css/ (デフォルトでは、\n hzn は Horizon エージェントに URL を要求します。) \n HZN_SDO_SVC_URL:「hzn sdo」サブコマンドが SDO 所有者サービスとの通信に \n 使用する URL をオーバーライドします。 (デフォルトでは、hzn は Horizon エージェントに URL を要求します。) \n \n これらすべての環境変数と、コマンド・ヘルプに記載されている環境変数は、\n ユーザーの構成ファイル ~/.hzn/hzn.json に JSON 形式で指定できます。\n 例: \n {Com____}"
+    "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+    "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルト・ロケーション (http://localhost) で Horizon Agent API を使用します  (これをオーバーライドするには、「環境変数」セクションを参照してください)。\n\nSubcommands Description: \n agbot: Horizon 契約ボットのリソースをリストおよび管理します。\n agreement: このエッジ・ノードで Horizon 契約 ボット\nで締結された契約をリストまたは管理します。architecture: このマシンのアーキテクチャーを表示します。 \n attribute: この Horizon エッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n deploycheck: デプロイメントの互換性を確認します。\n dev: サービスの作成のための開発ツールです。\n env: Horizon 環境変数を表示します。\n eventlog: 現行またはすべての登録のイベント・ログをリストします。\n exchange:  Horizon Exchange リソースをリストおよび管理します。\n key: 署名および検証に使用するサービスの鍵をリストおよび管理します。 \n mms: Horizon モデル管理サービス・リソースをリストおよび管理します。\n nmstatus: ローカル・ノード管理状況をリストおよび管理します。\n node: Horizon エッジ・ノードの一般情報をリストおよび管理します。\n nodemanagement: ノード管理のマニフェスト・ファイルおよびエージェント・ファイルをリストおよび管理します。\n policy: この Horizon エッジ・ノードのポリシーをリストおよび管理します。 \n reginput:「hzn register」コマンドに使用できる、このパターンの入力ファイル・テンプレートを作成します。 \n register: 管理ハブを持つこのエッジ・ノードを登録します。\n secretsmanager: シークレット・マネージャー内のシークレットをリストおよび管理します。\n service: この Horizon エッジ・ノードに現在登録されているサービスをリストまたは管理します。\n status: ノードの現在の Horizon 内部状況を表示します。\n unregister: Horizon エッジ・ノードを登録解除します。\n userinput: Horizon エッジ・ノードに現在登録されているサービス・ユーザー入力をリストまたは管理します。\n util: ユーティリティー・コマンド。\n version: Horizon バージョンを表示します。\n sdo: Horizon SDO 所有権証明書および鍵をリストおよび管理 します。\n fdo: Horizon FDO 所有権証明書および鍵をリストおよび管理します。\n\n環境変数:\n HORIZON_URL: hzn が Horizon エージェント API に接続する URL をオーバーライドします。\nこれにより、ssh トンネル経由でリモート Horizon エージェントを使用することが可能になります。\nHZN_EXCHANGE_URL: 「hzn exchange」サブコマンドが Horizon Exchange と通信するために使用する URL をオーバーラードします。 例: \n https://exchange.bluehorizon.network/api/v1。 (デフォルトでは、hzn は Horizon エージェントに \n URL を要求します。) \n HZN_ORG_ID: 'hzn exchange -o' フラグのデフォルト値。\n 組織 ID 'を指定します。\n HZN_EXCHANGE_USER_AUTH:'[org/]user:pw' の形式の 'hzn exchange -u' または 'hzn\n  register -u' フラグのデフォルト値。 HZN_EXCHANGE_USER_AUTH が設定されているときに \n 組織が省略された場合は、HZN_ORG_ID を設定できます。\n HZN_FSS_CSSURL:「hzn mms」サブコマンドが Horizon モデル管理サービスとの通信に \n 使用する URL をオーバーライドします。\n 例: \n https://exchange.bluehorizon.network/css/ (デフォルトでは、\n hzn は Horizon エージェントに URL を要求します。) \n HZN_SDO_SVC_URL:「hzn sdo」サブコマンドが SDO 所有者サービスとの通信に \n 使用する URL をオーバーライドします。 (デフォルトでは、hzn は Horizon エージェントに\n URL を要求します。) \n HZN_FDO_SVC_URL:「hzn fdo」サブコマンドが FDO 所有者サービスとの通信に \n 使用する URL をオーバーライドします。 (デフォルトでは、hzn は Horizon エージェントに URL を要求します。) \n \n これらすべての環境変数と、コマンド・ヘルプに記載されている環境変数は、\n ユーザーの構成ファイル ~/.hzn/hzn.json に JSON 形式で指定できます。\n 例: \n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -2620,6 +2620,10 @@
     "translation": "SDO 所有者サービス内のリソースをリストおよび管理します"
   },
   {
+    "id": "Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+    "translation": "SDO 所有者サービス・リソースに対する Horizon Exchange 資格情報。 デフォルトは HZN_EXCHANGE_USER_AUTH 環境変数です。 ユーザーの組織を前に付加していない場合は、環境変数 HZN_ORG_ID の値が自動的に前に付加されます。"
+  },
+  {
     "id": "List and manage Horizon SDO ownership keys.",
     "translation": "Horizon SDO 所有権鍵をリストおよび管理します。"
   },
@@ -2766,6 +2770,54 @@
   {
     "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
     "translation": "この証明書に関連付けられたエッジ・デバイスに使用するノード・ポリシー・ファイル。 これは、-e および -p とは同時に指定することはできません。"
+  },
+  {
+    "id": "List and manage resources in FDO owner services",
+    "translation": "FDO 所有者サービス内のリソースのリストおよび管理"
+  },
+  {
+    "id": "Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+    "translation": "FDO 所有者サービス・リソースを照会するための Horizon Exchange 資格情報。 デフォルトは HZN_EXCHANGE_USER_AUTH 環境変数です。 ユーザーの組織を前に付加していない場合は、環境変数 HZN_ORG_ID の値が自動的に前に付加されます。"
+  },
+  {
+    "id": "List FDO ownership public keys.",
+    "translation": "FDO 所有権の公開鍵をリストします。"
+  },
+  {
+    "id": "List a public key from the FDO Owner services using the device alias from the manufacturer.",
+    "translation": "製造元のデバイス別名を使用して、FDO 所有者サービスの公開鍵をリストします。"
+  },
+  {
+    "id": "The device alias received from the manufacturer. It can be one of the following: SECP256R1, SECP384R1, RSAPKCS3072, RSAPKCS2048, RSA2048RESTR which are all cryptography standards.",
+    "translation": "製造元から受け取ったデバイス別名。 これは、SECP256R1、SECP384R1、RSAPKCS3072、RSAPKCS2048、RSA2048RESTR のいずれかになります。これらはすべて暗号化標準です。"
+  },
+  {
+    "id": "List and manage Horizon FDO ownership vouchers.",
+    "translation": "Horizon FDO 所有権証明書をリストおよび管理します。"
+  },
+  {
+    "id": "List the imported FDO ownership vouchers.",
+    "translation": "インポートされた FDO 所有権証明書をリストします。"
+  },
+  {
+    "id": "List the full details of this FDO ownership voucher.",
+    "translation": "この FDO 所有権証明書の完全な詳細をリストします。"
+  },
+  {
+    "id": "Imports the FDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
+    "translation": "FDO 所有権証明書をインポートして、該当するデバイスを起動、構成、および登録できるようにします。"
+  },
+  {
+    "id": "The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).",
+    "translation": "FDO 所有権証明書ファイル。 ファイル・タイプの拡張子 (txt、tar、tar.gz、tgz、または zip) を指定する必要があります。 tar または zip の形式の場合、その中のすべての .txt ファイルがインポートされます (他のファイルおよびディレクトリーはメッセージも出されずに無視されます)。"
+  },
+  {
+    "id": "Download the specified FDO ownership voucher from FDO owner services.",
+    "translation": "指定された FDO 所有権証明書を FDO 所有者サービスからダウンロードします。"
+  },
+  {
+    "id": "The FDO ownership voucher to download.",
+    "translation": "ダウンロードする FDO 所有権証明書。"
   },
   {
     "id": "organization ID must be specified with either the -o flag or HZN_ORG_ID",
@@ -3206,6 +3258,22 @@
   {
     "id": "The SDO service url: {SdoUrl}",
     "translation": "SDO サービス URL: {SdoUrl}"
+  },
+  {
+    "id": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+    "translation": "HZN_FDO_SVC_URL が設定されていないので、{ANAXOVERWRITEFILE} から取得してください。"
+  },
+  {
+    "id": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+    "translation": "{ANAXOVERWRITEFILE} から HZN_FDO_SVC_URL を取得中にエラーが発生しました: {Err}"
+  },
+  {
+    "id": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+    "translation": "環境、{ANAXOVERWRITEFILE}、またはいずれかの hzn.json ファイルから HZN_FDO_SVC_URL 値を取得できませんでした"
+  },
+  {
+    "id": "The FDO service url: {FdoUrl}",
+    "translation": "FDO サービス URL: {FdoUrl}"
   },
   {
     "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
@@ -4520,6 +4588,10 @@
     "translation": "HA グループの説明を空にすることはできません。"
   },
   {
+    "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName} because node {ClusterNode} is 'cluster' type. HA group does not support 'cluster' type members.",
+    "translation": "ノード {ClusterNode} が「cluster」タイプであるため、HA グループ {HaGroupOrg}/{HaGroupName} を作成できません。 HA グループは「cluster」タイプのメンバーをサポートしていません。"
+  },
+  {
     "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
     "translation": "Horizon Exchange で HA グループ {HaGroupOrg}/{HaGroupName} が更新されました"
   },
@@ -4544,6 +4616,10 @@
     "translation": "HA グループ {HaGroupOrg}/{HaGroupName} が Horizon Exchange から削除されました。"
   },
   {
+    "id": "Cannot add node {ClusterNode} to HA group {HaGroupOrg}/{HaGroupName} because it has 'cluster' type. HA group does not support 'cluster' type members.",
+    "translation": "ノード {ClusterNode} は「cluster」タイプであるため、HA グループ {HaGroupOrg}/{HaGroupName} に追加できません。 HA グループは「cluster」タイプのメンバーをサポートしていません。"
+  },
+  {
     "id": "node org is different from the group org {HaGroupOrg} for node '{NodeOrg}/{NodeName}'",
     "translation": "ノード組織は、ノード「{NodeOrg}/{NodeName}」のグループ組織 {HaGroupOrg} と異なります"
   },
@@ -4560,8 +4636,8 @@
     "translation": "以下のノードが HA グループ {HaGroupOrg}/{HaGroupName}に追加されます:「{JoinaddedNodes_}」"
   },
   {
-    "id": "Warning: the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
-    "translation": "警告: 以下のノードは異なるグループに属しているため、グループに追加できません:「{JoinfailedNodes_}」"
+    "id": "the following nodes cannot be added to the group because they are in different groups: \"{JoinfailedNodes_}\"",
+    "translation": "以下のノードは異なるグループに属しているため、このグループに追加できません: 「{JoinfailedNodes_}」"
   },
   {
     "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
@@ -5416,6 +5492,134 @@
     "translation": "バージョンを比較できませんでした。{Err}"
   },
   {
+    "id": "Please sepcify the device alias received from the manufacturer. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+    "translation": "製造元から受け取ったデバイス別名を指定してください。 サポートされるデバイス別名は  {JoinsupportedAliases_} であり、すべて暗号化標準です。"
+  },
+  {
+    "id": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
+    "translation": "別名が無効です。 サポートされるデバイス別名は  {JoinsupportedAliases_} であり、すべて暗号化標準です。"
+  },
+  {
+    "id": "Listing FDO keys.",
+    "translation": "FDO 鍵をリストしています。"
+  },
+  {
+    "id": "Invalid alias name. The key for device alias \"{KeyName}\" does not exist in organization \"{Org}\".",
+    "translation": "別名が無効です。 デバイス別名「{KeyName}」の鍵が組織「{Org}」に存在しません。"
+  },
+  {
+    "id": "Invalid credentials. The user cannot access the public key for device alias \"{KeyName}\" in organization \"{Org}\" with the given credentials.",
+    "translation": "無効な資格情報です。 ユーザーは、指定された資格情報を使用して、組織「{Org}」 内のデバイス別名「{KeyName}」の公開鍵にアクセスできません。"
+  },
+  {
+    "id": "Listing imported FDO vouchers.",
+    "translation": "インポートされた FDO 証明書をリストしています。"
+  },
+  {
+    "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
+    "translation": "{ApiMsg} からの HTTP 応答「{StringrespBodyBytes}」の JSON アンマーシャル: {Err}"
+  },
+  {
+    "id": "failed to marshal 'hzn fdo voucher list' output: {Err}",
+    "translation": "「hzn fdo voucher list」の出力のマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the FDO owner services.",
+    "translation": "証明書「{Device}」が FDO 所有者サービスから {FileName} に正常にダウンロードされました。"
+  },
+  {
+    "id": "Importing voucher file name: {Name}",
+    "translation": "証明書ファイル名のインポート: {Name}"
+  },
+  {
+    "id": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
+    "translation": "-e、--policy、および -p は、どれも同時に指定することはできません (この内の 1 つを指定できます)"
+  },
+  {
+    "id": "accessing {PolicyFilePath}: {Err}",
+    "translation": "{PolicyFilePath} にアクセス: {Err}"
+  },
+  {
+    "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
+    "translation": "HA グループ組織 ID「{HaGroupOrg}」が、ノード組織 ID「{Org}」と異なります。"
+  },
+  {
+    "id": "reading voucher file {Name}: {Err}",
+    "translation": "証明書ファイル {Name} の読み取り: {Err}"
+  },
+  {
+    "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
+    "translation": "無効な証明書名です。 証明書「{Voucher}」は組織「{Org}」に存在しません。"
+  },
+  {
+    "id": "Invalid credentials. The user cannot access vouchers in org \"{Org}\" with given credentials.",
+    "translation": "無効な資格情報です。 ユーザーは、指定された資格情報を使用して組織「{Org}」内の証明書にアクセスできません。"
+  },
+  {
+    "id": "Invalid credentials. The user cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
+    "translation": "無効な資格情報です。 ユーザーは、指定された資格情報を使用して組織「{Org}」内の証明書「{Voucher}」にアクセスできません。"
+  },
+  {
+    "id": "reading the bytes from {VoucherFileName}: {Err}",
+    "translation": "{VoucherFileName} からバイトを読み取っています: {Err}"
+  },
+  {
+    "id": "creating zip reader for {Name}: {Err}",
+    "translation": "{Name} の zip リーダーの作成: {Err}"
+  },
+  {
+    "id": "opening file {Name} within zip for {Name_1}: {Err}",
+    "translation": "{Name_1} の zip 内の ファイル {Name} を開く: {Err}"
+  },
+  {
+    "id": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
+    "translation": "証明書がインポートされました。 ノード ID: {NodeId}、トークン: {NodeToken}"
+  },
+  {
+    "id": "reading the policy file {PolicyFilePath}: {Err}",
+    "translation": "ポリシー・ファイル {PolicyFilePath} の読み取り: {Err}"
+  },
+  {
+    "id": "Using node policy: {PolicyStr}",
+    "translation": "ノード・ポリシーの使用: {PolicyStr}"
+  },
+  {
+    "id": "Cannot proceed with node {NodeId} because the node is in a different HA group: {ExistingHagrName}.",
+    "translation": "ノード {NodeId} は別の HA グループ {ExistingHagrName} に属しているため、続行できません。"
+  },
+  {
+    "id": "The node is already in the HA group '{HaGroupName}'",
+    "translation": "このノードは既に HA グループ「{HaGroupName}」に含まれています"
+  },
+  {
+    "id": "Invalid voucher file format: {StringrespBodyBytes}.",
+    "translation": "無効な証明書ファイル・フォーマットです。{StringrespBodyBytes}"
+  },
+  {
+    "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
+    "translation": "無効な資格情報です。 ユーザー「{User}」は指定された資格情報で組織「{Org}」の証明書にアクセスできません。"
+  },
+  {
+    "id": "Adding/updating node...",
+    "translation": "ノードの追加/更新..."
+  },
+  {
+    "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
+    "translation": "サービス構成ユーザー入力ファイル {UserInputFileName}の読み取り: {Err}"
+  },
+  {
+    "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
+    "translation": "JSON ストリング「{PolicyStr}」のアンマーシャルに失敗しました。{Err}"
+  },
+  {
+    "id": "Incorrect policy format in '{PolicyStr}': {Err}",
+    "translation": "「{PolicyStr}」内のポリシー・フォーマットに誤りがあります。{Err}"
+  },
+  {
+    "id": "Adding/updating node policy...",
+    "translation": "ノード・ポリシーの追加/更新..."
+  },
+  {
     "id": "failed to marshal 'key list' output: {Err}",
     "translation": "「key list」の出力のマーシャルに失敗しました: {Err}"
   },
@@ -5972,6 +6176,10 @@
     "translation": "ランダム・ノード・トークンが生成されました。"
   },
   {
+    "id": "--ha-group flag does not support 'cluster' type agent or node.",
+    "translation": "-- ha-group フラグは、「cluster」タイプのエージェントやノードをサポートしていません。"
+  },
+  {
     "id": "node '{Org}/{NodeId}' does not exist in the Exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
     "translation": "指定されたトークンのノード「{Org}/{NodeId}」は、Exchange 内に存在しません。また、Exchange 用ユーザー資格情報を入力するための -u フラグが指定されていないので、ノードを作成または更新できません。"
   },
@@ -5986,6 +6194,10 @@
   {
     "id": "Node type mismatch. The node type '{NodeType}' does not match the node type '{NodeType_1}' of the Exchange node {NId}.",
     "translation": "ノード・タイプが一致しません。 ノード・タイプ「{NodeType}」が、Exchange ノード {NId} のノード・タイプ「{NodeType_1}」と一致しません。"
+  },
+  {
+    "id": "The node {NId} is in the HA group {HAGroup} but the agent is 'cluster' type. HA group does not support 'cluster' type members. Please remove the node from the HA group or choose a different node id with -n flag.",
+    "translation": "ノード {NId} は HA グループ {HAGroup} 内にありますが、エージェントは「cluster」タイプです。 HA グループは「cluster」タイプのメンバーをサポートしていません。 HA グループからこのノードを削除するか、-n フラグを使用して別のノード ID を選択してください。"
   },
   {
     "id": "Node {Org}/{NodeId} exists in the Exchange",
@@ -6190,10 +6402,6 @@
   {
     "id": "invalid node ID: {Err}",
     "translation": "無効なノード ID: {Err}"
-  },
-  {
-    "id": "the HA group organization ID '{HaGroupOrg}' is different from the node organization ID '{Org}'.",
-    "translation": "HA グループ組織 ID「{HaGroupOrg}」が、ノード組織 ID「{Org}」と異なります。"
   },
   {
     "id": "invalid HA group ID: {Err}",
@@ -6416,10 +6624,6 @@
     "translation": "SDO 鍵をリストしています。"
   },
   {
-    "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
-    "translation": "{ApiMsg} からの HTTP 応答「{StringrespBodyBytes}」の JSON アンマーシャル: {Err}"
-  },
-  {
     "id": "SDO key name {KeyName} not found",
     "translation": "SDO 鍵名 {KeyName} が見つかりません"
   },
@@ -6470,10 +6674,6 @@
   {
     "id": "Invalid credentials. User \"{User}\" cannot access key \"{KeyName}\" in org \"{Org}\" with given credentials.",
     "translation": "無効な資格情報です。 ユーザー「{User}」は指定された資格情報で組織「{Org}」の鍵「{KeyName}」にアクセスできません。"
-  },
-  {
-    "id": "reading the bytes from {KeyFileName}: {Err}",
-    "translation": "{KeyFileName} からバイトを読み取っています。{Err}"
   },
   {
     "id": "parsing the json from {KeyFileName}: {Err}",
@@ -6548,14 +6748,6 @@
     "translation": "インポートされた SDO 証明書をリストします。"
   },
   {
-    "id": "Invalid voucher name. Voucher \"{Voucher}\" does not exist in org \"{Org}\".",
-    "translation": "無効な証明書名です。 証明書「{Voucher}」は組織「{Org}」に存在しません。"
-  },
-  {
-    "id": "Invalid credentials. User \"{User}\" cannot access vouchers in org \"{Org}\" with given credentials.",
-    "translation": "無効な資格情報です。 ユーザー「{User}」は指定された資格情報で組織「{Org}」の証明書にアクセスできません。"
-  },
-  {
     "id": "Invalid credentials. User \"{User}\" cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
     "translation": "無効な資格情報です。 ユーザー「{User}」は指定された資格情報で組織「{Org}」の証明書「{Voucher}」にアクセスできません。"
   },
@@ -6572,22 +6764,6 @@
     "translation": "バウチャー \"{Device}\" が SDO 所有者サービスから {FileName} に正常にダウンロードされました。"
   },
   {
-    "id": "Importing voucher file name: {Name}",
-    "translation": "証明書ファイル名のインポート: {Name}"
-  },
-  {
-    "id": "-e, --policy, and -p are all mutually exclusive (can specify one of them)",
-    "translation": "-e、--policy、および -p は、どれも同時に指定することはできません (この内の 1 つを指定できます)"
-  },
-  {
-    "id": "accessing {PolicyFilePath}: {Err}",
-    "translation": "{PolicyFilePath} にアクセス: {Err}"
-  },
-  {
-    "id": "reading voucher file {Name}: {Err}",
-    "translation": "証明書ファイル {Name} の読み取り: {Err}"
-  },
-  {
     "id": "unsupported voucher file type extension: {Name}",
     "translation": "サポートされない証明書ファイル・タイプ拡張子: {Name}"
   },
@@ -6596,52 +6772,8 @@
     "translation": "警告: \"hzn voucher import\" は推奨されておらず、将来のリリースで削除される予定です。 代わりに \"hzn sdo voucher import\" を使用してください。"
   },
   {
-    "id": "creating zip reader for {Name}: {Err}",
-    "translation": "{Name} の zip リーダーの作成: {Err}"
-  },
-  {
-    "id": "opening file {Name} within zip for {Name_1}: {Err}",
-    "translation": "{Name_1} の zip 内の ファイル {Name} を開く: {Err}"
-  },
-  {
     "id": "Importing {VoucherFileName} for device {Uuid}, using rendezvous servers {RendezvousUrls__} ...",
     "translation": "デバイス {Uuid} の {VoucherFileName} を、rendezvous サーバー {RendezvousUrls__} を使用してインポート中 ..."
-  },
-  {
-    "id": "Voucher imported. Node id: {NodeId}, token: {NodeToken}",
-    "translation": "証明書がインポートされました。 ノード ID: {NodeId}、トークン: {NodeToken}"
-  },
-  {
-    "id": "reading the policy file {PolicyFilePath}: {Err}",
-    "translation": "ポリシー・ファイル {PolicyFilePath} の読み取り: {Err}"
-  },
-  {
-    "id": "Using node policy: {PolicyStr}",
-    "translation": "ノード・ポリシーの使用: {PolicyStr}"
-  },
-  {
-    "id": "Invalid voucher file format: {StringrespBodyBytes}.",
-    "translation": "無効な証明書ファイル・フォーマットです。{StringrespBodyBytes}"
-  },
-  {
-    "id": "Adding/updating node...",
-    "translation": "ノードの追加/更新..."
-  },
-  {
-    "id": "reading the service cofiguration user input file {UserInputFileName}: {Err}",
-    "translation": "サービス構成ユーザー入力ファイル {UserInputFileName}の読み取り: {Err}"
-  },
-  {
-    "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
-    "translation": "JSON ストリング「{PolicyStr}」のアンマーシャルに失敗しました。{Err}"
-  },
-  {
-    "id": "Incorrect policy format in '{PolicyStr}': {Err}",
-    "translation": "「{PolicyStr}」内のポリシー・フォーマットに誤りがあります。{Err}"
-  },
-  {
-    "id": "Adding/updating node policy...",
-    "translation": "ノード・ポリシーの追加/更新..."
   },
   {
     "id": "failed to unmarshal REST API response: {Perr}",

@@ -3567,6 +3567,78 @@
       "fuzzy": true
     },
     {
+      "id": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+      "message": "HZN_FDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+      "translation": "HZN_FDO_SVC_URL이 설정되어 있지 않습니다. {ANAXOVERWRITEFILE}에서 가져오십시오.",
+      "placeholders": [
+        {
+          "id": "ANAXOVERWRITEFILE",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ANAX_OVERWRITE_FILE"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+      "message": "Error getting HZN_FDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "{ANAXOVERWRITEFILE}에서 HZN_FDO_SVC_URL을 가져오는 중에 오류 발생: {Err}",
+      "placeholders": [
+        {
+          "id": "ANAXOVERWRITEFILE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ANAX_OVERWRITE_FILE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+      "message": "Could not get the HZN_FDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+      "translation": "해당 환경, {ANAXOVERWRITEFILE} 또는 hzn.json 파일 중 하나에서 HZN_FDO_SVC_URL 값을 가져올 수 없음",
+      "placeholders": [
+        {
+          "id": "ANAXOVERWRITEFILE",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ANAX_OVERWRITE_FILE"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The FDO service url: {FdoUrl}",
+      "message": "The FDO service url: {FdoUrl}",
+      "translation": "FDO 서비스 URL: {FdoUrl}",
+      "placeholders": [
+        {
+          "id": "FdoUrl",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "fdoUrl"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
       "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
       "translation": "{ApiMethod}을(를) 실행하기 위해 Horizon {HorizonService} REST API에 연결할 수 없습니다. Horizon 에이전트가 현재 구성된 것과 다른 {Article} {HorizonService_1}을(를) 사용하도록 {ServiceEnvVarName}을(를) 설정합니다. 구체적 오류: {Err}",
