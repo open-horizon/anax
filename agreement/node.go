@@ -121,7 +121,7 @@ func (w *AgreementWorker) checkNodeUserInputChanges(pDevice *persistence.Exchang
 				w.devicePattern, "")
 			w.isOffline()
 		}
-	} else if updated && len(changedSvcSpecs) != 0{
+	} else if updated && len(changedSvcSpecs) != 0 {
 		w.hznOffline = false
 		glog.V(3).Infof(logString(fmt.Sprintf("Node user input updated with the exchange copy. The changed user inputs are: %v", changedSvcSpecs)))
 		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,

@@ -37,11 +37,13 @@ func Test_Validate_Succeed1(t *testing.T) {
 func Test_Validate_Succeed_Special_Characters(t *testing.T) {
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{
-		"でんしゃのりば == 京都",
+		"でんしゃのりば == アイウエオカキクケコサシスセソ",
 		"火车站 == 上海",    // simplified Chinese
 		"車號 == 漢54321", // traditional Chinese
 		"estación_de_tren = Nochistlán",
 		"기차역== 서울시",
+		"アイウエオカキクケコサシスセソ==最終ログインを有効にするＡＢＣ一丁七Çàâｱｲｳ€¥鯵表噂ソ十豹竹敷～兎椄＊＠＇屜丯愛金",
+		"All==\"möglich política règles d'arrêt Não é possível ler o arquivo を使用したポリシーのアドバタイズを開始しま 서비스에 대한 정책 파을 읽을 수 없습니다. 오 副本同步本地节点策略 無法從本端資料庫讀取節點物件\"",
 	}
 	ce := constraintStrings
 
