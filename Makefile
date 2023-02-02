@@ -505,7 +505,7 @@ fss: ess-docker-image css-docker-image
 
 # This is a target that is ONLY called by the deb packager system. The ESS and CSS containers are built and published by that process
 # when new versions are created. Developers should not use this target.
-# Note that only ESS is supported by amd64 and ppc64el archs. CSS is amd64 only.
+# Note that only ESS is supported by amd64, arm64 and ppc64el archs. CSS is amd64 only.
 fss-package: ess-docker-image css-docker-image
 	@echo "Packaging file sync service containers"
 	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
