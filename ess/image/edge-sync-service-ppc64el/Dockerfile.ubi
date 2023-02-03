@@ -14,6 +14,8 @@ RUN microdnf update -y --nodocs --setopt=install_weak_deps=0 --disableplugin=sub
 # add license file
 COPY LICENSE.txt /licenses
 
+RUN mkdir -p /edge-sync-service
+
 ADD edge-sync-service /edge-sync-service/
 
 CMD ["/edge-sync-service/edge-sync-service"]
