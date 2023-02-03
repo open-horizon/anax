@@ -27,6 +27,8 @@ spec:
       initContainers:
       - name: initcontainer
         image: alpine:latest
+        securityContext:
+          runAsNonRoot: false
         command:
         - sh
         - -c
