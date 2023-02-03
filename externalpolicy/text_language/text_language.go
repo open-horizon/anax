@@ -230,17 +230,20 @@ func validOpValuePair(name string, op string, opType rune, val interface{}, valT
 }
 
 // the unicode character ranges are:
-// \u4E00-\u9FFF common chinese characters
+// \u4E00-\u9FFF CJK common characters
 // \u00A0-\u00FF latin 1 supplement
 // \u3040-\u309F hiragana (japanese)
+// \u30A0-\u30FF katakana (japanese)
 // \u1100-\u11FF and \uAC00-\uD7AF hangul (korean)
+// \uFF00-\uFFEF Halfwidth and Fullwidth Forms
+// \u20A0-\u20CF Currency Symbols
 func getLexer() lexer.Definition {
 	return lexer.Must(ebnf.New(`
 	  alphanumeric = digit | alpha .
 
 	  vers = {digit} "." {digit} "." {digit} .
 	  digit = "0"…"9" .
-	  alpha = "a"…"z" | "A"…"Z" | "\u4E00"…"\u9FFF" | "\u00A0"…"\u00FF" | "\u3040"…"\u309F" | "\u1100"…"\u11FF" | "\uAC00"…"\uD7AF" .
+	  alpha = "a"…"z" | "A"…"Z" | "\u4E00"…"\u9FFF" | "\u00A0"…"\u00FF" | "\u3040"…"\u309F" | "\u1100"…"\u11FF" | "\uAC00"…"\uD7AF" | "\u30A0"…"\u30FF" | "\uFF00"…"\uFFEF" | "\u20A0"…"\u20CF" .
 
 	  InStr = "in" {"in"} (alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | ".") {alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | "."} .
 
