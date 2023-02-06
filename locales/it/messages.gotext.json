@@ -400,7 +400,7 @@
     {
       "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
       "message": "Node {Org}/{Node} can start executing nmp {NmpId}.",
-      "translation": "Il nodo {Org}/{Node} può avviare l'esecuzione di nmp {NmpId}.",
+      "translation": "Il nodo {Org}/{Node} può avviare l'esecuzione della nmp {NmpId}.",
       "placeholders": [
         {
           "id": "Org",
@@ -432,7 +432,7 @@
     {
       "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
       "message": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
-      "translation": "Il nodo {Org}/{Node} non può avviare l'esecuzione di nmp {NmpId}.",
+      "translation": "Il nodo {Org}/{Node} non può avviare l'esecuzione della nmp {NmpId}.",
       "placeholders": [
         {
           "id": "Org",
@@ -7342,7 +7342,7 @@
     {
       "id": "The start time must be in RFC3339 format or set to \"now\".",
       "message": "The start time must be in RFC3339 format or set to \"now\".",
-      "translation": "L'ora di inizio deve essere in formato RFC3339 o deve essere impostata su \"now\".",
+      "translation": "La data/ora di inizio deve essere in formato RFC3339 o deve essere impostata su \"now\".",
       "fuzzy": true
     },
     {
@@ -9694,7 +9694,7 @@
         "New node management policy status created for policy {Arg_1}."
       ],
       "message": "New node management policy status created for policy {Arg_1}.",
-      "translation": "Nuovo stato della politica di gestione del nodo creato per la politica {Arg_1}.",
+      "translation": "Nuovo stato della politica di gestione dei nodi creato per la politica {Arg_1}.",
       "placeholders": [
         {
           "id": "Arg_1",

@@ -3266,7 +3266,7 @@
     {
       "id": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
       "message": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
-      "translation": "Der Name der neu zu bewertenden Knotenmanagementrichtlinie. Erfolgt keine Angabe, werden alle Knotenmanagementrichtlinie für diesen Knoten erneut bewertet.",
+      "translation": "Der Name der neu zu bewertenden Knotenmanagementrichtlinie. Erfolgt keine Angabe, werden alle Knotenmanagementrichtlinien für diesen Knoten erneut bewertet.",
       "fuzzy": true
     },
     {
@@ -14282,7 +14282,7 @@
     {
       "id": "Assertions on how the agent should update itself.",
       "message": "Assertions on how the agent should update itself.",
-      "translation": "Assertionen, wie der Agent sich selbst aktualisieren soll.",
+      "translation": "Zusicherungen, wie der Agent sich selbst aktualisieren soll.",
       "fuzzy": true
     },
     {
@@ -14624,7 +14624,7 @@
     {
       "id": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
       "message": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
-      "translation": "Die Knotenmanagementrichtlinie {NmpFullName} ist bereits in Horizon Exchange aktiviert.",
+      "translation": "Die Knotenmanagementrichtlinie {NmpFullName} ist bereits in Horizon Exchange aktiviert",
       "placeholders": [
         {
           "id": "NmpFullName",
@@ -14680,7 +14680,7 @@
     {
       "id": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
       "message": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
-      "translation": "Die Knotenmanagementrichtlinie {NmpFullName} ist in Horizon Exchange bereits inaktiviert.",
+      "translation": "Die Knotenmanagementrichtlinie {NmpFullName} ist in Horizon Exchange bereits inaktiviert",
       "placeholders": [
         {
           "id": "NmpFullName",
@@ -18148,7 +18148,7 @@
     {
       "id": "The node is already in the HA group '{HaGroupName}'",
       "message": "The node is already in the HA group '{HaGroupName}'",
-      "translation": "Der Knoten ist bereits Teil der HA-Gruppe '{HaGroupName}'.",
+      "translation": "Der Knoten ist bereits Teil der HA-Gruppe '{HaGroupName}'",
       "placeholders": [
         {
           "id": "HaGroupName",
@@ -20546,7 +20546,7 @@
     {
       "id": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
       "message": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
-      "translation": "Mit der angegebene HA-Gruppe {HaGroupName} kann nicht fortgefahren werden, weil sich der Knoten in einer anderen HA-Gruppe befindet {ExistingHagrName}.",
+      "translation": "Mit der angegebenen HA-Gruppe {HaGroupName} kann nicht fortgefahren werden, weil sich der Knoten in einer anderen HA-Gruppe mit Namen {ExistingHagrName} befindet.",
       "placeholders": [
         {
           "id": "HaGroupName",

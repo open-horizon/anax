@@ -400,7 +400,7 @@
     {
       "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
       "message": "Node {Org}/{Node} can start executing nmp {NmpId}.",
-      "translation": "El nodo {Org}/{Node} puede empezar a ejecutar la NMP {NmpId}.",
+      "translation": "El nodo {Org}/{Node} puede empezar a ejecutar la nmp {NmpId}.",
       "placeholders": [
         {
           "id": "Org",
@@ -432,7 +432,7 @@
     {
       "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
       "message": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
-      "translation": "El nodo {Org}/{Node} no puede empezar a ejecutar la NMP {NmpId}.",
+      "translation": "El nodo {Org}/{Node} no puede empezar a ejecutar la nmp {NmpId}.",
       "placeholders": [
         {
           "id": "Org",

@@ -85,11 +85,11 @@
   },
   {
     "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
-    "translation": "Il nodo {Org}/{Node} può avviare l'esecuzione di nmp {NmpId}."
+    "translation": "Il nodo {Org}/{Node} può avviare l'esecuzione della nmp {NmpId}."
   },
   {
     "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
-    "translation": "Il nodo {Org}/{Node} non può avviare l'esecuzione di nmp {NmpId}."
+    "translation": "Il nodo {Org}/{Node} non può avviare l'esecuzione della nmp {NmpId}."
   },
   {
     "id": "No input found.",
@@ -1581,7 +1581,7 @@
   },
   {
     "id": "The start time must be in RFC3339 format or set to \"now\".",
-    "translation": "L'ora di inizio deve essere in formato RFC3339 o deve essere impostata su \"now\"."
+    "translation": "La data/ora di inizio deve essere in formato RFC3339 o deve essere impostata su \"now\"."
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1949,7 +1949,7 @@
   },
   {
     "id": "New node management policy status created for policy {Arg_1}.",
-    "translation": "Nuovo stato della politica di gestione del nodo creato per la politica {Arg_1}."
+    "translation": "Nuovo stato della politica di gestione dei nodi creato per la politica {Arg_1}."
   },
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",

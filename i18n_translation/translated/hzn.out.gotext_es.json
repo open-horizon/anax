@@ -17,11 +17,11 @@
   },
   {
     "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
-    "translation": "El nodo {Org}/{Node} puede empezar a ejecutar la NMP {NmpId}."
+    "translation": "El nodo {Org}/{Node} puede empezar a ejecutar la nmp {NmpId}."
   },
   {
     "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
-    "translation": "El nodo {Org}/{Node} no puede empezar a ejecutar la NMP {NmpId}."
+    "translation": "El nodo {Org}/{Node} no puede empezar a ejecutar la nmp {NmpId}."
   },
   {
     "id": "No input found.",
@@ -417,7 +417,7 @@
   },
   {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Interfaz de línea de comandos del agente de Horizon. La mayoría de los subcomandos usan el API del agente de Horizon en la ubicación predeterminada http://localhost (consulte la sección Variables de entorno para cambiar esto).\n\nSubcomandos Descripción:\n  agbot: Listar y gestionar los recursos del bot de acuerdos de Horizon.\n  agreement: Listar o gestionar los acuerdos que este nodo perimetral ha hecho con un bot de acuerdos de Horizon.\n  architecture: Mostrar la arquitectura de esta máquina. \n  attribute: Listar o gestionar los atributos globales registrados actualmente en este nodo perimetral de Horizon.\n  deploycheck: Comprobar la compatibilidad del despliegue.\n  dev: Herramientas de desarrollo para crear servicios.\n  env: Mostrar las variables de entorno de Horizon.\n  eventlog: Listar los registros de suceso del registro actual o de todos los registros.\n  exchange: Listar y gestionar los recursos de Horizon Exchange.\n  key: Listra y gestionar las claves de firma y verificación de servicios. \n  mms: Listar y gestionar los recursos de Horizon Model Management Service.\n  nmstatus: Listar y gestionar el estado de gestión del nodo local.\n  node: Listar y gestionar la información general de este nodo perimetral de Horizon.\n  nodemanagement: Listar y gestionar los manifiestos y archivos de agente para la gestión de nodos.\n  policy: Listar y gestionar la política de este nodo perimetral de Horizon. \n  reginput: Crear una plantilla de archivo de entrada para este patrón que se pueda usar en el comando 'hzn register'. \n  register: Registrar este nodo perimetral en el hub de gestión.\n  secretsmanager: Listar y gestionar secretos en el gestor de secretos.\n  service: Listar o gestionar los servicios registrados actualmente en este nodo perimetral de Horizon.\n  status: Mostrar el estado interno actual de Horizon del nodo.\n  unregister: Anular el registro y restablecer este nodo perimetral de Horizon.\n  userinput: Listar o gestionar las entradas de usuario de servicio registradas actualmente en este nodo perimetral de Horizon.\n  util: Comandos de utilidad.\n  version: Mostrar la versión de Horizon.\n  sdo: Listar y gestionar los comprobantes y claves de propiedad SDO de Horizon.\n  fdo: Listar y gestionar los comprobantes y claves de propiedad FDP de Horizon.\n\nVariables de Entorno:\n  HORIZON_URL:  Sustituir el URL por el que hzn se pone en contacto con el API del agente de  Horizon.\n      Esto se puede facilitar con un agente de Horizon remoto a través de un túnel SSH.\n  HZN_EXCHANGE_URL:  Sustituir el URL que usan los subcomandos de 'hzn exchange'\n      para comunicarse con Horizon Exchange, por ejemplo\n      https://exchange.bluehorizon.network/api/v1. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n HZN_ORG_ID: Valor predeterminado del distintivo 'hzn exchange -o', \n para especificar el ID de organización '. \n HZN_EXCHANGE_USER_AUTH: Valor predeterminado de los distintivos 'hzn exchange -u' o 'hzn\n register -u ', con el formato' [org/]usuario:cont'. Observe que HZN_ORG_ID se puede definir\n si se omite org cuando HZN_EXCHANGE_USER_AUTH está definido. \n HZN_FSS_CSSURL: Sustituir el URL que utilizan los subcomandos 'hzn mms' \n para comunicarse con el servicio de gestión de modelos de Horizon; por ejemplo \n https://exchange.bluehorizon.network/css/. (De forma predeterminada hzn solicitará al \n agente de Horizon el URL). \n HZN_SDO_SVC_URL: Sustituir el URL que utilizan los subcomandos 'hzn sdo' \n para comunicarse con los servicios de propietario de SDO. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL.) \n HZN_FDO_SVC_URL: Sustituir el URL que utilizan los subcomandos 'hzn fdo' \n para comunicarse con los servicios de propietario FDO. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n \n Todas estas variables de entorno y las mencionadas en la ayuda del comando se pueden \n especificar en el archivo de configuración del usuario: ~/.hzn/hzn.json en formato JSON. \n Por ejemplo: \n {Com____}"
+    "translation": "Interfaz de línea de mandatos del agente de Horizon. La mayoría de los submandatos usan el API del agente de Horizon en la ubicación predeterminada http://localhost (consulte la sección Variables de entorno para cambiar esto).\n\nSubmandatos Descripción:\n  agbot: Listar y gestionar los recursos del bot de acuerdos de Horizon.\n  agreement: Listar o gestionar los acuerdos que este nodo perimetral ha hecho con un bot de acuerdos de Horizon.\n  architecture: Mostrar la arquitectura de esta máquina. \n  attribute: Listar o gestionar los atributos globales registrados actualmente en este nodo perimetral de Horizon.\n  deploycheck: Comprobar la compatibilidad del despliegue.\n  dev: Herramientas de desarrollo para crear servicios.\n  env: Mostrar las variables de entorno de Horizon.\n  eventlog: Listar los registros de suceso del registro actual o de todos los registros.\n  exchange: Listar y gestionar los recursos de Horizon Exchange.\n  key: Listra y gestionar las claves de firma y verificación de servicios. \n  mms: Listar y gestionar los recursos de Horizon Model Management Service.\n  nmstatus: Listar y gestionar el estado de gestión del nodo local.\n  node: Listar y gestionar la información general de este nodo perimetral de Horizon.\n  nodemanagement: Listar y gestionar los manifiestos y archivos de agente para la gestión de nodos.\n  policy: Listar y gestionar la política de este nodo perimetral de Horizon. \n  reginput: Crear una plantilla de archivo de entrada para este patrón que se pueda usar en el mandato 'hzn register'. \n  register: Registrar este nodo perimetral en el hub de gestión.\n  secretsmanager: Listar y gestionar secretos en el gestor de secretos.\n  service: Listar o gestionar los servicios registrados actualmente en este nodo perimetral de Horizon.\n  status: Mostrar el estado interno actual de Horizon del nodo.\n  unregister: Anular el registro y restablecer este nodo perimetral de Horizon.\n  userinput: Listar o gestionar las entradas de usuario de servicio registradas actualmente en este nodo perimetral de Horizon.\n  util: Mandatos de utilidad.\n  version: Mostrar la versión de Horizon.\n  sdo: Listar y gestionar los comprobantes y claves de propiedad SDO de Horizon.\n  fdo: Listar y gestionar los comprobantes y claves de propiedad FDP de Horizon.\n\nVariables de Entorno:\n  HORIZON_URL:  Sustituir el URL por el que hzn se pone en contacto con el API del agente de  Horizon.\n      Esto se puede facilitar con un agente de Horizon remoto a través de un túnel SSH.\n  HZN_EXCHANGE_URL:  Sustituir el URL que usan los submandatos de 'hzn exchange'\n      para comunicarse con Horizon Exchange, por ejemplo\n      https://exchange.bluehorizon.network/api/v1. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n HZN_ORG_ID: Valor predeterminado del distintivo 'hzn exchange -o', \n para especificar el ID de organización '. \n HZN_EXCHANGE_USER_AUTH: Valor predeterminado de los distintivos 'hzn exchange -u' o 'hzn\n register -u ', con el formato' [org/]usuario:cont'. Observe que HZN_ORG_ID se puede definir\n si se omite org cuando HZN_EXCHANGE_USER_AUTH está definido. \n HZN_FSS_CSSURL: Sustituir el URL que utilizan los submandatos 'hzn mms' \n para comunicarse con el servicio de gestión de modelos de Horizon; por ejemplo \n https://exchange.bluehorizon.network/css/. (De forma predeterminada hzn solicitará al \n agente de Horizon el URL). \n HZN_SDO_SVC_URL: Sustituir el URL que utilizan los submandatos 'hzn sdo' \n para comunicarse con los servicios de propietario de SDO. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL.) \n HZN_FDO_SVC_URL: Sustituir el URL que utilizan los submandatos 'hzn fdo' \n para comunicarse con los servicios de propietario FDO. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n \n Todas estas variables de entorno y las mencionadas en la ayuda del mandato se pueden \n especificar en el archivo de configuración del usuario: ~/.hzn/hzn.json en formato JSON. \n Por ejemplo: \n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -1025,7 +1025,7 @@
   },
   {
     "id": "List and manage deployment policies in the Horizon Exchange.",
-    "translation": "Liste y gestione las políticas de despliegue en Horizon Exchange."
+    "translation": "Listar y gestionar las políticas de despliegue en Horizon Exchange."
   },
   {
     "id": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
@@ -1169,7 +1169,7 @@
   },
   {
     "id": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
-    "translation": "Hora de inicio de la política de gestión de nodos habilitada. La hora de inicio tiene que una indicación de fecha y hora RFC3339 o bien \"now\" (ahora)."
+    "translation": "Hora de inicio de la política de gestión de nodos habilitada. La hora de inicio tiene que ser una indicación de fecha y hora RFC3339 o bien \"now\" (ahora)."
   },
   {
     "id": "The start window of the enabled node management policy.",
@@ -1309,7 +1309,7 @@
   },
   {
     "id": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
-    "translation": "Vuelva a evaluar la política de gestión de nodos (NMP) en este nodo. Ejecute este comando para reintentar una NMP cuando la actualización haya fallado y se haya solucionado el problema. No ejecute este comando cuando el nodo se esté actualizando."
+    "translation": "Vuelva a evaluar la política de gestión de nodos (nmp) en este nodo. Ejecute este mandato para reintentar una nmp cuando la actualización haya fallado y se haya solucionado el problema. No ejecute este mandato cuando el nodo se esté actualizando."
   },
   {
     "id": "Re-evaluate node management policy for this node.",
@@ -1777,7 +1777,7 @@
   },
   {
     "id": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
-    "translation": "Ruta del archivo JSON que contiene los metadatos necesarios para crear/actualizar el grupo HA en Horizon Exchange. Especifique -f- para leer de stdin."
+    "translation": "Vía de acceso al archivo JSON que contiene los metadatos necesarios para crear/actualizar el grupo HA en Horizon Exchange. Especifique -f- para leer de stdin."
   },
   {
     "id": "Remove the HA group in the Horizon Exchange.",
@@ -1801,7 +1801,7 @@
   },
   {
     "id": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
-    "translation": "Nodo que se va a añadir al grupo HA. Este distintivo se puede repetir para especificar nodos distintos."
+    "translation": "Nodo que se va a añadir al grupo HA. Este distintivo se puede repetir para especificar diferentes nodos."
   },
   {
     "id": "Remove nodes from the HA group in the Horizon Exchange.",
@@ -1809,7 +1809,7 @@
   },
   {
     "id": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
-    "translation": "Nodo que se va a eliminar del grupo HA. Este distintivo se puede repetir para especificar nodos distintos."
+    "translation": "Nodo que se va a eliminar del grupo HA. Este distintivo se puede repetir para especificar diferentes nodos."
   },
   {
     "id": "Display the status of the Horizon Exchange.",
@@ -2181,11 +2181,11 @@
   },
   {
     "id": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
-    "translation": "Ruta del archivo de clave privada que se va a usar para firmar el manifiesto. Se almacenará la correspondiente clave pública en el MMS para garantizar la integridad del manifiesto. Si no se especifica, se utilizará la variable de entorno HZN_PRIVATE_KEY_FILE para encontrar una clave privada. Si no se establece, se utilizará ~/.hzn/keys/service.private.key. Si no existe, solo se genera un par de claves RSA para esta operación de publicación y, a continuación, se descarta la clave privada."
+    "translation": "Vía de acceso al archivo de clave privada que se va a usar para firmar el manifiesto. Se almacenará la correspondiente clave pública en el MMS para garantizar la integridad del manifiesto. Si no se especifica, se utilizará la variable de entorno HZN_PRIVATE_KEY_FILE para encontrar una clave privada. Si no se establece, se utilizará ~/.hzn/keys/service.private.key. Si no existe, solo se genera un par de claves RSA para esta operación de publicación y, a continuación, se descarta la clave privada."
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
-    "translation": "El comando de publicación no comprobará la integridad de los datos de manifiesto cargados. Mutuamente excluyente con --hashAlgo y --hash"
+    "translation": "El mandato de publicación no comprobará la integridad de los datos de manifiesto cargados. Mutuamente excluyente con --hashAlgo y --hash"
   },
   {
     "id": "Display a list of manifest files stored in the management hub.",
@@ -2345,7 +2345,7 @@
   },
   {
     "id": "The name of the HA group that this node will be added to.",
-    "translation": "Nombre del grupo HA al que se va a añadir este nodo."
+    "translation": "Nombre del grupo HA al que se añadirá este nodo."
   },
   {
     "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
@@ -2513,7 +2513,7 @@
   },
   {
     "id": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
-    "translation": "Vuelva a evaluar la política de gestión de nodos (NMP). Ejecute este comando para reintentar una NMP cuando la actualización haya fallado y se haya solucionado el problema. No ejecute este comando cuando el nodo se esté actualizando."
+    "translation": "Vuelva a evaluar la política de gestión de nodos (nmp). Ejecute este mandato para reintentar una nmp cuando la actualización haya fallado y se haya solucionado el problema. No ejecute este mandato cuando el nodo se esté actualizando."
   },
   {
     "id": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
@@ -2733,7 +2733,7 @@
   },
   {
     "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
-    "translation": "Nombre del grupo HA al que se se va a añadir el dispositivo perimetral asociado a este comprobante."
+    "translation": "Nombre del grupo HA al que se añadirá el dispositivo perimetral asociado a este comprobante."
   },
   {
     "id": "Download the specified SDO ownership voucher from SDO owner services.",
@@ -4685,7 +4685,7 @@
   },
   {
     "id": "When to start an upgrade, default \"now\".",
-    "translation": "Cuándo iniciar una actualización, el valor predeterminado es \"now\"."
+    "translation": "Cuándo iniciar una actualización, el valor predeterminado es \"now\" (ahora)."
   },
   {
     "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
@@ -4729,7 +4729,7 @@
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-    "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha añadido en Horizonte Exchange"
+    "translation": "La política de gestión de nodos {NmpOrg}/{NmpName} se ha añadido en Horizon Exchange"
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
@@ -6237,7 +6237,7 @@
   },
   {
     "id": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
-    "translation": "No se puede proceder con el grupo HA especificado {HaGroupName} porque el nodo está en un grupo HA diferente {ExistingHagrName}."
+    "translation": "No se puede continuar con el grupo HA especificado {HaGroupName} porque el nodo está en un grupo HA diferente {ExistingHagrName}."
   },
   {
     "id": "The node is already in the HA group '{HaGroupName}'.",
