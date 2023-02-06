@@ -921,7 +921,7 @@
   },
   {
     "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-    "translation": "檔案 {FileName} 已存在。 請指定不同的檔案路徑或檔名。 若要改寫現有檔案，請使用 '--overwrite' 旗標。"
+    "translation": "檔案 {FileName} 已存在。請指定不同的檔案路徑或檔名。若要改寫現有檔案，請使用 '--overwrite' 旗標。"
   },
   {
     "id": "Failed to save data for object '{DefaultFileName}' to file {FileName}, err: {Err}",

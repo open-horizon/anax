@@ -1177,7 +1177,7 @@
   },
   {
     "id": "Disable a node management policy in the Horizon Exchange.",
-    "translation": "Désactivez une règle de gestion de noeud dans Horizon Exchange."
+    "translation": "Désactiver une règle de gestion de noeud dans Horizon Exchange."
   },
   {
     "id": "The name of the node management policy to disable.",
@@ -1309,11 +1309,11 @@
   },
   {
     "id": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
-    "translation": "Réévaluez la règle de gestion de noeud (nmp) pour ce noeud. Exécutez cette commande pour relancer un nmp lorsque la mise à niveau a échoué et que le problème est résolu. N'exécutez pas cette commande lorsque le noeud est encore au milieu d'une mise à niveau."
+    "translation": "Réévaluer la règle de gestion de noeud (nmp) pour ce noeud. Exécutez cette commande pour relancer un nmp lorsque la mise à niveau a échoué et que le problème est résolu. N'exécutez pas cette commande lorsque le noeud est encore au milieu d'une mise à niveau."
   },
   {
     "id": "Re-evaluate node management policy for this node.",
-    "translation": "Réévaluez la règle de gestion de noeud pour ce noeud."
+    "translation": "Réévaluer la règle de gestion de noeud pour ce noeud."
   },
   {
     "id": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
@@ -1753,7 +1753,7 @@
   },
   {
     "id": "Display the HA group resources from the Horizon Exchange.",
-    "translation": "Affichez les ressources du groupe HA à partir d'Horizon Exchange."
+    "translation": "Afficher les ressources du groupe à haute disponibilité à partir d'Horizon Exchange."
   },
   {
     "id": "List just this one HA group.",
@@ -1765,47 +1765,47 @@
   },
   {
     "id": "Display an empty HA group template that can be filled in.",
-    "translation": "Affichez un modèle de groupe HA vide qui peut être rempli."
+    "translation": "Afficher un modèle de groupe à haute disponibilité vide qui peut être rempli."
   },
   {
     "id": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
-    "translation": "Ajoutez ou remplacez un groupe HA dans Horizon Exchange. Utilisez 'hzn exchange hagroup new' pour un modèle de groupe HA vide."
+    "translation": "Ajouter ou remplacer un groupe à haute disponibilité dans Horizon Exchange. Utiliser 'hzn exchange hagroup new' pour un modèle de groupe à haute disponibilité vide."
   },
   {
     "id": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
-    "translation": "Nom du groupe HA à ajouter ou à remplacer. S'il est omis, l'attribut name du fichier d'entrée est utilisé."
+    "translation": "Nom du groupe à haute disponibilité à ajouter ou à remplacer. S'il est omis, l'attribut name du fichier d'entrée est utilisé."
   },
   {
     "id": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
-    "translation": "Chemin d'accès à un fichier JSON contenant les métadonnées nécessaires pour créer/mettre à jour le groupe HA dans Horizon Exchange. Spécifier -f- pour lire à partir de l'entrée standard (stdin)."
+    "translation": "Chemin d'accès à un fichier JSON contenant les métadonnées nécessaires pour créer/mettre à jour le groupe à haute disponibilité dans Horizon Exchange. Spécifier -f- pour lire à partir de l'entrée standard (stdin)."
   },
   {
     "id": "Remove the HA group in the Horizon Exchange.",
-    "translation": "Supprimez le groupe HA dans Horizon Exchange."
+    "translation": "Supprimez le groupe à haute disponibilité dans Horizon Exchange."
   },
   {
     "id": "The name of the HA group to be removed.",
-    "translation": "Nom du groupe HA à supprimer."
+    "translation": "Nom du groupe à haute disponibilité à supprimer."
   },
   {
     "id": "Manage HA group members in the Horizon Exchange",
-    "translation": "Gérer les membres de groupe HA dans Horizon Exchange"
+    "translation": "Gérer les membres de groupe à haute disponibilité dans Horizon Exchange"
   },
   {
     "id": "Add nodes to the HA group in the Horizon Exchange.",
-    "translation": "Ajoutez des noeuds au groupe HA dans Horizon Exchange."
+    "translation": "Ajouter des noeuds au groupe à haute disponibilité dans Horizon Exchange."
   },
   {
     "id": "The name of the HA group.",
-    "translation": "Nom du groupe HA."
+    "translation": "Nom du groupe à haute disponibilité."
   },
   {
     "id": "Node to be added to the HA group. This flag can be repeated to specify different nodes.",
-    "translation": "Noeud à ajouter au groupe HA. Cet indicateur peut être répété pour spécifier des noeuds différents."
+    "translation": "Noeud à ajouter au groupe à haute disponibilité. Cet indicateur peut être répété pour spécifier des noeuds différents."
   },
   {
     "id": "Remove nodes from the HA group in the Horizon Exchange.",
-    "translation": "Supprimez des noeuds du groupe HA dans Horizon Exchange."
+    "translation": "Supprimer des noeuds du groupe à haute disponibilité dans Horizon Exchange."
   },
   {
     "id": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
@@ -2501,7 +2501,7 @@
   },
   {
     "id": "Display the node managment status for the local node.",
-    "translation": "Affichez l'état de gestion du noeud local."
+    "translation": "Afficher l'état de gestion du noeud local."
   },
   {
     "id": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
@@ -2509,11 +2509,11 @@
   },
   {
     "id": "Show the entire contents of each node management status object.",
-    "translation": "Affichez l'intégralité du contenu de chaque objet de statut de gestion de noeud."
+    "translation": "Afficher l'intégralité du contenu de chaque objet de statut de gestion de noeud."
   },
   {
     "id": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
-    "translation": "Réévaluez la règle de gestion des noeuds (nmp). Exécutez cette commande pour relancer un nmp lorsque la mise à niveau a échoué et que le problème est résolu. N'exécutez pas cette commande lorsque le noeud est encore au milieu d'une mise à niveau."
+    "translation": "Réévaluer la règle de gestion des noeuds (nmp). Exécutez cette commande pour relancer un nmp lorsque la mise à niveau a échoué et que le problème est résolu. N'exécutez pas cette commande lorsque le noeud est encore au milieu d'une mise à niveau."
   },
   {
     "id": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
@@ -2733,7 +2733,7 @@
   },
   {
     "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
-    "translation": "Nom du groupe HA auquel le dispositif de périphérie associé à ce bon sera ajouté."
+    "translation": "Nom du groupe à haute disponibilité auquel le dispositif de périphérie associé à ce bon sera ajouté."
   },
   {
     "id": "Download the specified SDO ownership voucher from SDO owner services.",
@@ -3561,7 +3561,7 @@
   },
   {
     "id": "HA group {HaGroupName} does not exist in org {HaGroupOrg}.",
-    "translation": "Le groupe HA {HaGroupName} n'existe pas dans l'organisation {HaGroupOrg}."
+    "translation": "Le groupe à haute disponibilité {HaGroupName} n'existe pas dans l'organisation {HaGroupOrg}."
   },
   {
     "id": "failed to unmarshal json input file {FilePath}: {Err}",
@@ -4569,11 +4569,11 @@
   },
   {
     "id": "Optional. The name of the HA group.",
-    "translation": "Facultatif. Nom du groupe HA."
+    "translation": "Facultatif. Nom du groupe à haute disponibilité."
   },
   {
     "id": "A description of the HA group.",
-    "translation": "Description du groupe HA."
+    "translation": "Description du groupe à haute disponibilité."
   },
   {
     "id": "A list of node names that are members of this group.",
@@ -4581,11 +4581,11 @@
   },
   {
     "id": "HA group name is not specified.",
-    "translation": "Le nom du groupe HA n'est pas indiqué."
+    "translation": "Le nom du groupe à haute disponibilité n'est pas indiqué."
   },
   {
     "id": "HA group description cannot be empty.",
-    "translation": "La description de groupe HA ne peut pas être vide."
+    "translation": "La description de groupe à haute disponibilité ne peut pas être vide."
   },
   {
     "id": "Cannot create HA group {HaGroupOrg}/{HaGroupName} because node {ClusterNode} is 'cluster' type. HA group does not support 'cluster' type members.",
@@ -4649,7 +4649,7 @@
   },
   {
     "id": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
-    "translation": "Les noeuds \"{JoinnodesToRemove_}\" sont supprimés du groupe HA {HaGroupOrg}/{HaGroupName} dans Horizon Exchange"
+    "translation": "Les noeuds \"{JoinnodesToRemove_}\" sont supprimés du groupe à haute disponibilité {HaGroupOrg}/{HaGroupName} dans Horizon Exchange"
   },
   {
     "id": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
@@ -4669,7 +4669,7 @@
   },
   {
     "id": "A much longer description of the policy.",
-    "translation": "Une description beaucoup plus longue de la règle."
+    "translation": "Description beaucoup plus longue de la règle."
   },
   {
     "id": "A list of policy properties that describe this policy.",

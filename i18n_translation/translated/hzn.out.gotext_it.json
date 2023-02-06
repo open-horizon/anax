@@ -17,11 +17,11 @@
   },
   {
     "id": "Node {Org}/{Node} can start executing nmp {NmpId}.",
-    "translation": "Il nodo {Org}/{Node} può avviare l'esecuzione di nmp {NmpId}."
+    "translation": "Il nodo {Org}/{Node} può avviare l'esecuzione della nmp {NmpId}."
   },
   {
     "id": "Node {Org}/{Node} can not start executing nmp {NmpId}.",
-    "translation": "Il nodo {Org}/{Node} non può avviare l'esecuzione di nmp {NmpId}."
+    "translation": "Il nodo {Org}/{Node} non può avviare l'esecuzione della nmp {NmpId}."
   },
   {
     "id": "No input found.",
@@ -417,7 +417,7 @@
   },
   {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Interfaccia della riga comandi per l'agent Horizon. La maggior parte dei sottocomandi utilizza l'API dell'agent Horizon nell'ubicazione predefinita http://localhost (consultare la sezione relativa alle variabili d'ambiente per l'ambiente per sostituire tale impostazione).\n\nDescrizione sottocomandi:\n  agbot: elenca e gestisce le risorse bot dell'accordo Horizon.\n  agreement: elenca o gestisce gli accordi che questo nodo edge ha stabilito con un bot dell'accordo Horizon.\n  architecture: mostra l'architettura di questa macchina. \n  attribute: elenca o gestisce gli attributi globali attualmente registrati su questo nodo edge Horizon.\n  deploycheck: controlla la compatibilità della distribuzione.\n  dev: strumenti di sviluppo per la creazione di servizi.\n  env: mostra l'ambiente Horizon Variabili.\n  eventlog: elenca i log degli eventi per le registrazioni correnti o per tutte le registrazioni.\n  exchange: elenca e gestisce risorse Horizon Exchange.\n  key: elenca e gestisce chiavi per la firma e la verifica dei servizi. \n  mms: elenca e gestisce risorse Horizon Model Management Service.\n  nmstatus: elenca e gestisce lo stato d gestione del nodo per il nodo locale.\n  node: elenca e gestisce informazioni generali su questo nodo edge Horizon.\n  nodemanagement: elenca e gestisce i manifest e i file dell'agent per la gestione del nodo.\n  policy: elenca e gestisce la politica per questo nodo edge Horizon. \n  reginput: crea un template del file di input per questo modello, che può essere utilizzato per il comando 'hzn register'. \n  register: registra questo nodo edge con l'hub di gestione.\n  secretsmanager: elenca e gestisce segreti nel gestore segreti.\n  service: elenca o gestisce i servizi attualmente registrati su questo nodo edge Horizon.\n  status: visualizza lo stato interno corrente di Horizon per il nodo.\n  unregister: annulla la registrazione e reimposta questo nodo edge Horizon.\n  userinput: elenca o gestisce gli input dell'utente del servizio attualmente registrati su questo nodo edge Horizon.\n  util: comandi di utilità.\n  version: mostra la versione di Horizon.\n  sdo: elenca e gestisce i voucher e le chiavi di proprietà di Horizon SDO.\n  fdo: elenca e gestisce i voucher e le chiavi di proprietà di Horizon FDO.\n\nVariabili d'ambiente:\n  HORIZON_URL:  sostituisce l'URL nel quale hzn contatta l'API dell'agent Horizon.\n      L'impostazione di questa variabile può facilitare l'utilizzo di un agent Horizon remoto tramite un tunnel ssh.\n  HZN_EXCHANGE_URL:  sostituisce l'URL che i sottocomandi 'hzn exchange' utilizzano\n      per comunicare con Horizon Exchange, ad esempio\n      https://exchange.bluehorizon.network/api/v1. (Per impostazione predefinita hzn chiederà all'agent \n Horizon l'URL.) \n HZN_ORG_ID: valore predefinito per l'indicatore 'hzn exchange -o', \n per specificare l'ID organizzazione '. \n HZN_EXCHANGE_USER_AUTH: valore predefinito per l'indicatore' hzn exchange -u 'o' hzn \n register -u ', nel formato' [ org/] user:pw '. Notare che HZN_ORG_ID può essere impostato \n se org viene omesso quando è impostato HZN_EXCHANGE_USER_AUTH. \n HZN_FSS_CSSURL: sovrascrivere l'URL che i sottocomandi 'hzn mms' utilizzano \n per comunicare con il servizio di gestione modelli Horizon, ad esempio \n https://exchange.bluehorizon.network/css/. (Per impostazione predefinita, hzn chiederà all'agent \n Horizon l'URL.) \n HZN_SDO_SVC_URL: Sovrascrive l'URL utilizzato dai sottocomandi \n 'hzn sdo' per comunicare con i servizi del proprietario SDO. (Per mpostazione predefinita hzn chiederà\nl'URL all'agent Horizon.)\n  HZN_FDO_SVC_URL:  sostituisce l'URL che i sottocomandi 'hzn fdo' utilizzano\n  per comunicare con i servizi del proprietario di FDO. (Per impostazione predefinita, hzn richiederà all'agent \n Horizon l'URL.) \n \n Tutte queste variabili di ambiente e quelle menzionate nella guida del comando possono essere \n specificate nel file di configurazione dell'utente: ~/.hzn/hzn.json con formato JSON. \n Ad esempio: \n {Com____}"
+    "translation": "Interfaccia della riga comandi per l'agent Horizon. La maggior parte dei sottocomandi utilizza l'API dell'agent Horizon nell'ubicazione predefinita http://localhost (consultare la sezione relativa alle variabili d'ambiente per l'ambiente per sostituire tale impostazione).\n\nDescrizione sottocomandi:\n  agbot: elenca e gestisce le risorse bot dell'accordo Horizon.\n  agreement: elenca o gestisce gli accordi che questo nodo edge ha stabilito con un bot dell'accordo Horizon.\n  architecture: mostra l'architettura di questa macchina. \n  attribute: elenca o gestisce gli attributi globali attualmente registrati su questo nodo edge Horizon.\n  deploycheck: controlla la compatibilità della distribuzione.\n  dev: strumenti di sviluppo per la creazione di servizi.\n  env: mostra l'ambiente Horizon Variabili.\n  eventlog: elenca i log degli eventi per le registrazioni correnti o per tutte le registrazioni.\n  exchange: elenca e gestisce risorse Horizon Exchange.\n  key: elenca e gestisce chiavi per la firma e la verifica dei servizi. \n  mms: elenca e gestisce risorse Horizon Model Management Service.\n  nmstatus: elenca e gestisce lo stato d gestione del nodo per il nodo locale.\n  node: elenca e gestisce informazioni generali su questo nodo edge Horizon.\n  nodemanagement: elenca e gestisce i manifest e i file dell'agent per la gestione del nodi.\n  policy: elenca e gestisce la politica per questo nodo edge Horizon. \n  reginput: crea un template del file di input per questo modello, che può essere utilizzato per il comando 'hzn register'. \n  register: registra questo nodo edge con l'hub di gestione.\n  secretsmanager: elenca e gestisce segreti nel gestore segreti.\n  service: elenca o gestisce i servizi attualmente registrati su questo nodo edge Horizon.\n  status: visualizza lo stato interno corrente di Horizon per il nodo.\n  unregister: annulla la registrazione e reimposta questo nodo edge Horizon.\n  userinput: elenca o gestisce gli input dell'utente del servizio attualmente registrati su questo nodo edge Horizon.\n  util: comandi di utilità.\n  version: mostra la versione di Horizon.\n  sdo: elenca e gestisce i voucher e le chiavi di proprietà di Horizon SDO.\n  fdo: elenca e gestisce i voucher e le chiavi di proprietà di Horizon FDO.\n\nVariabili d'ambiente:\n  HORIZON_URL:  sostituisce l'URL nel quale hzn contatta l'API dell'agent Horizon.\n      L'impostazione di questa variabile può facilitare l'utilizzo di un agent Horizon remoto tramite un tunnel ssh.\n  HZN_EXCHANGE_URL:  sostituisce l'URL che i sottocomandi 'hzn exchange' utilizzano\n      per comunicare con Horizon Exchange, ad esempio\n      https://exchange.bluehorizon.network/api/v1. (Per impostazione predefinita hzn chiederà all'agent \n Horizon l'URL.) \n HZN_ORG_ID: valore predefinito per l'indicatore 'hzn exchange -o', \n per specificare l'ID organizzazione '. \n HZN_EXCHANGE_USER_AUTH: valore predefinito per l'indicatore' hzn exchange -u 'o' hzn \n register -u ', nel formato' [ org/] user:pw '. Notare che HZN_ORG_ID può essere impostato \n se org viene omesso quando è impostato HZN_EXCHANGE_USER_AUTH. \n HZN_FSS_CSSURL: sovrascrivere l'URL che i sottocomandi 'hzn mms' utilizzano \n per comunicare con il servizio di gestione modelli Horizon, ad esempio \n https://exchange.bluehorizon.network/css/. (Per impostazione predefinita, hzn chiederà all'agent \n Horizon l'URL.) \n HZN_SDO_SVC_URL: Sovrascrive l'URL utilizzato dai sottocomandi \n 'hzn sdo' per comunicare con i servizi del proprietario SDO. (Per mpostazione predefinita hzn chiederà\nl'URL all'agent Horizon.)\n  HZN_FDO_SVC_URL:  sostituisce l'URL che i sottocomandi 'hzn fdo' utilizzano\n  per comunicare con i servizi del proprietario di FDO. (Per impostazione predefinita, hzn richiederà all'agent \n Horizon l'URL.) \n \n Tutte queste variabili di ambiente e quelle menzionate nella guida del comando possono essere \n specificate nel file di configurazione dell'utente: ~/.hzn/hzn.json con formato JSON. \n Ad esempio: \n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -597,19 +597,19 @@
   },
   {
     "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "L'ID nodo Horizon Exchange. Si esclude reciprocamente con -- ha - group, -- node - pol e -- node-ui. Se omesso, verrà utilizzato l'ID nodo con cui è registrato il dispositivo corrente. Questo indicatore può essere ripetuto per specificare più di un nodo. Se non si antepone un ID nodo con l'ID organizzazione, verrà automaticamente anteposto al valore -o."
+    "translation": "L'ID nodo Horizon Exchange. Si esclude reciprocamente con --ha-group, --node-pol e --node-ui. Se omesso, verrà utilizzato l'ID nodo con cui è registrato il dispositivo corrente. Questo indicatore può essere ripetuto per specificare più di un nodo. Se non si antepone un ID nodo con l'ID organizzazione, verrà automaticamente anteposto al valore -o."
   },
   {
     "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-    "translation": "Il nome di un gruppo HA. Si esclude reciprocamente con -n, -- node - pol e -- node-ui."
+    "translation": "Il nome di un gruppo HA. Si esclude reciprocamente con -n, --node-pol e --node-ui."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
-    "translation": "Il nome del file di input JSON che contiene la politica del nodo. Si esclude reciprocamente con -n, -- ha - group, -p e -P."
+    "translation": "Il nome del file di input JSON che contiene la politica del nodo. Si esclude reciprocamente con -n, --ha-group, -p e -P."
   },
   {
     "id": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
-    "translation": "Il nome del file di input JSON che contiene l'input utente del nodo. Si esclude reciprocamente con -n, -- ha - group."
+    "translation": "Il nome del file di input JSON che contiene l'input utente del nodo. Si esclude reciprocamente con -n, --ha-group."
   },
   {
     "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -645,15 +645,15 @@
   },
   {
     "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "L'ID nodo Horizon Exchange. Si esclude reciprocamente con -- ha - group e -- node-pol. Se omesso, verrà utilizzato l'ID nodo con cui è registrato il dispositivo corrente. Questo indicatore può essere ripetuto per specificare più di un nodo. Se non si antepone un ID nodo con l'ID organizzazione, verrà automaticamente anteposto al valore -o."
+    "translation": "L'ID nodo Horizon Exchange. Si esclude reciprocamente con --ha-group e --node-pol. Se omesso, verrà utilizzato l'ID nodo con cui è registrato il dispositivo corrente. Questo indicatore può essere ripetuto per specificare più di un nodo. Se non si antepone un ID nodo con l'ID organizzazione, verrà automaticamente anteposto al valore -o."
   },
   {
     "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-    "translation": "Il nome di un gruppo HA. Si esclude reciprocamente con -n e -- node-pol."
+    "translation": "Il nome di un gruppo HA. Si esclude reciprocamente con -n e --node-pol."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
-    "translation": "Il nome del file di input JSON che contiene la politica del nodo. Si esclude reciprocamente con -n, -- ha - group."
+    "translation": "Il nome del file di input JSON che contiene la politica del nodo. Si esclude reciprocamente con -n, --ha-group."
   },
   {
     "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -1089,15 +1089,15 @@
   },
   {
     "id": "List and manage node management policies in the Horizon Exchange.",
-    "translation": "Elencare e gestire le politiche di gestione del nodo in Horizon Exchange."
+    "translation": "Elencare e gestire le politiche di gestione dei nodi in Horizon Exchange."
   },
   {
     "id": "Display the node management policies from the Horizon Exchange.",
-    "translation": "Visualizzare le politiche di gestione del nodo da Horizon Exchange."
+    "translation": "Visualizzare le politiche di gestione dei nodi da Horizon Exchange."
   },
   {
     "id": "List just this one node management policy.",
-    "translation": "Elencare solo questa politica di gestione del nodo."
+    "translation": "Elencare solo questa politica di gestione dei nodi."
   },
   {
     "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
@@ -1105,83 +1105,83 @@
   },
   {
     "id": "Display detailed output about the node management policies.",
-    "translation": "Visualizzare l'output dettagliato relativo alle politiche di gestione del nodo."
+    "translation": "Visualizzare l'output dettagliato relativo alle politiche di gestione dei nodi."
   },
   {
     "id": "List all the nodes that apply for the given node management policy.",
-    "translation": "Elencare tutti i nodi che si applicano per la politica di gestione del nodo fornita."
+    "translation": "Elencare tutti i nodi che si applicano per la politica di gestione dei nodi fornita."
   },
   {
     "id": "Add or replace a node management policy in the Horizon Exchange. Use 'hzn exchange nmp new' for an empty node management policy template.",
-    "translation": "Aggiungere o sostituire una politica di gestione del nodo in Horizon Exchange. Utilizzare 'hzn exchange nmp new' per un modello di gestione del nodo vuoto."
+    "translation": "Aggiungere o sostituire una politica di gestione dei nodi in Horizon Exchange. Utilizzare 'hzn exchange nmp new' per un modello di politica di gestione dei nodi vuoto."
   },
   {
     "id": "List all the nodes that will be compatible with this node management policy. Use this flag with --dry-run to list nodes without publishing the policy to the Exchange.",
-    "translation": "Elencare tutti i nodi che saranno compatibili con questa politica di gestione del nodo. Utilizzare questo indicatore con --dry-run per elencare i nodi senza pubblicare la politica in Exchange."
+    "translation": "Elencare tutti i nodi che saranno compatibili con questa politica di gestione dei nodi. Utilizzare questo indicatore con --dry-run per elencare i nodi senza pubblicare la politica in Exchange."
   },
   {
     "id": "The name of the node management policy to add or overwrite.",
-    "translation": "Il nome della politica di gestione del nodo da aggiungere o sovrascrivere."
+    "translation": "Il nome della politica di gestione dei nodi da aggiungere o sovrascrivere."
   },
   {
     "id": "The path of a JSON file containing the metadata necessary to create/update the node management policy in the Horizon Exchange. Specify -f- to read from stdin.",
-    "translation": "Il percorso di un file JSON che contiene i metadati necessari per creare o aggiornare la politica di gestione del nodo in Horizon Exchange. Specificare -f- per leggere da stdin."
+    "translation": "Il percorso di un file JSON che contiene i metadati necessari per creare o aggiornare la politica di gestione dei nodi in Horizon Exchange. Specificare -f- per leggere da stdin."
   },
   {
     "id": "Allow this node management policy to be published even though it does not have any constraints.",
-    "translation": "Consentire la pubblicazione di questa politica di gestione del nodo anche se non contiene vincoli."
+    "translation": "Consentire la pubblicazione di questa politica di gestione dei nodi anche se non contiene vincoli."
   },
   {
     "id": "Display an empty node management policy template that can be filled in.",
-    "translation": "Visualizzare un modello della politica di gestione del nodo vuoto che è possibile compilare."
+    "translation": "Visualizzare un modello della politica di gestione dei nodi vuoto che è possibile compilare."
   },
   {
     "id": "Remove the node management policy in the Horizon Exchange.",
-    "translation": "Rimuovere la politica di gestione del nodo in Horizon Exchange."
+    "translation": "Rimuovere la politica di gestione dei nodi in Horizon Exchange."
   },
   {
     "id": "The name of the node management policy to be removed.",
-    "translation": "Il nome della politica di gestione del nodo da rimuovere."
+    "translation": "Il nome della politica di gestione dei nodi da rimuovere."
   },
   {
     "id": "List the status of a given node management policy across all nodes in given org.",
-    "translation": "Elencare lo stato di una determinata politica di gestione nodi su tutti i nodi in organizzazione indicata."
+    "translation": "Elencare lo stato di una determinata politica di gestione dei nodi su tutti i nodi nell'organizzazione indicata."
   },
   {
     "id": "The name of the node management policy status to check.",
-    "translation": "Il nome dello stato della politica di gestione del nodo da controllare."
+    "translation": "Il nome dello stato della politica di gestione dei nodi da controllare."
   },
   {
     "id": "Filter output to include just this one node. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "Filtrare l'output per includere solo questo nodo. Utilizzare con il flag --long per visualizzare l'intero contenuto di un oggetto di stato della politica di gestione del nodo singolo."
+    "translation": "Filtrare l'output per includere solo questo nodo. Utilizzare con l'indicatore --long per visualizzare l'intero contenuto di un oggetto di stato della politica di gestione dei nodi singolo."
   },
   {
     "id": "Show the entire contents of each node management policy status object.",
-    "translation": "Mostrare l'intero contenuto di ogni oggetto di stato della politica di gestione del nodo."
+    "translation": "Mostrare l'intero contenuto di ogni oggetto di stato della politica di gestione dei nodi."
   },
   {
     "id": "Enable a node management policy in the Horizon Exchange.",
-    "translation": "Abilita una politica di gestione nodo in Horizon Exchange."
+    "translation": "Abilita una politica di gestione dei nodi in Horizon Exchange."
   },
   {
     "id": "The name of the node management policy to enable.",
-    "translation": "Il nome della politica di gestione del nodo da abilitare."
+    "translation": "Il nome della politica di gestione dei nodi da abilitare."
   },
   {
     "id": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
-    "translation": "L'ora di inizio della politica di gestione del nodo abilitata. L'ora di inizio deve essere la data/ora RFC3339 o \"now\""
+    "translation": "La data/ora di inizio della politica di gestione dei nodi abilitata. La data/ora di inizio deve essere la data/ora RFC3339 o \"now\""
   },
   {
     "id": "The start window of the enabled node management policy.",
-    "translation": "La finestra di avvio della politica di gestione del nodo abilitata."
+    "translation": "La finestra di inizio della politica di gestione dei nodi abilitata."
   },
   {
     "id": "Disable a node management policy in the Horizon Exchange.",
-    "translation": "Disabilita una politica di gestione nodo in Horizon Exchange."
+    "translation": "Disabilita una politica di gestione dei nodi in Horizon Exchange."
   },
   {
     "id": "The name of the node management policy to disable.",
-    "translation": "Il nome della politica di gestione del nodo da disabilitare."
+    "translation": "Il nome della politica di gestione dei nodi da disabilitare."
   },
   {
     "id": "List and manage nodes in the Horizon Exchange",
@@ -1277,15 +1277,15 @@
   },
   {
     "id": "List and manage node management resources in the Horizon Exchange",
-    "translation": "Elencare e gestire le risorse di gestione del nodo in Horizon Exchange"
+    "translation": "Elencare e gestire le risorse di gestione dei nodi in Horizon Exchange"
   },
   {
     "id": "List the compatible node management policies for the node. Only policies that are enabled will be displayed unless the -a flag is specified.",
-    "translation": "Elencare le politiche di gestione del nodo compatibili per il nodo. Verranno visualizzate solo le politiche che sono abilitate, a meno che non sia specificato l'indicatore -a."
+    "translation": "Elencare le politiche di gestione dei nodi compatibili per il nodo. Verranno visualizzate solo le politiche che sono abilitate, a meno che non sia specificato l'indicatore -a."
   },
   {
     "id": "List node management policies for this node",
-    "translation": "Elencare le politiche di gestione del nodo per questo nodo"
+    "translation": "Elencare le politiche di gestione dei nodi per questo nodo"
   },
   {
     "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
@@ -1293,31 +1293,31 @@
   },
   {
     "id": "Include disabled NMP's.",
-    "translation": "Includere gli NMP disabilitati."
+    "translation": "Includere le NMP disabilitate."
   },
   {
     "id": "List the node management policy statuses for this node.",
-    "translation": "Elencare gli stati della politica di gestione nodi per questo nodo."
+    "translation": "Elencare gli stati della politica di gestione dei nodi per questo nodo."
   },
   {
     "id": "List node management policy statuses for this node.",
-    "translation": "Elencare gli stati della politica di gestione nodi per questo nodo."
+    "translation": "Elencare gli stati della politica di gestione dei nodi per questo nodo."
   },
   {
     "id": "Filter output to include just this one node managment policy. Use with --long flag to display entire content of a single node management policy status object.",
-    "translation": "Filtrare l'output per includere solo questa politica di gestione del nodo. Utilizzare con il flag --long per visualizzare l'intero contenuto di un oggetto di stato della politica di gestione del nodo singolo."
+    "translation": "Filtrare l'output per includere solo questa politica di gestione dei nodi. Utilizzare con l'indicatore --long per visualizzare l'intero contenuto di un oggetto di stato della politica di gestione dei nodi singolo."
   },
   {
     "id": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
-    "translation": "Valuta nuovamente la politica di gestione del nodo (nmp) per questo nodo. Eseguire questo comando per tentare di nuovo un nmp quando l'aggiornamento non è riuscito e il problema è stato risolto. Non eseguire questo comando quando il nodo è ancora in fase di aggiornamento."
+    "translation": "Valuta nuovamente la politica di gestione dei nodi (nmp) per questo nodo. Eseguire questo comando per tentare di nuovo una nmp quando l'aggiornamento non è riuscito e il problema è stato risolto. Non eseguire questo comando quando il nodo è ancora in fase di aggiornamento."
   },
   {
     "id": "Re-evaluate node management policy for this node.",
-    "translation": "Valuta nuovamente la politica di gestione del nodo per questo nodo."
+    "translation": "Valuta nuovamente la politica di gestione dei nodi per questo nodo."
   },
   {
     "id": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
-    "translation": "Il nome della politica di gestione del nodo da valutare di nuovo. Se omesso, tutte le politiche di gestione del nodo verranno valutate di nuovo per questo nodo."
+    "translation": "Il nome della politica di gestione dei nodi da valutare di nuovo. Se omesso, tutte le politiche di gestione dei nodi verranno valutate di nuovo per questo nodo."
   },
   {
     "id": "List the run-time status of the node.",
@@ -1769,7 +1769,7 @@
   },
   {
     "id": "Add or replace an HA group in the Horizon Exchange. Use 'hzn exchange hagroup new' for an empty HA group template.",
-    "translation": "Aggiunge o sostituisce un gruppo HA in Horizon Exchange. Utilizza 'hzn exchange hagroup new' per un modello di gruppo HA vuoto."
+    "translation": "Aggiunge o sostituisce un gruppo HA in Horizon Exchange. Utilizzare 'hzn exchange hagroup new' per un modello di gruppo HA vuoto."
   },
   {
     "id": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
@@ -1777,7 +1777,7 @@
   },
   {
     "id": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
-    "translation": "Il percorso di un file JSON contenente i metadati necessari per creare / aggiornare il gruppo HA in Horizon Exchange. Specificare -f- per leggere da stdin."
+    "translation": "Il percorso di un file JSON contenente i metadati necessari per creare/aggiornare il gruppo HA in Horizon Exchange. Specificare -f- per leggere da stdin."
   },
   {
     "id": "Remove the HA group in the Horizon Exchange.",
@@ -1809,7 +1809,7 @@
   },
   {
     "id": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
-    "translation": "Nodo da eliminare dal gruppo HA. Questo indicatore può essere ripetuto per specificare nodi differenti."
+    "translation": "Nodo da rimuovere dal gruppo HA. Questo indicatore può essere ripetuto per specificare nodi differenti."
   },
   {
     "id": "Display the status of the Horizon Exchange.",
@@ -2117,11 +2117,11 @@
   },
   {
     "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-    "translation": "L'algoritmo di hash utilizzato per eseguire l'hash dei dati dell'oggetto prima di firmarli, che garantisce l'integrità dei dati durante il caricamento e il download. Gli algoritmi di hash supportati sono SHA1 o SHA256, quello predefinito è SHA1. Si esclude reciprocamente con l'indicatore --noIntegrity"
+    "translation": "L'algoritmo di hash utilizzato per eseguire l'hash dei dati dell'oggetto prima di firmarli, che garantisce l'integrità dei dati durante il caricamento e il download. Gli algoritmi hash supportati sono SHA1 o SHA256, quello predefinito è SHA1. Si esclude reciprocamente con l'indicatore --noIntegrity"
   },
   {
     "id": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
-    "translation": "L'hash dei dati dell'oggetto che vengono caricati o scaricati. Utilizzare questo indicatore se si desidera fornire l'hash invece di permettere al comando di calcolare automaticamente l'hash. L'hash deve essere generato utilizzando l'algoritmo SHA1 o SHA256. Se l'hash è stato generato utilizzando SHA256 è necessario specificare l'indicatore -a. Questo indicatore si esclude reciprocamente con -noIntegrity."
+    "translation": "L'hash dei dati dell'oggetto di cui è in corso il caricamento o il download. Utilizzare questo indicatore se si desidera fornire l'hash invece di permettere al comando di calcolare automaticamente l'hash. L'hash deve essere generato utilizzando l'algoritmo SHA1 o SHA256. Se l'hash è stato generato utilizzando SHA256 è necessario specificare l'indicatore -a. Questo indicatore si esclude reciprocamente con --noIntegrity."
   },
   {
     "id": "The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
@@ -2145,7 +2145,7 @@
   },
   {
     "id": "List and manage manifests and agent files for node management.",
-    "translation": "Elenca e gestisce i file manifest e agent per la gestione del nodo."
+    "translation": "Elenca e gestisce i file manifest e agent per la gestione dei nodi."
   },
   {
     "id": "Horizon user credentials to query and create Node Management resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
@@ -2173,19 +2173,19 @@
   },
   {
     "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-    "translation": "L'algoritmo hash utilizzato per eseguire l'hash dei dati manifest prima di firmarli, che garantisce l'integrità dei dati durante il caricamento e il download. Gli algoritmi di hash supportati sono SHA1 o SHA256, il valore predefinito è SHA1. Si esclude reciprocamente con l'indicatore -- noIntegrity"
+    "translation": "L'algoritmo hash utilizzato per eseguire l'hash dei dati manifest prima di firmarli, che garantisce l'integrità dei dati durante il caricamento e il download. Gli algoritmi hash supportati sono SHA1 o SHA256, il valore predefinito è SHA1. Si esclude reciprocamente con l'indicatore --noIntegrity"
   },
   {
     "id": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
-    "translation": "L'hash dei dati manifest che vengono caricati o scaricati. Utilizzare questo indicatore se si desidera fornire l'hash invece di consentire al comando di calcolare automaticamente l'hash. L'hash deve essere generato utilizzando l'algoritmi SHA1 o SHA256 . L'indicatore -a deve essere specificato se l'hash è stato generato utilizzando SHA256. Questo indicatore si esclude reciprocamente con -- noIntegrity."
+    "translation": "L'hash dei dati manifest di cui è in corso il caricamento o il download. Utilizzare questo indicatore se si desidera fornire l'hash invece di consentire al comando di calcolare automaticamente l'hash. L'hash deve essere generato utilizzando l'algoritmi SHA1 o SHA256 . L'indicatore -a deve essere specificato se l'hash è stato generato utilizzando SHA256. Questo indicatore si esclude reciprocamente con --noIntegrity."
   },
   {
     "id": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
-    "translation": "Il percorso di un file di chiave privata da utilizzare per firmare il manifest. La chiave pubblica corrispondente verrà memorizzata nell'MMS per assicurare l'integrità del manifest. Se non specificato, la variabile di ambiente HZN_PRIVATE_KEY_FILE verrà utilizzata per trovare una chiave privata. Se non impostato, verrà utilizzato ~/.hzn/keys/service.private.key. Se non esiste, viene generata una coppia di chiavi RSA solo per questa operazione di pubblicazione e la chiave privata viene eliminata."
+    "translation": "Il percorso di un file di chiave privata da utilizzare per firmare il manifest. La chiave pubblica corrispondente verrà memorizzata nell'MMS per assicurare l'integrità del manifest. Se non specificato, la variabile di ambiente HZN_PRIVATE_KEY_FILE verrà utilizzata per trovare una chiave privata. Se non impostato, verrà utilizzato ~/.hzn/keys/service.private.key. Se non esiste, viene generata una coppia di chiavi RSA solo per questa operazione di pubblicazione e quindi la chiave privata viene eliminata."
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
-    "translation": "Il comando di pubblicazione non eseguirà un controllo di integrità dei dati sui dati manifest caricati. Si esclude a vicenda con -- hashAlgo e -- hash"
+    "translation": "Il comando di pubblicazione non eseguirà un controllo dell'integrità dei dati sui dati manifest caricati. Si esclude reciprocamente con --hashAlgo e --hash"
   },
   {
     "id": "Display a list of manifest files stored in the management hub.",
@@ -2505,19 +2505,19 @@
   },
   {
     "id": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
-    "translation": "Il nome della politica di gestione del nodo. Se omesso, verrà visualizzato lo stato di tutte le politiche di gestione per questo nodo."
+    "translation": "Il nome della politica di gestione dei nodi. Se omesso, verrà visualizzato lo stato di tutte le politiche di gestione per questo nodo."
   },
   {
     "id": "Show the entire contents of each node management status object.",
-    "translation": "Mostrare l'intero contenuto di ogni oggetto stato di gestione del nodo."
+    "translation": "Mostrare l'intero contenuto di ogni oggetto di stato della gestione del nodo."
   },
   {
     "id": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
-    "translation": "Valutare di nuovo la politica di gestione del nodo (nmp). Eseguire questo comando per tentare di nuovo un nmp quando l'aggiornamento non è riuscito e il problema è stato risolto. Non eseguire questo comando quando il nodo è ancora in fase di aggiornamento."
+    "translation": "Valuta di nuovo la politica di gestione dei nodi (nmp). Eseguire questo comando per tentare di nuovo una nmp quando l'aggiornamento non è riuscito e il problema è stato risolto. Non eseguire questo comando quando il nodo è ancora in fase di aggiornamento."
   },
   {
     "id": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
-    "translation": "Il nome della politica di gestione del nodo. Se omesso, tutte le politiche di gestione per questo nodo verranno valutate di nuovo."
+    "translation": "Il nome della politica di gestione dei nodi. Se omesso, tutte le politiche di gestione per questo nodo verranno valutate di nuovo."
   },
   {
     "id": "Utility commands.",
@@ -2621,7 +2621,7 @@
   },
   {
     "id": "Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-    "translation": "Credenziali Horizon Exchange per le risorse del servizio del proprietario di SDO. Il valore predefinito è la variabile d'ambiente HZN_EXCHANGE_USER_AUTH. Se a questo valore non si antepone l'organizzazione dell'utente, verrà automaticamente anteposto il valore della variabile d'ambiente HZN_ORG_ID."
+    "translation": "Credenziali Horizon Exchange per le risorse del servizio del proprietario di SDO. Il valore predefinito è la variabile d'ambiente HZN_EXCHANGE_USER_AUTH. Se non si utilizza come prefisso l'organizzazione dell'utente, verrà automaticamente utilizzato come prefisso il valore della variabile d'ambiente HZN_ORG_ID."
   },
   {
     "id": "List and manage Horizon SDO ownership keys.",
@@ -2777,7 +2777,7 @@
   },
   {
     "id": "Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-    "translation": "Credenziali Horizon Exchange per eseguire query delle risorse del servizio del proprietario di FDO. Il valore predefinito è la variabile d'ambiente HZN_EXCHANGE_USER_AUTH. Se a questo valore non si antepone l'organizzazione dell'utente, verrà automaticamente anteposto il valore della variabile d'ambiente HZN_ORG_ID."
+    "translation": "Credenziali Horizon Exchange per eseguire query delle risorse del servizio del proprietario di FDO. Il valore predefinito è la variabile d'ambiente HZN_EXCHANGE_USER_AUTH. Se non si utilizza come prefisso l'organizzazione dell'utente, verrà automaticamente utilizzato come prefisso il valore della variabile d'ambiente HZN_ORG_ID."
   },
   {
     "id": "List FDO ownership public keys.",
@@ -3501,15 +3501,15 @@
   },
   {
     "id": "-n and --ha-group are mutually exclusive.",
-    "translation": "-n e -- ha - group si escludono reciprocamente."
+    "translation": "-n e --ha-group si escludono reciprocamente."
   },
   {
     "id": "--ha-group and --node-pol are mutually exclusive.",
-    "translation": "-- ha - group e -- node - pol si escludono reciprocamente."
+    "translation": "--ha-group e --node-pol si escludono reciprocamente."
   },
   {
     "id": "--ha-group and --node-ui are mutually exclusive.",
-    "translation": "-- ha - group e -- node-ui si escludono reciprocamente."
+    "translation": "--ha-group e --node-ui si escludono reciprocamente."
   },
   {
     "id": "The HA group {HaGroupName} does not have members.",
@@ -3709,7 +3709,7 @@
   },
   {
     "id": "use --url with service projects.",
-    "translation": "utilizzare -- url con i progetti di servizio."
+    "translation": "utilizzare --url con i progetti di servizio."
   },
   {
     "id": "--project {Project} does not contain Horizon service metadata.",
@@ -4605,7 +4605,7 @@
   },
   {
     "id": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
-    "translation": "Sei sicuro di voler rimuovere il gruppo HA {HaGroupName} per l'organizzazione {HaGroupOrg} da Horizon Exchange?"
+    "translation": "Si è sicuri di voler rimuovere il gruppo HA {HaGroupName} per l'organizzazione {HaGroupOrg} da Horizon Exchange?"
   },
   {
     "id": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
@@ -4641,7 +4641,7 @@
   },
   {
     "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
-    "translation": "Si è sicuri di voler eliminare i nodi {NodeNames} dal gruppo HA {HaGroupName} per l'organizzazione {HaGroupOrg} in Horizon Exchange?"
+    "translation": "Si è sicuri di voler rimuovere i nodi {NodeNames} dal gruppo HA {HaGroupName} per l'organizzazione {HaGroupOrg} in Horizon Exchange?"
   },
   {
     "id": "Node {NodeName} is not in HA group {HaGroupOrg}/{HaGroupName}.",
@@ -4657,7 +4657,7 @@
   },
   {
     "id": "NMP {NmpName} not found in org {NmpOrg}",
-    "translation": "NMP {NmpName} non trovato nell'organizzazione {NmpOrg}"
+    "translation": "NMP {NmpName} non trovata nell'organizzazione {NmpOrg}"
   },
   {
     "id": "failed to marshal 'hzn exchange nmp list' output: {Err}",
@@ -4689,7 +4689,7 @@
   },
   {
     "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
-    "translation": "Abilitare gli agent per rendere causale l'ora di avvio dell'aggiornamento entro start + startWindow secondi, valore predefinito 0."
+    "translation": "Abilitare gli agent per rendere causale la data/ora di inizio dell'aggiornamento entro start + startWindow secondi, valore predefinito 0."
   },
   {
     "id": "Assertions on how the agent should update itself.",
@@ -4705,19 +4705,19 @@
   },
   {
     "id": "Incorrect node management policy format in file {JsonFilePath}: {Err}",
-    "translation": "Formato della politica di gestione del nodo non corretto nel file {JsonFilePath}: {Err}"
+    "translation": "Formato della politica di gestione dei nodi non corretto nel file {JsonFilePath}: {Err}"
   },
   {
     "id": "The node management policy has no constraints which might result in the management policy being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable.",
-    "translation": "La politica di gestione del nodo non contiene vincoli, il che può risultare nella distribuzione della politica di gestione a tutti i nodi. Specificare --no-constraints per confermare che ciò sia accettabile."
+    "translation": "La politica di gestione dei nodi non contiene vincoli, il che può risultare nella distribuzione della politica di gestione a tutti i nodi. Specificare --no-constraints per confermare che ciò sia accettabile."
   },
   {
     "id": "An AgentAutoUpgradePolicy was defined, but a manifest was not defined. Please specify a manifest that is stored in the CSS before attempting to add an NMP with an AgentAutoUpgradePolicy.",
-    "translation": "È stato definito un AgentAutoUpgradePolicy, ma non è stato definito un manifest. Specificare un file manifest memorizzato nel CSS prima di provare ad aggiungere un NMP con AgentAutoUpgradePolicy."
+    "translation": "È stata definita una AgentAutoUpgradePolicy, ma non è stato definito un manifest. Specificare un manifest memorizzato nel CSS prima di provare ad aggiungere una NMP con una AgentAutoUpgradePolicy."
   },
   {
     "id": "An AgentAutoUpgradePolicy was defined with manifest '{FullManifest}' which does not exist in org {ManOrg}.",
-    "translation": "È stato definito un AgentAutoUpgradePolicy con il manifest '{FullManifest}' che non esiste nell'organizzazione {ManOrg}."
+    "translation": "È stata definita una AgentAutoUpgradePolicy con il manifest '{FullManifest}' che non esiste nell'organizzazione {ManOrg}."
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
@@ -4725,7 +4725,7 @@
   },
   {
     "id": "Cannot create node management policy {NmpOrg}/{NmpName}: {Msg}",
-    "translation": "Impossibile creare la politica di gestione del nodo {NmpOrg}/{NmpName}: {Msg}"
+    "translation": "Impossibile creare la politica di gestione dei nodi {NmpOrg}/{NmpName}: {Msg}"
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
@@ -4733,11 +4733,11 @@
   },
   {
     "id": "Are you sure you want to remove node management policy {NmpName} for org {NmpOrg} from the Horizon Exchange?",
-    "translation": "Rimuovere la politica di gestione del nodo {NmpName} per l'organizzazione {NmpOrg} da Horizon Exchange?"
+    "translation": "Si è sicuri di voler rimuovere la politica di gestione dei nodi {NmpName} per l'organizzazione {NmpOrg} da Horizon Exchange?"
   },
   {
     "id": "Node management policy {NmpName} not found in org {NmpOrg}",
-    "translation": "Politica di gestione del nodo {NmpName} non trovata nell'organizzazione {NmpOrg}"
+    "translation": "Politica di gestione dei nodi {NmpName} non trovata nell'organizzazione {NmpOrg}"
   },
   {
     "id": "Node management policy {NmpOrg}/{NmpName} removed from the Horizon Exchange.",
@@ -4749,43 +4749,43 @@
   },
   {
     "id": "Status for NMP {NmpName} not found in org {NmpOrg}",
-    "translation": "Stato di NMP {NmpName} non trovato nell'organizzazione {NmpOrg}"
+    "translation": "Stato della NMP {NmpName} non trovato nell'organizzazione {NmpOrg}"
   },
   {
     "id": "Status for NMP {NmpName} not found for node {NodeName} in org {NmpOrg}",
-    "translation": "Stato di NMP {NmpName} non trovato per il nodo {NodeName} nell'organizzazione {NmpOrg}"
+    "translation": "Stato della NMP {NmpName} non trovato per il nodo {NodeName} nell'organizzazione {NmpOrg}"
   },
   {
     "id": "Failed to parse start time: {Err}. The start time must be in RFC3339 format or set to \"now\".",
-    "translation": "Impossibile analizzare l'ora di avvio: {Err}. L'ora di inizio deve essere in formato RFC3339 o deve essere impostata su \"now\"."
+    "translation": "Impossibile analizzare la data/ora di inizio: {Err}. La data/ora di inizio deve essere in formato RFC3339 o deve essere impostata su \"now\"."
   },
   {
     "id": "Failed to parse start window: {Err}. The start window must be Integer.",
-    "translation": "Impossibile analizzare la finestra di avvio {Err}. La finestra di avvio deve essere un numero intero."
+    "translation": "Impossibile analizzare la finestra di inizio {Err}. La finestra di inizio deve essere un numero intero."
   },
   {
     "id": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
-    "translation": "La politica di gestione del nodo {NmpFullName} è già abilitata in Horizon Exchange."
+    "translation": "La politica di gestione dei nodi {NmpFullName} è già abilitata in Horizon Exchange."
   },
   {
     "id": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
-    "translation": "Politica di gestione del nodo {NmpFullName} abilitata in Horizon Exchange"
+    "translation": "Politica di gestione dei nodi {NmpFullName} abilitata in Horizon Exchange"
   },
   {
     "id": "Cannot enable node management policy {NmpFullName}: {Msg}",
-    "translation": "Impossibile abilitare la politica di gestione del nodo {NmpFullName}: {Msg}"
+    "translation": "Impossibile abilitare la politica di gestione dei nodi {NmpFullName}: {Msg}"
   },
   {
     "id": "Node management policy {NmpFullName} is already disabled in the Horizon Exchange",
-    "translation": "La politica di gestione del nodo {NmpFullName} è già disabilitata in Horizon Exchange"
+    "translation": "La politica di gestione dei nodi {NmpFullName} è già disabilitata in Horizon Exchange"
   },
   {
     "id": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
-    "translation": "Politica di gestione del nodo {NmpFullName} disabilitata in Horizon Exchange"
+    "translation": "Politica di gestione dei nodi {NmpFullName} disabilitata in Horizon Exchange"
   },
   {
     "id": "Cannot disable node management policy {NmpFullName}: {Msg}",
-    "translation": "Impossibile disabilitare la politica di gestione del nodo {NmpFullName}: {Msg}"
+    "translation": "Impossibile disabilitare la politica di gestione dei nodi {NmpFullName}: {Msg}"
   },
   {
     "id": "failed to marshal 'exchange node list' output: {Err}",
@@ -5005,7 +5005,7 @@
   },
   {
     "id": "The the Horizon agent for node {NodeOrg}/{NodeName} will re-evaluate the management policies.",
-    "translation": "L'agent Horizon per il nodo {NodeOrg}/{NodeName} valuterà nuovamente i criteri di gestione."
+    "translation": "L'agent Horizon per il nodo {NodeOrg}/{NodeName} valuterà nuovamente le politiche di gestione."
   },
   {
     "id": "Verifying userInputs with the node pattern {Pattern}.",
@@ -5809,15 +5809,15 @@
   },
   {
     "id": "The following node management policy will be re-evaluated: {NmpName}.",
-    "translation": "La seguente politica di gestione del nodo verrà valutata di nuovo: {NmpName}."
+    "translation": "La seguente politica di gestione dei nodi verrà valutata di nuovo: {NmpName}."
   },
   {
     "id": "No node management policy for this node.",
-    "translation": "Nessuna politica di gestione nodo per questo nodo."
+    "translation": "Nessuna politica di gestione dei nodi per questo nodo."
   },
   {
     "id": "The following node management policies will be re-evaluated: {JoinallIDs_}.",
-    "translation": "Le seguenti politiche di gestione del nodo verranno valutate di nuovo: {JoinallIDs_}."
+    "translation": "Le seguenti politiche di gestione dei nodi verranno valutate di nuovo: {JoinallIDs_}."
   },
   {
     "id": "Failed to get proper response from Horizon agent",
@@ -5901,7 +5901,7 @@
   },
   {
     "id": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
-    "translation": "Valore non valido per -- hashAlgo, utilizzare SHA1 o SHA256"
+    "translation": "Valore non valido per --hashAlgo, utilizzare SHA1 o SHA256"
   },
   {
     "id": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
@@ -5957,7 +5957,7 @@
   },
   {
     "id": "Are you sure you want to remove manifest {ManOrg}/{ManifestId} from the Management Hub?",
-    "translation": "Rimuovere il manifest {ManOrg}/{ManifestId} dall'hub di gestione?"
+    "translation": "Si è sicuri di voler rimuovere il manifest {ManOrg}/{ManifestId} dall'hub di gestione?"
   },
   {
     "id": "Manifest '{ManOrg}/{ManifestId}' of type '{ManifestType}' not found in the Management Hub",
@@ -6093,15 +6093,15 @@
   },
   {
     "id": "Policies that are used for node management only.",
-    "translation": "Politiche che vengono utilizzate solo per la gestione del nodo."
+    "translation": "Politiche che vengono utilizzate solo per la gestione dei nodi."
   },
   {
     "id": "A list of policy properties for node management.",
-    "translation": "Un elenco di proprietà della politica per la gestione del nodo."
+    "translation": "Un elenco di proprietà della politica per la gestione dei nodi."
   },
   {
     "id": "A list of constraints for node management.",
-    "translation": "Un elenco di vincoli per la gestione del nodo."
+    "translation": "Un elenco di vincoli per la gestione dei nodi."
   },
   {
     "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
@@ -7437,7 +7437,7 @@
   },
   {
     "id": "Are you sure you want to unregister this Horizon node?",
-    "translation": "Si è certi di voler annullare la registrazione di questo nodo Horizon?"
+    "translation": "Si è sicuri di voler annullare la registrazione di questo nodo Horizon?"
   },
   {
     "id": "Cannot backup eventlogs: {Err}",
@@ -8253,7 +8253,7 @@
   },
   {
     "id": "The start time must be in RFC3339 format or set to \"now\".",
-    "translation": "L'ora di inizio deve essere in formato RFC3339 o deve essere impostata su \"now\"."
+    "translation": "La data/ora di inizio deve essere in formato RFC3339 o deve essere impostata su \"now\"."
   },
   {
     "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -8297,7 +8297,7 @@
   },
   {
     "id": "New node management policy status created for policy {Arg_1}.",
-    "translation": "Nuovo stato della politica di gestione del nodo creato per la politica {Arg_1}."
+    "translation": "Nuovo stato della politica di gestione dei nodi creato per la politica {Arg_1}."
   },
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
