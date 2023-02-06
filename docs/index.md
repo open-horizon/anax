@@ -56,7 +56,7 @@ Model objects in {{site.data.keyword.edge_notm}} are the metadata representation
 
 ## [Policy based deployment](policy.md)
 
-The policy based deployment support in {{site.data.keyword.edge_notm}} enables containerized workloads (aka services) to be deployed to edge nodes that are running the {{site.data.keyword.edge_notm}} agent and which are registered to an {{site.data.keyword.edge_notm}} Management Hub.
+The policy based deployment support in {{site.data.keyword.edge_notm}} enables containerized workloads (services) to be deployed to edge nodes that are running the {{site.data.keyword.edge_notm}} agent and which are registered to an {{site.data.keyword.edge_notm}} Management Hub.
 
 ## [Policy Properties and Constraints](properties_and_constraints.md)
 

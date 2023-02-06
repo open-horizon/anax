@@ -76,7 +76,7 @@ The following is an example of a manifest json file. This would be a common case
 
 Adding a manifest to the Management Hub can only be performed by the **org admin** or the root user.
 
-After the json file is obtained by running hzn nm manifest new and is filled out, run the following command to add the file to the hub:
+After the json file is obtained by running `hzn nm manifest new` and is filled out, run the following command to add the file to the hub:
 
 ```bash
 hzn nm manifest add --type agent_upgrade_manifests --id <manifest-name> --json-file <path-to-manifest>
