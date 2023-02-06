@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-24"
+lastupdated: "2023-002-05"
 title: "Node management overview"
 description: Automatic agent upgrade using policy based node management
 parent: Agent (anax)
@@ -16,20 +16,23 @@ nav_order: 12
 {:child: .link .ulchildlink}
 {:childlinks: .ullinks}
 
-# Overview of node management
+# Node management overview
 {: #overview-nmp}
 
 ## Automatic agent upgrade
 {: #auto-agent-upgrade}
 
-The Automatic Agent Upgrade is a policy-based node management feature that allows an org admin to create node management policies that deploy upgrade jobs to nodes and manages them autonomously. This allows the admin to ensure that all the nodes in the system are using the intended versions.
+Automatic agent upgrade is a policy-based node management feature that allows an org admin to create node management policies that deploy upgrade jobs to nodes and manages them autonomously. This allows the admin to ensure that all the nodes in the system are using the intended versions.
 
 This feature utilizes existing agent artifacts that reside in Cloud Sync Service (CSS) from the edgeNodeFiles.sh installation script.
 
-### How to set-up an Automatic Agent Upgrade policy
+### How to set-up an Automatic agent upgrade policy
 {: auto-agent-setup}
 
+The following steps describe how to set up an Automatic agent upgrade policy.
+
 1. Determine the manifestID for the new version of agent software.
+
    - List the available manifests present in the IBM org on your system. Execute the following
 
      ```bash
@@ -44,7 +47,8 @@ This feature utilizes existing agent artifacts that reside in Cloud Sync Service
      ```
      {: codeblock}
 
-2. Create a Node Management Policy
+2. Create a node management policy.
+
    - Use the following command to save a node management policy (NMP) template to a file. An NMP determines which nodes to upgrade, when to do the upgrade, and what to upgrade. In this example, the file is named `nmp.json`
 
      ```bash
@@ -80,7 +84,7 @@ This feature utilizes existing agent artifacts that reside in Cloud Sync Service
      ```
      {: codeblock}
 
-3. Verify the impacted edge nodes (Optional)
+3. (Optional) Verify the impacted edge nodes.
    The following command can be used to check which nodes the NMP applies to before publishing the NMP to the Exchange. This is useful to confirm the NMP parameters will target the desired edge nodes only.
 
    ```bash
@@ -88,14 +92,15 @@ This feature utilizes existing agent artifacts that reside in Cloud Sync Service
    ```
    {: codeblock}
 
-4. Add the NMP to the Exchange
+4. Add the NMP to the Exchange.
 
    ```bash
    hzn exchange nmp add sample_nmp -f nmp.json
    ```
    {: codeblock}
 
-5. Observe the status of the upgrade job (Optional)
+5. (Optional) Observe the status of the upgrade job.
+
    - Now that the NMP has been published, it will soon get picked up by the worker on the agent to perform the upgrade. The status of the NMP can then be observed using the following command.
 
      ```bash

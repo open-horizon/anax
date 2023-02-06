@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-24"
+lastupdated: "2023-02-05"
 title: "Deployment Strings"
 description: Description of deployment strings
 
@@ -38,7 +38,7 @@ The `deployment` and `clusterDeployment` strings are JSON which have been "strin
 ```
 {: codeblock}
 
- **Note**: You do not need to stringify the deployment strings if you use the `hzn` command to create the service in the exchange. However if you use `curl` command to create the service, you must stringify it.
+ **Note**: You do not need to stringify the deployment strings if you use the `hzn` command to create the service in the exchange. However, if you use `curl` command to create the service, you must stringify it.
 
 ## Deployment string fields
 {: #deployment-fields}
@@ -61,11 +61,11 @@ Because {{site.data.keyword.edge_notm}} uses the docker API to start the contain
     - `entrypoint`: `["executable", "param1", "param2"]` - override ENTRYPOINT specified in the Dockerfile.
     - `max_memory_mb`: `4096` - the maximum amount of memory the service container can use
     - `max_cpus`: `1.5` - how much of the available CPU resources the service container can use. For instance, if the host machine has two CPUs and you set value to 1.5, the container is guaranteed to use at most one and a half of the CPUs
-    - `log_driver`: the logging driver (e.g. `json-file`) to use for container logs, instead of default one (syslog)
-    - `secrets`: `{"ai_secret": {"description": "The token for cloud AI service."}, "sql_secret": {}}` - a list of secret names and the descriptions. The `description` can be omitted. A secret name is just a user defined string. A pattern or a deployment policy will associate it with the name of the secret in the secret provider. The horizon agent will mount the secrets at '/open-horizon-secrets' within the service's containers. Each secret name appears as a file in that directory, containing the details of the secret from the secret provider. Each secret file is a JSON encoded file containing the "key" and "value" set when the secret was created with the hzn secretsmanager secret add command.
+    - `log_driver`: the logging driver (for example `json-file`) to use for container logs, instead of default one (syslog)
+    - `secrets`: `{"ai_secret": {"description": "The token for cloud AI service."}, "sql_secret": {}}` - a list of secret names and the descriptions. The `description` can be omitted. A secret name is just a user defined string. A pattern or a deployment policy will associate it with the name of the secret in the secret provider. The horizon agent will mount the secrets at '/open-horizon-secrets' within the service's containers. Each secret name appears as a file in that directory, containing the details of the secret from the secret provider. Each secret file is a JSON encoded file containing the 'key' and 'value' set when the secret was created with the hzn secretsmanager secret add command.
     - `user`: Sets the username or UID used. root (id = 0) is the default user within a container. The image developer can create additional users. Those users are accessible by name. When passing a numeric ID, the user does not have to exist in the container.
     - `pid`: Set the PID (Process) Namespace mode for the container. `container:<name|id>` joins another container's PID namespace. `host` use the host's PID namespace inside the container. In certain cases you want your container to share the host’s process namespace, basically allowing processes within the container to see all of the processes on the system.
-    - `sysctls`: Sysctl settings are exposed via Kubernetes, allowing users to modify certain kernel parameters at runtime for namespaces within a container. The parameters cover various subsystems, such as: networking (common prefix: net.), kernel (common prefix: kernel.), virtual memory (common prefix: vm.), MDADM (common prefix: dev.). To get a list of all parameters, you can run: `sudo sysctl -a`
+    - `sysctls`: Sysctl settings are exposed by Kubernetes, allowing users to modify certain kernel parameters at runtime for namespaces within a container. The parameters cover various subsystems, such as: networking (common prefix: net.), kernel (common prefix: kernel.), virtual memory (common prefix: vm.), MDADM (common prefix: dev.). To get a list of all parameters, you can run: `sudo sysctl -a`
 
 ## clusterDeployment String Fields
 {: #clusterdeployment-fields}
@@ -77,7 +77,7 @@ Because {{site.data.keyword.edge_notm}} uses operators to deploy the application
 ## Deployment String Examples
 {: #deployment-examples}
 
-A `deployment` string JSON would look like this:
+This is a `deployment` string JSON example:
 
 ```json
 {

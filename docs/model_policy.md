@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-24"
+lastupdated: "2023-02-05"
 title: "Model Object"
 description: Model Policies deploy application metadata objects to edge nodes
 
@@ -22,9 +22,9 @@ nav_order: 11
 
 Model objects in {{site.data.keyword.edge_notm}} are the metadata representation of application metadata objects.
 Applications are often written such that external metadata can be injected into the application in order to alter the behavior of the logic.
-This is notably true in the case of machine learning and AI inferencing, where the logic which analyzes a data stream is instructed via a machine learning model how to process the data to derive an analysis result.
+This is notably true in the case of machine learning and AI inferencing, where the logic which analyzes a data stream uses a machine learning model to process the data to derive an analysis result.
 {{site.data.keyword.edge_notm}} allows application to be structured using this metadata driven approach, by supporting the ability to deploy the application's metadata on different lifecycle boundaries than the service (inferencing logic) which consumes the metadata.
-In {{site.data.keyword.edge_notm}} the application's metadata is called a model, and it is represented by a model object with the JSON serialization shown below.
+In {{site.data.keyword.edge_notm}}, the application's metadata is called a model, and it is represented by a model object with the JSON serialization shown below.
 
 One aspect of the model object is the policy expressions it contains. The {{site.data.keyword.edge_notm}} policy based, autonomous deployment capability is described [here](./policy.md).
 The key to understanding model policy is remember that models are associated with services, and thus follow those services in terms of where the services are deployed.
@@ -41,11 +41,11 @@ Following are the fields in the JSON representation of a model object:
 - `destinationType`: The {{site.data.keyword.edge_notm}} Pattern in use by nodes where this object should be deployed. This field is optional and mutually exclusive with `destinationPolicy`. You should delete this field when using `destinationPolicy`.
 - `destinationList`: The list of destinations as an array of pattern:nodeId pairs where the object will be deployed. This field is mutually exclusive with `desinationID` and `destinationPolicy`. You should delete this field when using `destinationPolicy`.
 - `destinationPolicy`:
-  - `properties`: Policy properties as described [here](./properties_and_constraints.md) which a node policy constraint can refer to.
-  - `constraints`: Policy constraints as described [here](./properties_and_constraints.md) which refer to node policy properties.
-  - `services`: A list of services which can consume the associated model object.
+  - `properties`: Policy properties as described [here](./properties_and_constraints.md) that a node policy constraint can refer to.
+  - `constraints`: Policy constraints as described [here](./properties_and_constraints.md) that refer to node policy properties.
+  - `services`: A list of services that can consume the associated model object.
     - `serviceName`: The name of the service that will consume the model object. This is the same value as found in the `url` field [here](./service_def.md).
-    - `orgID` : The organization in which the service in `serviceName` is defined.
+    - `orgID` : The organization where the service in `serviceName` is defined.
     - `version`: A version range indicating the set of service versions with which this model object is associated.
     - `arch`: The hardware architecture of the service in `serviceName`, or `*` to indicate any compatible architecture. This is the same value as found in the `arch` field [here](./service_def.md).
 - `expiration`: A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format. This field is optional.

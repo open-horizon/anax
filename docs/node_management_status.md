@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-24"
+lastupdated: "2023-02-05"
 title: "Node management status"
 description: Automatic agent upgrade status using policy based node management
 parent: Agent (anax)
@@ -146,7 +146,7 @@ The `nmp-name` argument is optional and lets the user list a single NMP. This is
 
 **Note**: The command in this section are for listing the status of a NMP as that status exists in the node's local database. To see the status that is stored in the Exchange, see the section **Listing the Exchange status of NMP currently stored in the Exchange** below.
 
-## Resetting an already completed NMP
+## Resetting an previously completed NMP
 {: #nmp-reset}
 
 Resetting a NMP stored in the Exchange can only be performed by the **org admin** (as well as root).

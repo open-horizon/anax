@@ -2219,13 +2219,13 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- | ---- | ---------------- |
-| allowDowngrade | | boolean | a boolean value that designates if a downgrade to a previous version is allowed to occur. |
+| allowDowngrade | | boolean | a Boolean value that designates if a downgrade to a previous version is allowed to occur. |
 | manifest | | string | a string value that corresponds to an upgrade manifest in the Exchange. |
 | scheduledUnixTime | | string | a RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
 | latestMap | | json | a json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
-| | softwareLatest | boolean | a boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
-| | configLatest | boolean | a boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
-| | certLatest | boolean | a boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+| | softwareLatest | boolean | a Boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
+| | configLatest | boolean | a Boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
+| | certLatest | boolean | a Boolean value that designates if the certificate should stay up-to-date with the latest available version. |
 {: caption="Table 41. GET /nodemanagement/nextjob JSON response fields" caption-side="top"}
 
 #### Example
@@ -2303,13 +2303,13 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- | ---- | ---------------- |
-| allowDowngrade | | boolean | a boolean value that designates if a downgrade to a previous version is allowed to occur. |
+| allowDowngrade | | boolean | a Boolean value that designates if a downgrade to a previous version is allowed to occur. |
 | manifest | | string | a string value that corresponds to an upgrade manifest in the Exchange. |
 | scheduledUnixTime | | string | a RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
 | latestMap | | json | a json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
-| | softwareLatest | boolean | a boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
-| | configLatest | boolean | a boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
-| | certLatest | boolean | a boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+| | softwareLatest | boolean | a Boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
+| | configLatest | boolean | a Boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
+| | certLatest | boolean | a Boolean value that designates if the certificate should stay up-to-date with the latest available version. |
 {: caption="Table 43. GET /nodemanagement/status JSON response fields" caption-side="top"}
 
 #### Example
@@ -2411,13 +2411,13 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- | ---- | ---------------- |
-| allowDowngrade | | boolean | a boolean value that designates if a downgrade to a previous version is allowed to occur. |
+| allowDowngrade | | boolean | a Boolean value that designates if a downgrade to a previous version is allowed to occur. |
 | manifest | | string | a string value that corresponds to an upgrade manifest in the Exchange. |
 | scheduledUnixTime | | string | a RFC3339 timestamp designating when the upgrade job should start in the local unix time. |
 | latestMap | | json | a json map that describes which upgrade types are to track and stay up-to-date with the latest available version. |
-| | softwareLatest | boolean | a boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
-| | configLatest | boolean | a boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
-| | certLatest | boolean | a boolean value that designates if the certificate should stay up-to-date with the latest available version. |
+| | softwareLatest | boolean | a Boolean value that designates if the agent software packages should stay up-to-date with the latest available version. |
+| | configLatest | boolean | a Boolean value that designates if the configuration file should stay up-to-date with the latest available version. |
+| | certLatest | boolean | a Boolean value that designates if the certificate should stay up-to-date with the latest available version. |
 {: caption="Table 45. GET /nodemanagement/status/\{nmpname\} JSON response fields" caption-side="top"}
 
 #### Example

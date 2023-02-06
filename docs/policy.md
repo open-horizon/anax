@@ -1,9 +1,9 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-24"
+lastupdated: "2023-02-05"
 title: "Policy based deployment"
-description: Policy based deployment enables containerized workloads (aka services) to be deployed to edge nodes
+description: Policy based deployment enables containerized workloads (services) to be deployed to edge nodes
 
 parent: Agent (anax)
 nav_order: 16
@@ -20,13 +20,13 @@ nav_order: 16
 # Policy based deployment
 {: #policy-deployment}
 
-The policy based deployment support in {{site.data.keyword.edge_notm}} enables containerized workloads (aka services) to be deployed to edge nodes that are running the {{site.data.keyword.edge_notm}} agent and which are registered to an {{site.data.keyword.edge_notm}} Management Hub.
+The policy based deployment support in {{site.data.keyword.edge_notm}} enables containerized workloads (services) to be deployed to edge nodes that are running the {{site.data.keyword.edge_notm}} agent and which are registered to an {{site.data.keyword.edge_notm}} Management Hub.
 The deployment engine (implemented inside the {{site.data.keyword.edge_notm}} Agbot) uses policy to autonomously determine where services should be deployed, undeployed or re-deployed.
 As nodes, models, services and deployment policies are added, updated or removed from the management hub, the deployment engine will automatically react to the change.
 An adminstrator never has to interact directly with the deployment engine, it just works quietly in the background ensuring that the edge computing environment it is managing has services deployed where they should be.
 
 To accomplish this there are four kinds of policy in {{site.data.keyword.edge_notm}}; node policy, deployment policy, service policy, and model policy.
-Each kind of policy is composed of properties and constraints which are described in more detail [here](./properties_and_constraints.md).
+Each kind of policy is composed of properties and constraints which are described in more detail in the [Properties and Constraints]](./properties_and_constraints.md) documentation.
 
 ## Node policy
 {: #node-policy}

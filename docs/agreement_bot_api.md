@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-30"
+lastupdated: "2023-02-05"
 description: Agreement Bot APIs
 title: "Agreement Bot APIs"
 
@@ -468,7 +468,7 @@ body:
 | data_verification_time | json | the time in seconds when the agbot last detected data being sent by the device |
 | data_notification_sent | json | the time in seconds when the agbot last sent a data verification message to the device |
 | metering_notification_sent | json | the time in seconds when the agbot last sent a metering notification message |
-| metering_notification_msgs | json | the last 2 metering notification messages sent to the device, ordered newest to oldest |
+| metering_notification_msgs | json | the last two metering notification messages sent to the device, ordered newest to oldest |
 | archived | json | false when the agreement is active, true when it is being terminated or has already terminated |
 | terminated_reason | json | the termination reason code |
 | terminated_description | json | the textual description of the terminated_reason code |
@@ -634,7 +634,7 @@ Get a specific policy.
 | ---- | ---- | ---------------- |
 | org | string | the name of the organization. |
 | name | string | the name of the policy. |
-{: caption="Table 17. GET /policy/\{org\}/{name} JSON parameter fields" caption-side="top"}
+{: caption="Table 17. GET /policy/\{org\}/\{name\} JSON parameter fields" caption-side="top"}
 
 #### Response
 
@@ -653,7 +653,7 @@ body:
 | properties | array | an array of name value pairs that the current party have. |
 | dataVerification | json | contains information on how data gets verified. |
 | nodeHealth | json | contains information on how to determine  the health of the node. |
-{: caption="Table 18. GET /policy/\{org\}/{name} JSON response fields" caption-side="top"}
+{: caption="Table 18. GET /policy/\{org\}/\{name\} JSON response fields" caption-side="top"}
 
 #### Example
 
