@@ -4581,7 +4581,7 @@
   },
   {
     "id": "HA group name is not specified.",
-    "translation": "O nome do grupo de alta disponibilidade não está especificado."
+    "translation": "O nome do grupo de alta disponibilidade não foi especificado."
   },
   {
     "id": "HA group description cannot be empty.",
@@ -4689,7 +4689,7 @@
   },
   {
     "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
-    "translation": "Ativar os agentes para escolher a esmo o horário de início do upgrade dentro do início + startWindow segundos, padrão 0."
+    "translation": "Permitir que os agentes escolham aleatoriamente o horário de início do upgrade dentro do início + startWindow segundos. O padrão é 0."
   },
   {
     "id": "Assertions on how the agent should update itself.",
@@ -7161,7 +7161,7 @@
   },
   {
     "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
-    "translation": "falha ao assinalar digitalmente o arquivo {ObjFile}, Erro: {Err}"
+    "translation": "falha ao assinar digitalmente o arquivo {ObjFile}, Erro: {Err}"
   },
   {
     "id": "Upload object in chunk, chunk size is: {ChunkSize}",

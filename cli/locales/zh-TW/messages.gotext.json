@@ -2296,7 +2296,7 @@
     {
       "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
       "message": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-      "translation": "包含節點使用者輸入的 JSON 輸入檔名稱。 與 -n 互斥。",
+      "translation": "包含節點使用者輸入的 JSON 輸入檔名稱。與 -n 互斥。",
       "fuzzy": true
     },
     {
@@ -2398,7 +2398,7 @@
     {
       "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
       "message": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
-      "translation": "應顯示其日誌記錄的服務名稱。 服務名稱與服務定義的 URL 欄位相同。",
+      "translation": "應顯示其日誌記錄的服務名稱。服務名稱與服務定義的 URL 欄位相同。",
       "fuzzy": true
     },
     {
@@ -4002,7 +4002,7 @@
     {
       "id": "Manage HA group members in the Horizon Exchange",
       "message": "Manage HA group members in the Horizon Exchange",
-      "translation": "在 Horizon Exchange 中管理 HA 群組成員",
+      "translation": "管理 Horizon Exchange 中的 HA 群組成員",
       "fuzzy": true
     },
     {
@@ -4488,7 +4488,7 @@
     {
       "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
       "message": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
-      "translation": "發佈指令將不會對上傳的物件資料執行資料完整性檢查。 它與 --hashAlgo 和 --hash 互斥",
+      "translation": "發佈指令將不會對上傳的物件資料執行資料完整性檢查。它與 --hashAlgo 和 --hash 互斥",
       "fuzzy": true
     },
     {
@@ -4864,7 +4864,7 @@
     {
       "id": "The name of the HA group that this node will be added to.",
       "message": "The name of the HA group that this node will be added to.",
-      "translation": "將新增此節點的 HA 群組名稱。",
+      "translation": "此節點將新增到其中的 HA 群組名稱。",
       "fuzzy": true
     },
     {
@@ -8377,7 +8377,7 @@
     {
       "id": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
       "message": "File {FileName} already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.",
-      "translation": "檔案 {FileName} 已存在。 請指定不同的檔案路徑或檔名。 若要改寫現有檔案，請使用 '--overwrite' 旗標。",
+      "translation": "檔案 {FileName} 已存在。請指定不同的檔案路徑或檔名。若要改寫現有檔案，請使用 '--overwrite' 旗標。",
       "placeholders": [
         {
           "id": "FileName",
@@ -12982,7 +12982,7 @@
     {
       "id": "Deployment policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
       "message": "Deployment policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
-      "translation": "已在 Horizon Exchange 中更新部署原則：{PolOrg}/{Policy}",
+      "translation": "已在 Horizon Exchange 中更新了部署原則：{PolOrg}/{Policy}",
       "placeholders": [
         {
           "id": "PolOrg",
@@ -13148,7 +13148,7 @@
     {
       "id": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
       "message": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
-      "translation": "已在 Horizon Exchange 中更新原則 {PolOrg}/{PolicyName}",
+      "translation": "已在 Horizon Exchange 中更新了原則 {PolOrg}/{PolicyName}",
       "placeholders": [
         {
           "id": "PolOrg",
@@ -13752,7 +13752,7 @@
     {
       "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
       "message": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
-      "translation": "在 Horizon Exchange 中更新了 HA 群組 {HaGroupOrg}/{HaGroupName}",
+      "translation": "已在 Horizon Exchange 中更新了 HA 群組 {HaGroupOrg}/{HaGroupName}",
       "placeholders": [
         {
           "id": "HaGroupOrg",
@@ -13808,7 +13808,7 @@
     {
       "id": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
       "message": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
-      "translation": "在 Horizon Exchange 中新增了 HA 群組 {HaGroupOrg}/{HaGroupName}",
+      "translation": "已在 Horizon Exchange 中新增了 HA 群組 {HaGroupOrg}/{HaGroupName}",
       "placeholders": [
         {
           "id": "HaGroupOrg",
@@ -13992,7 +13992,7 @@
     {
       "id": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
       "message": "Node {NodeName} is already in HA group {HaGroupOrg}/{HaGroupName}. Skipping the node.",
-      "translation": "節點 {NodeName} 已在 HA 群組 {HaGroupOrg}/{HaGroupName} 中。 正在跳過節點。",
+      "translation": "節點 {NodeName} 已在 HA 群組 {HaGroupOrg}/{HaGroupName} 中。 跳過此節點。",
       "placeholders": [
         {
           "id": "NodeName",
@@ -14258,7 +14258,7 @@
     {
       "id": "This policy applies to nodes using one of these patterns.",
       "message": "This policy applies to nodes using one of these patterns.",
-      "translation": "此原則適合使用下列其中一個型樣的節點。",
+      "translation": "此原則適用於使用下列其中一個型樣的節點。",
       "fuzzy": true
     },
     {
@@ -14276,7 +14276,7 @@
     {
       "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
       "message": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
-      "translation": "讓代理程式在start + startWindow 時間內隨機選擇升級開始時間，預設值為 0。",
+      "translation": "讓代理程式在 start + startWindow 秒內隨機選擇升級開始時間，預設值為 0。",
       "fuzzy": true
     },
     {
@@ -14360,7 +14360,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} updated in the Horizon Exchange",
-      "translation": "已在 Horizon Exchange 中更新節點管理原則 {NmpOrg}/{NmpName}",
+      "translation": "已在 Horizon Exchange 中更新了節點管理原則 {NmpOrg}/{NmpName}",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -14416,7 +14416,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "在 Horizon Exchange 中新增了節點管理原則 {NmpOrg}/{NmpName}",
+      "translation": "已在 Horizon Exchange 中新增了節點管理原則 {NmpOrg}/{NmpName}",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -14640,7 +14640,7 @@
     {
       "id": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
       "message": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
-      "translation": "在 Horizon Exchange 中啟用了節點管理原則 {NmpFullName}",
+      "translation": "已在 Horizon Exchange 中啟用了節點管理原則 {NmpFullName}",
       "placeholders": [
         {
           "id": "NmpFullName",
@@ -14696,7 +14696,7 @@
     {
       "id": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
       "message": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
-      "translation": "在 Horizon Exchange 中停用了節點管理原則 {NmpFullName}",
+      "translation": "已在 Horizon Exchange 中停用了節點管理原則 {NmpFullName}",
       "placeholders": [
         {
           "id": "NmpFullName",
@@ -15970,7 +15970,7 @@
     {
       "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
       "message": "Invalid input for --max-nodes. Negative integer is not allowed.",
-      "translation": "--max-nodes 的輸入無效。 不容許負整數。",
+      "translation": "--max-nodes 的輸入無效。不容許負整數。",
       "fuzzy": true
     },
     {
@@ -16398,7 +16398,7 @@
     {
       "id": "Pattern {PatOrg}/{Pattern} updated in the Horizon Exchange",
       "message": "Pattern {PatOrg}/{Pattern} updated in the Horizon Exchange",
-      "translation": "已在 Horizon Exchange 中更新型樣 {PatOrg}/{Pattern}",
+      "translation": "已在 Horizon Exchange 中更新了型樣 {PatOrg}/{Pattern}",
       "placeholders": [
         {
           "id": "PatOrg",
@@ -17312,7 +17312,7 @@
     {
       "id": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
       "message": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "更新服務原則，並根據此服務原則重新評估所有合約。 現有合約可能已取消並重新協議。",
+      "translation": "正在更新服務原則，並根據此服務原則重新評估所有合約。 現有合約可能已取消並重新協議。",
       "fuzzy": true
     },
     {
@@ -19476,7 +19476,7 @@
     {
       "id": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
       "message": "Digital sign with {HashAlgorithm} will be performed for data integrity.",
-      "translation": "將使用 {HashAlgorithm} 執行數位簽章，以確保資料完整性。",
+      "translation": "將執行使用 {HashAlgorithm} 進行的數位簽署，以確保資料完整性。",
       "placeholders": [
         {
           "id": "HashAlgorithm",
@@ -19492,7 +19492,7 @@
     {
       "id": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
       "message": "Failed to digital sign the manifest {ManifestFile}, Error: {Err}",
-      "translation": "無法對資訊清單 {ManifestFile} 執行數位簽章，錯誤：{Err}",
+      "translation": "無法對資訊清單 {ManifestFile} 進行數位簽署，錯誤：{Err}",
       "placeholders": [
         {
           "id": "ManifestFile",
@@ -19898,7 +19898,7 @@
     {
       "id": "Warning: built-in properties {IncludedBuiltIns} are read-only. The given value will be ignored.",
       "message": "Warning: built-in properties {IncludedBuiltIns} are read-only. The given value will be ignored.",
-      "translation": "警告：內建內容 {IncludedBuiltIns} 是唯讀的。 將忽略給定的值。",
+      "translation": "警告：內建內容 {IncludedBuiltIns} 是唯讀的。將忽略給定的值。",
       "placeholders": [
         {
           "id": "IncludedBuiltIns",
@@ -20546,7 +20546,7 @@
     {
       "id": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
       "message": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
-      "translation": "無法繼續處理給定的 HA 群組 {HaGroupName}，因為節點位於不同的 HA 群組 {ExistingHagrName}。",
+      "translation": "無法繼續使用給定的 HA 群組 {HaGroupName}，因為節點位於不同的 HA 群組 {ExistingHagrName}。",
       "placeholders": [
         {
           "id": "HaGroupName",
@@ -21812,7 +21812,7 @@
     {
       "id": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.",
       "message": "The secret binding compatibility cannot be verified because the user credential is not provided. Please use the 'hzn deploycheck secretbinding -p' command to verify.",
-      "translation": "無法驗證密碼連結相容性，因為未提供使用者認證。 請使用 'hzn deploycheck secretbinding -p' 指令來驗證。",
+      "translation": "無法驗證密碼連結相容性，因為未提供使用者認證。請使用 'hzn deploycheck secretbinding -p' 指令來驗證。",
       "fuzzy": true
     },
     {
@@ -23838,7 +23838,7 @@
     {
       "id": "Digital sign with {HashAlgorithm} will be performed for data integrity. It will delay the MMS object publish.",
       "message": "Digital sign with {HashAlgorithm} will be performed for data integrity. It will delay the MMS object publish.",
-      "translation": "將對資料完整性執行使用 {HashAlgorithm} 進行的數位簽署。 它將延遲 MMS 物件發佈。",
+      "translation": "將執行使用 {HashAlgorithm} 進行的數位簽署，以確保資料完整性。 它將延遲 MMS 物件發佈。",
       "placeholders": [
         {
           "id": "HashAlgorithm",
@@ -23854,7 +23854,7 @@
     {
       "id": "failed to digital sign the file {ObjFile}, Error: {Err}",
       "message": "failed to digital sign the file {ObjFile}, Error: {Err}",
-      "translation": "無法以數位方式簽署檔案 {ObjFile}，錯誤為：{Err}",
+      "translation": "無法對檔案 {ObjFile} 進行數位簽署，錯誤為：{Err}",
       "placeholders": [
         {
           "id": "ObjFile",

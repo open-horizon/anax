@@ -2146,7 +2146,7 @@
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
       "message": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange ノード ID。 --ha-group、--node-pol、および --node-ui と同時に指定することはできません。 省略した場合は、現在のデバイスが登録されているノード ID が使用されます。 このフラグは、複数のノードを指定するために繰り返すことができます。 ノード ID の前に組織 ID を付加しない場合は、自動的に -o 値が前に付加されます。",
+      "translation": "Horizon Exchange ノード ID。 --ha-group、--node-pol、および --node-ui と同時に指定することはできません。 省略した場合は、現在のデバイスが登録されているノード ID が使用されます。 このフラグは、複数のノードを指定するために繰り返すことができます。 ノードIDの前に組織IDを付加していない場合、自動的に-o値が前に付加されます。",
       "fuzzy": true
     },
     {
@@ -2218,7 +2218,7 @@
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
       "message": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange ノード ID。 --ha-group および --node-pol と同時に指定することはできません。 省略した場合は、現在のデバイスが登録されているノード ID が使用されます。 このフラグは、複数のノードを指定するために繰り返すことができます。 ノード ID の前に組織 ID を付加しない場合は、自動的に -o 値が前に付加されます。",
+      "translation": "Horizon Exchange ノード ID。 --ha-group および --node-pol と同時に指定することはできません。 省略した場合は、現在のデバイスが登録されているノード ID が使用されます。 このフラグは、複数のノードを指定するために繰り返すことができます。 ノードIDの前に組織IDを付加していない場合、自動的に-o値が前に付加されます。",
       "fuzzy": true
     },
     {
@@ -3038,19 +3038,19 @@
     {
       "id": "The name of the node management policy to enable.",
       "message": "The name of the node management policy to enable.",
-      "translation": "使用可能にするノード管理ポリシーの名前。",
+      "translation": "有効にするノード管理ポリシーの名前。",
       "fuzzy": true
     },
     {
       "id": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
       "message": "The start time of the enabled node management policy. Start time should be RFC3339 timestamp or \"now\"",
-      "translation": "使用可能にされたノード管理ポリシーの開始時刻。 開始時刻は RFC3339 タイム・スタンプまたは「now」でなければなりません。",
+      "translation": "有効にされたノード管理ポリシーの開始時刻。 開始時刻は RFC3339 タイム・スタンプまたは「now」でなければなりません。",
       "fuzzy": true
     },
     {
       "id": "The start window of the enabled node management policy.",
       "message": "The start window of the enabled node management policy.",
-      "translation": "使用可能にされたノード管理ポリシーの開始ウィンドウ。",
+      "translation": "使用可能にされたノード管理ポリシーの開始時間枠。",
       "fuzzy": true
     },
     {
@@ -3062,7 +3062,7 @@
     {
       "id": "The name of the node management policy to disable.",
       "message": "The name of the node management policy to disable.",
-      "translation": "使用不可にするノード管理ポリシーの名前。",
+      "translation": "無効にするノード管理ポリシーの名前。",
       "fuzzy": true
     },
     {
@@ -3254,13 +3254,13 @@
     {
       "id": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
       "message": "Re-evaluate the node management policy (nmp) for this node. Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
-      "translation": "このノードのノード管理ポリシー (nmp) を再評価してください。 アップグレードが失敗して問題が修正されたときに nmp を再試行するには、このコマンドを実行します。 ノードがまだアップグレード中の場合は、このコマンドを実行しないでください。",
+      "translation": "このノードのノード管理ポリシー(nmp)を再評価します。 アップグレードが失敗して問題が修正されたときに nmp を再試行するには、このコマンドを実行します。 ノードがまだアップグレード中の場合は、このコマンドを実行しないでください。",
       "fuzzy": true
     },
     {
       "id": "Re-evaluate node management policy for this node.",
       "message": "Re-evaluate node management policy for this node.",
-      "translation": "このノードのノード管理ポリシーを再評価してください。",
+      "translation": "このノードのノード管理ポリシーを再評価します。",
       "fuzzy": true
     },
     {
@@ -3996,7 +3996,7 @@
     {
       "id": "The name of the HA group to be removed.",
       "message": "The name of the HA group to be removed.",
-      "translation": "除去する HA グループの名前です。",
+      "translation": "削除するHAグループの名前です。",
       "fuzzy": true
     },
     {
@@ -4536,7 +4536,7 @@
     {
       "id": "List and manage manifests and agent files for node management.",
       "message": "List and manage manifests and agent files for node management.",
-      "translation": "ノード管理用のマニフェストとエージェント・ファイルをリストして管理します。",
+      "translation": "ノード管理用のマニフェストとエージェント・ファイルをリストおよび管理します。",
       "fuzzy": true
     },
     {
@@ -5116,7 +5116,7 @@
     {
       "id": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
       "message": "Re-evaluate the node management policy (nmp). Run this command to retry a nmp when the upgrade failed and the problem is fixed. Do not run this command when the node is still in the middle of an upgrade.",
-      "translation": "ノード管理ポリシー (nmp) を再評価してください。 アップグレードが失敗して問題が修正されたときに nmp を再試行するには、このコマンドを実行します。 ノードがまだアップグレード中の場合は、このコマンドを実行しないでください。",
+      "translation": "ノード管理ポリシー(nmp)を再評価します。 アップグレードが失敗して問題が修正されたときに nmp を再試行するには、このコマンドを実行します。 ノードがまだアップグレード中の場合は、このコマンドを実行しないでください。",
       "fuzzy": true
     },
     {
@@ -13808,7 +13808,7 @@
     {
       "id": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
       "message": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
-      "translation": "Horizon Exchange に追加された HA グループ {HaGroupOrg}/{HaGroupName}",
+      "translation": "HA グループ{HaGroupOrg}/{HaGroupName}がHorizon Exchangeに追加されました",
       "placeholders": [
         {
           "id": "HaGroupOrg",
@@ -14024,7 +14024,7 @@
     {
       "id": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
       "message": "The following nodes are added to HA group {HaGroupOrg}/{HaGroupName}: \"{JoinaddedNodes_}\"",
-      "translation": "以下のノードが HA グループ {HaGroupOrg}/{HaGroupName}に追加されます:「{JoinaddedNodes_}」",
+      "translation": "以下のノードがHAグループ{HaGroupOrg}/{HaGroupName}に追加されました:「{JoinaddedNodes_}」",
       "placeholders": [
         {
           "id": "HaGroupOrg",
@@ -14072,7 +14072,7 @@
     {
       "id": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
       "message": "Are you sure you want to remove nodes {NodeNames} from HA group {HaGroupName} for org {HaGroupOrg} in the Horizon Exchange?",
-      "translation": "Horizon Exchange 内の組織 {HaGroupOrg} について、HA グループ {HaGroupName} からノード {NodeNames} を削除しますか?",
+      "translation": "Horizon Exchange内の組織{HaGroupOrg}のHA グループ{HaGroupName}からノード{NodeNames}を削除しますか?",
       "placeholders": [
         {
           "id": "NodeNames",
@@ -14246,7 +14246,7 @@
     {
       "id": "A much longer description of the policy.",
       "message": "A much longer description of the policy.",
-      "translation": "ポリシーの説明がはるかに長くなっています。",
+      "translation": "ポリシーの詳細な説明。",
       "fuzzy": true
     },
     {
@@ -14416,7 +14416,7 @@
     {
       "id": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
       "message": "Node management policy {NmpOrg}/{NmpName} added in the Horizon Exchange",
-      "translation": "Horizon Exchange に追加されたノード管理ポリシー {NmpOrg}/{NmpName}",
+      "translation": "ノード管理ポリシー{NmpOrg}/{NmpName}がHorizon Exchangeに追加されました",
       "placeholders": [
         {
           "id": "NmpOrg",
@@ -14608,7 +14608,7 @@
     {
       "id": "Failed to parse start window: {Err}. The start window must be Integer.",
       "message": "Failed to parse start window: {Err}. The start window must be Integer.",
-      "translation": "開始ウィンドウを解析できませんでした: {Err}。 開始ウィンドウは整数でなければなりません。",
+      "translation": "開始時間枠を解析できませんでした: {Err}。 開始時間枠は整数でなければなりません。",
       "placeholders": [
         {
           "id": "Err",
@@ -14624,7 +14624,7 @@
     {
       "id": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
       "message": "Node management policy {NmpFullName} is already enabled in the Horizon Exchange",
-      "translation": "ノード管理ポリシー {NmpFullName} は Horizon Exchange で既に有効になっています",
+      "translation": "ノード管理ポリシー{NmpFullName}はHorizon Exchangeで既に有効になっています",
       "placeholders": [
         {
           "id": "NmpFullName",
@@ -14640,7 +14640,7 @@
     {
       "id": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
       "message": "Node management policy {NmpFullName} enabled in the Horizon Exchange",
-      "translation": "Horizon Exchange で有効になっているノード管理ポリシー {NmpFullName}",
+      "translation": "ノード管理ポリシー{NmpFullName}がHorizon Exchangeで有効になりました",
       "placeholders": [
         {
           "id": "NmpFullName",
@@ -14696,7 +14696,7 @@
     {
       "id": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
       "message": "Node management policy {NmpFullName} disabled in the Horizon Exchange",
-      "translation": "ノード管理ポリシー {NmpFullName} が Horizon Exchange で無効になっています",
+      "translation": "ノード管理ポリシー{NmpFullName}がHorizon Exchangeで無効になりました",
       "placeholders": [
         {
           "id": "NmpFullName",
@@ -15432,7 +15432,7 @@
     {
       "id": "Updating Node policy {AttribName} attribute for node {Node} in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
       "message": "Updating Node policy {AttribName} attribute for node {Node} in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Horizon Exchange 内のノード {Node} のノード・ポリシー {AttribName} 属性を更新し、このポリシーに基づいてすべての契約を再評価します。 既存の契約はキャンセルされ、再交渉される可能性があります。",
+      "translation": "Horizon Exchange 内のノード {Node} のノード・ポリシー {AttribName} 属性を更新し、このポリシーに基づいてすべての契約を再評価します。 既存の契約は解除され、再交渉される場合があります。",
       "placeholders": [
         {
           "id": "AttribName",
@@ -17312,7 +17312,7 @@
     {
       "id": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
       "message": "Updating Service policy and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "サービス・ポリシーを更新し、このサービス・ポリシーに基づいてすべての契約を再評価します。 既存の契約はキャンセルされ、再交渉される可能性があります。",
+      "translation": "サービス・ポリシーを更新し、このサービス・ポリシーに基づいてすべての契約を再評価しています。 既存の契約は解除され、再交渉される場合があります。",
       "fuzzy": true
     },
     {
@@ -18544,7 +18544,7 @@
     {
       "id": "{PrivKeyFile} is a directory. Please specify a file name.",
       "message": "{PrivKeyFile} is a directory. Please specify a file name.",
-      "translation": "{PrivKeyFile} はディレクトリーです。 ファイル名を指定してください。",
+      "translation": "{PrivKeyFile} はディレクトリーです。ファイル名を指定してください。",
       "placeholders": [
         {
           "id": "PrivKeyFile",
@@ -19898,7 +19898,7 @@
     {
       "id": "Warning: built-in properties {IncludedBuiltIns} are read-only. The given value will be ignored.",
       "message": "Warning: built-in properties {IncludedBuiltIns} are read-only. The given value will be ignored.",
-      "translation": "警告: 組み込みプロパティー {IncludedBuiltIns} は読み取り専用です。 指定された値は無視されます。",
+      "translation": "警告: 組み込みプロパティー {IncludedBuiltIns} は読み取り専用です。指定された値は無視されます。",
       "placeholders": [
         {
           "id": "IncludedBuiltIns",
@@ -20176,7 +20176,7 @@
     {
       "id": "Failed to read value for HZN_REGISTER_HTTP_TIMEOUT from config file. Continuing with default value.",
       "message": "Failed to read value for HZN_REGISTER_HTTP_TIMEOUT from config file. Continuing with default value.",
-      "translation": "構成ファイルから HZN_REGISTER_HTTP_TIMEOUT の値を読み取ることができませんでした。 デフォルト値を使用して続行します。",
+      "translation": "構成ファイルから HZN_REGISTER_HTTP_TIMEOUT の値を読み取ることができませんでした。デフォルト値を使用して続行します。",
       "fuzzy": true
     },
     {
@@ -20546,7 +20546,7 @@
     {
       "id": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
       "message": "Cannot proceed with the given HA group {HaGroupName} because the node is in a different HA group {ExistingHagrName}.",
-      "translation": "ノードが別の HA グループ {ExistingHagrName}にあるため、指定された HA グループ {HaGroupName} を続行できません。",
+      "translation": "ノードが別のHA グループ{ExistingHagrName}にあるため、指定されたHA グループ{HaGroupName}で処理を進めることはできません。",
       "placeholders": [
         {
           "id": "HaGroupName",
@@ -20888,7 +20888,7 @@
     {
       "id": "Failed to unregister node. Attempting a deep clean of the node.",
       "message": "Failed to unregister node. Attempting a deep clean of the node.",
-      "translation": "ノードの登録抹消に失敗しました。 ノードのディープ・クリーンを試行しています。",
+      "translation": "ノードの登録抹消に失敗しました。ノードのディープ・クリーンを試行しています。",
       "fuzzy": true
     },
     {

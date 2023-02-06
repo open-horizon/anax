@@ -597,7 +597,7 @@
   },
   {
     "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Horizon Exchange 节点标识。 与 --ha-group、--node-pol 和 --node-ui 互斥。 如果省略了此选项，那么将使用用于注册当前设备的节点标识。 可重复使用此标志来指定多个节点。 如果未在节点标识前面加上组织标识，则会自动在节点标识前面加上 -o 值。"
+    "translation": "Horizon Exchange 节点标识。 与 --ha-group、--node-pol 和 --node-ui 互斥。 如果省略此项，那么将使用用于注册当前设备的节点标识。 可重复使用此标志来指定多个节点。 如果未在节点标识前面加上组织标识，则会自动在节点标识前面加上 -o 值。"
   },
   {
     "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
@@ -605,7 +605,7 @@
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
-    "translation": "包含节点策略的 JSON 输入文件名称。 与 -n、--ha-group、-p 和 -P 互斥。"
+    "translation": "包含节点策略的 JSON 输入文件名。 与 -n、--ha-group、-p 和 -P 互斥。"
   },
   {
     "id": "The JSON input file name containing the node user input. Mutually exclusive with -n, --ha-group.",
@@ -645,7 +645,7 @@
   },
   {
     "id": "The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.",
-    "translation": "Horizon Exchange 节点标识。 与 --ha-group 和 --node-pol 互斥。 如果省略了此选项，那么将使用用于注册当前设备的节点标识。 可重复使用此标志来指定多个节点。 如果未在节点标识前面加上组织标识，则会自动在节点标识前面加上 -o 值。"
+    "translation": "Horizon Exchange 节点标识。 与 --ha-group 和 --node-pol 互斥。 如果省略此项，那么将使用用于注册当前设备的节点标识。 可重复使用此标志来指定多个节点。 如果未在节点标识前面加上组织标识，则会自动在节点标识前面加上 -o 值。"
   },
   {
     "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
@@ -653,7 +653,7 @@
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
-    "translation": "包含节点策略的 JSON 输入文件名称。 与 -n 和 --ha-group 互斥。"
+    "translation": "包含节点策略的 JSON 输入文件名。 与 -n 和 --ha-group 互斥。"
   },
   {
     "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -1209,7 +1209,7 @@
   },
   {
     "id": "Your node architecture. If not specified, architecture will be left blank.",
-    "translation": "节点体系结构。 如果未指定，体系结构将留空。"
+    "translation": "节点体系结构。如果未指定，体系结构将留空。"
   },
   {
     "id": "The name of your node",
@@ -1237,11 +1237,11 @@
   },
   {
     "id": "The node id to be checked. Mutually exclusive with -n flag.",
-    "translation": "要检查的节点标识。 与 -n 标志互斥。"
+    "translation": "要检查的节点标识。与 -n 标志互斥。"
   },
   {
     "id": "The token for the node. Mutually exclusive with -n flag.",
-    "translation": "节点的令牌。 与 -n 标志互斥。"
+    "translation": "节点的令牌。与 -n 标志互斥。"
   },
   {
     "id": "Display the node resources from the Horizon Exchange.",
@@ -1317,7 +1317,7 @@
   },
   {
     "id": "The name of the node managment policy to be re-evaluated. If omitted, all of the node management policies will be re-evaluated for this node.",
-    "translation": "要重新评估的节点管理策略的名称。 如果省略了此选项，那么将重新评估此节点的所有节点管理策略。"
+    "translation": "要重新评估的节点管理策略的名称。 如果省略此项，那么将重新评估此节点的所有节点管理策略。"
   },
   {
     "id": "List the run-time status of the node.",
@@ -1749,7 +1749,7 @@
   },
   {
     "id": "List and manage high availability (HA) groups in the Horizon Exchange",
-    "translation": "在 Horizon Exchange 中列出和管理高可用性 (HA) 组"
+    "translation": "列出和管理 Horizon Exchange 中的高可用性 (HA) 组"
   },
   {
     "id": "Display the HA group resources from the Horizon Exchange.",
@@ -1773,11 +1773,11 @@
   },
   {
     "id": "The name of the HA group to add or overwrite. If omitted, the name attribute in the input file will be used.",
-    "translation": "要添加或覆盖的 HA 组的名称。 如果省略了此选项，那么将使用输入文件中的 name 属性。"
+    "translation": "要添加或覆盖的 HA 组的名称。 如果省略此项，那么将使用输入文件中的 name 属性。"
   },
   {
     "id": "The path of a JSON file containing the metadata necessary to create/update the HA group in the Horizon Exchange. Specify -f- to read from stdin.",
-    "translation": "含有在 Horizon Exchange 中创建/更新 HA 组所需的元数据的 JSON 文件的路径。 指定 -f- 以从 stdin 读取。"
+    "translation": "包含在 Horizon Exchange 中创建/更新 HA 组所需的元数据的 JSON 文件的路径。 指定 -f- 以从 stdin 读取。"
   },
   {
     "id": "Remove the HA group in the Horizon Exchange.",
@@ -1789,11 +1789,11 @@
   },
   {
     "id": "Manage HA group members in the Horizon Exchange",
-    "translation": "在 Horizon Exchange 中管理 HA 组成员"
+    "translation": "管理 Horizon Exchange 中的 HA 组成员"
   },
   {
     "id": "Add nodes to the HA group in the Horizon Exchange.",
-    "translation": "在 Horizon Exchange 中将节点添加到 HA 组。"
+    "translation": "将节点添加到 Horizon Exchange 中的 HA 组。"
   },
   {
     "id": "The name of the HA group.",
@@ -1805,7 +1805,7 @@
   },
   {
     "id": "Remove nodes from the HA group in the Horizon Exchange.",
-    "translation": "在 Horizon Exchange 中从 HA 组中移除节点。"
+    "translation": "从 Horizon Exchange 中的 HA 组内移除节点。"
   },
   {
     "id": "Node to be removed from the HA group. This flag can be repeated to specify different nodes.",
@@ -2085,7 +2085,7 @@
   },
   {
     "id": "The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m",
-    "translation": "要发布的对象的类型。 此标志必须与 -i 配合使用。 它与 -m 互斥"
+    "translation": "要发布的对象的类型。此标志必须与 -i 配合使用。它与 -m 互斥"
   },
   {
     "id": "The id of the object to publish. This flag must be used with -t. It is mutually exclusive with -m",
@@ -2113,7 +2113,7 @@
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash",
-    "translation": "发布命令不会对上载的对象数据执行数据完整性检查。 它与 --hashAlgo 和 --hash 互斥"
+    "translation": "发布命令不会对上载的对象数据执行数据完整性检查。它与 --hashAlgo 和 --hash 互斥"
   },
   {
     "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
@@ -2121,7 +2121,7 @@
   },
   {
     "id": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
-    "translation": "正在上载或下载的对象数据的散列。 如果要提供散列而不是允许命令自动计算散列，请使用此标志。 必须使用 SHA1 或 SHA256 算法生成散列。 如果散列是使用 SHA256 生成的，那么必须指定 -a 标志。 此标志与 --noIntegrity 互斥。"
+    "translation": "正在上载或下载的对象数据的散列。如果要提供散列而不是允许命令自动计算散列，请使用此标志。必须使用 SHA1 或 SHA256 算法生成散列。如果散列是使用 SHA256 生成的，那么必须指定 -a 标志。此标志与 --noIntegrity 互斥。"
   },
   {
     "id": "The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
@@ -2181,7 +2181,7 @@
   },
   {
     "id": "The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.",
-    "translation": "要用于对清单进行签名的专用密钥文件的路径。 相应的公用密钥将存储在 MMS 中，这可以确保清单的完整性。 如果未指定此选项，那么将使用环境变量 HZN_PRIVATE_KEY_FILE 来查找专用密钥。 如果未设置此选项，那么将使用 ~/.hzn/keys/service.private.key。 如果不存在此密钥，那么将仅针对此发布操作生成 RSA 密钥对，然后废弃该专用密钥。"
+    "translation": "要用于对清单进行签名的专用密钥文件的路径。 相应的公用密钥将存储在 MMS 中，这可以确保清单的完整性。 如果未指定此项，那么将使用环境变量 HZN_PRIVATE_KEY_FILE 来查找专用密钥。 如果未设置此项，那么将使用 ~/.hzn/keys/service.private.key。 如果不存在此密钥，那么将仅针对此发布操作生成 RSA 密钥对，然后废弃该专用密钥。"
   },
   {
     "id": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
@@ -2277,7 +2277,7 @@
   },
   {
     "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-    "translation": "包含节点策略的 JSON 输入文件名称。 指定 -f- 以从 stdin 读取。 节点策略包含“deployment”和“management”属性。 请使用“hzn policy new”来查看节点策略格式。"
+    "translation": "包含节点策略的 JSON 输入文件名。 指定 -f- 以从 stdin 读取。 节点策略包含“deployment”和“management”属性。 请使用“hzn policy new”来查看节点策略格式。"
   },
   {
     "id": "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.",
@@ -2505,7 +2505,7 @@
   },
   {
     "id": "The name of the node management policy. If omitted the status of all management policies for this node will be displayed.",
-    "translation": "节点管理策略的名称。 如果省略了此选项，那么将显示此节点的所有管理策略的状态。"
+    "translation": "节点管理策略的名称。 如果省略此项，那么将显示此节点的所有管理策略的状态。"
   },
   {
     "id": "Show the entire contents of each node management status object.",
@@ -2517,7 +2517,7 @@
   },
   {
     "id": "The name of the node management policy. If omitted all management policies for this node will be re-evaluated.",
-    "translation": "节点管理策略的名称。 如果省略了此选项，那么将重新评估此节点的所有管理策略。"
+    "translation": "节点管理策略的名称。 如果省略此项，那么将重新评估此节点的所有管理策略。"
   },
   {
     "id": "Utility commands.",
@@ -4385,7 +4385,7 @@
   },
   {
     "id": "Deployment policy: {PolOrg}/{Policy} added in the Horizon Exchange",
-    "translation": "Horizon Exchange 中已添加部署策略 {PolOrg}/{Policy}"
+    "translation": "已在 Horizon Exchange 中添加部署策略 {PolOrg}/{Policy}"
   },
   {
     "id": "Invalid format for properties: {Err1}",
@@ -4601,7 +4601,7 @@
   },
   {
     "id": "HA group {HaGroupOrg}/{HaGroupName} added in the Horizon Exchange",
-    "translation": "在 Horizon Exchange 中添加了 HA 组 {HaGroupOrg}/{HaGroupName}"
+    "translation": "已在 Horizon Exchange 中添加 HA 组 {HaGroupOrg}/{HaGroupName}"
   },
   {
     "id": "Are you sure you want to remove HA group {HaGroupName} for org {HaGroupOrg} from the Horizon Exchange?",
@@ -4689,7 +4689,7 @@
   },
   {
     "id": "Enable agents to randomize upgrade start time within start + startWindow seconds, default 0.",
-    "translation": "使代理程序能够在 start + startWindow 时间内随机选择升级开始时间，缺省值为 0。"
+    "translation": "使代理程序能够在 start + startWindow 秒内随机选择升级开始时间，缺省值为 0。"
   },
   {
     "id": "Assertions on how the agent should update itself.",
