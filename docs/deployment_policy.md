@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-24"
+lastupdated: "2023-02-05"
 title: "Deployment Policy"
 description: Description of Deployment policy json fields
 
@@ -32,17 +32,17 @@ Following are the fields in the JSON representation of a deployment policy:
 
 - `label`: A short description of the deployment policy suitable to be displayed in a UI. This field is not required.
 - `description`: A longer description of the deployment policy. This field is not required.
-- `services`: A list of services to be deployed. There MUST be at least one service in the list.
+- `services`: A list of services to be deployed. There must be at least one service in the list.
   - `name`: The name (URL) of a service to be deployed. This is the same value as found in the `url` field [here](./service_def.md).
   - `org`: The organization in which the service in `name` is defined.
   - `arch`: The hardware architecture of the service in `name`, or `*` to indicate any compatible architecture. This is the same value as found in the `arch` field [here](./service_def.md).
-  - `serviceVersions`: A list of versions of the service. At least 1 version MUST be specified.
+  - `serviceVersions`: A list of versions of the service. At least one version must be specified.
     - `version`: One of the versions of the service in `name`. This is the same value as found in the `version` field [here](./service_def.md).
     - `priority`: The relative priority of deploying this version over another version in the list of service versions.
       - `priority_value`: The priority value assigned to this version. Priority is expressed in human terms, where a lower ordinal value means higher priority. Priority values within the list are not required to be sequential, just unique within the list. When deploying a service, {{site.data.keyword.edge_notm}} will attempt to deploy the highest priority version first. If the service is not successfully started, the next highest version will be attempted.
       - `retries`: The number of times to retry starting a failed service.
-      - `retry_durations`: The number of seconds (i.e. elapsed time) in which the indicated number of `retries` must occur before giving up and moving on to the next highest priority service version.
-  - `nodeHealth`: For nodes that are expected to remain network connected to the management, these setting indicate how aggressive the Agbot should be in determining if a node is out of policy.
+      - `retry_durations`: The number of seconds (elapsed time) in which the indicated number of `retries` must occur before giving up and moving on to the next highest priority service version.
+  - `nodeHealth`: For nodes that are expected to remain network connected to the management, these settings indicate how aggressive the Agbot should be in determining if a node is out of policy.
     - `missing_heartbeat_interval`: The number of seconds a heartbeat can be missed (from the perspective of the management hub) until the node is considered missing. When a node is detected as missing, its agreements are cancelled by the Agbot.
     - `check_agreement_status`: The number of seconds between checks (by the management hub) to verify that the node still has an agreement for this service.
 - `properties`: Policy properties as described [here](./properties_and_constraints.md) which a node policy constraint can refer to.

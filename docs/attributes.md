@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-30"
+lastupdated: "2023-02-05"
 title: "Horizon Attributes"
 description: Horizon Edge Services details
 
@@ -12,10 +12,10 @@ nav_order: 6
 ## {{site.data.keyword.horizon}} Attributes
 {: #attributes}
 
-This document contains the definition for each attribute that can be set on the [POST /attribute](./api.md#api-post--attribute) API or the [POST /service/config](./api.md#api-post--serviceconfig) API.
-Attributes are used to condition the behavior of the {{site.data.keyword.horizon_agent}} and/or services running on the agent.
+This section contains the definition for each attribute that can be set on the [POST /attribute](./api.md#api-post--attribute) API or the [POST /service/config](./api.md#api-post--serviceconfig) API.
+Attributes are used to condition the behavior of the {{site.data.keyword.horizon_agent}} and services running on the agent.
 
-The body of the attribute section always follows the following form:
+The body of the attribute section always follows this format:
 
 ```json
     {
@@ -30,7 +30,7 @@ The body of the attribute section always follows the following form:
 ```
 {: codeblock}
 
-The `type` field is a string that indicates which attribute you would like to set.
+The `type` field is a string that indicates which attribute you want to set.
 Valid values are:
 
 * [UserInputAttributes](#uia)
@@ -39,23 +39,24 @@ Valid values are:
 * [MeteringAttributes](#ma)
 * [AgreementProtocolAttributes](#agpa)
 
-Each attribute type is described in it's own section below.
+Each attribute type is described below.
 
-The `label` field is a string that is displayed in the {{site.data.keyword.horizon}} user interface when working with this attribute.
+| attribute | description |
+| --------- | ----------- |
+| `label` | a string that is displayed in the {{site.data.keyword.horizon}} user interface when working with this attribute. |
+| `publishable` | a Boolean that indicates whether or not the variables in the mapping section are published for the workload to see. |
+| `host_only` | a Boolean that indicates whether or not this attribute should be applied to the {{site.data.keyword.horizon_agent}} runtime, not to a specific service. |
+| `mappings` | is a map of variables and values that are specific to the type of the attribute.|
+{: caption="Table 1. Attribute field descriptions" caption-side="top"}
 
-The `publishable` field is a boolean that indicates whether or not the variables in the mapping section are published for the workload to see.
-
-The `host_only` field is a boolean that indicates whether or not this attribute should be applied to the {{site.data.keyword.horizon_agent}} runtime, not to a specific service.
-
-The `mappings` field is a map of variables and values that are specific to the type of the attribute.
 If an attribute type has any specific variables to be set, they are described in the type's section below.
 
 ### <a name="uia"></a>UserInputAttributes
 {: #userinputattributes}
 
-This attribute is used to set user input variables from a service definition.
+This attribute sets user input variables from a service definition.
 Every service can define variables that the node user can configure.
-Only service variables that don't have default values in the service definition must be set through the UserInputAttributes attribute.
+Only service variables that do not have default values in the service definition must be set through the UserInputAttributes attribute.
 The variables are typed, which can also be found in the service definition.
 The supported types are: `string`, `int`, `float`, `boolean`, `list of strings`.
 These variables are converted to environment variables (and the value is converted to a string) so they can be passed into the service implementation container.
@@ -67,7 +68,7 @@ The value for `host_only` should be `false`.
 The `service_specs` specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the UserInputAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the UserInputAttributes, you must specify the `service_specs`.
 
 The variables you can set are defined by the service definition.
-Suppose the service definition contained the following userInputs section:
+Consider the service definition example containing the following userInputs section:
 
 ```json
     "userInput":[
@@ -86,8 +87,8 @@ Suppose the service definition contained the following userInputs section:
 ```
 {: codeblock}
 
-The `test` variable has no default so it needs to be set through a UserInputAttributes attribute.
-The `testDefault` variable has a default, so it can be optionally set by the same attribute.
+The `test` variable has no default; it must be set through a UserInputAttributes attribute.
+The `testDefault` variable has a default, it can be optionally set by the same attribute.
 
 For example:
 
@@ -113,7 +114,7 @@ For example:
 ### <a name="httpsa"></a>HTTPSBasicAuthAttributes
 {: #authattributes}
 
-This attribute is used to set a host wide basic auth user and password for HTTPS communication.
+This attribute sets a host-wide basic auth user and password for HTTPS communication.
 The `url` variable sets the HTTP network domain and path to which this attribute applies.
 HTTPS communication to other URLs will not use this basic auth configuration.
 
@@ -145,7 +146,7 @@ For example:
 ### <a name="bxa"></a>DockerRegistryAuthAttributes
 {: #regattributes}
 
-This attribute is used to set a container registry authentication user name and password or token that enables the {{site.data.keyword.horizon_agent}} to access a container registry when downloading images for services and workloads.
+This attribute sets a container registry authentication user name and password or token that enables the {{site.data.keyword.horizon_agent}} to access a container registry when downloading images for services and workloads.
 
 The value for `publishable` should be `false`.
 
@@ -211,7 +212,7 @@ For example:
 ### <a name="ma"></a>MeteringAttributes
 {: #meteringattributes}
 
-This attribute is used to configure how the service wants to be metered as part of an agreement.
+This attribute configures how the service wants to be metered as part of an agreement.
 
 The value for `publishable` should be `true`.
 
@@ -228,7 +229,7 @@ If the agbot also specifies a metering policy, the metering attributes specified
 If a nodes wants more token per unit time than the agbot is willing to provide, then an agreement cannot be made.
 If an agbot is able to satisfy the node, then the tokens per unit time specified by the node will be used.
 
-For example, the service wants the agbot to grant 2 tokens per hour, and notify the mode that the agreement is still valid every hour (3600 seconds).
+For example, the service wants the agbot to grant two tokens per hour, and notify the mode that the agreement is still valid every hour (3600 seconds).
 
 ```json
 {
@@ -254,10 +255,10 @@ For example, the service wants the agbot to grant 2 tokens per hour, and notify 
 ### <a name="agpa"></a>AgreementProtocolAttributes
 {: #protocolattributes}
 
-This attribute is used when service has a specific requirement for an agreement protocol.
+This attribute is used when a service has a specific requirement for an agreement protocol.
 An agreement protocol is a pre-defined mechanism for enabling two entities (a node and an agbot) to agree on which services and workloads to run.
 The {{site.data.keyword.horizon}} system supports one protocol; "Basic".
-By default, the {{site.data.keyword.horizon}} system uses the "Basic" protocol (which requires nothing more than a TCP network) and therefore this attribute should only be used in advanced situations where more than 1 protocol is available.
+By default, the {{site.data.keyword.horizon}} system uses the "Basic" protocol, which requires a TCP network only; therefore, use this attribute in advanced situations where more than one protocol is available.
 
 Agreement protocols are chosen by the agbot based on the order they appear in the node's service's attributes.
 

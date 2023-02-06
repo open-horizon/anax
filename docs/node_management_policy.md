@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-24"
+lastupdated: "2023-02-05"
 title: "Node management policy"
 description: Automatic agent upgrade using policy based node management
 parent: Agent (anax)
@@ -38,17 +38,17 @@ Following are the fields in the JSON representation of a NMP:
 * `constraints`: Policy constraints as described [here](./properties_and_constraints.md) which refer to node policy properties.
 * `properties`: Policy properties as described [here](./properties_and_constraints.md) which a node policy constraint can refer to.
 * `patterns`: A list of patterns that this policy is compatible with. This field is mutually exclusive with the properties and constraints fields.
-* `enabled`: A boolean to indicate whether this NMP can be deployed to nodes or not.
-* `start`: A RFC3339 formatted timestamp for when the NMP should be executed on compatible nodes. The value "now" can be specified to indicate that the NMP should be executed immediately.
+* `enabled`: A Boolean to indicate whether this NMP can be deployed to nodes or not.
+* `start`: A RFC3339 formatted timestamp for when the NMP should run on compatible nodes. The value "now" can be specified to indicate that the NMP should run immediately.
 * `startWindow`: A value (in seconds) used to randomize the NMP start time in order to reduce the number of nodes running the same NMP simultaneously. The NMP will start within `start` + `startWindow` seconds. For 1000's of agents, it is recommended a startWindow of an hour or more (3600 seconds) be used.
 * `agentUpgradePolicy`: A JSON structure to define an automatic agent upgrade job.
   * `manifest`: The name of a manifest that exists in the Management Hub that describes the packages and versions that will be installed. Manifests are described in more detail [here](./agentfile_manifest.md)
-  * `allowDowngrade`: A boolean to indicate whether this upgrade job can perform a downgrade to a previous version.
+  * `allowDowngrade`: A Boolean to indicate whether this upgrade job can perform a downgrade to a previous version.
 
 ## Example
 {: nmp-example}
 
-The following is an example of a NMP json file. In this example, the properties and constraints are being used to specify deployment, so the patterns field is omitted. This NMP will be executed on the next node heartbeat since the start field is set to "now" and it has been enabled. The job being performed in this NMP is an automatic agent upgrade job, so a manifest has been specified in the `agentUpgradePolicy` field. This manifest should contain the software, certificate, and / or config files and versions that the agent will be upgraded to. In this case, if any of the versions specified in the manifest are lower than currently installed, they will be skipped since the `allowDowngrade` field is set to false.
+The following is an example of a NMP json file. In this example, the properties and constraints are being used to specify deployment, so the patterns field is omitted. This NMP will run on the next node heartbeat since the start field is set to "now" and it has been enabled. The job being performed in this NMP is an automatic agent upgrade job, so a manifest has been specified in the `agentUpgradePolicy` field. This manifest should contain the software, certificate, and / or config files and versions that the agent will be upgraded to. In this case, if any of the versions specified in the manifest are lower than currently installed, they will be skipped since the `allowDowngrade` field is set to false.
 
 ```json
 {
