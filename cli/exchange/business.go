@@ -3,6 +3,7 @@ package exchange
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/cli/cliconfig"
@@ -252,7 +253,7 @@ func verifySecretBindingForPolicy(policy *businesspolicy.BusinessPolicy, polOrg 
 	// make sure the all the service secrets have bindings.
 	neededSB, extraneousSB, err := ValidateSecretBindingForDeplPolicy(policy, ec, true, msgPrinter)
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to validate the secret binding. %v", err))
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("%v", err))
 	} else if extraneousSB != nil && len(extraneousSB) > 0 {
 		msgPrinter.Printf("Note: The following secret bindings are not required by any services for this deployment policy:")
 		msgPrinter.Println()
@@ -344,6 +345,12 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
 	}
+
+	// Shut off the Anax runtime logging.
+	flag.Set("v", "0")
+	flag.Set("stderrthreshold", "3")
+	flag.Set("log_dir", "/dev/null")
+	flag.Parse()
 
 	// map: keyed by index of the secretBinding array, the value is a map of
 	// service secret names in the binding that are needed, i.e. not extraneous.
