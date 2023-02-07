@@ -11,10 +11,15 @@ RUN microdnf update -y --nodocs && microdnf clean all && microdnf install --nodo
     && microdnf install -y jq procps tar \
     && curl -4LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/arm64/kubectl \
     && chmod +x ./kubectl \
-    && mv ./kubectl /usr/local/bin
+    && mv ./kubectl /usr/local/bin \
+    && mkdir -p /tmp/agentbackup \
+    && adduser cronjobuser -u 1000 -U -f -1 -c "cronjob user,1,2,3" 
 
 # Copy cronjob script into container
 COPY cronjobs/auto-upgrade-cronjob.sh /usr/local/bin/
 
 # Give user access to cronjob script
+RUN chown -R cronjobuser:cronjobuser /usr/local/bin/auto-upgrade-cronjob.sh /tmp/agentbackup
+
+USER cronjobuser
 RUN chmod 755 /usr/local/bin/auto-upgrade-cronjob.sh
