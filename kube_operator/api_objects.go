@@ -31,7 +31,7 @@ type APIObjectInterface interface {
 // Sort a slice of k8s api objects by kind of object
 // Returns a map of object type names to api object interfaces types, the namespace to be used for the operator, and an error if one occurs
 // Also verifies that all objects are named so they can be found and uninstalled
-func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstructured, envVarMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstructured.Unstructured, envVarMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	namespace := ""
 	objMap := map[string][]APIObjectInterface{}
 	for _, obj := range allObjects {
@@ -109,7 +109,15 @@ func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstru
 			}
 		case K8S_CRD_TYPE:
 			if typedCRD, ok := obj.Object.(*crdv1beta1.CustomResourceDefinition); ok {
-				newCustomResource := CustomResourceV1Beta1{CustomResourceDefinitionObject: typedCRD, CustomResourceObject: customResource, InstallTimeout: crInstallTimeout}
+				kind := typedCRD.Spec.Names.Kind
+				if kind == "" {
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field.", obj.Object)))
+				}
+				customResourceList, ok := customResources[kind]
+				if !ok {
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: no custom resource object with kind %v found in %v.", kind, customResources)))
+				}
+				newCustomResource := CustomResourceV1Beta1{CustomResourceDefinitionObject: typedCRD, CustomResourceObjectList: customResourceList, InstallTimeout: crInstallTimeout}
 				if newCustomResource.Name() != "" {
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes custom resource definition object %s.", newCustomResource.Name())))
 					objMap[K8S_CRD_TYPE] = append(objMap[K8S_CRD_TYPE], newCustomResource)
@@ -117,7 +125,15 @@ func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstru
 					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object must have a name in its metadata section.")))
 				}
 			} else if typedCRD, ok := obj.Object.(*crdv1.CustomResourceDefinition); ok {
-				objMap[K8S_CRD_TYPE] = append(objMap[K8S_CRD_TYPE], CustomResourceV1{CustomResourceDefinitionObject: typedCRD, CustomResourceObject: customResource, InstallTimeout: crInstallTimeout})
+                                kind := typedCRD.Spec.Names.Kind
+                                if kind == "" {
+                                        return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field.", obj.Object)))
+                                }
+                                customResourceList, ok := customResources[kind]
+                                if !ok {
+                                        return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: no custom resource object with kind %v found in %v.", kind, customResources)))
+                                }
+				objMap[K8S_CRD_TYPE] = append(objMap[K8S_CRD_TYPE], CustomResourceV1{CustomResourceDefinitionObject: typedCRD, CustomResourceObjectList: customResourceList, InstallTimeout: crInstallTimeout})
 			} else {
 				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
@@ -410,7 +426,7 @@ func NewCRDV1beta1Client() (*apiv1beta1client.ApiextensionsV1beta1Client, error)
 
 type CustomResourceV1Beta1 struct {
 	CustomResourceDefinitionObject *crdv1beta1.CustomResourceDefinition
-	CustomResourceObject           *unstructured.Unstructured
+	CustomResourceObjectList       []*unstructured.Unstructured
 	InstallTimeout                 int64
 }
 
@@ -427,43 +443,45 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 		_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("Error installing custom resource definition: %v", err)
 	}
 
 	// Client for creating the CR in the cluster
 	dynClient, err := NewDynamicKubeClient()
 	if err != nil {
-		return err
+		return fmt.Errorf("Error creating the dynamic kube client: %v", err)
 	}
 	gvr, err := cr.gvr()
 	if err != nil {
-		return err
+		return fmt.Errorf("Error getting the custom resource definition GroupVersionResource: %v", err)
 	}
 	crClient := dynClient.Resource(*gvr)
 
-	resourceName := ""
-	if typedCrMetadata, ok := cr.CustomResourceObject.Object["metadata"].(map[string]interface{}); ok {
-		if name, ok := typedCrMetadata["name"]; ok {
-			resourceName = fmt.Sprintf("%v", name)
-		}
-	}
+	for _, customResourceObject := range cr.CustomResourceObjectList {
+	        resourceName := ""
+        	if typedCrMetadata, ok := customResourceObject.Object["metadata"].(map[string]interface{}); ok {
+              		if name, ok := typedCrMetadata["name"]; ok {
+                	        resourceName = fmt.Sprintf("%v", name)
+        	        }
+	        }
 
-	// the cluster has to create the endpoint for the custom resource, this can take some time
-	// the cr cannot exist without the crd so we don't have to worry about it already existing
-	timeout := cr.InstallTimeout
-	glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, cr.CustomResourceObject)))
-	for {
-		_, err = crClient.Namespace(namespace).Create(context.Background(), cr.CustomResourceObject, metav1.CreateOptions{})
-		if err != nil && timeout > 0 {
-			glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
-			time.Sleep(time.Second * 5)
-		} else if err != nil {
-			return fmt.Errorf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
-		} else {
-			glog.V(3).Infof(kwlog(fmt.Sprintf("Sucessfully created custom resource %s.", resourceName)))
-			break
+		// the cluster has to create the endpoint for the custom resource, this can take some time
+		// the cr cannot exist without the crd so we don't have to worry about it already existing
+		timeout := cr.InstallTimeout
+		glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, customResourceObject)))
+		for {
+			_, err = crClient.Namespace(namespace).Create(context.Background(), customResourceObject, metav1.CreateOptions{})
+			if err != nil && timeout > 0 {
+				glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
+				time.Sleep(time.Second * 5)
+			} else if err != nil {
+				return fmt.Errorf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
+			} else {
+				glog.V(3).Infof(kwlog(fmt.Sprintf("Sucessfully created custom resource %s.", resourceName)))
+				break
+			}
+			timeout = timeout - 5
 		}
-		timeout = timeout - 5
 	}
 
 	return nil
@@ -482,29 +500,31 @@ func (cr CustomResourceV1Beta1) Uninstall(c KubeClient, namespace string) {
 	}
 	crClient := dynClient.Resource(*gvr)
 
-	var newCrName string
-	if metaInterf, ok := cr.CustomResourceObject.Object["metadata"]; ok {
-		if metaMap, ok := metaInterf.(map[string]interface{}); ok {
-			if metaMapName, ok := metaMap["name"]; ok {
-				newCrName = fmt.Sprintf("%v", metaMapName)
+	for _, customResourceObject := range cr.CustomResourceObjectList {
+		var newCrName string
+		if metaInterf, ok := customResourceObject.Object["metadata"]; ok {
+			if metaMap, ok := metaInterf.(map[string]interface{}); ok {
+				if metaMapName, ok := metaMap["name"]; ok {
+					newCrName = fmt.Sprintf("%v", metaMapName)
+				} else {
+					glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", customResourceObject)))
+				}
 			} else {
-				glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", cr.CustomResourceObject)))
+				glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", customResourceObject)))
 			}
 		} else {
-			glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", cr.CustomResourceObject)))
+			glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", customResourceObject)))
 		}
-	} else {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", cr.CustomResourceObject)))
-	}
-	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName)))
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName)))
 
-	err = crClient.Namespace(namespace).Delete(context.Background(), newCrName, metav1.DeleteOptions{})
-	if err != nil {
-		glog.Warningf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
-	} else {
-		err = cr.waitForCRUninstall(c, namespace, 0, newCrName)
+		err = crClient.Namespace(namespace).Delete(context.Background(), newCrName, metav1.DeleteOptions{})
 		if err != nil {
-			glog.Errorf(fmt.Sprintf("%v", err))
+			glog.Warningf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
+		} else {
+			err = cr.waitForCRUninstall(c, namespace, 0, newCrName)
+			if err != nil {
+				glog.Errorf(kwlog(fmt.Sprintf("%v", err)))
+			}
 		}
 	}
 
@@ -552,25 +572,28 @@ func (cr CustomResourceV1Beta1) Status(c KubeClient, namespace string) (interfac
 	}
 
 	crClient := dynClient.Resource(*gvr)
+	statusArray := make([]interface{}, 1)
 
-	if metadata, ok := cr.CustomResourceObject.Object["metadata"]; ok {
-		if metadataTyped, ok := metadata.(map[string]interface{}); ok {
-			if name, ok := metadataTyped["name"]; ok {
-				res, err := crClient.Namespace(namespace).Get(context.Background(), fmt.Sprintf("%v", name), metav1.GetOptions{})
-				if err != nil {
-					return nil, err
-				}
+	for _, customResourceObject := range cr.CustomResourceObjectList {
+		if metadata, ok := customResourceObject.Object["metadata"]; ok {
+			if metadataTyped, ok := metadata.(map[string]interface{}); ok {
+				if name, ok := metadataTyped["name"]; ok {
+					res, err := crClient.Namespace(namespace).Get(context.Background(), fmt.Sprintf("%v", name), metav1.GetOptions{})
+					if err != nil {
+						return nil, err
+					}
 
-				if status, ok := res.Object["status"]; ok {
-					return status, nil
-				} else {
-					return nil, fmt.Errorf("Error status not found")
+					if status, ok := res.Object["status"]; ok {
+						statusArray = append(statusArray, status)
+					} else {
+						return nil, fmt.Errorf("Error status not found")
+					}
 				}
 			}
 		}
 	}
 
-	return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to find operator name to report status.")))
+	return statusArray, nil
 }
 
 func (cr CustomResourceV1Beta1) Name() string {
@@ -579,7 +602,7 @@ func (cr CustomResourceV1Beta1) Name() string {
 
 // gvr is the group version resource that allows the dynamic client to interact with types defined by custom resource definitions
 func (cr CustomResourceV1Beta1) gvr() (*schema.GroupVersionResource, error) {
-	if apiVers, ok := cr.CustomResourceObject.Object["apiVersion"]; ok {
+	if apiVers, ok := cr.CustomResourceObjectList[0].Object["apiVersion"]; ok {
 		if typedApiVers, ok := apiVers.(string); ok {
 			gv, err := schema.ParseGroupVersion(typedApiVers)
 			if err != nil {
@@ -588,11 +611,11 @@ func (cr CustomResourceV1Beta1) gvr() (*schema.GroupVersionResource, error) {
 			gvr := schema.GroupVersionResource{Resource: cr.CustomResourceDefinitionObject.Spec.Names.Plural, Group: gv.Group, Version: gv.Version}
 			return &gvr, nil
 		} else {
-			return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: apiversion field is not of type string %v", cr.CustomResourceObject.Object)))
+			return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: apiversion field is not of type string %v", cr.CustomResourceObjectList[0].Object)))
 		}
 
 	} else {
-		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObject.Object)))
+		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObjectList[0].Object)))
 	}
 }
 
@@ -609,7 +632,7 @@ func NewCRDV1Client() (*apiv1client.ApiextensionsV1Client, error) {
 
 type CustomResourceV1 struct {
 	CustomResourceDefinitionObject *crdv1.CustomResourceDefinition
-	CustomResourceObject           *unstructured.Unstructured
+	CustomResourceObjectList       []*unstructured.Unstructured
 	InstallTimeout                 int64
 }
 
@@ -640,29 +663,31 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 	}
 	crClient := dynClient.Resource(*gvr)
 
-	resourceName := ""
-	if typedCrMetadata, ok := cr.CustomResourceObject.Object["metadata"].(map[string]interface{}); ok {
-		if name, ok := typedCrMetadata["name"]; ok {
-			resourceName = fmt.Sprintf("%v", name)
-		}
-	}
+	for _, customResourceObject := range cr.CustomResourceObjectList {
+		resourceName := ""
+        	if typedCrMetadata, ok := customResourceObject.Object["metadata"].(map[string]interface{}); ok {
+                	if name, ok := typedCrMetadata["name"]; ok {
+                	        resourceName = fmt.Sprintf("%v", name)
+        	        }
+	        }
 
-	// the cluster has to create the endpoint for the custom resource, this can take some time
-	// the cr cannot exist without the crd so we don't have to worry about it already existing
-	timeout := cr.InstallTimeout
-	glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, cr.CustomResourceObject)))
-	for {
-		_, err = crClient.Namespace(namespace).Create(context.Background(), cr.CustomResourceObject, metav1.CreateOptions{})
-		if err != nil && timeout > 0 {
-			glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
-			time.Sleep(time.Second * 5)
-		} else if err != nil {
-			return fmt.Errorf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
-		} else {
-			glog.V(3).Infof(kwlog(fmt.Sprintf("Sucessfully created custom resource %s.", resourceName)))
-			break
+		// the cluster has to create the endpoint for the custom resource, this can take some time
+		// the cr cannot exist without the crd so we don't have to worry about it already existing
+		timeout := cr.InstallTimeout
+		glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, customResourceObject)))
+		for {
+			_, err = crClient.Namespace(namespace).Create(context.Background(), customResourceObject, metav1.CreateOptions{})
+			if err != nil && timeout > 0 {
+				glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
+				time.Sleep(time.Second * 5)
+			} else if err != nil {
+				return fmt.Errorf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
+			} else {
+				glog.V(3).Infof(kwlog(fmt.Sprintf("Sucessfully created custom resource %s.", resourceName)))
+				break
+			}
+			timeout = timeout - 5
 		}
-		timeout = timeout - 5
 	}
 
 	return nil
@@ -684,29 +709,31 @@ func (cr CustomResourceV1) Uninstall(c KubeClient, namespace string) {
 	}
 	crClient := dynClient.Resource(*gvr)
 
-	var newCrName string
-	if metaInterf, ok := cr.CustomResourceObject.Object["metadata"]; ok {
-		if metaMap, ok := metaInterf.(map[string]interface{}); ok {
-			if metaMapName, ok := metaMap["name"]; ok {
-				newCrName = fmt.Sprintf("%v", metaMapName)
+	for _, customResourceObject := range cr.CustomResourceObjectList {
+		var newCrName string
+		if metaInterf, ok := customResourceObject.Object["metadata"]; ok {
+			if metaMap, ok := metaInterf.(map[string]interface{}); ok {
+				if metaMapName, ok := metaMap["name"]; ok {
+					newCrName = fmt.Sprintf("%v", metaMapName)
+				} else {
+					glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", customResourceObject)))
+				}
 			} else {
-				glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", cr.CustomResourceObject)))
+				glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", customResourceObject)))
 			}
 		} else {
-			glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", cr.CustomResourceObject)))
+			glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", customResourceObject)))
 		}
-	} else {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", cr.CustomResourceObject)))
-	}
 
-	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName)))
-	err = crClient.Namespace(namespace).Delete(context.Background(), newCrName, metav1.DeleteOptions{})
-	if err != nil {
-		glog.Warningf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
-	} else {
-		err = cr.waitForCRUninstall(c, namespace, 0, newCrName)
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName)))
+		err = crClient.Namespace(namespace).Delete(context.Background(), newCrName, metav1.DeleteOptions{})
 		if err != nil {
-			glog.Errorf(fmt.Sprintf("%v", err))
+			glog.Warningf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
+		} else {
+			err = cr.waitForCRUninstall(c, namespace, 0, newCrName)
+			if err != nil {
+				glog.Errorf(fmt.Sprintf("%v", err))
+			}
 		}
 	}
 	// CRDs need a different client
@@ -752,25 +779,28 @@ func (cr CustomResourceV1) Status(c KubeClient, namespace string) (interface{}, 
 		return nil, err
 	}
 	crClient := dynClient.Resource(*gvr)
+	statusArray := make([]interface{}, 1)
 
-	if metadata, ok := cr.CustomResourceObject.Object["metadata"]; ok {
-		if metadataTyped, ok := metadata.(map[string]interface{}); ok {
-			if name, ok := metadataTyped["name"]; ok {
-				res, err := crClient.Namespace(namespace).Get(context.Background(), fmt.Sprintf("%v", name), metav1.GetOptions{})
-				if err != nil {
-					return nil, err
-				}
+	for _, customResourceObject := range cr.CustomResourceObjectList {
+		if metadata, ok := customResourceObject.Object["metadata"]; ok {
+			if metadataTyped, ok := metadata.(map[string]interface{}); ok {
+				if name, ok := metadataTyped["name"]; ok {
+					res, err := crClient.Namespace(namespace).Get(context.Background(), fmt.Sprintf("%v", name), metav1.GetOptions{})
+					if err != nil {
+						return nil, err
+					}
 
-				if status, ok := res.Object["status"]; ok {
-					return status, nil
-				} else {
-					return nil, fmt.Errorf("Error status not found")
+					if status, ok := res.Object["status"]; ok {
+						statusArray = append(statusArray, status)
+					} else {
+						return nil, fmt.Errorf("Error status not found")
+					}
 				}
 			}
 		}
 	}
 
-	return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to find operator name to report status.")))
+	return statusArray, nil
 }
 
 func (cr CustomResourceV1) Name() string {
@@ -779,7 +809,7 @@ func (cr CustomResourceV1) Name() string {
 
 // group-version-resource is used by the discovry client to interact with a type defined by the custom resource definition
 func (cr CustomResourceV1) gvr() (*schema.GroupVersionResource, error) {
-	if apiVers, ok := cr.CustomResourceObject.Object["apiVersion"]; ok {
+	if apiVers, ok := cr.CustomResourceObjectList[0].Object["apiVersion"]; ok {
 		if typedApiVers, ok := apiVers.(string); ok {
 			gv, err := schema.ParseGroupVersion(typedApiVers)
 			if err != nil {
@@ -788,10 +818,10 @@ func (cr CustomResourceV1) gvr() (*schema.GroupVersionResource, error) {
 			gvr := schema.GroupVersionResource{Resource: cr.CustomResourceDefinitionObject.Spec.Names.Plural, Group: gv.Group, Version: gv.Version}
 			return &gvr, nil
 		} else {
-			return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: apiversion field is not of type string %v", cr.CustomResourceObject.Object)))
+			return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: apiversion field is not of type string %v", cr.CustomResourceObjectList[0].Object)))
 		}
 
 	} else {
-		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObject.Object)))
+		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObjectList[0].Object)))
 	}
 }
