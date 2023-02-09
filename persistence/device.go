@@ -99,6 +99,12 @@ func newExchangeDevice(id string, token string, name string, nodeType string, to
 		pattern = pat
 	}
 
+	// make sure SoftwareVersions is not nil
+	svs := softwareVersions
+	if svs == nil {
+		svs = map[string]string{}
+	}
+
 	return &ExchangeDevice{
 		Id:                 id,
 		Name:               name,
@@ -109,7 +115,7 @@ func newExchangeDevice(id string, token string, name string, nodeType string, to
 		Org:                org,
 		Pattern:            pattern,
 		Config:             cfg,
-		SoftwareVersions:   softwareVersions,
+		SoftwareVersions:   svs,
 	}, nil
 }
 
@@ -189,6 +195,10 @@ func (e *ExchangeDevice) SetAgentVersion(db *bolt.DB, deviceId string, agentSoft
 	}
 
 	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		if d.SoftwareVersions == nil {
+			d.SoftwareVersions = map[string]string{}
+		}
+
 		d.SoftwareVersions[AGENT_VERSION] = agentSoftwareVersion
 		return &d
 	})
@@ -200,6 +210,9 @@ func (e *ExchangeDevice) SetConfigVersion(db *bolt.DB, deviceId string, configVe
 	}
 
 	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		if d.SoftwareVersions == nil {
+			d.SoftwareVersions = map[string]string{}
+		}
 		d.SoftwareVersions[CONFIG_VERSION] = configVersion
 		return &d
 	})
@@ -211,6 +224,9 @@ func (e *ExchangeDevice) SetCertVersion(db *bolt.DB, deviceId string, certVersio
 	}
 
 	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		if d.SoftwareVersions == nil {
+			d.SoftwareVersions = map[string]string{}
+		}
 		d.SoftwareVersions[CERT_VERSION] = certVersion
 		return &d
 	})
@@ -382,6 +398,12 @@ func FindExchangeDevice(db *bolt.DB) (*ExchangeDevice, error) {
 		if devices[0].NodeType == "" {
 			devices[0].NodeType = DEVICE_TYPE_DEVICE
 		}
+
+		// make sure the SoftwareVersions is not nil
+		if devices[0].SoftwareVersions == nil {
+			devices[0].SoftwareVersions = map[string]string{}
+		}
+
 		return &devices[0], nil
 	} else {
 		return nil, nil
