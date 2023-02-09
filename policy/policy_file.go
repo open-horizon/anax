@@ -528,6 +528,9 @@ func (self *Policy) ShortString() string {
 }
 
 func (self *Policy) IsSameWorkload(compare *Policy) bool {
+	if len(self.Workloads) != len(compare.Workloads) {
+		return false
+	}
 	for _, wl := range self.Workloads {
 		found := false
 		for _, compareWL := range compare.Workloads {
