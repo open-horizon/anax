@@ -3576,6 +3576,11 @@ function prepare_k8s_deployment_file() {
     log_debug "prepare_k8s_deployment_file() begin"
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
 
+    # InitContainer needs to be removed for ocp because it breaks mounted directory permisson. In ocp, the permission of volume is configured by scc.
+    if is_ocp_cluster; then
+        sed -i -e '/START_NOT_FOR_OCP/,/END_NOT_FOR_OCP/d' deployment-template.yml
+    fi
+
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
     chk $? 'creating deployment.yml'
 
