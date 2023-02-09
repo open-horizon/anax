@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-02-05"
+lastupdated: "2023-02-09"
 title: "Horizon Attributes"
 description: Horizon Edge Services details
 
@@ -9,7 +9,7 @@ parent: Agent (anax)
 nav_order: 6
 ---
 
-## {{site.data.keyword.horizon}} Attributes
+# {{site.data.keyword.horizon}} Attributes
 {: #attributes}
 
 This section contains the definition for each attribute that can be set on the [POST /attribute](./api.md#api-post--attribute) API or the [POST /service/config](./api.md#api-post--serviceconfig) API.
@@ -18,15 +18,15 @@ Attributes are used to condition the behavior of the {{site.data.keyword.horizon
 The body of the attribute section always follows this format:
 
 ```json
-    {
-        "type": "<attribute_type>",
-        "label": "a string that could be displayed in a user interface",
-        "publishable": boolean,
-        "host_only": boolean,
-        "mappings": {
-          "variable": value
-        }
+{
+    "type": "<attribute_type>",
+    "label": "a string that could be displayed in a user interface",
+    "publishable": boolean,
+    "host_only": boolean,
+    "mappings": {
+      "variable": value
     }
+}
 ```
 {: codeblock}
 
@@ -51,7 +51,7 @@ Each attribute type is described below.
 
 If an attribute type has any specific variables to be set, they are described in the type's section below.
 
-### <a name="uia"></a>UserInputAttributes
+## <a name="uia"></a>UserInputAttributes
 {: #userinputattributes}
 
 This attribute sets user input variables from a service definition.
@@ -71,19 +71,19 @@ The variables you can set are defined by the service definition.
 Consider the service definition example containing the following userInputs section:
 
 ```json
-    "userInput":[
-        {
-            "name":"test",
-            "label":"a label description",
-            "type":"string"
-        },
-        {
-            "name":"testdefault",
-            "label":"a label description",
-            "type":"string",
-            "defaultValue":"default"
-        }
-    ]
+"userInput":[
+    {
+        "name":"test",
+        "label":"a label description",
+        "type":"string"
+    },
+    {
+        "name":"testdefault",
+        "label":"a label description",
+        "type":"string",
+        "defaultValue":"default"
+    }
+]
 ```
 {: codeblock}
 
@@ -93,25 +93,25 @@ The `testDefault` variable has a default, it can be optionally set by the same a
 For example:
 
 ```json
-    {
-        "type": "UserInputAttributes",
-        "label": "variables",
-        "publishable": true,
-        "host_only": false,
-        "service_specs": [
-            {
-                "url": "https://bluehorizon.network/services/netspeed",
-                "organization": "myorg"
-            }
-        ],
-        "mappings": {
-            "test": "aValue"
+{
+    "type": "UserInputAttributes",
+    "label": "variables",
+    "publishable": true,
+    "host_only": false,
+    "service_specs": [
+        {
+            "url": "https://bluehorizon.network/services/netspeed",
+            "organization": "myorg"
         }
+    ],
+    "mappings": {
+        "test": "aValue"
     }
+}
 ```
 {: codeblock}
 
-### <a name="httpsa"></a>HTTPSBasicAuthAttributes
+## <a name="httpsa"></a>HTTPSBasicAuthAttributes
 {: #authattributes}
 
 This attribute sets a host-wide basic auth user and password for HTTPS communication.
@@ -129,21 +129,21 @@ The `password` variable is a string containing the basic auth user's password.
 For example:
 
 ```json
-    {
-        "type": "HTTPSBasicAuthAttributes",
-        "label": "HTTPS Basic auth",
-        "publishable": false,
-        "host_only": true,
-        "mappings": {
-            "url":      "https://us.internetofthings.ibmcloud.com/api/v0002/horizon-image/common"
-            "username": "me",
-            "password": "myPassword"
-        }
+{
+    "type": "HTTPSBasicAuthAttributes",
+    "label": "HTTPS Basic auth",
+    "publishable": false,
+    "host_only": true,
+    "mappings": {
+        "url":      "https://us.internetofthings.ibmcloud.com/api/v0002/horizon-image/common"
+        "username": "me",
+        "password": "myPassword"
     }
+}
 ```
 {: codeblock}
 
-### <a name="bxa"></a>DockerRegistryAuthAttributes
+## <a name="bxa"></a>DockerRegistryAuthAttributes
 {: #regattributes}
 
 This attribute sets a container registry authentication user name and password or token that enables the {{site.data.keyword.horizon_agent}} to access a container registry when downloading images for services and workloads.
@@ -157,59 +157,59 @@ The value for `token` can be a token, an API key or a password.
 For example:
 
 ```json
-    /* Use this if your docker images are in the IBM Cloud container registry, you can use either token or Identity and Access Management (IAM) API key. */
-    {
-        "type": "DockerRegistryAuthAttributes",
-        "label": "Docker auth",
-        "publishable": false,
-        "host_only": true,
-        "mappings": {
-            "auths": [
-                {
-                    "registry": "mydockerrepo",
-                    "username": "user1",
-                    "token": "myDockerhubPassword"
-                }
-            ]
-        }
+/* Use this if your docker images are in the IBM Cloud container registry, you can use either token or Identity and Access Management (IAM) API key. */
+{
+    "type": "DockerRegistryAuthAttributes",
+    "label": "Docker auth",
+    "publishable": false,
+    "host_only": true,
+    "mappings": {
+        "auths": [
+            {
+                "registry": "mydockerrepo",
+                "username": "user1",
+                "token": "myDockerhubPassword"
+            }
+        ]
     }
+}
 
-    /* Use this if your docker images are in the IBM Cloud container registry. The `myDockerToken` variable is a string containing the docker token used to access the repository. */
-    {
-        "type": "DockerRegistryAuthAttributes",
-        "label": "Docker auth",
-        "publishable": false,
-        "host_only": true,
-        "mappings": {
-            "auths": [
-                {
-                    "registry": "registry.ng.bluemix.net",
-                    "username": "token",
-                    "token": "myDockerToken"
-                }
-            ]
-        }
+/* Use this if your docker images are in the IBM Cloud container registry. The `myDockerToken` variable is a string containing the docker token used to access the repository. */
+{
+    "type": "DockerRegistryAuthAttributes",
+    "label": "Docker auth",
+    "publishable": false,
+    "host_only": true,
+    "mappings": {
+        "auths": [
+            {
+                "registry": "registry.ng.bluemix.net",
+                "username": "token",
+                "token": "myDockerToken"
+            }
+        ]
     }
+}
 
-    /* Use this if your docker images are in the IBM Cloud container registry. The `myIAMApiKey` variable is a string containing the IBM Cloud Identity and Access Management (IAM) API key. The user is `iamapikey`. */
-    {
-        "type": "DockerRegistryAuthAttributes",
-        "label": "Docker auth",
-        "publishable": false,
-        "host_only": true,
-        "mappings": {
-            "auths": [
-                {
-                    "registry": "registry.ng.bluemix.net",
-                    "username": "iamapikey",
-                    "token": "myIAMApiKey"}
-            ]
-        }
+/* Use this if your docker images are in the IBM Cloud container registry. The `myIAMApiKey` variable is a string containing the IBM Cloud Identity and Access Management (IAM) API key. The user is `iamapikey`. */
+{
+    "type": "DockerRegistryAuthAttributes",
+    "label": "Docker auth",
+    "publishable": false,
+    "host_only": true,
+    "mappings": {
+        "auths": [
+            {
+                "registry": "registry.ng.bluemix.net",
+                "username": "iamapikey",
+                "token": "myIAMApiKey"}
+        ]
     }
+}
 ```
 {: codeblock}
 
-### <a name="ma"></a>MeteringAttributes
+## <a name="ma"></a>MeteringAttributes
 {: #meteringattributes}
 
 This attribute configures how the service wants to be metered as part of an agreement.
@@ -265,24 +265,24 @@ Agreement protocols are chosen by the agbot based on the order they appear in th
 The `service_specs` specifies what services the attribute applies to. If the `url` is an empty string, it applies to all the services. If you set the AgreementProtocolAttributes through the `/service/config` api, you do not need to specify the `service_specs` because the service is specified in other fields. However, if you use `/attribute` api to set the AgreementProtocolAttributes, you must specify the `service_specs`.
 
 ```json
-    {
-        "type": "AgreementProtocolAttributes",
-        "label": "Agreement Protocols",
-        "publishable": true,
-        "host_only": false,
-        "service_specs": [
-            {
-                "url": "https://bluehorizon.network/services/netspeed",
-                "organization": "myorg"
-            }
-        ],
-        "mappings": {
-            "protocols": [
-                {
-                    "Basic": []
-                }
-            ]
+{
+    "type": "AgreementProtocolAttributes",
+    "label": "Agreement Protocols",
+    "publishable": true,
+    "host_only": false,
+    "service_specs": [
+        {
+            "url": "https://bluehorizon.network/services/netspeed",
+            "organization": "myorg"
         }
+    ],
+    "mappings": {
+        "protocols": [
+            {
+                "Basic": []
+            }
+        ]
     }
+}
 ```
 {: codeblock}
