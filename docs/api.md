@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-30"
+lastupdated: "2023-02-09"
 title: "Horizon APIs"
 description: Horizon APIs
 
@@ -9,7 +9,7 @@ parent: Agent (anax)
 nav_order: 5
 ---
 
-## {{site.data.keyword.horizon}} APIs
+# {{site.data.keyword.horizon}} APIs
 {: #agent-apis}
 
 This document contains the {{site.data.keyword.horizon}} REST APIs for the {{site.data.keyword.horizon}} agent running on an edge node. The output of the APIs is in JSON compact format. To get a better view, you can use the JSONView extension in your web browser or use the `jq` command from the command line interface. For example:

@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-02-05"
+lastupdated: "2023-02-09"
 description: Horizon Edge Services details
 title: "Horizon Edge Service Detail"
 
@@ -9,12 +9,12 @@ parent: Agent (anax)
 nav_order: 10
 ---
 
-## {{site.data.keyword.horizon}} Edge service details
+# {{site.data.keyword.horizon}} Edge service details
 {: #edge-services}
 
 {{site.data.keyword.edge_notm}} manages the lifecycle, connectivity, and other features of services it launches on a device. This section is intended for developers creating {{site.data.keyword.horizon}} service container workload definitions.
 
-### Service environment variables
+## Service environment variables
 {: #edge-service-vars}
 
 {{site.data.keyword.horizon}} sets the following environment variables when starting a service container:
