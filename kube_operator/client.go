@@ -265,21 +265,17 @@ func ProcessDeployment(tar string, envVars map[string]string, agId string, crIns
 		return nil, "", err
 	}
 
-	if len(customResources) > 1 {
-		return nil, "", fmt.Errorf(kwlog(fmt.Sprintf("Expected one custom resource in deployment. Got %d", len(customResources))))
-	}
-
-	var unstructCr *unstructured.Unstructured
-
-	if len(customResources) > 0 {
-		unstructCr, err = unstructuredObjectFromYaml(customResources[0])
-		if err != nil {
-			return nil, "", err
-		}
+	customResourceKindMap := map[string][]*unstructured.Unstructured{}
+	for _, customResource := range customResources {
+		unstructCr, err := unstructuredObjectFromYaml(customResource)
+                if err != nil {
+                        return nil, "", err
+                }
+		customResourceKindMap[unstructCr.GetKind()] = append(customResourceKindMap[unstructCr.GetKind()], unstructCr)
 	}
 
 	// Sort the k8s api objects by kind
-	return sortAPIObjects(k8sObjs, unstructCr, envVars, agId, crInstallTimeout)
+	return sortAPIObjects(k8sObjs, customResourceKindMap, envVars, agId, crInstallTimeout)
 }
 
 // CreateConfigMap will create a config map with the provided environment variable map
@@ -399,10 +395,6 @@ func getK8sObjectFromYaml(yamlFiles []YamlFile, sch *runtime.Scheme) ([]APIObjec
 			newObj := APIObjects{Type: gvk, Object: &newUnstructObj}
 			retObjects = append(retObjects, newObj)
 		}
-	}
-
-	if len(customResources) > 1 {
-		return retObjects, customResources, fmt.Errorf(kwlog(fmt.Sprintf("Error: kubernetes object not in recognized scheme.")))
 	}
 
 	return retObjects, customResources, nil
