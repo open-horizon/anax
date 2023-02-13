@@ -1866,7 +1866,7 @@
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon 에이전트에 대한 명령행 인터페이스입니다. 대부분의 하위 명령은 기본 위치(http://localhost)에서 Horizon Agent API를 사용합니다(재정의하려면 해당 환경의 환경 변수 섹션 참조).\n\n하위 명령에 대한 설명:\n  agbot: Horizon 계약 봇 리소스를 나열하고 관리합니다.\n  agreement: 이 에지 노드에서 Horizon 계약 봇으로 만든 계약을 나열하거나 관리합니다.\n  architecture: 이 시스템의 아키텍처를 표시합니다.\n  attribute: 현재 이 Horizon 에지 노드에 등록되어 있는 글로벌 속성을 나열하거나 관리합니다.\n  deploycheck: 배치 호환성을 확인합니다.\n  dev: 서비스 작성을 위한 개발 도구.\n  env: Horizon 환경 변수를 표시합니다.\n  eventlog: 현재 또는 모든 등록에 대한 이벤트 로그를 나열합니다.\n  exchange: Horizon Exchange 리소스를 나열하고 관리합니다.\n  key: 서비스 서명 및 확인을 위한 키를 나열하고 관리합니다.\n  mms: Horizon Model Management Service 리소스를 나열하고 관리합니다.\n  nmstatus: 로컬 노드에 대한 노드 관리 상태를 나열하고 관리합니다.\n  node: 이 Horizon 에지 노드에 대한 일반 정보를 나열하고 관리합니다.\n  nodemanagement: 노드 관리를 위한 Manifest 및 에이전트 파일을 나열하고 관리합니다.\n  policy: 이 Horizon 에지 노드에 대한 정책을 나열하고 관리합니다.\n  reginput: 'hzn register' 명령에 사용할 수 있는 이 패턴에 대한 입력 파일 템플리트를 작성합니다.\n  register: 이 에지 노드를 관리 허브에 등록합니다.\n  secretsmanager: Secrets Manager에서 시크릿을 나열하고 관리합니다.\n  service: 이 Horizon 에지 노드에 현재 등록되어 있는 서비스를 나열하거나 관리합니다.\n  status: 노드의 현재 Horizon 내부 상태를 표시합니다.\n  unregister: 이 Horizon 에지 노드를 등록 취소 및 재설정합니다.\n  userinput: 이 Horizon 에지 노드에 현재 등록되어 있는 서비스 사용자 입력을 나열하거나 관리합니다.\n  util: 유틸리티 명령.\n  version: Horizon 버전을 표시합니다.\n  sdo: Horizon SDO 소유권 바우처 및 키를 나열하고 관리합니다.\n  fdo: List and manage Horizon FDO 소유권 바우처 및 키를 나열하고 관리합니다.\n\n환경 변수:\n  HORIZON_URL: hzn에서 Horizon Agent API에 접속하는 URL을 대체합니다.\n      이를 사용하면 ssh 터널을 통해 원격 Horizon Agent를 쉽게 사용할 수 있습니다.\n  HZN_EXCHANGE_URL: Horizon Exchange와 통신하기 위해\n      'hzn exchange' 하위 명령이 사용하는 URL을 재정의합니다\n(예: https://exchange.bluehorizon.network/api/v1). (기본적으로, hzn은\n      Horizon Agent에 URL을 요청합니다.)\n  HZN_ORG_ID:  조직 ID를 지정하기 위한\n      'hzn exchange -o' 플래그의 기본값.\n  HZN_EXCHANGE_USER_AUTH:  '[org/]user:pw' 양식에서 'hzn exchange -u' 또는\n  'hzn register -u' 플래그의 기본값. HZN_EXCHANGE_USER_AUTH를\n  설정할 때 조직이 생략된 경우 HZN_ORG_ID를 설정할 수 있습니다.\n  HZN_FSS_CSSURL:  'hzn mms' 하위 명령이 Horizon Model Management Service와\n      통신하는 데 사용하는 URL을 재정의합니다\n      (예: https://exchange.bluehorizon.network/css/). (기본적으로, hzn은\n      Horizon Agent에 URL을 요청합니다.)\n  HZN_SDO_SVC_URL:  'hzn sdo' 하위 명령이 SDO 소유자 서비스와 통신하는 데\n  사용하는 URL을 재정의합니다. (기본적으로, hzn은\n      Horizon Agent에 URL을 요청합니다.)\n  HZN_FDO_SVC_URL:  'hzn fdo' 하위 명령이 FDO 소유자 서비스와 통신하는 데\n  사용하는 URL을 재정의합니다. (기본적으로, hzn은\nHorizon Agent에 URL을 요청합니다.)\n\n이러한 모든 환경 변수 및 명령 도움말에 언급된 변수는 사용자 구성 파일에\n  지정할 수 있습니다(~/.hzn/hzn.json, JSON 형식의 경우).\n  예:\n  {Com____}",
+      "translation": "Horizon 에이전트에 대한 명령행 인터페이스입니다. 대부분의 하위 명령은 기본 위치(http://localhost)에서 Horizon Agent API를 사용합니다(재정의하려면 해당 환경의 환경 변수 섹션 참조).\n\n하위 명령에 대한 설명:\n  agbot: Horizon 계약 봇 리소스를 나열하고 관리합니다.\n  agreement: 이 에지 노드에서 Horizon 계약 봇으로 만든 계약을 나열하거나 관리합니다.\n  architecture: 이 시스템의 아키텍처를 표시합니다.\n  attribute: 현재 이 Horizon 에지 노드에 등록되어 있는 글로벌 속성을 나열하거나 관리합니다.\n  deploycheck: 배치 호환성을 확인합니다.\n  dev: 서비스 작성을 위한 개발 도구입니다.\n  env: Horizon 환경 변수를 표시합니다.\n  eventlog: 현재 또는 모든 등록에 대한 이벤트 로그를 나열합니다.\n  exchange: Horizon Exchange 리소스를 나열하고 관리합니다.\n  key: 서비스 서명 및 확인을 위한 키를 나열하고 관리합니다.\n  mms: Horizon Model Management Service 리소스를 나열하고 관리합니다.\n  nmstatus: 로컬 노드에 대한 노드 관리 상태를 나열하고 관리합니다.\n  node: 이 Horizon 에지 노드에 대한 일반 정보를 나열하고 관리합니다.\n  nodemanagement: 노드 관리를 위한 Manifest 및 에이전트 파일을 나열하고 관리합니다.\n  policy: 이 Horizon 에지 노드에 대한 정책을 나열하고 관리합니다.\n  reginput: 'hzn register' 명령에 사용할 수 있는 이 패턴에 대한 입력 파일 템플리트를 작성합니다.\n  register: 이 에지 노드를 관리 허브에 등록합니다.\n  secretsmanager: Secrets Manager에서 시크릿을 나열하고 관리합니다.\n  service: 이 Horizon 에지 노드에 현재 등록되어 있는 서비스를 나열하거나 관리합니다.\n  status: 노드의 현재 Horizon 내부 상태를 표시합니다.\n  unregister: 이 Horizon 에지 노드를 등록 취소 및 재설정합니다.\n  userinput: 이 Horizon 에지 노드에 현재 등록되어 있는 서비스 사용자 입력을 나열하거나 관리합니다.\n  util: 유틸리티 명령입니다.\n  version: Horizon 버전을 표시합니다.\n  sdo: Horizon SDO 소유권 바우처 및 키를 나열하고 관리합니다.\n  fdo: List and manage Horizon FDO 소유권 바우처 및 키를 나열하고 관리합니다.\n\n환경 변수:\n  HORIZON_URL: hzn에서 Horizon Agent API에 접속하는 URL을 대체합니다.\n      이를 사용하면 ssh 터널을 통해 원격 Horizon Agent를 쉽게 사용할 수 있습니다.\n  HZN_EXCHANGE_URL: Horizon Exchange와 통신하기 위해\n      'hzn exchange' 하위 명령이 사용하는 URL을 재정의합니다\n(예: https://exchange.bluehorizon.network/api/v1). (기본적으로, hzn은\n      Horizon Agent에 URL을 요청합니다.)\n  HZN_ORG_ID:  조직 ID를 지정하기 위한\n      'hzn exchange -o' 플래그의 기본값입니다.\n  HZN_EXCHANGE_USER_AUTH:  '[org/]user:pw' 양식에서 'hzn exchange -u' 또는\n  'hzn register -u' 플래그의 기본값입니다. HZN_EXCHANGE_USER_AUTH를\n  설정할 때 조직이 생략된 경우 HZN_ORG_ID를 설정할 수 있습니다.\n  HZN_FSS_CSSURL:  'hzn mms' 하위 명령이 Horizon Model Management Service와\n      통신하는 데 사용하는 URL을 재정의합니다\n      (예: https://exchange.bluehorizon.network/css/). (기본적으로, hzn은\n      Horizon Agent에 URL을 요청합니다.)\n  HZN_SDO_SVC_URL:  'hzn sdo' 하위 명령이 SDO 소유자 서비스와 통신하는 데\n  사용하는 URL을 재정의합니다. (기본적으로, hzn은\n      Horizon Agent에 URL을 요청합니다.)\n  HZN_FDO_SVC_URL:  'hzn fdo' 하위 명령이 FDO 소유자 서비스와 통신하는 데\n  사용하는 URL을 재정의합니다. (기본적으로, hzn은\nHorizon Agent에 URL을 요청합니다.)\n\n이러한 모든 환경 변수 및 명령 도움말에 언급된 변수는 사용자 구성 파일에\n  지정할 수 있습니다(~/.hzn/hzn.json, JSON 형식의 경우).\n  예:\n  {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -2158,7 +2158,7 @@
     {
       "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
       "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
-      "translation": "노드 정책을 포함하는 JSON 입력 파일 이름입니다. -n, --ha-group, -p 및 -P를 함께 사용할 수 없습니다.",
+      "translation": "노드 정책을 포함하는 JSON 입력 파일 이름입니다. -n, --ha-group, -p 및 -P와 함께 사용할 수 없습니다.",
       "fuzzy": true
     },
     {
@@ -4596,7 +4596,7 @@
     {
       "id": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
       "message": "The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash",
-      "translation": "공개 명령은 업로드된 Manifest 데이터에 대해 데이터 무결성 검사를 수행하지 않습니다. --hashAlgo 및 --hash를 함께 사용할 수 없습니다.",
+      "translation": "공개 명령은 업로드된 Manifest 데이터에 대해 데이터 무결성 검사를 수행하지 않습니다. --hashAlgo 및 --hash와 함께 사용할 수 없습니다.",
       "fuzzy": true
     },
     {
@@ -5278,7 +5278,7 @@
     {
       "id": "Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
       "message": "Horizon Exchange credentials to SDO owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-      "translation": "SDO 소유자 서비스 리소스에 대한 Horizon Exchange 신임 정보. 기본값은 HZN_EXCHANGE_USER_AUTH 환경 변수입니다. 사용자의 조직 앞에 추가하지 않는 경우 자동으로 HZN_ORG_ID 환경 변수의 값이 앞에 추가됩니다.",
+      "translation": "SDO 소유자 서비스 리소스에 대한 Horizon Exchange 신임 정보입니다. 기본값은 HZN_EXCHANGE_USER_AUTH 환경 변수입니다. 사용자의 조직 앞에 추가하지 않는 경우 자동으로 HZN_ORG_ID 환경 변수의 값이 앞에 추가됩니다.",
       "fuzzy": true
     },
     {
@@ -5512,7 +5512,7 @@
     {
       "id": "Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
       "message": "Horizon Exchange credentials to query FDO Owner service resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
-      "translation": "FDO 소유자 서비스 리소스를 조회하기 위한 Horizon Exchange 신임 정보. 기본값은 HZN_EXCHANGE_USER_AUTH 환경 변수입니다. 사용자의 조직 앞에 추가하지 않는 경우 자동으로 HZN_ORG_ID 환경 변수의 값이 앞에 추가됩니다.",
+      "translation": "FDO 소유자 서비스 리소스를 조회하기 위한 Horizon Exchange 신임 정보입니다. 기본값은 HZN_EXCHANGE_USER_AUTH 환경 변수입니다. 사용자의 조직 앞에 추가하지 않는 경우 자동으로 HZN_ORG_ID 환경 변수의 값이 앞에 추가됩니다.",
       "fuzzy": true
     },
     {
@@ -5560,7 +5560,7 @@
     {
       "id": "The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).",
       "message": "The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).",
-      "translation": "FDO 소유권 바우처 파일. 파일 유형 확장자는 txt, tar, tar.gz, tgz 또는 zip이어야 합니다. tar/zip 형식 중 하나라면, 포함된 모든 .txt 파일을 가져옵니다(기타 파일/디렉토리는 자동으로 무시됨).",
+      "translation": "FDO 소유권 바우처 파일입니다. 파일 유형 확장자는 txt, tar, tar.gz, tgz 또는 zip이어야 합니다. tar/zip 형식 중 하나라면, 포함된 모든 .txt 파일을 가져옵니다(기타 파일/디렉토리는 자동으로 무시됨).",
       "fuzzy": true
     },
     {
@@ -8765,7 +8765,7 @@
     {
       "id": "--ha-group and --node-ui are mutually exclusive.",
       "message": "--ha-group and --node-ui are mutually exclusive.",
-      "translation": "--ha-group 및 --node-ui를 함께 사용할 수 없습니다.",
+      "translation": "--ha-group 및 --node-ui와 함께 사용할 수 없습니다.",
       "fuzzy": true
     },
     {
@@ -13752,7 +13752,7 @@
     {
       "id": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
       "message": "HA group {HaGroupOrg}/{HaGroupName} updated in the Horizon Exchange",
-      "translation": "Horizon Exchange에서 HA 그룹 {HaGroupOrg}/{HaGroupName} 업데이트됨",
+      "translation": "Horizon Exchange에서 HA 그룹 {HaGroupOrg}/{HaGroupName}이(가) 업데이트됨",
       "placeholders": [
         {
           "id": "HaGroupOrg",
@@ -14270,7 +14270,7 @@
     {
       "id": "When to start an upgrade, default \"now\".",
       "message": "When to start an upgrade, default \"now\".",
-      "translation": "업그레이드를 시작할 때는 \"지금\"이 기본값입니다.",
+      "translation": "업그레이드를 시작할 때는 \"now\"가 기본값입니다.",
       "fuzzy": true
     },
     {
@@ -17674,7 +17674,7 @@
     {
       "id": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
       "message": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
-      "translation": "올바르지 않은 별명. 지원되는 디바이스 별명은 {JoinsupportedAliases_}이며 모두 암호화 표준입니다.",
+      "translation": "올바르지 않은 별명입니다. 지원되는 디바이스 별명은 {JoinsupportedAliases_}이며 모두 암호화 표준입니다.",
       "placeholders": [
         {
           "id": "JoinsupportedAliases_",
@@ -19470,7 +19470,7 @@
     {
       "id": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
       "message": "Invalid value for --hashAlgo, please use SHA1 or SHA256",
-      "translation": "--hashAlgo에 대한 올바르지 않은 값. SHA1 또는 SHA256을 사용하십시오.",
+      "translation": "--hashAlgo에 대한 올바르지 않은 값입니다. SHA1 또는 SHA256을 사용하십시오.",
       "fuzzy": true
     },
     {
@@ -23808,7 +23808,7 @@
     {
       "id": "invalid value for --hashAlgo, please use SHA1 or SHA256",
       "message": "invalid value for --hashAlgo, please use SHA1 or SHA256",
-      "translation": "--hashAlgo에 대한 올바르지 않은 값. SHA1 또는 SHA256을 사용하십시오.",
+      "translation": "--hashAlgo에 대한 올바르지 않은 값입니다. SHA1 또는 SHA256을 사용하십시오.",
       "fuzzy": true
     },
     {

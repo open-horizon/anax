@@ -417,7 +417,7 @@
   },
   {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Horizon 代理程式的指令行介面。 大部分次指令都使用位於預設位置 http://localhost 的 Horizon 代理程式 API（請參閱環境「環境變數」區段來置換此項目）。\n\n 次指令說明：\n agbot：列出並管理 Horizon 合約機器人資源。\n agreement：列出或管理此邊緣節點與 Horizon 合約機器人建立的合約。\n architecture：顯示此機器的架構。 \n attribute：列出或管理目前在此 Horizon 邊緣節點上登錄的廣域屬性。\n deploycheck：檢查部署相容性。\n dev：用於建立服務的開發工具。\n env：顯示 Horizon 環境變數。\n eventlog：列出現行或所有登錄的事件日誌。\n exchange：列出並管理 Horizon Exchange 資源。\n key：列出並管理用於簽署及驗證服務的金鑰。 \n mms：列出並管理 Horizon 模型管理服務資源。\n mmstatus：列出並管理本端節點的節點管理狀態。\n node：列出並管理此 Horizon 邊緣節點的一般資訊。\n nodemanagement：列出並管理用於節點管理的資訊清單和代理程式檔案。\n policy：列出並管理此 Horizon 邊緣節點的原則。 \n reginput：為此型樣建立可用於 'hzn register' 指令的輸入檔範本。 \n register：向管理中心登錄此邊緣節點。\n secretsmanager：列出並管理密鑰管理程式中的密鑰。\n service：列出或管理目前在此 Horizon 邊緣節點上登錄的服務。\n status：顯示節點的現行 Horizon 內部狀態。\n unregister：取消登錄並重設此 Horizon 邊緣節點。\n userinput：列出或管理目前在此 Horizon 邊緣節點上登錄的服務使用者輸入。\n util：公用程式指令。\n version：顯示 Horizon 版本。\n sdo：列出並管理 Horizon SDO 所有權憑單和金鑰。\n fdo：列出並管理 Horizon FDO 所有權憑單和金鑰。\n\n 環境變數：\n HORIZON_URL：置換 hzn 聯絡 Horizon 代理程式 API 的 URL。\n 這有助於透過 ssh 通道使用遠端 Horizon 代理程式。\n HZN_EXCHANGE_URL：置換 'hzn exchange' 次指令用來 \n 與 Horizon Exchange 通訊的 URL，例如 \n https://exchange.bluehorizon.network/api/v1。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_ORG_ID：'hzn exchange -o' 旗標的預設值，\n 用以指定組織 ID。\n HZN_EXCHANGE_USER_AUTH：'hzn exchange -u' 或 'hzn\n  register -u' 旗標的預設值，格式為 '[org/] user:pw'。 請注意，如果在設定 HZN_EXCHANGE_USER_AUTH 時\n省略組織，則可以設定 HZN_ORG_ID。\n HZN_FSS_CSSURL：置換 'hzn mms' 次指令用來\n與 Horizon 模型管理服務通訊的 URL，例如 \n https://exchange.bluehorizon.network/css/。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_SDO_SVC_URL：置換 'hzn sdo' 次指令用來 \n 與 SDO 擁有者服務通訊的 URL。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_FDO_SVC_URL：置換 'hzn fdo' 次指令用來 \n 與 FDO 擁有者服務通訊的 URL。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n\n 所有這些環境變數以及指令說明中提及的環境變數\n都可以在使用者配置檔中以 JSON 格式指定：~/.hzn/hzn.json。\n 例如：\n {Com____}"
+    "translation": "Horizon 代理程式的指令行介面。 大部分次指令都使用位於預設位置 http://localhost 的 Horizon 代理程式 API（請參閱環境「環境變數」區段來置換此項目）。\n\n 次指令說明：\n agbot：列出並管理 Horizon 合約機器人資源。\n agreement：列出或管理此邊緣節點與 Horizon 合約機器人建立的合約。\n architecture：顯示此機器的架構。 \n attribute：列出或管理目前在此 Horizon 邊緣節點上登錄的廣域屬性。\n deploycheck：檢查部署相容性。\n dev：用於建立服務的開發工具。\n env：顯示 Horizon 環境變數。\n eventlog：列出現行或所有登錄的事件日誌。\n exchange：列出並管理 Horizon Exchange 資源。\n key：列出並管理用於簽署及驗證服務的金鑰。 \n mms：列出並管理 Horizon 模型管理服務資源。\n mmstatus：列出並管理本端節點的節點管理狀態。\n node：列出並管理此 Horizon 邊緣節點的一般資訊。\n nodemanagement：列出並管理用於節點管理的資訊清單和代理程式檔案。\n policy：列出並管理此 Horizon 邊緣節點的原則。 \n reginput：為此型樣建立可用於 'hzn register' 指令的輸入檔範本。 \n register：向管理中心登錄此邊緣節點。\n secretsmanager：列出並管理密鑰管理程式中的密鑰。\n service：列出或管理目前在此 Horizon 邊緣節點上登錄的服務。\n status：顯示節點的現行 Horizon 內部狀態。\n unregister：取消登錄並重設此 Horizon 邊緣節點。\n userinput：列出或管理目前在此 Horizon 邊緣節點上登錄的服務使用者輸入。\n util：公用程式指令。\n version：顯示 Horizon 版本。\n sdo：列出並管理 Horizon SDO 所有權憑證和金鑰。\n fdo：列出並管理 Horizon FDO 所有權憑證和金鑰。\n\n 環境變數：\n HORIZON_URL：置換 hzn 聯絡 Horizon 代理程式 API 的 URL。\n 這有助於透過 ssh 通道使用遠端 Horizon 代理程式。\n HZN_EXCHANGE_URL：置換 'hzn exchange' 次指令用來 \n 與 Horizon Exchange 通訊的 URL，例如 \n https://exchange.bluehorizon.network/api/v1。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_ORG_ID：'hzn exchange -o' 旗標的預設值，\n 用以指定組織 ID。\n HZN_EXCHANGE_USER_AUTH：'hzn exchange -u' 或 'hzn\n  register -u' 旗標的預設值，格式為 '[org/] user:pw'。 請注意，如果在設定 HZN_EXCHANGE_USER_AUTH 時\n省略組織，則可以設定 HZN_ORG_ID。\n HZN_FSS_CSSURL：置換 'hzn mms' 次指令用來\n與 Horizon 模型管理服務通訊的 URL，例如 \n https://exchange.bluehorizon.network/css/。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_SDO_SVC_URL：置換 'hzn sdo' 次指令用來 \n 與 SDO 擁有者服務通訊的 URL。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n HZN_FDO_SVC_URL：置換 'hzn fdo' 次指令用來 \n 與 FDO 擁有者服務通訊的 URL。 （依預設，hzn 會要求 \n Horizon 代理程式提供 URL。）\n\n 所有這些環境變數以及指令說明中提及的環境變數\n都可以在使用者配置檔中以 JSON 格式指定：~/.hzn/hzn.json。\n 例如：\n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -2721,7 +2721,7 @@
   },
   {
     "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-    "translation": "要用於與此憑單相關聯之邊緣裝置的節點原則檔案。 它與 -e 和 -p 互斥。 節點原則包含 'deployment' 和 'management' 屬性。 請使用 'hzn policy new' 來查看節點原則格式。"
+    "translation": "要用於與此憑證相關聯之邊緣裝置的節點原則檔案。 它與 -e 和 -p 互斥。 節點原則包含 'deployment' 和 'management' 屬性。 請使用 'hzn policy new' 來查看節點原則格式。"
   },
   {
     "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
@@ -2729,11 +2729,11 @@
   },
   {
     "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
-    "translation": "JSON 檔案，用於設定或置換服務所需的使用者輸入變數，而這些服務將部署至與此憑單相關聯的邊緣裝置。 請使用 'hzn userinput new' 來查看格式。"
+    "translation": "JSON 檔案，用於設定或置換服務所需的使用者輸入變數，而這些服務將部署至與此憑證相關聯的邊緣裝置。 請使用 'hzn userinput new' 來查看格式。"
   },
   {
     "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
-    "translation": "與此憑單相關聯的邊緣裝置將新增至其中的 HA 群組名稱。"
+    "translation": "與此憑證相關聯的邊緣裝置將新增至其中的 HA 群組名稱。"
   },
   {
     "id": "Download the specified SDO ownership voucher from SDO owner services.",
@@ -6717,7 +6717,7 @@
   },
   {
     "id": "Inspecting voucher file name: {Name}",
-    "translation": "正在檢查憑單檔名：{Name}"
+    "translation": "正在檢查憑證檔名：{Name}"
   },
   {
     "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
@@ -6737,7 +6737,7 @@
   },
   {
     "id": "did not find any rendezvous server URLs in the voucher",
-    "translation": "在憑單中找不到任何會合伺服器 URL"
+    "translation": "在憑證中找不到任何會合伺服器 URL"
   },
   {
     "id": "decoding UUID: {Error}",
@@ -6761,7 +6761,7 @@
   },
   {
     "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
-    "translation": "憑單 \"{Device}\" 已順利從 SDO 擁有者服務下載至 {FileName}。"
+    "translation": "憑證 \"{Device}\" 已順利從 SDO 擁有者服務下載至 {FileName}。"
   },
   {
     "id": "unsupported voucher file type extension: {Name}",

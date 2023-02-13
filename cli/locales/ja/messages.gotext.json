@@ -1866,7 +1866,7 @@
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルト・ロケーション (http://localhost) で Horizon Agent API を使用します  (これをオーバーライドするには、「環境変数」セクションを参照してください)。\n\nSubcommands Description: \n agbot: Horizon 契約ボットのリソースをリストおよび管理します。\n agreement: このエッジ・ノードで Horizon 契約 ボット\nで締結された契約をリストまたは管理します。architecture: このマシンのアーキテクチャーを表示します。 \n attribute: この Horizon エッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n deploycheck: デプロイメントの互換性を確認します。\n dev: サービスの作成のための開発ツールです。\n env: Horizon 環境変数を表示します。\n eventlog: 現行またはすべての登録のイベント・ログをリストします。\n exchange:  Horizon Exchange リソースをリストおよび管理します。\n key: 署名および検証に使用するサービスの鍵をリストおよび管理します。 \n mms: Horizon モデル管理サービス・リソースをリストおよび管理します。\n nmstatus: ローカル・ノード管理状況をリストおよび管理します。\n node: Horizon エッジ・ノードの一般情報をリストおよび管理します。\n nodemanagement: ノード管理のマニフェスト・ファイルおよびエージェント・ファイルをリストおよび管理します。\n policy: この Horizon エッジ・ノードのポリシーをリストおよび管理します。 \n reginput:「hzn register」コマンドに使用できる、このパターンの入力ファイル・テンプレートを作成します。 \n register: 管理ハブを持つこのエッジ・ノードを登録します。\n secretsmanager: シークレット・マネージャー内のシークレットをリストおよび管理します。\n service: この Horizon エッジ・ノードに現在登録されているサービスをリストまたは管理します。\n status: ノードの現在の Horizon 内部状況を表示します。\n unregister: Horizon エッジ・ノードを登録解除します。\n userinput: Horizon エッジ・ノードに現在登録されているサービス・ユーザー入力をリストまたは管理します。\n util: ユーティリティー・コマンド。\n version: Horizon バージョンを表示します。\n sdo: Horizon SDO 所有権証明書および鍵をリストおよび管理 します。\n fdo: Horizon FDO 所有権証明書および鍵をリストおよび管理します。\n\n環境変数:\n HORIZON_URL: hzn が Horizon エージェント API に接続する URL をオーバーライドします。\nこれにより、ssh トンネル経由でリモート Horizon エージェントを使用することが可能になります。\nHZN_EXCHANGE_URL: 「hzn exchange」サブコマンドが Horizon Exchange と通信するために使用する URL をオーバーラードします。 例: \n https://exchange.bluehorizon.network/api/v1。 (デフォルトでは、hzn は Horizon エージェントに \n URL を要求します。) \n HZN_ORG_ID: 'hzn exchange -o' フラグのデフォルト値。\n 組織 ID 'を指定します。\n HZN_EXCHANGE_USER_AUTH:'[org/]user:pw' の形式の 'hzn exchange -u' または 'hzn\n  register -u' フラグのデフォルト値。 HZN_EXCHANGE_USER_AUTH が設定されているときに \n 組織が省略された場合は、HZN_ORG_ID を設定できます。\n HZN_FSS_CSSURL:「hzn mms」サブコマンドが Horizon モデル管理サービスとの通信に \n 使用する URL をオーバーライドします。\n 例: \n https://exchange.bluehorizon.network/css/ (デフォルトでは、\n hzn は Horizon エージェントに URL を要求します。) \n HZN_SDO_SVC_URL:「hzn sdo」サブコマンドが SDO 所有者サービスとの通信に \n 使用する URL をオーバーライドします。 (デフォルトでは、hzn は Horizon エージェントに\n URL を要求します。) \n HZN_FDO_SVC_URL:「hzn fdo」サブコマンドが FDO 所有者サービスとの通信に \n 使用する URL をオーバーライドします。 (デフォルトでは、hzn は Horizon エージェントに URL を要求します。) \n \n これらすべての環境変数と、コマンド・ヘルプに記載されている環境変数は、\n ユーザーの構成ファイル ~/.hzn/hzn.json に JSON 形式で指定できます。\n 例: \n {Com____}",
+      "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルト・ロケーション(http://localhost)でHorizon Agent APIを使用します (これをオーバーライドするには、「環境変数」セクションを参照してください)。\n\nサブコマンドの説明: \n agbot: Horizon契約ボットのリソースをリストおよび管理します。\n agreement: このエッジ・ノードでHorizon契約ボットで締結された契約をリストまたは管理します。\n architecture: このマシンのアーキテクチャーを表示します。\n attribute: このHorizonエッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n deploycheck: デプロイメントの互換性を確認します。\n dev: サービスの作成のための開発ツールです。\n env: Horizon環境変数を表示します。\n eventlog: 現行またはすべての登録のイベント・ログをリストします。\n exchange: Horizon Exchangeリソースをリストおよび管理します。\n key: 署名および検証に使用するサービスの鍵をリストおよび管理します。 \n mms: Horizonモデル管理サービス・リソースをリストおよび管理します。\n nmstatus: ローカル・ノード管理状況をリストおよび管理します。\n node: このHorizonエッジ・ノードの一般情報をリストおよび管理します。\n nodemanagement: ノード管理のマニフェスト・ファイルおよびエージェント・ファイルをリストおよび管理します。\n policy: このHorizonエッジ・ノードのポリシーをリストおよび管理します。 \n reginput:「hzn register」コマンドに使用できる、このパターンの入力ファイル・テンプレートを作成します。 \n register: 管理ハブを持つこのエッジ・ノードを登録します。\n secretsmanager: シークレット・マネージャー内のシークレットをリストおよび管理します。\n service: このHorizonエッジ・ノードに現在登録されているサービスをリストまたは管理します。\n status: ノードの現在のHorizon内部状況を表示します。\n unregister: このHorizonエッジ・ノードを登録解除します。\n userinput: このHorizonエッジ・ノードに現在登録されているサービス・ユーザー入力をリストまたは管理します。\n util: ユーティリティー・コマンド。\n version: Horizonバージョンを表示します。\n sdo: Horizon SDO所有権証明書および鍵をリストおよび管理 します。\n fdo: Horizon FDO所有権証明書および鍵をリストおよび管理します。\n\n環境変数:\n HORIZON_URL: hznがHorizonエージェントAPIに接続するURLをオーバーライドします。\n      これにより、sshトンネル経由でリモートHorizonエージェントを使用することが可能になります。\n HZN_EXCHANGE_URL:「hzn exchange」サブコマンドがHorizon Exchangeと通信するために\n      使用するURLをオーバーラードします。\n例: https://exchange.bluehorizon.network/api/v1。 (デフォルトでは、hznはHorizonエージェントに\n      URLを要求します。) \n HZN_ORG_ID: 'hzn exchange -o'フラグのデフォルト値。\n      組織IDを指定します。\n HZN_EXCHANGE_USER_AUTH:'[org/]user:pw'の形式の'hzn exchange -u'または'hzn\n  register -u'フラグのデフォルト値。 HZN_EXCHANGE_USER_AUTHが設定されているときに\n      組織が省略された場合は、HZN_ORG_IDを設定できます。\n HZN_FSS_CSSURL:「hzn mms」サブコマンドがHorizonモデル管理サービスとの通信に\n      使用するURLをオーバーライドします。\n 例: https://exchange.bluehorizon.network/css/ (デフォルトでは、\n      hznはHorizonエージェントにURLを要求します。) \n HZN_SDO_SVC_URL:「hzn sdo」サブコマンドがSDO所有者サービスとの通信に\n      使用するURLをオーバーライドします。 (デフォルトでは、hznはHorizonエージェントに\n      URLを要求します。) \n HZN_FDO_SVC_URL:「hzn fdo」サブコマンドがFDO所有者サービスとの通信に \n      使用するURLをオーバーライドします。 (デフォルトでは、hzn は Horizon エージェントに URL を要求します。) \n \n これらすべての環境変数と、コマンド・ヘルプに記載されている環境変数は、\n ユーザーの構成ファイル ~/.hzn/hzn.json に JSON 形式で指定できます。\n 例: \n {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -3050,7 +3050,7 @@
     {
       "id": "The start window of the enabled node management policy.",
       "message": "The start window of the enabled node management policy.",
-      "translation": "使用可能にされたノード管理ポリシーの開始時間枠。",
+      "translation": "有効にされたノード管理ポリシーの開始時間枠。",
       "fuzzy": true
     },
     {
@@ -5428,7 +5428,7 @@
     {
       "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
       "message": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p. A node policy contains the 'deployment' and 'management' attributes. Please use 'hzn policy new' to see the node policy format.",
-      "translation": "このバウチャーに関連付けられたエッジ・デバイスに使用するノード・ポリシー・ファイル。 -e および -p と同時に指定することはできません。 ノード・ポリシーには、「deployment」属性と「management」属性が含まれています。 ノード・ポリシーの形式を確認するには、「hzn policy new」を使用してください。",
+      "translation": "この証明書に関連付けられたエッジ・デバイスに使用するノード・ポリシー・ファイル。 -e および -p と同時に指定することはできません。 ノード・ポリシーには、「deployment」属性と「management」属性が含まれています。 ノード・ポリシーの形式を確認するには、「hzn policy new」を使用してください。",
       "fuzzy": true
     },
     {
@@ -5440,13 +5440,13 @@
     {
       "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
       "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
-      "translation": "このバウチャーに関連付けられたエッジ・デバイスにデプロイされるサービスに必要なユーザー入力変数を設定またはオーバーライドする JSON ファイル。 形式を確認するには、「hzn userinput new」を使用してください。",
+      "translation": "この証明書に関連付けられたエッジ・デバイスにデプロイされるサービスに必要なユーザー入力変数を設定またはオーバーライドするJSONファイル。 形式を確認するには、「hzn userinput new」を使用してください。",
       "fuzzy": true
     },
     {
       "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
       "message": "The name of the HA group that the edge device associated with this voucher will be added to.",
-      "translation": "このバウチャーに関連付けられているエッジ・デバイスが追加される HA グループの名前。",
+      "translation": "この証明書に関連付けられているエッジ・デバイスが追加されるHAグループの名前。",
       "fuzzy": true
     },
     {
@@ -5506,7 +5506,7 @@
     {
       "id": "List and manage resources in FDO owner services",
       "message": "List and manage resources in FDO owner services",
-      "translation": "FDO 所有者サービス内のリソースのリストおよび管理",
+      "translation": "FDO所有者サービス内のリソースをリストおよび管理します",
       "fuzzy": true
     },
     {
@@ -13856,7 +13856,7 @@
     {
       "id": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
       "message": "HA group {HaGroupName} is not found in org {HaGroupOrg}",
-      "translation": "HA グループ {HaGroupName} が組織 {HaGroupOrg} に見つかりません",
+      "translation": "HAグループ{HaGroupName}が組織{HaGroupOrg}内で見つかりません",
       "placeholders": [
         {
           "id": "HaGroupName",
@@ -14136,7 +14136,7 @@
     {
       "id": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
       "message": "Nodes \"{JoinnodesToRemove_}\" are removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
-      "translation": "Horizon Exchange 内の HA グループ {HaGroupOrg}/{HaGroupName} からノード「{JoinnodesToRemove_}」が削除されます。",
+      "translation": "Horizon Exchange内のHAグループ{HaGroupOrg}/{HaGroupName}からノード「{JoinnodesToRemove_}」が削除されました。",
       "placeholders": [
         {
           "id": "JoinnodesToRemove_",
@@ -14168,7 +14168,7 @@
     {
       "id": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
       "message": "Node \"{JoinnodesToRemove_}\" is removed from HA group {HaGroupOrg}/{HaGroupName} in the Horizon Exchange",
-      "translation": "Horizon Exchange 内の HA グループ {HaGroupOrg}/{HaGroupName} からノード「{JoinnodesToRemove_}」が削除されます。",
+      "translation": "Horizon Exchange内のHAグループ{HaGroupOrg}/{HaGroupName}からノード「{JoinnodesToRemove_}」が削除されました。",
       "placeholders": [
         {
           "id": "JoinnodesToRemove_",
@@ -17658,7 +17658,7 @@
     {
       "id": "Please sepcify the device alias received from the manufacturer. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
       "message": "Please sepcify the device alias received from the manufacturer. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
-      "translation": "製造元から受け取ったデバイス別名を指定してください。 サポートされるデバイス別名は  {JoinsupportedAliases_} であり、すべて暗号化標準です。",
+      "translation": "製造元から受け取ったデバイス別名を指定してください。 サポートされるデバイス別名は{JoinsupportedAliases_}であり、これらはすべて暗号化標準です。",
       "placeholders": [
         {
           "id": "JoinsupportedAliases_",
@@ -17674,7 +17674,7 @@
     {
       "id": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
       "message": "Invalid alias. The supported device aliases are: {JoinsupportedAliases_} which are all cryptography standards.",
-      "translation": "別名が無効です。 サポートされるデバイス別名は  {JoinsupportedAliases_} であり、すべて暗号化標準です。",
+      "translation": "別名が無効です。 サポートされるデバイス別名は{JoinsupportedAliases_}であり、これらはすべて暗号化標準です。",
       "placeholders": [
         {
           "id": "JoinsupportedAliases_",
