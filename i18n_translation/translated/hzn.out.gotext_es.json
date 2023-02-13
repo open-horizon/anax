@@ -417,7 +417,7 @@
   },
   {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Interfaz de línea de mandatos del agente de Horizon. La mayoría de los submandatos usan el API del agente de Horizon en la ubicación predeterminada http://localhost (consulte la sección Variables de entorno para cambiar esto).\n\nSubmandatos Descripción:\n  agbot: Listar y gestionar los recursos del bot de acuerdos de Horizon.\n  agreement: Listar o gestionar los acuerdos que este nodo perimetral ha hecho con un bot de acuerdos de Horizon.\n  architecture: Mostrar la arquitectura de esta máquina. \n  attribute: Listar o gestionar los atributos globales registrados actualmente en este nodo perimetral de Horizon.\n  deploycheck: Comprobar la compatibilidad del despliegue.\n  dev: Herramientas de desarrollo para crear servicios.\n  env: Mostrar las variables de entorno de Horizon.\n  eventlog: Listar los registros de suceso del registro actual o de todos los registros.\n  exchange: Listar y gestionar los recursos de Horizon Exchange.\n  key: Listra y gestionar las claves de firma y verificación de servicios. \n  mms: Listar y gestionar los recursos de Horizon Model Management Service.\n  nmstatus: Listar y gestionar el estado de gestión del nodo local.\n  node: Listar y gestionar la información general de este nodo perimetral de Horizon.\n  nodemanagement: Listar y gestionar los manifiestos y archivos de agente para la gestión de nodos.\n  policy: Listar y gestionar la política de este nodo perimetral de Horizon. \n  reginput: Crear una plantilla de archivo de entrada para este patrón que se pueda usar en el mandato 'hzn register'. \n  register: Registrar este nodo perimetral en el hub de gestión.\n  secretsmanager: Listar y gestionar secretos en el gestor de secretos.\n  service: Listar o gestionar los servicios registrados actualmente en este nodo perimetral de Horizon.\n  status: Mostrar el estado interno actual de Horizon del nodo.\n  unregister: Anular el registro y restablecer este nodo perimetral de Horizon.\n  userinput: Listar o gestionar las entradas de usuario de servicio registradas actualmente en este nodo perimetral de Horizon.\n  util: Mandatos de utilidad.\n  version: Mostrar la versión de Horizon.\n  sdo: Listar y gestionar los comprobantes y claves de propiedad SDO de Horizon.\n  fdo: Listar y gestionar los comprobantes y claves de propiedad FDP de Horizon.\n\nVariables de Entorno:\n  HORIZON_URL:  Sustituir el URL por el que hzn se pone en contacto con el API del agente de  Horizon.\n      Esto se puede facilitar con un agente de Horizon remoto a través de un túnel SSH.\n  HZN_EXCHANGE_URL:  Sustituir el URL que usan los submandatos de 'hzn exchange'\n      para comunicarse con Horizon Exchange, por ejemplo\n      https://exchange.bluehorizon.network/api/v1. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n HZN_ORG_ID: Valor predeterminado del distintivo 'hzn exchange -o', \n para especificar el ID de organización '. \n HZN_EXCHANGE_USER_AUTH: Valor predeterminado de los distintivos 'hzn exchange -u' o 'hzn\n register -u ', con el formato' [org/]usuario:cont'. Observe que HZN_ORG_ID se puede definir\n si se omite org cuando HZN_EXCHANGE_USER_AUTH está definido. \n HZN_FSS_CSSURL: Sustituir el URL que utilizan los submandatos 'hzn mms' \n para comunicarse con el servicio de gestión de modelos de Horizon; por ejemplo \n https://exchange.bluehorizon.network/css/. (De forma predeterminada hzn solicitará al \n agente de Horizon el URL). \n HZN_SDO_SVC_URL: Sustituir el URL que utilizan los submandatos 'hzn sdo' \n para comunicarse con los servicios de propietario de SDO. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL.) \n HZN_FDO_SVC_URL: Sustituir el URL que utilizan los submandatos 'hzn fdo' \n para comunicarse con los servicios de propietario FDO. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n \n Todas estas variables de entorno y las mencionadas en la ayuda del mandato se pueden \n especificar en el archivo de configuración del usuario: ~/.hzn/hzn.json en formato JSON. \n Por ejemplo: \n {Com____}"
+    "translation": "Interfaz de línea de mandatos del agente de Horizon. La mayoría de los submandatos usan el API del agente de Horizon en la ubicación predeterminada http://localhost (consulte la sección Variables de entorno para cambiar esto).\n\nSubmandatos Descripción:\n  agbot: Listar y gestionar los recursos del bot de acuerdos de Horizon.\n  agreement: Listar o gestionar los acuerdos que este nodo perimetral ha hecho con un bot de acuerdos de Horizon.\n  architecture: Mostrar la arquitectura de esta máquina. \n  attribute: Listar o gestionar los atributos globales registrados actualmente en este nodo perimetral de Horizon.\n  deploycheck: Comprobar la compatibilidad del despliegue.\n  dev: Herramientas de desarrollo para crear servicios.\n  env: Mostrar las variables de entorno de Horizon.\n  eventlog: Listar los registros de suceso del registro actual o de todos los registros.\n  exchange: Listar y gestionar los recursos de Horizon Exchange.\n  key: Listar y gestionar las claves de firma y verificación de servicios. \n  mms: Listar y gestionar los recursos de Horizon Model Management Service.\n  nmstatus: Listar y gestionar el estado de gestión del nodo local.\n  node: Listar y gestionar la información general de este nodo perimetral de Horizon.\n  nodemanagement: Listar y gestionar los manifiestos y archivos de agente para la gestión de nodos.\n  policy: Listar y gestionar la política de este nodo perimetral de Horizon. \n  reginput: Crear una plantilla de archivo de entrada para este patrón que se pueda usar en el mandato 'hzn register'. \n  register: Registrar este nodo perimetral en el hub de gestión.\n  secretsmanager: Listar y gestionar secretos en el gestor de secretos.\n  service: Listar o gestionar los servicios registrados actualmente en este nodo perimetral de Horizon.\n  status: Mostrar el estado interno actual de Horizon del nodo.\n  unregister: Anular el registro y restablecer este nodo perimetral de Horizon.\n  userinput: Listar o gestionar las entradas de usuario de servicio registradas actualmente en este nodo perimetral de Horizon.\n  util: Mandatos de utilidad.\n  version: Mostrar la versión de Horizon.\n  sdo: Listar y gestionar los cupones y claves de propiedad SDO de Horizon.\n  fdo: Listar y gestionar los cupones y claves de propiedad FDP de Horizon.\n\nVariables de Entorno:\n  HORIZON_URL:  Sustituir el URL por el que hzn se pone en contacto con el API del agente de  Horizon.\n      Esto se puede facilitar con un agente de Horizon remoto a través de un túnel SSH.\n  HZN_EXCHANGE_URL:  Sustituir el URL que usan los submandatos de 'hzn exchange'\n      para comunicarse con Horizon Exchange, por ejemplo\n      https://exchange.bluehorizon.network/api/v1. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n HZN_ORG_ID: Valor predeterminado del distintivo 'hzn exchange -o', \n para especificar el ID de organización '. \n HZN_EXCHANGE_USER_AUTH: Valor predeterminado de los distintivos 'hzn exchange -u' o 'hzn\n register -u ', con el formato' [org/]usuario:cont'. Observe que HZN_ORG_ID se puede establecer\n si se omite org cuando HZN_EXCHANGE_USER_AUTH está establecido. \n HZN_FSS_CSSURL: Sustituir el URL que utilizan los submandatos 'hzn mms' \n para comunicarse con el servicio de gestión de modelos de Horizon; por ejemplo \n https://exchange.bluehorizon.network/css/. (De forma predeterminada hzn solicitará al \n agente de Horizon el URL). \n HZN_SDO_SVC_URL: Sustituir el URL que utilizan los submandatos 'hzn sdo' \n para comunicarse con los servicios de propietario de SDO. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL.) \n HZN_FDO_SVC_URL: Sustituir el URL que utilizan los submandatos 'hzn fdo' \n para comunicarse con los servicios de propietario FDO. (De forma predeterminada, hzn solicitará al \n agente de Horizon el URL). \n \n Todas estas variables de entorno y las mencionadas en la ayuda del mandato se pueden \n especificar en el archivo de configuración del usuario: ~/.hzn/hzn.json en formato JSON. \n Por ejemplo: \n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -2693,7 +2693,7 @@
   },
   {
     "id": "List the full details of this SDO ownership voucher.",
-    "translation": "Listar los detalles completos del cupón de propiedad SDO."
+    "translation": "Listar los detalles completos de este cupón de propiedad SDO."
   },
   {
     "id": "When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.",
@@ -2729,11 +2729,11 @@
   },
   {
     "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to the edge device associated with this voucher. Please use 'hzn userinput new' to see the format.",
-    "translation": "Se desplegará un archivo JSON que define o sustituye las variables de entrada de usuario que necesitan los servicios que se van a desplegar en el dispositivo perimetral asociado a este comprobante. Utilice 'hzn userinput new' para ver el formato."
+    "translation": "Se desplegará un archivo JSON que define o sustituye las variables de entrada de usuario que necesitan los servicios que se van a desplegar en el dispositivo perimetral asociado a este cupón. Utilice 'hzn userinput new' para ver el formato."
   },
   {
     "id": "The name of the HA group that the edge device associated with this voucher will be added to.",
-    "translation": "Nombre del grupo HA al que se añadirá el dispositivo perimetral asociado a este comprobante."
+    "translation": "Nombre del grupo HA al que se añadirá el dispositivo perimetral asociado a este cupón."
   },
   {
     "id": "Download the specified SDO ownership voucher from SDO owner services.",
@@ -2793,31 +2793,31 @@
   },
   {
     "id": "List and manage Horizon FDO ownership vouchers.",
-    "translation": "Listar y gestionar comprobantes de propiedad FDO de Horizon."
+    "translation": "Listar y gestionar cupones de propiedad FDO de Horizon."
   },
   {
     "id": "List the imported FDO ownership vouchers.",
-    "translation": "Listar los comprobantes de propiedad FDO importados."
+    "translation": "Listar los cupones de propiedad FDO importados."
   },
   {
     "id": "List the full details of this FDO ownership voucher.",
-    "translation": "Listar los detalles completos de este comprobante de propiedad FDO."
+    "translation": "Listar los detalles completos de este cupón de propiedad FDO."
   },
   {
     "id": "Imports the FDO ownership voucher so that the corresponding device can be booted, configured, and registered.",
-    "translation": "Importa el comprobante de propiedad FDO para que el dispositivo correspondiente se pueda arrancar, configurar y registrar."
+    "translation": "Importa el cupón de propiedad FDO para que el dispositivo correspondiente se pueda arrancar, configurar y registrar."
   },
   {
     "id": "The FDO ownership voucher file. Must be file type extension: txt, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all .txt files within it will be imported (other files/dirs will be silently ignored).",
-    "translation": "Archivo del comprobante de propiedad FDO. Tiene que ser la extensión de tipo de archivo: txt, tar, tar.gz, tgz o zip. Si es cualquiera de los formatos tar/zip, se importarán todos los archivos .txt (otros archivos/dirs se ignorarán silenciosamente)."
+    "translation": "Archivo del cupón de propiedad FDO. Debe tener una extensión de tipo de archivo: txt, tar, tar.gz, tgz o zip. Si es cualquiera de los formatos tar/zip, se importarán todos los archivos .txt (otros archivos/dirs se ignorarán en silencio)."
   },
   {
     "id": "Download the specified FDO ownership voucher from FDO owner services.",
-    "translation": "Descargar el comprobante de propiedad FDO especificado de los servicios de propietario FDO."
+    "translation": "Descargar el cupón de propiedad FDO especificado de los servicios de propietario FDO."
   },
   {
     "id": "The FDO ownership voucher to download.",
-    "translation": "Comprobante de propiedad FDO que se va a descargar."
+    "translation": "Cupón de propiedad FDO que se va a descargar."
   },
   {
     "id": "organization ID must be specified with either the -o flag or HZN_ORG_ID",
@@ -5513,7 +5513,7 @@
   },
   {
     "id": "Listing imported FDO vouchers.",
-    "translation": "Listando comprobantes FDO importados."
+    "translation": "Listando cupones FDO importados."
   },
   {
     "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
@@ -5525,7 +5525,7 @@
   },
   {
     "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the FDO owner services.",
-    "translation": "El comprobante \"{Device}\" se ha descargado correctamente en {FileName} desde los servicios de propietario FDO."
+    "translation": "El cupón \"{Device}\" se ha descargado correctamente en {FileName} desde los servicios de propietario FDO."
   },
   {
     "id": "Importing voucher file name: {Name}",
@@ -5553,11 +5553,11 @@
   },
   {
     "id": "Invalid credentials. The user cannot access vouchers in org \"{Org}\" with given credentials.",
-    "translation": "Credenciales no válidas. El usuario no puede acceder a los comprobantes de la organización \"{Org}\" con las credenciales proporcionadas."
+    "translation": "Credenciales no válidas. El usuario no puede acceder a los cupones de la organización \"{Org}\" con las credenciales proporcionadas."
   },
   {
     "id": "Invalid credentials. The user cannot access voucher \"{Voucher}\" in org \"{Org}\" with given credentials.",
-    "translation": "Credenciales no válidas. El usuario no puede acceder al comprobante \"{Voucher}\" en la organización \"{Org}\" con las credenciales proporcionadas."
+    "translation": "Credenciales no válidas. El usuario no puede acceder al cupón \"{Voucher}\" en la organización \"{Org}\" con las credenciales proporcionadas."
   },
   {
     "id": "reading the bytes from {VoucherFileName}: {Err}",
@@ -6717,7 +6717,7 @@
   },
   {
     "id": "Inspecting voucher file name: {Name}",
-    "translation": "Inspeccionando nombre de archivo de comprobante: {Name}"
+    "translation": "Inspeccionando nombre de archivo de cupón: {Name}"
   },
   {
     "id": "WARNING: \"hzn voucher inspect\" is deprecated and will be removed in a future release. Please use \"hzn sdo voucher inspect\" instead.",
@@ -6737,7 +6737,7 @@
   },
   {
     "id": "did not find any rendezvous server URLs in the voucher",
-    "translation": "no ha encontrado ningún URL de servidor rendezvous en el comprobante"
+    "translation": "no ha encontrado ningún URL de servidor rendezvous en el cupón"
   },
   {
     "id": "decoding UUID: {Error}",
@@ -6761,7 +6761,7 @@
   },
   {
     "id": "Voucher \"{Device}\" successfully downloaded to {FileName} from the SDO owner services.",
-    "translation": "El comprobante \"{Device}\" se ha descargado correctamente en {FileName} desde los servicios del propietario de SDO."
+    "translation": "El cupón \"{Device}\" se ha descargado correctamente en {FileName} desde los servicios del propietario de SDO."
   },
   {
     "id": "unsupported voucher file type extension: {Name}",
