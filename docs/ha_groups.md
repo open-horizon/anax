@@ -14,9 +14,9 @@ nav_order: 9
 
 ## Overview
 
-High avalability (HA) node groups allow an admin or node owner to group nodes together that are running the same service to ensure the service stays running on at least one of the nodes at all times. HA grouping is enforced by the agbot which will only allow one node in a group to perform an upgrade at a time. Nodes in an HA group will still complete agent and service upgrades but in a co-ordinated manner. Nodes may only be in one HA group at a time.
+High availability (HA) node groups allow an administrator or node owner to group nodes together that are running the same service to ensure the service stays running on at least one of the nodes at all times. HA grouping is enforced by the agbot which will only allow one node in a group to perform an upgrade at a time. Nodes in an HA group will still complete agent and service upgrades but in a coordinated manner. Nodes may only be in one HA group at a time.
 
-## Creating HA Node Groups
+## Creating HA node groups
 
 To generate a template for creating HA node groups run:
 
@@ -46,7 +46,7 @@ hzn exchange hagroup add --json-file <new-hagroup.json>
 ```
 {: codeblock}
 
-While any user can create an HA group, only org admins or the node's owner may add a node to a group. HA groups become effective as soon as the group is created in the exchange.
+While any user can create an HA group, only org administrators or the node's owner may add a node to a group. HA groups become effective as soon as the group is created in the exchange.
 
 ## Listing nodes in a HA group
 
@@ -61,16 +61,16 @@ hzn exchange hagroup list <group-name>
 
 After the HA group exists in the exchange, nodes can be added to it in several ways.
 
-- At node registration, an HA group for the node can be specified with the flag `--ha-group=HA-GROUP` where `HA-GROUP` the name of the existing HA group.
+- At node registration, an HA group for the node can be specified with the flag `--ha-group=HA-GROUP` where `HA-GROUP` is the name of the existing HA group.
 
 - A node (that previously exists in the exchange, need not be registered) can be added to a group with the command:
 
-```bash
-hzn exchange hagroup member add <group name> --node=NODE
-```
-{: codeblock}
+  ```bash
+  hzn exchange hagroup member add <group name> --node=NODE
+  ```
+  {: codeblock}
 
-where `NODE` is the node id of the node to add.
+  where `NODE` is the node id of the node to add.
 
 Additionally, the HA group template used to originally create the group can be updated with the id of the node to add, then republished with:
 
@@ -81,7 +81,7 @@ Additionally, the HA group template used to originally create the group can be u
 
 Note: If a node is already in an HA group, it must be removed from the group before it can be added to anouther.
 
-## Removing Nodes from HA Groups
+## Removing nodes from HA groups
 
 Nodes can be removed from an HA group with this command:
 
@@ -90,7 +90,7 @@ hzn exchange hagroup member remove <group name> --node=NODE
 ```
 {: codeblock}
 
-Lastly, to remove the entire HA group from the exchange: 
+Lastly, to remove the entire HA group from the exchange:
 
 ```bash
 hzn exchange hagroup remove <group name>
@@ -99,6 +99,6 @@ hzn exchange hagroup remove <group name>
 
 ## Limitations
 
-- Currently this feature is only supported for device type nodes. Cluster nodes are expected to use kubernetes operator capabilities to ensure service avalibility.
-- The service on a node will still be upgraded even if the nodes in its group are offline.
-- If a node is added to an HA group while the node has already started an upgrade, the HA group membership of the node will not be enforced until the ongoing upgrade has completed.
+- This feature is only supported for device type nodes. Cluster nodes are expected to use kubernetes operator capabilities to ensure service availability.
+- Services, with current agreements which are running on a node, will still be upgraded even if other nodes in its HA group are offline.
+- If a node is added to an HA group while the node has already started a upgrade, the HA group membership of the node will not be enforced until the ongoing service or agent upgrade has completed.
