@@ -125,14 +125,14 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object must have a name in its metadata section.")))
 				}
 			} else if typedCRD, ok := obj.Object.(*crdv1.CustomResourceDefinition); ok {
-                                kind := typedCRD.Spec.Names.Kind
-                                if kind == "" {
-                                        return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field.", obj.Object)))
-                                }
-                                customResourceList, ok := customResources[kind]
-                                if !ok {
-                                        return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: no custom resource object with kind %v found in %v.", kind, customResources)))
-                                }
+				kind := typedCRD.Spec.Names.Kind
+				if kind == "" {
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field.", obj.Object)))
+				}
+				customResourceList, ok := customResources[kind]
+				if !ok {
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: no custom resource object with kind %v found in %v.", kind, customResources)))
+				}
 				objMap[K8S_CRD_TYPE] = append(objMap[K8S_CRD_TYPE], CustomResourceV1{CustomResourceDefinitionObject: typedCRD, CustomResourceObjectList: customResourceList, InstallTimeout: crInstallTimeout})
 			} else {
 				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object has unrecognized type %T: %v", obj.Object, obj.Object)))
@@ -458,12 +458,12 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 	crClient := dynClient.Resource(*gvr)
 
 	for _, customResourceObject := range cr.CustomResourceObjectList {
-	        resourceName := ""
-        	if typedCrMetadata, ok := customResourceObject.Object["metadata"].(map[string]interface{}); ok {
-              		if name, ok := typedCrMetadata["name"]; ok {
-                	        resourceName = fmt.Sprintf("%v", name)
-        	        }
-	        }
+		resourceName := ""
+		if typedCrMetadata, ok := customResourceObject.Object["metadata"].(map[string]interface{}); ok {
+			if name, ok := typedCrMetadata["name"]; ok {
+				resourceName = fmt.Sprintf("%v", name)
+			}
+		}
 
 		// the cluster has to create the endpoint for the custom resource, this can take some time
 		// the cr cannot exist without the crd so we don't have to worry about it already existing
@@ -665,11 +665,11 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 
 	for _, customResourceObject := range cr.CustomResourceObjectList {
 		resourceName := ""
-        	if typedCrMetadata, ok := customResourceObject.Object["metadata"].(map[string]interface{}); ok {
-                	if name, ok := typedCrMetadata["name"]; ok {
-                	        resourceName = fmt.Sprintf("%v", name)
-        	        }
-	        }
+		if typedCrMetadata, ok := customResourceObject.Object["metadata"].(map[string]interface{}); ok {
+			if name, ok := typedCrMetadata["name"]; ok {
+				resourceName = fmt.Sprintf("%v", name)
+			}
+		}
 
 		// the cluster has to create the endpoint for the custom resource, this can take some time
 		// the cr cannot exist without the crd so we don't have to worry about it already existing

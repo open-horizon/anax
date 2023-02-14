@@ -268,9 +268,9 @@ func ProcessDeployment(tar string, envVars map[string]string, agId string, crIns
 	customResourceKindMap := map[string][]*unstructured.Unstructured{}
 	for _, customResource := range customResources {
 		unstructCr, err := unstructuredObjectFromYaml(customResource)
-                if err != nil {
-                        return nil, "", err
-                }
+		if err != nil {
+			return nil, "", err
+		}
 		customResourceKindMap[unstructCr.GetKind()] = append(customResourceKindMap[unstructCr.GetKind()], unstructCr)
 	}
 
