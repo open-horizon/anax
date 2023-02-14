@@ -76,7 +76,8 @@ func NewServicePolicyEntry(p *externalpolicy.ExternalPolicy, svcId string) (*Ser
 
 type BusinessPolicyEntry struct {
 	Policy          *policy.Policy                 `json:"policy,omitempty"`          // the metadata for this business policy from the exchange, it is the converted to the internal policy format
-	Updated         uint64                         `json:"updatedTime,omitempty"`     // the time when this entry was updated
+	Updated         uint64                         `json:"updatedTime,omitempty"`     // the time in seconds when this entry was updated
+	UpdatedMSec     uint64                         `json:"updatedTimeMSec,omitempty"` // the time in milliseconds when this entry was updated
 	Hash            []byte                         `json:"hash,omitempty"`            // a hash of the business policy to compare for matadata changes in the exchange
 	ServicePolicies map[string]*ServicePolicyEntry `json:"servicePolicies,omitempty"` // map of the service id and service policies
 }
@@ -91,6 +92,7 @@ func (p *BusinessPolicyEntry) DeepCopy() *BusinessPolicyEntry {
 	}
 
 	newUpdated := p.Updated
+	newUpdatedMSec := p.UpdatedMSec
 
 	var newHash []byte
 	if p.Hash == nil {
@@ -110,7 +112,7 @@ func (p *BusinessPolicyEntry) DeepCopy() *BusinessPolicyEntry {
 		}
 	}
 
-	copyBusinessPolicyEntry := BusinessPolicyEntry{Policy: newPolicy, Updated: newUpdated, Hash: newHash, ServicePolicies: newServePolicy}
+	copyBusinessPolicyEntry := BusinessPolicyEntry{Policy: newPolicy, Updated: newUpdated, UpdatedMSec: newUpdatedMSec, Hash: newHash, ServicePolicies: newServePolicy}
 	return &copyBusinessPolicyEntry
 
 }
@@ -120,6 +122,7 @@ func (p *BusinessPolicyEntry) DeepCopy() *BusinessPolicyEntry {
 func NewBusinessPolicyEntry(pol *businesspolicy.BusinessPolicy, polId string) (*BusinessPolicyEntry, error) {
 	pBE := new(BusinessPolicyEntry)
 	pBE.Updated = uint64(time.Now().Unix())
+	pBE.UpdatedMSec = uint64(time.Now().UnixMilli())
 	if hash, err := hashPolicy(pol); err != nil {
 		return nil, err
 	} else {
@@ -142,10 +145,11 @@ func NewBusinessPolicyEntry(pol *businesspolicy.BusinessPolicy, polId string) (*
 func (p *BusinessPolicyEntry) String() string {
 	return fmt.Sprintf("BusinessPolicyEntry: "+
 		"Updated: %v "+
+		"UpdatedMSec: %v "+
 		"Hash: %x "+
 		"Policy: %v"+
 		"ServicePolicies: %v",
-		p.Updated, p.Hash, p.Policy, p.ServicePolicies)
+		p.Updated, p.UpdatedMSec, p.Hash, p.Policy, p.ServicePolicies)
 }
 
 func (p *BusinessPolicyEntry) ShortString() string {
@@ -155,10 +159,11 @@ func (p *BusinessPolicyEntry) ShortString() string {
 	}
 	return fmt.Sprintf("BusinessPolicyEntry: "+
 		"Updated: %v "+
+		"UpdatedMSec: %v "+
 		"Hash: %x "+
 		"Policy: %v"+
 		"ServicePolicies: %v",
-		p.Updated, p.Hash, p.Policy.Header.Name, keys)
+		p.Updated, p.UpdatedMSec, p.Hash, p.Policy.Header.Name, keys)
 }
 
 // hash the business policy or the service policy gotten from the exchange
@@ -192,6 +197,7 @@ func (p *BusinessPolicyEntry) AddServicePolicy(svcPolicy *externalpolicy.Externa
 		if !bytes.Equal(pSE.Hash, servicePol.Hash) {
 			p.ServicePolicies[svcId] = pSE
 			p.Updated = uint64(time.Now().Unix())
+			p.UpdatedMSec = uint64(time.Now().UnixMilli())
 			return true, nil
 		} else {
 			// same service policy exists, do nothing
@@ -221,6 +227,7 @@ func (p *BusinessPolicyEntry) RemoveServicePolicy(svcId string) bool {
 
 			// update the timestamp
 			p.Updated = uint64(time.Now().Unix())
+			p.UpdatedMSec = uint64(time.Now().UnixMilli())
 			return true
 		} else {
 			return false
@@ -235,6 +242,7 @@ func (pe *BusinessPolicyEntry) DeleteAllServicePolicies(org string) {
 func (p *BusinessPolicyEntry) UpdateEntry(pol *businesspolicy.BusinessPolicy, polId string, newHash []byte) (*policy.Policy, error) {
 	p.Hash = newHash
 	p.Updated = uint64(time.Now().Unix())
+	p.UpdatedMSec = uint64(time.Now().UnixMilli())
 	p.ServicePolicies = make(map[string]*ServicePolicyEntry, 0)
 
 	// validate and convert the exchange business policy to internal policy format
@@ -346,7 +354,7 @@ func (pm *BusinessPolicyManager) GetAllPoliciesOrderedForOrg(org string, newestF
 		// Second, sort the BPE list based on the requested order.
 		if newestFirst {
 			sort.Slice(tempList, func(i, j int) bool {
-				return tempList[i].Updated > tempList[j].Updated
+				return tempList[i].UpdatedMSec > tempList[j].UpdatedMSec
 			})
 		} else {
 			sort.Sort(BPEsByLastUpdatedTimeAscending(tempList))
@@ -375,7 +383,7 @@ func (s BPEsByLastUpdatedTimeAscending) Swap(i, j int) {
 
 // The greater than check produces an ordering from highest to lowest.
 func (s BPEsByLastUpdatedTimeAscending) Less(i, j int) bool {
-	return s[i].Updated < s[j].Updated
+	return s[i].UpdatedMSec < s[j].UpdatedMSec
 }
 
 func (pm *BusinessPolicyManager) GetBusinessPolicyEntry(org string, pol *policy.Policy) *BusinessPolicyEntry {
