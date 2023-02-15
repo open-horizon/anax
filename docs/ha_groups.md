@@ -14,39 +14,39 @@ nav_order: 9
 
 ## Overview
 
-High availability (HA) node groups allow an administrator or node owner to group nodes together that are running the same service to ensure the service stays running on at least one of the nodes at all times. HA grouping is enforced by the agbot which will only allow one node in a group to perform an upgrade at a time. Nodes in an HA group will still complete agent and service upgrades but in a coordinated manner. Nodes may only be in one HA group at a time.
+High availability (HA) node groups allow an administrator or node owner to group nodes together that are running the same service to ensure the service stays running on at least one of the nodes at all times. HA grouping is enforced by the agbot, which will only allow one node in a group to perform an upgrade at a time. Nodes in an HA group still complete agent and service upgrades in a coordinated manner. Nodes can only be in one HA group at a time.
 
 ## Creating HA node groups
 
-To generate a template for creating HA node groups run:
+1. To generate a template for creating HA node groups run:
 
-```bash
-hzn exchange hagroup new
-```
-{: codeblock}
+   ```bash
+   hzn exchange hagroup new
+   ```
+   {: codeblock}
 
-Copy the output to a file and fill in the required fields.  In this example, `new-hagroup.json`
+2. Copy the output to a file and fill in the required fields.  In this example, `new-hagroup.json`
 
-```json
-{
-  "name": "",             /* Optional. The name of the HA group. */
-  "description": "",      /* A description of the HA group. */
-  "members": [            /* A list of node names that are members of this group. */
-    "node1",
-    "node2"
-  ]
-}
-```
-{: codeblock}
+   ```json
+   {
+     "name": "",             /* Optional. The name of the HA group. */
+     "description": "",      /* A description of the HA group. */
+     "members": [            /* A list of node names that are members of this group. */
+       "node1",
+       "node2"
+     ]
+   }
+   ```
+   {: codeblock}
 
-Create the group in the exchange:
+3. Create the group in the exchange:
 
-```bash
-hzn exchange hagroup add --json-file <new-hagroup.json>
-```
-{: codeblock}
+   ```bash
+   hzn exchange hagroup add --json-file <new-hagroup.json>
+   ```
+   {: codeblock}
 
-While any user can create an HA group, only org administrators or the node's owner may add a node to a group. HA groups become effective as soon as the group is created in the exchange.
+While any user can create an HA group, only org administrators or the node's owner can add a node to a group. HA groups become effective as soon as the group is created in the exchange.
 
 ## Listing nodes in a HA group
 
@@ -79,11 +79,11 @@ Additionally, the HA group template used to originally create the group can be u
 ```
 {: codeblock}
 
-Note: If a node is already in an HA group, it must be removed from the group before it can be added to anouther.
+**Note**: If a node is already in an HA group, it must be removed from the group before it can be added to another.
 
 ## Removing nodes from HA groups
 
-Nodes can be removed from an HA group with this command:
+Remove nodes from an HA group with this command:
 
 ```bash
 hzn exchange hagroup member remove <group name> --node=NODE
@@ -100,5 +100,5 @@ hzn exchange hagroup remove <group name>
 ## Limitations
 
 - This feature is only supported for device type nodes. Cluster nodes are expected to use kubernetes operator capabilities to ensure service availability.
-- Services, with current agreements which are running on a node, will still be upgraded even if other nodes in its HA group are offline.
-- If a node is added to an HA group while the node has already started a upgrade, the HA group membership of the node will not be enforced until the ongoing service or agent upgrade has completed.
+- Services, with current agreements that are running on a node, are still upgraded, even if other nodes in its HA group are offline.
+- If a node is added to an HA group while the node has already started a upgrade, the HA group membership of the node is not enforced until the ongoing service or agent upgrade has completed.
