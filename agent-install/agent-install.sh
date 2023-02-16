@@ -2012,7 +2012,7 @@ function debian_device_install_prereqs() {
                 curl -sSL get.docker.com | sh
             else
                 curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
-                add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
+                add-apt-repository -y "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
                 runCmdQuietly apt-get update -q
                 runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
             fi
@@ -2087,7 +2087,7 @@ function install_debian_device_horizon_pkgs() {
             apt-key add "$PKG_APT_KEY"
         fi
         log_verbose "Adding $PKG_APT_REPO to /etc/apt/sources.list and installing horizon ..."
-        add-apt-repository "deb [arch=$(dpkg --print-architecture)] $PKG_APT_REPO $(lsb_release -cs)-$APT_REPO_BRANCH main"
+        add-apt-repository -y "deb [arch=$(dpkg --print-architecture)] $PKG_APT_REPO $(lsb_release -cs)-$APT_REPO_BRANCH main"
         if [[ $AGENT_ONLY_CLI == 'true' || $AGENT_IN_CONTAINER == 'true' ]]; then
             runCmdQuietly apt-get install -yqf horizon-cli
         else
