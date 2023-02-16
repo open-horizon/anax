@@ -506,7 +506,10 @@ func addFiles(w *tar.Writer, srcPath, base string) error {
 		} else if fileInfo.IsDir() {
 			// Recurse
 			newBase := fileInfo.Name() + "/"
-			addFiles(w, srcPath, newBase)
+			err = addFiles(w, srcPath, newBase)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

@@ -509,7 +509,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 			return
 		}
 		// update status.json, set k8s.configMap.updated = true
-		if setResourceUpdatedInStatusFile(workDir, RESOURCE_CONFIGMAP, true); err != nil {
+		if err = setResourceUpdatedInStatusFile(workDir, RESOURCE_CONFIGMAP, true); err != nil {
 			errMessage = fmt.Sprintf("Failed to  set updated to true for configmap for nmp: %v, error: %v", nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
@@ -535,7 +535,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 		}
 
 		// update status.json, set k8s.secret.updated = true
-		if setResourceUpdatedInStatusFile(workDir, RESOURCE_SECRET, true); err != nil {
+		if err = setResourceUpdatedInStatusFile(workDir, RESOURCE_SECRET, true); err != nil {
 			errMessage = fmt.Sprintf("Failed to  set updated to true for secret for nmp: %v, error: %v", nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)

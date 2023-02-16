@@ -2972,7 +2972,7 @@ func (b *ContainerWorker) createDockerVolumesForContainer(serviceName string, ag
 					// same the volume in local db so that it can be cleaned up at unregistration time
 					// Ling todo - only save the ones that are specified by the user in binds.
 					if b.db != nil {
-						if persistence.SaveContainerVolumeByName(b.db, vol_name); err != nil {
+						if err = persistence.SaveContainerVolumeByName(b.db, vol_name); err != nil {
 							return fmt.Errorf("Failed to get save the docker volume name %v into the local db. %v", vol_name, err)
 						}
 					}
