@@ -273,6 +273,7 @@ clean:
 	@echo "Removing working directories"
 	-@rm -rf $(CURDIR)/docker/tempfs 2>/dev/null || true
 	-@sudo rm -fr $(UDS) 2>/dev/null || true
+	-@sudo rm -r /tmp/e2edevtest /tmp/hzndev /tmp/ess-auth /tmp/ess-store /tmp/service_storage 2>/dev/null || true
 	@echo "Removing stale networks"
 	-@docker network prune -f 2>/dev/null || true
 

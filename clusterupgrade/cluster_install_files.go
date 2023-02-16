@@ -450,6 +450,7 @@ func decompress(tarGZFilePath, targetFolder string) error {
 				return err
 			}
 			if _, err := io.Copy(f, tarReader); err != nil {
+				f.Close()
 				return err
 			}
 			f.Close()
@@ -506,7 +507,10 @@ func addFiles(w *tar.Writer, srcPath, base string) error {
 		} else if fileInfo.IsDir() {
 			// Recurse
 			newBase := fileInfo.Name() + "/"
-			addFiles(w, srcPath, newBase)
+			err = addFiles(w, srcPath, newBase)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
