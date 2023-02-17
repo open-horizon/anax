@@ -559,6 +559,7 @@ HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
 HZN_AGBOT_URL=$CLUSTER_URL/edge-agbot/
 HZN_SDO_SVC_URL=$CLUSTER_URL/edge-sdo-ocs/api
+HZN_FDO_SVC_URL=$CLUSTER_URL/edge-fdo-ocs/api
 AGENT_NAMESPACE=$AGENT_NAMESPACE
 EndOfContent
 
@@ -577,6 +578,7 @@ HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
 HZN_AGBOT_URL=$CLUSTER_URL/edge-agbot/
 HZN_SDO_SVC_URL=$CLUSTER_URL/edge-sdo-ocs/api
+HZN_FDO_SVC_URL=$CLUSTER_URL/edge-fdo-ocs/api
 EndOfContent
 
         		if [[ -n $ORG_ID ]]; then
