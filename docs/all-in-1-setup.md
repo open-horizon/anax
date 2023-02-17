@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-01-24"
+lastupdated: "2023-02-17"
 title: "How to set-up the Open Horizon All-in-1 Horizon Management Hub for edge clusters"
 
 parent: Agent (anax)
@@ -41,7 +41,7 @@ nav_order: 19
    If you would like to use different credentials to connect your agent, use the hzn exchange org create and hzn exchange user create commands to add a new org and user, respectively. Export these variables and/or take note of them.
 
    **Notes**:
-   - For more information about the all-in-1 hub, please follow this [link](/mgmt-hub/docs/index.md).
+   - For more information about the all-in-1 hub, please follow this [link](/docs/mgmt-hub/docs/index.md).
    - The following section on installing and configuring a cluster currently has separate directions for two solutions - k3s and microk8s.  Please choose one of those two supported solutions or use your own and translate our directions accordingly.
 
 3. Now that the Management Hub is up and running, an edge cluster agent can be installed following the instructions found [here](./cluster_install.md)
