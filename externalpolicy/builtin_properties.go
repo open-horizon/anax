@@ -184,7 +184,9 @@ func createDeviceNodeBuiltInPolicy(availableMem bool, omitGenHwId bool, existing
 		}
 	}
 
-	nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_HARDWAREID, hwId), false)
+	if hwId != "" || !omitGenHwId {
+		nodeBuiltInReadOnlyProps.Add_Property(Property_Factory(PROP_NODE_HARDWAREID, hwId), false)
+	}
 
 	edgeOS, containerized, err := ProfileEdgeOS()
 	if err != nil {
