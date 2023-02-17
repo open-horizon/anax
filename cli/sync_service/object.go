@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
@@ -354,7 +355,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 
 		// Create public key. Sign data. Set "hashAlgorithm", "publicKey" and "signature" field
 		file, err := os.Open(objFile)
-		defer file.Close()
+		defer cutil.CloseFileLogError(file)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to open object file %v: %v", objFile, err))
 		}
@@ -408,7 +409,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to open object file %v: %v", objFile, err))
 		}
-		defer file.Close()
+		defer cutil.CloseFileLogError(file)
 
 		if noChunkUpload {
 			cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file, nil)

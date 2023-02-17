@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 )
 
@@ -64,7 +65,7 @@ func LogLinux(instanceId string, tailing bool) {
 	if err != nil {
 		Fatal(NOT_FOUND, msgPrinter.Sprintf("%v could not be opened or does not exist: %v", sysLogPath, err))
 	}
-	defer file.Close()
+	defer cutil.CloseFileLogError(file)
 	// Check file stats and capture the current size of the file if we will be tailing it.
 	var file_size int64
 	if tailing {
@@ -114,12 +115,11 @@ func LogLinux(instanceId string, tailing bool) {
 				file_size = new_file_size
 			} else {
 				// Log rotation has occurred. Re-open the new syslog file and capture the current size.
-				file.Close()
+				cutil.CloseFileLogError(file)
 				file, err = os.Open(sysLogPath)
 				if err != nil {
 					Fatal(NOT_FOUND, msgPrinter.Sprintf("%v could not be opened or does not exist: %v", sysLogPath, err))
 				}
-				defer file.Close()
 				// Setup a new reader on the new file.
 				reader = bufio.NewReader(file)
 				fi, err := file.Stat()

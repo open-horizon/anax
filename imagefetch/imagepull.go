@@ -24,7 +24,7 @@ func dockerCredsFromConfigFile(configFilePath string) (*docker.AuthConfiguration
 
 	f, err := os.Open(configFilePath)
 	if f != nil {
-		defer f.Close()
+		defer cutil.CloseFileLogError(f)
 	}
 	if err != nil {
 		return nil, err

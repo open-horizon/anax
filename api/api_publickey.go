@@ -11,6 +11,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/open-horizon/anax/cutil"
 )
 
 func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +91,7 @@ func returnFileBytes(filename string, w http.ResponseWriter) error {
 	// Open the file so that we can read any header info that might be there.
 	file, err := os.Open(filename)
 	if file != nil {
-		defer file.Close()
+		defer cutil.CloseFileLogError(file)
 	}
 
 	if err != nil {

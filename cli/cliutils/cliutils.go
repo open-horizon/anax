@@ -1030,7 +1030,7 @@ func GetEnvVarFromFile(filename string, key string) (string, error) {
 			return "", err
 		}
 	}
-	defer fHandle.Close()
+	defer cutil.CloseFileLogError(fHandle)
 
 	scanner := bufio.NewScanner(fHandle)
 	for scanner.Scan() {

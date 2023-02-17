@@ -373,7 +373,7 @@ func backupEventLogs() error {
 	if err != nil {
 		return errors.New(msgPrinter.Sprintf("failed to backup eventlogs file %v. %v", fileName, err))
 	}
-	defer file.Close()
+	defer cutil.CloseFileLogError(file)
 
 	if _, err := file.Write(elogsJson); err != nil {
 		return errors.New(msgPrinter.Sprintf("failed to save the eventlogs to file %v. %v", fileName, err))

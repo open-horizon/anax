@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 )
 
@@ -209,7 +210,7 @@ func GetConfigFromNonJsonFile(configFile string) (map[string]string, error) {
 	if err != nil {
 		return hzn_vars, err
 	}
-	defer fileHandle.Close()
+	defer cutil.CloseFileLogError(fileHandle)
 
 	// regex for comment line
 	r, _ := regexp.Compile(`^(\s)*#(.*)*`)

@@ -15,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	anaxExchange "github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
@@ -54,7 +55,7 @@ type InspectOutput struct {
 
 // hzn sdo voucher inspect <voucher-file>
 func VoucherInspect(voucherFile *os.File) {
-	defer voucherFile.Close()
+	defer cutil.CloseFileLogError(voucherFile)
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Inspecting voucher file name: %s", voucherFile.Name()))
 
@@ -317,7 +318,7 @@ func VoucherDownload(org, userCreds, device, outputFile string, overwrite bool) 
 
 // hzn sdo voucher import <voucher-file>
 func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyFilePath, patternName, userInputFileName, haGroupName string) {
-	defer voucherFile.Close()
+	defer cutil.CloseFileLogError(voucherFile)
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Importing voucher file name: %s", voucherFile.Name()))
 
