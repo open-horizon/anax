@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"io/ioutil"
 	"os"
 )
@@ -43,7 +44,7 @@ func ConvertB64StringToFile(b64Package string) (string, error) {
 	} else if f, err := ioutil.TempFile("", TEMP_PACKAGE_PREFIX); err != nil {
 		return "", err
 	} else {
-		defer f.Close()
+		defer cutil.CloseFileLogError(f)
 		num, err := f.Write(sDec)
 		if err != nil {
 			return "", err

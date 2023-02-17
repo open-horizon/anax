@@ -659,7 +659,7 @@ func SaveOpYamlToFile(sId string, clusterDeployment string, filePath string, for
 	if err != nil {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to create file %v. %v", fileName, err))
 	}
-	defer file.Close()
+	defer cutil.CloseFileLogError(file)
 
 	if _, err := file.Write(archiveData); err != nil {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to save the clusterDeployment operator yaml to file %v. %v", fileName, err))

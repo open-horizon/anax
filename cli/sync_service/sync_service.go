@@ -413,35 +413,8 @@ func loadCSS(org string, fileType string, fileObjects []string) error {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	for _, fileName := range fileObjects {
-		cliutils.Verbose(msgPrinter.Sprintf("Loading %v into CSS", fileName))
-
-		if fileObject, err := os.Open(fileName); err != nil {
-			return errors.New(msgPrinter.Sprintf("unable to open file object %v, error %v", fileName, err))
-		} else if fileBytes, err := ioutil.ReadAll(fileObject); err != nil {
-			return errors.New(msgPrinter.Sprintf("unable to read file object %v, error %v", fileName, err))
-		} else {
-
-			defer fileObject.Close()
-
-			fileObjectName := path.Base(fileName)
-
-			metadata := &cssFileMeta{
-				ObjectID:   fileObjectName,
-				ObjectType: fileType,
-			}
-
-			// Get this host's IP address because that's where the CSS is listening.
-			hostIP := os.Getenv("HZN_DEV_HOST_IP")
-			if hostIP == "" {
-				hostIP = "localhost"
-			}
-
-			// Form the CSS URL and then PUT the file into the CSS.
-			url := fmt.Sprintf("http://%v:%v/api/v1/objects/%v/%v/%v", hostIP, getCSSPort(), org, fileType, fileObjectName)
-
-			if err := putFile(url, org, metadata, fileBytes); err != nil {
-				return errors.New(msgPrinter.Sprintf("unable to add file %v to the CSS, error %v", fileName, err))
-			}
+		if err := loadCSSFile(org, fileType, fileName); err != nil {
+			return err
 		}
 	}
 
@@ -452,6 +425,42 @@ func loadCSS(org string, fileType string, fileObjects []string) error {
 
 	return nil
 
+}
+
+func loadCSSFile(org string, fileType string, fileName string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	cliutils.Verbose(msgPrinter.Sprintf("Loading %v into CSS", fileName))
+
+	if fileObject, err := os.Open(fileName); err != nil {
+		return errors.New(msgPrinter.Sprintf("unable to open file object %v, error %v", fileName, err))
+	} else if fileBytes, err := ioutil.ReadAll(fileObject); err != nil {
+		return errors.New(msgPrinter.Sprintf("unable to read file object %v, error %v", fileName, err))
+	} else {
+		defer cutil.CloseFileLogError(fileObject)
+
+		fileObjectName := path.Base(fileName)
+
+		metadata := &cssFileMeta{
+			ObjectID:   fileObjectName,
+			ObjectType: fileType,
+		}
+
+		// Get this host's IP address because that's where the CSS is listening.
+		hostIP := os.Getenv("HZN_DEV_HOST_IP")
+		if hostIP == "" {
+			hostIP = "localhost"
+		}
+
+		// Form the CSS URL and then PUT the file into the CSS.
+		url := fmt.Sprintf("http://%v:%v/api/v1/objects/%v/%v/%v", hostIP, getCSSPort(), org, fileType, fileObjectName)
+
+		if err := putFile(url, org, metadata, fileBytes); err != nil {
+			return errors.New(msgPrinter.Sprintf("unable to add file %v to the CSS, error %v", fileName, err))
+		}
+	}
+	return nil
 }
 
 type cssFileMeta struct {

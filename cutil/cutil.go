@@ -614,7 +614,7 @@ func GetCPUCount(cpuinfo_file string) (int, error) {
 	if fh, err := os.Open(cpuinfo_file); err != nil {
 		return 0, err
 	} else {
-		defer fh.Close()
+		defer CloseFileLogError(fh)
 
 		cpu_count := 0
 		scanner := bufio.NewScanner(fh)
@@ -653,7 +653,7 @@ func GetMachineSerial(cpuInfoFile string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer fh.Close()
+	defer CloseFileLogError(fh)
 
 	scanner := bufio.NewScanner(fh)
 	r, _ := regexp.Compile("Serial([ \t]*):")
@@ -694,7 +694,7 @@ func GetMemInfo(meminfo_file string) (uint64, uint64, error) {
 	if fh, err := os.Open(meminfo_file); err != nil {
 		return 0, 0, err
 	} else {
-		defer fh.Close()
+		defer CloseFileLogError(fh)
 
 		total_mem := uint64(0)
 		avail_mem := uint64(0)
@@ -825,4 +825,14 @@ func GetCertificateVersion(certFilePath string) string {
 		}
 	}
 	return version
+}
+
+// use this when deferring a file close so that any error message returned by the close is logged
+func CloseFileLogError(f *os.File) {
+	if f == nil {
+		return
+	}
+	if err := f.Close(); err != nil {
+		glog.Errorf("Error closing file: %v", err)
+	}
 }
