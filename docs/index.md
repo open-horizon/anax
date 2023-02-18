@@ -22,15 +22,15 @@ Automatic agent upgrade is a policy-based node management feature that allows an
 
 Use these instructions to start the agent in a container and have more control over the details than that allowed by the `horzion-container` script.
 
-## [{{site.data.keyword.edge_notm}} Agreement Bot APIs](agreement_bot_api.md)
+## [{{site.data.keyword.horizon}} Agreement Bot APIs](agreement_bot_api.md)
 
-This section contains the {{site.data.keyword.edge_notm}} JSON APIs for the {{site.data.keyword.edge_notm}} system running an Agreement Bot.
+This section contains the {{site.data.keyword.horizon}} JSON APIs for the {{site.data.keyword.horizon}} system running an Agreement Bot.
 
-## [{{site.data.keyword.edge_notm}} APIs](api.md)
+## [{{site.data.keyword.horizon}} APIs](api.md)
 
-This section contains the {{site.data.keyword.edge_notm}} REST APIs for the {{site.data.keyword.edge_notm}} agent running on an edge node.
+This section contains the {{site.data.keyword.horizon}} REST APIs for the {{site.data.keyword.horizon}} agent running on an edge node.
 
-## [{{site.data.keyword.edge_notm}} Attributes](attributes.md)
+## [{{site.data.keyword.horizon}} Attributes](attributes.md)
 
 This section contains the definition for each attribute that can be set on the [POST /attribute](./api.md#api-post--attribute) API or the [POST /service/config](./api.md#api-post--serviceconfig) API.
 
@@ -42,13 +42,13 @@ There are built-in property names that can be used in the policies.
 
 A deployment policy is just one aspect of the deployment capability, and is described here in detail.
 
-## [{{site.data.keyword.edge_notm}} Deployment Strings](deployment_string.md)
+## [{{site.data.keyword.horizon}} Deployment Strings](deployment_string.md)
 
-When defining services in the {{site.data.keyword.edge_notm}} Exchange, the deployment field defines how the service will be deployed.
+When defining services in the {{site.data.keyword.horizon}} Exchange, the deployment field defines how the service will be deployed.
 
-## [{{site.data.keyword.edge_notm}} Edge Service Detail](managed_workloads.md)
+## [{{site.data.keyword.horizon}} Edge Service Detail](managed_workloads.md)
 
-{{site.data.keyword.edge_notm}} manages the lifecycle, connectivity, and other features of services it launches on a device. This section is intended for developers creating {{site.data.keyword.edge_notm}} service container workload definitions.
+{{site.data.keyword.edge_notm}} manages the lifecycle, connectivity, and other features of services it launches on a device. This section is intended for developers creating {{site.data.keyword.horizon}} service container workload definitions.
 
 ## [Model Object](model_policy.md)
 
@@ -56,7 +56,7 @@ Model objects in {{site.data.keyword.edge_notm}} are the metadata representation
 
 ## [Policy based deployment](policy.md)
 
-The policy based deployment support in {{site.data.keyword.edge_notm}} enables containerized workloads (services) to be deployed to edge nodes that are running the {{site.data.keyword.edge_notm}} agent and which are registered to an {{site.data.keyword.edge_notm}} Management Hub.
+The policy based deployment support in {{site.data.keyword.edge_notm}} enables containerized workloads (services) to be deployed to edge nodes that are running the {{site.data.keyword.horizon}} agent and which are registered to an {{site.data.keyword.edge_notm}} Management Hub.
 
 ## [Policy Properties and Constraints](properties_and_constraints.md)
 
