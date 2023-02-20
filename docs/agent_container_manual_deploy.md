@@ -17,7 +17,11 @@ These instructions assume that the agent container you want to deploy already ex
 ### Usage
 {: #container-usage}
 
-There are several techniques to start the agent in a container. If you have already installed the Horizon CLI package, it installed a `horizon-container` script onto your system. Alternatively, you can manually set the `docker run` parameters and run the container.
+There are several techniques to start the agent in a container. 
+
+For a simplified process to getting an agent running, see the `--container` option in [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink}.
+
+Alternatively, if you have already installed the Horizon CLI package, it installed a `horizon-container` script onto your system. This script has the following options:
 
 ## horizon-container command
 
@@ -38,7 +42,7 @@ Arguments:
 
 ## Manual instructions
 
-Use these instructions to start the agent in a container, which provides more control over details than that allowed by the horizon-container script. For a simplified process to getting an agent running see the [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink}.
+Finally, use these instructions to start the agent in a container, which provides more control over details than that allowed by the horizon-container script or agent-install.sh script. 
 
 ### Prerequisites
 {: #container-prereqs}
@@ -79,6 +83,7 @@ If the management hub you are using uses Secure Socket Layer (SSL) encryption, t
      * The port to expose from the container that hzn will call the agent on. This is typically 8081.
    * DOCKER_ADD_HOSTS="--add-host=$`<host name to add to container hosts file>`"
      * This is only necessary if the exchange or css url will not be resolvable from inside the agent container.
+     * The format would look like `--add-host=edge-openhorizon.com:169.22.10.179`
 
    Example:
 
