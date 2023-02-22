@@ -54,7 +54,7 @@ Use these docker run instructions to start the agent in a container, which provi
 ### Prerequisites
 {: #container-prereqs}
 
- Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}
+Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}
 
 If the management hub you are using uses Secure Socket Layer (SSL) encryption, then you need to have the SSL certificate from the management hub.
 
