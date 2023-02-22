@@ -1,9 +1,9 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-02-21"
+lastupdated: "2023-02-22"
 title: "Agent in a Container"
-description: Instructions for starting an agent in a container on Linux
+description: Instructions for starting an agent in a container
 
 parent: Agent (anax)
 nav_order: 2
@@ -17,13 +17,13 @@ nav_order: 2
 {:child: .link .ulchildlink}
 {:childlinks: .ullinks}
 
-## Starting an agent in a container on Linux
+# Starting the {{site.data.keyword.horizon}} agent in a container on Linux or {{site.data.keyword.macos_notm}}
 {: #container-agent}
 
-There are several techniques to start the agent in a container:
+There are several techniques to start the agent in a container providing different levels of ease and flexibility.
 
-* Option 1 -The [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink} provide a `--container` option to download and provision the agent in a container.
-* Option 2 - If you have already installed the Horizon CLI package, it installed a `horizon-container` script onto your system.
+* Option 1 -The [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink} provide a `--container` option to download and launch the agent in a container.
+* Option 2 - If you have already installed the {{site.data.keyword.horizon}} CLI package, it installed a `horizon-container` script onto your system that can be used to start the anax in container.
 * Option 3 - Manually start the docker container with custom parameters.
 
 ## Option 1 - `agent-install.sh --container`
@@ -54,7 +54,7 @@ Use these docker run instructions to start the agent in a container, which provi
 ### Prerequisites
 {: #container-prereqs}
 
-Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}
+ Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}
 
 If the management hub you are using uses Secure Socket Layer (SSL) encryption, then you need to have the SSL certificate from the management hub.
 
