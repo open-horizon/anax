@@ -9,6 +9,14 @@ parent: Agent (anax)
 nav_order: 5
 ---
 
+{:new_window: target="blank"}
+{:shortdesc: .shortdesc}
+{:screen: .screen}
+{:codeblock: .codeblock}
+{:pre: .pre}
+{:child: .link .ulchildlink}
+{:childlinks: .ullinks}
+
 # {{site.data.keyword.horizon}} APIs
 {: #agent-apis}
 
@@ -101,7 +109,7 @@ body:
 #### Example
 
 ```bash
-curl -s  http://localhost:8510/status/workers |jq
+curl -s  http://localhost:8510/status/workers | jq
 {
   "workers": {
     "AgBot": {
@@ -369,7 +377,7 @@ body:
 #### Example
 
 ```bash
-curl -s http://localhost:8510/node/configstate |jq '.'
+curl -s http://localhost:8510/node/configstate | jq '.'
 {
   "state": "configured",
   "last_update_time": 1510174292
@@ -793,7 +801,7 @@ service instance:
 #### Example
 
 ```bash
-curl http://localhost:8510/service |jq '.config'
+curl http://localhost:8510/service | jq '.config'
 [
   {
     "sensor_url": "https://bluehorizon.network/services/netspeed",
@@ -835,7 +843,7 @@ curl http://localhost:8510/service |jq '.config'
 {: codeblock}
 
 ```bash
-curl http://localhost:8510/service |jq '.definitions.active'
+curl http://localhost:8510/service | jq '.definitions.active'
 [
   {
     "record_id": "1",
@@ -899,7 +907,7 @@ curl http://localhost:8510/service |jq '.definitions.active'
 {: codeblock}
 
 ```bash
-curl http://localhost:8510/service |jq '.instances.active'
+curl http://localhost:8510/service | jq '.instances.active'
 [
   {
     "ref_url": "https://bluehorizon.network/services/location",
@@ -1006,7 +1014,7 @@ body:
 #### Example
 
 ```bash
-curl http://localhost:8510/service/config |jq
+curl http://localhost:8510/service/config | jq
 "config": [
   {
     "sensor_url": "https://bluehorizon.network/services/netspeed",
@@ -1141,7 +1149,7 @@ body:
 #### Example
 
 ```bash
-curl http://localhost:8510/service/configstate |jq
+curl http://localhost:8510/service/configstate | jq
 {
   "configstates": [
     {
@@ -1836,7 +1844,7 @@ body:
 #### Example
 
 ```bash
-curl -s http://localhost:8510/node/userinput |jq
+curl -s http://localhost:8510/node/userinput | jq
 [
   {
     "serviceOrgid": "userdev",
@@ -1913,7 +1921,7 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '[
       }
     ]
   }
-]'  http://localhost:8510/node/userinput |jq '.'
+]'  http://localhost:8510/node/userinput | jq '.'
 ```
 {: codeblock}
 
@@ -2021,7 +2029,7 @@ body:
 #### Example
 
 ```bash
-curl -s http://localhost:8510/node/policy |jq '.'
+curl -s http://localhost:8510/node/policy | jq '.'
 {
   "properties": [
     {

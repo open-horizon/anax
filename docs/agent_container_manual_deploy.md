@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-02-05"
+lastupdated: "2023-02-21"
 title: "Agent in a Container"
 description: Instructions for starting an agent in a container on Linux
 
@@ -9,21 +9,28 @@ parent: Agent (anax)
 nav_order: 2
 ---
 
+{:new_window: target="blank"}
+{:shortdesc: .shortdesc}
+{:screen: .screen}
+{:codeblock: .codeblock}
+{:pre: .pre}
+{:child: .link .ulchildlink}
+{:childlinks: .ullinks}
+
 ## Starting an agent in a container on Linux
 {: #container-agent}
 
-These instructions assume that the agent container you want to deploy already exists and is in a container image repository.
+There are several techniques to start the agent in a container:
 
-### Usage
-{: #container-usage}
+* Option 1 -The [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink} provide a `--container` option to download and provision the agent in a container.
+* Option 2 - If you have already installed the Horizon CLI package, it installed a `horizon-container` script onto your system.
+* Option 3 - Manually start the docker container with custom parameters.
 
-There are several techniques to start the agent in a container. 
+## Option 1 - `agent-install.sh --container`
 
 For a simplified process to getting an agent running, see the `--container` option in [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink}.
 
-Alternatively, if you have already installed the Horizon CLI package, it installed a `horizon-container` script onto your system. This script has the following options:
-
-## horizon-container command
+## Option 2 - `horizon-container start`
 
 Run the `horizon-container start` command to start the agent in a container.
 
@@ -40,9 +47,9 @@ Arguments:
 ```
 {: codeblock}
 
-## Manual instructions
+## Option 3 - Manual `docker run` instructions
 
-Finally, use these instructions to start the agent in a container, which provides more control over details than that allowed by the horizon-container script or agent-install.sh script. 
+Use these docker run instructions to start the agent in a container, which provides more control over details than that allowed by the horizon-container script or agent-install.sh script.
 
 ### Prerequisites
 {: #container-prereqs}

@@ -9,6 +9,14 @@ parent: Agent (anax)
 nav_order: 4
 ---
 
+{:new_window: target="blank"}
+{:shortdesc: .shortdesc}
+{:screen: .screen}
+{:codeblock: .codeblock}
+{:pre: .pre}
+{:child: .link .ulchildlink}
+{:childlinks: .ullinks}
+
 # {{site.data.keyword.horizon}} Agreement Bot APIs
 {: #agbot-apis}
 
@@ -658,7 +666,7 @@ body:
 #### Example
 
 ```bash
-curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-workloads-location_IBM_arm |jq
+curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-workloads-location_IBM_arm | jq
 {
   "header": {
     "name": "netspeed-docker_bluehorizon.network-workloads-location_IBM_arm",
@@ -838,7 +846,7 @@ body:
 #### Example
 
 ```bash
-curl -s http://localhost:8046/status |jq '.'
+curl -s http://localhost:8046/status | jq '.'
 {
   "configuration": {
     "exchange_api": "https://exchange.staging.bluehorizon.network/api/v1/",
@@ -880,7 +888,7 @@ body:
 #### Example
 
 ```bash
-curl -s http://localhost:8046/status/workers |jq
+curl -s http://localhost:8046/status/workers | jq
 {
   "workers": {
     "AgBot": {

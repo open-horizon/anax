@@ -9,6 +9,14 @@ parent: Agent (anax)
 nav_order: 9
 ---
 
+{:new_window: target="blank"}
+{:shortdesc: .shortdesc}
+{:screen: .screen}
+{:codeblock: .codeblock}
+{:pre: .pre}
+{:child: .link .ulchildlink}
+{:childlinks: .ullinks}
+
 # High availability node groups
 {: #ha-node-groups}
 
