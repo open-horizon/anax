@@ -47,7 +47,7 @@ Arguments:
 ```
 {: codeblock}
 
-## Option 3 - Manual `docker run` instructions
+## Option 3 - Manual `docker run` instructions (Linux only)
 
 Use these docker run instructions to start the agent in a container, which provides more control over details than that allowed by the horizon-container script or agent-install.sh script.
 
