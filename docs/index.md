@@ -11,6 +11,14 @@ has_children: true
 has_toc: false
 ---
 
+{:new_window: target="blank"}
+{:shortdesc: .shortdesc}
+{:screen: .screen}
+{:codeblock: .codeblock}
+{:pre: .pre}
+{:child: .link .ulchildlink}
+{:childlinks: .ullinks}
+
 # {{site.data.keyword.edge_notm}} Agent Documentation
 {: #anaxdocs}
 
