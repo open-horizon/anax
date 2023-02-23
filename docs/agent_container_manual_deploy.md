@@ -22,7 +22,7 @@ nav_order: 2
 
 There are several techniques to start the agent in a container providing different levels of ease and flexibility.
 
-* Option 1 -The [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink} provide a `--container` option to download and launch the agent in a container.
+* Option 1 - The [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink} provide a `--container` option to download and launch the agent in a container.
 * Option 2 - If you have already installed the {{site.data.keyword.horizon}} CLI package, it installed a `horizon-container` script onto your system that can be used to start the anax in container.
 * Option 3 - Manually start the docker container with custom parameters.
 
