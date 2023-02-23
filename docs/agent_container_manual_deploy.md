@@ -17,14 +17,21 @@ nav_order: 2
 {:child: .link .ulchildlink}
 {:childlinks: .ullinks}
 
-# Starting the {{site.data.keyword.horizon}} agent in a container on Linux or {{site.data.keyword.macos_notm}}
+# Starting the {{site.data.keyword.horizon}} agent in a container on Linux or {{site.data.keyword.macos}}
 {: #container-agent}
 
 There are several techniques to start the agent in a container providing different levels of ease and flexibility.
 
-* Option 1 -The [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink} provide a `--container` option to download and launch the agent in a container.
+* Option 1 - The [agent-install instructions ](https://github.com/open-horizon/anax/tree/master/agent-install){:target="_blank"}{: .externalLink} provide a `--container` option to download and launch the agent in a container.
 * Option 2 - If you have already installed the {{site.data.keyword.horizon}} CLI package, it installed a `horizon-container` script onto your system that can be used to start the anax in container.
 * Option 3 - Manually start the docker container with custom parameters.
+
+## Prerequisites
+{: #container-prereqs}
+
+Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}. {{site.data.keyword.macos}} users may require a Docker Desktop license, if necessary, and install the most recent version of Docker on your device. For more information, see the [Docker installation for Mac ](https://docs.docker.com/docker-for-mac/install/){:target="_blank"}{: .externalLink} documentation.
+
+If the management hub you are using uses Secure Socket Layer (SSL) encryption, then you need to have the SSL certificate from the management hub.
 
 ## Option 1 - `agent-install.sh --container`
 
@@ -50,13 +57,6 @@ Arguments:
 ## Option 3 - Manual `docker run` instructions (Linux only)
 
 Use these docker run instructions to start the agent in a container, which provides more control over details than that allowed by the horizon-container script or agent-install.sh script.
-
-### Prerequisites
-{: #container-prereqs}
-
-Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}
-
-If the management hub you are using uses Secure Socket Layer (SSL) encryption, then you need to have the SSL certificate from the management hub.
 
 ### Starting the agent
 {: #container-start}
