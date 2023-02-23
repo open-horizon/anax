@@ -17,7 +17,7 @@ nav_order: 2
 {:child: .link .ulchildlink}
 {:childlinks: .ullinks}
 
-# Starting the {{site.data.keyword.horizon}} agent in a container on Linux or {{site.data.keyword.macos}}
+# Starting the {{site.data.keyword.horizon}} agent in a container on Linux or {{site.data.keyword.macOS_notm}}
 {: #container-agent}
 
 There are several techniques to start the agent in a container providing different levels of ease and flexibility.
