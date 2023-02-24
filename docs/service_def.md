@@ -2,6 +2,7 @@
 copyright:
 years: 2022 - 2023
 lastupdated: "2023-02-05"
+title: "Service Definition"
 description: Description of Service definition JSON fields
 
 parent: Agent (anax)
