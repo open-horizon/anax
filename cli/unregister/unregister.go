@@ -64,7 +64,14 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 		}
 	} else {
 		// start unregistering the node
-		msgPrinter.Printf("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
+		msg := "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon..."
+		if removeNodeUnregister && horDevice.HAGroup != nil && *horDevice.HAGroup != "" {
+			msg = msgPrinter.Sprintf("Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group %v, removing this node from the Exchange and restarting Horizon...", *horDevice.HAGroup)
+		} else if removeNodeUnregister {
+			msg = "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from the Exchange, and restarting Horizon..."
+		}
+
+                msgPrinter.Printf(msg)
 		msgPrinter.Println()
 
 		// call horizon DELETE /node api, default timeout is to wait forever.
