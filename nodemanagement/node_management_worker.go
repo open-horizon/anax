@@ -392,6 +392,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 	}
 
 	nodePattern := exchDev.Pattern
+	configState := exchDev.Config.State
 	matchingNMPs := map[string]exchangecommon.ExchangeNodeManagementPolicy{}
 
 	for name, policy := range *allNMPs {
@@ -405,6 +406,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 					glog.Errorf(nmwlog(fmt.Sprintf("Failed to delete status for deactivated node policy %v from database. Error was %v", name, err)))
 				}
 				if existingStatus != nil {
+					eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_DELETED, name), persistence.EC_NMP_STATUS_CHANGED, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), nodePattern, configState)
 					if err := deleteNMPStatus(org, nodeId, name); err != nil {
 						glog.Errorf(nmwlog(fmt.Sprintf("Error removing status %v from exchange", name)))
 					}
@@ -442,6 +444,7 @@ func (n *NodeManagementWorker) ProcessAllNMPS(baseWorkingFile string, getAllNMPS
 			if _, ok := matchingNMPs[statusName]; !ok {
 				// The nmp this status is for is no longer in the exchange. Delete it
 				glog.Infof(nmwlog(fmt.Sprintf("Removing status %v from the local database and exchange as the nmp no longer exists in the exchange or no longer matches this node.", statusName)))
+				eventlog.LogNodeEvent(n.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_NMP_STATUS_DELETED, statusName), persistence.EC_NMP_STATUS_CHANGED, exchange.GetId(n.GetExchangeId()), exchange.GetOrg(n.GetExchangeId()), nodePattern, configState)
 				existingStatus, err := persistence.DeleteNMPStatus(n.db, statusName)
 				if err != nil {
 					glog.Errorf(nmwlog(fmt.Sprintf("Error removing status %v from database", statusName)))
