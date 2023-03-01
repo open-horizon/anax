@@ -202,7 +202,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 
 	w := NewDownloadWorker("download", &config.HorizonConfig{}, db)
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
+	if downloadFiles, _, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 2 {
 		t.Errorf("Expected 2 files for download. Got %v.", downloadFiles)
@@ -224,7 +224,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error updating node in db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
+	if downloadFiles, _, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
@@ -239,7 +239,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
+	if downloadFiles, _, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
@@ -254,7 +254,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
+	if downloadFiles, _, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 2 {
 		t.Errorf("Expected 2 file for download. Got %v.", downloadFiles)
@@ -271,7 +271,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
+	if downloadFiles, _, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 2 {
 		t.Errorf("Expected 2 file for download. Got %v.", downloadFiles)
@@ -290,7 +290,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
+	if downloadFiles, _, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)
@@ -305,7 +305,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Error saving node policy to db: %v", err)
 	}
 
-	if downloadFiles, err := w.formAgentUpgradePackageNames(dev); err != nil {
+	if downloadFiles, _, err := w.formAgentUpgradePackageNames(dev); err != nil {
 		t.Errorf("No error expected. Got %v.", err)
 	} else if len(*downloadFiles) != 1 {
 		t.Errorf("Expected 1 file for download. Got %v.", downloadFiles)

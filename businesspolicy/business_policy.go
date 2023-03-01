@@ -54,6 +54,24 @@ func (w ServiceRef) String() string {
 		w.NodeH)
 }
 
+func (w ServiceRef) Validate() error {
+	if w.Name == "" || w.Org == "" {
+		return fmt.Errorf("Name, or Org is empty string.")
+	} else if w.ServiceVersions == nil || len(w.ServiceVersions) == 0 {
+		return fmt.Errorf("The serviceVersions array is empty.")
+	} else if len(w.ServiceVersions) != 0 {
+		for _, wc := range w.ServiceVersions {
+			if wc.Priority.PriorityValue != 0 && (wc.Priority.RetryDurationS == 0 || wc.Priority.Retries == 0) {
+				return fmt.Errorf("retry_durations and retries cannot be zero if priority_value is set to non-zero value")
+			} else if wc.Priority.PriorityValue == 0 && (wc.Priority.RetryDurationS != 0 || wc.Priority.Retries != 0 || wc.Priority.VerifiedDurationS != 0) {
+				return fmt.Errorf("retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set")
+			}
+		}
+	}
+	return nil
+
+}
+
 type WorkloadPriority struct {
 	PriorityValue     int `json:"priority_value,omitempty"`     // The priority of the workload
 	Retries           int `json:"retries,omitempty"`            // The number of retries before giving up and moving to the next priority
@@ -112,10 +130,8 @@ func (b *BusinessPolicy) Validate() error {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// make sure required fields are not empty
-	if b.Service.Name == "" || b.Service.Org == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("Name, or Org is empty string."))
-	} else if b.Service.ServiceVersions == nil || len(b.Service.ServiceVersions) == 0 {
-		return fmt.Errorf(msgPrinter.Sprintf("The serviceVersions array is empty."))
+	if err := b.Service.Validate(); err != nil {
+		return err
 	}
 
 	// Validate the PropertyList.

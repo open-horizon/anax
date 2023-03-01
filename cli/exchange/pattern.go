@@ -41,6 +41,16 @@ type ServiceReference struct {
 	DataVerify      exchange.DataVerification `json:"dataVerification,omitempty"` // policy for verifying that the node is sending data
 	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`       // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
 }
+
+func (s ServiceReference) Validate() error {
+	for i := range s.ServiceVersions {
+		if err := s.ServiceVersions[i].Priority.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type PatternInput struct {
 	Label              string                         `json:"label"`
 	Description        string                         `json:"description,omitempty"`
@@ -124,8 +134,21 @@ func PatternUpdate(org string, credToUse string, pattern string, filePath string
 	var patch interface{}
 	var err error
 	if _, ok := findPatchType["services"]; ok {
-		patch = make(map[string][]ServiceReference)
-		err = json.Unmarshal([]byte(attribute), &patch)
+		serviceRefs := make(map[string][]ServiceReference)
+		err = json.Unmarshal([]byte(attribute), &serviceRefs)
+		patch = serviceRefs
+		if err == nil {
+			newValue := serviceRefs["services"]
+			if len(newValue) == 0 {
+				err = fmt.Errorf("the services array is empty")
+			} else if len(newValue) > 0 {
+				for i := range newValue {
+					if err1 := newValue[i].Validate(); err1 != nil {
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for services: %v", err1))
+					}
+				}
+			}
+		}
 	} else if _, ok := findPatchType["userInput"]; ok {
 		patch = make(map[string][]policy.UserInput)
 		err = json.Unmarshal([]byte(attribute), &patch)
@@ -254,6 +277,9 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 			for j := range patFile.Services[i].ServiceVersions {
 				patInput.Services[i].ServiceVersions[j].Version = patFile.Services[i].ServiceVersions[j].Version
 				if patFile.Services[i].ServiceVersions[j].Priority != nil {
+					if err := patFile.Services[i].ServiceVersions[j].Priority.Validate(); err != nil {
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format in pattern file %s: %v", jsonFilePath, err))
+					}
 					patInput.Services[i].ServiceVersions[j].Priority = *patFile.Services[i].ServiceVersions[j].Priority
 				}
 				if patFile.Services[i].ServiceVersions[j].Upgrade != nil {

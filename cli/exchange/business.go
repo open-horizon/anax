@@ -153,8 +153,16 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 	var patch interface{}
 	var err error
 	if _, ok := findPatchType["service"]; ok {
-		patch = make(map[string]businesspolicy.ServiceRef)
-		err = json.Unmarshal([]byte(attribute), &patch)
+		serviceRefs := make(map[string]businesspolicy.ServiceRef)
+		err = json.Unmarshal([]byte(attribute), &serviceRefs)
+		patch = serviceRefs
+		if err == nil {
+			newValue := serviceRefs["service"]
+			err1 := newValue.Validate()
+			if err1 != nil {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for service: %v", err1))
+			}
+		}
 	} else if _, ok := findPatchType["properties"]; ok {
 		props := make(map[string]externalpolicy.PropertyList)
 		err = json.Unmarshal([]byte(attribute), &props)
