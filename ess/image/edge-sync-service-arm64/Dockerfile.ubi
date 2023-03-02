@@ -9,12 +9,11 @@ RUN microdnf update -y --nodocs --setopt=install_weak_deps=0 --disableplugin=sub
 	&& microdnf install -y --nodocs openssl ca-certificates --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
 	&& microdnf clean all --disableplugin=subscription-manager \
 	&& rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \
-	&& mkdir -p /licenses
+	&& mkdir -p /licenses \
+	&& mkdir -p /edge-sync-service
 
 # add license file
 COPY LICENSE.txt /licenses
-
-RUN mkdir -p /edge-sync-service
 
 ADD edge-sync-service /edge-sync-service/
 
