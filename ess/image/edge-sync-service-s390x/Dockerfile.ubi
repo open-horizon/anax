@@ -1,0 +1,20 @@
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.1
+
+LABEL vendor="IBM"
+LABEL summary="Edge node Model Management System."
+LABEL description="Provides the edge node side of the Model Management System to be used by the CLI service test tools when also testing object models."
+
+# yum is not installed, use microdnf instead
+RUN microdnf update -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
+	&& microdnf install -y --nodocs openssl ca-certificates --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
+	&& microdnf clean all --disableplugin=subscription-manager \
+	&& rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \
+	&& mkdir -p /licenses \
+	&& mkdir -p /edge-sync-service
+
+# add license file
+COPY LICENSE.txt /licenses
+
+ADD edge-sync-service /edge-sync-service/
+
+CMD ["/edge-sync-service/edge-sync-service"]
