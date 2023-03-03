@@ -14,7 +14,7 @@ RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=s
   && microdnf clean all --disableplugin=subscription-manager \
   && rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \
   && mkdir -p /licenses /usr/horizon/bin /usr/horizon/web /var/horizon \
-  && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust \
+  && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust /etc/docker/certs.d \
   && adduser agentuser -u 1000 -U -f -1 -c "agent user,1,2,3"
 
 # add license file

@@ -196,7 +196,7 @@ ifdef GO_BUILD_LDFLAGS
 	GO_BUILD_LDFLAGS := -ldflags="$(GO_BUILD_LDFLAGS) -s -w"
 endif
 
-# Test if we can use Docker buildx if USE_DOCKER_BUILDX is set. If not, then we can't build multi-arch images on x86 but 
+# Test if we can use Docker buildx if USE_DOCKER_BUILDX is set. If not, then we can't build multi-arch images on x86 but
 #  will instead need to have a build platform of each arch to build images of different archs
 DOCKER_BUILDX_PLATFORM=$(arch)
 ifeq ($(arch),ppc64el)
@@ -228,10 +228,7 @@ $(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	    if [[ $(USE_UPX) == "true" ]]; then \
 			echo "Packing executable $(EXECUTABLE) with UPX"; \
 	    	upx $(EXECUTABLE); \
-	    fi; 
-
-	    
-
+	    fi;
 
 $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
@@ -255,7 +252,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 				HZN_LANG=$$loc $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1.$$loc; \
 			done && \
 	  		rm $(CLI_TEMP_EXECUTABLE); \
-	fi
+	fi;
 
 $(CSS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CSS_EXECUTABLE) given arch: $(arch)"
@@ -265,7 +262,7 @@ $(CSS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	if [[ $(USE_UPX) == "true" ]]; then \
 		echo "Packing executable $(CSS_EXECUTABLE) with UPX"; \
 		upx $(CSS_EXECUTABLE); \
-	fi; \
+	fi;
 
 $(ESS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(ESS_EXECUTABLE) given arch: $(arch)"
@@ -523,7 +520,7 @@ fss-package: ess-docker-image css-docker-image
 		else echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; fi \
 	fi
 
-clean: mostlyclean 
+clean: mostlyclean
 	@echo "Clean"
 ifneq ($(TMPGOPATH),$(GOPATH))
 	rm -rf $(TMPGOPATH)
@@ -532,7 +529,7 @@ endif
 
 realclean: i18n-clean clean
 
-mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean css-clean ess-clean 
+mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean css-clean ess-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	rm -Rf vendor
