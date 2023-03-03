@@ -1,8 +1,11 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.1
+FROM registry.access.redhat.com/ubi9/ubi-minimal:8.7
 
 LABEL vendor="IBM"
 LABEL summary="The agent for edge clusters."
 LABEL description="The agent in a container that is used solely for the purpose of running the agent in a kubernetes edge cluster."
+
+# add EPEL repo with jq pkg and all deps
+COPY EPEL.repo /etc/yum.repos.d
 
 # The anax binary (secrets manager code) shells out to groupadd, groupdel (from shadow-utils), pkill (from procps-ng)
 # The anax.service calls jq (from jq) and killall (from psmisc)

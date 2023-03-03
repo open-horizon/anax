@@ -1,10 +1,13 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.1
+FROM registry.access.redhat.com/ubi9/ubi-minimal:8.7
 
 LABEL vendor="IBM"
 LABEL summary="The agent in a general purpose container."
 LABEL description="A container which holds the edge node agent, to be used in environments where there is no operating system package that can install the agent natively."
 
 ARG DOCKER_VER=18.06.3-ce
+
+# add EPEL repo with jq pkg and all deps
+COPY EPEL.repo /etc/yum.repos.d
 
 # The anax binary (secrets manager code) shells out to groupadd, groupdel (from shadow-utils), pkill (from procps-ng)
 # The anax.service calls jq (from jq) and killall (from psmisc)
