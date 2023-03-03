@@ -792,7 +792,7 @@ Environment Variables:
 	utilVerifyPubKeyFile := utilVerifyCmd.Flag("public-key-file", msgPrinter.Sprintf("The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.")).Short('K').Required().ExistingFile()
 	utilVerifySig := utilVerifyCmd.Flag("signature", msgPrinter.Sprintf("The supposed signature of stdin.")).Short('s').Required().String()
 
-	smCmd := app.Command("secretsmanager | sm", msgPrinter.Sprintf("List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are currently not supported on cluster agents.")).Alias("sm").Alias("secretsmanager")
+	smCmd := app.Command("secretsmanager | sm", msgPrinter.Sprintf("List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.")).Alias("sm").Alias("secretsmanager")
 	smOrg := smCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	smUserPw := smCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
 	smSecretCmd := smCmd.Command("secret", msgPrinter.Sprintf("List and manage secrets in the secrets manager."))
