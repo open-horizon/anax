@@ -8,22 +8,14 @@ ARG DOCKER_VER=18.06.3-ce
 
 # yum is not installed, use microdnf instead
 # shadow-utils contains groupadd and adduser commands
-# build jq v1.6 from sources
+# install jq
 # install docker cli
 # create other required directories
 RUN microdnf update -y --nodocs && microdnf clean all && microdnf install --nodocs -y shadow-utils \
     && microdnf install --nodocs -y openssl ca-certificates \
     && microdnf install -y wget iptables vim-minimal procps tar gzip libtool autoconf make automake \
     && microdnf update -y --nodocs --nobest && microdnf clean all \
-    && wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-1.6.tar.gz \
-    && tar -xvf jq-1.6.tar.gz \
-    && cd jq-1.6 \
-    && autoreconf -fi \
-    && ./configure --disable-dependency-tracking \
-    && make \
-    && make install \
-    && cd - \
-    && rm -rf jq-1.6 jq-1.6.tar.gz \
+    && microdnf install -y jq \
     && curl -fsSLO https://download.docker.com/linux/static/stable/s390x/docker-${DOCKER_VER}.tgz \
   	&& tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \
   	&& rm docker-${DOCKER_VER}.tgz \
