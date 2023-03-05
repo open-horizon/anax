@@ -8,7 +8,7 @@ LABEL description="The agent in a container that is used solely for the purpose 
 # The anax.service calls jq (from jq) and killall (from psmisc)
 # anax does not use iptables directly but the github.com/coreos/go-iptables/iptables dependency needs the directory structure
 # Create required directories
-ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng"
+ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng tar"
 RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && microdnf clean all --disableplugin=subscription-manager \
