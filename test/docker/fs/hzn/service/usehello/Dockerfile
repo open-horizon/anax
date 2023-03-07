@@ -1,7 +1,7 @@
-FROM alpine:latest
+FROM alpine:3.16
 
 LABEL generated_by="e2edev"
-RUN apk --no-cache --update add curl jq
+RUN apk --no-cache --update add 'curl<7.88.0' jq
 
 RUN adduser --disabled-password "e2edevuser"
 
