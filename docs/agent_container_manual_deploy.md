@@ -66,15 +66,15 @@ Use these docker run instructions to start the agent in a container, which provi
    * HZN_EXCHANGE_URL=`<address of your exchange>`
    * HZN_FSS_CSSURL=`<css address>`
    * HZN_ORG_ID=`<the org this node should be in>`
-   * HZN_EXCHANGE_USER_AUTH=`<exchange username:password>`
+   * HZN_EXCHANGE_USER_AUTH=`<exchange username:password>` (or apikey)
    * HZN_AGBOT_URL=`<agbot api address>`
+   * HZN_MGMT_HUB_CERT_PATH=`<path to the ssl certificate file on the host machine>`
 
    Optional:
 
    * HZN_NODE_ID=`<a name for your node>`
    * If this parameter is not included, the node will be assigned a random alphanumeric identifier.
    * (DEPRECATED) HZN_DEVICE_ID=`<a name for your node>`
-   * HZN_MGMT_HUB_CERT_PATH=`<path to the ssl certificate file on the host machine>`
 
 2. Prior to starting the container, export the following variables:
 
@@ -83,8 +83,6 @@ Use these docker run instructions to start the agent in a container, which provi
    * HZN_AGENT_IMAGE_TAG=`<version of the agent container to use>`
    * CONFIG_FILE=`<Location of the configuration file>`
      * The configuration file with the contents from step 1.
-   * HZN_MGMT_HUB_CERT_MOUNT="-v `<ssl certificate file on host>`:`<$HZN_MGMT_HUB_CERT_PATH>`"
-     * This needs to be set in the configuration file so the agent can find the certificate after it starts.
    * DOCKER_NAME=`<name for the agent container>`
    * HORIZON_AGENT_PORT=`<port number>`
      * The port to expose from the container that hzn will call the agent on. This is typically 8081.
@@ -98,7 +96,7 @@ Use these docker run instructions to start the agent in a container, which provi
    HZN_AGENT_IMAGE=openhorizon/amd64_anax
    HZN_AGENT_IMAGE_TAG=latest
    CONFIG_FILE=/etc/default/horizon
-   HZN_MGMT_HUB_CERT_PATH=/etc/default/horizon/agent.crt
+   HZN_MGMT_HUB_CERT_PATH=/etc/horizon/agent-install.crt
    DOCKER_NAME=horizon1
    HORIZON_AGENT_PORT=8081
    ```
@@ -128,9 +126,10 @@ Use these docker run instructions to start the agent in a container, which provi
    -e DOCKER_NAME=$DOCKER_NAME \
    -e HZN_VAR_RUN_BASE=$fssHostSharePath \
    -v /var/run/docker.sock:/var/run/docker.sock \
-   -v $CONFIG_FILE:/etc/default/horizon:ro $HZN_MGMT_HUB_CERT_MOUNT \
-   -v $DOCKER_NAME_var:/var/horizon/ \
-   -v $DOCKER_NAME_etc:/etc/horizon/ \
+   -v $CONFIG_FILE:/etc/default/horizon:ro \
+   -v $HZN_MGMT_HUB_CERT_PATH:$HZN_MGMT_HUB_CERT_PATH \
+   -v ${DOCKER_NAME}_var:/var/horizon/ \
+   -v ${DOCKER_NAME}_etc:/etc/horizon/ \
    -v $fssHostSharePath:$fssHostSharePath \
    $HZN_AGENT_IMAGE:$HZN_AGENT_IMAGE_TAG
 
