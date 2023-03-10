@@ -29,9 +29,9 @@ There are several techniques to start the agent in a container providing differe
 ## Prerequisites
 {: #container-prereqs}
 
-Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}. {{site.data.keyword.macOS_notm}} users may require a Docker Desktop license, if necessary, and install the most recent version of Docker on your device. For more information, see the [Docker installation for Mac ](https://docs.docker.com/docker-for-mac/install/){:target="_blank"}{: .externalLink} documentation.
+Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}. {{site.data.keyword.macOS_notm}} users might require a Docker Desktop license, if necessary, and install Docker on your device. For more information, see the [Docker installation for Mac ](https://docs.docker.com/docker-for-mac/install/){:target="_blank"}{: .externalLink} documentation.
 
-If the management hub you are using uses Secure Socket Layer (SSL) encryption, then you need to have the SSL certificate from the management hub.
+If your management hub uses Secure Socket Layer (SSL) encryption, the management hub SSL certificate is required.
 
 ## Option 1 - `agent-install.sh --container`
 
@@ -87,8 +87,8 @@ Use these docker run instructions to start the agent in a container, which provi
    * HORIZON_AGENT_PORT=`<port number>`
      * The port to expose from the container that hzn will call the agent on. This is typically 8081.
    * DOCKER_ADD_HOSTS="--add-host=$`<host name to add to container hosts file>`"
-     * This is only necessary if the exchange or css url will not be resolvable from inside the agent container.
-     * The format would look like `--add-host=edge-openhorizon.com:169.22.10.179`
+     * This is only necessary if the exchange or CSS url will not be resolvable from inside the agent container.
+     * Use this syntax `--add-host=edge-openhorizon.com:169.22.10.179`
 
    Example:
 
