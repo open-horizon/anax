@@ -5,7 +5,9 @@ See the information about [community membership roles](https://wiki.lfedge.org/d
 
 | Name         | GitHub      | email                    |
 | ------------ | ----------- | ------------------------ |
+| David Booz   | dabooz      | <booz@us.ibm.com>        |
 | Joe Pearson  | joewxboy    | <joe.pearson@us.ibm.com> |
 | John Walicki | johnwalicki | <johnwalicki@gmail.com>  |
 | Lily Zhang   | liilyZhang  | <zhangl@us.ibm.com>      |
 | Ling Gao     | linggao     | <linggao@us.ibm.com>     |
+| Max McAdam   | maxmcadam   | <maxwell.mcAdam@ibm.com> |
