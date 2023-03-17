@@ -11,3 +11,4 @@ See the information about [community membership roles](https://wiki.lfedge.org/d
 | Lily Zhang   | liilyZhang  | <zhangl@us.ibm.com>      |
 | Ling Gao     | linggao     | <linggao@us.ibm.com>     |
 | Max McAdam   | maxmcadam   | <maxwell.mcAdam@ibm.com> |
+| Doug Larson  | dlarson04   | <larsond@us.ibm.com>     |
