@@ -84,6 +84,15 @@ type WorkloadPriority struct {
 	VerifiedDurationS int `json:"verified_durations,omitempty"` // The number of second in which verified data must exist before the rollback retry feature is turned off
 }
 
+func (w WorkloadPriority) Validate() error {
+	if w.PriorityValue != 0 && (w.RetryDurationS == 0 || w.Retries == 0) {
+		return fmt.Errorf("retry_durations and retries cannot be zero if priority_value is set to non-zero value")
+	} else if w.PriorityValue == 0 && (w.RetryDurationS != 0 || w.Retries != 0 || w.VerifiedDurationS != 0) {
+		return fmt.Errorf("retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set")
+	}
+	return nil
+}
+
 type UpgradePolicy struct {
 	Lifecycle string `json:"lifecycle,omitempty"` // immediate, never, agreement
 	Time      string `json:"time,omitempty"`      // the time of the upgrade
