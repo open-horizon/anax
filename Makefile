@@ -14,7 +14,7 @@ SHELL := /bin/bash
 # DO NOT set this variable to the branch in which you are doing development work.
 BRANCH_NAME ?= ""
 
-export VERSION ?= 2.30.0
+export VERSION ?= 2.31.0
 # BUILD_NUMBER will be added to the version if set. It can be a simple number or something like a numeric timestamp or jenkins hash.
 # It can NOT contain dashes, but can contain: plus, period, and tilde.
 export BUILD_NUMBER
