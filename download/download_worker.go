@@ -25,6 +25,7 @@ const (
 	CSSSHAREDORG = "IBM"
 
 	LATESTVERSION = "latest"
+	ALLFILES = "*"
 
 	DEBPACKAGETYPE  = "deb"
 	RHELPACKAGETYPE = "rpm"
@@ -223,7 +224,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 		if objIds != nil {
 			// make sure all the packages are available and downloaded
 			for _, objId := range *objIds {
-				if cutil.SliceContains(manifest.Software.FileList, objId) {
+				if cutil.SliceContains(manifest.Software.FileList, objId) || cutil.SliceContains(manifest.Software.FileList, ALLFILES) {
 					if err = w.DownloadCSSObject(CSSSHAREDORG, swType, objId, filePath, nmpName); err != nil {
 						return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, swType, objId, err)
 					}
@@ -237,7 +238,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 			// the device agent will use the one from current version.
 			// agent-install.sh is not used by the edge cluster agent.
 			if dev.GetNodeType() == persistence.DEVICE_TYPE_DEVICE {
-				if cutil.SliceContains(manifest.Software.FileList, HZN_AGENTINSTALL_FILE) {
+				if cutil.SliceContains(manifest.Software.FileList, HZN_AGENTINSTALL_FILE) || cutil.SliceContains(manifest.Software.FileList, ALLFILES) {
 					if err = w.DownloadCSSObject(CSSSHAREDORG, swType, HZN_AGENTINSTALL_FILE, filePath, nmpName); err != nil {
 						return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, swType, HZN_AGENTINSTALL_FILE, err)
 					} else if err := os.Chmod(path.Join(filePath, nmpName, HZN_AGENTINSTALL_FILE), 0755); err != nil {
@@ -249,7 +250,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	}
 
 	if configType != "" {
-		if cutil.SliceContains(manifest.Configuration.FileList, HZN_CONFIG_FILE) {
+		if cutil.SliceContains(manifest.Configuration.FileList, HZN_CONFIG_FILE) || cutil.SliceContains(manifest.Configuration.FileList, ALLFILES) {
 			if err = w.DownloadCSSObject(CSSSHAREDORG, configType, HZN_CONFIG_FILE, filePath, nmpName); err != nil {
 				return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, configType, HZN_CONFIG_FILE, err)
 			}
@@ -265,7 +266,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	}
 
 	if certType != "" {
-		if cutil.SliceContains(manifest.Certificate.FileList, HZN_CERT_FILE) {
+		if cutil.SliceContains(manifest.Certificate.FileList, HZN_CERT_FILE) || cutil.SliceContains(manifest.Certificate.FileList, ALLFILES) {
 			if err = w.DownloadCSSObject(CSSSHAREDORG, certType, HZN_CERT_FILE, filePath, nmpName); err != nil {
 				return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, certType, HZN_CERT_FILE, err)
 			}
