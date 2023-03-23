@@ -762,7 +762,7 @@ Environment Variables:
 	unregisterCmd := app.Command("unregister | unreg", msgPrinter.Sprintf("Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.")).Alias("unreg").Alias("unregister")
 	forceUnregister := unregisterCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	removeNodeUnregister := unregisterCmd.Flag("remove", msgPrinter.Sprintf("Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).")).Short('r').Bool()
-	deepCleanUnregister := unregisterCmd.Flag("deep-clean", msgPrinter.Sprintf("Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.")).Short('D').Bool()
+	deepCleanUnregister := unregisterCmd.Flag("deep-clean", msgPrinter.Sprintf("Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.")).Short('D').Bool()
 	timeoutUnregister := unregisterCmd.Flag("timeout", msgPrinter.Sprintf("The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.")).Short('t').Default("0").Int()
 	containerUnregister := unregisterCmd.Flag("container", msgPrinter.Sprintf("Perform a deep clean on a node running in a container. This flag  must be used with -D and only if the agent was installed as anax-in-container.")).Short('C').Bool()
 
