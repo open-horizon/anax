@@ -9,6 +9,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"math"
+	"os"
 )
 
 func NewKubeConfig() (*rest.Config, error) {
@@ -28,11 +29,11 @@ func NewKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-// GetClusterCountInfo returns the cluster's available memory, total memory, cpu count, arch, kube version, or an error if it cannot get the client
-func GetClusterCountInfo() (float64, float64, float64, string, string, error) {
+// GetClusterCountInfo returns the cluster's available memory, total memory, cpu count, arch, kube version, cluster namespace, or an error if it cannot get the client
+func GetClusterCountInfo() (float64, float64, float64, string, string, string, error) {
 	client, err := NewKubeClient()
 	if err != nil {
-		return 0, 0, 1, "", "", fmt.Errorf("Failed to get kube client for introspecting cluster properties. Proceding with default values. %v", err)
+		return 0, 0, 1, "", "", "", fmt.Errorf("Failed to get kube client for introspecting cluster properties. Proceding with default values. %v", err)
 	}
 	versionObj, err := client.Discovery().ServerVersion()
 	if err != nil {
@@ -42,13 +43,17 @@ func GetClusterCountInfo() (float64, float64, float64, string, string, error) {
 	if versionObj != nil {
 		version = versionObj.GitVersion
 	}
+
+	// get kube namespace
+	ns := GetClusterNamespace()
+
 	availMem := float64(0)
 	totalMem := float64(0)
 	cpu := float64(0)
 	arch := ""
 	nodes, err := client.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		return 0, 0, 0, "", "", nil
+		return 0, 0, 0, "", "", "", nil
 	}
 
 	for _, node := range nodes.Items {
@@ -60,7 +65,7 @@ func GetClusterCountInfo() (float64, float64, float64, string, string, error) {
 		cpu += FloatFromQuantity(node.Status.Capacity.Cpu())
 	}
 
-	return math.Round(availMem), math.Round(totalMem), cpu, arch, version, nil
+	return math.Round(availMem), math.Round(totalMem), cpu, arch, version, ns, nil
 }
 
 // FloatFromQuantity returns a float64 with the value of the given quantity type
@@ -73,4 +78,14 @@ func FloatFromQuantity(quantVal *resource.Quantity) float64 {
 	scale := decVal.Scale()
 	floatVal := float64(unscaledVal) * math.Pow10(-1*int(scale))
 	return floatVal
+}
+
+func GetClusterNamespace() string {
+	// get kube namespace
+	ns := os.Getenv("AGENT_NAMESPACE")
+	if ns == "" {
+		ns = "openhorizon-agent"
+	}
+
+	return ns
 }

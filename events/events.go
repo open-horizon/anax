@@ -205,19 +205,20 @@ type ContainerConfig struct {
 	DeploymentUserInfo         string            `json:"deployment_user_info"`
 	ClusterDeployment          string            `json:"cluster_deployment"`           // A stringified (and escaped) JSON structure.
 	ClusterDeploymentSignature string            `json:"cluster_deployment_signature"` // Digital signature of the ClusterDeployment string.
+	ClusterNamespace           string            `json:"cluster_namespace"`            // cluster namespace the cluster service will be deployed into
 	Overrides                  string            `json:"overrides"`
 	ImageDockerAuths           []ImageDockerAuth `json:"image_auths"`
 }
 
 func (c ContainerConfig) String() string {
-	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, ClusterDeployment: %v, ClusterDeploymentSignature: %v, Overrides: %v, ImageDockerAuths: %v",
-		c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, "********", c.ClusterDeploymentSignature, c.Overrides, c.ImageDockerAuths)
+	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, ClusterDeployment: %v, ClusterDeploymentSignature: %v, ClusterNamespace: %v, Overrides: %v, ImageDockerAuths: %v",
+		c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, "********", c.ClusterDeploymentSignature, c.ClusterNamespace, c.Overrides, c.ImageDockerAuths)
 }
 
 func (c ContainerConfig) ShortString() string {
 	if c.Deployment != "" {
-		return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, c.Overrides %v",
-			c.Deployment, cutil.TruncateDisplayString(c.DeploymentSignature, 10), c.DeploymentUserInfo, c.Overrides)
+		return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, ClusterNamespace: %v, Overrides %v",
+			c.Deployment, cutil.TruncateDisplayString(c.DeploymentSignature, 10), c.DeploymentUserInfo, c.ClusterNamespace, c.Overrides)
 	}
 
 	if c.ClusterDeployment != "" {
@@ -229,13 +230,14 @@ func (c ContainerConfig) ShortString() string {
 }
 
 func NewContainerConfig(deployment string, deploymentSignature string, deploymentUserInfo string,
-	clusterDeployment string, clusterDeploymentSignature string, overrides string, imageDockerAuths []ImageDockerAuth) *ContainerConfig {
+	clusterDeployment string, clusterDeploymentSignature string, clusterNamespace string, overrides string, imageDockerAuths []ImageDockerAuth) *ContainerConfig {
 	return &ContainerConfig{
 		Deployment:                 deployment,
 		DeploymentSignature:        deploymentSignature,
 		DeploymentUserInfo:         deploymentUserInfo,
 		ClusterDeployment:          clusterDeployment,
 		ClusterDeploymentSignature: clusterDeploymentSignature,
+		ClusterNamespace:           clusterNamespace,
 		Overrides:                  overrides,
 		ImageDockerAuths:           imageDockerAuths,
 	}
@@ -896,6 +898,7 @@ type GovernanceMaintenanceMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
+	ClusterNamespace  string // cluster namespace the service deploys to
 	Deployment        persistence.DeploymentConfig
 }
 
@@ -908,7 +911,7 @@ func (m GovernanceMaintenanceMessage) String() string {
 	if m.Deployment != nil {
 		depStr = m.Deployment.ToString()
 	}
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, ClusterNamespace: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, m.ClusterNamespace, depStr)
 }
 
 func (m GovernanceMaintenanceMessage) ShortString() string {
@@ -916,16 +919,17 @@ func (m GovernanceMaintenanceMessage) ShortString() string {
 	if m.Deployment != nil {
 		depStr = m.Deployment.ToString()
 	}
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, ClusterNamespace: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, m.ClusterNamespace, depStr)
 }
 
-func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId string, deployment persistence.DeploymentConfig) *GovernanceMaintenanceMessage {
+func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId string, clusterNamespace string, deployment persistence.DeploymentConfig) *GovernanceMaintenanceMessage {
 	return &GovernanceMaintenanceMessage{
 		event: Event{
 			Id: id,
 		},
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,
+		ClusterNamespace:  clusterNamespace,
 		Deployment:        deployment,
 	}
 }
@@ -952,9 +956,9 @@ func (m GovernanceWorkloadCancelationMessage) ShortString() string {
 	return m.String()
 }
 
-func NewGovernanceWorkloadCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment persistence.DeploymentConfig) *GovernanceWorkloadCancelationMessage {
+func NewGovernanceWorkloadCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, clusterNamespace string, deployment persistence.DeploymentConfig) *GovernanceWorkloadCancelationMessage {
 
-	govMaint := NewGovernanceMaintenanceMessage(id, protocol, agreementId, deployment)
+	govMaint := NewGovernanceMaintenanceMessage(id, protocol, agreementId, clusterNamespace, deployment)
 
 	return &GovernanceWorkloadCancelationMessage{
 		GovernanceMaintenanceMessage: *govMaint,

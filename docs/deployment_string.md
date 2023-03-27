@@ -73,6 +73,7 @@ Because {{site.data.keyword.edge_notm}} uses the docker API to start the contain
 Because {{site.data.keyword.edge_notm}} uses operators to deploy the applications in a Kubernetes cluster, the `clusterDeployment` contains the contents of the operator yaml archive files.
 
 - `operatorYamlArchive`: The content of the operator yaml archive files. These files are compressed (tarred and gzipped). And then the compressed content is converted to a base64 string.
+- `metadata`: A list of key-value paries. It is for internal use only. Do not put it in the `clusterDeployment` when publishing a service. 
 
 ## Deployment String Examples
 {: #deployment-examples}

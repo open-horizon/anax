@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"golang.org/x/text/message"
@@ -19,7 +20,8 @@ import (
 type PolicyCheck struct {
 	NodeId         string                                `json:"node_id,omitempty"`
 	NodeArch       string                                `json:"node_arch,omitempty"`
-	NodeType       string                                `json:"node_type,omitempty"` // can be omitted if node_id is specified
+	NodeType       string                                `json:"node_type,omitempty"`              // can be omitted if node_id is specified
+	NodeClusterNS  string                                `json:"node_cluster_namespace,omitempty"` // can be omitted if node_id is specified. If node_id is not specified the default values is "openhorizon-gent". The value is ignored if the node type is device.
 	NodePolicy     *exchangecommon.NodePolicy            `json:"node_policy,omitempty"`
 	BusinessPolId  string                                `json:"business_policy_id,omitempty"`
 	BusinessPolicy *businesspolicy.BusinessPolicy        `json:"business_policy,omitempty"`
@@ -31,8 +33,8 @@ type PolicyCheck struct {
 }
 
 func (p PolicyCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodePolicy: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v, Service：%v",
-		p.NodeId, p.NodeArch, p.NodeType, p.NodePolicy, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeClusterNS: %v, NodePolicy: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v, Service：%v",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodeClusterNS, p.NodePolicy, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy, p.Service)
 }
 
 // unmashal handler for PolicyCheck object to handle AbstractPatternFile and AbstractServiceFile
@@ -46,6 +48,7 @@ func (p *PolicyCheck) UnmarshalJSON(b []byte) error {
 	p.NodeId = cc.NodeId
 	p.NodeArch = cc.NodeArch
 	p.NodeType = cc.NodeType
+	p.NodeClusterNS = cc.NodeClusterNS
 	p.NodePolicy = cc.NodePolicy
 	p.BusinessPolId = cc.BusinessPolId
 	p.BusinessPolicy = cc.BusinessPolicy
@@ -127,14 +130,23 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 
 		resources.NodeType = node.NodeType
+		resources.NodeClusterNS = node.ClusterNamespace
 	}
 
-	// verify the input node type value and get the node type for the node from
+	// verify the input node type value and get the node type from
 	// node id or from the input.
 	if nodeType, err := VerifyNodeType(input.NodeType, resources.NodeType, nodeId, msgPrinter); err != nil {
 		return nil, err
 	} else {
 		resources.NodeType = nodeType
+	}
+
+	// verify the input node's cluster namespace value and get the node's cluster namespace from
+	// node id or from the input.
+	if nodeClusterNS, err := VerifyNodeClusterNamespace(input.NodeClusterNS, resources.NodeClusterNS, nodeId, msgPrinter); err != nil {
+		return nil, err
+	} else {
+		resources.NodeClusterNS = nodeClusterNS
 	}
 
 	// validate node policy and convert it to internal policy
@@ -143,6 +155,11 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	resources.NodePolicy, nPolicy, err1 = processNodePolicy(nodePolicyHandler, nodeId, input.NodePolicy, msgPrinter)
 	if err1 != nil {
 		return nil, err1
+	}
+
+	// cluster namespace from the input overwrites the one in the node policy
+	if resources.NodeClusterNS == "" {
+		resources.NodeClusterNS = nPolicy.ClusterNamespace
 	}
 
 	// validate and convert the business policy to internal policy
@@ -216,10 +233,16 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 						compatible, reason = CheckTypeCompatibility(resources.NodeType, topSvcDef, msgPrinter)
 					}
 					if compatible {
-						// policy compatibility check
-						compatible, reason, _, _, err1 = CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter)
-						if err1 != nil {
-							return nil, err1
+						// check namespace compatibility
+						if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+							compatible, _, reason = CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, bPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), true, msgPrinter)
+						}
+						if compatible {
+							// policy compatibility check
+							compatible, reason, _, _, err1 = CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter)
+							if err1 != nil {
+								return nil, err1
+							}
 						}
 					}
 					if compatible {
@@ -261,10 +284,16 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 								compatible, reason = CheckTypeCompatibility(resources.NodeType, topSvcDef, msgPrinter)
 							}
 							if compatible {
-								// policy compatibility check
-								compatible, reason, _, _, err = CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter)
-								if err != nil {
-									return nil, err
+								// check namespace compatibility
+								if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+									compatible, _, reason = CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, bPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), true, msgPrinter)
+								}
+								if compatible {
+									// policy compatibility check
+									compatible, reason, _, _, err = CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter)
+									if err != nil {
+										return nil, err
+									}
 								}
 							}
 							if compatible {
@@ -313,10 +342,16 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 					compatible, reason = CheckTypeCompatibility(resources.NodeType, topSvcDef, msgPrinter)
 				}
 				if compatible {
-					// policy compatibility check
-					compatible, reason, _, _, err1 = CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter)
-					if err1 != nil {
-						return nil, err1
+					// check namespace compatibility
+					if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+						compatible, _, reason = CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, bPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), true, msgPrinter)
+					}
+					if compatible {
+						// policy compatibility check
+						compatible, reason, _, _, err1 = CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter)
+						if err1 != nil {
+							return nil, err1
+						}
 					}
 				}
 			}

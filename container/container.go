@@ -1908,7 +1908,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				glog.Errorf("Insufficient running containers found for service instance %v. Found: %v", cmd.MsInstKey, cMatches)
 
 				// ask governer to record it into the db
-				cc := events.NewContainerConfig("", "", "", "", "", "", nil)
+				cc := events.NewContainerConfig("", "", "", "", "", "", "", nil)
 				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, msinst.AssociatedAgreements, []events.MicroserviceSpec{}, []persistence.ServiceInstancePathElement{}, false)
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 			}

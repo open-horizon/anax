@@ -28,6 +28,7 @@ func NewInstallCommand(launchContext interface{}) *InstallCommand {
 type UnInstallCommand struct {
 	AgreementProtocol  string
 	CurrentAgreementId string
+	ClusterNamespace   string
 	Deployment         persistence.DeploymentConfig
 }
 
@@ -35,10 +36,11 @@ func (u UnInstallCommand) ShortString() string {
 	return fmt.Sprintf("%v", u)
 }
 
-func NewUnInstallCommand(agp string, agId string, dc persistence.DeploymentConfig) *UnInstallCommand {
+func NewUnInstallCommand(agp string, agId string, clusterNamespace string, dc persistence.DeploymentConfig) *UnInstallCommand {
 	return &UnInstallCommand{
 		AgreementProtocol:  agp,
 		CurrentAgreementId: agId,
+		ClusterNamespace:   clusterNamespace,
 		Deployment:         dc,
 	}
 }
@@ -46,6 +48,7 @@ func NewUnInstallCommand(agp string, agId string, dc persistence.DeploymentConfi
 type MaintenanceCommand struct {
 	AgreementProtocol string
 	AgreementId       string
+	ClusterNamespace  string
 	Deployment        persistence.DeploymentConfig
 }
 
@@ -54,17 +57,18 @@ func (c MaintenanceCommand) String() string {
 	if c.Deployment != nil {
 		deployment_string = c.Deployment.ToString()
 	}
-	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Deployment: %v", c.AgreementProtocol, c.AgreementId, deployment_string)
+	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, ClusterNamespace: %v, Deployment: %v", c.AgreementProtocol, c.AgreementId, c.ClusterNamespace, deployment_string)
 }
 
 func (c MaintenanceCommand) ShortString() string {
 	return c.String()
 }
 
-func NewMaintenanceCommand(protocol string, agreementId string, deployment persistence.DeploymentConfig) *MaintenanceCommand {
+func NewMaintenanceCommand(protocol string, agreementId string, clusterNamespace string, deployment persistence.DeploymentConfig) *MaintenanceCommand {
 	return &MaintenanceCommand{
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,
+		ClusterNamespace:  clusterNamespace,
 		Deployment:        deployment,
 	}
 }

@@ -31,8 +31,17 @@ type APIObjectInterface interface {
 // Sort a slice of k8s api objects by kind of object
 // Returns a map of object type names to api object interfaces types, the namespace to be used for the operator, and an error if one occurs
 // Also verifies that all objects are named so they can be found and uninstalled
-func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstructured.Unstructured, envVarMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstructured.Unstructured, metadata map[string]interface{}, envVarMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	namespace := ""
+
+	// get the namespace from metadata
+	if metadata != nil {
+		if ns, ok := metadata["namespace"]; ok {
+			namespace = ns.(string)
+		}
+	}
+
+	// parse operator
 	objMap := map[string][]APIObjectInterface{}
 	for _, obj := range allObjects {
 		switch obj.Type.Kind {
@@ -147,9 +156,6 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 				glog.Errorf(kwlog(fmt.Sprintf("Object with gvk %v has type %T, not unstructured kube type.", obj.Type, obj.Object)))
 			}
 		}
-	}
-	if namespace == "" {
-		namespace = ANAX_NAMESPACE
 	}
 
 	return objMap, namespace, nil
@@ -399,7 +405,7 @@ func (d DeploymentAppsV1) Uninstall(c KubeClient, namespace string) {
 // Status will be the status of the operator pod
 func (d DeploymentAppsV1) Status(c KubeClient, namespace string) (interface{}, error) {
 	opName := d.DeploymentObject.ObjectMeta.Name
-	podList, err := c.Client.CoreV1().Pods(ANAX_NAMESPACE).List(context.Background(), metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", "name", opName)})
+	podList, err := c.Client.CoreV1().Pods(DEFAULT_ANAX_NAMESPACE).List(context.Background(), metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", "name", opName)})
 	if err != nil {
 		return nil, err
 	}

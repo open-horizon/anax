@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	ANAX_NAMESPACE = "openhorizon-agent"
+	DEFAULT_ANAX_NAMESPACE = "openhorizon-agent"
 	// Name for the env var config map. Only characters allowed: [a-z] "." and "-"
 	HZN_ENV_VARS = "hzn-env-vars"
 	// Variable that contains the name of the config map
@@ -122,14 +122,22 @@ func NewDynamicKubeClient() (dynamic.Interface, error) {
 }
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
-func (c KubeClient) Install(tar string, envVars map[string]string, agId string, crInstallTimeout int64) error {
-	apiObjMap, namespace, err := ProcessDeployment(tar, envVars, agId, crInstallTimeout)
+func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars map[string]string, agId string, reqNamespace string, crInstallTimeout int64) error {
+
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, envVars, agId, crInstallTimeout)
 	if err != nil {
 		return err
 	}
 
+	// get and check namespace
+	namespace := getFinalNamespace(reqNamespace, opNamespace)
+	nodeNamespace := cutil.GetClusterNamespace()
+	if namespace != nodeNamespace && nodeNamespace != DEFAULT_ANAX_NAMESPACE {
+		return fmt.Errorf("Service failed to start for agreement %v. Could not deploy service into namespace %v because the agent's namespace is %v and it restricts all services to have the same namespace.", agId, namespace, nodeNamespace)
+	}
+
 	// If the namespace was specified in the deployment then create the namespace object so it can be created
-	if _, ok := apiObjMap[K8S_NAMESPACE_TYPE]; !ok && namespace != ANAX_NAMESPACE {
+	if _, ok := apiObjMap[K8S_NAMESPACE_TYPE]; !ok && namespace != nodeNamespace {
 		nsObj := corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace"}, ObjectMeta: metav1.ObjectMeta{Name: namespace}}
 		apiObjMap[K8S_NAMESPACE_TYPE] = []APIObjectInterface{NamespaceCoreV1{NamespaceObject: &nsObj}}
 	}
@@ -160,11 +168,13 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string, 
 }
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
-func (c KubeClient) Uninstall(tar string, agId string) error {
-	apiObjMap, namespace, err := ProcessDeployment(tar, map[string]string{}, agId, 0)
+func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId string, reqNamespace string) error {
+
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, agId, 0)
 	if err != nil {
 		return err
 	}
+	namespace := getFinalNamespace(reqNamespace, opNamespace)
 
 	for _, crd := range apiObjMap[K8S_CRD_TYPE] {
 		crd.Uninstall(c, namespace)
@@ -189,12 +199,12 @@ func (c KubeClient) Uninstall(tar string, agId string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("Completed removal of all operator objects from the cluster.")))
 	return nil
 }
-
-func (c KubeClient) OperatorStatus(tar string, agId string) (interface{}, error) {
-	apiObjMap, namespace, err := ProcessDeployment(tar, map[string]string{}, agId, 0)
+func (c KubeClient) OperatorStatus(tar string, metadata map[string]interface{}, agId string, reqNamespace string) (interface{}, error) {
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
+	namespace := getFinalNamespace(reqNamespace, opNamespace)
 
 	if len(apiObjMap[K8S_DEPLOYMENT_TYPE]) < 1 {
 		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to find operator deployment object.")))
@@ -206,11 +216,13 @@ func (c KubeClient) OperatorStatus(tar string, agId string) (interface{}, error)
 	}
 	return status, nil
 }
-func (c KubeClient) Status(tar string, agId string) ([]ContainerStatus, error) {
-	apiObjMap, namespace, err := ProcessDeployment(tar, map[string]string{}, agId, 0)
+
+func (c KubeClient) Status(tar string, metadata map[string]interface{}, agId string, reqNamespace string) ([]ContainerStatus, error) {
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
+	namespace := getFinalNamespace(reqNamespace, opNamespace)
 
 	if len(apiObjMap[K8S_DEPLOYMENT_TYPE]) < 1 {
 		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to find operator deployment object.")))
@@ -251,8 +263,8 @@ func (c KubeClient) Status(tar string, agId string) ([]ContainerStatus, error) {
 	}
 }
 
-// ProcessDeployment takes the deployment string and converts it to a map with the k8s objects, the namespace to be used, and an error if one occurs
-func ProcessDeployment(tar string, envVars map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+// processDeployment takes the deployment string and converts it to a map with the k8s objects, the namespace to be used, and an error if one occurs
+func ProcessDeployment(tar string, metadata map[string]interface{}, envVars map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	// Read the yaml files from the commpressed tar files
 	yamls, err := getYamlFromTarGz(tar)
 	if err != nil {
@@ -275,7 +287,7 @@ func ProcessDeployment(tar string, envVars map[string]string, agId string, crIns
 	}
 
 	// Sort the k8s api objects by kind
-	return sortAPIObjects(k8sObjs, customResourceKindMap, envVars, agId, crInstallTimeout)
+	return sortAPIObjects(k8sObjs, customResourceKindMap, metadata, envVars, agId, crInstallTimeout)
 }
 
 // CreateConfigMap will create a config map with the provided environment variable map
@@ -435,4 +447,27 @@ func getYamlFromTarGz(deploymentString string) ([]YamlFile, error) {
 		}
 	}
 	return files, nil
+}
+
+// get the namespace that the service will eventually be deployed to.
+// reqNamespace: the requested namespace fromt agbot. It the namespace specified
+// in the pattern or policy. If it is empty, agbot assign it to the namespace embedded
+// in the metadata attribute of the clusterDeployment string for a service.
+// opNamespace: the namespace embedded in the service operator.
+// The result namespace is:
+//  1. reqNamespace if not empty,
+//  2. opNamespace if not empty,
+//  3. nodeNamespace.
+func getFinalNamespace(reqNamespace string, opNamespace string) string {
+	nodeNamespace := cutil.GetClusterNamespace()
+
+	namespace := reqNamespace
+	if namespace == "" {
+		namespace = opNamespace
+	}
+	if namespace == "" {
+		namespace = nodeNamespace
+	}
+
+	return namespace
 }

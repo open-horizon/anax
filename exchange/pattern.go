@@ -17,6 +17,7 @@ type Pattern struct {
 	Description        string                         `json:"description"`
 	Public             bool                           `json:"public"`
 	Services           []ServiceReference             `json:"services"`
+	ClusterNamespace   string                         `json:"clusterNamespace"`
 	AgreementProtocols []AgreementProtocol            `json:"agreementProtocols"`
 	UserInput          []policy.UserInput             `json:"userInput,omitempty"`
 	SecretBinding      []exchangecommon.SecretBinding `json:"secretBinding,omitempty"` // The secret binding from service secret names to vault secret names.
@@ -24,12 +25,13 @@ type Pattern struct {
 }
 
 func (w Pattern) String() string {
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v, UserInput: %v, SecretBinding: %v, LastUpdated: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, ClusterNamespace: %v, AgreementProtocols: %v, UserInput: %v, SecretBinding: %v, LastUpdated: %v",
 		w.Owner,
 		w.Label,
 		w.Description,
 		w.Public,
 		w.Services,
+		w.ClusterNamespace,
 		w.AgreementProtocols,
 		w.UserInput,
 		w.SecretBinding,
@@ -43,18 +45,19 @@ func (w Pattern) ShortString() string {
 		svc_a[i] = wl.ShortString()
 	}
 
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, ClusterNamespace: %v, AgreementProtocols: %v",
 		w.Owner,
 		w.Label,
 		w.Description,
 		w.Public,
 		svc_a,
+		w.ClusterNamespace,
 		w.AgreementProtocols)
 }
 
 // return a pointer to a copy of Pattern
 func (w Pattern) DeepCopy() *Pattern {
-	newPattern := Pattern{Owner: w.Owner, Label: w.Label, Description: w.Description, Public: w.Public}
+	newPattern := Pattern{Owner: w.Owner, Label: w.Label, Description: w.Description, Public: w.Public, ClusterNamespace: w.ClusterNamespace}
 
 	if w.Services != nil {
 		newServices := make([]ServiceReference, len(w.Services))
@@ -316,6 +319,8 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 
 		ConvertCommon(p, patternId, service.DataVerify, service.NodeH, pol)
 
+		pol.ClusterNamespace = p.ClusterNamespace
+
 		glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into policy %v", service.ShortString(), policyName)))
 		policies = append(policies, pol)
 
@@ -397,5 +402,4 @@ func ConvertCommon(p *Pattern, patternId string, dv DataVerification, nodeh Node
 		newSB := sb.MakeCopy()
 		pol.SecretBinding = append(pol.SecretBinding, newSB)
 	}
-
 }

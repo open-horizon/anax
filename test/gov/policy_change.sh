@@ -5,7 +5,7 @@ USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 PREFIX="policy change test "
 
-timeout=6
+timeout=24
 pws_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_pws")).current_agreement_id' )
 netspeed_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_netspeed")).current_agreement_id' )
 while [[ "$pws_ag" == "" || "$netspeed_ag" == "" ]]; do

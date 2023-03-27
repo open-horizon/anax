@@ -15,14 +15,15 @@ import (
 // The user defined policies (business policy, node policy) need to add constraints on these properties if needed.
 const (
 	// for node policy
-	PROP_NODE_CPU           = "openhorizon.cpu"               // The number of CPUs
-	PROP_NODE_MEMORY        = "openhorizon.memory"            // The amount of memory in MBs
-	PROP_NODE_ARCH          = "openhorizon.arch"              // The hardware architecture of the node (e.g. amd64, armv6, etc)
-	PROP_NODE_HARDWAREID    = "openhorizon.hardwareId"        // The device serial number if it can be found. A generated Id otherwise.
-	PROP_NODE_PRIVILEGED    = "openhorizon.allowPrivileged"   // Property set to determine if privileged services may be run on this device. Can be set by user, default is false.
-	PROP_NODE_K8S_VERSION   = "openhorizon.kubernetesVersion" // Server version of the cluster the agent is running in
-	PROP_NODE_OS            = "openhorizon.operatingSystem"   // The operating system the agent is installed on. For containerized agents, this is the host os
-	PROP_NODE_CONTAINERIZED = "openhorizon.containerized"     // Boolean field indicating whether the agent is running in a container
+	PROP_NODE_CPU           = "openhorizon.cpu"                 // The number of CPUs
+	PROP_NODE_MEMORY        = "openhorizon.memory"              // The amount of memory in MBs
+	PROP_NODE_ARCH          = "openhorizon.arch"                // The hardware architecture of the node (e.g. amd64, armv6, etc)
+	PROP_NODE_HARDWAREID    = "openhorizon.hardwareId"          // The device serial number if it can be found. A generated Id otherwise.
+	PROP_NODE_PRIVILEGED    = "openhorizon.allowPrivileged"     // Property set to determine if privileged services may be run on this device. Can be set by user, default is false.
+	PROP_NODE_K8S_VERSION   = "openhorizon.kubernetesVersion"   // Server version of the cluster the agent is running in
+	PROP_NODE_K8S_NAMESPACE = "openhorizon.kubernetesNamespace" // The namespace for cluster agent.
+	PROP_NODE_OS            = "openhorizon.operatingSystem"     // The operating system the agent is installed on. For containerized agents, this is the host os
+	PROP_NODE_CONTAINERIZED = "openhorizon.containerized"       // Boolean field indicating whether the agent is running in a container
 
 	// for install type
 	OS_CLUSTER   = "cluster"
@@ -45,10 +46,11 @@ const (
 	PROP_SVC_PRIVILEGED = "openhorizon.allowPrivileged" // Does the service use workloads that require privileged mode or net==host to run. Can be set by user. Is an error to set to false if service introspection indicates true.
 )
 
-const MAX_MEMEORY = 1048576 // the unit is MB. This is 1000G
+const MAX_MEMEORY = 1048576                            // the unit is MB. This is 1000G
+const DEFAULT_NODE_K8S_NAMESPACE = "openhorizon-agent" // the default cluster name space for cluster type. The default for device type is an emptry string.
 
 func ListReadOnlyProperties() []string {
-	return []string{PROP_NODE_CPU, PROP_NODE_ARCH, PROP_NODE_MEMORY, PROP_NODE_HARDWAREID, PROP_NODE_K8S_VERSION, PROP_NODE_OS, PROP_NODE_CONTAINERIZED}
+	return []string{PROP_NODE_CPU, PROP_NODE_ARCH, PROP_NODE_MEMORY, PROP_NODE_HARDWAREID, PROP_NODE_K8S_VERSION, PROP_NODE_K8S_NAMESPACE, PROP_NODE_OS, PROP_NODE_CONTAINERIZED}
 }
 
 // returns a map of all the built-in properties used by the given node type
@@ -101,7 +103,7 @@ func CreateNodeBuiltInPolicy(availableMem bool, omitGenHwId bool, existingPolicy
 
 func createClusterNodeBuiltInPolicy(availableMem bool) *ExternalPolicy {
 	builtInPol := new(PropertyList)
-	availMem, totMem, cpu, arch, vers, err := cutil.GetClusterCountInfo()
+	availMem, totMem, cpu, arch, vers, ns, err := cutil.GetClusterCountInfo()
 	if err != nil {
 		glog.V(2).Infof("Error getting cluster built-in properties: %v", err)
 	}
@@ -112,6 +114,7 @@ func createClusterNodeBuiltInPolicy(availableMem bool) *ExternalPolicy {
 	if vers != "" {
 		builtInPol.Add_Property(Property_Factory(PROP_NODE_K8S_VERSION, vers), false)
 	}
+	builtInPol.Add_Property(Property_Factory(PROP_NODE_K8S_NAMESPACE, ns), false)
 	if availableMem {
 		builtInPol.Add_Property(Property_Factory(PROP_NODE_MEMORY, availMem), false)
 	} else {
@@ -245,6 +248,7 @@ func IsNodeBuiltinPropertyName(propName string) bool {
 		propName == PROP_NODE_HARDWAREID ||
 		propName == PROP_NODE_PRIVILEGED ||
 		propName == PROP_NODE_K8S_VERSION ||
+		propName == PROP_NODE_K8S_NAMESPACE ||
 		propName == PROP_NODE_OS ||
 		propName == PROP_NODE_CONTAINERIZED {
 		return true

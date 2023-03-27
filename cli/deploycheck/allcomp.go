@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -20,7 +21,7 @@ import (
 )
 
 // check if the policies are compatible
-func AllCompatible(org string, userPw string, nodeIds []string, haGroupName string, nodeArch string, nodeType string, nodeOrg string,
+func AllCompatible(org string, userPw string, nodeIds []string, haGroupName string, nodeArch string, nodeType string, nodeNamespace string, nodeOrg string,
 	nodePolFile string, nodeUIFile string, businessPolId string, businessPolFile string,
 	patternId string, patternFile string, servicePolFile string, svcDefFiles []string,
 	checkAllSvcs bool, showDetail bool) {
@@ -29,7 +30,7 @@ func AllCompatible(org string, userPw string, nodeIds []string, haGroupName stri
 
 	// check the input and get the defaults
 	userOrg, credToUse, nIds, useNodeId, bp, pattern, serviceDefs := verifyCompCheckParameters(
-		org, userPw, nodeIds, haGroupName, nodeType, nodePolFile, nodeUIFile, businessPolId, businessPolFile,
+		org, userPw, nodeIds, haGroupName, nodeType, nodeNamespace, nodePolFile, nodeUIFile, businessPolId, businessPolFile,
 		patternId, patternFile, servicePolFile, svcDefFiles)
 
 	// get exchange context
@@ -57,6 +58,7 @@ func AllCompatible(org string, userPw string, nodeIds []string, haGroupName stri
 		compCheckInput := compcheck.CompCheck{}
 		compCheckInput.NodeArch = nodeArch
 		compCheckInput.NodeType = nodeType
+		compCheckInput.NodeClusterNS = nodeNamespace
 		compCheckInput.NodeOrg = nodeOrg
 		compCheckInput.BusinessPolicy = bp
 		compCheckInput.PatternId = patternId
@@ -117,7 +119,7 @@ func AllCompatible(org string, userPw string, nodeIds []string, haGroupName stri
 
 		if bUseLocalNodeForPolicy || bUseLocalNodeForUI {
 			// get id from local node, check arch
-			compCheckInput.NodeId, compCheckInput.NodeArch, compCheckInput.NodeType, compCheckInput.NodeOrg = getLocalNodeInfo(nodeArch, nodeType, nodeOrg)
+			compCheckInput.NodeId, compCheckInput.NodeArch, compCheckInput.NodeType, compCheckInput.NodeClusterNS, compCheckInput.NodeOrg = getLocalNodeInfo(nodeArch, nodeType, nodeNamespace, nodeOrg)
 		}
 
 		if nodeType == "" && compCheckInput.NodeId != "" {
@@ -170,8 +172,13 @@ func AllCompatible(org string, userPw string, nodeIds []string, haGroupName stri
 // and -p and -P pairs are mutually exclusive.
 // Business policy and pattern are mutually exclusive.
 // Get default credential, node id and org if they are not set.
-func verifyCompCheckParameters(org string, userPw string, nodeIds []string, haGroupName string, nodeType string, nodePolFile string, nodeUIFile string,
-	businessPolId string, businessPolFile string, patternId string, patternFile string, servicePolFile string,
+func verifyCompCheckParameters(org string, userPw string,
+	nodeIds []string, haGroupName string,
+	nodeType string, nodeNamespace string,
+	nodePolFile string, nodeUIFile string,
+	businessPolId string, businessPolFile string,
+	patternId string, patternFile string,
+	servicePolFile string,
 	svcDefFiles []string) (string, string, []string, bool, *businesspolicy.BusinessPolicy, common.AbstractPatternFile, []common.AbstractServiceFile) {
 
 	// get message printer
@@ -183,6 +190,11 @@ func verifyCompCheckParameters(org string, userPw string, nodeIds []string, haGr
 
 	// make sure the node type has correct value
 	ValidateNodeType(nodeType)
+
+	// make sure the namespace is only specified for cluster node
+	if nodeType == persistence.DEVICE_TYPE_DEVICE && nodeNamespace != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-s can only be specified when the node type sepcified by -t is 'cluster'."))
+	}
 
 	// make sure only specify one: business policy or pattern
 	useBPol := false
@@ -313,7 +325,7 @@ func verifyCompCheckParameters(org string, userPw string, nodeIds []string, haGr
 }
 
 // get node info and check node arch and org against the input arch
-func getLocalNodeInfo(inputArch string, inputType string, inputOrg string) (string, string, string, string) {
+func getLocalNodeInfo(inputArch string, inputType string, inputNamespace string, inputOrg string) (string, string, string, string, string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -321,6 +333,7 @@ func getLocalNodeInfo(inputArch string, inputType string, inputOrg string) (stri
 	nodeType := ""
 	nodeOrg := ""
 	arch := cutil.ArchString()
+	namespace := ""
 
 	horDevice := api.HorizonDevice{}
 	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
@@ -330,7 +343,7 @@ func getLocalNodeInfo(inputArch string, inputType string, inputOrg string) (stri
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot use the local node because it is not registered."))
 	}
 
-	// get node id, type and org
+	// get node id, type cluster namespace and org
 	if horDevice.Org != nil {
 		nodeOrg = *horDevice.Org
 		if horDevice.Id != nil {
@@ -341,14 +354,27 @@ func getLocalNodeInfo(inputArch string, inputType string, inputOrg string) (stri
 		nodeType = *horDevice.NodeType
 	}
 
+	if horDevice.ClusterNamespace != nil {
+		namespace = *horDevice.ClusterNamespace
+	}
+
+	if nodeType == persistence.DEVICE_TYPE_CLUSTER && namespace == "" {
+		namespace = externalpolicy.DEFAULT_NODE_K8S_NAMESPACE
+	}
+
 	// check node architecture
 	if inputArch != "" && inputArch != arch {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node architecture %v specified by -a does not match the architecture of the local node %v.", inputArch, arch))
 	}
 
-	// get/check node architecture
+	// get/check node type
 	if inputType != "" && nodeType != "" && inputType != nodeType {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node type %v specified by -t does not match the type of the local node %v.", inputType, nodeType))
+	}
+
+	// get/check node cluster namespace
+	if inputNamespace != "" && namespace != "" && inputNamespace != namespace {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node cluster namespace %v specified by -s does not match the cluster namespace of the local node %v.", inputNamespace, namespace))
 	}
 
 	// check node organization
@@ -356,7 +382,7 @@ func getLocalNodeInfo(inputArch string, inputType string, inputOrg string) (stri
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node organization %v specified by -O does not match the organization of the local node %v.", inputType, nodeOrg))
 	}
 
-	return id, arch, nodeType, nodeOrg
+	return id, arch, nodeType, namespace, nodeOrg
 }
 
 // get business policy from exchange or from file.

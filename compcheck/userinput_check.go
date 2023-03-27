@@ -19,7 +19,8 @@ import (
 type UserInputCheck struct {
 	NodeId         string                                `json:"node_id,omitempty"`
 	NodeArch       string                                `json:"node_arch,omitempty"`
-	NodeType       string                                `json:"node_type,omitempty"` // can be omitted if node_id is specified
+	NodeType       string                                `json:"node_type,omitempty"`              // can be omitted if node_id is specified
+	NodeClusterNS  string                                `json:"node_cluster_namespace,omitempty"` // can be omitted if node_id is specified. If node_id is not specified the default values is "openhorizon-gent". The value is ignored if the node type is device.
 	NodeUserInput  []policy.UserInput                    `json:"node_user_input,omitempty"`
 	BusinessPolId  string                                `json:"business_policy_id,omitempty"`
 	BusinessPolicy *businesspolicy.BusinessPolicy        `json:"business_policy,omitempty"`
@@ -33,8 +34,8 @@ type UserInputCheck struct {
 }
 
 func (p UserInputCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, Service: %v,",
-		p.NodeId, p.NodeArch, p.NodeType, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeClusterNS: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, Service: %v,",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodeClusterNS, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.Service)
 }
 
 // unmashal handler for UserInputCheck object to handle AbstractPatternFile and AbstractServiceFile
@@ -48,6 +49,7 @@ func (p *UserInputCheck) UnmarshalJSON(b []byte) error {
 	p.NodeId = cc.NodeId
 	p.NodeArch = cc.NodeArch
 	p.NodeType = cc.NodeType
+	p.NodeClusterNS = cc.NodeClusterNS
 	p.NodeUserInput = cc.NodeUserInput
 	p.BusinessPolId = cc.BusinessPolId
 	p.BusinessPolicy = cc.BusinessPolicy
@@ -83,8 +85,9 @@ func UserInputCompatible(ec exchange.ExchangeContext, uiInput *UserInputCheck, c
 	getPatterns := exchange.GetHTTPExchangePatternHandler(ec)
 	serviceDefResolverHandler := exchange.GetHTTPServiceDefResolverHandler(ec)
 	getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
+	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(ec)
 
-	return userInputCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, serviceDefResolverHandler, getSelectedServices, uiInput, checkAllSvcs, msgPrinter)
+	return userInputCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, serviceDefResolverHandler, getSelectedServices, nodePolicyHandler, uiInput, checkAllSvcs, msgPrinter)
 }
 
 // Internal function for UserInputCompatible
@@ -93,6 +96,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	getPatterns exchange.PatternHandler,
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	getSelectedServices exchange.SelectedServicesHandler,
+	nodePolicyHandler exchange.NodePolicyHandler,
 	uiInput *UserInputCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
 
 	// get default message printer if nil
@@ -137,6 +141,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 
 		resources.NodeType = node.NodeType
+		resources.NodeClusterNS = node.ClusterNamespace
 
 		if input.NodeUserInput == nil {
 			resources.NodeUserInput = node.UserInput
@@ -144,12 +149,19 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 	}
 
-	// verify the input node type value and get the node type for the node from
-	// node id or from the input.
+	// verify the input node type value and get the node type from node id or from the input.
 	if nodeType, err := VerifyNodeType(input.NodeType, resources.NodeType, nodeId, msgPrinter); err != nil {
 		return nil, err
 	} else {
 		resources.NodeType = nodeType
+	}
+
+	// verify the input node's cluster namespace value and get the node's cluster namespace from
+	// node id or from the input.
+	if nodeClusterNS, err := VerifyNodeClusterNamespace(input.NodeClusterNS, resources.NodeClusterNS, nodeId, msgPrinter); err != nil {
+		return nil, err
+	} else {
+		resources.NodeClusterNS = nodeClusterNS
 	}
 
 	// make sure only specify one: business policy or pattern
@@ -168,6 +180,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	// validate the business policy/pattern, get the user input and workloads from them.
 	var bpUserInput []policy.UserInput
 	var serviceRefs []exchange.ServiceReference
+	consumerNamespace := ""
 	if useBPol {
 		bPolicy, _, err := processBusinessPolicy(getBusinessPolicies, input.BusinessPolId, input.BusinessPolicy, false, msgPrinter)
 		if err != nil {
@@ -177,6 +190,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 		bpUserInput = bPolicy.UserInput
 		serviceRefs = getWorkloadsFromBPol(bPolicy, resources.NodeArch)
+		consumerNamespace = bPolicy.Service.ClusterNamespace
 	} else {
 		pattern, err := processPattern(getPatterns, input.PatternId, input.Pattern, msgPrinter)
 		if err != nil {
@@ -186,6 +200,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 		bpUserInput = pattern.GetUserInputs()
 		serviceRefs = getWorkloadsFromPattern(pattern, resources.NodeArch)
+		consumerNamespace = pattern.GetClusterNamespace()
 	}
 	if serviceRefs == nil || len(serviceRefs) == 0 {
 		if resources.NodeArch != "" {
@@ -209,7 +224,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	// go through all the workloads and check if user input is compatible or not
 	service_comp := map[string]common.AbstractServiceFile{}
 	service_incomp := map[string]common.AbstractServiceFile{}
-	svc_type_mismatch := map[string]bool{}
+	svc_other_mismatch := map[string]bool{}
 	overall_compatible := true
 
 	// save all the services that are retrieved from the exchange so that
@@ -243,7 +258,13 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, topSvcDef, msgPrinter)
 						if !compatible_t {
 							reason = reason_t
-							svc_type_mismatch[sId] = true
+							svc_other_mismatch[sId] = true
+						} else if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+							compatible_n, _, reason_n := CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, consumerNamespace, topSvcDef.GetClusterDeployment(), true, msgPrinter)
+							if !compatible_n {
+								reason = reason_n
+								svc_other_mismatch[sId] = true
+							}
 						}
 
 						if compatible && compatible_t {
@@ -282,7 +303,13 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 								compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, &svc, msgPrinter)
 								if !compatible_t {
 									reason = reason_t
-									svc_type_mismatch[sId] = true
+									svc_other_mismatch[sId] = true
+								} else if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+									compatible_n, _, reason_n := CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, consumerNamespace, svc.GetClusterDeployment(), true, msgPrinter)
+									if !compatible_n {
+										reason = reason_n
+										svc_other_mismatch[sId] = true
+									}
 								}
 
 								if compatible && compatible_t {
@@ -332,7 +359,13 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, useSDef, msgPrinter)
 						if !compatible_t {
 							reason = reason_t
-							svc_type_mismatch[sId] = true
+							svc_other_mismatch[sId] = true
+						} else if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+							compatible_n, _, reason_n := CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, consumerNamespace, useSDef.GetClusterDeployment(), true, msgPrinter)
+							if !compatible_n {
+								reason = reason_n
+								svc_other_mismatch[sId] = true
+							}
 						}
 
 						if compatible && compatible_t {
@@ -357,7 +390,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		if overall_compatible && !service_compatible {
 			if useBPol {
 				overall_compatible = false
-			} else if len(service_incomp) != len(svc_type_mismatch) {
+			} else if len(service_incomp) != len(svc_other_mismatch) {
 				// some compatibility errors are from non type mismatch
 				overall_compatible = false
 			}
@@ -371,7 +404,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	// for the pattern case, if all the services are type mismatch then the overall_compatible should
 	// turn to false
 	if overall_compatible && !useBPol {
-		if len(service_comp) == 0 && len(svc_type_mismatch) > 0 {
+		if len(service_comp) == 0 && len(svc_other_mismatch) > 0 {
 			overall_compatible = false
 		}
 	}

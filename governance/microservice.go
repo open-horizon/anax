@@ -229,7 +229,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			}
 
 			// Fire an event to the torrent worker so that it will download the container
-			cc := events.NewContainerConfig(ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "", "", "", img_auths)
+			cc := events.NewContainerConfig(ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "", "", "", "", img_auths)
 
 			// convert the user input from the service attributes, user input from policy and node to env variables
 			envAdds, err := w.GetEnvVarsForServiceDepolyment(msdef, ms_instance, agreementId)
@@ -343,8 +343,14 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 		// If this function is called by the only clean up the workload containers for the agreement
 		glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for associated agreements %v", ms_inst.AssociatedAgreements)))
 		for _, ag := range agreements {
+
+			clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ag)
+			if err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ag.CurrentAgreementId, err)))
+			}
+
 			// send the event to the container so that the workloads can be deleted
-			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
+			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, clusterNamespace, ag.GetDeploymentConfig())
 
 			var ag_reason_code uint
 			switch ms_reason_code {
@@ -971,10 +977,15 @@ func (w *GovernanceWorker) handleServiceSuspended(service_cs []events.ServiceCon
 			persistence.EC_CANCEL_AGREEMENT_SERVICE_SUSPENDED,
 			ag)
 
+		clusterNamespace, err := w.GetRequestedClusterNamespaceFromAg(&ag)
+		if err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ag.CurrentAgreementId, err)))
+		}
+
 		w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
 
 		// cleanup workloads
-		w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
+		w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, clusterNamespace, ag.GetDeploymentConfig())
 
 		// clean up microservice instances
 		w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, true)

@@ -34,6 +34,9 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 	// Add properties to the policy
 	for prop, val := range *props {
 		p.Add_Property(externalpolicy.Property_Factory(prop, val), false)
+		if prop == externalpolicy.PROP_NODE_K8S_NAMESPACE {
+			p.ClusterNamespace = val.(string)
+		}
 	}
 
 	p.MaxAgreements = maxAgreements
@@ -82,6 +85,9 @@ func GenPolicyFromExternalPolicy(extPol *externalpolicy.ExternalPolicy, polName 
 	for _, p := range extPol.Properties {
 		if err := pPolicy.Add_Property(&p, false); err != nil {
 			return nil, fmt.Errorf("Failed to add property %v to policy. %v", p, err)
+		}
+		if p.Name == externalpolicy.PROP_NODE_K8S_NAMESPACE {
+			pPolicy.ClusterNamespace = p.Value.(string)
 		}
 	}
 

@@ -31,3 +31,7 @@ func (p *Pattern) GetUserInputs() []policy.UserInput {
 func (p *Pattern) GetSecretBinding() []exchangecommon.SecretBinding {
 	return p.SecretBinding
 }
+
+func (p *Pattern) GetClusterNamespace() string {
+	return p.ClusterNamespace
+}

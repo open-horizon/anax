@@ -72,9 +72,10 @@ type EstablishedAgreement struct {
 	CurrentDeployment               map[string]ServiceConfig `json:"current_deployment"`  // Native Horizon deployment config goes here, mutually exclusive with the extended deployment field. This field is set before the imagefetch worker starts the workload.
 	ExtendedDeployment              map[string]interface{}   `json:"extended_deployment"` // All non-native deployment configs go here.
 	Proposal                        string                   `json:"proposal"`
-	ProposalSig                     string                   `json:"proposal_sig"`           // the proposal currently in effect
-	AgreementProtocol               string                   `json:"agreement_protocol"`     // the agreement protocol being used. It is also in the proposal.
-	ProtocolVersion                 int                      `json:"protocol_version"`       // the agreement protocol version being used.
+	ProposalSig                     string                   `json:"proposal_sig"`       // the proposal currently in effect
+	AgreementProtocol               string                   `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
+	ProtocolVersion                 int                      `json:"protocol_version"`   // the agreement protocol version being used.
+	RequestedClusterNamespace       string                   `json:"requested_cluster_namespace"`
 	TerminatedReason                uint64                   `json:"terminated_reason"`      // the reason that the agreement was terminated
 	TerminatedDescription           string                   `json:"terminated_description"` // a string form of the reason that the agreement was terminated
 	AgreementProtocolTerminatedTime uint64                   `json:"agreement_protocol_terminated_time"`

@@ -11,6 +11,7 @@ type AbstractPatternFile interface {
 	GetServices() []exchange.ServiceReference
 	GetUserInputs() []policy.UserInput
 	GetSecretBinding() []exchangecommon.SecretBinding
+	GetClusterNamespace() string
 	IsPublic() bool
 }
 
@@ -24,6 +25,7 @@ type PatternFile struct {
 	Label              string                         `json:"label"`
 	Description        string                         `json:"description,omitempty"`
 	Public             bool                           `json:"public"`
+	ClusterNamespace   string                         `json:"clusterNamespace"`
 	Services           []ServiceReferenceFile         `json:"services"`
 	AgreementProtocols []exchange.AgreementProtocol   `json:"agreementProtocols,omitempty"`
 	UserInput          []policy.UserInput             `json:"userInput,omitempty"`
@@ -84,6 +86,10 @@ func (p *PatternFile) GetUserInputs() []policy.UserInput {
 
 func (p *PatternFile) GetSecretBinding() []exchangecommon.SecretBinding {
 	return p.SecretBinding
+}
+
+func (p *PatternFile) GetClusterNamespace() string {
+	return p.ClusterNamespace
 }
 
 type ServiceReferenceFile struct {
