@@ -377,9 +377,9 @@ stop() {
 	remove_horizon_upgrade_cronjob $INDEX_NUM
 
 	# Stop the anax container
-	echo "Unregistering the node, then stopping/removing the horizon container (this may take a minute)..."
+	echo "Unregistering the node, removing the node resource, and then stopping/removing the horizon container (this may take a minute)..."
 	export HORIZON_URL=http://localhost:$HORIZON_AGENT_PORT
-	hzn unregister -f
+	hzn unregister -f -r 
 	${DOCKER_ENGINE} stop -t 120 $DOCKER_NAME  # give it time to unregister and stop the service containers
 	if [[ $? -ne 0 ]]; then
 		echo "Error stopping container: $DOCKER_NAME. Resuming stop procedures."
