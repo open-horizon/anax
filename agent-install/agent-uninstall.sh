@@ -159,8 +159,8 @@ function validate_args(){
     fi
 
     if [[ -z "$AGENT_NAMESPACE" ]]; then
-        AGENT_NAMESPACE=$DEFAULT_AGENT_NAMESPACE
-        echo "\$AGENT_NAMESPACE: ${AGENT_NAMESPACE}"
+        log_info "AGENT_NAMESPACE is not specified. Please use -m to set. Exiting..."
+        exit 1
     fi
 
     log_info "Check finished successfully"

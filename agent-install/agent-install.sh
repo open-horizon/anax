@@ -122,6 +122,7 @@ Options/Flags:
         --ha-group      Specify the HA group this node will be added to during the node registration, if -s is not specified. (This flag is equivalent to HZN_HA_GROUP)
         --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to AGENT_IN_CONTAINER)
+        --namespace     The namespace that the cluster agent will be installed to. The default is 'openhorizon-agent'
     -N                  The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
     -h  --help          This usage
 
@@ -182,9 +183,9 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
             auto-upgrade)
                 ARG_AGENT_AUTO_UPGRADE=true
                 ;;
-            # namespace)
-            #     ARG_AGENT_NAMESPACE=${all_args[$OPTIND-1]}
-            #     ;;
+            namespace)
+                ARG_AGENT_NAMESPACE=${all_args[$OPTIND-1]}
+                ;;
             help)
                 usage 0
                 ;;
@@ -1252,8 +1253,13 @@ function get_all_variables() {
 
             # if node_id is still not set, use ${HOSTNAME}
             if [[ -z $node_id ]]; then
-                node_id=${HOSTNAME}   # default
-                log_info "node_id is not set, use host name as node id"
+                if is_device; then
+                    node_id=${HOSTNAME}   # default
+                    log_info "node_id is not set, use host name as node id"
+                else
+                    node_id=${AGENT_NAMESPACE}_${HOSTNAME}
+                    log_info "node_id is not set, use namespace_hostname as node id"
+                fi
             fi
         fi
     fi
@@ -3502,7 +3508,7 @@ function get_edge_cluster_files() {
         rm "$EDGE_CLUSTER_TAR_FILE_NAME"
     fi
 
-    for f in deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml agent-uninstall.sh; do
+    for f in deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml agent-uninstall.sh role.yml; do
         if [[ ! -f $f ]]; then
             log_fatal 1 "file $f not found"
         fi
