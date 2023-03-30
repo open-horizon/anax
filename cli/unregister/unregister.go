@@ -71,7 +71,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 			msg = "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from the Exchange, and restarting Horizon..."
 		}
 
-                msgPrinter.Printf(msg)
+		msgPrinter.Printf(msg)
 		msgPrinter.Println()
 
 		// call horizon DELETE /node api, default timeout is to wait forever.
