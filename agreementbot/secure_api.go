@@ -292,6 +292,16 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	//    type: string
 	//    required: false
 	//    description: "The architecture of the node."
+	//  - name: node_type
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified."
+	//  - name: node_cluster_namespace
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified or the node_type is device."
 	//  - name: node_policy
 	//    in: body
 	//    required: false
@@ -405,6 +415,16 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	//    type: string
 	//    required: false
 	//    description: "The architecture of the node."
+	//  - name: node_type
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified."
+	//  - name: node_cluster_namespace
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified."
 	//  - name: node_user_input
 	//    in: body
 	//    required: false
@@ -668,11 +688,16 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	//    type: string
 	//    required: false
 	//    description: "The architecture of the node."
-	//  - name: node_org
+	//  - name: node_type
 	//    in: body
 	//    type: string
 	//    required: false
-	//    description: "The organization of the node."
+	//    description: "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified."
+	//  - name: node_cluster_namespace
+	//    in: body
+	//    type: string
+	//    required: false
+	//    description: "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified or the node_type is device."
 	//  - name: node_policy
 	//    in: body
 	//    required: false
