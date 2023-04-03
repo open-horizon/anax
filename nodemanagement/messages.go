@@ -8,7 +8,7 @@ const (
 	EL_NMP_STATUS_CREATED            = "New node management policy status created for policy %v."
 	EL_NMP_STATUS_CHANGED            = "Node management status for %v changed to %v."
 	EL_NMP_STATUS_CHANGED_WITH_ERROR = "Node management status for %v changed to %v. Error message: %v"
-	EL_NMP_STATUS_DELETED		 = "Removing node management status for %v."
+	EL_NMP_STATUS_DELETED            = "Removing node management status for %v."
 )
 
 // This is does nothing useful at run time.
@@ -22,5 +22,5 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_NMP_STATUS_CREATED)
 	msgPrinter.Sprintf(EL_NMP_STATUS_CHANGED)
 	msgPrinter.Sprintf(EL_NMP_STATUS_CHANGED_WITH_ERROR)
-	msgPrinter.Sprintf(EL_NMP_STATUS_DELETED )
+	msgPrinter.Sprintf(EL_NMP_STATUS_DELETED)
 }

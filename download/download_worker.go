@@ -25,7 +25,7 @@ const (
 	CSSSHAREDORG = "IBM"
 
 	LATESTVERSION = "latest"
-	ALLFILES = "*"
+	ALLFILES      = "*"
 
 	DEBPACKAGETYPE  = "deb"
 	RHELPACKAGETYPE = "rpm"

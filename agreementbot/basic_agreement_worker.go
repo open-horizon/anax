@@ -242,7 +242,7 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 			wi := workItem.(HandleReply)
 			if ok := a.HandleAgreementReply(a.protocolHandler, &wi, a.workerID); ok {
 				lock := a.alm.getAgreementLock(wi.Reply.AgreementId())
-                                lock.Lock()
+				lock.Lock()
 
 				// Update state in the database
 				if ag, err := a.db.AgreementFinalized(wi.Reply.AgreementId(), a.protocolHandler.Name()); err != nil {

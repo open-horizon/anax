@@ -17,7 +17,7 @@ type Pattern struct {
 	Description        string                         `json:"description"`
 	Public             bool                           `json:"public"`
 	Services           []ServiceReference             `json:"services"`
-	ClusterNamespace   string                         `json:"clusterNamespace"`
+	ClusterNamespace   string                         `json:"clusterNamespace,omitempty"`
 	AgreementProtocols []AgreementProtocol            `json:"agreementProtocols"`
 	UserInput          []policy.UserInput             `json:"userInput,omitempty"`
 	SecretBinding      []exchangecommon.SecretBinding `json:"secretBinding,omitempty"` // The secret binding from service secret names to vault secret names.
