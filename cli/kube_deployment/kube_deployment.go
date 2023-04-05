@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/plugin_registry"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"io/ioutil"
@@ -53,11 +54,26 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, privKey *r
 	}
 
 	// Get the base 64 encoding of the kube operator, and put it into the deployment config.
-	if b64, err := ConvertFileToB64String(operatorFilePath); err != nil {
+	b64, err := ConvertFileToB64String(operatorFilePath)
+	if err != nil {
 		return true, "", "", errors.New(msgPrinter.Sprintf("unable to read kube operator %v, error %v", dep["operatorYamlArchive"], err))
-	} else {
-		dep["operatorYamlArchive"] = b64
 	}
+	dep["operatorYamlArchive"] = b64
+
+	if _, ok := dep["metadata"]; ok {
+		return true, "", "", errors.New(msgPrinter.Sprintf("'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service"))
+	}
+
+	md := make(map[string]interface{}, 0)
+	namespaceInOperator, err := common.GetKubeOperatorNamespace(b64)
+	if err != nil {
+		return true, "", "", errors.New(msgPrinter.Sprintf("failed to get namespace from kube operator %v, error %v", operatorFilePath, err))
+	} else if namespaceInOperator != "" {
+		msgPrinter.Printf("Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern")
+		msgPrinter.Println()
+	}
+	md["namespace"] = namespaceInOperator
+	dep["metadata"] = md
 
 	// Stringify and sign the deployment string.
 	deployment, err := json.Marshal(dep)
