@@ -106,6 +106,22 @@ func NodeInitalSetup(db *bolt.DB, getDevice exchange.DeviceHandler, patchDevice 
 				return fmt.Errorf("Unable to update the Exchange with correct node version. %v", err)
 			}
 		}
+
+		if pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
+			if pDevice.GetNodeType() == persistence.DEVICE_TYPE_CLUSTER && exchNode.ClusterNamespace != cutil.GetClusterNamespace() {
+				// update exchange with correct clusterNamespace
+				cluster_namespace := cutil.GetClusterNamespace()
+				if err = patchDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, &exchange.PatchDeviceRequest{ClusterNamespace: &cluster_namespace}); err != nil {
+					return fmt.Errorf("Unable to update the Exchange with correct node cluster namespace. %v", err)
+				}
+
+			} else if pDevice.GetNodeType() == persistence.DEVICE_TYPE_DEVICE && exchNode.ClusterNamespace != "" {
+				// clear the cluster namespace for the exchange node if node type is device
+				if err = patchDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, &exchange.PatchDeviceRequest{ClusterNamespace: nil}); err != nil {
+					return fmt.Errorf("Unable to update the Exchange node with nil cluster namespace. %v", err)
+				}
+			}
+		}
 	}
 
 	return err

@@ -244,13 +244,12 @@ func CreateHorizonDevice(device *HorizonDevice,
 	}
 
 	// update the cluster namespace for the exchange node
-	// TODO: enable it after exchange api supports it
-	//pdr = exchange.PatchDeviceRequest{}
-	//ns := cutil.GetClusterNamespace()
-	//pdr.ClusterNamespace = &ns
-	//if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
-	//	return errorhandler(NewSystemError(fmt.Sprintf("error updating cluster namespace for the exchange node. %v", err))), nil, nil
-	//}
+	pdr = exchange.PatchDeviceRequest{}
+	ns := cutil.GetClusterNamespace()
+	pdr.ClusterNamespace = &ns
+	if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("error updating cluster namespace for the exchange node. %v", err))), nil, nil
+	}
 
 	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device
 	// object suitable for output (external consumption). Specifically the token is omitted.
