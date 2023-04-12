@@ -53,7 +53,7 @@ func GetClusterCountInfo() (float64, float64, float64, string, string, string, e
 	arch := ""
 	nodes, err := client.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		return 0, 0, 0, "", "", "", nil
+		return 0, 0, 0, "", "", "", err
 	}
 
 	for _, node := range nodes.Items {
