@@ -99,7 +99,7 @@ func (s SecretsManager) SaveMicroserviceInstanceSecretsFromAgreementSecrets(agId
 		return nil
 	} else if agSecretsList, err := s.FindSecretsMatchingMsInst(agAllSecretsList, msInst); err != nil {
 		return err
-	} else if agSecretsList == nil {
+	} else if agSecretsList == nil || len(*agSecretsList) == 0 {
 		return nil
 	} else if existingInstSvcSec, err := persistence.FindAllSecretsForMS(s.db, msInst.GetKey()); err != nil {
 		return err

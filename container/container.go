@@ -762,6 +762,12 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 		case events.UNCONFIGURE_COMPLETE:
 			w.Commands <- NewNodeUnconfigCommand(msg)
 		}
+	case *events.AgreementAddedToExistingMicroserviceMessage:
+		msg, _ := incoming.(*events.AgreementAddedToExistingMicroserviceMessage)
+		switch msg.Event().Id {
+		case events.NEW_AGREEMENT_USING_MICROSERVICE:
+			w.Commands <- NewAgreementUsingMicroserviceCommand(msg)
+		}
 
 	default: // nothing
 
@@ -2007,6 +2013,12 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			glog.Errorf("Error handling node unconfig command: %v", err)
 		}
 		b.Commands <- worker.NewTerminateCommand("shutdown")
+
+	case *AgreementUsingMicroserviceCommand:
+		cmd := command.(*AgreementUsingMicroserviceCommand)
+		if err := b.GetSecretsManager().ProcessServiceSecretsWithInstanceId(cmd.msg.MsInstKey, cmd.msg.AgreementId); err != nil {
+			glog.Errorf("Maxwell: error processing service secrets for msinst %v for agreement %v", cmd.msg.MsInstKey, cmd.msg.AgreementId)
+		}
 
 	default:
 		return false

@@ -59,6 +59,7 @@ const (
 	CANCEL_MICROSERVICE_NETWORK EventId = "CANCEL_MICROSERVICE_NETWORK"
 	NEW_BC_CLIENT               EventId = "NEW_BC_CONTAINER"
 	IMAGE_LOAD_FAILED           EventId = "IMAGE_LOAD_FAILED"
+	NEW_AGREEMENT_USING_MICROSERVICE EventId = "NEW_AGREEMENT_USING_MICROSERVICE"
 
 	// policy-related
 	NEW_POLICY             EventId = "NEW_POLICY"
@@ -1755,6 +1756,34 @@ func NewMicroserviceContainersDestroyedMessage(id EventId, key string) *Microser
 			Id: id,
 		},
 		MsInstKey: key,
+	}
+}
+
+type AgreementAddedToExistingMicroserviceMessage struct {
+	event Event
+	MsInstKey string
+	AgreementId string
+}
+
+func (m *AgreementAddedToExistingMicroserviceMessage) Event() Event {
+	return m.event
+}
+
+func (m *AgreementAddedToExistingMicroserviceMessage) String() string {
+        return m.ShortString()
+}
+
+func (m *AgreementAddedToExistingMicroserviceMessage) ShortString() string {
+        return fmt.Sprintf("Event: %v, MsInstKey: %v, AgreementId: %v", m.event, m.MsInstKey, m.AgreementId)
+}
+
+func NewAgreementAddedToExistingMicroserviceMessage(id EventId, key string, agId string) *AgreementAddedToExistingMicroserviceMessage {
+	return &AgreementAddedToExistingMicroserviceMessage{
+		event: Event{
+			Id: id,
+		},
+		MsInstKey: key,
+		AgreementId: agId,
 	}
 }
 
