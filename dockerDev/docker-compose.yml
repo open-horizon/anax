@@ -6,6 +6,6 @@ services:
       SSH_USERNAME: "${SSH_USERNAME:-jetbrains}"
       SSH_PASSWORD: "${SSH_PASSWORD:-jetbrains}"
     volumes:
-      - "./home:/opt/home"
+      - "./home:/opt/anax"
     ports:
       - "${SSH_PORT:-22}:22"
