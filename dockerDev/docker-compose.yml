@@ -3,6 +3,7 @@ services:
   devEnv:
     image: dev
     environment:
+      # Customize as needed
       SSH_USERNAME: "${SSH_USERNAME:-jetbrains}"
       SSH_PASSWORD: "${SSH_PASSWORD:-jetbrains}"
     volumes:

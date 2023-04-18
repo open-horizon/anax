@@ -8,9 +8,9 @@ RUN apt-get update && apt-get upgrade -y && \
 	chmod +x /start.sh
 
 
-# Should work in theory for vscode as well ToDo: allow custom passwords if supplied
-ENV SSH_USERNAME=jetbrains
-ENV SSH_PASSWORD=jetbrains
+# Should work in theory for vscode as well
+ENV SSH_USERNAME={SSH_USERNAME:-jetbrains}
+ENV SSH_PASSWORD={SSH_PASSWORD:-jetbrains}
 EXPOSE 22
 
 # pull from main repo, or choice of fork depending on config
