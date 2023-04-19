@@ -7,6 +7,7 @@ services:
       # in order to connect to the container from the host machine, connect to localhost:$SSH_PORT then fill out username and password
       SSH_USERNAME: "${SSH_USERNAME:-jetbrains}"
       SSH_PASSWORD: "${SSH_PASSWORD:-jetbrains}"
+      SRCREPO: "${SSH_PASSWORD}"
     volumes:
       - "./home:/opt/anax"
     ports:

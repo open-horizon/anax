@@ -14,8 +14,9 @@ ENV SSH_PASSWORD={SSH_PASSWORD:-jetbrains}
 EXPOSE 22
 
 # pull from main repo, or choice of fork depending on config
-# ToDo: later
-RUN mkdir /opt/anax && cd /opt/anax && git clone https://github.com/open-horizon/anax.git .
+ENV a='https://github.com/open-horizon/anax.git'
+
+RUN mkdir /opt/anax && cd /opt/anax && git clone ${SRCREPO:-$a} .
 WORKDIR /opt/anax
 RUN go install && go clean
 
