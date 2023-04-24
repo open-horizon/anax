@@ -4,6 +4,7 @@ ADD ./start.sh /start.sh
 
 RUN apt-get update && apt-get upgrade -y && \
 	apt-get install openssh-server nano -y && \
+    apt-get install neofetch -y && \
 	systemctl enable ssh && \
 	chmod +x /start.sh
 

@@ -14,3 +14,4 @@ chown -R ${SSH_USERNAME} /opt/anax
 service ssh start
 
 tail -f /dev/null
+neofetch
