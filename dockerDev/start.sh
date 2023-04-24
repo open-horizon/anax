@@ -11,6 +11,9 @@ fi
 echo -e "${SSH_PASSWORD}\n${SSH_PASSWORD}" | passwd ${SSH_USERNAME}
 chown -R ${SSH_USERNAME} /opt/anax
 
+cd /opt/anax
+git clone ${SRCREPO:-$a} . && go install && go clean
+
 service ssh start
 
 tail -f /dev/null
