@@ -17,7 +17,7 @@ type Device struct {
 	Name               string             `json:"name"`
 	Owner              string             `json:"owner"`
 	NodeType           string             `json:"nodeType"`
-	ClusterNamespace   string             `json:"clusterNamespace"`
+	ClusterNamespace   string             `json:"clusterNamespace,omitempty"`
 	Pattern            string             `json:"pattern"`
 	RegisteredServices []Microservice     `json:"registeredServices"`
 	MsgEndPoint        string             `json:"msgEndPoint"`
