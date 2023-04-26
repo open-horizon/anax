@@ -29,9 +29,9 @@ There are several techniques to start the agent in a container providing differe
 ## Prerequisites
 {: #container-prereqs}
 
-Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}. {{site.data.keyword.macOS_notm}} users may require a Docker Desktop license, if necessary, and install the most recent version of Docker on your device. For more information, see the [Docker installation for Mac ](https://docs.docker.com/docker-for-mac/install/){:target="_blank"}{: .externalLink} documentation.
+Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}. {{site.data.keyword.macOS_notm}} users might require a Docker Desktop license, if necessary, and install Docker on your device. For more information, see the [Docker installation for Mac ](https://docs.docker.com/docker-for-mac/install/){:target="_blank"}{: .externalLink} documentation.
 
-If the management hub you are using uses Secure Socket Layer (SSL) encryption, then you need to have the SSL certificate from the management hub.
+If your management hub uses Secure Socket Layer (SSL) encryption, the management hub SSL certificate is required.
 
 ## Option 1 - `agent-install.sh --container`
 
@@ -66,15 +66,15 @@ Use these docker run instructions to start the agent in a container, which provi
    * HZN_EXCHANGE_URL=`<address of your exchange>`
    * HZN_FSS_CSSURL=`<css address>`
    * HZN_ORG_ID=`<the org this node should be in>`
-   * HZN_EXCHANGE_USER_AUTH=`<exchange username:password>`
+   * HZN_EXCHANGE_USER_AUTH=`<exchange username:password>` (or apikey)
    * HZN_AGBOT_URL=`<agbot api address>`
+   * HZN_MGMT_HUB_CERT_PATH=`<path to the ssl certificate file on the host machine>`
 
    Optional:
 
    * HZN_NODE_ID=`<a name for your node>`
    * If this parameter is not included, the node will be assigned a random alphanumeric identifier.
    * (DEPRECATED) HZN_DEVICE_ID=`<a name for your node>`
-   * HZN_MGMT_HUB_CERT_PATH=`<path to the ssl certificate file on the host machine>`
 
 2. Prior to starting the container, export the following variables:
 
@@ -83,14 +83,12 @@ Use these docker run instructions to start the agent in a container, which provi
    * HZN_AGENT_IMAGE_TAG=`<version of the agent container to use>`
    * CONFIG_FILE=`<Location of the configuration file>`
      * The configuration file with the contents from step 1.
-   * HZN_MGMT_HUB_CERT_MOUNT="-v `<ssl certificate file on host>`:`<$HZN_MGMT_HUB_CERT_PATH>`"
-     * This needs to be set in the configuration file so the agent can find the certificate after it starts.
    * DOCKER_NAME=`<name for the agent container>`
    * HORIZON_AGENT_PORT=`<port number>`
      * The port to expose from the container that hzn will call the agent on. This is typically 8081.
    * DOCKER_ADD_HOSTS="--add-host=$`<host name to add to container hosts file>`"
-     * This is only necessary if the exchange or css url will not be resolvable from inside the agent container.
-     * The format would look like `--add-host=edge-openhorizon.com:169.22.10.179`
+     * This is only necessary if the exchange or CSS url will not be resolvable from inside the agent container.
+     * Use this syntax `--add-host=edge-openhorizon.com:169.22.10.179`
 
    Example:
 
@@ -98,7 +96,7 @@ Use these docker run instructions to start the agent in a container, which provi
    HZN_AGENT_IMAGE=openhorizon/amd64_anax
    HZN_AGENT_IMAGE_TAG=latest
    CONFIG_FILE=/etc/default/horizon
-   HZN_MGMT_HUB_CERT_PATH=/etc/default/horizon/agent.crt
+   HZN_MGMT_HUB_CERT_PATH=/etc/horizon/agent-install.crt
    DOCKER_NAME=horizon1
    HORIZON_AGENT_PORT=8081
    ```
@@ -128,9 +126,10 @@ Use these docker run instructions to start the agent in a container, which provi
    -e DOCKER_NAME=$DOCKER_NAME \
    -e HZN_VAR_RUN_BASE=$fssHostSharePath \
    -v /var/run/docker.sock:/var/run/docker.sock \
-   -v $CONFIG_FILE:/etc/default/horizon:ro $HZN_MGMT_HUB_CERT_MOUNT \
-   -v $DOCKER_NAME_var:/var/horizon/ \
-   -v $DOCKER_NAME_etc:/etc/horizon/ \
+   -v $CONFIG_FILE:/etc/default/horizon:ro \
+   -v $HZN_MGMT_HUB_CERT_PATH:$HZN_MGMT_HUB_CERT_PATH \
+   -v ${DOCKER_NAME}_var:/var/horizon/ \
+   -v ${DOCKER_NAME}_etc:/etc/horizon/ \
    -v $fssHostSharePath:$fssHostSharePath \
    $HZN_AGENT_IMAGE:$HZN_AGENT_IMAGE_TAG
 

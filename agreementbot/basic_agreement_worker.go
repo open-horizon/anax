@@ -241,6 +241,9 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 		} else if workItem.Type() == REPLY {
 			wi := workItem.(HandleReply)
 			if ok := a.HandleAgreementReply(a.protocolHandler, &wi, a.workerID); ok {
+				lock := a.alm.getAgreementLock(wi.Reply.AgreementId())
+                                lock.Lock()
+
 				// Update state in the database
 				if ag, err := a.db.AgreementFinalized(wi.Reply.AgreementId(), a.protocolHandler.Name()); err != nil {
 					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error persisting agreement %v finalized: %v", wi.Reply.AgreementId(), err)))
@@ -251,6 +254,7 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 				} else if err := a.protocolHandler.RecordConsumerAgreementState(wi.Reply.AgreementId(), pol, ag.Org, "Finalized Agreement", a.workerID); err != nil {
 					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", wi.Reply.AgreementId(), err)))
 				}
+				lock.Unlock()
 			}
 
 		} else if workItem.Type() == DATARECEIVEDACK {

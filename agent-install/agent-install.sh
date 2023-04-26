@@ -695,22 +695,24 @@ function download_css_file() {
         download_with_retry $remote_path $local_file "$cert_flag" $exch_creds
     fi
 
-    local version_from_cert_file
-    getCertVersionFromCertFile version_from_cert_file
+    if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
+        local version_from_cert_file
+        getCertVersionFromCertFile version_from_cert_file
 
-    if [[ -n $AGENT_CERT_VERSION ]]; then
-        if is_linux; then  # Skip writing comment to cert file for MacOS since it failed on M1 machine in mac_trust_cert step
-            if [[ -z $version_from_cert_file ]]; then
-                # write AGENT_CERT_VERSION in file comment as ------OpenHorizon Version x.x.x-----
-                version_to_add="-----OpenHorizon Version $AGENT_CERT_VERSION-----"
-                log_debug "add this line $version_to_add to cert file"
-            
-                echo "-----OpenHorizon Version $AGENT_CERT_VERSION-----" > tmp-agent-install.crt
-                cat $AGENT_CERT_FILE_DEFAULT >> tmp-agent-install.crt
-                mv tmp-agent-install.crt $AGENT_CERT_FILE_DEFAULT
-            elif [[ "$AGENT_CERT_VERSION" != "$version_from_cert_file" ]]; then
-                # if version in cert != version in css filename, overwrite to use version in css filename
-                sed -i "s#$version_from_cert_file#${AGENT_CERT_VERSION}#g" $AGENT_CERT_FILE_DEFAULT 
+        if [[ -n $AGENT_CERT_VERSION ]]; then
+            if is_linux; then  # Skip writing comment to cert file for MacOS since it failed on M1 machine in mac_trust_cert step
+                if [[ -z $version_from_cert_file ]]; then
+                    # write AGENT_CERT_VERSION in file comment as ------OpenHorizon Version x.x.x-----
+                    version_to_add="-----OpenHorizon Version $AGENT_CERT_VERSION-----"
+                    log_debug "add this line $version_to_add to cert file: $AGENT_CERT_FILE"
+                
+                    echo "-----OpenHorizon Version $AGENT_CERT_VERSION-----" > tmp-agent-install.crt
+                    cat $AGENT_CERT_FILE >> tmp-agent-install.crt
+                    mv tmp-agent-install.crt $AGENT_CERT_FILE
+                elif [[ "$AGENT_CERT_VERSION" != "$version_from_cert_file" ]]; then
+                    # if version in cert != version in css filename, overwrite to use version in css filename
+                    sed -i "s#$version_from_cert_file#${AGENT_CERT_VERSION}#g" $AGENT_CERT_FILE 
+                fi
             fi
         fi
     fi
@@ -767,7 +769,7 @@ function getCertVersionFromCertFile() {
         else
             continue
         fi
-    done < "$AGENT_CERT_FILE_DEFAULT"
+    done < "$AGENT_CERT_FILE"
 
     log_debug "cert_ver_from_file=$cert_ver_from_file"
     eval $__resultvar="'${cert_ver_from_file}'"
