@@ -3797,12 +3797,12 @@ function create_namespace_admin_role() {
     fi
 
     # namespace scoped agent will need cluster role to list all the k8s nodes. This is used to get kubernete information when set built-in node properties
-    clusterrole_get_nodes="cluster-admin-list-nodes"
+    clusterrole_get_nodes="cluster-admin-for-namespaced-agent"
     log_verbose "checking if $clusterrole_get_nodes clusterrole exists"
     if ! $KUBECTL get clusterrole ${clusterrole_get_nodes} 2>/dev/null; then
         log_verbose "creating ${clusterrole_get_nodes}..."
-        $KUBECTL apply -f clusterrole-list-nodes.yml
-        chk $? "creating clusterrole to list nodes"
+        $KUBECTL apply -f clusterrole-for-namespaced-agent.yml
+        chk $? "creating clusterrole for namespace-scoped agent"
         log_info "clusterrole ${clusterrole_get_nodes} is created"
     else
         log_info "${clusterrole_get_nodes} exists, skip creating clusterrole"
@@ -3845,14 +3845,16 @@ function create_role_binding() {
         log_info "rolebinding ${AGENT_ROLE_BINDING} exists, skip creating rolebinding"
     fi
 
-    log_verbose "checking if clusterrolebinding $CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES exist..."
-    if ! $KUBECTL get clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES} 2>/dev/null; then
+    # cluster-role-get-k8s-nodes-<namespace-name>
+    clusterrolebinding_read_k8s_nodes=${CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES}-${AGENT_NAMESPACE}
+    log_verbose "checking if clusterrolebinding $clusterrolebinding_read_k8s_nodes exist..."
+    if ! $KUBECTL get clusterrolebinding ${clusterrolebinding_read_k8s_nodes} 2>/dev/null; then
         log_verbose "Binding ${SERVICE_ACCOUNT_NAME} to cluster role to get k8s nodes..."
-        $KUBECTL create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin-list-nodes
+        $KUBECTL create clusterrolebinding ${clusterrolebinding_read_k8s_nodes} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin-for-namespace-scoped-agent
         chk $? "creating clusterrolebinding for ${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}"
-        log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES} created"
+        log_info "clusterrolebinding ${clusterrolebinding_read_k8s_nodes} created"
     else
-        log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES} exists, skip creating clusterrolebinding"
+        log_info "clusterrolebinding ${clusterrolebinding_read_k8s_nodes} exists, skip creating clusterrolebinding"
     fi
 
     log_debug "create_role_binding() end"

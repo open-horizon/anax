@@ -205,6 +205,7 @@ func (c KubeClient) OperatorStatus(tar string, metadata map[string]interface{}, 
 		return nil, err
 	}
 	namespace := getFinalNamespace(reqNamespace, opNamespace)
+	glog.Infof("Lily - In OperatorStatus, opNamespace is %v, getFinalNamespace is: %v", opNamespace, namespace)
 
 	if len(apiObjMap[K8S_DEPLOYMENT_TYPE]) < 1 {
 		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to find operator deployment object.")))

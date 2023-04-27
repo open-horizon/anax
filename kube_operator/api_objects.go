@@ -405,7 +405,7 @@ func (d DeploymentAppsV1) Uninstall(c KubeClient, namespace string) {
 // Status will be the status of the operator pod
 func (d DeploymentAppsV1) Status(c KubeClient, namespace string) (interface{}, error) {
 	opName := d.DeploymentObject.ObjectMeta.Name
-	podList, err := c.Client.CoreV1().Pods(DEFAULT_ANAX_NAMESPACE).List(context.Background(), metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", "name", opName)})
+	podList, err := c.Client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", "name", opName)})
 	if err != nil {
 		return nil, err
 	}
@@ -651,10 +651,10 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating custom resource definition %v", cr.CustomResourceDefinitionObject)))
 	_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
-		cr.Uninstall(c, namespace)
-		_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
-	}
-	if err != nil {
+		//cr.Uninstall(c, namespace)
+		//_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Custom resource definition already exist: %v", cr.CustomResourceDefinitionObject)))
+	} else if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to create custom resource definition %s: %v", cr.Name(), err)))
 	}
 
@@ -683,7 +683,10 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 		glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, customResourceObject)))
 		for {
 			_, err = crClient.Namespace(namespace).Create(context.Background(), customResourceObject, metav1.CreateOptions{})
-			if err != nil && timeout > 0 {
+			if err != nil && errors.IsAlreadyExists(err) {
+				glog.V(3).Infof(kwlog(fmt.Sprintf("Operator custom resource already exist, skip creating custom resource %v.", customResourceObject)))
+				break
+			} else if err != nil && timeout > 0 {
 				glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
 				time.Sleep(time.Second * 5)
 			} else if err != nil {

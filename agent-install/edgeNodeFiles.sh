@@ -854,7 +854,7 @@ function getClusterDeployTemplates () {
     done
 }
 
-# Get agent-uninstall.sh, deployment-template.yml, persistentClaim-template.yml, auto-upgrade-cronjob-template.yml, role.yml clusterrole-list-nodes.yml and create tar file
+# Get agent-uninstall.sh, deployment-template.yml, persistentClaim-template.yml, auto-upgrade-cronjob-template.yml, role.yml clusterrole-for-namespaced-agent.yml and create tar file
 function getEdgeClusterFiles() {
 
     local upgradeFiles=$1
@@ -863,7 +863,7 @@ function getEdgeClusterFiles() {
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
         echo "Creating tar file of edge cluster files..."
-        tar -zcf $EDGE_CLUSTER_TAR_FILE_NAME agent-uninstall.sh deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml role.yml clusterrole-list-nodes.yml
+        tar -zcf $EDGE_CLUSTER_TAR_FILE_NAME agent-uninstall.sh deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml role.yml clusterrole-for-namespaced-agent.yml
         chk $? 'Creating tar file of edge cluster files'
         putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME "agent_files" false  $(getHznVersion)
         putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME "agent_software_files-$(getHznVersion)" true $(getHznVersion)

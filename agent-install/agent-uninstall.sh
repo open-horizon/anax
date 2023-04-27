@@ -335,6 +335,15 @@ function deleteAgentResources() {
     # give pods sometime to terminate by themselves
     sleep 10
 
+    set -e
+    log_info "Deleting auto-upgrade cronjob..."
+    if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+        $KUBECTL delete cronjob $CRONJOB_AUTO_UPGRADE_NAME -n $AGENT_NAMESPACE
+    else
+        log_info "cronjob ${CRONJOB_AUTO_UPGRADE_NAME} does not exist, skip deleting cronjob"
+    fi
+    set +e
+
     log_info "Checking if pods are deleted"
     PODS=$($KUBECTL get pod -n $AGENT_NAMESPACE 2>/dev/null)
     if [[ -n "$PODS" ]]; then
@@ -364,16 +373,7 @@ function deleteAgentResources() {
     $KUBECTL delete secret $SECRET_NAME -n $AGENT_NAMESPACE
     $KUBECTL delete secret $IMAGE_REGISTRY_SECRET_NAME -n $AGENT_NAMESPACE
     $KUBECTL delete secret ${SECRET_NAME}-backup -n $AGENT_NAMESPACE
-    set -e
-
-    log_info "Deleting auto-upgrade cronjob..."
-    if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
-        $KUBECTL delete cronjob $CRONJOB_AUTO_UPGRADE_NAME -n $AGENT_NAMESPACE
-    else
-        log_info "cronjob ${CRONJOB_AUTO_UPGRADE_NAME} does not exist, skip deleting cronjob"
-    fi
-
-    set +e
+    
     if [[ "$AGENT_NAMESPACE" == "$DEFAULT_AGENT_NAMESPACE" ]]; then
         log_info "Deleting clusterrolebinding..."
         $KUBECTL delete clusterrolebinding $CLUSTER_ROLE_BINDING_NAME

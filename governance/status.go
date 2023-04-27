@@ -211,7 +211,11 @@ func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) (
 						if err != nil {
 							return nil, fmt.Errorf(logString(fmt.Sprintf("unable to get the requested cluster namespace from the agreement proposal.")))
 						}
+						glog.Infof("Lily - reqNamespace is %v", reqNamespace) // lily-issue3470
 						agId = ags[0].CurrentAgreementId
+						rqcn := ags[0].RequestedClusterNamespace
+						glog.Infof("Lily - rqcn from ags[0] is %v", rqcn) // empty string
+
 					}
 
 					// get status
@@ -332,7 +336,7 @@ func GetOperatorStatus(deployment string, agId string, reqNamespace string) (int
 	if kd, err := persistence.GetKubeDeployment(deployment); err == nil {
 		client, err := kube_operator.NewKubeClient()
 		if err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving operator status from cluster, error: %v", err)))
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting kube client, error: %v", err)))
 		}
 		opStatus, err := client.OperatorStatus(kd.OperatorYamlArchive, kd.Metadata, agId, reqNamespace)
 		if err != nil {
