@@ -164,29 +164,36 @@ type OtherObject struct {
 
 func (o OtherObject) Install(c KubeClient, namespace string) error {
 	name := o.Name()
-	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to create object %v with GroupVersionKind %v", name, o.GVK)))
+	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to create object %v with GroupVersionResource %v", name, o.gvr())))
 
 	dynClient := c.DynClient.Resource(o.gvr())
 
-	if _, err := dynClient.Namespace(namespace).Create(context.Background(), o.Object, metav1.CreateOptions{}); err != nil {
-		return err
+	if _, err1 := dynClient.Namespace(namespace).Create(context.Background(), o.Object, metav1.CreateOptions{}); err1 == nil {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("successfully created namespaced object %v with GroupVersionResource %v", name, o.gvr())))
+	} else if _, err2 := dynClient.Create(context.Background(), o.Object, metav1.CreateOptions{}); err2 == nil {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("successfully created cluster-wide object %v with GroupVersionResource %v", name, o.gvr())))
+	} else {
+		return fmt.Errorf("%v, %v", err1, err2)
 	}
 
-	glog.V(3).Infof(kwlog(fmt.Sprintf("successfully created object %v with GroupVersionKind %v", name, o.GVK)))
 	return nil
 }
 
 func (o OtherObject) Uninstall(c KubeClient, namespace string) {
 	name := o.Name()
-	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to delete object %v with GroupVersionKind %v", name, o.GVK)))
+	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to delete object %v with GroupVersionResource %v", name, o.gvr())))
 
 	dynClient := c.DynClient.Resource(o.gvr())
 
-	if err := dynClient.Namespace(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("Failed to uninstall %v object %v: %v", o.GVK, name, err)))
+	if err1 := dynClient.Namespace(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err1 == nil {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("successfully deleted namespaced object %v with GroupVersionResource %v", name, o.gvr())))
+	} else if err2 := dynClient.Delete(context.Background(), name, metav1.DeleteOptions{}); err2 == nil {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("successfully deleted cluster-wide object %v with GroupVersionResource %v", name, o.gvr())))
+	} else {
+		glog.Errorf(kwlog(fmt.Sprintf("Failed to uninstall %v object %v: %v, %v", o.gvr(), name, err1, err2)))
 	}
 
-	glog.V(3).Infof(kwlog(fmt.Sprintf("successfully deleted object %v with GroupVersionKind %v", name, o.GVK)))
+	glog.V(3).Infof(kwlog(fmt.Sprintf("successfully deleted object %v with GroupVersionResource %v", name, o.GVK)))
 }
 
 func (o OtherObject) Name() string {
