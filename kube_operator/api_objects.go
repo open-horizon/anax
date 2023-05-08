@@ -225,6 +225,10 @@ func (n NamespaceCoreV1) Install(c KubeClient, namespace string) error {
 }
 
 func (n NamespaceCoreV1) Uninstall(c KubeClient, namespace string) {
+	if namespace == cutil.GetClusterNamespace() {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("skipping deletion of namespace used by agent %v", n.NamespaceObject)))
+		return
+	}
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting namespace %v", n.NamespaceObject)))
 	err := c.Client.CoreV1().Namespaces().Delete(context.Background(), n.Name(), metav1.DeleteOptions{})
 	if err != nil {
