@@ -51,7 +51,7 @@ const (
 )
 
 func getBaseK8sKinds() []string {
-	return []string{K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_DEPLOYMENT_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_CRD_TYPE, K8S_NAMESPACE_TYPE}
+	return []string{K8S_NAMESPACE_TYPE, K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_DEPLOYMENT_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_CRD_TYPE}
 }
 
 func getDangerKinds() []string {
@@ -173,7 +173,8 @@ func (c KubeClient) Uninstall(tar string, agId string) error {
 	baseK8sComponents := getBaseK8sKinds()
 
 	// uninstall all the objects of built-in k8s types
-	for _, componentType := range baseK8sComponents {
+	for i := len(baseK8sComponents) - 1; i >= 0; i-- {
+		componentType := baseK8sComponents[i]
 		for _, componentObj := range apiObjMap[componentType] {
 			glog.Infof(kwlog(fmt.Sprintf("attempting to uninstall %v %v", componentType, componentObj.Name())))
 			componentObj.Uninstall(c, namespace)
