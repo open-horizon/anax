@@ -243,12 +243,14 @@ func CreateHorizonDevice(device *HorizonDevice,
 		return errorhandler(NewSystemError(fmt.Sprintf("error updating architecture for the exchange node. %v", err))), nil, nil
 	}
 
-	// update the cluster namespace for the exchange node
-	pdr = exchange.PatchDeviceRequest{}
-	ns := cutil.GetClusterNamespace()
-	pdr.ClusterNamespace = &ns
-	if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("error updating cluster namespace for the exchange node. %v", err))), nil, nil
+	if device.NodeType != nil && *device.NodeType == persistence.DEVICE_TYPE_CLUSTER {
+		// update the cluster namespace for the exchange node
+		pdr = exchange.PatchDeviceRequest{}
+		ns := cutil.GetClusterNamespace()
+		pdr.ClusterNamespace = &ns
+		if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("error updating cluster namespace for the exchange node. %v", err))), nil, nil
+		}
 	}
 
 	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device
