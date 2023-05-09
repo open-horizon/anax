@@ -9,6 +9,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"math"
+	"os"
 )
 
 func NewKubeConfig() (*rest.Config, error) {
@@ -73,4 +74,13 @@ func FloatFromQuantity(quantVal *resource.Quantity) float64 {
 	scale := decVal.Scale()
 	floatVal := float64(unscaledVal) * math.Pow10(-1*int(scale))
 	return floatVal
+}
+
+func GetClusterNamespace() string {
+	// get kube namespace
+	ns := os.Getenv("AGENT_NAMESPACE")
+	if ns == "" {
+		ns = "openhorizon-agent"
+	}
+	return ns
 }
