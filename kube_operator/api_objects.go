@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"strings"
 	"time"
@@ -416,9 +417,12 @@ func (d DeploymentAppsV1) Uninstall(c KubeClient, namespace string) {
 // Status will be the status of the operator pod
 func (d DeploymentAppsV1) Status(c KubeClient, namespace string) (interface{}, error) {
 	opName := d.DeploymentObject.ObjectMeta.Name
-	podList, err := c.Client.CoreV1().Pods(DEFAULT_ANAX_NAMESPACE).List(context.Background(), metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", "name", opName)})
+	podList, err := c.Client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", "name", opName)})
 	if err != nil {
 		return nil, err
+	} else if podList == nil || len(podList.Items) == 0 {
+		labelSelector := metav1.LabelSelector{MatchLabels: d.DeploymentObject.Spec.Selector.MatchLabels}
+		podList, err = c.Client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: labels.Set(labelSelector.MatchLabels).String()})
 	}
 	return podList, nil
 }
