@@ -193,7 +193,7 @@ func PatternUpdate(org string, credToUse string, pattern string, filePath string
 			patch = make(map[string]string)
 			err = json.Unmarshal([]byte(attribute), &patch)
 		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding."))
 		}
 	}
 
