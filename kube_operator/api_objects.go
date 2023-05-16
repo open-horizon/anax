@@ -150,7 +150,7 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 		}
 	}
 	if namespace == "" {
-		namespace = ANAX_NAMESPACE
+		namespace = cutil.GetClusterNamespace()
 	}
 
 	return objMap, namespace, nil
