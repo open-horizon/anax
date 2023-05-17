@@ -13,7 +13,6 @@ CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
 CRONJOB_AUTO_UPGRADE_NAME="auto-upgrade-cronjob"
 DEFAULT_AGENT_NAMESPACE="openhorizon-agent"
-ADMIN_ROLE="agent-namespace-admin"
 USE_DELETE_FORCE=false
 DELETE_TIMEOUT=10 # Default delete timeout
 
@@ -374,17 +373,8 @@ function deleteAgentResources() {
     fi
 
     set +e
-    if [[ "$AGENT_NAMESPACE" == "$DEFAULT_AGENT_NAMESPACE" ]]; then
-        log_info "Deleting clusterrolebinding..."
-        $KUBECTL delete clusterrolebinding $CLUSTER_ROLE_BINDING_NAME
-    else
-        log_info "Deleting rolebinding..."
-        ROLE_BINDING="$AGENT_NAMESPACE-role-binding"
-        $KUBECTL delete rolebinding $ROLE_BINDING -n $AGENT_NAMESPACE
-
-        log_info "Deleting role..."
-        $KUBECTL delete role $ADMIN_ROLE -n $AGENT_NAMESPACE
-    fi
+    log_info "Deleting clusterrolebinding..."
+    $KUBECTL delete clusterrolebinding $CLUSTER_ROLE_BINDING_NAME
 
     log_info "Deleting persistent volume..."
     $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
