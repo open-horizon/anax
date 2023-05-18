@@ -18,9 +18,11 @@ spec:
       - name: agent-etc-vol
         configMap:
           name: openhorizon-agent-config
+      # START_CERT_VOL
       - name: agent-cert-volume
         secret:
           secretName: openhorizon-agent-secrets
+      # END_CERT_VOL
       - name: agent-pvc-storage
         persistentVolumeClaim:
           claimName: openhorizon-agent-pvc
@@ -50,8 +52,10 @@ spec:
         - mountPath: /etc/default/horizon
           subPath: horizon
           name: agent-etc-vol
+        # START_CERT_VOL
         - mountPath: /etc/default/cert
           name: agent-cert-volume
+        # END_CERT_VOL
         - mountPath: /var/horizon
           name: agent-pvc-storage
           subPath: horizon
@@ -79,5 +83,7 @@ spec:
           value:  __AgentNameSpace__
         - name: AGENT_CLUSTER_IMAGE_REGISTRY_HOST
           value: __ImageRegistryHost__
+        # START_CERT_VOL
         - name: HZN_MGMT_HUB_CERT_PATH
           value: /etc/default/cert/agent-install.crt
+        # END_CERT_VOL
