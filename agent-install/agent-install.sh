@@ -3556,10 +3556,13 @@ function create_horizon_env() {
         log_verbose "$HZN_ENV_FILE already exists. Will overwrite it..."
         rm $HZN_ENV_FILE
     fi
-    local cert_name=$(basename ${AGENT_CERT_FILE})
-    local cluster_cert_path="/etc/default/cert"
-    log_verbose "copy cert file to $cluster_cert_path ..."
-    mkdir -p $cluster_cert_path && cp ${AGENT_CERT_FILE} $cluster_cert_path
+    if [[ -f $AGENT_CERT_FILE ]]; then
+        local cert_name=$(basename ${AGENT_CERT_FILE})
+        local cluster_cert_path="/etc/default/cert"
+        log_verbose "copy cert file to $cluster_cert_path ..."
+        mkdir -p $cluster_cert_path && cp ${AGENT_CERT_FILE} $cluster_cert_path
+        echo "HZN_MGMT_HUB_CERT_PATH=$cluster_cert_path/$cert_name" >>$HZN_ENV_FILE
+    fi
 
     echo "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}" >>$HZN_ENV_FILE
     echo "HZN_FSS_CSSURL=${HZN_FSS_CSSURL}" >>$HZN_ENV_FILE
@@ -3574,7 +3577,6 @@ function create_horizon_env() {
     fi
     echo "HZN_DEVICE_ID=${NODE_ID}" >>$HZN_ENV_FILE
     echo "HZN_NODE_ID=${NODE_ID}" >> $HZN_ENV_FILE
-    echo "HZN_MGMT_HUB_CERT_PATH=$cluster_cert_path/$cert_name" >>$HZN_ENV_FILE
     echo "HZN_AGENT_PORT=8510" >>$HZN_ENV_FILE
     echo "HZN_CONFIG_VERSION=${HZN_CONFIG_VERSION}" >> $HZN_ENV_FILE
     log_debug "create_horizon_env() end"
@@ -3588,6 +3590,11 @@ function prepare_k8s_deployment_file() {
     # InitContainer needs to be removed for ocp because it breaks mounted directory permisson. In ocp, the permission of volume is configured by scc.
     if is_ocp_cluster; then
         sed -i -e '/START_NOT_FOR_OCP/,/END_NOT_FOR_OCP/d' deployment-template.yml
+    fi
+
+    if [[ ! -f $AGENT_CERT_FILE ]]; then
+        log_debug "agent cert file is not used, remove secret and secret mount section from deployment-template.yml ..."
+        sed -i -e '{/START_CERT_VOL/,/END_CERT_VOL/d;}' deployment-template.yml
     fi
 
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
@@ -3862,17 +3869,21 @@ function create_role_binding() {
 function create_secret() {
     log_debug "create_secrets() begin"
 
-    log_verbose "checking if secret ${SECRET_NAME} exist..."
-
-    if ! $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
-        log_verbose "creating secret for cert file..."
-        $KUBECTL create secret generic ${SECRET_NAME} --from-file=${AGENT_CERT_FILE} -n ${AGENT_NAMESPACE}
-        chk $? "creating secret ${SECRET_NAME} from cert file ${AGENT_CERT_FILE}"
-        log_info "secret ${SECRET_NAME} created"
+    if [[ ! -f $AGENT_CERT_FILE ]]; then
+        log_debug "agent cert file is not used, skip creating secret ..."
+        sed -i -e '{/START_CERT_VOL/,/END_CERT_VOL/d;}' deployment-template.yml
     else
-        log_info "secret ${SECRET_NAME} exists, skip creating secret"
-    fi
+        log_verbose "checking if secret ${SECRET_NAME} exist..."
 
+        if ! $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+            log_verbose "creating secret for cert file..."
+            $KUBECTL create secret generic ${SECRET_NAME} --from-file=${AGENT_CERT_FILE} -n ${AGENT_NAMESPACE}
+            chk $? "creating secret ${SECRET_NAME} from cert file ${AGENT_CERT_FILE}"
+            log_info "secret ${SECRET_NAME} created"
+        else
+            log_info "secret ${SECRET_NAME} exists, skip creating secret"
+        fi
+    fi
     log_debug "create_secrets() end"
 }
 
@@ -3994,8 +4005,12 @@ function create_persistent_volume() {
 function check_resources_for_deployment() {
     log_debug "check_resources_for_deployment() begin"
     # check secrets/configmap/persistent
-    $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} >/dev/null
-    secret_ready=$?
+    if [[ -f $AGENT_CERT_FILE ]]; then
+        $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} >/dev/null
+        secret_ready=$?
+    else
+        secret_ready=0
+    fi
 
     $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null
     configmap_ready=$?
