@@ -109,7 +109,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc2 // indirect
-	github.com/opencontainers/runc v1.1.2 // indirect
+	github.com/opencontainers/runc v1.1.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
@@ -138,7 +138,7 @@ replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18
 	github.com/docker/distribution => github.com/docker/distribution v2.8.1+incompatible
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.0
-	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.2
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.5
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
 	golang.org/x/text => golang.org/x/text v0.5.0
 	k8s.io/apimachinery => k8s.io/apimachinery v0.26.1
