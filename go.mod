@@ -68,7 +68,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20220119192733-fe33c00cee21 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
-	github.com/containerd/containerd v1.6.17 // indirect
+	github.com/containerd/containerd v1.6.18 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.11.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
@@ -135,7 +135,7 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.6.17
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18
 	github.com/docker/distribution => github.com/docker/distribution v2.8.1+incompatible
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.0
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.2
