@@ -102,6 +102,7 @@ fi
 systemctl start horizon.service
 #fi
 mkdir -p /var/horizon/ /var/run/horizon/
+mkdir -p /etc/cron.d/
 
 # add cron job for agent auto-upgrade
 echo "*/5 * * * * root /usr/horizon/bin/agent-auto-upgrade.sh 2>&1|/usr/bin/logger -t AgentAutoUpgrade" > /etc/cron.d/horizon_agent_upgrade

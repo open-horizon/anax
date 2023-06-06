@@ -431,6 +431,7 @@ add_horizon_upgrade_cronjob() {
 		echo "$cronjobs" | sudo crontab -
 	else
 		echo "Adding a cron job for agent auto-upgrade..."
+		mkdir -p /etc/cron.d/
 		sudo echo "*/5 * * * * root /usr/horizon/bin/agent-auto-upgrade.sh ${container_number} 2>&1|/usr/bin/logger -t AgentAutoUpgrade-${container_number}" > /etc/cron.d/horizon${container_number}_agent_upgrade
 	fi
 }
