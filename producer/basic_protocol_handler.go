@@ -291,6 +291,8 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.CANCEL_NODE_USERINPUT_CHANGED
 	case TERM_REASON_NODE_PATTERN_CHANGED:
 		return basicprotocol.CANCEL_NODE_PATTERN_CHANGED
+	case TERM_FAILED_AGREEMENT_VERIFY:
+		return basicprotocol.CANCEL_FAILED_AGREEMENT_VERIFY
 	default:
 		return 999
 	}

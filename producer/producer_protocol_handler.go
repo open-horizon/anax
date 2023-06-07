@@ -650,6 +650,7 @@ const TERM_REASON_NODE_SHUTDOWN = "NodeShutdown"
 const TERM_REASON_SERVICE_SUSPENDED = "ServiceSuspended"
 const TERM_REASON_NODE_USERINPUT_CHANGED = "NodeUserInputChanged"
 const TERM_REASON_NODE_PATTERN_CHANGED = "NodePatternChanged"
+const TERM_FAILED_AGREEMENT_VERIFY = "FailedAgreementVerify"
 
 // ==============================================================================================================
 type ExchangeMessageCommand struct {

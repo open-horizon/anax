@@ -322,7 +322,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.NodeHeartbeatStateChangeMessage)
 		switch msg.Event().Id {
 		case events.NODE_HEARTBEAT_RESTORED:
-			cmd := w.NewNodeHeartbeatRestoredCommand()
+			cmd := w.NewNodeHeartbeatRestoredCommand(false)
 			w.Commands <- cmd
 
 			// Make sure device status is up to date since heartbeating is now restored. It means connectivity to
@@ -1345,7 +1345,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		cmd, _ := command.(*NodeHeartbeatRestoredCommand)
 		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
 
-		w.handleNodeHeartbeatRestored()
+		w.handleNodeHeartbeatRestored(!cmd.Retry)
 
 	case *ServiceSuspendedCommand:
 		cmd, _ := command.(*ServiceSuspendedCommand)
