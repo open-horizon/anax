@@ -57,8 +57,6 @@ horizon-cli-deb: require-version
 	cp ../../agent-install/k8s/deployment-template.yml horizon-cli/usr/horizon/cluster
 	cp ../../agent-install/k8s/persistentClaim-template.yml horizon-cli/usr/horizon/cluster
 	cp ../../agent-install/k8s/auto-upgrade-cronjob-template.yml horizon-cli/usr/horizon/cluster
-	cp ../../agent-install/k8s/role.yml horizon-cli/usr/horizon/cluster
-	cp ../../agent-install/k8s/clusterrole-list-nodes.yml horizon-cli/usr/horizon/cluster
 	if [ -e ../../cli/bash_completion/hzn_bash_autocomplete.sh ]; then \
           cp ../../cli/bash_completion/hzn_bash_autocomplete.sh horizon-cli/etc/bash_completion.d; \
 	fi

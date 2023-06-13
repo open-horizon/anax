@@ -222,7 +222,7 @@ function manifestInitUpgradeFields() {
 # Remove files from previous run, so we know there won't be (for example) multiple versions of the horizon pkgs in the dir
 function cleanUpPreviousFiles() {
     echo "Removing any generated files from previous run..."
-    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "amd64${AGENT_IMAGE_TAR_FILE}" "arm64${AGENT_IMAGE_TAR_FILE}" "$AGENT_K8S_IMAGE_TAR_FILE" "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml role.yml clusterrole-list-nodes.yml horizon*.{deb,rpm,pkg,crt}
+    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "amd64${AGENT_IMAGE_TAR_FILE}" "arm64${AGENT_IMAGE_TAR_FILE}" "$AGENT_K8S_IMAGE_TAR_FILE" "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*.{deb,rpm,pkg,crt}
     chk $? "removing previous files in $PWD"
     echo
 }
@@ -836,7 +836,7 @@ function getAgentUninstallScript () {
     chk $? "Getting $installFile"
 }
 
-# Get deployment-template.yml, persistentClaim-template.yml, auto-upgrade-cronjob-template.yml, role.yml and clusterrole-list-nodes.yml from where it was install by horizon-cli
+# Get deployment-template.yml, persistentClaim-template.yml, auto-upgrade-cronjob-template.yml from where it was install by horizon-cli
 function getClusterDeployTemplates () {
     local installDir   # where the files have been installed by horizon-cli
     if [[ $OSTYPE == darwin* ]]; then
@@ -844,7 +844,7 @@ function getClusterDeployTemplates () {
     else   # linux (deb or rpm)
         installDir='/usr/horizon/cluster'
     fi
-    for f in deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml role.yml clusterrole-list-nodes.yml; do
+    for f in deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml; do
         local installFile="$installDir/$f"
         if [[ ! -f $installFile ]]; then
             fatal 2 "$installFile does not exist"
@@ -854,7 +854,7 @@ function getClusterDeployTemplates () {
     done
 }
 
-# Get agent-uninstall.sh, deployment-template.yml, persistentClaim-template.yml, auto-upgrade-cronjob-template.yml, role.yml clusterrole-list-nodes.yml and create tar file
+# Get agent-uninstall.sh, deployment-template.yml, persistentClaim-template.yml, auto-upgrade-cronjob-template.yml and create tar file
 function getEdgeClusterFiles() {
 
     local upgradeFiles=$1
@@ -863,7 +863,7 @@ function getEdgeClusterFiles() {
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
         echo "Creating tar file of edge cluster files..."
-        tar -zcf $EDGE_CLUSTER_TAR_FILE_NAME agent-uninstall.sh deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml role.yml clusterrole-list-nodes.yml
+        tar -zcf $EDGE_CLUSTER_TAR_FILE_NAME agent-uninstall.sh deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml
         chk $? 'Creating tar file of edge cluster files'
         putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME "agent_files" false  $(getHznVersion)
         putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME "agent_software_files-$(getHznVersion)" true $(getHznVersion)
@@ -879,9 +879,9 @@ function createTarFile () {
 
     local files_to_compress
     if [[ $EDGE_NODE_TYPE == 'ALL' ]]; then
-        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt amd64$AGENT_IMAGE_TAR_FILE arm64${AGENT_IMAGE_TAR_FILE} $AGENT_K8S_IMAGE_TAR_FILE $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml role.yml clusterrole-list-nodes.yml horizon*"
+        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt amd64$AGENT_IMAGE_TAR_FILE arm64${AGENT_IMAGE_TAR_FILE} $AGENT_K8S_IMAGE_TAR_FILE $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*"
     elif [[ $EDGE_NODE_TYPE == "x86_64-Cluster" || $EDGE_NODE_TYPE == "ppc64le-Cluster" ]]; then
-        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_K8S_IMAGE_TAR_FILE $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml role.yml clusterrole-list-nodes.yml"
+        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_K8S_IMAGE_TAR_FILE $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml"
     elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
         files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon-cli* amd64${AGENT_IMAGE_TAR_FILE}"
     else   # linux device
