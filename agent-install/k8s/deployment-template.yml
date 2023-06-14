@@ -80,7 +80,9 @@ spec:
         - name: HZN_ORG_ID
           value: __OrgId__
         - name: AGENT_NAMESPACE
-          value:  __AgentNameSpace__
+          value: __AgentNameSpace__
+        - name: HZN_NAMESPACE_SCOPED
+          value: __NamespaceScoped__
         - name: AGENT_CLUSTER_IMAGE_REGISTRY_HOST
           value: __ImageRegistryHost__
         # START_CERT_VOL

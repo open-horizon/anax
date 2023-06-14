@@ -123,6 +123,7 @@ Options/Flags:
         --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to AGENT_IN_CONTAINER)
         --namespace     The namespace that the cluster agent will be installed to. The default is 'openhorizon-agent'
+        --namespace-scoped The cluster agent will only have namespace scope. The default is 'false'
     -N                  The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
     -h  --help          This usage
 
@@ -156,6 +157,8 @@ Additional Edge Cluster Variables (in environment or config file):
     AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS: Maximum seconds to wait for the agent deployment rollout status to be successful. Default: 75
     AGENT_K8S_IMAGE_TAR_FILE: the file name of the edge cluster agent docker image in tar.gz format. Default: $DEFAULT_AGENT_K8S_IMAGE_TAR_FILE
     CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE: the file name of the edge cluster auto-upgrade-cronjob cronjob docker image in tar.gz format. Default: $DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE
+    AGENT_NAMESPACE: The cluster namespace that the agent will be installed in
+    NAMESPACE_SCOPED: specify this value if the edge cluster agent is namespace-scoped agent
 EndOfMessage
     exit $exit_code
 }
@@ -185,6 +188,9 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
                 ;;
             namespace)
                 ARG_AGENT_NAMESPACE=${all_args[$OPTIND-1]}
+                ;;
+            namespace-scoped)
+                ARG_NAMESPACE_SCOPED=true
                 ;;
             help)
                 usage 0
@@ -1169,6 +1175,7 @@ function get_all_variables() {
     elif is_cluster; then
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE "$DEFAULT_AGENT_NAMESPACE"
+        get_variable NAMESPACE_SCOPED 'false'
         USE_EDGE_CLUSTER_REGISTRY='true'   #get_variable USE_EDGE_CLUSTER_REGISTRY 'true'  # currently true is the only supported value
         get_variable AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS '75'
 
@@ -3435,6 +3442,73 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
     log_debug "loadClusterAgentAutoUpgradeCronJobImage() end"
 }
 
+function contains_namespace() {
+    local namespaces=$1
+    for t in $namespaces
+    do
+        if [ "$t" == "$AGENT_NAMESPACE" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Cluster only: check if there is scope conflict
+# check if there is another agent deployment in any namespace
+#   - NO: continue on agent fresh install
+#   - YES:
+#       1. same namespace: continue, the scope will be checked in check_agent_deployment_exist (set AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE=true)
+#       2. different namespace: greb 1 deployment and check scope
+#           a. current is cluster scoped agent => error
+#           b. current is namespace scoped agent:
+#               existing agent in other namespace is namespace scope: can proceed to install
+#               existing agent in other namespace is cluster scope: error
+# Side-effect: set AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE
+function check_cluster_agent_scope() {
+    log_debug "check_cluster_agent_scope() begin"
+    AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE="false"
+
+    if $KUBECTL get deployment --field-selector metadata.name=agent -A | grep -E '(^|\s)agent($|\s)' >/dev/null 2>&1; then
+        log_debug "Has agent deployment in this cluster"
+        # has agent deployment in the cluster
+        # check namespace
+        namespaces_have_agent=$($KUBECTL get deployment --field-selector metadata.name=agent -A -o jsonpath="{.items[*].metadata.namespace}" | tr -s '[[:space:]]' ',')
+        log_info "Already have agent deployment in namespaces: $namespaces_have_agent, checking scope of existing agent"
+
+        IFS=',' read -r -a namespace_array <<< "$namespaces_have_agent"
+
+        if contains_namespace $namespace_array; then
+            log_debug "Namespaces array contains current namespace"
+            # continue to check_agent_deployment_exist() to check scope
+            AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE="true"
+        else
+            # has agent in other namespace(s). Pick one agent deployment and check scope
+            #   current is cluster scoped agent => error
+            #   current is namespace scoped agent:
+            #       namespace scope agent in other namespace => can proceed to install
+            #       cluster scope agent in other namespace => error
+            if ! $NAMESPACE_SCOPED; then
+                log_fatal 3 "One or more agents detected in $namespaces_have_agent. A cluster scoped agent cannot be installed to the same cluster that has agent(s) already"
+            fi
+
+            namespace_to_check=${namespace_array[0]}
+            local namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${namespace_to_check} -o jsonpath='{.spec.template.spec.containers[0].env}' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
+            log_debug "Current HZN_NAMESPACE_SCOPED in agent deployment under namespace $namespace_to_check is: $namespace_scoped_env_value_in_use"
+            log_debug "NAMESPACE_SCOPED passed to this script is: $NAMESPACE_SCOPED" # namespace scoped
+
+            if [[ "$namespace_scoped_env_value_in_use" == "" ]] || [[ "$namespace_scoped_env_value_in_use" == "false" ]] ; then
+                log_fatal 3 "A cluster scoped agent detected in $namespace_to_check. A namespace scoped agent cannot be installed to the same cluster that has a cluster scoped agent"
+            fi
+        fi
+ 
+    else
+        # no agent deployment in any namespace, can proceed to install this agent
+        log_debug "No agent deployment in any namespace, can proceed to install this agent"
+    fi
+    log_debug "check_cluster_agent_scope() end"
+
+}
+
 # Cluster only: check if agent deployment exists to determine whether to do agent install or agent update
 # Side-effect: sets AGENT_DEPLOYMENT_UPDATE, POD_ID, IS_AGENT_IMAGE_VERSION_SAME, IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME, IS_HORIZON_ORG_ID_SAME
 function check_agent_deployment_exist() {
@@ -3443,6 +3517,8 @@ function check_agent_deployment_exist() {
     IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME="false"
     IS_HORIZON_ORG_ID_SAME="false"
 
+    # has agent deployment, return 0 (true)
+    # doesn't have agent deployment, return 1 (false)
     if ! $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
         # agent deployment doesn't exist in ${AGENT_NAMESPACE}, fresh install
         AGENT_DEPLOYMENT_UPDATE="false"
@@ -3452,6 +3528,19 @@ function check_agent_deployment_exist() {
             # agent deployment does not have agent pod in RUNNING status
             log_fatal 3 "Previous agent pod in not in RUNNING status, please run agent-uninstall.sh to clean up and re-run the agent-install.sh"
         else
+            # check 0) agent scope in deployment
+            local namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env}' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
+            log_debug "Current HZN_NAMESPACE_SCOPED in agent deployment is $namespace_scoped_env_value_in_use"
+            log_debug "NAMESPACE_SCOPED passed to this script is: $NAMESPACE_SCOPED"
+
+            if [[ "$namespace_scoped_env_value_in_use" == "" ]]; then
+                namespace_scoped_env_value_in_use="false"
+            fi
+
+            if [[ "$namespace_scoped_env_value_in_use" != "$NAMESPACE_SCOPED" ]]; then
+                log_fatal 3 "Current agent scope cannot be updated, please run agent-uninstall.sh and re-run agent-install.sh"
+            fi
+
             # check 1) agent image in deployment
             # eg: {image-registry}:5000/{repo}/{image-name}:{version}
             local agent_image_in_use=$($KUBECTL get deployment agent -o jsonpath='{$.spec.template.spec.containers[:1].image}' -n ${AGENT_NAMESPACE})
@@ -3480,12 +3569,11 @@ function check_agent_deployment_exist() {
             fi
 
             # check 3) HZN_ORG_ID set in deployment
-            local horizon_org_id_env_name_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env[0].name}')
-            local horizon_org_id_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env[0].value}')
-            log_debug "Current HZN_ORG_ID in agent deployment is: env_name: $horizon_org_id_env_name_in_use, env_value: $horizon_org_id_env_value_in_use"
-            log_debug "HZN_ORG_ID passed to this script is: env_name: HZN_ORG_ID, env_value: $HZN_ORG_ID"
+            local horizon_org_id_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env}' | jq -r '.[] | select(.name=="HZN_ORG_ID").value')
+            log_debug "Current HZN_ORG_ID in agent deployment is: $horizon_org_id_env_value_in_use"
+            log_debug "HZN_ORG_ID passed to this script is: $HZN_ORG_ID"
 
-            if [[ "$horizon_org_id_env_name_in_use" == "HZN_ORG_ID" ]] && [[ "$horizon_org_id_env_value_in_use" == "$HZN_ORG_ID" ]]; then
+            if [[ "$horizon_org_id_env_value_in_use" == "$HZN_ORG_ID" ]]; then
                 IS_HORIZON_ORG_ID_SAME="true"
             fi
 
@@ -3600,7 +3688,7 @@ function prepare_k8s_deployment_file() {
         sed -i -e '{/START_CERT_VOL/,/END_CERT_VOL/d;}' deployment-template.yml
     fi
 
-    sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
+    sed -e "s#__AgentNameSpace__#\"${AGENT_NAMESPACE}\"#g" -e "s#__NamespaceScoped__#\"${NAMESPACE_SCOPED}\"#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
     chk $? 'creating deployment.yml'
 
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
@@ -3984,9 +4072,11 @@ function update_deployment() {
     log_debug "update_deployment() begin"
 
     if [[ "$IS_AGENT_IMAGE_VERSION_SAME" == "true" ]] && [[ "$IS_HORIZON_ORG_ID_SAME" == "true" ]]; then
-        log_info "Agent image version and HZN_ORG_ID are the same. Keeping the existing agent deployment."
+        log_info "Agent image version and HZN_ORG_ID are the same. Keeping the existing agent deployment. Deleting agent pod ${POD_ID} in namespace ${AGENT_NAMESPACE} to pickup changes in configmap and secrets"
+        $KUBECTL delete pod ${POD_ID} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
+        chk $? 'deleting the old pod for agent update on cluster'
     else
-	if $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
+        if $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
             # deployment exists, delete it
             log_verbose "Found deployment ${DEPLOYMENT_NAME} in ${AGENT_NAMESPACE} namespace, deleting it..."
             $KUBECTL delete deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
@@ -4134,6 +4224,8 @@ function install_update_cluster() {
 
     check_existing_exch_node_is_correct_type "cluster"
 
+    check_cluster_agent_scope   # sets AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE
+
     loadClusterAgentImage   # create the cluster agent docker image locally
     loadClusterAgentAutoUpgradeCronJobImage # create the cluster cronjob docker images locally
 
@@ -4146,7 +4238,10 @@ function install_update_cluster() {
         pushImagesToEdgeClusterRegistry
     fi
 
-    check_agent_deployment_exist   # sets AGENT_DEPLOYMENT_UPDATE
+    if [[ "$AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE" == "true" ]]; then
+        check_agent_deployment_exist   # sets AGENT_DEPLOYMENT_UPDATE POD_ID
+    fi
+
     if [[ "$AGENT_DEPLOYMENT_UPDATE" == "true" ]]; then
         log_info "Update agent on edge cluster"
         update_cluster
