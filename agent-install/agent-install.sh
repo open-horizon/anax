@@ -26,7 +26,7 @@ SUPPORTED_REDHAT_VARIANTS=(rhel redhatenterprise centos fedora $SUPPORTED_REDHAT
 SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 9.0 9.1 9.2 8 9 32 35 36 37 38 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le s390x  riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
 
-SUPPORTED_EDGE_CLUSTER_ARCH=(amd64)
+SUPPORTED_EDGE_CLUSTER_ARCH=(amd64 s390x)
 SUPPORTED_ANAX_IN_CONTAINER_ARCH=(amd64 arm64 s390x)
 
 SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
@@ -48,7 +48,7 @@ CURL_RETRY_PARMS="--retry 5 --retry-connrefused --retry-max-time 120"
 
 SEMVER_REGEX='^[0-9]+\.[0-9]+(\.[0-9]+)+'   # matches a version like 1.2.3 (must be at least 3 fields). Also allows a bld num on the end like: 1.2.3-RC1
 
-# The following variable will need to have the $ARCH prepended to it before it can be used - currently only amd64 and arm64 are built
+# The following variable will need to have the $ARCH prepended to it before it can be used
 DEFAULT_AGENT_IMAGE_TAR_FILE='_anax.tar.gz'
 
 INSTALLED_AGENT_CFG_FILE="/etc/default/horizon"
@@ -68,9 +68,10 @@ GET_RESOURCE_MAX_TRY=5
 POD_ID=""
 HZN_ENV_FILE="/tmp/agent-install-horizon-env"
 DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY="image-registry.openshift-image-registry.svc:5000"
-DEFAULT_AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
-DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE='amd64_auto-upgrade-cronjob_k8s.tar.gz'
 EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
+# The following variables will need to have the $ARCH prepended before they can be used
+DEFAULT_AGENT_K8S_IMAGE_TAR_FILE='_anax_k8s.tar.gz'
+DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE='_auto-upgrade-cronjob_k8s.tar.gz'
 
 # agent upgrade types. To update the certificate only, just do "-G cert" or set AGENT_UPGRADE_TYPES="cert"
 UPGRADE_TYPE_SW="software"
@@ -131,7 +132,7 @@ Additional Variables (in environment or config file):
 
 Additional Edge Device Variables (in environment or config file):
     NODE_ID_MAPPING_FILE: File to map hostname or IP to node id, for bulk install.  Default: node-id-mapping.csv
-    AGENT_IMAGE_TAR_FILE: the file name of the device agent docker image in tar.gz format. Default: $DEFAULT_AGENT_IMAGE_TAR_FILE
+    AGENT_IMAGE_TAR_FILE: the file name of the device agent docker image in tar.gz format. Default: \${ARCH}$DEFAULT_AGENT_IMAGE_TAR_FILE
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
 
 Optional Edge Device Environment Variables For Testing New Distros - Not For Production Use
@@ -152,8 +153,10 @@ Additional Edge Cluster Variables (in environment or config file):
     AGENT_NAMESPACE: The namespace the agent should run in. Default: openhorizon-agent
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
     AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS: Maximum seconds to wait for the agent deployment rollout status to be successful. Default: 75
-    AGENT_K8S_IMAGE_TAR_FILE: the file name of the edge cluster agent docker image in tar.gz format. Default: $DEFAULT_AGENT_K8S_IMAGE_TAR_FILE
-    CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE: the file name of the edge cluster auto-upgrade-cronjob cronjob docker image in tar.gz format. Default: $DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE
+    AGENT_K8S_IMAGE_TAR_FILE: the file name of the edge cluster agent docker image in tar.gz format. Default: \${ARCH}$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE
+    CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE: the file name of the edge cluster auto-upgrade-cronjob cronjob docker image in tar.gz format. Default: \${ARCH}$DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE
+    AGENT_NAMESPACE: The cluster namespace that the agent will be installed in
+    NAMESPACE_SCOPED: specify this value if the edge cluster agent is namespace-scoped agent
 EndOfMessage
     exit $exit_code
 }
@@ -1172,6 +1175,8 @@ function get_all_variables() {
 
         local image_arch=$(get_cluster_image_arch)
         check_support "${SUPPORTED_EDGE_CLUSTER_ARCH[*]}" "${image_arch}" 'kubernetes edge cluster architectures'
+        DEFAULT_AGENT_K8S_IMAGE_TAR_FILE=${image_arch}${DEFAULT_AGENT_K8S_IMAGE_TAR_FILE}
+        DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE=${image_arch}${DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE}
 
         if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
             local default_image_registry_on_edge_cluster
