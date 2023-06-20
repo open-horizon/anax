@@ -29,11 +29,11 @@ func NewKubeClient() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-// GetClusterCountInfo returns the cluster's available memory, total memory, cpu count, arch, kube version, cluster namespace, or an error if it cannot get the client
-func GetClusterCountInfo() (float64, float64, float64, string, string, string, error) {
+// GetClusterCountInfo returns the cluster's available memory, total memory, cpu count, arch, kube version, cluster namespace, agent scope or an error if it cannot get the client
+func GetClusterCountInfo() (float64, float64, float64, string, string, string, bool, error) {
 	client, err := NewKubeClient()
 	if err != nil {
-		return 0, 0, 1, "", "", "", fmt.Errorf("Failed to get kube client for introspecting cluster properties. Proceding with default values. %v", err)
+		return 0, 0, 1, "", "", "", false, fmt.Errorf("Failed to get kube client for introspecting cluster properties. Proceding with default values. %v", err)
 	}
 	versionObj, err := client.Discovery().ServerVersion()
 	if err != nil {
@@ -46,6 +46,7 @@ func GetClusterCountInfo() (float64, float64, float64, string, string, string, e
 
 	// get kube namespace
 	ns := GetClusterNamespace()
+	isNamespaceScoped := IsNamespaceScoped()
 
 	availMem := float64(0)
 	totalMem := float64(0)
@@ -53,7 +54,7 @@ func GetClusterCountInfo() (float64, float64, float64, string, string, string, e
 	arch := ""
 	nodes, err := client.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		return 0, 0, 0, "", "", "", err
+		return 0, 0, 0, "", "", "", false, err
 	}
 
 	for _, node := range nodes.Items {
@@ -65,7 +66,7 @@ func GetClusterCountInfo() (float64, float64, float64, string, string, string, e
 		cpu += FloatFromQuantity(node.Status.Capacity.Cpu())
 	}
 
-	return math.Round(availMem), math.Round(totalMem), cpu, arch, version, ns, nil
+	return math.Round(availMem), math.Round(totalMem), cpu, arch, version, ns, isNamespaceScoped, nil
 }
 
 // FloatFromQuantity returns a float64 with the value of the given quantity type
@@ -88,4 +89,12 @@ func GetClusterNamespace() string {
 	}
 
 	return ns
+}
+
+func IsNamespaceScoped() bool {
+	isNamespaceScoped := os.Getenv("HZN_NAMESPACE_SCOPED")
+	if isNamespaceScoped == "true" {
+		return true
+	}
+	return false
 }
