@@ -1,9 +1,7 @@
-# This pipeline is to build anax binaries
+# Name of the workflow
+name: E2E-test
 
-name: anax-build-test
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the anax-build branch
+# Workflow triggers -- When a pull request is made for the listed branches
 on:
   pull_request:
     branches:
@@ -11,39 +9,43 @@ on:
       - v2.30
       - v2.29
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# Jobs executed when workflow is triggered
 jobs:
-  # This workflow contains a single job called "build"
-  build:
+  test:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
+
+    # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
       matrix:
         tests: ["NOLOOP=1", "NOLOOP=1 TEST_PATTERNS=sall"]
+
+    # Variables that are available to all steps in the job
     env:
       GOPATH: /home/runner/work/anax/anax/go
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
         with:
-           path: go/src/github.com/${{github.repository}}
-      
-      # prepare the environment
-      - name: Set up golang 1.19.2
+          path: go/src/github.com/${{github.repository}}
+    
+      # Prepares the environment by setting up golang
+      - name: Set up golang 1.19
         uses: actions/setup-go@v2
         with:
-           go-version: '1.19.2'
+          go-version: '1.19'
+          check-latest: true
 
-      # build anax binaries
+      # Build anax binaries
       - name: Build anax binaries
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
-
-      # build the e2edev docker images 
+          
+      # Build the e2edev docker images 
       - name: Build the e2edev docker images
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
 
       # E2E development test
       - name: E2E dev-test
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test clean && make -C test test TEST_VARS=${{matrix.tests}}
- 
