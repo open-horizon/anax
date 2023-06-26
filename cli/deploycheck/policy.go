@@ -31,7 +31,7 @@ func readServicePolicyFile(filePath string, inputFileStruct *exchangecommon.Serv
 }
 
 // check if the policies are compatible
-func PolicyCompatible(org string, userPw string, nodeIds []string, haGroupName string, nodeArch string, nodeType string, nodeNamespace string, nodePolFile string, businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string, checkAllSvcs bool, showDetail bool) {
+func PolicyCompatible(org string, userPw string, nodeIds []string, haGroupName string, nodeArch string, nodeType string, nodeNamespace string, nodeIsNamespaceScoped bool, nodePolFile string, businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string, checkAllSvcs bool, showDetail bool) {
 
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -73,6 +73,7 @@ func PolicyCompatible(org string, userPw string, nodeIds []string, haGroupName s
 		policyCheckInput.NodeArch = nodeArch
 		policyCheckInput.NodeType = nodeType
 		policyCheckInput.NodeClusterNS = nodeNamespace
+		policyCheckInput.NodeNamespaceScoped = nodeIsNamespaceScoped
 		policyCheckInput.BusinessPolicy = bp
 
 		// formalize node id or get node policy
@@ -94,7 +95,7 @@ func PolicyCompatible(org string, userPw string, nodeIds []string, haGroupName s
 
 		if bUseLocalNode {
 			// get id from local node, check arch
-			policyCheckInput.NodeId, policyCheckInput.NodeArch, policyCheckInput.NodeType, policyCheckInput.NodeClusterNS, _ = getLocalNodeInfo(nodeArch, nodeType, nodeNamespace, "")
+			policyCheckInput.NodeId, policyCheckInput.NodeArch, policyCheckInput.NodeType, policyCheckInput.NodeClusterNS, policyCheckInput.NodeNamespaceScoped, _ = getLocalNodeInfo(nodeArch, nodeType, nodeNamespace, nodeIsNamespaceScoped, "")
 
 			// get node policy from local node
 			var np exchangecommon.NodePolicy

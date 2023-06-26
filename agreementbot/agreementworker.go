@@ -550,7 +550,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// for cluster type and check for namespace compatibility
 		consumerNamespace := ""
 		if nodeType == persistence.DEVICE_TYPE_CLUSTER {
-			t_comp, consumerNamespace, t_reason = compcheck.CheckClusterNamespaceCompatibility(nodeType, exchangeDev.ClusterNamespace, wi.ConsumerPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), false, msgPrinter)
+			t_comp, consumerNamespace, t_reason = compcheck.CheckClusterNamespaceCompatibility(nodeType, exchangeDev.ClusterNamespace, exchangeDev.IsNamespaceScoped, wi.ConsumerPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), wi.ConsumerPolicy.PatternId, false, msgPrinter)
 			if !t_comp {
 				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with node %v for service %v/%v %v. %v", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version, t_reason)))
 				return

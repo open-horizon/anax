@@ -2,7 +2,7 @@
 
 # set -x
 
-NAME_SPACE="openhorizon-agent"
+NAME_SPACE="agent-namespace"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
 

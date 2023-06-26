@@ -2125,6 +2125,4 @@ func (w *GovernanceWorker) GetRequestedClusterNamespaceFromAg(ag *persistence.Es
 	} else {
 		return tcPolicy.ClusterNamespace, nil
 	}
-
-	return "", nil
 }

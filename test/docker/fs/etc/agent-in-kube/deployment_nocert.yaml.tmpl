@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent
-  namespace: openhorizon-agent
+  namespace: agent-namespace
 spec:
   replicas: 1
   selector:
@@ -47,3 +47,5 @@ spec:
           value: "1"
         - name: ANAX_LOG_LEVEL
           value: "5"
+        - name: AGENT_NAMESPACE
+          value: "agent-namespace"
