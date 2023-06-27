@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	dynamic "k8s.io/client-go/dynamic"
 	"strings"
 	"time"
 )
@@ -460,10 +461,9 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating custom resource definition %v", cr.CustomResourceDefinitionObject)))
 	_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
-		cr.Uninstall(c, namespace)
-		_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
-	}
-	if err != nil {
+		// If the crd already exists this is not a problem
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Failed to create custom resource definition %s because it already exists. Continuing with installation. %v", cr.CustomResourceDefinitionObject.Name, err)))
+	} else if err != nil {
 		return fmt.Errorf("Error installing custom resource definition: %v", err)
 	}
 
@@ -509,6 +509,8 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 }
 
 func (cr CustomResourceV1Beta1) Uninstall(c KubeClient, namespace string) {
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource created by this CRD %v %v %v %v", cr.Name(), cr.kind(), cr.group(), cr.versions())))
+
 	dynClient, err := NewDynamicKubeClient()
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes dynamic client for uninstalling the custom resource: %v", err)))
@@ -547,19 +549,29 @@ func (cr CustomResourceV1Beta1) Uninstall(c KubeClient, namespace string) {
 				glog.Errorf(kwlog(fmt.Sprintf("%v", err)))
 			}
 		}
+
 	}
 
-	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource definition %v", cr.CustomResourceDefinitionObject.ObjectMeta.Name)))
-	// CRDs need a different client
-	apiClient, err := NewCRDV1beta1Client()
+	crdInuse, err := cr.crdUsedByCRInOtherNamespace(crClient, namespace)
 	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes CustomResourceDefinition client for uninstall: %v", err)))
-		return
+		glog.Errorf(fmt.Sprintf("%v", err))
 	}
-	crds := apiClient.CustomResourceDefinitions()
-	err = crds.Delete(context.Background(), cr.Name(), metav1.DeleteOptions{})
-	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
+
+	if crdInuse {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("operator custom resource definition %v is still used by other custom resource, skip deleting CRD", cr.Name())))
+	} else {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource definition %v", cr.Name())))
+		// CRDs need a different client
+		apiClient, err := NewCRDV1beta1Client()
+		if err != nil {
+			glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes CustomResourceDefinition client for uninstall: %v", err)))
+			return
+		}
+		crds := apiClient.CustomResourceDefinitions()
+		err = crds.Delete(context.Background(), cr.Name(), metav1.DeleteOptions{})
+		if err != nil {
+			glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
+		}
 	}
 }
 
@@ -621,6 +633,27 @@ func (cr CustomResourceV1Beta1) Name() string {
 	return cr.CustomResourceDefinitionObject.ObjectMeta.Name
 }
 
+func (cr CustomResourceV1Beta1) kind() string {
+	crdSpecNames := cr.CustomResourceDefinitionObject.Spec.Names
+	crKind := crdSpecNames.Kind
+	return crKind
+}
+
+func (cr CustomResourceV1Beta1) group() string {
+	return cr.CustomResourceDefinitionObject.Spec.Group
+}
+
+func (cr CustomResourceV1Beta1) versions() []string {
+	var versions []crdv1beta1.CustomResourceDefinitionVersion
+	versions = cr.CustomResourceDefinitionObject.Spec.Versions
+
+	var versionNames []string
+	for _, version := range versions {
+		versionNames = append(versionNames, version.Name)
+	}
+	return versionNames
+}
+
 // gvr is the group version resource that allows the dynamic client to interact with types defined by custom resource definitions
 func (cr CustomResourceV1Beta1) gvr() (*schema.GroupVersionResource, error) {
 	if apiVers, ok := cr.CustomResourceObjectList[0].Object["apiVersion"]; ok {
@@ -638,6 +671,10 @@ func (cr CustomResourceV1Beta1) gvr() (*schema.GroupVersionResource, error) {
 	} else {
 		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObjectList[0].Object)))
 	}
+}
+
+func (cr CustomResourceV1Beta1) crdUsedByCRInOtherNamespace(crClient dynamic.NamespaceableResourceInterface, namespace string) (bool, error) {
+	return checkCRDInUse(crClient, cr.kind(), cr.group(), cr.versions(), namespace)
 }
 
 // --------Version v1--------
@@ -666,10 +703,8 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating custom resource definition %v", cr.CustomResourceDefinitionObject)))
 	_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
-		cr.Uninstall(c, namespace)
-		_, err = crds.Create(context.Background(), cr.CustomResourceDefinitionObject, metav1.CreateOptions{})
-	}
-	if err != nil {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Failed to create custom resource definition %s because it already exists. Continuing with installation. %v", cr.CustomResourceDefinitionObject.Name, err)))
+	} else if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to create custom resource definition %s: %v", cr.Name(), err)))
 	}
 
@@ -715,8 +750,7 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 }
 
 func (cr CustomResourceV1) Uninstall(c KubeClient, namespace string) {
-	// Delete the custom resource definitions from the cluster
-	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource definition %v", cr.Name())))
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource created by this CRD %v %v %v %v", cr.Name(), cr.kind(), cr.group(), cr.versions())))
 
 	dynClient, err := NewDynamicKubeClient()
 	if err != nil {
@@ -729,7 +763,6 @@ func (cr CustomResourceV1) Uninstall(c KubeClient, namespace string) {
 		return
 	}
 	crClient := dynClient.Resource(*gvr)
-
 	for _, customResourceObject := range cr.CustomResourceObjectList {
 		var newCrName string
 		if metaInterf, ok := customResourceObject.Object["metadata"]; ok {
@@ -746,7 +779,7 @@ func (cr CustomResourceV1) Uninstall(c KubeClient, namespace string) {
 			glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", customResourceObject)))
 		}
 
-		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName)))
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName))) // newCrName: example-nginxoperator, cr.Name(): nginxoperators.nginx.operator.com
 		err = crClient.Namespace(namespace).Delete(context.Background(), newCrName, metav1.DeleteOptions{})
 		if err != nil {
 			glog.Warningf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
@@ -757,17 +790,30 @@ func (cr CustomResourceV1) Uninstall(c KubeClient, namespace string) {
 			}
 		}
 	}
-	// CRDs need a different client
-	apiClient, err := NewCRDV1Client()
+
+	crdInuse, err := cr.crdUsedByCRInOtherNamespace(crClient, namespace)
 	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes CustomResourceDefinition client for uninstall: %v", err)))
-		return
+		glog.Errorf(fmt.Sprintf("%v", err))
 	}
-	crds := apiClient.CustomResourceDefinitions()
-	err = crds.Delete(context.Background(), cr.Name(), metav1.DeleteOptions{})
-	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
+
+	if crdInuse {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("operator custom resource definition %v is still used by other custom resource, skip deleting CRD", cr.Name())))
+	} else {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource definition %v", cr.Name())))
+		// CRDs need a different client
+		apiClient, err := NewCRDV1Client()
+		if err != nil {
+			glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes CustomResourceDefinition client for uninstall: %v", err)))
+			return
+		}
+		crds := apiClient.CustomResourceDefinitions()
+		err = crds.Delete(context.Background(), cr.Name(), metav1.DeleteOptions{})
+		if err != nil {
+			glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
+		}
+
 	}
+
 }
 
 func (cr CustomResourceV1) waitForCRUninstall(c KubeClient, namespace string, timeoutS int, crName string) error {
@@ -828,6 +874,27 @@ func (cr CustomResourceV1) Name() string {
 	return cr.CustomResourceDefinitionObject.ObjectMeta.Name
 }
 
+func (cr CustomResourceV1) kind() string {
+	crdSpecNames := cr.CustomResourceDefinitionObject.Spec.Names
+	crKind := crdSpecNames.Kind
+	return crKind
+}
+
+func (cr CustomResourceV1) group() string {
+	return cr.CustomResourceDefinitionObject.Spec.Group
+}
+
+func (cr CustomResourceV1) versions() []string {
+	var versions []crdv1.CustomResourceDefinitionVersion
+	versions = cr.CustomResourceDefinitionObject.Spec.Versions
+
+	var versionNames []string
+	for _, version := range versions {
+		versionNames = append(versionNames, version.Name)
+	}
+	return versionNames
+}
+
 // group-version-resource is used by the discovry client to interact with a type defined by the custom resource definition
 func (cr CustomResourceV1) gvr() (*schema.GroupVersionResource, error) {
 	if apiVers, ok := cr.CustomResourceObjectList[0].Object["apiVersion"]; ok {
@@ -845,4 +912,37 @@ func (cr CustomResourceV1) gvr() (*schema.GroupVersionResource, error) {
 	} else {
 		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObjectList[0].Object)))
 	}
+}
+
+func (cr CustomResourceV1) crdUsedByCRInOtherNamespace(crClient dynamic.NamespaceableResourceInterface, namespace string) (bool, error) {
+	return checkCRDInUse(crClient, cr.kind(), cr.group(), cr.versions(), namespace)
+}
+
+func checkCRDInUse(crClient dynamic.NamespaceableResourceInterface, crdKind string, crdGroup string, crdVersions []string, namespace string) (bool, error) {
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Check if the CRD (Kind: %v, Group: %v, Versions: %v) is used by crs in the namespace other than %v", crdKind, crdGroup, crdVersions, namespace)))
+	lOps := metav1.ListOptions{
+		FieldSelector: fmt.Sprintf("metadata.namespace!=%v", namespace),
+	}
+	crsInOtherNS, err := crClient.Namespace("").List(context.Background(), lOps)
+	if err != nil && !errors.IsNotFound(err) && !strings.Contains(err.Error(), "not find") {
+		glog.Errorf(kwlog(fmt.Sprintf("failed to list all CRs in other namespace error: %v, will keep this crd", err)))
+		return true, err
+	} else {
+		glog.V(5).Infof(kwlog(fmt.Sprintf("CRs in other namespace result: %v", crsInOtherNS)))
+		items := crsInOtherNS.Items
+		for _, item := range items {
+			//  eg: item.GetKind():NginxOperator, item.GetAPIVersion(): nginx.operator.com/v1alpha1
+			if item.GetNamespace() != namespace && item.GetKind() == crdKind {
+				if groupVersion, err := schema.ParseGroupVersion(item.GetAPIVersion()); err != nil {
+					glog.Errorf(kwlog(fmt.Sprintf("unable to get group and version for %v", item)))
+					return true, err
+				} else if groupVersion.Group == crdGroup && cutil.SliceContains(crdVersions, groupVersion.Version) {
+					glog.V(3).Infof(kwlog(fmt.Sprintf("The crd (Kind: %v, Group: %v, Version: %v) is still in use, skip deleting crd", crdKind, crdGroup, crdVersions)))
+					return true, nil
+				}
+			}
+		}
+	}
+
+	return false, nil
 }
