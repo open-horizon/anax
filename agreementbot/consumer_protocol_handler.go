@@ -332,6 +332,9 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed incompatibly. Cancelling agreement: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
 						b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph, policyMatches)
 					} else {
+						if glog.V(5) {
+							glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current agreement %v is still valid", ag.CurrentAgreementId)))
+						}
 						stillValidAgs = append(stillValidAgs, ag.CurrentAgreementId)
 					}
 				} else {
@@ -373,7 +376,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 // if an error occurs, both will be false
 func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persistence.Agreement, oldPolicy *policy.Policy, cph ConsumerProtocolHandler) (bool, bool) {
 	if glog.V(5) {
-		glog.Infof("attempting to update agreement %v due to change in policy", ag.CurrentAgreementId)
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("attempting to update agreement %v due to change in policy", ag.CurrentAgreementId)))
 	}
 
 	svcAllPol := externalpolicy.ExternalPolicy{}
@@ -450,25 +453,29 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	if err != nil {
 		return false, false
 	}
+	// wlUsage is nil if no prioriy is set in the previous policy
+	wlUsagePriority := 0
 	if wlUsage != nil {
-		if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsage.Priority); currentWL == nil {
-			// the current workload priority is no longer in the deployment policy
-			glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsage.Priority, ag.CurrentAgreementId)))
-			return true, false
-		} else {
-			wl = currentWL
-		}
+		wlUsagePriority = wlUsage.Priority
+	}
 
-		if oldPolicy != nil {
-			for choice <= wlUsage.Priority && nextPriority != nil {
-				choice = nextPriority.Priority.PriorityValue
-				matchingWL := policy.GetWorkloadWithPriority(oldPolicy.Workloads, choice)
-				if matchingWL == nil || !matchingWL.IsSame(*nextPriority) {
-					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Higher priority version added or modified. Cancelling agreement %v", ag.CurrentAgreementId)))
-					return true, false
-				}
-				nextPriority = policy.GetNextWorkloadChoice(busPol.Workloads, choice)
+	if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsagePriority); currentWL == nil {
+		// the current workload priority is no longer in the deployment policy
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsagePriority, ag.CurrentAgreementId)))
+		return true, false
+	} else {
+		wl = currentWL
+	}
+
+	if oldPolicy != nil {
+		for choice <= wlUsagePriority && nextPriority != nil {
+			choice = nextPriority.Priority.PriorityValue
+			matchingWL := policy.GetWorkloadWithPriority(oldPolicy.Workloads, choice)
+			if matchingWL == nil || !matchingWL.IsSame(*nextPriority) {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Higher priority version added or modified. Cancelling agreement %v", ag.CurrentAgreementId)))
+				return true, false
 			}
+			nextPriority = policy.GetNextWorkloadChoice(busPol.Workloads, choice)
 		}
 	}
 
