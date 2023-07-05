@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
+	"time"
 )
 
 type ChangePattern struct {
@@ -45,7 +46,8 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored(checkAll bool) error {
 	} else {
 		veryfication_failed := false
 		for _, ag := range ags {
-			if ag.AgreementTerminatedTime == 0 && (checkAll || ag.FailedVerAttempts != 0){
+			timeSinceVer := uint64(time.Now().Unix()) - ag.LastVerAttemptUpdateTime
+			if ag.AgreementTerminatedTime == 0 && (checkAll || (ag.FailedVerAttempts != 0 && timeSinceVer > 60)) {
 				bcType, bcName, bcOrg := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
 
 				// Check to see if the agreement is valid. For agreement on the blockchain, we check the blockchain directly. This call to the blockchain
@@ -64,17 +66,12 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored(checkAll bool) error {
 						if ag.FailedVerAttempts > 5 {
 							reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_FAILED_AGREEMENT_VERIFY)
 							w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
-						} else {
-							_, err := persistence.SetFailedVerAttempts(w.db, ag.CurrentAgreementId, ag.AgreementProtocol, ag.FailedVerAttempts+1) 
-							if err != nil {
-								glog.Errorf(logString(fmt.Sprintf("encountered error updating agreement %v, error %v", ag.CurrentAgreementId, err)))
-							}
 						}
 					} else {
-						_, err := persistence.SetFailedVerAttempts(w.db, ag.CurrentAgreementId, ag.AgreementProtocol, 0)
+						_, err := persistence.SetFailedVerAttempts(w.db, ag.CurrentAgreementId, ag.AgreementProtocol, ag.FailedVerAttempts+1)
 						if err != nil {
-                                                        glog.Errorf(logString(fmt.Sprintf("encountered error updating agreement %v, error %v", ag.CurrentAgreementId, err)))
-                                                } 
+							glog.Errorf(logString(fmt.Sprintf("encountered error updating agreement %v, error %v", ag.CurrentAgreementId, err)))
+						}
 					}
 				}
 			}
