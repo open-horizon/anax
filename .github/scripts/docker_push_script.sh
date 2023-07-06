@@ -12,23 +12,8 @@ fi
 # Push those images
 for image in "${images[@]}"; do
 
-    if [[ ${image} == *"cloud-sync-service"* ]]; then
-        VERSION=${CSS_IMAGE_VERSION}
-    elif [[ ${image} == *"edge-sync-service"* ]]; then
-        VERSION=${ESS_IMAGE_VERSION}
-    else
-        VERSION=${ANAX_IMAGE_VERSION}
-    fi
-
     if [[ ${GITHUB_REF} == 'refs/heads/master' ]]; then
         docker push ${IMAGE_REPO}/${image}:testing
-    fi
-
-    if [[ -n "$VERSION" ]]; then
-        docker tag ${IMAGE_REPO}/${image}:testing ${IMAGE_REPO}/${image}:${VERSION}
-        docker push ${IMAGE_REPO}/${image}:${VERSION}
-    else
-        echo 'Error pushing docker images, variable $VERSION is unset'
     fi
 
 done

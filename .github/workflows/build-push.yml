@@ -254,12 +254,10 @@ jobs:
           # This does something important and the action will run indefinitely without it
           sudo security authorizationdb write com.apple.trust-settings.admin allow
 
-          # Use our secret crt and key to make the pkcs12 file
-          touch $RUNNER_TEMP/horizon-cli.key
+          # Use our secret crt and P12 to create files
           touch $RUNNER_TEMP/horizon-cli.crt
-          echo "$HORIZONCLI_KEY" >> $RUNNER_TEMP/horizon-cli.key
-          echo "$HORIZONCLI_CRT" >> $RUNNER_TEMP/horizon-cli.crt
-          openssl pkcs12 -export -inkey $RUNNER_TEMP/horizon-cli.key -in $RUNNER_TEMP/horizon-cli.crt -out $CERTIFICATE_PATH -password env:P12_PASSWORD
+          echo "$MACPKG_HORIZON_CLI_CRT" >> $RUNNER_TEMP/horizon-cli.crt
+          echo $MACPKG_HORIZON_CLI_P12_BASE64_ENC | base64 -d -o $CERTIFICATE_PATH
 
           # Create a temporary keychain to bypass the prompts that cause the github action to run indefinitely
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -269,19 +267,18 @@ jobs:
 
           # Add our certificate first as a trusted certificate (so that it can be used) then import the whole pkcs12 certificate so the key is included
           sudo security add-trusted-cert -d -r trustRoot -k $KEYCHAIN_PATH $RUNNER_TEMP/horizon-cli.crt
-          sudo security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k $KEYCHAIN_PATH -A
+          sudo security import $CERTIFICATE_PATH -P "$MACPKG_HORIZON_CLI_P12_PASSWORD" -k $KEYCHAIN_PATH -A
 
           # This prevents other popups that cause the github action to run indefinitely
           sudo security set-key-partition-list -S apple-tool:,apple:,pkgbuild:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           # Clean sensitive files
-          rm $RUNNER_TEMP/horizon-cli.key
           rm $CERTIFICATE_PATH
         env:
-          HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}         # Contains the content of the horizon-cli.crt
-          HORIZONCLI_KEY: ${{ secrets.HORIZONCLI_KEY }}         # Contains the content of the horizon-cli.key
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}         # Contains the content of the horizon-cli.crt
+          MACPKG_HORIZON_CLI_P12_BASE64_ENC: ${{ secrets.MACPKG_HORIZON_CLI_P12_BASE64_ENC }}
+          MACPKG_HORIZON_CLI_P12_PASSWORD: ${{ secrets.MACPKG_HORIZON_CLI_P12_PASSWORD }}
+          MACPKG_KEYCHAIN_PASSWORD: ${{ secrets.MACPKG_KEYCHAIN_PASSWORD }}
 
       # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
@@ -376,15 +373,11 @@ jobs:
             # Build docker image with only mac tarball
             docker build \
                 --no-cache \
-                -t ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:${ANAX_IMAGE_VERSION} \
+                -t ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing \
                 -f Dockerfile.macpkg.tarball \
                 .
 
-            # Push docker image
-            docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:${ANAX_IMAGE_VERSION}
-
             if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
-                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:${ANAX_IMAGE_VERSION} ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
                 docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
             fi
           env:
