@@ -464,7 +464,7 @@ if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ 
 fi
 
 if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
     echo "Sleeping 15 seconds..."
     sleep 15
 
