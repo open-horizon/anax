@@ -5,17 +5,21 @@
 function getHznVersion() { local hzn_version=$(hzn version | grep "^Horizon CLI"); echo ${hzn_version##* }; }
 
 # Global constants
-SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM arm64-macOS x86_64-macOS x86_64-Cluster ppc64le-RPM ppc64le-Cluster ALL'
+SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM arm64-macOS x86_64-macOS x86_64-Cluster ppc64le-RPM ppc64le-Cluster s390x-RPM s390x-Deb ALL'
 EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
 
-# Note: arch must prepend the following 2 variables when used - currently only amd64 and arm64 are built and pushed
+# Note: arch must prepend the following 2 variables when used - currently only amd64, arm64, s390x are built and pushed
 AGENT_IMAGE_TAR_FILE='_anax.tar.gz'
 AGENT_IMAGE='_anax'
 
-AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
-AGENT_K8S_IMAGE='amd64_anax_k8s'
-AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE='amd64_auto-upgrade-cronjob_k8s.tar.gz'
-AUTO_UPGRADE_CRONJOB_K8S_IMAGE='amd64_auto-upgrade-cronjob_k8s'
+# Note: arch must prepend the following 4 variables when used - currently only amd64 and s390x are built and pushed
+AGENT_K8S_IMAGE_TAR_FILE='_anax_k8s.tar.gz'
+AGENT_K8S_IMAGE='_anax_k8s'
+AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE='_auto-upgrade-cronjob_k8s.tar.gz'
+AUTO_UPGRADE_CRONJOB_K8S_IMAGE='_auto-upgrade-cronjob_k8s'
+
+AGENT_K8S_ARCHITECTURES=("amd64" "s390x")
+
 AGENT_IMAGE_TAG=$(getHznVersion)
 DEFAULT_PULL_REGISTRY='docker.io/openhorizon'
 MANIFEST_NAME='edgeNodeFiles_manifest'
@@ -222,8 +226,12 @@ function manifestInitUpgradeFields() {
 # Remove files from previous run, so we know there won't be (for example) multiple versions of the horizon pkgs in the dir
 function cleanUpPreviousFiles() {
     echo "Removing any generated files from previous run..."
-    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "amd64${AGENT_IMAGE_TAR_FILE}" "arm64${AGENT_IMAGE_TAR_FILE}" "$AGENT_K8S_IMAGE_TAR_FILE" "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*.{deb,rpm,pkg,crt}
+    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "amd64${AGENT_IMAGE_TAR_FILE}" "arm64${AGENT_IMAGE_TAR_FILE}" deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*.{deb,rpm,pkg,crt}
     chk $? "removing previous files in $PWD"
+    for arch in ${AGENT_K8S_ARCHITECTURES[@]}; do
+         rm -f "${arch}$AGENT_K8S_IMAGE_TAR_FILE" "${arch}$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" 
+         chk $? "removing previous files in $PWD"
+    done
     echo
 }
 
@@ -231,38 +239,44 @@ function cleanUpPreviousFiles() {
 function getAgentK8sImageTarFile() {
     local upgradeFiles=$1
 
-    if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
-        local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
-        echo "Extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
-        tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE"
-        chk $? "extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
-    else
-        if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
-            echo "Logging into $PULL_REGISTRY ..."
-            echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
-            chk $? "logging into edge cluster's registry: $PULL_REGISTRY"
-            ALREADY_LOGGED_INTO_REGISTRY='true'
+    for arch in ${AGENT_K8S_ARCHITECTURES[@]}; do
+
+        the_k8s_image=${arch}${AGENT_K8S_IMAGE}
+        the_k8s_image_tar_file=${arch}${AGENT_K8S_IMAGE_TAR_FILE}
+
+        if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
+            local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
+            echo "Extracting $pkgBaseName/docker/${the_k8s_image_tar_file} from $PACKAGE_NAME.tar.gz ..."
+            tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/${the_k8s_image_tar_file}"
+            chk $? "extracting $pkgBaseName/docker/${the_k8s_image_tar_file} from $PACKAGE_NAME.tar.gz"
+        else
+            if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
+                echo "Logging into $PULL_REGISTRY ..."
+                echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
+                chk $? "logging into edge cluster's registry: $PULL_REGISTRY"
+                ALREADY_LOGGED_INTO_REGISTRY='true'
+            fi
+
+            echo "Pulling $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG ..."
+            docker pull $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG
+            chk $? "pulling $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG"
+
+            echo "Saving ${the_k8s_image}:$AGENT_IMAGE_TAG to ${the_k8s_tar_file} ..."
+            docker save $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG | gzip > ${the_k8s_image_tar_file}
+            chk $? "saving $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG"
         fi
 
-        echo "Pulling $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG ..."
-        docker pull $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG
-        chk $? "pulling $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG"
+        if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+            echo "Extracting version from ${the_k8s_image_tar_file} ..."
+            local version=$(tar -zxOf "${the_k8s_image_tar_file}" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
+            version=${version##*:}   # strip the path and image name from the front
+            echo "Version/tag of ${the_k8s_image_tar_file} is: $version"
+            putOneFileInCss "${the_k8s_image_tar_file}" agent_files false $version
+            putOneFileInCss "${the_k8s_image_tar_file}" "agent_software_files-${version}"  true  ${version}
 
-        echo "Saving $AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG to $AGENT_K8S_IMAGE_TAR_FILE ..."
-        docker save $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG | gzip > $AGENT_K8S_IMAGE_TAR_FILE
-        chk $? "saving $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG"
-    fi
-
-    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        echo "Extracting version from $AGENT_K8S_IMAGE_TAR_FILE ..."
-        local version=$(tar -zxOf "$AGENT_K8S_IMAGE_TAR_FILE" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
-        version=${version##*:}   # strip the path and image name from the front
-        echo "Version/tag of $AGENT_K8S_IMAGE_TAR_FILE is: $version"
-        putOneFileInCss "$AGENT_K8S_IMAGE_TAR_FILE" agent_files false $version
-        putOneFileInCss "$AGENT_K8S_IMAGE_TAR_FILE" "agent_software_files-${version}"  true  ${version}
-
-        addElementToArray $upgradeFiles $AGENT_K8S_IMAGE_TAR_FILE
-    fi
+            addElementToArray $upgradeFiles ${the_k8s_image_tar_file}
+        fi
+    done
     echo
 }
 
@@ -270,38 +284,44 @@ function getAgentK8sImageTarFile() {
 function getAutoUpgradeCronjobK8sImageTarFile() {
     local upgradeFiles=$1
 
-    if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
-        local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
-        echo "Extracting $pkgBaseName/docker/$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
-        tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE"
-        chk $? "extracting $pkgBaseName/docker/$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
-    else
-        if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
-            echo "Logging into $PULL_REGISTRY ..."
-            echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
-            chk $? "logging into edge cluster's registry: $PULL_REGISTRY"
-            ALREADY_LOGGED_INTO_REGISTRY='true'
+    for arch in ${AGENT_K8S_ARCHITECTURES[@]}; do
+
+        the_k8s_cronjob_image=${arch}${AUTO_UPGRADE_CRONJOB_K8S_IMAGE}
+        the_k8s_cronjob_image_tar_file=${arch}${AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE}
+
+        if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
+            local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
+            echo "Extracting $pkgBaseName/docker/${the_k8s_cronjob_image_tar_file} from $PACKAGE_NAME.tar.gz ..."
+            tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/${the_k8s_cronjob_image_tar_file}"
+            chk $? "extracting $pkgBaseName/docker/${the_k8s_cronjob_image_tar_file} from $PACKAGE_NAME.tar.gz"
+        else
+            if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
+                echo "Logging into $PULL_REGISTRY ..."
+                echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
+                chk $? "logging into edge cluster's registry: $PULL_REGISTRY"
+                ALREADY_LOGGED_INTO_REGISTRY='true'
+            fi
+
+            echo "Pulling $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG ..."
+            docker pull $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG
+            chk $? "pulling $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG"
+
+            echo "Saving ${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG to ${the_k8s_cronjob_image_tar_file} ..."
+            docker save $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG | gzip > ${the_k8s_cronjob_image_tar_file}
+            chk $? "saving $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG"
         fi
 
-        echo "Pulling $PULL_REGISTRY/$AUTO_UPGRADE_CRONJOB_K8S_IMAGE:$AGENT_IMAGE_TAG ..."
-        docker pull $PULL_REGISTRY/$AUTO_UPGRADE_CRONJOB_K8S_IMAGE:$AGENT_IMAGE_TAG
-        chk $? "pulling $PULL_REGISTRY/$AUTO_UPGRADE_CRONJOB_K8S_IMAGE:$AGENT_IMAGE_TAG"
+        if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+            echo "Extracting version from ${the_k8s_cronjob_image_tar_file} ..."
+            local version=$(tar -zxOf "${the_k8s_cronjob_image_tar_file}" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
+            version=${version##*:}   # strip the path and image name from the front
+            echo "Version/tag of ${the_k8s_cronjob_image_tar_file} is: $version"
+            putOneFileInCss "${the_k8s_cronjob_image_tar_file}" agent_files false $version
+            putOneFileInCss "${the_k8s_cronjob_image_tar_file}" "agent_software_files-${version}"  true  ${version}
 
-        echo "Saving $AUTO_UPGRADE_CRONJOB_K8S_IMAGE:$AGENT_IMAGE_TAG to $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE ..."
-        docker save $PULL_REGISTRY/$AUTO_UPGRADE_CRONJOB_K8S_IMAGE:$AGENT_IMAGE_TAG | gzip > $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE
-        chk $? "saving $PULL_REGISTRY/$AUTO_UPGRADE_CRONJOB_K8S_IMAGE:$AGENT_IMAGE_TAG"
-    fi
-
-    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        echo "Extracting version from $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE ..."
-        local version=$(tar -zxOf "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
-        version=${version##*:}   # strip the path and image name from the front
-        echo "Version/tag of $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE is: $version"
-        putOneFileInCss "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" agent_files false $version
-        putOneFileInCss "$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" "agent_software_files-${version}"  true  ${version}
-
-        addElementToArray $upgradeFiles $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE
-    fi
+            addElementToArray $upgradeFiles ${the_k8s_cronjob_image_tar_file}
+        fi
+    done
     echo
 }
 
@@ -720,7 +740,7 @@ function getHorizonPackageFiles() {
         putHorizonPkgsInCss $softwareFiles $opsys $pkgtype $arch
     fi
 
-    if [[ $opsys == 'macos' ]]; then   #future: do this for all amd64/x86_64
+    if [[ $opsys == 'macos' ]] || [[ $arch == 's390x' ]]; then   #future: do this for all amd64/x86_64
 
         # Set architectures to match what agent will use
         if [[ $arch == "x86_64" ]]; then
@@ -789,6 +809,12 @@ function gatherHorizonPackageFiles() {
     fi
     if [[ $EDGE_NODE_TYPE == 'ppc64le-RPM' || $EDGE_NODE_TYPE == 'ALL' ]]; then
         getHorizonPackageFiles $agentSoftwareFiles 'linux' 'rpm' 'ppc64le'
+    fi
+    if [[ $EDGE_NODE_TYPE == 's390x-RPM' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        getHorizonPackageFiles $agentSoftwareFiles 'linux' 'rpm' 's390x'
+    fi
+    if [[ $EDGE_NODE_TYPE == 's390x-Deb' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        getHorizonPackageFiles $agentSoftwareFiles 'linux' 'deb' 's390x'
     fi
     # there are no packages to extract for edge-cluster, because that uses the agent docker image
 
