@@ -215,6 +215,20 @@ cmd="hzn register -u $USERDEV_ADMIN_AUTH -n an12345:Abcdefghijklmno1 -o userdev 
 reg_node "$cmd"
 verify_agreements "userdev" "userdevadmin:userdevadminpw"
 
+## after node is registered, token cannot be updated via hzn exchange node settoken
+echo -e "${PREFIX} Verify node token cannot be changed after node is registered"
+cmd="hzn exchange node settoken an12345 an12345token -o userdev -u $USERDEV_ADMIN_AUTH"
+echo -e "$cmd"
+ret=`$cmd 2>&1`
+if [ $? -eq 0 ]; then
+  echo -e "${PREFIX} 'hzn exchange node settoken' should have failed because node public key is already set."
+  exit 1
+elif [[ $ret != *"public key is set for node 'userdev/an12345', cannot set a token"* ]]; then
+  echo -e "${PREFIX} Wrong error message for 'hzn register': $ret."
+  echo -e "${PREFIX} It should have said 'public key is set for node userdev/an12345, cannot set a token'."
+  exit 1
+fi
+
 ## test register while the node is registered
 echo -e "${PREFIX} Testing 'hzn register' while the node is registered."
 ret=$(hzn register -u $USERDEV_ADMIN_AUTH -n an12345:Abcdefghijklmno1 -o userdev -f /tmp/reg_userinput.json --policy /tmp/node_policy.json 2>&1)
@@ -229,49 +243,52 @@ else
   echo -e "$ret"
 fi
 
-## register pattern sns, node will be created by this command
-unreg_node
-hzn exchange -u e2edevadmin:e2edevadminpw -o e2edev@somecomp.com node remove an12345 -f 
+if [ "$TEST_PATTERNS" == "sall" ]; then
+  ## register pattern sns, node will be created by this command
+  unreg_node
+  hzn exchange -u e2edevadmin:e2edevadminpw -o e2edev@somecomp.com node remove an12345 -f 
 
-echo -e "${PREFIX} Testing 'hzn register' with pattern sns."
-cmd="hzn register -u e2edevadmin:e2edevadminpw -n an12345:Abcdefghijklmno1 -f /tmp/reg_userinput.json -o e2edev@somecomp.com -p e2edev@somecomp.com/sns"
-reg_node "$cmd"
-verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
+  echo -e "${PREFIX} Testing 'hzn register' with pattern sns."
+  cmd="hzn register -u e2edevadmin:e2edevadminpw -n an12345:Abcdefghijklmno1 -f /tmp/reg_userinput.json -o e2edev@somecomp.com -p e2edev@somecomp.com/sns"
+  reg_node "$cmd"
+  verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
 
-## register pattern sns using positional argument, node already exists
-unreg_node
-echo -e "${PREFIX} Testing 'hzn register' with pattern sns using positional argument."
-cmd="hzn register -n e2edev@somecomp.com/an12345:Abcdefghijklmno1 -f /tmp/reg_userinput.json e2edev@somecomp.com sns"
-reg_node "$cmd"
-verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
+  ## register pattern sns using positional argument, node already exists
+  unreg_node
+  echo -e "${PREFIX} Testing 'hzn register' with pattern sns using positional argument."
+  cmd="hzn register -n e2edev@somecomp.com/an12345:Abcdefghijklmno1 -f /tmp/reg_userinput.json e2edev@somecomp.com sns"
+  reg_node "$cmd"
+  verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
 
-## test registering node with both sns pattern and policy
-unreg_node
-echo -e "${PREFIX} Testing 'hzn register' with both pattern sns and policy."
-cmd="hzn register -n an12345:Abcdefghijklmno1 -o e2edev@somecomp.com -f /tmp/reg_userinput.json -p sns --policy /tmp/node_policy.json"
-reg_node "$cmd"
+  ## test registering node with both sns pattern and policy
+  unreg_node
+  echo -e "${PREFIX} Testing 'hzn register' with both pattern sns and policy."
+  cmd="hzn register -n an12345:Abcdefghijklmno1 -o e2edev@somecomp.com -f /tmp/reg_userinput.json -p sns --policy /tmp/node_policy.json"
+  reg_node "$cmd"
 
-# make sure node has pattern associated.
-ret=$(hzn node list |jq '.pattern')
-if [ $ret != '"e2edev@somecomp.com/sns"' ]; then
-  echo -e "${PREFIX} the node should have pattern e2edev@somecomp.com/sns, but got: $ret"
-  exit 1
+  # make sure node has pattern associated.
+  ret=$(hzn node list |jq '.pattern')
+  if [ $ret != '"e2edev@somecomp.com/sns"' ]; then
+    echo -e "${PREFIX} the node should have pattern e2edev@somecomp.com/sns, but got: $ret"
+    exit 1
+  fi
+
+  verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
+
+  ## register pattern sall using flags, take HZN_ORG_ID. Use sall as the last test to restore the status before this script.
+  unreg_node
+  export HZN_ORG_ID=e2edev@somecomp.com
+  echo -e "${PREFIX} Testing 'hzn register' with pattern sall with HZN_ORG_ID"
+  cmd="hzn register -n an12345:Abcdefghijklmno1 -f /tmp/reg_userinput_all.json -p sall"
+  reg_node "$cmd"
+
+  ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./verify_agreements.sh
+  if [ $? -ne 0 ]; then 
+    echo -e "${PREFIX} Failed to verify agreement."
+    exit 1
+  fi
 fi
 
-verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
-
-## register pattern sall using flags, take HZN_ORG_ID. Use sall as the last test to restore the status before this script.
-unreg_node
-export HZN_ORG_ID=e2edev@somecomp.com
-echo -e "${PREFIX} Testing 'hzn register' with pattern sall with HZN_ORG_ID"
-cmd="hzn register -n an12345:Abcdefghijklmno1 -f /tmp/reg_userinput_all.json -p sall"
-reg_node "$cmd"
-
-ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./verify_agreements.sh
-if [ $? -ne 0 ]; then 
-  echo -e "${PREFIX} Failed to verify agreement."
-  exit 1
-fi
 unset HZN_ORG_ID
 
 echo -e "${PREFIX} Done"
