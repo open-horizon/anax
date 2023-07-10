@@ -19,6 +19,9 @@ docker build \
 
 if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then 
     docker push ${IMAGE_REPO}/${arch}_anax_debian:testing
+
+    docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_debian:testing
+    docker push ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_debian:testing
 fi
 
 # Deal with RPM Package
@@ -47,5 +50,8 @@ if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' ]]; then
 
     if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then 
         docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing
+
+        docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_rpm:testing
+        docker push ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_rpm:testing
     fi
 fi
