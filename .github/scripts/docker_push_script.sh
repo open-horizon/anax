@@ -14,6 +14,9 @@ for image in "${images[@]}"; do
 
     if [[ ${GITHUB_REF} == 'refs/heads/master' ]]; then
         docker push ${IMAGE_REPO}/${image}:testing
+
+        docker tag ${IMAGE_REPO}/${image}:testing ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
+        docker push ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
     fi
 
 done

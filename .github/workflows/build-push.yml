@@ -8,9 +8,10 @@ on:
       - master
       - v2.30
       - v2.29
-
+        
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
+  GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
   RUN_NUMBER: ${{ github.run_number }}
   RUN_NUMBER_OFFSET: ${{ vars.RUN_NUMBER_OFFSET }}
 
@@ -23,6 +24,50 @@ jobs:
     outputs: 
       BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
     steps:
+      # Ensure that the repo variables and secrets are set before running any other steps
+      - name: Check User Set Variables
+        run: |
+          if [[ -z "$DOCKER_USER" ]]; then \
+          echo "::error::Secret DOCKER_USER was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$DOCKER_TOKEN" ]]; then \
+          echo "::error::Secret DOCKER_TOKEN was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_HORIZON_CLI_CRT" ]]; then \
+          echo "::error::Secret MACPKG_HORIZON_CLI_CRT was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_HORIZON_CLI_P12_BASE64_ENC" ]]; then \
+          echo "::error::Secret MACPKG_HORIZON_CLI_P12_BASE64_ENC was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_HORIZON_CLI_P12_PASSWORD" ]]; then \
+          echo "::error::Secret MACPKG_HORIZON_CLI_P12_PASSWORD was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_KEYCHAIN_PASSWORD" ]]; then \
+          echo "::error::Secret MACPKG_KEYCHAIN_PASSWORD was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$IMAGE_REPO" ]]; then \
+          echo "::error::Variable DOCKERHUB_REPO was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$RUN_NUMBER_OFFSET" ]]; then \
+          echo "::error::Variable RUN_NUMBER_OFFSET was not set"; \
+          exit 1; \
+          fi
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
+          MACPKG_HORIZON_CLI_P12_BASE64_ENC: ${{ secrets.MACPKG_HORIZON_CLI_P12_BASE64_ENC }}
+          MACPKG_HORIZON_CLI_P12_PASSWORD: ${{ secrets.MACPKG_HORIZON_CLI_P12_PASSWORD }}
+          MACPKG_KEYCHAIN_PASSWORD: ${{ secrets.MACPKG_KEYCHAIN_PASSWORD }}
+
+      # Offset the Build Number
       - name: Offset
         id: offset
         run: |
@@ -77,7 +122,15 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          password: ${{ secrets.DOCKER_TOKEN }} 
+          
+      # Authenticate GHCR to allow pushing to our alternate image registry
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # Checkout our Github repo
       - name: Checkout Github Repo
@@ -342,16 +395,24 @@ jobs:
             username: ${{ secrets.DOCKER_USER }}
             password: ${{ secrets.DOCKER_TOKEN }}
 
+        # Authenticate GHCR to allow pushing to our alternate image registry
+        - name: Login to Github Container Registry
+          uses: docker/login-action@v2
+          with:
+            registry: ghcr.io
+            username: ${{ github.repository_owner }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
         # Setup a working directory in the temp folder path
         - name: Setup Working Directory and add Certificate File
           id: workdir_setup
           run: |
             mkdir $RUNNER_TEMP/macs
             touch $RUNNER_TEMP/macs/horizon-cli.crt
-            echo "$HORIZONCLI_CRT" >> $RUNNER_TEMP/macs/horizon-cli.crt
+            echo "$MACPKG_HORIZON_CLI_CRT" >> $RUNNER_TEMP/macs/horizon-cli.crt
             echo "PKG_PATH="${RUNNER_TEMP}/macs"" >> $GITHUB_OUTPUT
           env:
-            HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}
+            MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
 
         # Retrieve artifact from previous job
         - name: Download our MacOS Package Artifact
@@ -379,6 +440,8 @@ jobs:
 
             if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
                 docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
+                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
+                docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
             fi
           env:
             ANAX_IMAGE_VERSION: ${{ needs.mac-build.outputs.ANAX_VERSION }}
