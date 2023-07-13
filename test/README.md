@@ -92,7 +92,6 @@ Here is a full description of all the variables you can use to setup the test th
 - NOUPGRADE=1 - turns off the service upgrading/downgrading tests.
 - NOPATTERNCHANGE=1 - turns off the node pattern change test.
 - NOCOMPCHECK=1 - turns off the policy compatibility test.
-- NOSDO=1 - turns off the SDO test.
 - NOAGENTAUTO=1 - turns off the Agent Auto Upgrade tests.
 - NONS=1 - dont register the netspeed service.
 - NOGPS=1 - dont register the gpstest service.

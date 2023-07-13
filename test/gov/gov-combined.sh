@@ -419,14 +419,6 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 
 fi
 
-if [ "$NOSDO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  ./hzn_sdo.sh
-  if [ $? -ne 0 ]; then
-    echo "SDO test using hzn command failure."
-    exit 1
-  fi
-fi
-
 # if [ "$NOAGENTAUTO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 #   ./hzn_nmp.sh
 #   if [ $? -ne 0 ]; then
