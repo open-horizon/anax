@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.5
-	github.com/open-horizon/edge-sync-service v1.9.10
+	github.com/open-horizon/edge-sync-service v1.9.11
 	github.com/open-horizon/edge-utilities v0.0.0-20190711093331-0908b45a7152
 	github.com/open-horizon/rsapss-tool v0.0.0-20190416131035-2fc75eb3b6ea
 	github.com/operator-framework/api v0.17.1
@@ -123,7 +123,6 @@ require (
 	golang.org/x/tools v0.8.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
