@@ -20,14 +20,14 @@ VERB_DEBUG=5
 # This allows you to experiment with platforms or variations that are not yet officially tested/supported.
 SUPPORTED_DEBIAN_VARIANTS=(ubuntu raspbian debian $SUPPORTED_DEBIAN_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 SUPPORTED_DEBIAN_VERSION=(bullseye jammy focal bionic buster xenial stretch $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
-SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
+SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf s390x $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel redhatenterprise centos fedora $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: version 8 and 9 are added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
-SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 9.0 9.1 8 9 32 35 36 37 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
-SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
+SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 9.0 9.1 9.2 8 9 32 35 36 37 38 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le s390x  riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
 
 SUPPORTED_EDGE_CLUSTER_ARCH=(amd64)
-SUPPORTED_ANAX_IN_CONTAINER_ARCH=(amd64 arm64)
+SUPPORTED_ANAX_IN_CONTAINER_ARCH=(amd64 arm64 s390x)
 
 SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
 SUPPORTED_LINUX_DISTRO=(${SUPPORTED_DEBIAN_VARIANTS[@]} ${SUPPORTED_REDHAT_VARIANTS[@]})   # compared to what our detect_distro() sets DISTRO to
@@ -2286,7 +2286,11 @@ function redhat_device_install_prereqs() {
         fi
     fi
 
-    dnf install -yq curl jq cronie
+    # Curl likely already on a RHEL system so only try to install it if missing - caused a problem for RHEL 9.2
+    if ! isCmdInstalled curl; then
+        dnf install -yq curl
+    fi
+    dnf install -yq jq cronie
 
     # cron will be used for agent auto upgrade process
     systemctl start crond
@@ -3757,7 +3761,7 @@ function create_namespace() {
 function create_service_account() {
     log_debug "create_service_account() begin"
 
-    log_verbose "checking if serviceaccont exist..."
+    log_verbose "checking if serviceaccount exist..."
     if ! $KUBECTL get serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
         log_verbose "serviceaccount ${SERVICE_ACCOUNT_NAME} does not exist, creating..."
         $KUBECTL create serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${AGENT_NAMESPACE}
@@ -3897,16 +3901,16 @@ function update_cronjobs() {
     log_debug "update_cronjobs() begin"
 
     # For auto-upgrade-cronjob
-    if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
-        # cronjob exists, delete it
-        log_verbose "Found cronjob ${CRONJOB_AUTO_UPGRADE_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old cronjob..."
-        $KUBECTL delete cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
-        chk $? "deleting cronjob for auto-upgrade-cronjob on cluster"
-        log_verbose "Old cronjob ${CRONJOB_AUTO_UPGRADE_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
+    if [[ "$IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME" != "true" ]]; then
+        if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
+            # cronjob exists, delete it
+            log_verbose "Found cronjob ${CRONJOB_AUTO_UPGRADE_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old cronjob..."
+            $KUBECTL delete cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
+            chk $? "deleting cronjob for auto-upgrade-cronjob on cluster"
+            log_verbose "Old cronjob ${CRONJOB_AUTO_UPGRADE_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
+        fi
+        create_cronjobs
     fi
-
-    create_cronjobs
-
     log_debug "update_cronjobs() end"
 }
 

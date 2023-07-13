@@ -85,7 +85,9 @@ type EstablishedAgreement struct {
 	BlockchainOrg                   string                   `json:"blockchain_org,omitempty"`        // the org of the blockchain instance
 	RunningWorkload                 WorkloadInfo             `json:"workload_to_run,omitempty"`       // For display purposes, a copy of the workload info that this agreement is managing. It should be the same info that is buried inside the proposal.
 	AgreementTimeout                uint64                   `json:"agreement_timeout"`
-	ServiceDefId                    string                   `json:"service_definition_id"` // stores the microservice definiton id
+	ServiceDefId                    string                   `json:"service_definition_id"`         // stores the microservice definiton id
+	FailedVerAttempts               uint64                   `json:"failed_verification_attempts"`  // number of times a agreementverify has failed for this agreement
+	LastVerAttemptUpdateTime        uint64                   `json:"last_verification_update_time"` // time the FailedVerAttempts field was last updated
 }
 
 func (c EstablishedAgreement) String() string {
@@ -119,13 +121,15 @@ func (c EstablishedAgreement) String() string {
 		"BlockchainOrg: %v, "+
 		"RunningWorkload: %v, "+
 		"AgreementTimeout: %v, "+
-		"ServiceDefId: %v",
+		"ServiceDefId: %v, "+
+		"FailedVerAttempts: %v",
+		"LastVerAttemptUpdateTime: %v",
 		c.Name, c.DependentServices, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
 		"********", c.ProposalSig,
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementBCUpdateAckTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
 		c.AgreementProtocol, c.ProtocolVersion, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
-		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg, c.RunningWorkload, c.AgreementTimeout, c.ServiceDefId)
+		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg, c.RunningWorkload, c.AgreementTimeout, c.ServiceDefId, c.FailedVerAttempts, c.LastVerAttemptUpdateTime)
 
 }
 
@@ -176,6 +180,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		BlockchainOrg:                   bcOrg,
 		RunningWorkload:                 *wi,
 		AgreementTimeout:                agreementTimeout,
+		FailedVerAttempts:               0,
 	}
 
 	return newAg, db.Update(func(tx *bolt.Tx) error {
@@ -470,6 +475,14 @@ func MeteringNotificationReceived(db *bolt.DB, dbAgreementId string, mn Metering
 	})
 }
 
+func SetFailedVerAttempts(db *bolt.DB, dbAgreementId string, protocol string, failedVerAttempts uint64) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.LastVerAttemptUpdateTime = uint64(time.Now().Unix())
+		c.FailedVerAttempts = failedVerAttempts
+		return &c
+	})
+}
+
 func SetAgreementTimeout(db *bolt.DB, dbAgreementId string, protocol string, agTimeoutS uint64) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementTimeout = agTimeoutS
@@ -627,6 +640,8 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 					mod.ServiceDefId = update.ServiceDefId
 				}
 				mod.Proposal = update.Proposal // allow proposal to be updated to accomodate policy changes
+				mod.FailedVerAttempts = update.FailedVerAttempts
+				mod.LastVerAttemptUpdateTime = update.LastVerAttemptUpdateTime
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)
