@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/containermessage"
+	"os"
 	"testing"
 )
 
@@ -210,11 +211,14 @@ func Test_RemoveEnvVar_nothing3(t *testing.T) {
 }
 
 func Test_CheckPermissions_0(t *testing.T) {
+	if err := createTmpDir(); err != nil {
+		t.Errorf("Failed to create ./tmp directory with 0777 permission, err: %v", err)
+	}
 
-	binds := []string{"/tmp"}
+	binds := []string{"./tmp"}
 
 	if err := hasValidBindPermissions(binds); err != nil {
-		t.Errorf("Bind is supported, should not have returned an error.")
+		t.Errorf("Bind is supported, should not have returned an error")
 	}
 
 	binds = []string{"/root"}
@@ -229,7 +233,7 @@ func Test_CheckPermissions_0(t *testing.T) {
 		t.Errorf("Bind is not supported, should have returned an error.")
 	}
 
-	binds = []string{"/tmp:/hosttmp:ro"}
+	binds = []string{"./tmp:/hosttmp:ro"}
 
 	if err := hasValidBindPermissions(binds); err != nil {
 		t.Errorf("Bind is supported, should not have returned an error.")
@@ -241,7 +245,7 @@ func Test_CheckPermissions_0(t *testing.T) {
 		t.Errorf("Bind is not supported, should have returned an error.")
 	}
 
-	binds = []string{"/tmp:/hosttmp"}
+	binds = []string{"./tmp:/hosttmp"}
 
 	if err := hasValidBindPermissions(binds); err != nil {
 		t.Errorf("Bind is supported, should not have returned an error.")
@@ -253,7 +257,7 @@ func Test_CheckPermissions_0(t *testing.T) {
 		t.Errorf("Bind is not supported, should have returned an error.")
 	}
 
-	binds = []string{"/tmp:/hosttmp:rw"}
+	binds = []string{"./tmp:/hosttmp:rw"}
 
 	if err := hasValidBindPermissions(binds); err != nil {
 		t.Errorf("Bind is supported, should not have returned an error.")
@@ -271,4 +275,21 @@ func Test_CheckPermissions_0(t *testing.T) {
 		t.Errorf("Bind is supported, should not have returned an error.")
 	}
 
+	os.RemoveAll("./tmp")
+
+}
+
+func createTmpDir () error {
+	if err := os.MkdirAll("./tmp", 0777); err != nil {
+		return err
+	}
+
+	if info, err := os.Stat("./tmp"); err != nil {
+		return err
+	} else if info.Mode()&4 == 0 || info.Mode()&2 == 0 {
+		if err := os.Chmod("./tmp", 0777); err != nil {
+			return err
+		}
+	}
+	return nil
 }
