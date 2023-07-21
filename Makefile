@@ -432,14 +432,14 @@ anax-k8s-image: anax-k8s-clean
 	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp -f $(LICENSE_FILE) $(ANAX_K8S_CONTAINER_DIR)
 	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" || $(arch) == "s390x" ]]; then \
 		cd $(ANAX_K8S_CONTAINER_DIR) && docker $(DOCKER_BUILD_CMD) $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_LABELS) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi.$(arch) .; \
 	fi
 	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
 
 auto-upgrade-cronjob-k8s-image: auto-upgrade-cronjob-k8s-clean
 	@echo "Producing Agent Auto Upgrade CronJob K8S docker image $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" || $(arch) == "s390x" ]]; then \
 		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LABELS) -t $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) -f Dockerfile.ubi.auto-upgrade-cron.$(arch) .; \
 	fi
 	docker tag $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):$(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION)
