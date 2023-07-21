@@ -112,7 +112,7 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 			if typedCRD, ok := obj.Object.(*crdv1beta1.CustomResourceDefinition); ok {
 				kind := typedCRD.Spec.Names.Kind
 				if kind == "" {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field.", obj.Object)))
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field: %v", obj.Object)))
 				}
 				customResourceList, ok := customResources[kind]
 				if !ok {
@@ -128,7 +128,7 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 			} else if typedCRD, ok := obj.Object.(*crdv1.CustomResourceDefinition); ok {
 				kind := typedCRD.Spec.Names.Kind
 				if kind == "" {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field.", obj.Object)))
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field: %v", obj.Object)))
 				}
 				customResourceList, ok := customResources[kind]
 				if !ok {

@@ -419,6 +419,13 @@ func decompress(tarGZFilePath, targetFolder string) error {
 	}
 	defer uncompressStream.Close()
 
+	// create the target folder if it is not exist
+	if _, err := os.Stat(targetFolder); err != nil {
+		if err := os.MkdirAll(targetFolder, 0755); err != nil {
+			return err
+		}
+	}
+
 	tarReader := tar.NewReader(uncompressStream)
 	for {
 		header, err := tarReader.Next()
