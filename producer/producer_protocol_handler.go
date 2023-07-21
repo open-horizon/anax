@@ -487,7 +487,7 @@ func (w *BaseProducerProtocolHandler) MatchClusterNamespace(tcPolicy *policy.Pol
 		} else {
 			compResult, _, reason := compcheck.CheckClusterNamespaceCompatibility(nodeType, cutil.GetClusterNamespace(), tcPolicy.ClusterNamespace, workload.ClusterDeployment, true, nil)
 			if compResult {
-				glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("cluster namespace matches. %v")))
+				glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("cluster namespace matches. %v", reason)))
 			} else {
 				glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("cluster namespace not match. %v", reason)))
 			}

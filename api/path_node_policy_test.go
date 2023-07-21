@@ -169,7 +169,7 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 		t.Errorf("no node policy returned")
 	} else if fnp, err := FindNodePolicyForOutput(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != len(*propList)+NUM_BUILT_INS-3 {
+	} else if len(fnp.Properties) != len(*propList)+NUM_BUILT_INS-1 {
 		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != propName {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)
@@ -194,7 +194,7 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 		t.Errorf("no node policy returned")
 	} else if fnp, err := FindNodePolicyForOutput(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != len(*propList)+NUM_BUILT_INS-3 {
+	} else if len(fnp.Properties) != len(*propList)+NUM_BUILT_INS-1 {
 		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != propName {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)
