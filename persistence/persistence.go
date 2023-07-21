@@ -122,7 +122,7 @@ func (c EstablishedAgreement) String() string {
 		"RunningWorkload: %v, "+
 		"AgreementTimeout: %v, "+
 		"ServiceDefId: %v, "+
-		"FailedVerAttempts: %v",
+		"FailedVerAttempts: %v, "+
 		"LastVerAttemptUpdateTime: %v",
 		c.Name, c.DependentServices, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
 		"********", c.ProposalSig,
