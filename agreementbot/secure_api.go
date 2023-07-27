@@ -1044,6 +1044,7 @@ type SecretRequestInfo struct {
 
 	// information about the resources being accessed
 	user            string // if applicable, the user whose resources are being accessed
+	node		string // if applicable, the node whose resources are being accessed
 	vaultSecretName string // the name of the secret being accessed
 
 	msgPrinter *message.Printer
@@ -1071,6 +1072,11 @@ type SecretRequestInfo struct {
 //     type: string
 //     required: false
 //     description: "The user owning the secret."
+//   - name: node
+//     in: query
+//     type: string
+//     required: false
+//     description: "The node the secret is for."
 //   - name: secret
 //     in: query
 //     type: string
@@ -1093,12 +1099,19 @@ func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *Secret
 	pathVars := mux.Vars(r)
 	org := pathVars["org"]
 	user := pathVars["user"]
+	node := pathVars["node"]
 	vaultSecretName := pathVars["secret"]
 	api_url := "/org/%v/secrets/%v"
 	resourceString := fmt.Sprintf(api_url, "{org}", "{secret}")
-	if user != "" {
+	if user != "" && node != "" {
+		api_url = "/org/%v/secrets/user/%v/node/%v/%v"
+                resourceString = fmt.Sprintf(api_url, "{org}", "{user}", "{node}", "{secret}")
+	} else if user != "" {
 		api_url = "/org/%v/secrets/user/%v/%v"
 		resourceString = fmt.Sprintf(api_url, "{org}", "{user}", "{secret}")
+	} else if node != "" {
+		api_url = "/org/%v/secrets/node/%v/%v"
+                resourceString = fmt.Sprintf(api_url, "{org}", "{node}", "{secret}")
 	}
 
 	ec, exUser, msgPrinter, userAuthenticated := a.processExchangeCred(resourceString, UserTypeCred, w, r)
@@ -1119,14 +1132,18 @@ func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *Secret
 		writeResponse(w, msgPrinter.Sprintf(unavailMsg), http.StatusServiceUnavailable)
 	}
 
-	if user != "" {
+	if user != "" && node != "" {
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, user, node, vaultSecretName))))
+	} else if user != "" {
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, user, vaultSecretName))))
+	} else if node != "" {
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, node, vaultSecretName))))
 	} else {
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, vaultSecretName))))
 	}
 
 	// pre processing
-	if err, httpCode := a.vaultSecretPreCheck(ec, fmt.Sprint(r.URL), vaultSecretName, org, user, msgPrinter); err != nil {
+	if err, httpCode := a.vaultSecretPreCheck(ec, fmt.Sprint(r.URL), vaultSecretName, org, user, node, msgPrinter); err != nil {
 		glog.Errorf(APIlogString(err.Error()))
 		writeResponse(w, err.Error(), httpCode)
 		return nil
@@ -1140,7 +1157,7 @@ func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *Secret
 		}
 	}
 
-	return &SecretRequestInfo{org, ec, exUser, user, vaultSecretName, msgPrinter}
+	return &SecretRequestInfo{org, ec, exUser, user, node, vaultSecretName, msgPrinter}
 }
 
 func parseSecretDetails(w http.ResponseWriter, r *http.Request, msgPrinter *message.Printer) *secrets.SecretDetails {
@@ -1178,9 +1195,13 @@ func (a *SecureAPI) errCheck(err error, action string, info *SecretRequestInfo) 
 
 		// build the original secret name
 		var secretName string
-		if info.user != "" {
+		if info.user != "" && info.node != "" {
+			secretName = "user/" + info.user + "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+		} else if info.user != "" {
 			secretName = "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
-		} else {
+		} else if info.node != "" {
+                        secretName = "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+                } else {
 			secretName = info.vaultSecretName
 		}
 
@@ -1302,7 +1323,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// pull details for an org-level secret
-		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "", info.vaultSecretName)
+		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "", "", info.vaultSecretName)
 		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
 			writeResponse(w, secretDetails, http.StatusOK)
 		} else {
@@ -1387,7 +1408,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// pull details for a user-level secret
-		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.user, info.vaultSecretName)
+		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.user, "", info.vaultSecretName)
 		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
 			writeResponse(w, secretDetails, http.StatusOK)
 		} else {
@@ -1437,7 +1458,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 // This function does preprocessing for the secret APIs.
 // It returns error and http response code.
 func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
-	apiUrl string, vaultSecretName string, org string, user string,
+	apiUrl string, vaultSecretName string, org string, user string, node string,
 	msgPrinter *message.Printer) (error, int) {
 
 	// Check if vault is configured in the management hub, and the provider is ready to handle requests.
@@ -1455,6 +1476,8 @@ func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
 	} else if (strings.Contains(apiUrl, "/user/") && user == "") ||
 		(vaultSecretName == "user" && user == "") {
 		return fmt.Errorf(msgPrinter.Sprintf("User must be specified in the API path")), http.StatusBadRequest
+	} else if (strings.Contains(apiUrl, "/node") && node == "") || (vaultSecretName == "node" && node == "") {
+		return fmt.Errorf(msgPrinter.Sprintf("Node must be specified in the API path")), http.StatusBadRequest
 	}
 
 	return nil, 0
@@ -1533,7 +1556,7 @@ func (a *SecureAPI) verifySecretNames(ec exchange.ExchangeContext, exUser string
 			_, secretName := vbind.GetBinding()
 
 			//parse the bound secret name
-			secretUser, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
+			secretUser, secretNode, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
 			if err != nil {
 				return false, "", err
 			}
@@ -1542,19 +1565,25 @@ func (a *SecureAPI) verifySecretNames(ec exchange.ExchangeContext, exUser string
 			// can use the agbot secure API precheck function vaultSecretPreCheck
 			agbotApiUrl := ""
 			fullSecretName := ""
-			if secretUser == "" {
-				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/%v", nodeOrg, shortSecretName)
-				fullSecretName = fmt.Sprintf("/openhorizon/%v/%v", nodeOrg, shortSecretName)
-			} else {
+			if secretUser != "" && secretNode != "" {
+				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/user/%v/node/%v/%v", nodeOrg, secretUser, secretNode, shortSecretName)
+                                fullSecretName = fmt.Sprintf("/openhorizon/%v/user/%v/node/%v/%v", nodeOrg, secretUser, secretNode, shortSecretName)
+			} else if secretUser != "" {
 				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/user/%v/%v", nodeOrg, secretUser, shortSecretName)
 				fullSecretName = fmt.Sprintf("/openhorizon/%v/user/%v/%v", nodeOrg, secretUser, shortSecretName)
-			}
-			if err, _ := a.vaultSecretPreCheck(ec, agbotApiUrl, shortSecretName, nodeOrg, secretUser, msgPrinter); err != nil {
+			} else if secretNode != "" {
+				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/node/%v/%v", nodeOrg, secretNode, shortSecretName)
+                                fullSecretName = fmt.Sprintf("/openhorizon/%v/node/%v/%v", nodeOrg, secretNode, shortSecretName)
+			} else {
+                                agbotApiUrl = fmt.Sprintf("/org/%v/secrets/%v", nodeOrg, shortSecretName)
+                                fullSecretName = fmt.Sprintf("/openhorizon/%v/%v", nodeOrg, shortSecretName)
+                        }
+			if err, _ := a.vaultSecretPreCheck(ec, agbotApiUrl, shortSecretName, nodeOrg, secretUser, secretNode, msgPrinter); err != nil {
 				return false, "", err
 			}
 
 			// check if the bound secret exists or not{}
-			payload, err, _ := a.listVaultSecret(&SecretRequestInfo{nodeOrg, ec, exUser, secretUser, shortSecretName, msgPrinter})
+			payload, err, _ := a.listVaultSecret(&SecretRequestInfo{nodeOrg, ec, exUser, secretUser, secretNode, shortSecretName, msgPrinter})
 			if err != nil {
 				return false, "", fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager.", fullSecretName))
 			} else if payload != nil {

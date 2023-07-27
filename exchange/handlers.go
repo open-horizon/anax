@@ -480,11 +480,11 @@ func GetHTTPAgbotPatternNodeSearchHandler(ec ExchangeContext) AgbotPatternNodeSe
 }
 
 // A handler for checking if a vault secret exists.
-type VaultSecretExistsHandler func(agbotURL string, org string, userName string, secretName string) (bool, error)
+type VaultSecretExistsHandler func(agbotURL string, org string, userName string, nodeName string, secretName string) (bool, error)
 
 func GetHTTPVaultSecretExistsHandler(ec ExchangeContext) VaultSecretExistsHandler {
-	return func(agbotURL string, org string, userName string, secretName string) (bool, error) {
-		return VaultSecretExists(ec, agbotURL, org, userName, secretName)
+	return func(agbotURL string, org string, userName string, nodeName string, secretName string) (bool, error) {
+		return VaultSecretExists(ec, agbotURL, org, userName, nodeName, secretName)
 	}
 }
 

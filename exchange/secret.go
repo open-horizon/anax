@@ -12,17 +12,21 @@ type VaultSecretExistsResponse struct {
 }
 
 // Calls the agbot secure API to check if the given vault secret exists or not
-func VaultSecretExists(ec ExchangeContext, agbotURL string, org string, userName string, secretName string) (bool, error) {
+func VaultSecretExists(ec ExchangeContext, agbotURL string, org string, userName string, nodeName string,secretName string) (bool, error) {
 
 	var resp interface{}
 	resp = new(VaultSecretExistsResponse)
 
 	url := strings.TrimRight(agbotURL, "/")
 
-	if userName == "" {
+	if nodeName != "" && userName != "" {
+		url += fmt.Sprintf("/org/%v/secrets/user/%v/node/%v/%v", org, userName, nodeName, secretName)
+	} else if nodeName != "" {
+                url += fmt.Sprintf("/org/%v/secrets/node/%v/%v", org, nodeName, secretName)
+        } else if userName != "" {
+                url += fmt.Sprintf("/org/%v/secrets/user/%v/%v", org, userName, secretName)
+        } else {
 		url += fmt.Sprintf("/org/%v/secrets/%v", org, secretName)
-	} else {
-		url += fmt.Sprintf("/org/%v/secrets/user/%v/%v", org, userName, secretName)
 	}
 
 	retryCount := ec.GetHTTPFactory().RetryCount
