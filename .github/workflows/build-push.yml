@@ -83,7 +83,7 @@ jobs:
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
       matrix:
-        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el']
+        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x']
         platform: ['linux']
 
     # Variables that are available to all steps in the job
@@ -229,6 +229,52 @@ jobs:
             make rpmpkgs
             mkdir /home/runner/work/anax/anax/RPMS
             cp /root/rpmbuild/RPMS/ppc64le/*.rpm /home/runner/work/anax/anax/RPMS
+
+      # Make our s390x RPM packages in docker container to specify architecture
+      # Comes from open source action: https://github.com/uraimo/run-on-arch-action
+      ## By default this action will bind our $GITHUB_WORKSPACE to $GITHUB_WORKSPACE in the docker container
+      - name: Make s390x RPM Packages
+        if: matrix.architecture == 's390x'
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          # Specify container arch and distro
+          arch: s390x
+          distro: ubuntu20.04
+
+          # Pass necessary env. variables to the new docker container env.
+          env: |
+            VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+            BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
+            GITHUB_REPOSITORY: ${{ github.repository }}
+            GO_VERSION: ${{ steps.get_go.outputs.GO_VERSION }}
+
+          # Specify which shell our commands will use (ubuntu distro so use bash)
+          shell : /bin/bash
+
+          # Install the necessary dependencies needed to make the rpm packages
+          # apt-get install golang, will get version 1.13 so we have to do it manually
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y build-essential
+            apt-get install -q -y make
+            apt-get install -q -y rpm
+            apt-get install -q -y ca-certificates
+            apt-get install -q -y wget
+            apt-get install -q -y sudo
+            apt-get install -q -y gettext
+          
+          # Commands that will be ran inside our docker container
+          run: |
+            cd /
+            wget https://go.dev/dl/${GO_VERSION}.linux-s390x.tar.gz 
+            sudo tar -C /usr/local -xf ${GO_VERSION}.linux-s390x.tar.gz
+            export GOPATH=/usr/local/go
+            export PATH=$PATH:/usr/local/go/bin
+            cp -R /home/runner/work/anax/anax/go/src/github.com /usr/local/go/src
+            cd /usr/local/go/src/github.com/${GITHUB_REPOSITORY}
+            make rpmpkgs
+            mkdir /home/runner/work/anax/anax/RPMS
+            cp /root/rpmbuild/RPMS/s390x/*.rpm /home/runner/work/anax/anax/RPMS
             
       # Create Docker images with only Debs and RPM packages in tar.gz then push to Dockerhub
       - name: Push RPM/DEB Packages to Dockerhub
@@ -238,14 +284,14 @@ jobs:
 
       # Build Docker Images
       - name: Build Docker Images
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/docker_build_script.sh
 
       # Push Docker Images to Dockerhub
       - name: Push Docker Images
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/docker_push_script.sh
