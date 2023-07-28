@@ -7,6 +7,8 @@ elif [[ ${arch} == 'ppc64el' ]]; then
     images=('ppc64el_anax' 'ppc64el_anax_k8s' 'ppc64el_auto-upgrade-cronjob_k8s' 'ppc64el_edge-sync-service')
 elif [[ ${arch} == 'arm64' ]]; then
     images=('arm64_anax' 'arm64_anax_k8s' 'arm64_auto-upgrade-cronjob_k8s' 'arm64_edge-sync-service')
+elif [[ ${arch} == 's390x' ]]; then
+    images=('s390x_anax' 's390x_anax_k8s' 's390x_auto-upgrade-cronjob_k8s' 's390x_edge-sync-service')
 fi
 
 # Push those images
