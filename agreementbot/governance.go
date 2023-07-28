@@ -155,19 +155,19 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 									if smSecretName == exchange.GetId(updatedSecretName) {
 
 										// Call the secret manager plugin to get the secret details.
-										secretUser, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
+										secretUser, secretNode, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
 										if err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error parsing secret %s, error: %v", updatedSecretName, err)))
 											continue
 										}
 
 										newBS := make(exchangecommon.BoundSecret)
-										secretLookupKey := fmt.Sprintf("%v_%v_%v", ag.Org, secretUser, secretName)
+										secretLookupKey := fmt.Sprintf("%v_%v_%v_%v", ag.Org, secretUser, secretNode, secretName)
 										//# check if new secret value already retrieved
 										if val, ok := updatedSecretsMap[secretLookupKey]; ok {
 											newBS[serviceSecretName] = val
 										} else {
-											details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), exchange.GetOrg(updatedSecretName), secretUser, secretName)
+											details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), exchange.GetOrg(updatedSecretName), secretUser, secretNode, secretName)
 											if err != nil {
 												glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
 												continue

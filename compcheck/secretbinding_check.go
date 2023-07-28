@@ -614,7 +614,7 @@ func ValidateSecretBindingForSingleService(secretBinding []exchangecommon.Secret
 						key, vs := vbind.GetBinding()
 						if sn == key {
 							found = true
-							if _, _, err := ParseVaultSecretName(vs, msgPrinter); err != nil {
+							if _, _, _, err := ParseVaultSecretName(vs, msgPrinter); err != nil {
 								return index, nil, err
 							}
 							sbNeeded[sn] = true
@@ -792,31 +792,33 @@ func VerifySingleVaultSecret(vaultSecretName string, nodeOrg string, agbotURL st
 	}
 
 	// parse the name
-	userName, sName, err_parse := ParseVaultSecretName(vaultSecretName, msgPrinter)
+	userName, nodeName, sName, err_parse := ParseVaultSecretName(vaultSecretName, msgPrinter)
 	if err_parse != nil {
 		return false, fmt.Errorf(msgPrinter.Sprintf("Error parsing secret name in the secret binding. %v", err_parse))
 	}
 
 	// check the existance
-	if exists, err := vaultSecretExists(agbotURL, nodeOrg, userName, sName); err != nil {
+	if exists, err := vaultSecretExists(agbotURL, nodeOrg, userName, nodeName, sName); err != nil {
 		return false, fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager. %v", vaultSecretName, err))
 	} else {
 		return exists, nil
 	}
 }
 
-// Parse the given vault secret name and return (user_name, secret_name, fully_qualified_name)
+// Parse the given vault secret name and return (user_name, node_name, secret_name, error)
 // The vault secret name has the following formats:
 //
 //	mysecret
-//	user/myusername/mysecrte
+//	user/myusername/mysecret
+//	node/mynodename/mysecret
+//	user/myusername/node/mynodename/mysecret
 //
 // The fully qualified name in vault is the name above preceded by "openhorizon/<orgname>".
 // However, it is not valid to specify the fully qualified name in the deployment policy or the pattern.
 // The <org_name> will always be the node's org name at the deployment time.
 // For deployment policy and private pattern, it is actually the org name of the policy or pattrn.
 // For public pattern, it is the org name of the node.
-func ParseVaultSecretName(secretName string, msgPrinter *message.Printer) (string, string, error) {
+func ParseVaultSecretName(secretName string, msgPrinter *message.Printer) (string, string, string, error) {
 
 	// get default message printer if nil
 	if msgPrinter == nil {
@@ -825,28 +827,29 @@ func ParseVaultSecretName(secretName string, msgPrinter *message.Printer) (strin
 
 	// cannot be empty string
 	if secretName == "" {
-		return "", "", fmt.Errorf(msgPrinter.Sprintf("The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret."))
+		return "", "", "", fmt.Errorf(msgPrinter.Sprintf("The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret."))
 	}
 
+	secretName = strings.TrimPrefix(secretName, "/")
 	parts := strings.Split(secretName, "/")
 	length := len(parts)
 	if parts[0] != "openhorizon" {
-		if parts[0] != "user" && parts[0] != "" {
+		if parts[0] != "user" && parts[0] != "node" && parts[0] != "" {
 			// case: mysecret
-			return "", secretName, nil
-		} else if parts[0] == "" && parts[1] != "user" {
-			// case: /mysecret
-			return "", strings.Join(parts[1:], "/"), nil
+			return "", "", secretName, nil
+		} else if parts[0] == "user" && length >= 5 && parts[2] == "node" {
+			// case: user/myusername/node/mynodename/mysecret
+			return parts[1], parts[3], strings.Join(parts[4:], "/"), nil
 		} else if parts[0] == "user" && length >= 3 {
-			// case: user/myusername/mysecrte
-			return parts[1], strings.Join(parts[2:], "/"), nil
-		} else if parts[0] == "" && parts[1] == "user" && length >= 4 {
-			// case: /usr/myusername/mysecrte
-			return parts[2], strings.Join(parts[3:], "/"), nil
+			// case: user/myusername/mysecret
+			return parts[1], "", strings.Join(parts[2:], "/"), nil
+		} else if parts[0] == "node" && length >= 3 {
+			//case: node/mynodename/mysecret
+			return "", parts[1], strings.Join(parts[2:], "/"), nil
 		}
 	}
 
-	return "", "", fmt.Errorf(msgPrinter.Sprintf("Invalid format for the binding secret name: %v. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.", secretName))
+	return "", "", "", fmt.Errorf(msgPrinter.Sprintf("Invalid format for the binding secret name: %v. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.", secretName))
 }
 
 // update the index map.

@@ -80,7 +80,7 @@ func (sm *SecretUpdateManager) CheckForUpdates(secretProvider secrets.AgbotSecre
 	for _, fullSecretName := range secretNames {
 
 		secretOrg := exchange.GetOrg(fullSecretName)
-		secretUser, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(fullSecretName), nil)
+		secretUser, secretNode, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(fullSecretName), nil)
 		if err != nil {
 			glog.Errorf(smlogString(fmt.Sprintf("Error parsing secret %s, error: %v", fullSecretName, err)))
 			continue
@@ -90,10 +90,10 @@ func (sm *SecretUpdateManager) CheckForUpdates(secretProvider secrets.AgbotSecre
 
 		// All secrets that are referenced by a policy or pattern are in the secret update tables, but some of these secrets
 		// might not exist yet.
-		secretMetadata, err := secretProvider.GetSecretMetadata(secretOrg, secretUser, secretName)
+		secretMetadata, err := secretProvider.GetSecretMetadata(secretOrg, secretUser, secretNode, secretName)
 		if err != nil {
 			// For secrets that dont exist yet, just ignore them.
-			glog.Warningf(smlogString(fmt.Sprintf("Error retrieving metadata for secret %s for user %s in org %s metadata, error: %v", secretName, secretUser, secretOrg, err)))
+			glog.Warningf(smlogString(fmt.Sprintf("Error retrieving metadata for secret %s for user %s for node %s in org %s metadata, error: %v", secretName, secretUser, secretNode, secretOrg, err)))
 			continue
 		}
 
@@ -180,7 +180,7 @@ func (sm *SecretUpdateManager) UpdatePolicies(org string, exchPolsMetadata map[s
 				_, secretFullName := bs.GetBinding()
 				referencedSecrets[fmt.Sprintf("%s/%s", org, secretFullName)] = true
 
-				secretUser, secretName, err := compcheck.ParseVaultSecretName(secretFullName, nil)
+				secretUser, secretNode, secretName, err := compcheck.ParseVaultSecretName(secretFullName, nil)
 				if err != nil {
 					glog.Errorf(smlogString(fmt.Sprintf("unable to parse secret name %s, error: %v", secretFullName, err)))
 					continue
@@ -192,7 +192,7 @@ func (sm *SecretUpdateManager) UpdatePolicies(org string, exchPolsMetadata map[s
 				secretLastUpdateTime := time.Now().Unix()
 
 				// Get the secret's metadata, if it exists
-				sm, err := secretProvider.GetSecretMetadata(org, secretUser, secretName)
+				sm, err := secretProvider.GetSecretMetadata(org, secretUser, secretNode, secretName)
 				if err != nil {
 					// The secret should be stored in the table even if it doesnt exist, so that if it is created later
 					// changes to it will be recognized.
@@ -284,7 +284,7 @@ func (sm *SecretUpdateManager) UpdatePatterns(org string, exchPatternMetadata ma
 				// Extract the secret manager secret name
 				_, secretFullName := bs.GetBinding()
 
-				secretUser, secretName, err := compcheck.ParseVaultSecretName(secretFullName, nil)
+				secretUser, secretNode, secretName, err := compcheck.ParseVaultSecretName(secretFullName, nil)
 				if err != nil {
 					glog.Errorf(smlogString(fmt.Sprintf("unable to parse secret name %s, error: %v", secretFullName, err)))
 					continue
@@ -297,7 +297,7 @@ func (sm *SecretUpdateManager) UpdatePatterns(org string, exchPatternMetadata ma
 					referencedSecrets[fmt.Sprintf("%s/%s", secretOrg, secretFullName)] = true
 
 					// Get the secret's metadata, if it exists
-					sm, err := secretProvider.GetSecretMetadata(secretOrg, secretUser, secretName)
+					sm, err := secretProvider.GetSecretMetadata(secretOrg, secretUser, secretNode, secretName)
 					if err != nil {
 						// The secret should be stored in the table even if it doesnt exist, so that if it is created later
 						// changes to it will be recognized.
