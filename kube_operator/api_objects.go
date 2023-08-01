@@ -223,6 +223,13 @@ type NamespaceCoreV1 struct {
 }
 
 func (n NamespaceCoreV1) Install(c KubeClient, namespace string) error {
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - namespace in operator is %v, service deploy namespace is: %v", n.Name(), namespace)))
+	// The deploy namespace has been added to the apiObjMap in client.go
+	if namespace != n.Name() {
+		glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' is ignored. Service will be deployed to '%v'.", n.Name(), namespace)))
+		return nil
+	}
+
 	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to create namespace %v", n.NamespaceObject)))
 	_, err := c.Client.CoreV1().Namespaces().Create(context.Background(), n.NamespaceObject, metav1.CreateOptions{})
 	if err != nil {
@@ -233,19 +240,20 @@ func (n NamespaceCoreV1) Install(c KubeClient, namespace string) error {
 }
 
 func (n NamespaceCoreV1) Uninstall(c KubeClient, namespace string) {
+	// embedded namespace is not created if deployernamespace != embedded namespace.
 	if namespace == cutil.GetClusterNamespace() {
-		glog.V(3).Infof(kwlog(fmt.Sprintf("skipping deletion of namespace used by agent %v", n.NamespaceObject)))
+		glog.V(3).Infof(kwlog(fmt.Sprintf("skipping deletion of namespace used by agent %v", namespace)))
 		return
 	}
-	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting namespace %v", n.NamespaceObject)))
-	err := c.Client.CoreV1().Namespaces().Delete(context.Background(), n.Name(), metav1.DeleteOptions{})
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting namespace %v", namespace)))
+	err := c.Client.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
 	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to delete namespace %s. Error: %v", n.Name(), err)))
+		glog.Errorf(kwlog(fmt.Sprintf("unable to delete namespace %s. Error: %v", namespace, err)))
 	}
 }
 
 func (n NamespaceCoreV1) Status(c KubeClient, namespace string) (interface{}, error) {
-	nsStatus, err := c.Client.CoreV1().Namespaces().Get(context.Background(), n.Name(), metav1.GetOptions{})
+	nsStatus, err := c.Client.CoreV1().Namespaces().Get(context.Background(), namespace, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error getting namespace status: %v", err)))
 	}
@@ -927,7 +935,7 @@ func checkCRDInUse(crClient dynamic.NamespaceableResourceInterface, crdKind stri
 	if err != nil && !errors.IsNotFound(err) && !strings.Contains(err.Error(), "not find") {
 		glog.Errorf(kwlog(fmt.Sprintf("failed to list all CRs in other namespace error: %v, will keep this crd", err)))
 		return true, err
-	} else {
+	} else if crsInOtherNS != nil {
 		glog.V(5).Infof(kwlog(fmt.Sprintf("CRs in other namespace result: %v", crsInOtherNS)))
 		items := crsInOtherNS.Items
 		for _, item := range items {

@@ -17,6 +17,7 @@ import (
 	"golang.org/x/text/message"
 	"net/http"
 	"runtime"
+	"strings"
 )
 
 // BusinessListPolicy lists all the policies in the org or only the specified policy if one is given
@@ -95,7 +96,7 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 	ec := cliutils.GetUserExchangeContext(org, credToUse)
 	verifySecretBindingForPolicy(&policyFile, polOrg, ec)
 
-	ValidateServiceClusterNS(&policyFile.Service, ec)
+	ValidateClusterNS(&policyFile, ec)
 
 	// if the --no-constraints flag is not specified and the given policy has no constraints, alert the user.
 	if (!noConstraints) && policyFile.HasNoConstraints() {
@@ -413,6 +414,51 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 	}
 
 	return ret, nil
+}
+
+func ValidateClusterNS(policy *businesspolicy.BusinessPolicy, ec exchange.ExchangeContext) {
+	ValidateClusterNSWithConstraint(policy, ec)
+	ValidateServiceClusterNS(&policy.Service, ec)
+}
+
+// Validate cluster namespace specified in the deployment policy has no conflict with constraint, print warning message if conflict is detected
+func ValidateClusterNSWithConstraint(policy *businesspolicy.BusinessPolicy, ec exchange.ExchangeContext) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if policy == nil || &policy.Service == nil {
+		return
+	}
+
+	if policy.Service.ClusterNamespace != "" && !policy.HasNoConstraints() {
+		clusterNSInPolicy := policy.Service.ClusterNamespace
+
+		propList := new(externalpolicy.PropertyList)
+		propList.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_NODE_K8S_NAMESPACE, clusterNSInPolicy), false)
+
+		newconstr := externalpolicy.Constraint_Factory()
+		constrains := policy.Constraints.GetStrings()
+		for _, constrain := range constrains {
+			if strings.Contains(constrain, externalpolicy.PROP_NODE_K8S_NAMESPACE) {
+				// We only need to validate constraint that has "openhorizon.kubernetesNamespace"
+				newconstr.Add_Constraint(constrain)
+			} else {
+				continue
+			}
+		}
+
+		// all the "openhorizon.kubernetesNamespace" related constrain (along with other if in the same line) are added
+		if parsedConstrain, err := externalpolicy.GetParseConstraintWithName(newconstr, externalpolicy.PROP_NODE_K8S_NAMESPACE); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to get constraint with name %v, error: %v", externalpolicy.PROP_NODE_K8S_NAMESPACE, err))
+		} else {
+			requiredProperties := externalpolicy.ConvertParsedConstraintToRequiredProperty(parsedConstrain)
+
+			if err = requiredProperties.IsSatisfiedBy(*propList); err != nil {
+				msgPrinter.Printf("Warning: kubernetesNamespace defined in the constrain %v is different from the clusterNamespace '%v' specified in the deployment policy, the policy might result in no service deployments: %v", newconstr, clusterNSInPolicy, err)
+				msgPrinter.Println()
+			}
+		}
+	}
 }
 
 // Verify the clusterNamespace is not set for device service.

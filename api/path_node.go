@@ -251,6 +251,14 @@ func CreateHorizonDevice(device *HorizonDevice,
 		if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
 			return errorhandler(NewSystemError(fmt.Sprintf("error updating cluster namespace for the exchange node. %v", err))), nil, nil
 		}
+
+		pdr = exchange.PatchDeviceRequest{}
+		isNS := cutil.IsNamespaceScoped()
+		pdr.IsNamespaceScoped = &isNS
+		if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("error updating cluster agent scope for the exchange node. %v", err))), nil, nil
+		}
+
 	}
 
 	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device

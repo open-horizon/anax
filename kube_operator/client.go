@@ -132,12 +132,14 @@ func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars
 	// get and check namespace
 	namespace := getFinalNamespace(reqNamespace, opNamespace)
 	nodeNamespace := cutil.GetClusterNamespace()
-	if namespace != nodeNamespace && nodeNamespace != DEFAULT_ANAX_NAMESPACE {
-		return fmt.Errorf("Service failed to start for agreement %v. Could not deploy service into namespace %v because the agent's namespace is %v and it restricts all services to have the same namespace.", agId, namespace, nodeNamespace)
+	nodeIsNamespaceScope := cutil.IsNamespaceScoped()
+	if namespace != nodeNamespace && nodeIsNamespaceScope {
+		return fmt.Errorf("Service failed to start for agreement %v. Could not deploy service into namespace %v because the agent's namespace is namespace scoped, and it restricts all services to the agent namespace %v", agId, namespace, nodeNamespace)
 	}
 
 	// If the namespace was specified in the deployment then create the namespace object so it can be created
-	if _, ok := apiObjMap[K8S_NAMESPACE_TYPE]; !ok && namespace != nodeNamespace {
+	_, ok := apiObjMap[K8S_NAMESPACE_TYPE]
+	if !ok || namespace != opNamespace {
 		nsObj := corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace"}, ObjectMeta: metav1.ObjectMeta{Name: namespace}}
 		apiObjMap[K8S_NAMESPACE_TYPE] = []APIObjectInterface{NamespaceCoreV1{NamespaceObject: &nsObj}}
 	}
@@ -180,6 +182,20 @@ func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId 
 		crd.Uninstall(c, namespace)
 	}
 
+	// uninstall any remaining components of unknown type
+	for _, unknownObj := range apiObjMap[K8S_UNSTRUCTURED_TYPE] {
+		glog.Infof(kwlog(fmt.Sprintf("attempting to uninstall %v", unknownObj.Name())))
+		unknownObj.Uninstall(c, namespace)
+	}
+
+	nodeIsNamespaceScope := cutil.IsNamespaceScoped()
+	nodeNamespace := cutil.GetClusterNamespace()
+	// If the namespace was specified in the deployment then create the namespace object so it can be uninstalled
+	if _, ok := apiObjMap[K8S_NAMESPACE_TYPE]; !ok && namespace != nodeNamespace && !nodeIsNamespaceScope {
+		nsObj := corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace"}, ObjectMeta: metav1.ObjectMeta{Name: namespace}}
+		apiObjMap[K8S_NAMESPACE_TYPE] = []APIObjectInterface{NamespaceCoreV1{NamespaceObject: &nsObj}}
+	}
+
 	baseK8sComponents := getBaseK8sKinds()
 
 	// uninstall all the objects of built-in k8s types
@@ -189,12 +205,6 @@ func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId 
 			glog.Infof(kwlog(fmt.Sprintf("attempting to uninstall %v %v", componentType, componentObj.Name())))
 			componentObj.Uninstall(c, namespace)
 		}
-	}
-
-	// uninstall any remaining components of unknown type
-	for _, unknownObj := range apiObjMap[K8S_UNSTRUCTURED_TYPE] {
-		glog.Infof(kwlog(fmt.Sprintf("attempting to uninstall %v", unknownObj.Name())))
-		unknownObj.Uninstall(c, namespace)
 	}
 
 	glog.V(3).Infof(kwlog(fmt.Sprintf("Completed removal of all operator objects from the cluster.")))

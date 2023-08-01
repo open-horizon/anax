@@ -12,7 +12,7 @@ ANAX_SOURCE=$2
 EXCH_ROOTPW=$3
 DOCKER_TEST_NETWORK=$4
 
-NAME_SPACE="openhorizon-agent"
+NAME_SPACE="agent-namespace"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
 PVC_NAME="agent-pvc-horizon"
@@ -265,5 +265,6 @@ $cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/node.policy.json ${
 $cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/node_ui.json ${NAME_SPACE}/${POD}:/home/agentuser/.
 
 $cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui.json -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
+#$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui.json --policy /home/agentuser/node_ui.json -u root/root:${EXCH_ROOTPW}
 
 echo "Configured agent for policy, waiting for the agbot to start."

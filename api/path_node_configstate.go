@@ -16,7 +16,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
-	"os"
 	"strings"
 )
 
@@ -358,15 +357,19 @@ func getSpecRefsForPattern(nodeType string, patName string,
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("working with pattern definition %v", patternDef)))
 
-	nodeNamespace := os.Getenv("AGENT_NAMESPACE")
+	// Uncomment this section after exchange add "isNamespaceScoped" field
+	nodeNamespace := cutil.GetClusterNamespace()
+	isNamespaceScoped := cutil.IsNamespaceScoped()
+
 	if nodeType == persistence.DEVICE_TYPE_CLUSTER {
 		if nodeNamespace == "" {
+			// TODO: a better way to detect cluster agent namespace
 			nodeNamespace = externalpolicy.DEFAULT_NODE_K8S_NAMESPACE
 		}
-		if nodeNamespace != externalpolicy.DEFAULT_NODE_K8S_NAMESPACE {
-			if patternDef.ClusterNamespace != "" && patternDef.ClusterNamespace != nodeNamespace {
-				return nil, nil, NewSystemError(fmt.Sprintf("Pattern cluster namespace is different from agent namespace. Cluster namespace in pattern is %v, agent namespace is %v", patternDef.ClusterNamespace, nodeNamespace))
-			}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("checking cluster namespace comptibility in pattern %v", patId)))
+		if err := compcheck.ValidatePatternClusterNamespace(isNamespaceScoped, nodeNamespace, patternDef.ClusterNamespace, patId, nil); err != nil {
+			return nil, nil, NewSystemError(err.Error())
 		}
 	}
 
@@ -416,7 +419,7 @@ func getSpecRefsForPattern(nodeType string, patName string,
 
 			if nodeType == persistence.DEVICE_TYPE_CLUSTER {
 				// Ignore service that has namespace conflict
-				if compatible, _, reason := compcheck.CheckClusterNamespaceCompatibility(nodeType, nodeNamespace, patternDef.ClusterNamespace, serviceDef.ClusterDeployment, true, nil); !compatible {
+				if compatible, _, reason := compcheck.CheckClusterNamespaceCompatibility(nodeType, cutil.GetClusterNamespace(), cutil.IsNamespaceScoped(), patternDef.ClusterNamespace, serviceDef.ClusterDeployment, patId, true, nil); !compatible {
 					// warning
 					glog.Infof(apiLogString(fmt.Sprintf("skipping service %v/%v because %v", service.ServiceOrg, service.ServiceURL, reason)))
 					continue

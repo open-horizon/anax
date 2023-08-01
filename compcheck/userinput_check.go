@@ -17,25 +17,26 @@ import (
 
 // The input format for the userinput check
 type UserInputCheck struct {
-	NodeId         string                                `json:"node_id,omitempty"`
-	NodeArch       string                                `json:"node_arch,omitempty"`
-	NodeType       string                                `json:"node_type,omitempty"`              // can be omitted if node_id is specified
-	NodeClusterNS  string                                `json:"node_cluster_namespace,omitempty"` // can be omitted if node_id is specified. If node_id is not specified the default values is "openhorizon-gent". The value is ignored if the node type is device.
-	NodeUserInput  []policy.UserInput                    `json:"node_user_input,omitempty"`
-	BusinessPolId  string                                `json:"business_policy_id,omitempty"`
-	BusinessPolicy *businesspolicy.BusinessPolicy        `json:"business_policy,omitempty"`
-	PatternId      string                                `json:"pattern_id,omitempty"`
-	Pattern        common.AbstractPatternFile            `json:"pattern,omitempty"`
-	Service        []common.AbstractServiceFile          `json:"service,omitempty"`
-	ServiceToCheck []string                              `json:"service_to_check,omitempty"`   // for internal use for performance. only check the service with the ids. If empty, check all.
-	DepServices    map[string]exchange.ServiceDefinition `json:"dependent_services,omitempty"` // for internal use for performance. A map of service definition keyed by id.
+	NodeId              string                                `json:"node_id,omitempty"`
+	NodeArch            string                                `json:"node_arch,omitempty"`
+	NodeType            string                                `json:"node_type,omitempty"`              // can be omitted if node_id is specified
+	NodeClusterNS       string                                `json:"node_cluster_namespace,omitempty"` // can be omitted if node_id is specified. If node_id is not specified the default values is "openhorizon-gent". The value is ignored if the node type is device.
+	NodeNamespaceScoped bool                                  `json:"node_namespace_scoped,omitempty"`  // Namespace-scoped: false will be omit
+	NodeUserInput       []policy.UserInput                    `json:"node_user_input,omitempty"`
+	BusinessPolId       string                                `json:"business_policy_id,omitempty"`
+	BusinessPolicy      *businesspolicy.BusinessPolicy        `json:"business_policy,omitempty"`
+	PatternId           string                                `json:"pattern_id,omitempty"`
+	Pattern             common.AbstractPatternFile            `json:"pattern,omitempty"`
+	Service             []common.AbstractServiceFile          `json:"service,omitempty"`
+	ServiceToCheck      []string                              `json:"service_to_check,omitempty"`   // for internal use for performance. only check the service with the ids. If empty, check all.
+	DepServices         map[string]exchange.ServiceDefinition `json:"dependent_services,omitempty"` // for internal use for performance. A map of service definition keyed by id.
 	// It is either empty or provides ALL the dependent services needed. It is expected the top level service definitions are provided
 	// in the 'Service' attribute when this attribute is not empty.
 }
 
 func (p UserInputCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeClusterNS: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, Service: %v,",
-		p.NodeId, p.NodeArch, p.NodeType, p.NodeClusterNS, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeClusterNS: %v, NodeNamespaceScoped: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, Service: %v,",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodeClusterNS, p.NodeNamespaceScoped, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.Service)
 }
 
 // unmashal handler for UserInputCheck object to handle AbstractPatternFile and AbstractServiceFile
@@ -50,6 +51,7 @@ func (p *UserInputCheck) UnmarshalJSON(b []byte) error {
 	p.NodeArch = cc.NodeArch
 	p.NodeType = cc.NodeType
 	p.NodeClusterNS = cc.NodeClusterNS
+	p.NodeNamespaceScoped = cc.NodeNamespaceScoped
 	p.NodeUserInput = cc.NodeUserInput
 	p.BusinessPolId = cc.BusinessPolId
 	p.BusinessPolicy = cc.BusinessPolicy
@@ -142,6 +144,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 
 		resources.NodeType = node.NodeType
 		resources.NodeClusterNS = node.ClusterNamespace
+		resources.NodeNamespaceScoped = node.IsNamespaceScoped
 
 		if input.NodeUserInput == nil {
 			resources.NodeUserInput = node.UserInput
@@ -162,6 +165,13 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		return nil, err
 	} else {
 		resources.NodeClusterNS = nodeClusterNS
+	}
+
+	// verify the input node scope and exchange node scope are same
+	if nodeIsNamespaceScope, err := VerifyNodeScope(input.NodeNamespaceScoped, resources.NodeNamespaceScoped, nodeId, msgPrinter); err != nil {
+		return nil, err
+	} else {
+		resources.NodeNamespaceScoped = nodeIsNamespaceScope
 	}
 
 	// make sure only specify one: business policy or pattern
@@ -260,7 +270,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 							reason = reason_t
 							svc_other_mismatch[sId] = true
 						} else if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
-							compatible_n, _, reason_n := CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, consumerNamespace, topSvcDef.GetClusterDeployment(), true, msgPrinter)
+							compatible_n, _, reason_n := CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, resources.NodeNamespaceScoped, consumerNamespace, topSvcDef.GetClusterDeployment(), input.PatternId, true, msgPrinter)
 							if !compatible_n {
 								reason = reason_n
 								svc_other_mismatch[sId] = true
@@ -305,7 +315,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 									reason = reason_t
 									svc_other_mismatch[sId] = true
 								} else if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
-									compatible_n, _, reason_n := CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, consumerNamespace, svc.GetClusterDeployment(), true, msgPrinter)
+									compatible_n, _, reason_n := CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, resources.NodeNamespaceScoped, consumerNamespace, svc.GetClusterDeployment(), input.PatternId, true, msgPrinter)
 									if !compatible_n {
 										reason = reason_n
 										svc_other_mismatch[sId] = true
@@ -361,7 +371,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 							reason = reason_t
 							svc_other_mismatch[sId] = true
 						} else if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
-							compatible_n, _, reason_n := CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, consumerNamespace, useSDef.GetClusterDeployment(), true, msgPrinter)
+							compatible_n, _, reason_n := CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, resources.NodeNamespaceScoped, consumerNamespace, useSDef.GetClusterDeployment(), input.PatternId, true, msgPrinter)
 							if !compatible_n {
 								reason = reason_n
 								svc_other_mismatch[sId] = true
