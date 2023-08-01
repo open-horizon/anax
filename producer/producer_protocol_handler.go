@@ -173,7 +173,9 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 					continue
 				}
 			} else {
-				glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)))
+				if glog.V(5) {
+					glog.Infof(BPPHlogString(w.Name(), fmt.Sprintf("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)))
+				}
 				return nil
 			}
 		}
@@ -469,7 +471,9 @@ func (w *BaseProducerProtocolHandler) MatchNodeType(tcPolicy *policy.Policy, dev
 			}
 		}
 
-		glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("workload has the correct deployment for the node type '%v'", nodeType)))
+		if glog.V(5) {
+			glog.Infof(BPPHlogString(w.Name(), fmt.Sprintf("workload has the correct deployment for the node type '%v'", nodeType)))
+		}
 		return true, nil
 	}
 }
@@ -487,7 +491,9 @@ func (w *BaseProducerProtocolHandler) MatchClusterNamespace(tcPolicy *policy.Pol
 		} else {
 			compResult, _, reason := compcheck.CheckClusterNamespaceCompatibility(nodeType, cutil.GetClusterNamespace(), cutil.IsNamespaceScoped(), tcPolicy.ClusterNamespace, workload.ClusterDeployment, "", true, nil)
 			if compResult {
-				glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("cluster namespace matches. %v", reason)))
+				if glog.V(5) {
+					glog.Infof(BPPHlogString(w.Name(), fmt.Sprintf("cluster namespace matches.")))
+				}
 			} else {
 				glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("cluster namespace not match. %v", reason)))
 			}
@@ -512,7 +518,9 @@ func (w *BaseProducerProtocolHandler) MatchPattern(tcPolicy *policy.Policy, dev 
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("pattern from the proposal: '%v' does not match the pattern on the device: '%v'.", tcPolicy.PatternId, device_pattern)))
 			return false, nil
 		} else {
-			glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("pattern from the proposal: '%v' matches the pattern on the device: '%v'.", tcPolicy.PatternId, device_pattern)))
+			if glog.V(5) {
+				glog.Infof(BPPHlogString(w.Name(), fmt.Sprintf("pattern from the proposal: '%v' matches the pattern on the device: '%v'.", tcPolicy.PatternId, device_pattern)))
+			}
 			return true, nil
 		}
 	}
@@ -588,12 +596,16 @@ func (w *BaseProducerProtocolHandler) TerminateAgreement(ag *persistence.Establi
 
 func (w *BaseProducerProtocolHandler) GetAgbotMessageEndpoint(agbotId string) (string, []byte, error) {
 
-	glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieving agbot %v msg endpoint from exchange", agbotId)))
+	if glog.V(5) {
+		glog.Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieving agbot %v msg endpoint from exchange", agbotId)))
+	}
 
 	if ag, err := w.getAgbot(agbotId, w.ec.GetExchangeURL(), w.ec.GetExchangeId(), w.ec.GetExchangeToken()); err != nil {
 		return "", nil, err
 	} else {
-		glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieved agbot %v msg endpoint from exchange %v", agbotId, ag.MsgEndPoint)))
+		if glog.V(5) {
+			glog.Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieved agbot %v msg endpoint from exchange %v", agbotId, ag.MsgEndPoint)))
+		}
 		return ag.MsgEndPoint, ag.PublicKey, nil
 	}
 
@@ -601,7 +613,9 @@ func (w *BaseProducerProtocolHandler) GetAgbotMessageEndpoint(agbotId string) (s
 
 func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, deviceId string, token string) (*exchange.Agbot, error) {
 
-	glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieving agbot %v from exchange", agbotId)))
+	if glog.V(5) {
+		glog.Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieving agbot %v from exchange", agbotId)))
+	}
 
 	var resp interface{}
 	resp = new(exchange.GetAgbotsResponse)
@@ -632,7 +646,9 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 			if ag, there := ags[agbotId]; !there {
 				return nil, errors.New(fmt.Sprintf("agbot %v not in GET response %v as expected", agbotId, ags))
 			} else {
-				glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieved agbot %v from exchange %v", agbotId, ag)))
+				if glog.V(5) {
+					glog.Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieved agbot %v from exchange %v", agbotId, ag)))
+				}
 				return &ag, nil
 			}
 		}

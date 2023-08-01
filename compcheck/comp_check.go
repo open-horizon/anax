@@ -930,7 +930,7 @@ func ValidatePatternClusterNamespace(isNamespaceScoped bool, nodeNamespace strin
 	} else {
 		// is cluster scope
 		if patternNamespace != "" {
-			return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The Cluster namespace specified in the pattern '%v' is %v, only pattern with empty clsuter namespace can be registered for cluster scoped agent", patternId, patternNamespace)), COMPCHECK_VALIDATION_ERROR)
+			return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The Cluster namespace specified in the pattern '%v' is %v, only pattern with empty cluster namespace can be registered for cluster scoped agent", patternId, patternNamespace)), COMPCHECK_VALIDATION_ERROR)
 		}
 	}
 	return nil
