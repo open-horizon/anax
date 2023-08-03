@@ -4,14 +4,21 @@
 
 # Verify a response. The inputs are:
 # $1 - the response
-# $2 - expected result
-# $3 - error message
+# $2 - expected result with docker legacy build
+# $3 - expected result with DOCKER_BUILDKIT
+# $4 - error message
 function verify {
-    respContains=$(echo $1 | grep "$2")
+    local resp=$1
+    respContains=$(echo $resp | grep "$2")
     if [ "${respContains}" == "" ]; then
-        echo -e "\nERROR: $3. Output was:"
-        echo -e "$1"
-        exit 1
+        echo -e "Didn't find \"$2\" in the response, check \"$3\" in response"
+        # with DOCKER_BUILDKIT, message is: # writing image sha256:[0-9A-Za-z]* done
+        respContains=$(echo $resp | grep -E "$3")
+        if [ "${respContains}" == "" ]; then
+            echo -e "\nERROR: $4. Output was:"
+            echo -e "$resp"
+            exit 1
+        fi
     fi
 }
 
@@ -33,7 +40,7 @@ function createProject {
 
     buildOut=$(make ARCH="${ARCH}" 2>&1)
 
-    verify "${buildOut}" "Successfully built" "$2 container did not build"
+    verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z]* done" "$2 container did not build"
     if [ $? -ne 0 ]; then exit $?; fi
 
     verify "${buildOut}" "$3" "$2 container did not produce output"
