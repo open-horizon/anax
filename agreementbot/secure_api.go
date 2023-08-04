@@ -189,7 +189,11 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/secretbindingcompatible", a.secretbinding_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/user/{user}", a.userSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/node/{node}", a.nodeSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/user/{user}/node/{node}", a.nodeUserSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc(`/org/{org}/secrets/user/{user}/node/{node}/{secret:[\w\/\-]+}`, a.nodeUserSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 		router.HandleFunc(`/org/{org}/secrets/user/{user}/{secret:[\w\/\-]+}`, a.userSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc(`/org/{org}/secrets/node/{node}/{secret:[\w\/\-]+}`, a.nodeSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets", a.orgSecrets).Methods("LIST", "OPTIONS")
 		router.HandleFunc(`/org/{org}/secrets/{secret:[\w\/\-]+}`, a.orgSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 		router.HandleFunc("/org/{org}/hagroup/{group}/nodemanagement/{node}/{nmpid}", a.haNodeNMPUpdateRequest).Methods("POST", "OPTIONS")
@@ -1371,6 +1375,31 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handler for /org/<org>/secrets/node/<node> - LIST, OPTIONS
+func (a *SecureAPI) nodeSecrets(w http.ResponseWriter, r *http.Request) {
+        info := a.secretsSetup(w, r)
+        if info == nil {
+                return
+        }
+
+        // handle API options
+        switch r.Method {
+        case "LIST":
+                // list node org-level secrets
+                if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+                        glog.Errorf(APIlogString(err.Error()))
+                        writeResponse(w, err.Error(), httpCode)
+                } else {
+                        writeResponse(w, payload, http.StatusOK)
+                }
+        case "OPTIONS":
+                w.Header().Set("Allow", "LIST, OPTIONS")
+                w.WriteHeader(http.StatusOK)
+        default:
+                w.WriteHeader(http.StatusMethodNotAllowed)
+        }
+}
+
 // handler for /org/<org>/secrets/user/<user> - LIST, OPTIONS
 func (a *SecureAPI) userSecrets(w http.ResponseWriter, r *http.Request) {
 	info := a.secretsSetup(w, r)
@@ -1394,6 +1423,31 @@ func (a *SecureAPI) userSecrets(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
+}
+
+// handler for /org/<org>/secrets/user/<user>/node/<node> - LIST, OPTIONS
+func (a *SecureAPI) nodeUserSecrets(w http.ResponseWriter, r *http.Request) {
+        info := a.secretsSetup(w, r)
+        if info == nil {
+                return
+        }
+
+        // handle API options
+        switch r.Method {
+        case "LIST":
+                // list user-level secrets
+                if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+                        glog.Errorf(APIlogString(err.Error()))
+                        writeResponse(w, err.Error(), httpCode)
+                } else {
+                        writeResponse(w, payload, http.StatusOK)
+                }
+        case "OPTIONS":
+                w.Header().Set("Allow", "LIST, OPTIONS")
+                w.WriteHeader(http.StatusOK)
+        default:
+                w.WriteHeader(http.StatusMethodNotAllowed)
+        }
 }
 
 // handler for /org/<org>/secrets/user/<user>/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
@@ -1455,6 +1509,124 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handler for /org/<org>/secrets/node/<node>/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
+func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
+        info := a.secretsSetup(w, r)
+        if info == nil {
+                return
+        }
+
+        // handle API options
+        nodePath := "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+        switch r.Method {
+        case "GET":
+                // pull details for a node org-level secret
+                secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "", info.node, info.vaultSecretName)
+                if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
+                        writeResponse(w, secretDetails, http.StatusOK)
+                } else {
+                        writeResponse(w, errMsg, serr.ResponseCode)
+                }
+        case "LIST":
+                // check existence of a node org-level secret
+                if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+                        glog.Errorf(APIlogString(err.Error()))
+                        writeResponse(w, err.Error(), httpCode)
+                } else {
+                        writeResponse(w, payload, http.StatusOK)
+                }
+        case "PUT":
+                fallthrough
+        case "POST":
+                // create a node org-level secret
+
+                // parse the request body
+                input := parseSecretDetails(w, r, info.msgPrinter)
+                if input == nil {
+                        return
+                }
+
+                // create the secret
+                err := a.secretProvider.CreateOrgNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodePath, *input)
+                if serr, errMsg := a.errCheck(err, "create", info); serr == nil {
+                        writeResponse(w, "Secret created/updated.", http.StatusCreated)
+                } else {
+                        writeResponse(w, errMsg, serr.ResponseCode)
+                }
+        case "DELETE":
+                err := a.secretProvider.DeleteOrgNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodePath)
+                if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
+                        writeResponse(w, "Secret created/updated.", http.StatusNoContent)
+                } else {
+                        writeResponse(w, errMsg, serr.ResponseCode)
+                }
+        case "OPTIONS":
+                w.Header().Set("Allow", "LIST, OPTIONS")
+                w.WriteHeader(http.StatusOK)
+        default:
+                w.WriteHeader(http.StatusMethodNotAllowed)
+        }
+}
+
+// handler for /org/<org>/secrets/user/<user>/node/<node>/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
+func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
+        info := a.secretsSetup(w, r)
+        if info == nil {
+                return
+        }
+
+        // handle API options
+        nodeUserPath := "user/" + info.user + "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+        switch r.Method {
+        case "GET":
+                // pull details for a user-level secret
+                secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.user, info.node, info.vaultSecretName)
+                if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
+                        writeResponse(w, secretDetails, http.StatusOK)
+                } else {
+                        writeResponse(w, errMsg, serr.ResponseCode)
+                }
+        case "LIST":
+                // check existence of a user-level secret
+                if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+                        glog.Errorf(APIlogString(err.Error()))
+                        writeResponse(w, err.Error(), httpCode)
+                } else {
+                        writeResponse(w, payload, http.StatusOK)
+                }
+        case "PUT":
+                fallthrough
+        case "POST":
+                // create a user-level secret
+
+                // parse the request body
+                input := parseSecretDetails(w, r, info.msgPrinter)
+                if input == nil {
+                        return
+                }
+
+                // create the secret
+                err := a.secretProvider.CreateUserNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodeUserPath, *input)
+                if serr, errMsg := a.errCheck(err, "create", info); serr == nil {
+                        writeResponse(w, "Secret created/updated.", http.StatusCreated)
+                } else {
+                        writeResponse(w, errMsg, serr.ResponseCode)
+                }
+        case "DELETE":
+                err := a.secretProvider.DeleteUserNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodeUserPath)
+                if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
+                        writeResponse(w, "Secret created/updated.", http.StatusNoContent)
+                } else {
+                        writeResponse(w, errMsg, serr.ResponseCode)
+                }
+        case "OPTIONS":
+                w.Header().Set("Allow", "LIST, OPTIONS")
+                w.WriteHeader(http.StatusOK)
+        default:
+                w.WriteHeader(http.StatusMethodNotAllowed)
+        }
+}
+
 // This function does preprocessing for the secret APIs.
 // It returns error and http response code.
 func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
@@ -1488,10 +1660,18 @@ func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
 func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error, int) {
 
 	userPath := "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
+	orgNodePath := "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+	userNodePath := "user/" + info.user + "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 	if info.vaultSecretName == "" {
 		secretNames := make([]string, 0)
 		var err error
-		if info.user != "" {
+		if info.user != "" && info.node != "" {
+			// listing node user level secrets
+                        secretNames, err = a.secretProvider.ListUserNodeSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.node, userNodePath)
+		} else if info.node != "" {
+			// listing node org level secrets
+                        secretNames, err = a.secretProvider.ListOrgNodeSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.node, orgNodePath)
+		} else if info.user != "" {
 			// listing user level secrets
 			secretNames, err = a.secretProvider.ListOrgUserSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
 		} else {
@@ -1516,11 +1696,19 @@ func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error
 		}
 	} else {
 		var err error
-		if info.user != "" {
-			err = a.secretProvider.ListOrgUserSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
-		} else {
-			err = a.secretProvider.ListOrgSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.vaultSecretName)
-		}
+               if info.user != "" && info.node != "" {
+                        // listing node user level secret
+                        err = a.secretProvider.ListUserNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userNodePath)
+                } else if info.node != "" {
+                        // listing node org level secret
+                        err = a.secretProvider.ListOrgNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, orgNodePath)
+                } else if info.user != "" {
+                        // listing user level secret
+                        err = a.secretProvider.ListOrgUserSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
+                } else {
+                        // listing org level secrets
+                        err = a.secretProvider.ListOrgSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.vaultSecretName)
+                }
 
 		// check the error output, ignore 404
 		if serr, errMsg := a.errCheck(err, "list", info); serr == nil {
