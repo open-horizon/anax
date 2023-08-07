@@ -1,0 +1,14 @@
+{
+    "service": {
+      "name": "k8s-service-embedded-ns",
+      "org": "e2edev@somecomp.com",
+      "arch": "amd64",
+      "clusterNamespace": "ns-in-policy",
+      "serviceVersions": [
+        {
+          "version": "1.0.0",
+          "priority":{}
+        }
+      ]
+    }	
+  }

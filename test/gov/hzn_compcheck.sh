@@ -2,6 +2,7 @@
 
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
+USERDEV_ORG="userdev"
 
 unset HZN_ORG_ID
 unset HZN_EXCHANGE_NODE_AUTH
@@ -23,7 +24,11 @@ else
   service_location="/root/input_files/compcheck/service_location.json"
   bp_location="/root/input_files/compcheck/business_pol_location.json"
   pattern_sloc="/root/input_files/compcheck/pattern_sloc.json"
-fi 
+fi
+
+if [[ "$NOKUBE" != "1" ]]; then
+  bp_k8s="/root/input_files/compcheck/business_pol_k8s_service1"
+fi
 
 
 # check the the result to see if it matches the expected http code and error
@@ -212,6 +217,15 @@ if [ $? -eq 0 ]; then
   echo "Service bluehorizon.network-services-location_2.0.7_${ARCH} should be compatible but not."
   exit 2
 fi
+
+if [[ "$NOKUBE" != "1" ]]; then
+  echo -e "\n${PREFIX} test with conflict namespace"
+  CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -B input_files/compcheck/business_pol_k8s_service1.json -n $USERDEV_ORG/agent-in-kube -s agent-namespace"
+  echo "$CMD"
+  RES=$($CMD 2>&1)
+  check_comp_results "$RES" "false" "Node properties do not satisfy constraint requirements."
+fi
+
 echo "Compatibility result expected."
 
 PREFIX="HZN userinput compatibility test:"
