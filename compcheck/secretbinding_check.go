@@ -728,7 +728,11 @@ func VerifyVaultSecrets(secretBinding []exchangecommon.SecretBinding, nodeOrg st
 			if exists, err := VerifySingleVaultSecret(vaultSecretName, nodeOrg, agbotURL, vaultSecretExists, msgPrinter); err != nil {
 				ret[vaultSecretName] = err.Error()
 			} else if !exists {
-				ret[vaultSecretName] = msgPrinter.Sprintf("Secret %v does not exist in the secret manager.", vaultSecretName)
+				msg := msgPrinter.Sprintf("Secret %v does not exist in the secret manager.", vaultSecretName)
+				if sn.EnableNodeLevelSecrets {
+					msg = msgPrinter.Sprintf("Secret %v does not exist in the secret manager for either org level or user level.", vaultSecretName)
+				}
+				ret[vaultSecretName] = msg
 			}
 		}
 	}
