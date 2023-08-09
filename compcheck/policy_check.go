@@ -180,16 +180,29 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		return nil, err1
 	}
 
+	msg_incompatible := msgPrinter.Sprintf("Policy Incompatible")
+	msg_compatible := msgPrinter.Sprintf("Compatible")
+
+	messages := map[string]string{}
+	if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER && resources.NodeNamespaceScoped {
+		// verify clusterNamespace vs openhorizon.kubernetesNamespace in the constraint
+		bpToValidate := *resources.BusinessPolicy
+		var hasWarning bool
+		hasWarning, err1 = businesspolicy.ValidateClusterNSWithConstraint(&bpToValidate)
+		if hasWarning {
+			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("%v", err1))
+			return NewCompCheckOutput(false, messages, resources), nil
+		} else if err1 != nil {
+			return nil, err1
+		}
+	}
+
 	// save all the services that are retrieved from the exchange so that
 	// they can be used later
 	dep_services := map[string]exchange.ServiceDefinition{}
 	top_services := []common.AbstractServiceFile{}
 
-	msg_incompatible := msgPrinter.Sprintf("Policy Incompatible")
-	msg_compatible := msgPrinter.Sprintf("Compatible")
-
 	// go through all the workloads and check if compatible or not
-	messages := map[string]string{}
 	overall_compatible := false
 	for _, workload := range bPolicy.Workloads {
 
