@@ -79,7 +79,6 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.5 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
-	github.com/fatih/color v1.15.0 // indirect
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -98,10 +97,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
-	github.com/magefile/mage v1.15.0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/moby/patternmatcher v0.5.0 // indirect
 	github.com/moby/sys/sequential v0.5.0 // indirect
@@ -140,8 +136,6 @@ require (
 
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18
-	github.com/docker/distribution => github.com/docker/distribution v2.8.2-beta.1+incompatible
-	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.0
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.5
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
 	golang.org/x/text => golang.org/x/text v0.5.0
