@@ -801,17 +801,21 @@ Environment Variables:
 	smUserPw := smCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
 	smSecretCmd := smCmd.Command("secret", msgPrinter.Sprintf("List and manage secrets in the secrets manager."))
 	smSecretListCmd := smSecretCmd.Command("list | ls", msgPrinter.Sprintf("Display the names of the secrets in the secrets manager.")).Alias("ls").Alias("list")
+	smSecretListNodeId := smSecretListCmd.Flag("nodeId", msgPrinter.Sprintf("The node id of the node secret to list. Include only if this secret is specific to a single node.")).Short('n').String()
 	smSecretListName := smSecretListCmd.Arg("secretName", msgPrinter.Sprintf("List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.")).String()
 	smSecretAddCmd := smSecretCmd.Command("add", msgPrinter.Sprintf("Add a secret to the secrets manager."))
 	smSecretAddName := smSecretAddCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.")).Required().String()
+	smSecretAddNodeId := smSecretAddCmd.Flag("nodeId", msgPrinter.Sprintf("The id of the node to apply this secret to. Include only if this secret is specific to a single node.")).Short('n').String()
 	smSecretAddFile := smSecretAddCmd.Flag("secretFile", msgPrinter.Sprintf("Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.")).Short('f').String()
 	smSecretAddKey := smSecretAddCmd.Flag("secretKey", msgPrinter.Sprintf("A key for the secret.")).Required().String()
 	smSecretAddDetail := smSecretAddCmd.Flag("secretDetail", msgPrinter.Sprintf("The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.")).Short('d').String()
 	smSecretAddOverwrite := smSecretAddCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.")).Short('O').Bool()
 	smSecretRemoveCmd := smSecretCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a secret in the secrets manager.")).Alias("rm").Alias("remove")
+	smSecretRemoveNodeId := smSecretRemoveCmd.Flag("nodeId", msgPrinter.Sprintf("The node id of the secret to be removed. Include only if this secret is specific to a single node.")).Short('n').String()
 	smSecretRemoveForce := smSecretRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	smSecretRemoveName := smSecretRemoveCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret to be removed from the secrets manager.")).Required().String()
 	smSecretReadCmd := smSecretCmd.Command("read", msgPrinter.Sprintf("Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation."))
+	smSecretReadNodeId := smSecretReadCmd.Flag("nodeId", msgPrinter.Sprintf("The node id of the node secret to read. Include only if this secret is specific to a single node.")).Short('n').String()
 	smSecretReadName := smSecretReadCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret to read in the secrets manager.")).Required().String()
 
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
@@ -1504,12 +1508,12 @@ Environment Variables:
 		fdo.VoucherDownload(*fdoOrg, *fdoUserPw, *fdoVoucherDownloadDevice, *fdoVoucherDownloadFile, *fdoVoucherDownloadOverwrite)
 
 	case smSecretListCmd.FullCommand():
-		secret_manager.SecretList(*smOrg, *smUserPw, *smSecretListName)
+		secret_manager.SecretList(*smOrg, *smUserPw, *smSecretListName, *smSecretListNodeId)
 	case smSecretAddCmd.FullCommand():
-		secret_manager.SecretAdd(*smOrg, *smUserPw, *smSecretAddName, *smSecretAddFile, *smSecretAddKey, *smSecretAddDetail, *smSecretAddOverwrite)
+		secret_manager.SecretAdd(*smOrg, *smUserPw, *smSecretAddName, *smSecretAddNodeId, *smSecretAddFile, *smSecretAddKey, *smSecretAddDetail, *smSecretAddOverwrite)
 	case smSecretRemoveCmd.FullCommand():
-		secret_manager.SecretRemove(*smOrg, *smUserPw, *smSecretRemoveName, *smSecretRemoveForce)
+		secret_manager.SecretRemove(*smOrg, *smUserPw, *smSecretRemoveName, *smSecretRemoveNodeId, *smSecretRemoveForce)
 	case smSecretReadCmd.FullCommand():
-		secret_manager.SecretRead(*smOrg, *smUserPw, *smSecretReadName)
+		secret_manager.SecretRead(*smOrg, *smUserPw, *smSecretReadName, *smSecretReadNodeId)
 	}
 }
