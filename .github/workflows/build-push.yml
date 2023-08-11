@@ -14,6 +14,8 @@ env:
   GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
   RUN_NUMBER: ${{ github.run_number }}
   RUN_NUMBER_OFFSET: ${{ vars.RUN_NUMBER_OFFSET }}
+  # used in docker_push_script.sh and package_push.sh scripts to push "testing" tags with the branch name appended to it
+  GH_BRANCH: ${{ github.ref_name }} 
 
 # Jobs executed when workflow is triggered
 jobs:
@@ -488,10 +490,13 @@ jobs:
                 -f Dockerfile.macpkg.tarball \
                 .
 
-            if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
-                docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
-                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
-                docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
+            if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then 
+                docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing
+                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing 
+                docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing
+            else
+                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing_${GH_BRANCH} 
+                docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing_${GH_BRANCH}
             fi
           env:
             ANAX_IMAGE_VERSION: ${{ needs.mac-build.outputs.ANAX_VERSION }}
