@@ -63,10 +63,16 @@ func queryWithRetry(query func() int, retryCount, retryInterval int) (httpCode i
 	return httpCode
 }
 
-// If secretName is empty, lists all the org level secrets and non-empty directories for the specified org in the secrets manager
-// If secretName is specified, prints a json object indicating whether the given secret exists or not in the secrets manager for the org
-// If the name provided is a directory, lists all the secrets in the directory.
-func SecretList(org, credToUse, secretName string) {
+// If secretName is empty
+// - nodeId is empty: lists all the org level secrets and non-empty directories for the specified org in the secrets manager
+// - else: list all the node secrets for the specified org
+// If secretName is
+// - nodeId is empty: prints a json object indicating whether the given secret exists or not in the secrets manager for the org
+// - else: prints node secrets as a json object indicating whether the given secret exists or not
+// If the name provided is a directory,
+// - nodeId is empty: lists all the secrets in the directory
+// - else: list all the node secrets for the given directory
+func SecretList(org, credToUse, secretName, secretNodeId string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -75,9 +81,22 @@ func SecretList(org, credToUse, secretName string) {
 		secretName = secretName[:len(secretName)-1]
 	}
 
+	if !strings.Contains(secretName, "/node") && secretNodeId != "" {
+		// add /node/{nodeID} to the path
+		secretName = getSecretPathForNodeLevelSecret(secretName, secretNodeId)
+	}
+	// if given secretName := "", nodeId is specified, then secretName will be convert to "node/{nodeId}"
+	// if given secretName is a directory: "user/userdevadmin", nodeId is specified, then secretName will be converted to "user/{userId}/node/{nodeId}"
+	// if given secretName is "test-password", nodeId is specified, then secretname will be converted to "node/{nodeId}/test-password"
+	// if given secretName is "user/userdevadmin/test-password", nodeId is specified, then secretName will be converted to "user/{userId}/node/{nodeId}/test-password":
+
 	// query the agbot secure api
 	var resp []byte
 	listQuery := func() int {
+		// call LIST: org/secrets/node/{nodeId}
+		//            org/secrets/user/{userId}/node/{nodeId}
+		//            org/secrets/node/{nodeId}/test-password
+		//            org/secrets/user/{userId}/node/{nodeId}/test-password
 		return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
 			[]int{200, 400, 401, 403, 404, 503, 504}, &resp)
 	}
@@ -89,10 +108,14 @@ func SecretList(org, credToUse, secretName string) {
 	isSecretDirectory := secretName == ""
 
 	// listing user secrets - user/<user>
+	// listing org node secrets - node/<nodeId>
+	// listing user node secrets - user/<user>/node/<nodeId>
 	if !isSecretDirectory {
 		nameParts := strings.Split(secretName, "/")
 		partsLength := len(nameParts)
-		isSecretDirectory = nameParts[0] == "user" && partsLength == 2
+		isUserSecretDirectory := nameParts[0] == "user" && (partsLength == 2 || partsLength == 4)
+		isOrgNodeSecretDirectory := nameParts[0] == "node" && partsLength == 2
+		isSecretDirectory = isUserSecretDirectory || isOrgNodeSecretDirectory
 	}
 
 	// parse and print the response
@@ -134,13 +157,18 @@ func SecretList(org, credToUse, secretName string) {
 
 // Adds or updates a secret in the secrets manager. Secret names are unique, if a secret already exists with the same name, the user
 // will be prompted if they want to overwrite the existing secret, unless the secretOverwrite flag is set
-func SecretAdd(org, credToUse, secretName, secretFile, secretKey, secretDetail string, secretOverwrite bool) {
+func SecretAdd(org, credToUse, secretName, secretNodeId, secretFile, secretKey, secretDetail string, secretOverwrite bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// get rid of trailing / from secret name
 	if strings.HasSuffix(secretName, "/") {
 		secretName = secretName[:len(secretName)-1]
+	}
+
+	if !strings.Contains(secretName, "/node") && secretNodeId != "" {
+		// add /node/{nodeID} to the path
+		secretName = getSecretPathForNodeLevelSecret(secretName, secretNodeId)
 	}
 
 	// check the input
@@ -222,13 +250,18 @@ func SecretAdd(org, credToUse, secretName, secretFile, secretKey, secretDetail s
 }
 
 // Removes a secret in the secrets manager. If the secret does not exist, an error (fatal) is raised
-func SecretRemove(org, credToUse, secretName string, forceRemoval bool) {
+func SecretRemove(org, credToUse, secretName, secretNodeId string, forceRemoval bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// get rid of trailing / from secret name
 	if strings.HasSuffix(secretName, "/") {
 		secretName = secretName[:len(secretName)-1]
+	}
+
+	if !strings.Contains(secretName, "/node") && secretNodeId != "" {
+		// add /node/{nodeID} to the path
+		secretName = getSecretPathForNodeLevelSecret(secretName, secretNodeId)
 	}
 
 	// confirm secret removal
@@ -260,10 +293,15 @@ func SecretRemove(org, credToUse, secretName string, forceRemoval bool) {
 }
 
 // Pulls secret details from the secrets manager. If the secret does not exist, an error (fatal) is raised
-func SecretRead(org, credToUse, secretName string) {
+func SecretRead(org, credToUse, secretName, secretNodeId string) {
 	// get rid of trailing / from secret name
 	if strings.HasSuffix(secretName, "/") {
 		secretName = secretName[:len(secretName)-1]
+	}
+
+	if !strings.Contains(secretName, "/node") && secretNodeId != "" {
+		// add /node/{nodeID} to the path
+		secretName = getSecretPathForNodeLevelSecret(secretName, secretNodeId)
 	}
 
 	// query the agbot secure api
@@ -286,4 +324,26 @@ func SecretRead(org, credToUse, secretName string) {
 		printResponse(resp, &secretDetails)
 	}
 
+}
+
+func getSecretPathForNodeLevelSecret(secretName string, secretNodeId string) string {
+	secretName = strings.TrimSpace(secretName)
+	if secretName == "" {
+		secretName = fmt.Sprintf("node/%v", secretNodeId)
+	} else {
+		parts := strings.Split(secretName, "/")
+		if len(parts) == 1 {
+			// org level, secretName: "test-password"
+			secretName = fmt.Sprintf("node/%v/%v", secretNodeId, secretName)
+		} else if len(parts) == 2 {
+			// list secret given a directory, eg: user/userdevadmin
+			secretName = fmt.Sprintf("%v/node/%v", secretName, secretNodeId)
+		} else if len(parts) == 3 {
+			// user level
+			// parts: [user, ${userid}, test-password]
+			secretName = fmt.Sprintf("%v/%v/node/%v/%v", parts[0], parts[1], secretNodeId, parts[2])
+		}
+	}
+
+	return secretName
 }
