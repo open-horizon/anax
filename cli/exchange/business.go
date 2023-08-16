@@ -526,6 +526,7 @@ func BusinessNewPolicy() {
 		`      "serviceOrgid": "",         /* ` + msgPrinter.Sprintf("The org of the service.") + ` */`,
 		`      "serviceUrl": "",           /* ` + msgPrinter.Sprintf("The name of the service.") + ` */`,
 		`      "serviceVersionRange": "",  /* ` + msgPrinter.Sprintf("The service version range.") + ` */`,
+		`      "enableNodeLevelSecrets": false,	/*` + msgPrinter.Sprint("Boolean value to indicate if the secrets are node level secrets.") + ` */`,
 		`      "secrets": [                /* ` + msgPrinter.Sprintf("The secret bindings.") + ` */`,
 		`        {      `,
 		`          "<service-secret-name>": "<secret-provider-secret-name>"  /* ` + msgPrinter.Sprintf("The valid formats for secret provider secret names are:") + ` */`,

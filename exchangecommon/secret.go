@@ -43,11 +43,12 @@ func (w BoundSecret) IsSame(other BoundSecret) bool {
 
 // The secret binding that maps service secret names to secret manager secret names
 type SecretBinding struct {
-	ServiceOrgid        string        `json:"serviceOrgid"`
-	ServiceUrl          string        `json:"serviceUrl"`
-	ServiceArch         string        `json:"serviceArch,omitempty"`         // empty string means it applies to all arches
-	ServiceVersionRange string        `json:"serviceVersionRange,omitempty"` // version range such as [0.0.0,INFINITY). empty string means it applies to all versions
-	Secrets             []BoundSecret `json:"secrets"`                       // maps a service secret name to a secret manager secret name
+	ServiceOrgid           string        `json:"serviceOrgid"`
+	ServiceUrl             string        `json:"serviceUrl"`
+	ServiceArch            string        `json:"serviceArch,omitempty"`         // empty string means it applies to all arches
+	ServiceVersionRange    string        `json:"serviceVersionRange,omitempty"` // version range such as [0.0.0,INFINITY). empty string means it applies to all versions
+	EnableNodeLevelSecrets bool          `json:"enableNodeLevelSecrets"`        // to indicate if the secrets are node level secrets
+	Secrets                []BoundSecret `json:"secrets"`                       // maps a service secret name to a secret manager secret name
 }
 
 func (w SecretBinding) String() string {
@@ -87,6 +88,10 @@ func (w SecretBinding) IsSame(other SecretBinding) bool {
 		return false
 	}
 	if w.ServiceArch != "" && other.ServiceArch != "" && w.ServiceArch != other.ServiceArch {
+		return false
+	}
+
+	if w.EnableNodeLevelSecrets != other.EnableNodeLevelSecrets {
 		return false
 	}
 	return SecretArrayIsSame(w.Secrets, other.Secrets)
