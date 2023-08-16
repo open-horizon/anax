@@ -35,9 +35,9 @@ type AgbotSecrets interface {
 	DeleteOrgNodeSecret(user, token, org, path string) error
 
 	ListUserNodeSecret(user, token, org, path string) error
-        ListUserNodeSecrets(user, token, org, node, path string) ([]string, error)
-        CreateUserNodeSecret(user, token, org, path string, data SecretDetails) error
-        DeleteUserNodeSecret(user, token, org, path string) error
+	ListUserNodeSecrets(user, token, org, node, path string) ([]string, error)
+	CreateUserNodeSecret(user, token, org, path string, data SecretDetails) error
+	DeleteUserNodeSecret(user, token, org, path string) error
 
 	// This function assumes that the plugin maintains an authentication to the secret manager that it can use
 	// when it doesnt need to call APIs with user creds. The creds used instead have the ability to READ secrets.

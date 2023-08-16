@@ -922,14 +922,27 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 				}
 
 				// The secret name might be a user private or org wide secret. Parse the name to determine which it is.
-				secretUser, secretNode, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
+				secretUser, _, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error parsing secret %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))
 					return err
 				}
 
 				// Call the secret manager plugin to get the secret details.
-				details, err := b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, secretNode, shortSecretName)
+				details := secrets.SecretDetails{}
+				if binding.EnableNodeLevelSecrets {
+					details, err = b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, exchange.GetId(deviceId), shortSecretName)
+					switch err.(type) {
+					case *secrets.NoSecretFound:
+						details, err = b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, "", shortSecretName)
+					}
+				} else {
+					details, err = b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, "", shortSecretName)
+				}
+
+				if err != nil {
+					return err
+				}
 
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error retrieving secret %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))

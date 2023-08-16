@@ -155,58 +155,58 @@ func Test_ParseVaultSecretName_good(t *testing.T) {
 	}
 
 	vName = "node/mynodename/mysecret"
-        _, sNode, sName, err := ParseVaultSecretName(vName, nil)
-        if err != nil {
-                t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
-        }
-        if sNode != "mynodename" || sName != "mysecret" {
-                t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v)", vName, sNode, sName)
-        }
+	_, sNode, sName, err := ParseVaultSecretName(vName, nil)
+	if err != nil {
+		t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
+	}
+	if sNode != "mynodename" || sName != "mysecret" {
+		t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v)", vName, sNode, sName)
+	}
 
 	vName = "node/mynodename/mysecret/extra"
-        _, sNode, sName, err = ParseVaultSecretName(vName, nil)
-        if err != nil {
-                t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
-        }
-        if sNode != "mynodename" || sName != "mysecret/extra" {
-                t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v)", vName, sNode, sName)
-        }
+	_, sNode, sName, err = ParseVaultSecretName(vName, nil)
+	if err != nil {
+		t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
+	}
+	if sNode != "mynodename" || sName != "mysecret/extra" {
+		t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v)", vName, sNode, sName)
+	}
 
 	vName = "/node/mynodename/myorgagain/extra/mysecret"
-        _, sNode, sName, err = ParseVaultSecretName(vName, nil)
-        if err != nil {
-                t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
-        }
-        if sNode != "mynodename" || sName != "myorgagain/extra/mysecret" {
-                t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v)", vName, sNode, sName)
-        }
+	_, sNode, sName, err = ParseVaultSecretName(vName, nil)
+	if err != nil {
+		t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
+	}
+	if sNode != "mynodename" || sName != "myorgagain/extra/mysecret" {
+		t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v)", vName, sNode, sName)
+	}
 
 	vName = "/user/myusername/node/mynodename/mysecret"
-        sUser, sNode, sName, err = ParseVaultSecretName(vName, nil)
-        if err != nil {
-                t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
-        }
-        if sNode != "mynodename" || sUser != "myusername" || sName != "mysecret" {
-                t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v, %v)", vName, sUser, sNode, sName)
-        }
+	sUser, sNode, sName, err = ParseVaultSecretName(vName, nil)
+	if err != nil {
+		t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
+	}
+	if sNode != "mynodename" || sUser != "myusername" || sName != "mysecret" {
+		t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v, %v)", vName, sUser, sNode, sName)
+	}
 
-        vName = "user/myusername/node/mynodename/mysecret/extra"
-        sUser, sNode, sName, err = ParseVaultSecretName(vName, nil)
-        if err != nil {
-                t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
-        }
-        if sNode != "mynodename" || sUser != "myusername" || sName != "mysecret/extra" {
-                t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v, %v)", vName, sUser, sNode, sName)
-        }
+	vName = "user/myusername/node/mynodename/mysecret/extra"
+	sUser, sNode, sName, err = ParseVaultSecretName(vName, nil)
+	if err != nil {
+		t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
+	}
+	if sNode != "mynodename" || sUser != "myusername" || sName != "mysecret/extra" {
+		t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v, %v)", vName, sUser, sNode, sName)
+	}
 
-        vName = "/user/myusername/node/mynodename/myorgagain/extra/mysecret"
-        sUser, sNode, sName, err = ParseVaultSecretName(vName, nil)
-        if err != nil {
-                t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
-        }
-        if sNode != "mynodename" || sUser != "myusername" || sName != "myorgagain/extra/mysecret" {
-                t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v, %v)", vName, sUser, sNode, sName)
-        }
+	vName = "/user/myusername/node/mynodename/myorgagain/extra/mysecret"
+	sUser, sNode, sName, err = ParseVaultSecretName(vName, nil)
+	if err != nil {
+		t.Errorf("ParseVaultSecretName returned error but should not. Error: %v", err)
+	}
+	if sNode != "mynodename" || sUser != "myusername" || sName != "myorgagain/extra/mysecret" {
+		t.Errorf("ParseVaultSecretName returned incorrect values for %v: (%v, %v, %v)", vName, sUser, sNode, sName)
+	}
 }
 
 func Test_ParseVaultSecretName_bad(t *testing.T) {

@@ -279,7 +279,7 @@ func Test_CheckPermissions_0(t *testing.T) {
 
 }
 
-func createTmpDir () error {
+func createTmpDir() error {
 	if err := os.MkdirAll("./tmp", 0777); err != nil {
 		return err
 	}
