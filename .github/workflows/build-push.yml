@@ -8,6 +8,7 @@ on:
       - master
       - v2.30
       - v2.29
+  workflow_dispatch:
         
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
@@ -21,10 +22,15 @@ env:
 jobs:
 
   # Migrating workflow causes run number to be reset to 1, offset so our versions don't go back in time.
-  offset-build-number:
+  prepare-workflow:
+    if: github.repository_owner == 'open-horizon'
     runs-on: ubuntu-20.04
     outputs: 
       BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
+      ANAX_IMAGE_VERSION: ${{ steps.version.outputs.ANAX_IMAGE_VERSION }}
+      CSS_IMAGE_VERSION: ${{ steps.version.outputs.CSS_IMAGE_VERSION }}
+      ESS_IMAGE_VERSION: ${{ steps.version.outputs.ESS_IMAGE_VERSION }}
+      VERSION_NO_BUILD_NUMBER: ${{ steps.version.outputs.VERSION_NO_BUILD_NUMBER }}
     steps:
       # Ensure that the repo variables and secrets are set before running any other steps
       - name: Check User Set Variables
@@ -75,9 +81,39 @@ jobs:
         run: |
           echo "BUILD_NUMBER=$(($RUN_NUMBER + $RUN_NUMBER_OFFSET))" >> "$GITHUB_OUTPUT"
 
+      # Checkout our Github repo
+      - name: Checkout Github Repo
+        uses: actions/checkout@v3
+
+      # Configure version variables for later steps, stored in our workflow env. variables
+      - name: Config Version Variables
+        id: version
+        run: |
+          cd $GITHUB_WORKSPACE
+          ./.github/scripts/configure_versions_script.sh
+        env:
+          BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
+      
+      # Prepare files for upload
+      - name: Prepare Files for Upload
+        run: |
+          mkdir $RUNNER_TEMP/files_to_upload
+          mkdir $RUNNER_TEMP/files_to_tar && cd $RUNNER_TEMP/files_to_tar
+          cp $GITHUB_WORKSPACE/agent-install/agent-uninstall.sh .
+          cp $GITHUB_WORKSPACE/agent-install/k8s/* .
+          tar -czvf $RUNNER_TEMP/files_to_upload/horizon-agent-edge-cluster-files.tar.gz *.*
+          cp $GITHUB_WORKSPACE/agent-install/agent-install.sh $RUNNER_TEMP/files_to_upload
+
+      # Upload files needed for release management that don't change between runs
+      - name: Upload Anax Agent Files
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-agent-files-v${{ steps.version.outputs.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/files_to_upload
+
   # Builds on Linux: Deb Packages, RPM Packages, Docker images, and pushes to Dockerhub
   linux-build-push:
-    needs: offset-build-number
+    needs: prepare-workflow
 
     # The type of runner that the job will run on 
     runs-on: ubuntu-20.04
@@ -92,11 +128,11 @@ jobs:
     env:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
-      BUILD_NUMBER: ${{ needs.offset-build-number.outputs.BUILD_NUMBER }}
-      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
-      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+      BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.BUILD_NUMBER }}
+      ANAX_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ANAX_IMAGE_VERSION }}
+      CSS_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.CSS_IMAGE_VERSION }}
+      ESS_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ESS_IMAGE_VERSION }}
+      VERSION_NO_BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.VERSION_NO_BUILD_NUMBER }}
       GOPATH: /home/runner/work/anax/anax/go
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -155,12 +191,6 @@ jobs:
         run: |
           echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
 
-      # Configure version variables for later steps, stored in our workflow env. variables
-      - name: Config Version Variables
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/configure_versions_script.sh
-      
       # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
         run: |
@@ -298,10 +328,91 @@ jobs:
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/docker_push_script.sh
 
+      # Save Docker Images
+      - name: Save Docker Images
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
+        run: |
+          mkdir -p $RUNNER_TEMP/images_to_upload && cd $RUNNER_TEMP/images_to_upload
+          ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/.github/scripts/docker_save_script.sh
+
+      # Upload Agbot Docker Images
+      - name: Upload Agbot Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_agbot-image-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_agbot.tar.gz
+      
+      # Upload Anax Docker Images
+      - name: Upload Anax Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_anax-image-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_anax.tar.gz
+
+      # Upload Anax K8s Docker Images
+      - name: Upload Anax K8s Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_anax_k8s-image-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_anax_k8s.tar.gz
+
+      # Upload Anax K8s Cronjob Docker Images
+      - name: Upload Anax K8s Cronjob Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_auto-upgrade-cronjob_k8s-image-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_auto-upgrade-cronjob_k8s.tar.gz
+
+      # Upload CSS Docker Images
+      - name: Upload CSS Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_cloud-sync-service-image-v${{ env.CSS_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_cloud-sync-service.tar.gz
+
+      # Upload ESS Docker Images
+      - name: Upload ESS Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_edge-sync-service-image-v${{ env.ESS_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_edge-sync-service.tar.gz
+
+      # Prep to Upload Packages
+      - name: Prepare to Upload Packages
+        run: |
+          mkdir -p $RUNNER_TEMP/rpm_to_upload
+          if [[ ${arch} == 'amd64' ]]; then \
+          cp /home/runner/rpmbuild/RPMS/x86_64/*.rpm $RUNNER_TEMP/rpm_to_upload; \
+          elif [[ ${arch} == 'ppc64el' || ${arch} == 's390x' ]]; then \
+          cp /home/runner/work/anax/anax/RPMS/*.rpm $RUNNER_TEMP/rpm_to_upload; \
+          fi
+          mkdir -p $RUNNER_TEMP/deb_to_upload
+          cp ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/pkg/deb/debs/*.deb $RUNNER_TEMP/deb_to_upload
+
+      # Upload RPM Packages
+      - name: Upload RPM Packages to Artifacts
+        if: (matrix.architecture == 'ppc64el' || matrix.architecture == 'amd64' || matrix.architecture == 's390x')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-rpm-package-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/rpm_to_upload/*.rpm
+          
+      # Upload DEB Packages
+      - name: Upload DEB Packages to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-deb-package-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/deb_to_upload/*.deb
 
   # Build our mac packages on a macOS runner
   mac-build:
-    needs: offset-build-number
+    needs: prepare-workflow
 
     # Do not use any 'xl' version of macos or you will pay (literally)
     # When mac silicon runner comes out we can update this runs-on to ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macSiliconVersion' }}
@@ -315,16 +426,12 @@ jobs:
     env:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
-      BUILD_NUMBER: ${{ needs.offset-build-number.outputs.BUILD_NUMBER }}
-      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
-      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+      BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.BUILD_NUMBER }}
+      ANAX_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ANAX_IMAGE_VERSION }}
+      CSS_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.CSS_IMAGE_VERSION }}
+      ESS_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ESS_IMAGE_VERSION }}
+      VERSION_NO_BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.VERSION_NO_BUILD_NUMBER }}
       GOPATH: /Users/runner/work/anax/anax/go
-
-    # Specify outputs to be used in our push-macos job
-    outputs:
-      ANAX_VERSION: ${{ env.ANAX_IMAGE_VERSION }}
 
     steps:
       # Checkout our Github repo
@@ -339,12 +446,6 @@ jobs:
         with:
           go-version: '1.19'
           check-latest: true
-
-      # Configure version variables for later steps, stored in our workflow env. variables
-      - name: Config Version Variables
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/configure_versions_script.sh
 
       # Configure the certificates for package signing
       - name: Configure Certificates
@@ -399,18 +500,24 @@ jobs:
         env:
           VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
 
+      - name: Add Certificate File to Package Directory
+        run: |
+          touch ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/pkg/mac/build/horizon-cli.crt
+          echo "$MACPKG_HORIZON_CLI_CRT" >> ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/pkg/mac/build/horizon-cli.crt
+        env:
+          MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
+
       # Upload created package to artifacts to be used in next job
       - name: Upload MacOS Package to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: macos-${{ matrix.architecture }}-package
-          path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}/pkg/mac/build/*.pkg
-
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-mac-package-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}/pkg/mac/build/*
 
   # This will push our built mac packages to Dockerhub
   mac-push:
       # Specify that we wait for mac-build to run and create the packages
-      needs: mac-build
+      needs: [prepare-workflow, mac-build]
 
       runs-on: ubuntu-20.04
 
@@ -456,22 +563,16 @@ jobs:
             password: ${{ secrets.GITHUB_TOKEN }}
 
         # Setup a working directory in the temp folder path
-        - name: Setup Working Directory and add Certificate File
-          id: workdir_setup
+        - name: Setup Working Directory for Mac Package
           run: |
             mkdir $RUNNER_TEMP/macs
-            touch $RUNNER_TEMP/macs/horizon-cli.crt
-            echo "$MACPKG_HORIZON_CLI_CRT" >> $RUNNER_TEMP/macs/horizon-cli.crt
-            echo "PKG_PATH="${RUNNER_TEMP}/macs"" >> $GITHUB_OUTPUT
-          env:
-            MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
 
         # Retrieve artifact from previous job
         - name: Download our MacOS Package Artifact
           uses: actions/download-artifact@v3
           with:
-            name: macos-${{ matrix.architecture }}-package
-            path: ${{ steps.workdir_setup.outputs.PKG_PATH }}
+            name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-mac-package-v${{ needs.prepare-workflow.outputs.ANAX_IMAGE_VERSION }}
+            path: ${{ runner.temp }}/macs
 
         # Push our .crt and .pkg to Dockerhub
         - name: Make MacOS Package Tarball and Upload to Dockerhub
@@ -485,10 +586,10 @@ jobs:
 
             # Build docker image with only mac tarball
             docker build \
-                --no-cache \
-                -t ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing \
-                -f Dockerfile.macpkg.tarball \
-                .
+              --no-cache \
+              -t ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing \
+              -f Dockerfile.macpkg.tarball \
+              .
 
             if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then 
                 docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing
@@ -499,4 +600,4 @@ jobs:
                 docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing_${GH_BRANCH}
             fi
           env:
-            ANAX_IMAGE_VERSION: ${{ needs.mac-build.outputs.ANAX_VERSION }}
+            ANAX_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ANAX_IMAGE_VERSION }}
