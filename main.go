@@ -161,7 +161,7 @@ func main() {
 	authm := resource.NewAuthenticationManager(cfg.GetFileSyncServiceAuthPath())
 
 	// Initialize the secrets manager to store secrets in the local db and in agent file system.
-	secretm := resource.NewSecretsManager(cfg.GetSecretsManagerFilePath(), db)
+	secretm := resource.NewSecretsManager(cfg, db)
 
 	// start workers
 	workers := worker.NewMessageHandlerRegistry()
@@ -188,7 +188,7 @@ func main() {
 		if imageWorker := imagefetch.NewImageFetchWorker("ImageFetch", cfg, db); imageWorker != nil {
 			workers.Add(imageWorker)
 		}
-		workers.Add(kube_operator.NewKubeWorker("Kube", cfg, db))
+		workers.Add(kube_operator.NewKubeWorker("Kube", cfg, db, secretm))
 		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
 		workers.Add(changes.NewChangesWorker("ExchangeChanges", cfg, db))
 		workers.Add(nodemanagement.NewNodeManagementWorker("NodeManagement", cfg, db))

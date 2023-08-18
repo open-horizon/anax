@@ -7,7 +7,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/persistence"
 	olmv1scheme "github.com/operator-framework/api/pkg/operators/v1"
 	olmv1alpha1scheme "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	olmv1client "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1"
@@ -39,6 +41,10 @@ const (
 	HZN_ENV_VARS = "hzn-env-vars"
 	// Variable that contains the name of the config map
 	HZN_ENV_KEY = "HZN_ENV_VARS"
+	// Name for the k8s secrets that contains service secrets. Only characters allowed: [a-z] "." and "-"
+	HZN_SERVICE_SECRETS = "hzn-service-secrets"
+
+	SECRETS_VOLUME_NAME = "service-secrets-vol"
 
 	K8S_ROLE_TYPE               = "Role"
 	K8S_ROLEBINDING_TYPE        = "RoleBinding"
@@ -122,9 +128,9 @@ func NewDynamicKubeClient() (dynamic.Interface, error) {
 }
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
-func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars map[string]string, agId string, reqNamespace string, crInstallTimeout int64) error {
+func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars map[string]string, secretsMap map[string]string, agId string, reqNamespace string, crInstallTimeout int64) error {
 
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, envVars, agId, crInstallTimeout)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, envVars, secretsMap, agId, crInstallTimeout)
 	if err != nil {
 		return err
 	}
@@ -164,6 +170,7 @@ func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars
 		glog.Infof(kwlog(fmt.Sprintf("successfully installed %v", unknownObj.Name())))
 	}
 
+	// TODO: Update cluster namespace in agreement or microservice?
 	glog.V(3).Infof(kwlog(fmt.Sprintf("all operator objects installed")))
 
 	return nil
@@ -172,7 +179,7 @@ func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
 func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId string, reqNamespace string) error {
 
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, map[string]string{}, agId, 0)
 	if err != nil {
 		return err
 	}
@@ -211,7 +218,7 @@ func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId 
 	return nil
 }
 func (c KubeClient) OperatorStatus(tar string, metadata map[string]interface{}, agId string, reqNamespace string) (interface{}, error) {
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +236,7 @@ func (c KubeClient) OperatorStatus(tar string, metadata map[string]interface{}, 
 }
 
 func (c KubeClient) Status(tar string, metadata map[string]interface{}, agId string, reqNamespace string) ([]ContainerStatus, error) {
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -274,8 +281,39 @@ func (c KubeClient) Status(tar string, metadata map[string]interface{}, agId str
 	}
 }
 
+// Currently we only support service/vault secret update, this k8s secret is create with service secret value in agreement. It is not the secret.yml from operator file
+func (c KubeClient) Update(tar string, metadata map[string]interface{}, agId string, reqNamespace string, updatedEnv map[string]string, updatedSecrets []persistence.PersistedServiceSecret) error {
+	// Convert updatedSecrets to map[string]string
+	updatedSecretsMap := make(map[string]string, 0)
+	for _, pss := range updatedSecrets {
+		secName := pss.SvcSecretName
+		secValue := pss.SvcSecretValue
+		updatedSecretsMap[secName] = secValue
+	}
+
+	// Current implementaion only updatedSecrets will be passed into this function
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, updatedEnv, updatedSecretsMap, agId, 0)
+	if err != nil {
+		return err
+	}
+	namespace := getFinalNamespace(reqNamespace, opNamespace)
+
+	if len(apiObjMap[K8S_DEPLOYMENT_TYPE]) < 1 {
+		return fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to find operator deployment object.")))
+	}
+
+	deployment := apiObjMap[K8S_DEPLOYMENT_TYPE][0] // deployment with updated secrets
+	err = deployment.Update(c, namespace)
+	if err != nil {
+		return err
+	}
+
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Successfully update the service secrets in namespace %v", namespace)))
+	return nil
+}
+
 // processDeployment takes the deployment string and converts it to a map with the k8s objects, the namespace to be used, and an error if one occurs
-func ProcessDeployment(tar string, metadata map[string]interface{}, envVars map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func ProcessDeployment(tar string, metadata map[string]interface{}, envVars map[string]string, secretsMap map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	// Read the yaml files from the commpressed tar files
 	yamls, err := getYamlFromTarGz(tar)
 	if err != nil {
@@ -298,7 +336,7 @@ func ProcessDeployment(tar string, metadata map[string]interface{}, envVars map[
 	}
 
 	// Sort the k8s api objects by kind
-	return sortAPIObjects(k8sObjs, customResourceKindMap, metadata, envVars, agId, crInstallTimeout)
+	return sortAPIObjects(k8sObjs, customResourceKindMap, metadata, envVars, secretsMap, agId, crInstallTimeout)
 }
 
 // CreateConfigMap will create a config map with the provided environment variable map
@@ -314,6 +352,17 @@ func (c KubeClient) CreateConfigMap(envVars map[string]string, agId string, name
 	res, err := c.Client.CoreV1().ConfigMaps(namespace).Create(context.Background(), &hznEnvConfigMap, metav1.CreateOptions{})
 	if err != nil {
 		return "", fmt.Errorf("Error: failed to create config map for %s: %v", agId, err)
+	}
+	return res.ObjectMeta.Name, nil
+}
+
+// CreateK8SSecrets will create a k8s secrets object which contains the service secret name and value
+func (c KubeClient) CreateK8SSecrets(serviceSecretsMap map[string]string, agId string, namespace string) (string, error) {
+	secretsLabel := map[string]string{"name": HZN_SERVICE_SECRETS}
+	hznServiceSecrets := corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-%s", HZN_SERVICE_SECRETS, agId), Labels: secretsLabel}, StringData: serviceSecretsMap}
+	res, err := c.Client.CoreV1().Secrets(namespace).Create(context.Background(), &hznServiceSecrets, metav1.CreateOptions{})
+	if err != nil {
+		return "", fmt.Errorf("Error: failed to create k8s secrets that contains service secrets for %s: %v", agId, err)
 	}
 	return res.ObjectMeta.Name, nil
 }
@@ -337,6 +386,28 @@ func addConfigMapVarToDeploymentObject(deployment appsv1.Deployment, configMapNa
 	for i >= 0 {
 		newEnv := append(deployment.Spec.Template.Spec.Containers[i].Env, hznEnvVar)
 		deployment.Spec.Template.Spec.Containers[i].Env = newEnv
+		i--
+	}
+	return deployment
+}
+
+// add a reference to the secrets service secrets to the deployment
+func addServiceSecretsToDeploymentObject(deployment appsv1.Deployment, secretsName string) appsv1.Deployment {
+	// Add secrets (secretsName is $HZN_SERVICE_SECRETS-$agId: hzn-service-secrets-12345) as Volume in deployment
+	volumeName := SECRETS_VOLUME_NAME
+	volume := corev1.Volume{Name: volumeName, VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: secretsName}}}
+	volumes := append(deployment.Spec.Template.Spec.Volumes, volume)
+	deployment.Spec.Template.Spec.Volumes = volumes
+
+	// mount the volume to deployment containers
+	secretsFilePathInPod := config.HZN_SECRETS_MOUNT
+	volumeMount := corev1.VolumeMount{Name: volumeName, MountPath: secretsFilePathInPod}
+
+	// Add secrets as volume mount for containers
+	i := len(deployment.Spec.Template.Spec.Containers) - 1
+	for i >= 0 {
+		newVM := append(deployment.Spec.Template.Spec.Containers[i].VolumeMounts, volumeMount)
+		deployment.Spec.Template.Spec.Containers[i].VolumeMounts = newVM
 		i--
 	}
 	return deployment

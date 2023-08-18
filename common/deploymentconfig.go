@@ -108,6 +108,52 @@ func ConvertToDeploymentConfig(deployment interface{}, msgPrinter *message.Print
 	return depConfig, nil
 }
 
+type ClusterDeploymentConfig struct {
+	Metadata            map[string]interface{}             `json:"metadata,omitempty"`
+	OperatorYamlArchive string                             `json:"operatorYamlArchive"`
+	Secrets             map[string]containermessage.Secret `json:"secrets"`
+}
+
+// Take the deployment field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
+// and turn it into the DeploymentConfig struct we really want.
+func ConvertToClusterDeploymentConfig(clusterDeployment interface{}, msgPrinter *message.Printer) (*ClusterDeploymentConfig, error) {
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	var jsonBytes []byte
+	var err error
+
+	// Take whatever type the deployment field is and convert it to marshalled json bytes
+	switch d := clusterDeployment.(type) {
+	case string:
+		if len(d) == 0 {
+			return nil, nil
+		}
+		// In the original input file this was escaped json as a string, but the original unmarshal removed the escapes
+		jsonBytes = []byte(d)
+	case nil:
+		return nil, nil
+	default:
+		// The only other valid input is regular json in ClusterDeploymentConfig structure. Marshal it back to bytes so we can unmarshal it in a way that lets Go know it is a DeploymentConfig
+		jsonBytes, err = json.Marshal(d)
+		if err != nil {
+			return nil, fmt.Errorf(msgPrinter.Sprintf("failed to marshal body for %v: %v", d, err))
+		}
+	}
+
+	// Now unmarshal the bytes into the struct we have wanted all along
+	clusterDepConfig := new(ClusterDeploymentConfig)
+	err = json.Unmarshal(jsonBytes, clusterDepConfig)
+	if err != nil {
+		return nil, fmt.Errorf(msgPrinter.Sprintf("failed to unmarshal json for deployment field %s: %v", string(jsonBytes), err))
+	}
+
+	return clusterDepConfig, nil
+
+}
+
 // Get the metadata filed from the cluster deployment config
 // inspectOperatorForNS: get the namespace from the operator if 'metadata' attribute is not defined.
 func GetClusterDeploymentMetadata(clusterDeployment interface{}, inspectOperatorForNS bool, msgPrinter *message.Printer) (map[string]interface{}, error) {
@@ -175,6 +221,6 @@ func GetClusterDeploymentMetadata(clusterDeployment interface{}, inspectOperator
 }
 
 func GetKubeOperatorNamespace(tar string) (string, error) {
-	_, namespace, err := kube_operator.ProcessDeployment(tar, nil, map[string]string{}, "", 0)
+	_, namespace, err := kube_operator.ProcessDeployment(tar, nil, map[string]string{}, map[string]string{}, "", 0)
 	return namespace, err
 }

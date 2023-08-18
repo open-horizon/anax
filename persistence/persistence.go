@@ -30,6 +30,7 @@ type WorkloadInfo struct {
 	Org     string `json:"org,omitempty"`
 	Version string `json:"version,omitempty"`
 	Arch    string `json:"arch,omitempty"`
+	//Namespace string `json:"namespace,omitempty"`  // TODO: Need to add Namespace for workflow?
 }
 
 func NewWorkloadInfo(url string, org string, version string, arch string) (*WorkloadInfo, error) {

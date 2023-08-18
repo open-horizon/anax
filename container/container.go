@@ -598,7 +598,7 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		client:        client,
 		iptables:      nil,
 		authMgr:       resource.NewAuthenticationManager(config.GetFileSyncServiceAuthPath()),
-		secretMgr:     resource.NewSecretsManager(config.GetSecretsManagerFilePath(), nil),
+		secretMgr:     resource.NewSecretsManager(config, nil),
 		pattern:       "",
 		isDevInstance: true,
 		apiServerType: svType,

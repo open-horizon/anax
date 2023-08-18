@@ -9,11 +9,12 @@ import (
 type KubeDeploymentConfig struct {
 	Metadata            map[string]interface{} `json:"metadata,omitempty"`
 	OperatorYamlArchive string                 `json:"operatorYamlArchive"`
+	Secrets             map[string]interface{} `json:"secrets,omitempty"`
 }
 
 func (k *KubeDeploymentConfig) ToString() string {
 	if k != nil {
-		return fmt.Sprintf("OperatorYamlArchive: %v, Metadata: %v", cutil.TruncateDisplayString(k.OperatorYamlArchive, 20), k.Metadata)
+		return fmt.Sprintf("OperatorYamlArchive: %v, Metadata: %v, Secrets: %v", cutil.TruncateDisplayString(k.OperatorYamlArchive, 20), k.Metadata, k.Secrets)
 	}
 	return ""
 }

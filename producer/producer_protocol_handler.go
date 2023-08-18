@@ -72,7 +72,7 @@ type ProducerProtocolHandler interface {
 	SetBlockchainWritable(cmd *BCWritableCommand)
 	IsBlockchainWritable(agreement *persistence.EstablishedAgreement) bool
 	IsAgreementVerifiable(agreement *persistence.EstablishedAgreement) bool
-	HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, error)
+	HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, []persistence.PersistedServiceSecret, error)
 	UpdateConsumer(ag *persistence.EstablishedAgreement)
 	UpdateConsumers()
 	GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string, string)
@@ -656,8 +656,8 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 
 }
 
-func (b *BaseProducerProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, error) {
-	return false, false, "", nil
+func (b *BaseProducerProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, []persistence.PersistedServiceSecret, error) {
+	return false, false, "", []persistence.PersistedServiceSecret{}, nil
 }
 
 func (b *BaseProducerProtocolHandler) UpdateConsumer(ag *persistence.EstablishedAgreement) {}
