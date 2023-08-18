@@ -1412,10 +1412,6 @@ results "$RES"
 
 fi
 
-if [[ "$NOKUBE" == "1" ]]; then
-  echo -e "Skipping k8s policy creation"
-else
-
 read -d '' bpk8ssvc1def <<EOF
 {
   "label": "business policy for k8s-service1",
@@ -1497,9 +1493,6 @@ echo -e "Register business policy bp_k8s_embedded_ns for k8s-service-embedded-ns
   RES=$(echo "$bpk8swithembeddednsdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_embedded_ns" | jq -r '.')
 
 results "$RES"
-
-
-fi
 
 
 # ======================= Service Policies that use top level services ======================
