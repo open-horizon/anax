@@ -228,6 +228,10 @@
     "translation": "API パスにユーザーを指定する必要があります"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "API パスにノードを指定する必要があります"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "秘密マネージャー内で秘密 {FullSecretName} を検査中にエラーが発生しました。"
   },
@@ -468,20 +472,20 @@
     "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "Name または Org が空ストリングです。"
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "serviceVersions 配列が空です。"
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "プロパティー {PROPSVCPRIVILEGED} にはブール値 (true または false) が必要です。"
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "名前 {PROPNODEK8SNAMESPACE}の制約の取得に失敗しました。エラー: {Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "制約 {Newconstr} で定義されている kubernetesNamespace は、デプロイメント・ポリシーで指定されている clusterNamespace '{ClusterNSInPolicy}' と異なるため、ポリシーにより、サービス・デプロイメントが行われない可能性があります。"
   },
   {
     "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
@@ -992,6 +996,22 @@
     "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "クラスター・デプロイメント・フィールド {StringjsonBytes}の JSON のアンマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "クラスター・デプロイメント・フィールドに無効なデータが指定されました: {TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "クラスター・デプロイメントのメタデータ属性の形式が正しくありません。"
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "Kube オペレーターから名前空間を取得できませんでした。{Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
   },
@@ -1080,6 +1100,34 @@
     "translation": "サービスには、ノード・タイプ「cluster」のクラスター・デプロイメント構成はありません。"
   },
   {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "入力ノードのクラスター名前空間 '{NodeNamespace}' は、Exchange {NodeId}からのノードのクラスター名前空間 '{ExchNodeNamespace}' と一致しません。"
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "入力ノードのスコープ '{NodeIsNamespaceScope}' が、Exchange {NodeId}からのノードのスコープ '{ExchNodeIsNamespaceScope}' と一致しません。"
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "デプロイメント・ポリシーまたはパターンで指定された名前空間 '{DeployerNamespace}' が、エージェントの名前空間 '{NodeNamespace}' と一致しません。"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "サービスからクラスター・デプロイメントを取得できませんでした。{Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "サービスで指定された名前空間 '{SvcNamespace}' は、エージェントの名前空間 '{NodeNamespace}' と一致しません。デプロイメント・ポリシーまたはパターンで上書きしてください。"
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "パターン '{PatternId}' で指定された名前空間 '{PatternNamespace}' が空であるか、名前空間スコープ・エージェントの名前空間 '{NodeNamespace}' と一致しません。名前空間スコープ・エージェントは、エージェントと同じ名前空間を持つパターンとのみ互換性があります。"
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "パターン '{PatternId}' で指定されたクラスター名前空間は {PatternNamespace}です。クラスター・スコープ・エージェントに登録できるのは、空のクラスター名前空間を持つパターンのみです。"
+  },
+  {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
     "translation": "{VersionRange} からバージョン式を作成できません。 {Err}"
   },
@@ -1102,6 +1150,10 @@
   {
     "id": "Policy Incompatible",
     "translation": "ポリシー非互換"
+  },
+  {
+    "id": "{Err1}",
+    "translation": "{Err1}"
   },
   {
     "id": "Architecture does not match.",
@@ -1342,6 +1394,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "ノード組織が指定されている必要があります。"
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "シークレット {VaultSecretName} は、組織レベルでもユーザー・レベルでもシークレット・マネージャーに存在しません。"
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -1954,6 +2010,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "{Arg_1}のノード管理状況が {Arg_2}に変更されました。"
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "{Arg_1}のノード管理状況が {Arg_2}に変更されました。 エラー・メッセージ: {Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "{Arg_1}のノード管理状況を除去しています。"
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

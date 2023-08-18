@@ -228,6 +228,10 @@
     "translation": "È necessario specificare l'utente nel percorso API"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "Il nodo deve essere specificato nel percorso API"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "Errore durante il controllo del segreto {FullSecretName} nel gestore dei segreti."
   },
@@ -468,20 +472,20 @@
     "translation": "Errore durante la conversione delle selezioni in selettori: {Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "Name o Org è una stringa vuota."
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "L'array serviceVersions è vuota."
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "le proprietà contengono una proprietà non valida: {Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "La proprietà {PROPSVCPRIVILEGED} deve avere un valore booleano (true o false)."
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "Impossibile ottenere il vincolo con nome {PROPNODEK8SNAMESPACE}, errore: {Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "Il kubernetesNamespace definito nel vincolo {Newconstr} è diverso dal clusterNamespace '{ClusterNSInPolicy}' specificato nella politica di distribuzione; la politica potrebbe non comportare alcuna distribuzione del servizio"
   },
   {
     "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
@@ -992,6 +996,22 @@
     "translation": "impossibile annullare il marshalling del json per il campo di distribuzione {StringjsonBytes}: {Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "impossibile annullare il marshalling di json per il campo di distribuzione del cluster {StringjsonBytes}: {Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "Dati non validi presentati nel campo di distribuzione del cluster: {TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "L'attributo di metadati nella distribuzione del cluster ha un formato non corretto."
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "Impossibile ottenere il namespace dall'operatore Kube. {Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "l'input utente {Name} non ha un valore predefinito e non è impostato"
   },
@@ -1080,6 +1100,34 @@
     "translation": "Il servizio non dispone della configurazione di distribuzione del cluster per il tipo di nodo 'cluster'."
   },
   {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "Il namespace del cluster del nodo di input '{NodeNamespace}' non corrisponde al namespace del cluster del nodo '{ExchNodeNamespace}' da Exchange {NodeId}."
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "L'ambito del nodo di input '{NodeIsNamespaceScope}' non corrisponde all'ambito del nodo '{ExchNodeIsNamespaceScope}' da Exchange {NodeId}."
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "Il namespace '{DeployerNamespace}' specificato nel pattern o nella politica di distribuzione non corrisponde al namespace dell'agent: '{NodeNamespace}'"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "Impossibile ottenere la distribuzione del cluster dal servizio. {Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "Il namespace {SvcNamespace}'specificato nel servizio non corrisponde al namespace dell'agent:'{NodeNamespace}'. Sovrascriverlo nel pattern o nella politica di distribuzione."
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "Il namespace '{PatternNamespace}' specificato nel pattern '{PatternId}' è vuoto o non corrisponde al namespace dell'agent in ambito namespace: '{NodeNamespace}'. L'agent in ambito namespace è compatibile solo con il pattern che ha lo stesso namespace con l'agent."
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "Il namespace del cluster specificato nel pattern '{PatternId}' è {PatternNamespace}, solo il pattern con namespace del cluster vuoto può essere registrato per l'agent in ambito cluster"
+  },
+  {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
     "translation": "Impossibile creare l'espressione di versione da {VersionRange}. {Err}"
   },
@@ -1102,6 +1150,10 @@
   {
     "id": "Policy Incompatible",
     "translation": "Politica incompatibile"
+  },
+  {
+    "id": "{Err1}",
+    "translation": "{Err1}"
   },
   {
     "id": "Architecture does not match.",
@@ -1342,6 +1394,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "È necessario fornire l'organizzazione del nodo."
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "Il segreto {VaultSecretName} non esiste nel Secret Manager per il livello organizzazione o per il livello utente."
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -1954,6 +2010,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "Lo stato di gestione del nodo per {Arg_1} è stato modificato in {Arg_2}."
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "Lo stato di gestione del nodo per {Arg_1} è stato modificato in {Arg_2}. Messaggio di errore: {Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "Rimozione dello stato di gestione del nodo per {Arg_1}."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

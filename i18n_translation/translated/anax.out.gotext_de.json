@@ -228,6 +228,10 @@
     "translation": "Der Benutzer muss im API-Pfad angegeben werden."
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "Knoten muss im API-Pfad angegeben sein"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "Fehler beim Überprüfen des geheimen Schlüssels {FullSecretName} im Manager für geheime Schlüssel."
   },
@@ -468,20 +472,20 @@
     "translation": "Fehler beim Umwandeln der Auswahlen in Selektoren: {Err}."
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "Der Name oder die Organisation ist eine leere Zeichenfolge."
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "Das Array für die Serviceversionen (serviceVersions) ist leer."
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "Eigenschaften enthalten ungültige Eigenschaft: {Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "Die Eigenschaft {PROPSVCPRIVILEGED} muss einen booleschen Wert haben ('true' oder 'false')."
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "Abrufen der Randbedingung mit dem Namen {PROPNODEK8SNAMESPACE}fehlgeschlagen; Fehler: {Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "Der kubernetesNamespace, der in der Randbedingung {Newconstr}definiert ist, deckt sich nicht mit dem clusterNamespace '{ClusterNSInPolicy}', der in der Bereitstellungsrichtlinie angegeben ist. Möglicherweise führt die Richtlinie zu keinen Servicebereitstellungen."
   },
   {
     "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
@@ -992,6 +996,22 @@
     "translation": "Unmarshalling der JSON-Datei für Bereitstellungsfeld {StringjsonBytes} fehlgeschlagen: {Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "Ausführung von Unmarshalling von JSON für Clusterbereitstellungsfeld {StringjsonBytes}ist fehlgeschlagen: {Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "Das Clusterbereitstellungsfeld weist ungültige Daten auf: {TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "Das Metadatenattribut in der Clusterbereitstellung weist das falsche Format auf."
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "Der Namensbereich konnte nicht vom Kube-Operator abgerufen werden. {Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "Benutzereingabe {Name} weist keinen Standardwert auf und ist nicht definiert."
   },
@@ -1080,6 +1100,34 @@
     "translation": "Der Service hat keine Clusterbereitstellungskonfiguration für den Knotentyp 'cluster'."
   },
   {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "Der Clusternamensbereich '{NodeNamespace}' des Eingabeknotens stimmt nicht mit dem Clusternamensbereich '{ExchNodeNamespace}' des Knotens aus Exchange {NodeId}überein."
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "Der Bereich '{NodeIsNamespaceScope}' des Eingabeknotens stimmt nicht mit dem Bereich '{ExchNodeIsNamespaceScope}' des Knotens von Exchange {NodeId}überein."
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "Der in der Bereitstellungsrichtlinie oder im Bereitstellungsmuster angegebene Namensbereich '{DeployerNamespace}' deckt sich nicht mit dem Namensbereich des Agenten: '{NodeNamespace}'."
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "Abrufen der Clusterbereitstellung aus dem Service fehlgeschlagen. {Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "Der im Service angegebene Namensbereich '{SvcNamespace}' deckt sich nicht mit dem Namensbereich des '{NodeNamespace}' des Agenten. Überschreiben Sie ihn in der Bereitstellungsrichtlinie oder im -muster."
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "Der im Muster '{PatternId}' angegebene Namensbereich '{PatternNamespace}' ist leer oder deckt sich nicht mit dem Namensbereich des namensbereichsorientierten Agenten: '{NodeNamespace}'. Der namensbereichsorienterte Agent ist nur mit Mustern kompatibel, die denselben Namensbereich wie der Agent haben."
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "Der Clusternamensbereich, der im Muster '{PatternId}' angegeben ist, lautet {PatternNamespace}. Für clusterbereichsorientierte Agenten können nur Muster mit leerem Clusternamensbereich registriert werden"
+  },
+  {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
     "translation": "Der Versionsausdruck kann nicht aus {VersionRange} erstellt werden. {Err}"
   },
@@ -1102,6 +1150,10 @@
   {
     "id": "Policy Incompatible",
     "translation": "Richtlinie nicht kompatibel"
+  },
+  {
+    "id": "{Err1}",
+    "translation": "{Err1}"
   },
   {
     "id": "Architecture does not match.",
@@ -1342,6 +1394,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "Die Knotenorganisation muss angegeben werden."
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "Der geheime Schlüssel {VaultSecretName} ist in Secret Manager weder auf Organisationsebene noch auf Benutzerebene vorhanden."
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -1954,6 +2010,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "Der Knotenmanagementstatus für {Arg_1} wurde in {Arg_2} geändert."
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "Der Knotenmanagementstatus für {Arg_1} wurde in {Arg_2} geändert. Fehlernachricht: {Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "Der Knotenmanagementstatus für {Arg_1}wird entfernt."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

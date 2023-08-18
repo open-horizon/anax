@@ -160,6 +160,10 @@
     "translation": "API 경로에 사용자를 지정해야 함"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "노드는 API 경로에 지정되어야 함"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "시크릿 관리자에서 {FullSecretName} 시크릿 확인 중 오류가 발생했습니다."
   },
@@ -400,20 +404,20 @@
     "translation": "선택사항을 선택기로 변환하는 중에 오류 발생: {Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "이름 또는 조직이 빈 문자열입니다."
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "serviceVersions 배열이 비어 있습니다."
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "특성에 올바르지 않은 특성이 포함되어 있음: {Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "{PROPSVCPRIVILEGED} 특성은 부울 값(true 또는 false)을 가져야 합니다."
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "이름이 {PROPNODEK8SNAMESPACE}인 제한조건을 가져오는 데 실패했습니다. 오류: {Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "제한조건 {Newconstr}에 정의된 kubernetesNamespace가 배치 정책에 지정된 clusterNamespace '{ClusterNSInPolicy}'과(와) 다릅니다. 정책으로 인해 서비스가 배치되지 않을 수 있습니다."
   },
   {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
@@ -592,6 +596,14 @@
     "translation": "노드 유형입니다. 유효한 값은 'device' 및 'cluster'입니다. 생략 시, 기본값은 현재 등록된 디바이스 또는 -n에 의해 제공되는 노드 유형입니다."
   },
   {
+    "id": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+    "translation": "노드 유형이 '클러스터'인 경우 노드의 Kubernetes 클러스터 네임스페이스입니다. 생략할 경우 기본값은 'openhorizon-agent'입니다. 노드 유형이 '디바이스'인 경우 값이 무시됩니다."
+  },
+  {
+    "id": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+    "translation": "노드 유형이 '클러스터'인 경우 노드의 클러스터 범위는 네임스페이스 범위입니다. 생략된 경우 기본값은 false입니다. 노드 유형이 '디바이스'인 경우 값이 무시됩니다."
+  },
+  {
     "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
     "translation": "노드의 조직입니다. 생략 시, 기본값은 현재 등록된 디바이스 또는 -n에서 제공한 노드의 조직입니다."
   },
@@ -600,8 +612,8 @@
     "translation": "Horizon Exchange 노드 ID입니다. --ha-group, --node-pol 및 --node-ui와 함께 사용할 수 없습니다. 생략된 경우 현재 디바이스가 등록된 노드 ID가 사용됩니다. 이 플래그를 반복하여 둘 이상의 노드를 지정할 수 있습니다. 조직 ID를 사용하여 노드 ID를 앞에 추가하지 않는 경우 자동으로 -o 값이 앞에 추가됩니다."
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-    "translation": "HA 그룹의 이름입니다. -n, --node-pol 및 --node-ui와 함께 사용할 수 없습니다."
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+    "translation": "HA 그룹의 이름입니다. 배치 확인은 지정된 HA 그룹 내의 모든 노드에서 수행됩니다. -n, --node-pol 및 --node-ui와 함께 사용할 수 없습니다."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
@@ -648,8 +660,8 @@
     "translation": "Horizon Exchange 노드 ID입니다. --ha-group 및 --node-pol은 함께 사용할 수 없습니다. 생략된 경우 현재 디바이스가 등록된 노드 ID가 사용됩니다. 이 플래그를 반복하여 둘 이상의 노드를 지정할 수 있습니다. 조직 ID를 사용하여 노드 ID를 앞에 추가하지 않는 경우 자동으로 -o 값이 앞에 추가됩니다."
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-    "translation": "HA 그룹의 이름입니다. -n 및 --node-pol은 함께 사용할 수 없습니다."
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+    "translation": "HA 그룹의 이름입니다. 배치 확인은 지정된 HA 그룹 내의 모든 노드에서 수행됩니다. -n 및 --node-pol은 함께 사용할 수 없습니다."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
@@ -2448,8 +2460,8 @@
     "translation": "Horizon exchange에서 이 노드 리소스를 제거합니다(더 이상 Horizon에서 이 노드를 사용하지 않으려고 하기 때문에)."
   },
   {
-    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-    "translation": "이전 등록 정보를 모두 제거합니다. 'hzn unregister' 명령이 실패한 후에만 이를 사용하십시오. 이 플래그를 사용하기 전에 'hzn eventlog list -a -l' 명령을 실행하여 로그를 캡처하십시오."
+    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+    "translation": "또한 이전 등록 정보를 모두 제거하십시오. 'hzn unregister' 명령이 실패한 후에만 사용하십시오. 이 명령을 실행하면 이벤트 로그가 자동으로 저장됩니다."
   },
   {
     "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
@@ -2552,8 +2564,8 @@
     "translation": "stdin의 추정된 서명입니다."
   },
   {
-    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-    "translation": "시크릿 관리자에서 시크릿을 나열 및 관리합니다. 참고: 전체 조직에서 사용 가능한 시크릿을 나열하려면 관리자로 인증해야 합니다."
+    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+    "translation": "Secrets Manager의 시크릿을 나열하고 관리합니다. 참고: 전체 조직에 사용 가능한 시크릿을 나열하려면 관리자로 인증해야 합니다. 클러스터 에이전트에서는 시크릿이 지원되지 않습니다."
   },
   {
     "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
@@ -2568,6 +2580,10 @@
     "translation": "시크릿 관리자에서 시크릿 이름을 표시합니다."
   },
   {
+    "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+    "translation": "나열할 노드 시크릿의 노드 ID입니다. 이 시크릿이 단일 노드에만 해당되는 경우에만 포함하십시오."
+  },
+  {
     "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
     "translation": "이 하나의 시크릿만 나열합니다. 시크릿의 존재를 나타내는 부울을 리턴합니다. 이는 시크릿 관리자에서 사용되는 시크릿의 이름입니다. 시크릿이 존재하지 않으면 종료 코드 1과 함께 리턴됩니다."
   },
@@ -2578,6 +2594,10 @@
   {
     "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
     "translation": "시크릿 이름입니다. 조직 내에서 고유해야 합니다. 이 이름은 서비스 정의에서 시크릿 이름에 이 시크릿을 바인드하기 위해 배치 정책 및 패턴에서 사용됩니다."
+  },
+  {
+    "id": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+    "translation": "이 시크릿을 적용할 노드의 ID입니다. 이 시크릿이 단일 노드에만 해당되는 경우에만 포함하십시오."
   },
   {
     "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
@@ -2600,12 +2620,20 @@
     "translation": "시크릿 관리자에서 시크릿을 제거합니다."
   },
   {
+    "id": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+    "translation": "제거할 시크릿의 노드 id입니다. 이 시크릿이 단일 노드에만 해당되는 경우에만 포함하십시오."
+  },
+  {
     "id": "The name of the secret to be removed from the secrets manager.",
     "translation": "시크릿 관리자에서 제거할 시크릿 이름입니다."
   },
   {
     "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
     "translation": "시크릿 관리자에 저장된 시크릿 세부사항을 읽습니다. 이는 시크릿 작성 시 제공된 키 및 값 쌍으로 구성됩니다."
+  },
+  {
+    "id": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+    "translation": "읽을 노드 시크릿의 노드 ID입니다. 이 시크릿이 단일 노드에만 해당되는 경우에만 포함하십시오."
   },
   {
     "id": "The name of the secret to read in the secrets manager.",
@@ -3492,6 +3520,10 @@
     "translation": "'hzn deploycheck all' 출력을 마샬링하는 데 실패함: {Err}"
   },
   {
+    "id": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+    "translation": "-s는 -t로 지정된 노드 유형이 '클러스터'인 경우에만 지정할 수 있습니다."
+  },
+  {
     "id": "Please specify either deployment policy or pattern.",
     "translation": "배치 정책 또는 패턴을 지정하십시오."
   },
@@ -3542,6 +3574,14 @@
   {
     "id": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
     "translation": "-t로 지정된 노드 유형 {InputType}이(가) 로컬 노드 {NodeType}의 유형과 일치하지 않습니다."
+  },
+  {
+    "id": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+    "translation": "-s로 지정된 노드 클러스터 네임스페이스 {InputNamespace}이(가) 로컬 노드 {Namespace}의 클러스터 네임스페이스와 일치하지 않습니다."
+  },
+  {
+    "id": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+    "translation": "--is-namespace-scoped로 지정된 노드 is-namespace-scoped {InputIsNamespaceScoped}이(가) 로컬 노드의 에이전트 범위 {IsNamespaceScoped}과(와) 일치하지 않습니다."
   },
   {
     "id": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
@@ -4388,6 +4428,10 @@
     "translation": "배치 정책 {PolOrg}/{Policy}이(가) Horizon Exchange에서 추가됨"
   },
   {
+    "id": "Invalid format for service: {Err1}",
+    "translation": "서비스 형식이 올바르지 않습니다. {Err1}"
+  },
+  {
     "id": "Invalid format for properties: {Err1}",
     "translation": "특성에 대한 올바르지 않은 형식: {Err1}"
   },
@@ -4428,8 +4472,8 @@
     "translation": "배치 정책 {PolOrg}/{Policy}이(가) 제거됨"
   },
   {
-    "id": "Failed to validate the secret binding. {Err}",
-    "translation": "시크릿 바인딩을 유효성 검증하는 데 실패했습니다. {Err}"
+    "id": "{Err}",
+    "translation": "{Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
@@ -4460,6 +4504,18 @@
     "translation": "종속 서비스 {Id}에 대한 시크릿 바인딩을 유효성 검증하는 중에 오류가 발생했습니다. {Err}"
   },
   {
+    "id": "Warning: {Err}",
+    "translation": "경고: {Err}"
+  },
+  {
+    "id": "Failed to validate cluster namespace for service, error was: {Err}",
+    "translation": "서비스의 클러스터 네임스페이스를 유효성 검증하는 데 실패했습니다. 오류: {Err}"
+  },
+  {
+    "id": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+    "translation": "ClusterNamespace는 디바이스 서비스에 대해 설정되어서는 안 됩니다. {Org}/{Name}(arch {Arch} 사용)"
+  },
+  {
     "id": "Deployment policy label.",
     "translation": "배치 정책 레이블입니다."
   },
@@ -4478,6 +4534,10 @@
   {
     "id": "Set to '*' to use services of any hardware architecture.",
     "translation": "하드웨어 아키텍처의 서비스를 사용하려면 '*'로 설정하십시오."
+  },
+  {
+    "id": "The cluster namespace of the service.",
+    "translation": "서비스의 클러스터 네임스페이스입니다."
   },
   {
     "id": "A list of service versions.",
@@ -5176,8 +5236,20 @@
     "translation": "{PatOrg} 조직에서 {Pattern} 패턴을 찾을 수 없음"
   },
   {
-    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-    "translation": "업데이트할 패턴 속성이 입력 파일에 없습니다. 지원되는 속성: label, description, services, userInput, secretBinding."
+    "id": "Invalid format for services: {Err1}",
+    "translation": "서비스 형식이 올바르지 않습니다. {Err1}"
+  },
+  {
+    "id": "Error checking service types for pattern {Pname}. {Err}",
+    "translation": "{Pname}패턴의 서비스 유형을 확인하는 중에 오류가 발생했습니다. {Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+    "translation": "'clusterNamespace'를 지정했지만 서비스에 {Pname} 패턴에 대한 클러스터 배치가 없습니다."
+  },
+  {
+    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+    "translation": "업데이트할 패턴 속성을 입력 파일에서 찾을 수 없습니다. 지원되는 속성은 레이블, 설명, clusterNamespace, 서비스, userInput 및 secretBinding입니다."
   },
   {
     "id": "Pattern {PatOrg}/{Pattern} updated in the Horizon Exchange",
@@ -5198,6 +5270,18 @@
   {
     "id": "the pattern definition ({Services}) must contain services, unable to proceed",
     "translation": "패턴 정의({Services})가 서비스를 포함해야 하며, 진행할 수 없습니다."
+  },
+  {
+    "id": "Error checking service types for pattern. {Err}",
+    "translation": "패턴의 서비스 유형을 확인하는 중 오류가 발생했습니다. {Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+    "translation": "'clusterNamespace'를 지정했지만 서비스에 패턴에 대한 클러스터 배치가 없습니다."
+  },
+  {
+    "id": "Invalid format in pattern file {JsonFilePath}: {Err}",
+    "translation": "패턴 파일 {JsonFilePath}에 유효하지 않은 형식: {Err}"
   },
   {
     "id": "Signing deployment_overrides field in service {I__1}, serviceVersion number {J__1}",
@@ -5250,6 +5334,10 @@
   {
     "id": "key '{KeyName}' not found",
     "translation": "'{KeyName}' 키를 찾을 수 없음"
+  },
+  {
+    "id": "Failed to validate the secret binding. {Err}",
+    "translation": "시크릿 바인딩을 유효성 검증하는 데 실패했습니다. {Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this pattern:",
@@ -5706,6 +5794,18 @@
   {
     "id": "unable to read kube operator {DepoperatorYamlArchive}, error {Err}",
     "translation": "kube 연산자 {DepoperatorYamlArchive}을(를) 읽을 수 없습니다. 오류 {Err}"
+  },
+  {
+    "id": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+    "translation": "'clusterDeployment'의 '메타데이터'를 설정할 수 없습니다. 서비스를 공개하기 전에 'clusterDeployment' 내부의 '메타데이터' 제거"
+  },
+  {
+    "id": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+    "translation": "kube 연산자 {OperatorFilePath}에서 네임스페이스를 가져오는 데 실패했습니다. 오류: {Err}"
+  },
+  {
+    "id": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+    "translation": "경고: 연산자 파일에서 네임스페이스가 발견되었습니다. 서비스 네임스페이스는 배치 정책 또는 패턴에 설정되어야 합니다."
   },
   {
     "id": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
@@ -6244,8 +6344,8 @@
     "translation": "노드가 이미 HA 그룹 '{HaGroupName}'에 있습니다."
   },
   {
-    "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-    "translation": "노드 {Org}/{NodeId}은(는) HA 그룹 {HaGroupName}에 있습니다."
+    "id": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+    "translation": "노드 {Org}/{NodeId}은(는) HA 그룹 {ExistingHagrName}에 있습니다."
   },
   {
     "id": "Updating the node policy...",
@@ -7380,6 +7480,10 @@
     "translation": "{Name} 컨테이너가 중지됨"
   },
   {
+    "id": "Configuration files {FileObjects} loaded into the File sync service.",
+    "translation": "파일 동기화 서비스에 구성 파일 {FileObjects}을(를) 로드했습니다."
+  },
+  {
     "id": "Loading {FileName} into CSS",
     "translation": "CSS에 {FileName} 로드 중"
   },
@@ -7394,10 +7498,6 @@
   {
     "id": "unable to add file {FileName} to the CSS, error {Err}",
     "translation": "CSS에 {FileName} 파일을 추가할 수 없습니다. 오류 {Err}"
-  },
-  {
-    "id": "Configuration files {FileObjects} loaded into the File sync service.",
-    "translation": "파일 동기화 서비스에 구성 파일 {FileObjects}을(를) 로드했습니다."
   },
   {
     "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
@@ -7442,6 +7542,10 @@
   {
     "id": "Cannot backup eventlogs: {Err}",
     "translation": "이벤트 로그를 백업할 수 없음: {Err}"
+  },
+  {
+    "id": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+    "translation": "이 노드 등록 취소 중, 모든 계약 취소 중, 모든 워크로드 중지 중, HA 그룹 {HAGroup}에서 이 노드 제거 중, Exchange에서 이 노드 제거 중 그리고 Horizon을 다시 시작하는 중..."
   },
   {
     "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
@@ -7676,6 +7780,22 @@
     "translation": "배치 필드 {StringjsonBytes}에 대한 JSON을 역마샬링하는 데 실패함: {Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "클러스터 배치 필드 {StringjsonBytes}에 대해 json을 역마샬링하는 데 실패했습니다. {Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "클러스터 배치 필드에 올바르지 않은 데이터가 표시되었습니다. {TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "클러스터 배치의 메타데이터 속성의 형식이 잘못되었습니다."
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "Kube 연산자에서 네임스페이스를 가져오는 데 실패했습니다. {Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "사용자 입력 {Name}이(가) 기본값을 갖고 있지 않으며 설정되지 않음"
   },
@@ -7758,6 +7878,34 @@
   {
     "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
     "translation": "서비스에 노드 유형 'cluster'에 대한 클러스터 배치 구성이 없습니다."
+  },
+  {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "입력 노드의 클러스터 네임스페이스 '{NodeNamespace}'이(가) Exchange {NodeId}의 노드 클러스터 네임스페이스 '{ExchNodeNamespace}'과(와) 일치하지 않습니다."
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "입력 노드의 범위 '{NodeIsNamespaceScope}'이(가) Exchange {NodeId}의 노드 범위 '{ExchNodeIsNamespaceScope}'과(와) 일치하지 않습니다."
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "배치 정책 또는 패턴에 지정된 네임스페이스 '{DeployerNamespace}'이(가) 에이전트의 네임스페이스와 일치하지 않습니다. '{NodeNamespace}'"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "서비스에서 클러스터 배치를 가져오는 데 실패했습니다. {Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "서비스에 지정된 '{SvcNamespace}' 네임스페이스가 에이전트의 네임스페이스와 일치하지 않습니다. '{NodeNamespace}'. 배치 정책 또는 패턴으로 겹쳐쓰십시오."
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "'{PatternId}' 패턴에 지정된 네임스페이스 '{PatternNamespace}'이(가) 비어 있거나 네임스페이스 범위 에이전트의 네임스페이스와 일치하지 않습니다. '{NodeNamespace}'. 네임스페이스 범위 에이전트는 에이전트와 네임스페이스가 동일한 패턴과만 호환 가능합니다."
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "'{PatternId}' 패턴에 지정된 클러스터 네임스페이스는 {PatternNamespace}입니다. 클러스터 범위 에이전트에는 빈 클러스터 네임스페이스가 있는 패턴만 등록할 수 있습니다."
   },
   {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
@@ -8022,6 +8170,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "노드 조직을 제공해야 합니다."
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "시크릿 {VaultSecretName}이(가) 조직 레벨 또는 사용자 레벨의 Secret Manager에 존재하지 않습니다."
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -8302,6 +8454,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "{Arg_1}에 대한 노드 관리 상태가 {Arg_2}(으)로 변경되었습니다."
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "{Arg_1}에 대한 노드 관리 상태가 {Arg_2}(으)로 변경되었습니다. 오류 메시지: {Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "{Arg_1}에 대한 노드 관리 상태를 제거 중입니다."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
