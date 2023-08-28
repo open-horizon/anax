@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -23,6 +24,7 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"strconv"
 	"time"
 )
 
@@ -49,6 +51,11 @@ const (
 
 const (
 	DEFAULT_CERT_PATH = "/etc/default/cert/"
+)
+
+const (
+	AGENT_NAMESPACE_ENV_NAME      = "AGENT_NAMESPACE"
+	HZN_NAMESPACE_SCOPED_ENV_NAME = "HZN_NAMESPACE_SCOPED"
 )
 
 var AGENT_NAMESPACE string
@@ -609,6 +616,19 @@ func checkAgentConfig(kubeClient *KubeClient, workDir string) (bool, map[string]
 	if configInK8S, err = kubeClient.ReadConfigMap(AGENT_NAMESPACE, AGENT_CONFIGMAP); err != nil {
 		return false, configInAgentFile, configInK8S, err
 	}
+
+	// value of AGENT_NAMESPACE and HZN_NAMESPACE_SCOPED can't be changed during auto-upgrade
+	// change or add current AGENT_NAMESPACE value to config
+	if AGENT_NAMESPACE != configInAgentFile[AGENT_NAMESPACE_ENV_NAME] {
+		configInAgentFile[AGENT_NAMESPACE_ENV_NAME] = AGENT_NAMESPACE
+	}
+
+	if _, ok := configInAgentFile[HZN_NAMESPACE_SCOPED_ENV_NAME]; ok {
+		agentIsNamespaceScope := cutil.IsNamespaceScoped()
+		strconv.FormatBool(agentIsNamespaceScope)
+		configInAgentFile[HZN_NAMESPACE_SCOPED_ENV_NAME] = strconv.FormatBool(agentIsNamespaceScope)
+	}
+
 	// compare to agent configmap
 	configIsSame := reflect.DeepEqual(configInAgentFile, configInK8S)
 	glog.Infof(cuwlog(fmt.Sprintf("agent install config is same: %v", configIsSame)))
