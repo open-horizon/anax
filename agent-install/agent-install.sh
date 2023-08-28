@@ -179,7 +179,9 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
     -)
         case "${OPTARG}" in
             ha-group)
-                ARG_HZN_HA_GROUP=${all_args[$OPTIND-1]}
+                eval nextopt=\${$OPTIND}
+                ARG_HZN_HA_GROUP=${nextopt}
+                OPTIND=$(( OPTIND + 1 ))
                 ;;
             container)
                 ARG_AGENT_IN_CONTAINER=true
@@ -188,7 +190,9 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
                 ARG_AGENT_AUTO_UPGRADE=true
                 ;;
             namespace)
-                ARG_AGENT_NAMESPACE=${all_args[$OPTIND-1]}
+                eval nextopt=\${$OPTIND}
+                ARG_AGENT_NAMESPACE=${nextopt}
+                OPTIND=$(( OPTIND + 1 ))
                 ;;
             namespace-scoped)
                 ARG_NAMESPACE_SCOPED=true
