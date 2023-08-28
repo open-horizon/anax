@@ -261,7 +261,7 @@ function getAgentK8sImageTarFile() {
             docker pull $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG
             chk $? "pulling $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG"
 
-            echo "Saving ${the_k8s_image}:$AGENT_IMAGE_TAG to ${the_k8s_tar_file} ..."
+            echo "Saving ${the_k8s_image}:$AGENT_IMAGE_TAG to ${the_k8s_image_tar_file} ..."
             docker save $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG | gzip > ${the_k8s_image_tar_file}
             chk $? "saving $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG"
         fi
