@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-002-05"
+lastupdated: "2023-08-29"
 title: "Node management overview"
 description: Automatic agent upgrade using policy based node management
 parent: Agent (anax)
@@ -25,6 +25,10 @@ nav_order: 12
 Automatic agent upgrade is a policy-based node management feature that allows an org admin to create node management policies that deploy upgrade jobs to nodes and manages them autonomously. This allows the admin to ensure that all the nodes in the system are using the intended versions.
 
 This feature utilizes existing agent artifacts that reside in Cloud Sync Service (CSS) from the edgeNodeFiles.sh installation script.
+
+Here is a video showing the agent auto-upgrade feature:
+
+{% include youtubePlayer.html id="f0emDR9AIGg" %}
 
 ### How to set-up an Automatic agent upgrade policy
 {: auto-agent-setup}
