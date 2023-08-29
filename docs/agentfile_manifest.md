@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-02-05"
+lastupdated: "2023-08-29"
 description: Automatic Agent Upgrade manifests
 title: "Automatic Agent Upgrade manifests"
 
@@ -25,6 +25,10 @@ nav_order: 3
 The {{site.data.keyword.edge_notm}} policy based, autonomous node management capability is described in the [node management policy](./node_management_policy.md) documentation.
 
 A manifest is used to specify files and versions that are used during the agent upgrade process.
+
+Here is a video showing the agent auto-upgrade feature:
+
+{% include youtubePlayer.html id="f0emDR9AIGg" %}
 
 ## Definition
 {: #manifest-def}
