@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/open-horizon/anax/basicprotocol"
 	"github.com/open-horizon/anax/cache"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -1106,7 +1107,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			} else {
 
 				// Allow the message extension handler to see the message
-				handled, cancel, agid, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
+				handled, cancel, agid, updatedSecs, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
 				if err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to handle message %v , error: %v", protocolMsg, err)))
 				} else if cancel {
@@ -1155,6 +1156,15 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						_, err := persistence.SetFailedVerAttempts(w.db, ags[0].CurrentAgreementId, ags[0].AgreementProtocol, 0)
 						if err != nil {
 							glog.Errorf(logString(fmt.Sprintf("encountered error updating agreement %v, error %v", ags[0].CurrentAgreementId, err)))
+						}
+
+						if len(updatedSecs) != 0 {
+							clusterNamespaceInAg, err := w.GetRequestedClusterNamespaceFromAg(&ags[0])
+							if err != nil {
+								glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ags[0].CurrentAgreementId, err)))
+							}
+							// have updatedSecs, send out an event to let kube worker know about the secret update
+							w.Messages() <- events.NewWorkloadUpdateMessage(events.UPDATE_SECRETS_IN_AGREEMENT, agid, msgProtocol, clusterNamespaceInAg, ags[0].GetDeploymentConfig(), updatedSecs)
 						}
 					}
 				}
@@ -1261,7 +1271,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if agreement, err := persistence.AgreementStateAgreementProtocolTerminated(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error marking agreement %v agreement protocol terminated: %v", cmd.AgreementId, err)))
 				} else {
-					if agreement.WorkloadTerminatedTime != 0 {
+					if agreement.TerminatedReason == basicprotocol.CANCEL_NOT_EXECUTED_TIMEOUT || agreement.WorkloadTerminatedTime != 0 { //service timeout, this field is 0
 						archive = true
 					}
 				}
@@ -1632,10 +1642,12 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 		lc.EnvironmentAdditions = &envAdds
 
+		if err := w.processServiceSecrets(tcPolicy, proposal.AgreementId()); err != nil {
+			return err
+		}
+
 		if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
-			if err := w.processServiceSecrets(tcPolicy, proposal.AgreementId()); err != nil {
-				return err
-			}
+
 			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
 			deps := serviceDef.GetServiceDependencies()
 
@@ -1686,7 +1698,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 // Save the secrets by agreement id since we don't have an instance id for the services yet
 func (w *GovernanceWorker) processServiceSecrets(tcPolicy *policy.Policy, agId string) error {
-	glog.V(5).Infof(logString(fmt.Sprintf("process service secrets for agreement: %v", agId)))
+	glog.V(3).Infof(logString(fmt.Sprintf("process service secrets for agreement: %v, tcPolicy.SecretDetails: %v", agId, tcPolicy.SecretDetails)))
 
 	allSecrets := persistence.PersistedSecretFromPolicySecret(tcPolicy.SecretDetails, agId)
 

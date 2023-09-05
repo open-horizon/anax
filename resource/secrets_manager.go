@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
@@ -19,12 +20,21 @@ import (
 )
 
 type SecretsManager struct {
-	SecretsStorePath string
-	db               *bolt.DB
+	config   *config.HorizonConfig
+	db       *bolt.DB
+	NodeType string
 }
 
-func NewSecretsManager(secFilePath string, database *bolt.DB) *SecretsManager {
-	return &SecretsManager{SecretsStorePath: secFilePath, db: database}
+func NewSecretsManager(cfg *config.HorizonConfig, database *bolt.DB) *SecretsManager {
+	nodeType := persistence.DEVICE_TYPE_DEVICE
+	if cfg.Edge.DockerEndpoint == "" {
+		nodeType = persistence.DEVICE_TYPE_CLUSTER
+	}
+	return &SecretsManager{config: cfg, db: database, NodeType: nodeType}
+}
+
+func (s SecretsManager) GetSecretDirPath() string {
+	return s.config.GetSecretsManagerFilePath()
 }
 
 func (s SecretsManager) ProcessServiceSecretsWithInstanceId(agId string, msInstKey string) error {
@@ -36,10 +46,29 @@ func (s SecretsManager) ProcessServiceSecretsWithInstanceId(agId string, msInstK
 		return fmt.Errorf(secLogString(fmt.Sprintf("Failed to get microservice instance interface for: %v. Error was: %v", msInstKey, err)))
 	} else if err = s.SaveMicroserviceInstanceSecretsFromAgreementSecrets(agId, msIntf); err != nil {
 		return fmt.Errorf(secLogString(fmt.Sprintf("Failed to convert secrets for agreement %v to persistent microservice form: %v", agId, err)))
-	} else if err = s.WriteNewServiceSecretsToFile(msInstKey); err != nil {
-		return fmt.Errorf(secLogString(fmt.Sprintf("Failed to write all secrets for agreement %v to file: %v", agId, err)))
+	} else if s.NodeType == persistence.DEVICE_TYPE_DEVICE {
+		if err = s.WriteNewServiceSecretsToFile(msInstKey); err != nil {
+			return fmt.Errorf(secLogString(fmt.Sprintf("Failed to write all secrets for agreement %v to file: %v", agId, err)))
+		}
 	}
+
 	return nil
+}
+
+func (s SecretsManager) ProcessServiceSecretsWithInstanceIdForCluster(agId string, msInstKey string) (map[string]string, error) {
+	secretsMap := make(map[string]string)
+	if err := s.ProcessServiceSecretsWithInstanceId(agId, msInstKey); err != nil {
+		return secretsMap, err
+	} else if secretsForService, err := persistence.FindAllSecretsForMS(s.db, msInstKey); err != nil {
+		return secretsMap, err
+	} else if secretsForService != nil {
+		for singleSecName, singlePersistedSecret := range secretsForService.SecretsMap {
+			secValue := singlePersistedSecret.SvcSecretValue
+			secretsMap[singleSecName] = secValue
+		}
+	}
+
+	return secretsMap, nil
 }
 
 func (s SecretsManager) ProcessServiceSecretUpdates(agId string, updatedSecList []persistence.PersistedServiceSecret) error {
@@ -53,8 +82,10 @@ func (s SecretsManager) ProcessServiceSecretUpdates(agId string, updatedSecList 
 				if cutil.SliceContains(existingSec.AgreementIds, agId) {
 					if err := persistence.SaveSecret(s.db, updatedSec.SvcSecretName, existingSvcSec.MsInstKey, existingSvcSec.MsInstVers, &updatedSec); err != nil {
 						return err
-					} else if err := s.WriteExistingServiceSecretsToFile(existingSvcSec.MsInstKey, updatedSec); err != nil {
-						return err
+					} else if s.NodeType == persistence.DEVICE_TYPE_DEVICE {
+						if err := s.WriteExistingServiceSecretsToFile(existingSvcSec.MsInstKey, updatedSec); err != nil {
+							return err
+						}
 					}
 				}
 			}
@@ -132,7 +163,7 @@ func (s SecretsManager) WriteExistingServiceSecretsToFile(msInstKey string, upda
 	if contentBytes, err := base64.StdEncoding.DecodeString(updatedSec.SvcSecretValue); err != nil {
 		return err
 	} else {
-		err = WriteToFile(contentBytes, path.Join(s.SecretsStorePath, msInstKey, updatedSec.SvcSecretName), path.Join(s.SecretsStorePath, msInstKey))
+		err = WriteToFile(contentBytes, path.Join(s.GetSecretDirPath(), msInstKey, updatedSec.SvcSecretName), path.Join(s.GetSecretDirPath(), msInstKey))
 	}
 	return nil
 }
@@ -178,7 +209,7 @@ func (s SecretsManager) DeleteAllSecForAgreement(db *bolt.DB, agreementId string
 
 // Remove the file containing the secret given
 func (s SecretsManager) RemoveSecretFile(msInstKey string, secretName string) error {
-	return os.RemoveAll(path.Join(s.SecretsStorePath, msInstKey))
+	return os.RemoveAll(path.Join(s.GetSecretDirPath(), msInstKey))
 }
 
 // This is for writing new service secrets to a file for the service container. This assumes that the secrets are already in the agent db.
@@ -189,7 +220,7 @@ func (s SecretsManager) WriteNewServiceSecretsToFile(msInstKey string) error {
 		for singleSecName, singleSecValue := range secretsForService.SecretsMap {
 			if contentBytes, err := base64.StdEncoding.DecodeString(singleSecValue.SvcSecretValue); err != nil {
 				return fmt.Errorf("Error decoding base64 encoded secret string: %v", err)
-			} else if err = CreateAndWriteToFile(contentBytes, msInstKey, path.Join(s.SecretsStorePath, msInstKey, singleSecName), path.Join(s.SecretsStorePath, msInstKey)); err != nil {
+			} else if err = CreateAndWriteToFile(contentBytes, msInstKey, path.Join(s.GetSecretDirPath(), msInstKey, singleSecName), path.Join(s.GetSecretDirPath(), msInstKey)); err != nil {
 				return err
 			}
 		}
@@ -302,7 +333,7 @@ func (s *SecretsManager) RemoveFile(key string) error {
 }
 
 func (s SecretsManager) GetSecretsPath(msInstKey string) string {
-	return path.Join(s.SecretsStorePath, msInstKey)
+	return path.Join(s.GetSecretDirPath(), msInstKey)
 }
 
 var secLogString = func(v interface{}) string {

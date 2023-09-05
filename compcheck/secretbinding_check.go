@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
-	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"golang.org/x/text/message"
 	"strings"
@@ -151,8 +151,6 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 	// node id or from the input.
 	if nodeType, err := VerifyNodeType(input.NodeType, resources.NodeType, nodeId, msgPrinter); err != nil {
 		return nil, err
-	} else if nodeType == persistence.DEVICE_TYPE_CLUSTER {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Node type '%v' does not support secret binding check.", nodeType)), COMPCHECK_INPUT_ERROR)
 	} else {
 		resources.NodeType = nodeType
 	}
@@ -583,17 +581,15 @@ func ValidateSecretBindingForSingleService(secretBinding []exchangecommon.Secret
 		return index, nil, err
 	}
 
-	// cluster type does not have secrets
+	var dConfig *common.DeploymentConfig
+	var cdConfig *common.ClusterDeploymentConfig
+	// convert the deployment string into object
 	if sdef.GetServiceType() == exchangecommon.SERVICE_TYPE_CLUSTER {
-		if index == -1 {
-			return index, nil, nil
-		} else {
-			return index, nil, fmt.Errorf(msgPrinter.Sprintf("Secret binding for a cluster service is not supported."))
-		}
+		cdConfig, err = common.ConvertToClusterDeploymentConfig(sdef.GetClusterDeployment(), msgPrinter)
+	} else {
+		dConfig, err = common.ConvertToDeploymentConfig(sdef.GetDeployment(), msgPrinter)
 	}
 
-	// convert the deployment string into object
-	dConfig, err := common.ConvertToDeploymentConfig(sdef.GetDeployment(), msgPrinter)
 	if err != nil {
 		return index, nil, err
 	}
@@ -607,26 +603,16 @@ func ValidateSecretBindingForSingleService(secretBinding []exchangecommon.Secret
 	noBinding := map[string]bool{}
 	if dConfig != nil {
 		for _, svcConf := range dConfig.Services {
-			for sn, _ := range svcConf.Secrets {
-				found := false
-				if index != -1 {
-					for _, vbind := range secretBinding[index].Secrets {
-						key, vs := vbind.GetBinding()
-						if sn == key {
-							found = true
-							if _, _, _, err := ParseVaultSecretName(vs, msgPrinter); err != nil {
-								return index, nil, err
-							}
-							sbNeeded[sn] = true
-							break
-						}
-					}
-				}
-				if !found {
-					noBinding[sn] = true
-				}
-			}
+			sbNeeded, noBinding, err = checkSecretsInDeploymentConfig(secretBinding, svcConf.Secrets, index, msgPrinter)
+
 		}
+	} else if cdConfig != nil {
+
+		sbNeeded, noBinding, err = checkSecretsInDeploymentConfig(secretBinding, cdConfig.Secrets, index, msgPrinter)
+	}
+
+	if err != nil {
+		return index, nil, err
 	}
 
 	if len(noBinding) > 0 {
@@ -647,6 +633,35 @@ func ValidateSecretBindingForSingleService(secretBinding []exchangecommon.Secret
 	}
 
 	return index, used_sb, nil
+}
+
+func checkSecretsInDeploymentConfig(secretBinding []exchangecommon.SecretBinding, Secrets map[string]containermessage.Secret, index int, msgPrinter *message.Printer) (map[string]bool, map[string]bool, error) {
+	sbNeeded := map[string]bool{}
+
+	// make sure each service secret has a binding
+	noBinding := map[string]bool{}
+
+	for sn, _ := range Secrets {
+		found := false
+		if index != -1 {
+			for _, vbind := range secretBinding[index].Secrets {
+				key, vs := vbind.GetBinding()
+				if sn == key {
+					found = true
+					if _, _, _, err := ParseVaultSecretName(vs, msgPrinter); err != nil {
+						return map[string]bool{}, map[string]bool{}, err
+					}
+					sbNeeded[sn] = true
+					break
+				}
+			}
+		}
+		if !found {
+			noBinding[sn] = true
+		}
+	}
+
+	return sbNeeded, noBinding, nil
 }
 
 // Given a list of SecretBinding's for multiples services, return index for

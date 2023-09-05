@@ -2,6 +2,7 @@ package kube_operator
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
@@ -27,13 +28,14 @@ type APIObjectInterface interface {
 	Install(c KubeClient, namespace string) error
 	Uninstall(c KubeClient, namespace string)
 	Status(c KubeClient, namespace string) (interface{}, error)
+	Update(c KubeClient, namespace string) error
 	Name() string
 }
 
 // Sort a slice of k8s api objects by kind of object
 // Returns a map of object type names to api object interfaces types, the namespace to be used for the operator, and an error if one occurs
 // Also verifies that all objects are named so they can be found and uninstalled
-func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstructured.Unstructured, metadata map[string]interface{}, envVarMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstructured.Unstructured, metadata map[string]interface{}, envVarMap map[string]string, secretsMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	namespace := ""
 
 	// get the namespace from metadata
@@ -96,7 +98,7 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedDeployment.ObjectMeta.Namespace)))
 					}
 				}
-				newDeployment := DeploymentAppsV1{DeploymentObject: typedDeployment, EnvVarMap: envVarMap, AgreementId: agreementId}
+				newDeployment := DeploymentAppsV1{DeploymentObject: typedDeployment, EnvVarMap: envVarMap, ServiceSecrets: secretsMap, AgreementId: agreementId}
 				if newDeployment.Name() != "" {
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes deployment object %s.", newDeployment.Name())))
 					objMap[K8S_DEPLOYMENT_TYPE] = append(objMap[K8S_DEPLOYMENT_TYPE], newDeployment)
@@ -204,6 +206,10 @@ func (o OtherObject) Uninstall(c KubeClient, namespace string) {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("successfully deleted object %v with GroupVersionResource %v", name, o.GVK)))
 }
 
+func (o OtherObject) Update(c KubeClient, namespace string) error {
+	return nil
+}
+
 func (o OtherObject) Name() string {
 	return o.Object.GetName()
 }
@@ -260,6 +266,10 @@ func (n NamespaceCoreV1) Status(c KubeClient, namespace string) (interface{}, er
 	return nsStatus, nil
 }
 
+func (o NamespaceCoreV1) Update(c KubeClient, namespace string) error {
+	return nil
+}
+
 func (n NamespaceCoreV1) Name() string {
 	return n.NamespaceObject.ObjectMeta.Name
 }
@@ -293,6 +303,10 @@ func (r RoleRbacV1) Uninstall(c KubeClient, namespace string) {
 
 func (r RoleRbacV1) Status(c KubeClient, namespace string) (interface{}, error) {
 	return &RoleRbacV1{}, nil
+}
+
+func (o RoleRbacV1) Update(c KubeClient, namespace string) error {
+	return nil
 }
 
 func (r RoleRbacV1) Name() string {
@@ -330,6 +344,10 @@ func (rb RolebindingRbacV1) Status(c KubeClient, namespace string) (interface{},
 	return nil, nil
 }
 
+func (o RolebindingRbacV1) Update(c KubeClient, namespace string) error {
+	return nil
+}
+
 func (rb RolebindingRbacV1) Name() string {
 	return rb.RolebindingObject.ObjectMeta.Name
 }
@@ -364,16 +382,21 @@ func (sa ServiceAccountCoreV1) Status(c KubeClient, namespace string) (interface
 	return nil, nil
 }
 
+func (o ServiceAccountCoreV1) Update(c KubeClient, namespace string) error {
+	return nil
+}
+
 func (sa ServiceAccountCoreV1) Name() string {
 	return sa.ServiceAccountObject.ObjectMeta.Name
 }
 
 //----------------Deployment----------------
-// The deployment object includes the environment variable config map
+// The deployment object includes the environment variable config map and vault secret as k8s secret
 
 type DeploymentAppsV1 struct {
 	DeploymentObject *appsv1.Deployment
 	EnvVarMap        map[string]string
+	ServiceSecrets   map[string]string
 	AgreementId      string
 }
 
@@ -395,6 +418,28 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 
 	// Let the operator know about the config map
 	dWithEnv := addConfigMapVarToDeploymentObject(*d.DeploymentObject, mapName)
+
+	if len(d.ServiceSecrets) > 0 {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("creating k8s secrets for service secret %v", d.ServiceSecrets)))
+
+		// ServiceSecrets is a map, key is the secret name, value is the base64 encoded string.
+		decodedSecrets, err := decodeServiceSecret(d.ServiceSecrets)
+		if err != nil {
+			return err
+		}
+
+		secretsName, err := c.CreateK8SSecrets(decodedSecrets, d.AgreementId, namespace)
+		if err != nil && errors.IsAlreadyExists(err) {
+			d.Uninstall(c, namespace)
+			secretsName, err = c.CreateK8SSecrets(d.ServiceSecrets, d.AgreementId, namespace)
+		}
+		if err != nil {
+			return err
+		}
+
+		dWithEnv = addServiceSecretsToDeploymentObject(dWithEnv, secretsName)
+	}
+
 	_, err = c.Client.AppsV1().Deployments(namespace).Create(context.Background(), &dWithEnv, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		d.Uninstall(c, namespace)
@@ -407,6 +452,41 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 	return nil
 }
 
+func (d DeploymentAppsV1) Update(c KubeClient, namespace string) error {
+	// If len(d.ServiceSecrets) > 0, need to check each entry, and update the value of service secrets entry in the k8s secret (Note: not replace the entire k8s with the d.ServiceSecrets)
+	if len(d.ServiceSecrets) > 0 {
+		// Update ServiceSecrets
+		secretsName := fmt.Sprintf("%s-%s", HZN_SERVICE_SECRETS, d.AgreementId)
+		if k8sSecretObject, err := c.Client.CoreV1().Secrets(namespace).Get(context.Background(), secretsName, metav1.GetOptions{}); err != nil {
+			return err
+		} else if k8sSecretObject == nil {
+			// invalid, return err
+			return fmt.Errorf(kwlog(fmt.Sprintf("Error updating existing service secret %v in namespace: %v, secret doesn't exist", secretsName, namespace)))
+		} else {
+			// in the dataMap, key is secretName, value is secret value in base64 encoded string
+			dataMap := k8sSecretObject.Data
+			for secretNameToUpdate, secretValueToUpdate := range d.ServiceSecrets {
+				if decodedSecValueBytes, err := base64.StdEncoding.DecodeString(secretValueToUpdate); err != nil {
+					return err
+				} else {
+					dataMap[secretNameToUpdate] = decodedSecValueBytes
+				}
+			}
+			k8sSecretObject.Data = dataMap
+			updatedSecret, err := c.Client.CoreV1().Secrets(namespace).Update(context.Background(), k8sSecretObject, metav1.UpdateOptions{})
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof(kwlog(fmt.Sprintf("Service secret %v in namespace %v updated successfully", updatedSecret, namespace)))
+		}
+	} else {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("No updated service secrets for deployment %v in namespace %v, skip updating", d.DeploymentObject, namespace)))
+	}
+	return nil
+
+	// If len(d.EnvVarMap) > 0 -----> Update the entry in configmap (This is not used yet, current implementation will always cancel agreement when userinput is changed in policy/pattern)
+}
+
 func (d DeploymentAppsV1) Uninstall(c KubeClient, namespace string) {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting deployment %s", d.DeploymentObject.ObjectMeta.Name)))
 	err := c.Client.AppsV1().Deployments(namespace).Delete(context.Background(), d.DeploymentObject.ObjectMeta.Name, metav1.DeleteOptions{})
@@ -415,11 +495,19 @@ func (d DeploymentAppsV1) Uninstall(c KubeClient, namespace string) {
 	}
 
 	configMapName := fmt.Sprintf("%s-%s", HZN_ENV_VARS, d.AgreementId)
-	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting config map %v", configMapName)))
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting config map %v in namespace %v", configMapName, namespace)))
 	// Delete the agreement config map
 	err = c.Client.CoreV1().ConfigMaps(namespace).Delete(context.Background(), configMapName, metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete config map %s. Error: %v", configMapName, err)))
+	}
+
+	// delete the secrets contains agreement service vault secrets
+	secretsName := fmt.Sprintf("%s-%s", HZN_SERVICE_SECRETS, d.AgreementId)
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting secrets %v in namespace %v", secretsName, namespace)))
+	err = c.Client.CoreV1().Secrets(namespace).Delete(context.Background(), secretsName, metav1.DeleteOptions{})
+	if err != nil {
+		glog.Errorf(kwlog(fmt.Sprintf("unable to delete secrets %s in namespace %v. Error: %v", secretsName, namespace, err)))
 	}
 }
 
@@ -635,6 +723,10 @@ func (cr CustomResourceV1Beta1) Status(c KubeClient, namespace string) (interfac
 	}
 
 	return statusArray, nil
+}
+
+func (o CustomResourceV1Beta1) Update(c KubeClient, namespace string) error {
+	return nil
 }
 
 func (cr CustomResourceV1Beta1) Name() string {
@@ -878,6 +970,10 @@ func (cr CustomResourceV1) Status(c KubeClient, namespace string) (interface{}, 
 	return statusArray, nil
 }
 
+func (o CustomResourceV1) Update(c KubeClient, namespace string) error {
+	return nil
+}
+
 func (cr CustomResourceV1) Name() string {
 	return cr.CustomResourceDefinitionObject.ObjectMeta.Name
 }
@@ -953,4 +1049,17 @@ func checkCRDInUse(crClient dynamic.NamespaceableResourceInterface, crdKind stri
 	}
 
 	return false, nil
+}
+
+func decodeServiceSecret(serviceSecrets map[string]string) (map[string]string, error) {
+	decodedSec := map[string]string{}
+
+	for secName, secValue := range serviceSecrets {
+		decodedSecValueBytes, err := base64.StdEncoding.DecodeString(secValue)
+		if err != nil {
+			return map[string]string{}, err
+		}
+		decodedSec[secName] = string(decodedSecValueBytes)
+	}
+	return decodedSec, nil
 }

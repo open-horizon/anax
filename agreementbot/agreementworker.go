@@ -675,7 +675,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 		// Make sure the deployment policy or pattern has all the right secret bindings in place and extract the secret details for the agent.
 		secrets_match := true
-		if policy_match && userInput_match && nodeType == persistence.DEVICE_TYPE_DEVICE {
+		if policy_match && userInput_match {
 
 			err := b.ValidateAndExtractSecrets(&wi.ConsumerPolicy, wi.Device.Id, &topSvcDef, depServices, workerId, msgPrinter)
 			if err != nil {
