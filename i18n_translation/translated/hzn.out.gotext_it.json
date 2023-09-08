@@ -160,6 +160,10 @@
     "translation": "È necessario specificare l'utente nel percorso API"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "Il nodo deve essere specificato nel percorso API"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "Errore durante il controllo del segreto {FullSecretName} nel gestore dei segreti."
   },
@@ -400,14 +404,6 @@
     "translation": "Errore durante la conversione delle selezioni in selettori: {Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "Name o Org è una stringa vuota."
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "L'array serviceVersions è vuota."
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "le proprietà contengono una proprietà non valida: {Err}"
   },
@@ -416,8 +412,16 @@
     "translation": "La proprietà {PROPSVCPRIVILEGED} deve avere un valore booleano (true o false)."
   },
   {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "Impossibile ottenere il vincolo con nome {PROPNODEK8SNAMESPACE}, errore: {Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "Il kubernetesNamespace definito nel vincolo {Newconstr} è diverso dal clusterNamespace '{ClusterNSInPolicy}' specificato nella politica di distribuzione; la politica potrebbe non comportare alcuna distribuzione del servizio"
+  },
+  {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Interfaccia della riga comandi per l'agent Horizon. La maggior parte dei sottocomandi utilizza l'API dell'agent Horizon nell'ubicazione predefinita http://localhost (consultare la sezione relativa alle variabili d'ambiente per l'ambiente per sostituire tale impostazione).\n\nDescrizione sottocomandi:\n  agbot: elenca e gestisce le risorse bot dell'accordo Horizon.\n  agreement: elenca o gestisce gli accordi che questo nodo edge ha stabilito con un bot dell'accordo Horizon.\n  architecture: mostra l'architettura di questa macchina. \n  attribute: elenca o gestisce gli attributi globali attualmente registrati su questo nodo edge Horizon.\n  deploycheck: controlla la compatibilità della distribuzione.\n  dev: strumenti di sviluppo per la creazione di servizi.\n  env: mostra le variabili di ambiente Horizon.\n  eventlog: elenca i log degli eventi per le registrazioni correnti o per tutte le registrazioni.\n  exchange: elenca e gestisce le risorse Horizon Exchange.\n  key: elenca e gestisce chiavi per la firma e la verifica dei servizi. \n  mms: elenca e gestisce le risorse del servizio di gestione modelli Horizon.\n  nmstatus: elenca e gestisce lo stato di gestione del nodo per il nodo locale.\n  node: elenca e gestisce informazioni generali su questo nodo edge Horizon.\n  nodemanagement: elenca e gestisce i manifest e i file dell'agent per la gestione del nodi.\n  policy: elenca e gestisce la politica per questo nodo edge Horizon. \n  reginput: crea un template del file di input per questo modello, che può essere utilizzato per il comando 'hzn register'. \n  register: registra questo nodo edge con l'hub di gestione.\n  secretsmanager: elenca e gestisce segreti nel gestore segreti.\n  service: elenca o gestisce i servizi attualmente registrati su questo nodo edge Horizon.\n  status: visualizza lo stato interno corrente di Horizon per il nodo.\n  unregister: annulla la registrazione e reimposta questo nodo edge Horizon.\n  userinput: elenca o gestisce gli input dell'utente del servizio attualmente registrati su questo nodo edge Horizon.\n  util: comandi di utilità.\n  version: mostra la versione di Horizon.\n  sdo: elenca e gestisce i voucher e le chiavi di proprietà di Horizon SDO.\n  fdo: elenca e gestisce i voucher e le chiavi di proprietà di Horizon FDO.\n\nVariabili d'ambiente:\n  HORIZON_URL:  sostituisce l'URL nel quale hzn contatta l'API dell'agent Horizon.\n      L'impostazione di questa variabile può facilitare l'utilizzo di un agent Horizon remoto tramite un tunnel ssh.\n  HZN_EXCHANGE_URL:  sostituisce l'URL che i sottocomandi 'hzn exchange' utilizzano\n      per comunicare con Horizon Exchange, ad esempio\n      https://exchange.bluehorizon.network/api/v1. (Per impostazione predefinita hzn chiederà all'agent \n Horizon l'URL.) \n HZN_ORG_ID: valore predefinito per l'indicatore 'hzn exchange -o', \n per specificare l'ID organizzazione '. \n HZN_EXCHANGE_USER_AUTH: valore predefinito per l'indicatore 'hzn exchange -u' o 'hzn \n register -u', nel formato '[ org/] user:pw'. Notare che HZN_ORG_ID può essere impostato \n se org viene omesso quando è impostato HZN_EXCHANGE_USER_AUTH. \n HZN_FSS_CSSURL: sostituisce l'URL che i sottocomandi 'hzn mms' utilizzano \n per comunicare con il servizio di gestione modelli Horizon, ad esempio \n https://exchange.bluehorizon.network/css/. (Per impostazione predefinita, hzn chiederà all'agent \n Horizon l'URL.) \n HZN_SDO_SVC_URL: sostituisce l'URL utilizzato dai sottocomandi \n 'hzn sdo' per comunicare con i servizi del proprietario SDO. (Per mpostazione predefinita hzn chiederà\nl'URL all'agent Horizon.)\n  HZN_FDO_SVC_URL:  sostituisce l'URL che i sottocomandi 'hzn fdo' utilizzano\n  per comunicare con i servizi del proprietario di FDO. (Per impostazione predefinita, hzn richiederà all'agent \n Horizon l'URL.) \n \n Tutte queste variabili di ambiente e quelle menzionate nella guida del comando possono essere \n specificate nel file di configurazione dell'utente: ~/.hzn/hzn.json con formato JSON. \n Ad esempio: \n {Com____}"
+    "translation": "Interfaccia della riga comandi per l'agent Horizon. La maggior parte dei sottocomandi utilizza l'API dell'agent Horizon nell'ubicazione predefinita http://localhost (consultare la sezione relativa alle variabili d'ambiente per l'ambiente per sostituire tale impostazione).\n\nDescrizione sottocomandi:\n  agbot: elenca e gestisce le risorse bot dell'accordo Horizon.\n  agreement: elenca o gestisce gli accordi che questo nodo edge ha stabilito con un bot dell'accordo Horizon.\n  architecture: mostra l'architettura di questa macchina. \n  attribute: elenca o gestisce gli attributi globali attualmente registrati su questo nodo edge Horizon.\n  deploycheck: controlla la compatibilità della distribuzione.\n  dev: strumenti di sviluppo per la creazione di servizi.\n  env: mostra le variabili di ambiente Horizon.\n  eventlog: elenca i log degli eventi per le registrazioni correnti o per tutte le registrazioni.\n  exchange: elenca e gestisce le risorse Horizon Exchange.\n  key: elenca e gestisce chiavi per la firma e la verifica dei servizi. \n  mms: elenca e gestisce le risorse del servizio di gestione modelli Horizon.\n  nmstatus: elenca e gestisce lo stato di gestione del nodo per il nodo locale.\n  node: elenca e gestisce informazioni generali su questo nodo edge Horizon.\n  nodemanagement: elenca e gestisce i manifest e i file dell'agent per la gestione dei nodi.\n  policy: elenca e gestisce la politica per questo nodo edge Horizon. \n  reginput: crea un template del file di input per questo modello, che può essere utilizzato per il comando 'hzn register'. \n  register: registra questo nodo edge con l'hub di gestione.\n  secretsmanager: elenca e gestisce segreti nel gestore segreti.\n  service: elenca o gestisce i servizi attualmente registrati su questo nodo edge Horizon.\n  status: visualizza lo stato interno corrente di Horizon per il nodo.\n  unregister: annulla la registrazione e reimposta questo nodo edge Horizon.\n  userinput: elenca o gestisce gli input dell'utente del servizio attualmente registrati su questo nodo edge Horizon.\n  util: comandi di utilità.\n  version: mostra la versione di Horizon.\n  sdo: elenca e gestisce i voucher e le chiavi di proprietà di Horizon SDO.\n  fdo: elenca e gestisce i voucher e le chiavi di proprietà di Horizon FDO.\n\nVariabili d'ambiente:\n  HORIZON_URL:  sostituisce l'URL nel quale hzn contatta l'API dell'agent Horizon.\n      L'impostazione di questa variabile può facilitare l'utilizzo di un agent Horizon remoto tramite un tunnel ssh.\n  HZN_EXCHANGE_URL:  sostituisce l'URL che i sottocomandi 'hzn exchange' utilizzano\n      per comunicare con Horizon Exchange, ad esempio\n      https://exchange.bluehorizon.network/api/v1. (Per impostazione predefinita hzn chiederà all'agent \n Horizon l'URL.) \n HZN_ORG_ID: valore predefinito per l'indicatore 'hzn exchange -o', \n per specificare l'ID organizzazione '. \n HZN_EXCHANGE_USER_AUTH: valore predefinito per l'indicatore 'hzn exchange -u' o 'hzn \n register -u', nel formato '[ org/] user:pw'. Notare che HZN_ORG_ID può essere impostato \n se org viene omesso quando è impostato HZN_EXCHANGE_USER_AUTH. \n HZN_FSS_CSSURL: sostituisce l'URL che i sottocomandi 'hzn mms' utilizzano \n per comunicare con il servizio di gestione modelli Horizon, ad esempio \n https://exchange.bluehorizon.network/css/. (Per impostazione predefinita, hzn chiederà all'agent \n Horizon l'URL.) \n HZN_SDO_SVC_URL: sostituisce l'URL utilizzato dai sottocomandi \n 'hzn sdo' per comunicare con i servizi del proprietario SDO. (Per mpostazione predefinita hzn chiederà\nl'URL all'agent Horizon.)\n  HZN_FDO_SVC_URL:  sostituisce l'URL che i sottocomandi 'hzn fdo' utilizzano\n  per comunicare con i servizi del proprietario di FDO. (Per impostazione predefinita, hzn richiederà all'agent \n Horizon l'URL.) \n \n Tutte queste variabili di ambiente e quelle menzionate nella guida del comando possono essere \n specificate nel file di configurazione dell'utente: ~/.hzn/hzn.json con formato JSON. \n Ad esempio: \n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -592,6 +596,14 @@
     "translation": "Il tipo di nodo. I valori validi sono 'device' e 'cluster'. Il valore predefinito è il tipo del nodo fornito mediante -n o il dispositivo registrato corrente, se omesso."
   },
   {
+    "id": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+    "translation": "Il namespace del cluster Kubernetes per il nodo se il tipo di nodo è 'cluster '. Il valore predefinito è 'openhorizon-agent ', se omesso. Il valore viene ignorato quando il tipo di nodo è 'device '"
+  },
+  {
+    "id": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+    "translation": "L'ambito del cluster per il nodo è in ambito namespace se il tipo di nodo è 'cluster '. Il valore predefinito è false, se omesso. Il valore viene ignorato quando il tipo di nodo è 'device '"
+  },
+  {
     "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
     "translation": "L'organizzazione del nodo. Il valore predefinito è l'organizzazione del nodo fornito mediante -n o il dispositivo registrato corrente, se omesso."
   },
@@ -600,8 +612,8 @@
     "translation": "L'ID nodo Horizon Exchange. Si esclude reciprocamente con --ha-group, --node-pol e --node-ui. Se omesso, verrà utilizzato l'ID nodo con cui è registrato il dispositivo corrente. Questo indicatore può essere ripetuto per specificare più di un nodo. Se non si utilizza l'ID organizzazione come prefisso dell'ID nodo, verrà automaticamente utilizzato come suo prefisso il valore -o."
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-    "translation": "Il nome di un gruppo HA. Si esclude reciprocamente con -n, --node-pol e --node-ui."
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+    "translation": "Il nome di un gruppo HA. Il controllo di distribuzione verrà eseguito su tutti i nodi all'interno del gruppo HA fornito. Si esclude reciprocamente con -n, --node-pol e --node-ui."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
@@ -648,8 +660,8 @@
     "translation": "L'ID nodo Horizon Exchange. Si esclude reciprocamente con --ha-group e --node-pol. Se omesso, verrà utilizzato l'ID nodo con cui è registrato il dispositivo corrente. Questo indicatore può essere ripetuto per specificare più di un nodo. Se non si utilizza l'ID organizzazione come prefisso dell'ID nodo, verrà automaticamente utilizzato come suo prefisso il valore -o."
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-    "translation": "Il nome di un gruppo HA. Si esclude reciprocamente con -n e --node-pol."
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+    "translation": "Il nome di un gruppo HA. Il controllo di distribuzione verrà eseguito su tutti i nodi all'interno del gruppo HA fornito. Si esclude reciprocamente con -n e --node-pol."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
@@ -2448,8 +2460,8 @@
     "translation": "Rimuove anche questa risorsa del nodo da Horizon Exchange (perché non si desidera più utilizzare questo nodo con Horizon)."
   },
   {
-    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-    "translation": "Rimuove anche tutte le informazioni di registrazione precedenti. Utilizzarlo solo dopo che il comando 'hzn unregister' non è riuscito. Catturare i log eseguendo il comando 'hzn eventlog list -a -l' prima di utilizzare questo indicatore."
+    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+    "translation": "Rimuovere anche tutte le informazioni di registrazione precedenti. Utilizzarlo solo dopo che il comando 'hzn unregister' non è riuscito. Il log eventi viene salvato automaticamente dopo l'esecuzione di questo comando."
   },
   {
     "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
@@ -2552,8 +2564,8 @@
     "translation": "La firma presunta di stdin."
   },
   {
-    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-    "translation": "Elencare e gestire i segreti nel gestore dei segreti. NOTA: è necessario autenticarsi come amministratore per elencare i segreti disponibili per l'intera organizzazione."
+    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+    "translation": "Elencare e gestire i segreti nel Secrets Manager. NOTA: è necessario autenticarsi come amministratore per elencare i segreti disponibili per l'intera organizzazione. I segreti non sono supportati sugli agent cluster."
   },
   {
     "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
@@ -2568,6 +2580,10 @@
     "translation": "Visualizzare i segreti nel gestore dei segreti."
   },
   {
+    "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+    "translation": "L'ID nodo del segreto nodo da elencare. Includere solo se questo segreto è specifico per un singolo nodo."
+  },
+  {
     "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
     "translation": "Elencare solo questo segreto. Restituisce un valore booleano che indica l'esistenza del segreto. Questo è il nome del segreto utilizzato nel gestore dei segreti. Se il segreto non esiste, viene restituito il codice 1."
   },
@@ -2578,6 +2594,10 @@
   {
     "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
     "translation": "Il nome del segreto. Deve essere univoco all'interno della propria organizzazione. Questo nome viene utilizzato nelle politiche di distribuzione e nei modelli per effettuare il bind di questo segreto a un nome di segreto in una definizione del servizio."
+  },
+  {
+    "id": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+    "translation": "L'ID del nodo a cui applicare questo segreto. Includere solo se questo segreto è specifico per un singolo nodo."
   },
   {
     "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
@@ -2600,12 +2620,20 @@
     "translation": "Rimuovere un segreto dal gestore dei segreti."
   },
   {
+    "id": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+    "translation": "L'ID nodo del segreto da rimuovere. Includere solo se questo segreto è specifico per un singolo nodo."
+  },
+  {
     "id": "The name of the secret to be removed from the secrets manager.",
     "translation": "Il nome del segreto da rimuovere dal gestore dei segreti."
   },
   {
     "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
     "translation": "Leggere i dettagli di un segreto memorizzato nel gestore dei segreti. Costituito dalla coppia chiave e valore fornita al momento della creazione del segreto."
+  },
+  {
+    "id": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+    "translation": "L'ID del segreto nodo da leggere. Includere solo se questo segreto è specifico per un singolo nodo."
   },
   {
     "id": "The name of the secret to read in the secrets manager.",
@@ -3492,6 +3520,10 @@
     "translation": "impossibile eseguire il marshalling dell'output di 'hzn deploycheck all': {Err}"
   },
   {
+    "id": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+    "translation": "-s può essere specificato solo quando il tipo di nodo specificato da -t è 'cluster '."
+  },
+  {
     "id": "Please specify either deployment policy or pattern.",
     "translation": "Specificare la politica di distribuzione o il modello."
   },
@@ -3542,6 +3574,14 @@
   {
     "id": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
     "translation": "Il tipo di nodo {InputType} specificato da -t non corrisponde al tipo del nodo locale {NodeType}."
+  },
+  {
+    "id": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+    "translation": "Il namespace del cluster del nodo {InputNamespace} specificato da -s non corrisponde al namespace del cluster del nodo locale {Namespace}."
+  },
+  {
+    "id": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+    "translation": "Il nodo is-namespace-scoped {InputIsNamespaceScoped} specificato da --is-namespace-scoped non corrisponde all'ambito agent del nodo locale {IsNamespaceScoped}."
   },
   {
     "id": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
@@ -4388,6 +4428,10 @@
     "translation": "Politica di distribuzione: {PolOrg}/{Policy} aggiunta in Horizon Exchange"
   },
   {
+    "id": "Invalid format for service: {Err1}",
+    "translation": "Formato non valido per il servizio: {Err1}"
+  },
+  {
     "id": "Invalid format for properties: {Err1}",
     "translation": "Formato non valido per le proprietà: {Err1}"
   },
@@ -4428,8 +4472,8 @@
     "translation": "Politica di distribuzione {PolOrg}/{Policy} rimossa"
   },
   {
-    "id": "Failed to validate the secret binding. {Err}",
-    "translation": "Impossibile convalidare il bind del segreto. {Err}"
+    "id": "{Err}",
+    "translation": "{Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
@@ -4460,6 +4504,18 @@
     "translation": "Errore di convalida dei bind dei segreti per il servizio dipendente {Id}. {Err}"
   },
   {
+    "id": "Warning: {Err}",
+    "translation": "Avvertenza: {Err}"
+  },
+  {
+    "id": "Failed to validate cluster namespace for service, error was: {Err}",
+    "translation": "Impossibile convalidare il namespace del cluster per il servizio, l'errore era: {Err}"
+  },
+  {
+    "id": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+    "translation": "ClusterNamespace non deve essere impostato per il servizio dispositivo: {Org}/{Name} con arch {Arch}"
+  },
+  {
     "id": "Deployment policy label.",
     "translation": "Etichetta della politica di distribuzione."
   },
@@ -4478,6 +4534,10 @@
   {
     "id": "Set to '*' to use services of any hardware architecture.",
     "translation": "Impostare su '*' per utilizzare i servizi di qualsiasi architettura hardware."
+  },
+  {
+    "id": "The cluster namespace of the service.",
+    "translation": "Il namespace del cluster del servizio."
   },
   {
     "id": "A list of service versions.",
@@ -5176,8 +5236,20 @@
     "translation": "Modello {Pattern} non trovato nell'organizzazione {PatOrg}"
   },
   {
-    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-    "translation": "L'attributo del modello da aggiornare non è stato trovato nel file di input. Gli attributi supportato sono: label, description, services, userInput e secretBinding."
+    "id": "Invalid format for services: {Err1}",
+    "translation": "Formato non valido per i servizi: {Err1}"
+  },
+  {
+    "id": "Error checking service types for pattern {Pname}. {Err}",
+    "translation": "Errore durante il controllo dei tipi di servizio per il pattern {Pname}. {Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+    "translation": "'clusterNamespace' è specificato, ma nessun servizio ha una distribuzione cluster per il pattern {Pname}."
+  },
+  {
+    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+    "translation": "L'attributo del pattern da aggiornare non è stato trovato nel file di input. Gli attributi supportati sono: label, description, clusterNamespace, services, userInput e secretBinding."
   },
   {
     "id": "Pattern {PatOrg}/{Pattern} updated in the Horizon Exchange",
@@ -5198,6 +5270,18 @@
   {
     "id": "the pattern definition ({Services}) must contain services, unable to proceed",
     "translation": "la definizione del modello ({Services}) deve contenere i servizi, impossibile procedere"
+  },
+  {
+    "id": "Error checking service types for pattern. {Err}",
+    "translation": "Errore durante il controllo dei tipi di servizio per il pattern. {Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+    "translation": "'clusterNamespace' è specificato, ma nessun servizio ha una distribuzione cluster per il pattern ."
+  },
+  {
+    "id": "Invalid format in pattern file {JsonFilePath}: {Err}",
+    "translation": "Formato non valido nel file di pattern {JsonFilePath}: {Err}"
   },
   {
     "id": "Signing deployment_overrides field in service {I__1}, serviceVersion number {J__1}",
@@ -5250,6 +5334,10 @@
   {
     "id": "key '{KeyName}' not found",
     "translation": "chiave '{KeyName}' non trovata"
+  },
+  {
+    "id": "Failed to validate the secret binding. {Err}",
+    "translation": "Impossibile convalidare il bind del segreto. {Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this pattern:",
@@ -5706,6 +5794,18 @@
   {
     "id": "unable to read kube operator {DepoperatorYamlArchive}, error {Err}",
     "translation": "impossibile leggere l'operatore kube {DepoperatorYamlArchive}, errore {Err}"
+  },
+  {
+    "id": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+    "translation": "'metadata' in 'clusterDeployment' non deve essere impostato. Rimuovere 'metadata' all'interno di 'clusterDeployment' prima di pubblicare il servizio"
+  },
+  {
+    "id": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+    "translation": "impossibile ottenere il namespace dall'operatore kube {OperatorFilePath}, errore {Err}"
+  },
+  {
+    "id": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+    "translation": "Avvertenza: il namespace è stato rilevato nel file operatore. Il namespace del servizio deve essere impostato nel pattern o nella politica di distribuzione"
   },
   {
     "id": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
@@ -6244,8 +6344,8 @@
     "translation": "Il nodo è già nel gruppo HA '{HaGroupName}'."
   },
   {
-    "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-    "translation": "Il nodo {Org}/{NodeId} è nel gruppo HA {HaGroupName}."
+    "id": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+    "translation": "Il nodo {Org}/{NodeId} è nel gruppo HA {ExistingHagrName}."
   },
   {
     "id": "Updating the node policy...",
@@ -7380,6 +7480,10 @@
     "translation": "Contenitore {Name} arrestato"
   },
   {
+    "id": "Configuration files {FileObjects} loaded into the File sync service.",
+    "translation": "File di configurazione {FileObjects} caricati nel servizio di sincronizzazione file."
+  },
+  {
     "id": "Loading {FileName} into CSS",
     "translation": "Caricamento di {FileName} in CSS"
   },
@@ -7394,10 +7498,6 @@
   {
     "id": "unable to add file {FileName} to the CSS, error {Err}",
     "translation": "impossibile aggiungere il file {FileName} a CSS, errore {Err}"
-  },
-  {
-    "id": "Configuration files {FileObjects} loaded into the File sync service.",
-    "translation": "File di configurazione {FileObjects} caricati nel servizio di sincronizzazione file."
   },
   {
     "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
@@ -7442,6 +7542,10 @@
   {
     "id": "Cannot backup eventlogs: {Err}",
     "translation": "Impossibile eseguire il backup dei log eventi: {Err}"
+  },
+  {
+    "id": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+    "translation": "Annullamento della registrazione di questo nodo, annullamento di tutti gli accordi, arresto di tutti i carichi di lavoro, rimozione di questo nodo dal gruppo HA {HAGroup}, rimozione di questo nodo da Exchange e riavvio di Horizon in corso..."
   },
   {
     "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
@@ -7676,6 +7780,22 @@
     "translation": "impossibile annullare il marshalling del json per il campo di distribuzione {StringjsonBytes}: {Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "impossibile annullare il marshalling di json per il campo di distribuzione del cluster {StringjsonBytes}: {Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "Dati non validi presentati nel campo di distribuzione del cluster: {TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "L'attributo di metadati nella distribuzione del cluster ha un formato non corretto."
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "Impossibile ottenere il namespace dall'operatore Kube. {Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "l'input utente {Name} non ha un valore predefinito e non è impostato"
   },
@@ -7758,6 +7878,34 @@
   {
     "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
     "translation": "Il servizio non dispone della configurazione di distribuzione del cluster per il tipo di nodo 'cluster'."
+  },
+  {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "Il namespace del cluster del nodo di input '{NodeNamespace}' non corrisponde al namespace del cluster del nodo '{ExchNodeNamespace}' da Exchange {NodeId}."
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "L'ambito del nodo di input '{NodeIsNamespaceScope}' non corrisponde all'ambito del nodo '{ExchNodeIsNamespaceScope}' da Exchange {NodeId}."
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "Il namespace '{DeployerNamespace}' specificato nel pattern o nella politica di distribuzione non corrisponde al namespace dell'agent: '{NodeNamespace}'"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "Impossibile ottenere la distribuzione del cluster dal servizio. {Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "Il namespace {SvcNamespace}'specificato nel servizio non corrisponde al namespace dell'agent:'{NodeNamespace}'. Sovrascriverlo nel pattern o nella politica di distribuzione."
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "Il namespace '{PatternNamespace}' specificato nel pattern '{PatternId}' è vuoto o non corrisponde al namespace dell'agent in ambito namespace: '{NodeNamespace}'. L'agent in ambito namespace è compatibile solo con il pattern che ha lo stesso namespace con l'agent."
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "Il namespace del cluster specificato nel pattern '{PatternId}' è {PatternNamespace}, solo il pattern con namespace del cluster vuoto può essere registrato per l'agent in ambito cluster"
   },
   {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
@@ -8022,6 +8170,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "È necessario fornire l'organizzazione del nodo."
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "Il segreto {VaultSecretName} non esiste nel Secret Manager per il livello organizzazione o per il livello utente."
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -8302,6 +8454,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "Lo stato di gestione del nodo per {Arg_1} è stato modificato in {Arg_2}."
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "Lo stato di gestione del nodo per {Arg_1} è stato modificato in {Arg_2}. Messaggio di errore: {Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "Rimozione dello stato di gestione del nodo per {Arg_1}."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

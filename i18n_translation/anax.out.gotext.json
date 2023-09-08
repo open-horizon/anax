@@ -228,6 +228,10 @@
     "translation": "User must be specified in the API path"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "Node must be specified in the API path"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "Error checking secret {FullSecretName} in the secret manager."
   },
@@ -468,20 +472,20 @@
     "translation": "Error converting the selections into Selectors: {Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "Name, or Org is empty string."
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "The serviceVersions array is empty."
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "properties contains an invalid property: {Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false)."
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments"
   },
   {
     "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
@@ -992,6 +996,22 @@
     "translation": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "Invalid data presented in the cluster deployment field: {TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "The metadata attribute in the cluster deployment has wrong format."
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "Failed to get the namespace from the Kube operator. {Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "user input {Name} has no default value and is not set"
   },
@@ -1080,6 +1100,34 @@
     "translation": "Service does not have cluster deployment configuration for node type 'cluster'."
   },
   {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}."
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}."
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "Failed to get cluster deployment from the service. {Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern."
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent."
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent"
+  },
+  {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
     "translation": "Unable to create version expression from {VersionRange}. {Err}"
   },
@@ -1102,6 +1150,10 @@
   {
     "id": "Policy Incompatible",
     "translation": "Policy Incompatible"
+  },
+  {
+    "id": "{Err1}",
+    "translation": "{Err1}"
   },
   {
     "id": "Architecture does not match.",
@@ -1342,6 +1394,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "The node organization must be provided."
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level."
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -1954,6 +2010,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "Node management status for {Arg_1} changed to {Arg_2}."
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "Removing node management status for {Arg_1}."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

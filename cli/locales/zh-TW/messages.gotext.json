@@ -624,6 +624,12 @@
       "fuzzy": true
     },
     {
+      "id": "Node must be specified in the API path",
+      "message": "Node must be specified in the API path",
+      "translation": "必須在 API 路徑中指定節點",
+      "fuzzy": true
+    },
+    {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
       "message": "Error checking secret {FullSecretName} in the secret manager.",
       "translation": "在密碼管理程式中檢查密碼 {FullSecretName} 時發生錯誤。",
@@ -1820,18 +1826,6 @@
       "fuzzy": true
     },
     {
-      "id": "Name, or Org is empty string.",
-      "message": "Name, or Org is empty string.",
-      "translation": "名稱或組織為空字串。",
-      "fuzzy": true
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "message": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 陣列為空。",
-      "fuzzy": true
-    },
-    {
       "id": "properties contains an invalid property: {Err}",
       "message": "properties contains an invalid property: {Err}",
       "translation": "內容包含無效內容：{Err}",
@@ -1859,6 +1853,54 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "externalpolicy.PROP_SVC_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "message": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "translation": "無法取得名稱為 {PROPNODEK8SNAMESPACE} 的限制，錯誤：{Err}",
+      "placeholders": [
+        {
+          "id": "PROPNODEK8SNAMESPACE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "externalpolicy.PROP_NODE_K8S_NAMESPACE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "message": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "translation": "限制 {Newconstr} 中定義的 kubernetesNamespace 與部署原則中指定的 clusterNamespace '{ClusterNSInPolicy}' 不同，該原則可能會導致無服務部署",
+      "placeholders": [
+        {
+          "id": "Newconstr",
+          "string": "%[1]v",
+          "type": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "argNum": 1,
+          "expr": "newconstr"
+        },
+        {
+          "id": "ClusterNSInPolicy",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "clusterNSInPolicy"
         }
       ],
       "fuzzy": true
@@ -2138,6 +2180,18 @@
       "fuzzy": true
     },
     {
+      "id": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+      "message": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+      "translation": "如果節點類型為 'cluster'，則為節點的 Kubernetes 叢集名稱空間。 如果省略的話，預設值為 'openhorizon-agent'。 當節點類型為 'device' 時，會忽略此值",
+      "fuzzy": true
+    },
+    {
+      "id": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+      "message": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+      "translation": "如果節點類型為 'cluster'，則節點的叢集範圍為名稱空間範圍。 如果省略的話，預設值為 false。 當節點類型為 'device' 時，會忽略此值",
+      "fuzzy": true
+    },
+    {
       "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
       "message": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
       "translation": "節點的組織。 預設值是由 -n 或現行已登錄裝置提供之節點的組織（如果已省略的話）。",
@@ -2150,9 +2204,9 @@
       "fuzzy": true
     },
     {
-      "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-      "message": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-      "translation": "HA 群組的名稱。 與 -n、--node-pol 和 --node-ui 互斥。",
+      "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "message": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "translation": "HA 群組的名稱。 將在給定 HA 群組內的所有節點上執行部署檢查。 與 -n、--node-pol 和 --node-ui 互斥。",
       "fuzzy": true
     },
     {
@@ -2222,9 +2276,9 @@
       "fuzzy": true
     },
     {
-      "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-      "message": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-      "translation": "HA 群組的名稱。 與 -n 和 --node-pol 互斥。",
+      "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+      "message": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+      "translation": "HA 群組的名稱。 將在給定 HA 群組內的所有節點上執行部署檢查。 與 -n 和 --node-pol 互斥。",
       "fuzzy": true
     },
     {
@@ -5018,9 +5072,9 @@
       "fuzzy": true
     },
     {
-      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-      "message": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-      "translation": "還會移除所有先前的登錄資訊。 僅在 'hzn unregister' 指令失敗之後使用它。 請在使用此旗標之前透過執行 'hzn eventlog list -a -l' 指令來擷取日誌。",
+      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+      "message": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+      "translation": "同時移除所有先前的登錄資訊。 請只在 'hzn unregister' 指令失敗之後才使用它。 在執行此指令之後，會自動儲存事件日誌。",
       "fuzzy": true
     },
     {
@@ -5174,9 +5228,9 @@
       "fuzzy": true
     },
     {
-      "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "message": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "translation": "列出並管理密碼管理程式中的密碼。 附註：您必須以管理者身分進行鑑別，才能列出可供整個組織使用的密碼。",
+      "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+      "message": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+      "translation": "列出及管理密碼管理程式中的密碼。 附註：您必須以管理者身分進行鑑別，才能列出可供整個組織使用的密碼。 叢集代理程式不支援密碼。",
       "fuzzy": true
     },
     {
@@ -5198,6 +5252,12 @@
       "fuzzy": true
     },
     {
+      "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+      "message": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+      "translation": "要列出之節點密碼的節點 ID。 只有當此密碼與單一節點相關時才包含在內。",
+      "fuzzy": true
+    },
+    {
       "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
       "message": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
       "translation": "僅列出這一個密碼。 傳回一個布林值，指出密碼存在。 這是密碼管理程式中使用的密碼名稱。 如果密碼不存在，則傳回結束碼 1。",
@@ -5213,6 +5273,12 @@
       "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
       "message": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
       "translation": "密碼的名稱。 它在您的組織內必須是唯一的。 在部署原則和型樣中使用此名稱，以將此密碼連結至服務定義中的密碼名稱。",
+      "fuzzy": true
+    },
+    {
+      "id": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+      "message": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+      "translation": "要套用此密碼的節點 ID。 只有當此密碼與單一節點相關時才包含在內。",
       "fuzzy": true
     },
     {
@@ -5246,6 +5312,12 @@
       "fuzzy": true
     },
     {
+      "id": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+      "message": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+      "translation": "要移除之密碼的節點 ID。 只有當此密碼與單一節點相關時才包含在內。",
+      "fuzzy": true
+    },
+    {
       "id": "The name of the secret to be removed from the secrets manager.",
       "message": "The name of the secret to be removed from the secrets manager.",
       "translation": "要從密碼管理程式中移除的密碼名稱。",
@@ -5255,6 +5327,12 @@
       "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
       "message": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
       "translation": "讀取儲存在密碼管理程式中的密碼詳細資料。 其中包含建立密碼時提供的金鑰和值配對。",
+      "fuzzy": true
+    },
+    {
+      "id": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+      "message": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+      "translation": "要讀取之節點密碼的節點 ID。 只有當此密碼與單一節點相關時才包含在內。",
       "fuzzy": true
     },
     {
@@ -8715,7 +8793,7 @@
           "id": "CompCheckInput",
           "string": "%[1]v",
           "type": "github.com/open-horizon/anax/compcheck.CompCheck",
-          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/exchangecommon.NodePolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
+          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeClusterNS string \"json:\\\"node_cluster_namespace,omitempty\\\"\"; NodeNamespaceScoped bool \"json:\\\"node_namespace_scoped,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/exchangecommon.NodePolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "compCheckInput"
         }
@@ -8736,6 +8814,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+      "message": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+      "translation": "只有在使用 -t 指定的節點類型為 'cluster' 時，才可以指定 -s。",
       "fuzzy": true
     },
     {
@@ -8858,6 +8942,54 @@
           "underlyingType": "string",
           "argNum": 2,
           "expr": "nodeType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+      "message": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+      "translation": "-s 指定的節點叢集名稱空間 {InputNamespace} 不符合本端節點 {Namespace}的叢集名稱空間。",
+      "placeholders": [
+        {
+          "id": "InputNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "inputNamespace"
+        },
+        {
+          "id": "Namespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "namespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+      "message": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+      "translation": "以 --is-namespace-scoped 指定的節點 is-namespace-scoped {InputIsNamespaceScoped} 不符合本端節點 {IsNamespaceScoped} 的代理程式範圍。",
+      "placeholders": [
+        {
+          "id": "InputIsNamespaceScoped",
+          "string": "%[1]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "inputIsNamespaceScoped"
+        },
+        {
+          "id": "IsNamespaceScoped",
+          "string": "%[2]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 2,
+          "expr": "isNamespaceScoped"
         }
       ],
       "fuzzy": true
@@ -13060,6 +13192,22 @@
       "fuzzy": true
     },
     {
+      "id": "Invalid format for service: {Err1}",
+      "message": "Invalid format for service: {Err1}",
+      "translation": "下列服務的格式無效：{Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Invalid format for properties: {Err1}",
       "message": "Invalid format for properties: {Err1}",
       "translation": "內容的格式無效：{Err1}",
@@ -13266,9 +13414,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to validate the secret binding. {Err}",
-      "message": "Failed to validate the secret binding. {Err}",
-      "translation": "無法驗證密碼連結。 {Err}",
+      "id": "{Err}",
+      "message": "{Err}",
+      "translation": "{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13438,6 +13586,70 @@
       "fuzzy": true
     },
     {
+      "id": "Warning: {Err}",
+      "message": "Warning: {Err}",
+      "translation": "警告： {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate cluster namespace for service, error was: {Err}",
+      "message": "Failed to validate cluster namespace for service, error was: {Err}",
+      "translation": "無法驗證服務的叢集名稱空間，錯誤為：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+      "message": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+      "translation": "不應為裝置服務設定 ClusterNamespace：{Org}/{Name} 並具有架構 {Arch}",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceRef.Org"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "serviceRef.Name"
+        },
+        {
+          "id": "Arch",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "serviceRef.Arch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Deployment policy label.",
       "message": "Deployment policy label.",
       "translation": "部署原則標籤。",
@@ -13465,6 +13677,12 @@
       "id": "Set to '*' to use services of any hardware architecture.",
       "message": "Set to '*' to use services of any hardware architecture.",
       "translation": "設為 '*' 以使用任何硬體架構的服務。",
+      "fuzzy": true
+    },
+    {
+      "id": "The cluster namespace of the service.",
+      "message": "The cluster namespace of the service.",
+      "translation": "服務的叢集名稱空間。",
       "fuzzy": true
     },
     {
@@ -15078,7 +15296,7 @@
           "id": "Device",
           "string": "%[1]s",
           "type": "github.com/open-horizon/anax/exchange.Device",
-          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; HAGroup string \"json:\\\"ha_group\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
+          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; ClusterNamespace string \"json:\\\"clusterNamespace,omitempty\\\"\"; IsNamespaceScoped bool \"json:\\\"isNamespaceScoped\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; HAGroup string \"json:\\\"ha_group\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "v"
         },
@@ -16390,9 +16608,65 @@
       "fuzzy": true
     },
     {
-      "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-      "message": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-      "translation": "在輸入檔中找不到要更新的型樣屬性。 受支援的屬性為：標籤、說明、服務、使用者輸入和密碼連結。",
+      "id": "Invalid format for services: {Err1}",
+      "message": "Invalid format for services: {Err1}",
+      "translation": "服務的格式無效：{Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking service types for pattern {Pname}. {Err}",
+      "message": "Error checking service types for pattern {Pname}. {Err}",
+      "translation": "檢查型樣 {Pname} 的服務類型時發生錯誤。{Err}",
+      "placeholders": [
+        {
+          "id": "Pname",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "p_name"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+      "message": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+      "translation": "已指定 'clusterNamespace'，但沒有服務具有型樣 {Pname} 的叢集部署。",
+      "placeholders": [
+        {
+          "id": "Pname",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "p_name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+      "message": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+      "translation": "在輸入檔中找不到要更新的型樣屬性。 支援的屬性為：label、description、clusterNamespace、services、userInput 及 secretBinding。",
       "fuzzy": true
     },
     {
@@ -16503,6 +16777,52 @@
           "underlyingType": "[]github.com/open-horizon/anax/common.ServiceReferenceFile",
           "argNum": 1,
           "expr": "patFile.Services"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking service types for pattern. {Err}",
+      "message": "Error checking service types for pattern. {Err}",
+      "translation": "檢查型樣的服務類型時發生錯誤。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+      "message": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+      "translation": "已指定 'clusterNamespace'，但沒有服務具有型樣的叢集部署。",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid format in pattern file {JsonFilePath}: {Err}",
+      "message": "Invalid format in pattern file {JsonFilePath}: {Err}",
+      "translation": "型樣檔案 {JsonFilePath} 中的格式無效：{Err}",
+      "placeholders": [
+        {
+          "id": "JsonFilePath",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "jsonFilePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -16781,6 +17101,22 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "keyName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate the secret binding. {Err}",
+      "message": "Failed to validate the secret binding. {Err}",
+      "translation": "無法驗證密碼連結。 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -18657,6 +18993,42 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+      "message": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+      "translation": "不應該設定 'clusterDeployment' 中的 'metadata'。 在發佈服務之前，請先移除 'clusterDeployment' 內的 'metadata'",
+      "fuzzy": true
+    },
+    {
+      "id": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+      "message": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+      "translation": "無法從 kube 運算子 {OperatorFilePath} 取得名稱空間，錯誤為 {Err}",
+      "placeholders": [
+        {
+          "id": "OperatorFilePath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "operatorFilePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+      "message": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+      "translation": "警告：在運算子檔案中偵測到名稱空間。 應該在部署原則或型樣中設定服務名稱空間",
       "fuzzy": true
     },
     {
@@ -20584,9 +20956,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-      "message": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-      "translation": "節點 {Org}/{NodeId} 位於 HA 群組 {HaGroupName} 中。",
+      "id": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+      "message": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+      "translation": "節點 {Org}/{NodeId} 位於 HA 群組 {ExistingHagrName} 中。",
       "placeholders": [
         {
           "id": "Org",
@@ -20605,12 +20977,12 @@
           "expr": "nodeId"
         },
         {
-          "id": "HaGroupName",
+          "id": "ExistingHagrName",
           "string": "%[3]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 3,
-          "expr": "haGroupName"
+          "expr": "existingHagrName"
         }
       ],
       "fuzzy": true
@@ -24972,6 +25344,22 @@
       "fuzzy": true
     },
     {
+      "id": "Configuration files {FileObjects} loaded into the File sync service.",
+      "message": "Configuration files {FileObjects} loaded into the File sync service.",
+      "translation": "配置檔 {FileObjects} 已載入檔案同步服務。",
+      "placeholders": [
+        {
+          "id": "FileObjects",
+          "string": "%[1]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "fileObjects"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Loading {FileName} into CSS",
       "message": "Loading {FileName} into CSS",
       "translation": "正在將 {FileName} 載入 CSS",
@@ -25055,22 +25443,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Configuration files {FileObjects} loaded into the File sync service.",
-      "message": "Configuration files {FileObjects} loaded into the File sync service.",
-      "translation": "配置檔 {FileObjects} 已載入檔案同步服務。",
-      "placeholders": [
-        {
-          "id": "FileObjects",
-          "string": "%[1]v",
-          "type": "[]string",
-          "underlyingType": "[]string",
-          "argNum": 1,
-          "expr": "fileObjects"
         }
       ],
       "fuzzy": true
@@ -25254,7 +25626,26 @@
       "fuzzy": true
     },
     {
-      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
+      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+      "message": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+      "translation": "正在取消登錄此節點、取消所有合約、停止所有工作量、從 HA 群組 {HAGroup} 中移除此節點、從 Exchange 中移除此節點並重新啟動 Horizon…",
+      "placeholders": [
+        {
+          "id": "HAGroup",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "*horDevice.HAGroup"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "msg",
+        "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon..."
+      ],
       "message": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
       "translation": "正在取消登錄此節點、取消所有合約、停止所有工作量並重新啟動 Horizon...",
       "fuzzy": true
@@ -25948,6 +26339,68 @@
       "fuzzy": true
     },
     {
+      "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "message": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "translation": "無法解除配置叢集部署欄位 {StringjsonBytes} 的 JSON：{Err}",
+      "placeholders": [
+        {
+          "id": "StringjsonBytes",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(jsonBytes)"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "message": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "translation": "叢集部署欄位中呈現的資料無效：{TempInterf}",
+      "placeholders": [
+        {
+          "id": "TempInterf",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "tempInterf"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The metadata attribute in the cluster deployment has wrong format.",
+      "message": "The metadata attribute in the cluster deployment has wrong format.",
+      "translation": "叢集部署中的 meta 資料屬性格式錯誤。",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get the namespace from the Kube operator. {Err}",
+      "message": "Failed to get the namespace from the Kube operator. {Err}",
+      "translation": "無法從 Kube 運算子取得名稱空間。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "user input {Name} has no default value and is not set",
       "message": "user input {Name} has no default value and is not set",
       "translation": "使用者輸入 {Name} 沒有預設值且未設定",
@@ -26283,6 +26736,190 @@
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "message": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "服務沒有節點類型 'cluster' 的叢集部署配置。",
+      "fuzzy": true
+    },
+    {
+      "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "message": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "translation": "輸入節點的叢集名稱空間 '{NodeNamespace}' 不符合 Exchange {NodeId} 中節點的叢集名稱空間 '{ExchNodeNamespace}'。",
+      "placeholders": [
+        {
+          "id": "NodeNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeNamespace"
+        },
+        {
+          "id": "ExchNodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "exchNodeNamespace"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "message": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "translation": "輸入節點的範圍 '{NodeIsNamespaceScope}' 與 Exchange {NodeId} 中節點的範圍 '{ExchNodeIsNamespaceScope}' 不相符。",
+      "placeholders": [
+        {
+          "id": "NodeIsNamespaceScope",
+          "string": "%[1]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "nodeIsNamespaceScope"
+        },
+        {
+          "id": "ExchNodeIsNamespaceScope",
+          "string": "%[2]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 2,
+          "expr": "exchNodeIsNamespaceScope"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "message": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "translation": "部署原則或型樣中指定的名稱空間 '{DeployerNamespace}' 不符合下列代理程式的名稱空間：'{NodeNamespace}'",
+      "placeholders": [
+        {
+          "id": "DeployerNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "deployerNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get cluster deployment from the service. {Err}",
+      "message": "Failed to get cluster deployment from the service. {Err}",
+      "translation": "無法從服務取得叢集部署。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "message": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "translation": "服務中指定的名稱空間 '{SvcNamespace}' 不符合下列代理程式的名稱空間：'{NodeNamespace}'。請在部署原則或型樣中將其改寫。",
+      "placeholders": [
+        {
+          "id": "SvcNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "message": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "translation": "型樣 '{PatternId}' 中指定的名稱空間 '{PatternNamespace}' 是空的，或不符合下列名稱空間範圍代理程式的名稱空間：'{NodeNamespace}'。名稱空間範圍代理程式僅與代理程式具有相同名稱空間的型樣相容。",
+      "placeholders": [
+        {
+          "id": "PatternNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternNamespace"
+        },
+        {
+          "id": "PatternId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternId"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "message": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "translation": "型樣 '{PatternId}' 中指定的叢集名稱空間是 {PatternNamespace}，只有具有空叢集名稱空間的型樣才能為叢集範圍代理程式登錄",
+      "placeholders": [
+        {
+          "id": "PatternId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternId"
+        },
+        {
+          "id": "PatternNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternNamespace"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -27389,6 +28026,22 @@
       "id": "The node organization must be provided.",
       "message": "The node organization must be provided.",
       "translation": "必須提供節點組織。",
+      "fuzzy": true
+    },
+    {
+      "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "message": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "translation": "密碼 {VaultSecretName} 不存在於組織層次或使用者層次的密碼管理程式中。",
+      "placeholders": [
+        {
+          "id": "VaultSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "vaultSecretName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -28756,6 +29409,56 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED_WITH_ERROR",
+        "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+      "translation": "{Arg_1} 的節點管理狀態已變更為 {Arg_2}。 錯誤訊息：{Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_DELETED",
+        "Removing node management status for {Arg_1}."
+      ],
+      "message": "Removing node management status for {Arg_1}.",
+      "translation": "正在移除 {Arg_1} 的節點管理狀態。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true

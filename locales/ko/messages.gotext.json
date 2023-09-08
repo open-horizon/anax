@@ -968,6 +968,12 @@
       "fuzzy": true
     },
     {
+      "id": "Node must be specified in the API path",
+      "message": "Node must be specified in the API path",
+      "translation": "노드는 API 경로에 지정되어야 함",
+      "fuzzy": true
+    },
+    {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
       "message": "Error checking secret {FullSecretName} in the secret manager.",
       "translation": "시크릿 관리자에서 {FullSecretName} 시크릿 확인 중 오류가 발생했습니다.",
@@ -2164,18 +2170,6 @@
       "fuzzy": true
     },
     {
-      "id": "Name, or Org is empty string.",
-      "message": "Name, or Org is empty string.",
-      "translation": "이름 또는 조직이 빈 문자열입니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "message": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 배열이 비어 있습니다.",
-      "fuzzy": true
-    },
-    {
       "id": "properties contains an invalid property: {Err}",
       "message": "properties contains an invalid property: {Err}",
       "translation": "특성에 올바르지 않은 특성이 포함되어 있음: {Err}",
@@ -2203,6 +2197,54 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "externalpolicy.PROP_SVC_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "message": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "translation": "이름이 {PROPNODEK8SNAMESPACE}인 제한조건을 가져오는 데 실패했습니다. 오류: {Err}",
+      "placeholders": [
+        {
+          "id": "PROPNODEK8SNAMESPACE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "externalpolicy.PROP_NODE_K8S_NAMESPACE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "message": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "translation": "제한조건 {Newconstr}에 정의된 kubernetesNamespace가 배치 정책에 지정된 clusterNamespace '{ClusterNSInPolicy}'과(와) 다릅니다. 정책으로 인해 서비스가 배치되지 않을 수 있습니다.",
+      "placeholders": [
+        {
+          "id": "Newconstr",
+          "string": "%[1]v",
+          "type": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "argNum": 1,
+          "expr": "newconstr"
+        },
+        {
+          "id": "ClusterNSInPolicy",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "clusterNSInPolicy"
         }
       ],
       "fuzzy": true
@@ -4754,6 +4796,68 @@
       "fuzzy": true
     },
     {
+      "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "message": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "translation": "클러스터 배치 필드 {StringjsonBytes}에 대해 json을 역마샬링하는 데 실패했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "StringjsonBytes",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(jsonBytes)"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "message": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "translation": "클러스터 배치 필드에 올바르지 않은 데이터가 표시되었습니다. {TempInterf}",
+      "placeholders": [
+        {
+          "id": "TempInterf",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "tempInterf"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The metadata attribute in the cluster deployment has wrong format.",
+      "message": "The metadata attribute in the cluster deployment has wrong format.",
+      "translation": "클러스터 배치의 메타데이터 속성의 형식이 잘못되었습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get the namespace from the Kube operator. {Err}",
+      "message": "Failed to get the namespace from the Kube operator. {Err}",
+      "translation": "Kube 연산자에서 네임스페이스를 가져오는 데 실패했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "user input {Name} has no default value and is not set",
       "message": "user input {Name} has no default value and is not set",
       "translation": "사용자 입력 {Name}이(가) 기본값을 갖고 있지 않으며 설정되지 않음",
@@ -5098,6 +5202,190 @@
       "fuzzy": true
     },
     {
+      "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "message": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "translation": "입력 노드의 클러스터 네임스페이스 '{NodeNamespace}'이(가) Exchange {NodeId}의 노드 클러스터 네임스페이스 '{ExchNodeNamespace}'과(와) 일치하지 않습니다.",
+      "placeholders": [
+        {
+          "id": "NodeNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeNamespace"
+        },
+        {
+          "id": "ExchNodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "exchNodeNamespace"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "message": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "translation": "입력 노드의 범위 '{NodeIsNamespaceScope}'이(가) Exchange {NodeId}의 노드 범위 '{ExchNodeIsNamespaceScope}'과(와) 일치하지 않습니다.",
+      "placeholders": [
+        {
+          "id": "NodeIsNamespaceScope",
+          "string": "%[1]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "nodeIsNamespaceScope"
+        },
+        {
+          "id": "ExchNodeIsNamespaceScope",
+          "string": "%[2]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 2,
+          "expr": "exchNodeIsNamespaceScope"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "message": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "translation": "배치 정책 또는 패턴에 지정된 네임스페이스 '{DeployerNamespace}'이(가) 에이전트의 네임스페이스와 일치하지 않습니다. '{NodeNamespace}'",
+      "placeholders": [
+        {
+          "id": "DeployerNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "deployerNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get cluster deployment from the service. {Err}",
+      "message": "Failed to get cluster deployment from the service. {Err}",
+      "translation": "서비스에서 클러스터 배치를 가져오는 데 실패했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "message": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "translation": "서비스에 지정된 '{SvcNamespace}' 네임스페이스가 에이전트의 네임스페이스와 일치하지 않습니다. '{NodeNamespace}'. 배치 정책 또는 패턴으로 겹쳐쓰십시오.",
+      "placeholders": [
+        {
+          "id": "SvcNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "message": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "translation": "'{PatternId}' 패턴에 지정된 네임스페이스 '{PatternNamespace}'이(가) 비어 있거나 네임스페이스 범위 에이전트의 네임스페이스와 일치하지 않습니다. '{NodeNamespace}'. 네임스페이스 범위 에이전트는 에이전트와 네임스페이스가 동일한 패턴과만 호환 가능합니다.",
+      "placeholders": [
+        {
+          "id": "PatternNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternNamespace"
+        },
+        {
+          "id": "PatternId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternId"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "message": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "translation": "'{PatternId}' 패턴에 지정된 클러스터 네임스페이스는 {PatternNamespace}입니다. 클러스터 범위 에이전트에는 빈 클러스터 네임스페이스가 있는 패턴만 등록할 수 있습니다.",
+      "placeholders": [
+        {
+          "id": "PatternId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternId"
+        },
+        {
+          "id": "PatternNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Unable to create version expression from {VersionRange}. {Err}",
       "message": "Unable to create version expression from {VersionRange}. {Err}",
       "translation": "{VersionRange}에서 버전 표현식을 작성할 수 없습니다. {Err}",
@@ -5211,6 +5499,22 @@
       "id": "Policy Incompatible",
       "message": "Policy Incompatible",
       "translation": "정책이 호환되지 않음",
+      "fuzzy": true
+    },
+    {
+      "id": "{Err1}",
+      "message": "{Err1}",
+      "translation": "{Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -6201,6 +6505,22 @@
       "id": "The node organization must be provided.",
       "message": "The node organization must be provided.",
       "translation": "노드 조직을 제공해야 합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "message": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "translation": "시크릿 {VaultSecretName}이(가) 조직 레벨 또는 사용자 레벨의 Secret Manager에 존재하지 않습니다.",
+      "placeholders": [
+        {
+          "id": "VaultSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "vaultSecretName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -9727,6 +10047,56 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED_WITH_ERROR",
+        "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+      "translation": "{Arg_1}에 대한 노드 관리 상태가 {Arg_2}(으)로 변경되었습니다. 오류 메시지: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_DELETED",
+        "Removing node management status for {Arg_1}."
+      ],
+      "message": "Removing node management status for {Arg_1}.",
+      "translation": "{Arg_1}에 대한 노드 관리 상태를 제거 중입니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true

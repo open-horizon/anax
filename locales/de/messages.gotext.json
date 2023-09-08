@@ -968,6 +968,12 @@
       "fuzzy": true
     },
     {
+      "id": "Node must be specified in the API path",
+      "message": "Node must be specified in the API path",
+      "translation": "Knoten muss im API-Pfad angegeben sein",
+      "fuzzy": true
+    },
+    {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
       "message": "Error checking secret {FullSecretName} in the secret manager.",
       "translation": "Fehler beim Überprüfen des geheimen Schlüssels {FullSecretName} im Manager für geheime Schlüssel.",
@@ -2164,18 +2170,6 @@
       "fuzzy": true
     },
     {
-      "id": "Name, or Org is empty string.",
-      "message": "Name, or Org is empty string.",
-      "translation": "Der Name oder die Organisation ist eine leere Zeichenfolge.",
-      "fuzzy": true
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "message": "The serviceVersions array is empty.",
-      "translation": "Das Array für die Serviceversionen (serviceVersions) ist leer.",
-      "fuzzy": true
-    },
-    {
       "id": "properties contains an invalid property: {Err}",
       "message": "properties contains an invalid property: {Err}",
       "translation": "Eigenschaften enthalten ungültige Eigenschaft: {Err}",
@@ -2203,6 +2197,54 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "externalpolicy.PROP_SVC_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "message": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "translation": "Abrufen der Randbedingung mit dem Namen {PROPNODEK8SNAMESPACE}fehlgeschlagen; Fehler: {Err}",
+      "placeholders": [
+        {
+          "id": "PROPNODEK8SNAMESPACE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "externalpolicy.PROP_NODE_K8S_NAMESPACE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "message": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "translation": "Der kubernetesNamespace, der in der Randbedingung {Newconstr}definiert ist, deckt sich nicht mit dem clusterNamespace '{ClusterNSInPolicy}', der in der Bereitstellungsrichtlinie angegeben ist. Möglicherweise führt die Richtlinie zu keinen Servicebereitstellungen.",
+      "placeholders": [
+        {
+          "id": "Newconstr",
+          "string": "%[1]v",
+          "type": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "argNum": 1,
+          "expr": "newconstr"
+        },
+        {
+          "id": "ClusterNSInPolicy",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "clusterNSInPolicy"
         }
       ],
       "fuzzy": true
@@ -4754,6 +4796,68 @@
       "fuzzy": true
     },
     {
+      "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "message": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "translation": "Ausführung von Unmarshalling von JSON für Clusterbereitstellungsfeld {StringjsonBytes}ist fehlgeschlagen: {Err}",
+      "placeholders": [
+        {
+          "id": "StringjsonBytes",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(jsonBytes)"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "message": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "translation": "Das Clusterbereitstellungsfeld weist ungültige Daten auf: {TempInterf}",
+      "placeholders": [
+        {
+          "id": "TempInterf",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "tempInterf"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The metadata attribute in the cluster deployment has wrong format.",
+      "message": "The metadata attribute in the cluster deployment has wrong format.",
+      "translation": "Das Metadatenattribut in der Clusterbereitstellung weist das falsche Format auf.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get the namespace from the Kube operator. {Err}",
+      "message": "Failed to get the namespace from the Kube operator. {Err}",
+      "translation": "Der Namensbereich konnte nicht vom Kube-Operator abgerufen werden. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "user input {Name} has no default value and is not set",
       "message": "user input {Name} has no default value and is not set",
       "translation": "Benutzereingabe {Name} weist keinen Standardwert auf und ist nicht definiert.",
@@ -5098,6 +5202,190 @@
       "fuzzy": true
     },
     {
+      "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "message": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "translation": "Der Clusternamensbereich '{NodeNamespace}' des Eingabeknotens stimmt nicht mit dem Clusternamensbereich '{ExchNodeNamespace}' des Knotens aus Exchange {NodeId}überein.",
+      "placeholders": [
+        {
+          "id": "NodeNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeNamespace"
+        },
+        {
+          "id": "ExchNodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "exchNodeNamespace"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "message": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "translation": "Der Bereich '{NodeIsNamespaceScope}' des Eingabeknotens stimmt nicht mit dem Bereich '{ExchNodeIsNamespaceScope}' des Knotens von Exchange {NodeId}überein.",
+      "placeholders": [
+        {
+          "id": "NodeIsNamespaceScope",
+          "string": "%[1]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "nodeIsNamespaceScope"
+        },
+        {
+          "id": "ExchNodeIsNamespaceScope",
+          "string": "%[2]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 2,
+          "expr": "exchNodeIsNamespaceScope"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "message": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "translation": "Der in der Bereitstellungsrichtlinie oder im Bereitstellungsmuster angegebene Namensbereich '{DeployerNamespace}' deckt sich nicht mit dem Namensbereich des Agenten: '{NodeNamespace}'.",
+      "placeholders": [
+        {
+          "id": "DeployerNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "deployerNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get cluster deployment from the service. {Err}",
+      "message": "Failed to get cluster deployment from the service. {Err}",
+      "translation": "Abrufen der Clusterbereitstellung aus dem Service fehlgeschlagen. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "message": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "translation": "Der im Service angegebene Namensbereich '{SvcNamespace}' deckt sich nicht mit dem Namensbereich des '{NodeNamespace}' des Agenten. Überschreiben Sie ihn in der Bereitstellungsrichtlinie oder im -muster.",
+      "placeholders": [
+        {
+          "id": "SvcNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "message": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "translation": "Der im Muster '{PatternId}' angegebene Namensbereich '{PatternNamespace}' ist leer oder deckt sich nicht mit dem Namensbereich des namensbereichsorientierten Agenten: '{NodeNamespace}'. Der namensbereichsorienterte Agent ist nur mit Mustern kompatibel, die denselben Namensbereich wie der Agent haben.",
+      "placeholders": [
+        {
+          "id": "PatternNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternNamespace"
+        },
+        {
+          "id": "PatternId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternId"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "message": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "translation": "Der Clusternamensbereich, der im Muster '{PatternId}' angegeben ist, lautet {PatternNamespace}. Für clusterbereichsorientierte Agenten können nur Muster mit leerem Clusternamensbereich registriert werden",
+      "placeholders": [
+        {
+          "id": "PatternId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternId"
+        },
+        {
+          "id": "PatternNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Unable to create version expression from {VersionRange}. {Err}",
       "message": "Unable to create version expression from {VersionRange}. {Err}",
       "translation": "Der Versionsausdruck kann nicht aus {VersionRange} erstellt werden. {Err}",
@@ -5211,6 +5499,22 @@
       "id": "Policy Incompatible",
       "message": "Policy Incompatible",
       "translation": "Richtlinie nicht kompatibel",
+      "fuzzy": true
+    },
+    {
+      "id": "{Err1}",
+      "message": "{Err1}",
+      "translation": "{Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -6201,6 +6505,22 @@
       "id": "The node organization must be provided.",
       "message": "The node organization must be provided.",
       "translation": "Die Knotenorganisation muss angegeben werden.",
+      "fuzzy": true
+    },
+    {
+      "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "message": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "translation": "Der geheime Schlüssel {VaultSecretName} ist in Secret Manager weder auf Organisationsebene noch auf Benutzerebene vorhanden.",
+      "placeholders": [
+        {
+          "id": "VaultSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "vaultSecretName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -9727,6 +10047,56 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED_WITH_ERROR",
+        "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+      "translation": "Der Knotenmanagementstatus für {Arg_1} wurde in {Arg_2} geändert. Fehlernachricht: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_DELETED",
+        "Removing node management status for {Arg_1}."
+      ],
+      "message": "Removing node management status for {Arg_1}.",
+      "translation": "Der Knotenmanagementstatus für {Arg_1}wird entfernt.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true

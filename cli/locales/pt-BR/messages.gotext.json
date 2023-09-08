@@ -624,6 +624,12 @@
       "fuzzy": true
     },
     {
+      "id": "Node must be specified in the API path",
+      "message": "Node must be specified in the API path",
+      "translation": "O nó deve ser especificado no caminho da API",
+      "fuzzy": true
+    },
+    {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
       "message": "Error checking secret {FullSecretName} in the secret manager.",
       "translation": "Erro ao verificar segredo {FullSecretName} no gerenciador de segredos.",
@@ -1820,18 +1826,6 @@
       "fuzzy": true
     },
     {
-      "id": "Name, or Org is empty string.",
-      "message": "Name, or Org is empty string.",
-      "translation": "Name ou Org é uma sequência de caracteres vazia.",
-      "fuzzy": true
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "message": "The serviceVersions array is empty.",
-      "translation": "A matriz serviceVersions está vazia.",
-      "fuzzy": true
-    },
-    {
       "id": "properties contains an invalid property: {Err}",
       "message": "properties contains an invalid property: {Err}",
       "translation": "As propriedades contêm uma propriedade inválida: {Err}",
@@ -1859,6 +1853,54 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "externalpolicy.PROP_SVC_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "message": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "translation": "Falha ao obter restrição com o nome {PROPNODEK8SNAMESPACE}, erro: {Err}",
+      "placeholders": [
+        {
+          "id": "PROPNODEK8SNAMESPACE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "externalpolicy.PROP_NODE_K8S_NAMESPACE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "message": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "translation": "O kubernetesNamespace definido na restrição {Newconstr} é diferente do clusterNamespace '{ClusterNSInPolicy}' especificado na política de implementação. A política pode resultar em nenhuma implementação de serviço",
+      "placeholders": [
+        {
+          "id": "Newconstr",
+          "string": "%[1]v",
+          "type": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "argNum": 1,
+          "expr": "newconstr"
+        },
+        {
+          "id": "ClusterNSInPolicy",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "clusterNSInPolicy"
         }
       ],
       "fuzzy": true
@@ -2138,6 +2180,18 @@
       "fuzzy": true
     },
     {
+      "id": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+      "message": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+      "translation": "O namespace do cluster Kubernetes para o nó se o tipo de nó for 'cluster'. O valor padrão será 'openhorizon-agent', se omitido. O valor é ignorado quando o tipo de nó é 'device'",
+      "fuzzy": true
+    },
+    {
+      "id": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+      "message": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+      "translation": "O escopo de cluster para o nó terá o escopo definido para o namespace se o tipo de nó for 'cluster'. O valor padrão será false, se omitido. O valor é ignorado quando o tipo de nó é 'device'",
+      "fuzzy": true
+    },
+    {
       "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
       "message": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
       "translation": "A organização do nó. O valor padrão é a organização do nó fornecido por -n ou pelo dispositivo registrado atual, se omitido.",
@@ -2150,9 +2204,9 @@
       "fuzzy": true
     },
     {
-      "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-      "message": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-      "translation": "O nome de um grupo de alta disponibilidade. Mutuamente exclusivo com -n, --node-pol e --node-ui.",
+      "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "message": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "translation": "O nome de um grupo de alta disponibilidade. A verificação de implementação será executada em todos os nós dentro do grupo de alta disponibilidade fornecido. Mutuamente exclusivo com -n, --node-pol e --node-ui.",
       "fuzzy": true
     },
     {
@@ -2222,9 +2276,9 @@
       "fuzzy": true
     },
     {
-      "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-      "message": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-      "translation": "O nome de um grupo de alta disponibilidade. Mutuamente exclusivo com -n e --node-pol.",
+      "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+      "message": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+      "translation": "O nome de um grupo de alta disponibilidade. A verificação de implementação será executada em todos os nós dentro do grupo de alta disponibilidade fornecido. Mutuamente exclusivo com -n e --node-pol.",
       "fuzzy": true
     },
     {
@@ -5018,9 +5072,9 @@
       "fuzzy": true
     },
     {
-      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-      "message": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-      "translation": "Remover também todas as informações de registro anteriores. Utilizar somente em caso de falha do comando 'hzn unregister'. Antes de usar essa sinalização, capture os logs, executando o comando 'hzn eventlog list -a -l'.",
+      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+      "message": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+      "translation": "Remova também todas as informações de registro anteriores. Use-as apenas após o comando 'hzn unregister' falhar. O log de eventos é salvo automaticamente após a execução deste comando.",
       "fuzzy": true
     },
     {
@@ -5174,9 +5228,9 @@
       "fuzzy": true
     },
     {
-      "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "message": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "translation": "Listar e gerenciar segredos no gerenciador de segredos. NOTA: deve-se autenticar como um administrador para listar segredos disponíveis para toda a organização.",
+      "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+      "message": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+      "translation": "Listar e gerenciar segredos no gerenciador de segredos. NOTA: deve-se autenticar como um administrador para listar segredos disponíveis para toda a organização. Os segredos não são suportados em agentes de cluster.",
       "fuzzy": true
     },
     {
@@ -5198,6 +5252,12 @@
       "fuzzy": true
     },
     {
+      "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+      "message": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+      "translation": "O ID do nó do segredo de nó a ser listado. Inclua apenas se esse segredo for específico para um único nó.",
+      "fuzzy": true
+    },
+    {
       "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
       "message": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
       "translation": "Listar apenas este segredo. Retorna um booleano indicando a existência do segredo. Este é o nome do segredo usado no gerenciador de segredos. Se o segredo não existir, retornará com o código de saída 1.",
@@ -5213,6 +5273,12 @@
       "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
       "message": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
       "translation": "O nome do segredo. Ele deve ser único dentro da sua organização. Este nome é usado em políticas e padrões de implementação para ligar este segredo a um nome secreto em uma definição de serviço.",
+      "fuzzy": true
+    },
+    {
+      "id": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+      "message": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+      "translation": "O ID do nó ao qual aplicar esse segredo. Inclua apenas se esse segredo for específico para um único nó.",
       "fuzzy": true
     },
     {
@@ -5246,6 +5312,12 @@
       "fuzzy": true
     },
     {
+      "id": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+      "message": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+      "translation": "O ID do nó do segredo a ser removido. Inclua apenas se esse segredo for específico para um único nó.",
+      "fuzzy": true
+    },
+    {
       "id": "The name of the secret to be removed from the secrets manager.",
       "message": "The name of the secret to be removed from the secrets manager.",
       "translation": "O nome do segredo a ser removido do gerenciador de segredos.",
@@ -5255,6 +5327,12 @@
       "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
       "message": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
       "translation": "Leia os detalhes de um segredo armazenado no gerenciador de segredos. Isso consiste no par chave-valor fornecido na criação do segredo.",
+      "fuzzy": true
+    },
+    {
+      "id": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+      "message": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+      "translation": "O ID do nó do segredo de nó a ser lido. Inclua apenas se esse segredo for específico para um único nó.",
       "fuzzy": true
     },
     {
@@ -8715,7 +8793,7 @@
           "id": "CompCheckInput",
           "string": "%[1]v",
           "type": "github.com/open-horizon/anax/compcheck.CompCheck",
-          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/exchangecommon.NodePolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
+          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeClusterNS string \"json:\\\"node_cluster_namespace,omitempty\\\"\"; NodeNamespaceScoped bool \"json:\\\"node_namespace_scoped,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/exchangecommon.NodePolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "compCheckInput"
         }
@@ -8736,6 +8814,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+      "message": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+      "translation": "-s poderá ser especificado apenas quando o tipo de nó especificado por -t for 'cluster'",
       "fuzzy": true
     },
     {
@@ -8858,6 +8942,54 @@
           "underlyingType": "string",
           "argNum": 2,
           "expr": "nodeType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+      "message": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+      "translation": "O namespace do cluster do nó {InputNamespace} especificado por -s não corresponde ao namespace do cluster do nó local {Namespace}.",
+      "placeholders": [
+        {
+          "id": "InputNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "inputNamespace"
+        },
+        {
+          "id": "Namespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "namespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+      "message": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+      "translation": "O nó is-namespace-scoped {InputIsNamespaceScoped} especificado por --is-namespace-scoped não corresponde ao escopo do agente do nó local {IsNamespaceScoped}.",
+      "placeholders": [
+        {
+          "id": "InputIsNamespaceScoped",
+          "string": "%[1]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "inputIsNamespaceScoped"
+        },
+        {
+          "id": "IsNamespaceScoped",
+          "string": "%[2]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 2,
+          "expr": "isNamespaceScoped"
         }
       ],
       "fuzzy": true
@@ -13060,6 +13192,22 @@
       "fuzzy": true
     },
     {
+      "id": "Invalid format for service: {Err1}",
+      "message": "Invalid format for service: {Err1}",
+      "translation": "Formato inválido para o serviço: {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Invalid format for properties: {Err1}",
       "message": "Invalid format for properties: {Err1}",
       "translation": "Formato inválido para as propriedades: {Err1}",
@@ -13266,9 +13414,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to validate the secret binding. {Err}",
-      "message": "Failed to validate the secret binding. {Err}",
-      "translation": "Falha ao validar a ligação do segredo. {Err}",
+      "id": "{Err}",
+      "message": "{Err}",
+      "translation": "{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13438,6 +13586,70 @@
       "fuzzy": true
     },
     {
+      "id": "Warning: {Err}",
+      "message": "Warning: {Err}",
+      "translation": "Aviso: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate cluster namespace for service, error was: {Err}",
+      "message": "Failed to validate cluster namespace for service, error was: {Err}",
+      "translation": "Falha ao validar o namespace do cluster para o serviço; o erro foi: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+      "message": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+      "translation": "ClusterNamespace não deve ser configurado para o serviço de dispositivo: {Org}/{Name} com arch {Arch}",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceRef.Org"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "serviceRef.Name"
+        },
+        {
+          "id": "Arch",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "serviceRef.Arch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Deployment policy label.",
       "message": "Deployment policy label.",
       "translation": "Rótulo da política de implementação.",
@@ -13465,6 +13677,12 @@
       "id": "Set to '*' to use services of any hardware architecture.",
       "message": "Set to '*' to use services of any hardware architecture.",
       "translation": "Configure como '*' para usar serviços de qualquer arquitetura de hardware.",
+      "fuzzy": true
+    },
+    {
+      "id": "The cluster namespace of the service.",
+      "message": "The cluster namespace of the service.",
+      "translation": "O namespace do cluster do serviço.",
       "fuzzy": true
     },
     {
@@ -15078,7 +15296,7 @@
           "id": "Device",
           "string": "%[1]s",
           "type": "github.com/open-horizon/anax/exchange.Device",
-          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; HAGroup string \"json:\\\"ha_group\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
+          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; ClusterNamespace string \"json:\\\"clusterNamespace,omitempty\\\"\"; IsNamespaceScoped bool \"json:\\\"isNamespaceScoped\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; HAGroup string \"json:\\\"ha_group\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "v"
         },
@@ -16390,9 +16608,65 @@
       "fuzzy": true
     },
     {
-      "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-      "message": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-      "translation": "O atributo padrão a ser atualizado não está localizado no arquivo de entrada. Os atributos suportados são: rótulo, descrição, serviços, userInput e secretBinding.",
+      "id": "Invalid format for services: {Err1}",
+      "message": "Invalid format for services: {Err1}",
+      "translation": "Formato inválido para serviços: {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking service types for pattern {Pname}. {Err}",
+      "message": "Error checking service types for pattern {Pname}. {Err}",
+      "translation": "Erro ao verificar tipos de serviço para o padrão {Pname}. {Err}",
+      "placeholders": [
+        {
+          "id": "Pname",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "p_name"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+      "message": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+      "translation": "'clusterNamespace' é especificado, mas nenhum serviço possui a implementação de cluster para o padrão {Pname}.",
+      "placeholders": [
+        {
+          "id": "Pname",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "p_name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+      "message": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+      "translation": "O atributo de padrão a ser atualizado não foi localizado no arquivo de entrada. Os atributos suportados são: label, description, clusterNamespace, services, userInput e secretBinding.",
       "fuzzy": true
     },
     {
@@ -16503,6 +16777,52 @@
           "underlyingType": "[]github.com/open-horizon/anax/common.ServiceReferenceFile",
           "argNum": 1,
           "expr": "patFile.Services"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking service types for pattern. {Err}",
+      "message": "Error checking service types for pattern. {Err}",
+      "translation": "Erro ao verificar os tipos de serviço para o padrão. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+      "message": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+      "translation": "'clusterNamespace' foi especificado, mas nenhum serviço possui implementação de cluster para o padrão.",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid format in pattern file {JsonFilePath}: {Err}",
+      "message": "Invalid format in pattern file {JsonFilePath}: {Err}",
+      "translation": "Formato inválido no arquivo padrão {JsonFilePath}: {Err}",
+      "placeholders": [
+        {
+          "id": "JsonFilePath",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "jsonFilePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -16781,6 +17101,22 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "keyName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate the secret binding. {Err}",
+      "message": "Failed to validate the secret binding. {Err}",
+      "translation": "Falha ao validar a ligação do segredo. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -18657,6 +18993,42 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+      "message": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+      "translation": "O 'metadata' em 'clusterDeployment' não deve ser configurado. Remova 'metadata' dentro do 'clusterDeployment' antes de publicar o serviço",
+      "fuzzy": true
+    },
+    {
+      "id": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+      "message": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+      "translation": "falha ao obter namespace do operador kube {OperatorFilePath}, erro {Err}",
+      "placeholders": [
+        {
+          "id": "OperatorFilePath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "operatorFilePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+      "message": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+      "translation": "Aviso: o namespace é detectado no arquivo do operador. O namespace do serviço deve ser configurado na política ou no padrão de implementação",
       "fuzzy": true
     },
     {
@@ -20584,9 +20956,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-      "message": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-      "translation": "O nó {Org}/{NodeId} está no grupo de alta disponibilidade {HaGroupName}.",
+      "id": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+      "message": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+      "translation": "O nó {Org}/{NodeId} está no grupo de alta disponibilidade {ExistingHagrName}.",
       "placeholders": [
         {
           "id": "Org",
@@ -20605,12 +20977,12 @@
           "expr": "nodeId"
         },
         {
-          "id": "HaGroupName",
+          "id": "ExistingHagrName",
           "string": "%[3]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 3,
-          "expr": "haGroupName"
+          "expr": "existingHagrName"
         }
       ],
       "fuzzy": true
@@ -24972,6 +25344,22 @@
       "fuzzy": true
     },
     {
+      "id": "Configuration files {FileObjects} loaded into the File sync service.",
+      "message": "Configuration files {FileObjects} loaded into the File sync service.",
+      "translation": "Arquivos de configuração {FileObjects} carregados no serviço de sincronização de arquivo.",
+      "placeholders": [
+        {
+          "id": "FileObjects",
+          "string": "%[1]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "fileObjects"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Loading {FileName} into CSS",
       "message": "Loading {FileName} into CSS",
       "translation": "Carregando {FileName} no CSS",
@@ -25055,22 +25443,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Configuration files {FileObjects} loaded into the File sync service.",
-      "message": "Configuration files {FileObjects} loaded into the File sync service.",
-      "translation": "Arquivos de configuração {FileObjects} carregados no serviço de sincronização de arquivo.",
-      "placeholders": [
-        {
-          "id": "FileObjects",
-          "string": "%[1]v",
-          "type": "[]string",
-          "underlyingType": "[]string",
-          "argNum": 1,
-          "expr": "fileObjects"
         }
       ],
       "fuzzy": true
@@ -25254,7 +25626,26 @@
       "fuzzy": true
     },
     {
-      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
+      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+      "message": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+      "translation": "Cancelando o registro desse nó, cancelando todos os contratos, parando todas as cargas de trabalho, removendo esse nó do grupo de alta disponibilidade {HAGroup}, removendo esse nó do Exchange e reiniciando o Horizon...",
+      "placeholders": [
+        {
+          "id": "HAGroup",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "*horDevice.HAGroup"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "msg",
+        "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon..."
+      ],
       "message": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
       "translation": "Cancelando o registro deste nó, cancelando todos os contratos, parando todas as cargas de trabalho e reiniciando o Horizon...",
       "fuzzy": true
@@ -25948,6 +26339,68 @@
       "fuzzy": true
     },
     {
+      "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "message": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "translation": "falha ao desserializar json para o campo de implementação de cluster {StringjsonBytes}: {Err}",
+      "placeholders": [
+        {
+          "id": "StringjsonBytes",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(jsonBytes)"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "message": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "translation": "Dados inválidos apresentados no campo de implementação de cluster: {TempInterf}",
+      "placeholders": [
+        {
+          "id": "TempInterf",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "tempInterf"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The metadata attribute in the cluster deployment has wrong format.",
+      "message": "The metadata attribute in the cluster deployment has wrong format.",
+      "translation": "O atributo de metadados na implementação de cluster possui formato incorreto.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get the namespace from the Kube operator. {Err}",
+      "message": "Failed to get the namespace from the Kube operator. {Err}",
+      "translation": "Falha ao obter o namespace do operador Kube. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "user input {Name} has no default value and is not set",
       "message": "user input {Name} has no default value and is not set",
       "translation": "A entrada do usuário {Name} não possui valor padrão e não está configurada",
@@ -26283,6 +26736,190 @@
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "message": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "O serviço não tem configuração de implementação de cluster para o tipo de nó 'cluster'.",
+      "fuzzy": true
+    },
+    {
+      "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "message": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "translation": "O namespace do cluster do nó de entrada '{NodeNamespace}' não corresponde ao namespace do cluster do nó '{ExchNodeNamespace}' da troca {NodeId}.",
+      "placeholders": [
+        {
+          "id": "NodeNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeNamespace"
+        },
+        {
+          "id": "ExchNodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "exchNodeNamespace"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "message": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "translation": "O escopo do nó de entrada '{NodeIsNamespaceScope}' não corresponde ao escopo do nó '{ExchNodeIsNamespaceScope}' da troca {NodeId}.",
+      "placeholders": [
+        {
+          "id": "NodeIsNamespaceScope",
+          "string": "%[1]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "nodeIsNamespaceScope"
+        },
+        {
+          "id": "ExchNodeIsNamespaceScope",
+          "string": "%[2]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 2,
+          "expr": "exchNodeIsNamespaceScope"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "message": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "translation": "O namespace '{DeployerNamespace}' especificado na política ou no padrão de implementação não corresponde ao namespace do agente: '{NodeNamespace}'",
+      "placeholders": [
+        {
+          "id": "DeployerNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "deployerNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get cluster deployment from the service. {Err}",
+      "message": "Failed to get cluster deployment from the service. {Err}",
+      "translation": "Falha ao obter a implementação de cluster do serviço. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "message": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "translation": "O namespace '{SvcNamespace}' especificado no serviço não corresponde ao namespace do agente: '{NodeNamespace}'. Sobrescreva-o na política ou no padrão de implementação.",
+      "placeholders": [
+        {
+          "id": "SvcNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "message": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "translation": "O namespace '{PatternNamespace}' especificado no padrão '{PatternId}' está vazio ou não corresponde ao namespace do agente com escopo definido no namespace: '{NodeNamespace}'. O agente com escopo definido no namespace é compatível apenas com o padrão que possui o mesmo namespace com o agente.",
+      "placeholders": [
+        {
+          "id": "PatternNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternNamespace"
+        },
+        {
+          "id": "PatternId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternId"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "message": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "translation": "O namespace do cluster especificado no padrão '{PatternId}' é {PatternNamespace}, apenas o padrão com o namespace do cluster vazio pode ser registrado para o agente com escopo definido no cluster",
+      "placeholders": [
+        {
+          "id": "PatternId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternId"
+        },
+        {
+          "id": "PatternNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternNamespace"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -27389,6 +28026,22 @@
       "id": "The node organization must be provided.",
       "message": "The node organization must be provided.",
       "translation": "A organização do nó deve ser fornecida.",
+      "fuzzy": true
+    },
+    {
+      "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "message": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "translation": "O segredo {VaultSecretName} não existe no gerenciador de segredo para o nível da organização ou nível do usuário.",
+      "placeholders": [
+        {
+          "id": "VaultSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "vaultSecretName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -28756,6 +29409,56 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED_WITH_ERROR",
+        "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+      "translation": "Status de gerenciamento do nó para {Arg_1} mudado para {Arg_2}. Mensagem de erro: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_DELETED",
+        "Removing node management status for {Arg_1}."
+      ],
+      "message": "Removing node management status for {Arg_1}.",
+      "translation": "Removendo status de gerenciamento do nó para {Arg_1}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true

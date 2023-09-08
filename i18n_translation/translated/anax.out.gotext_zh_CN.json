@@ -228,6 +228,10 @@
     "translation": "必须在 API 路径中指定用户"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "必须在 API 路径中指定节点"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "在私钥管理器中检查私钥 {FullSecretName} 时出错。"
   },
@@ -468,20 +472,20 @@
     "translation": "将选定项目转换为选择器出错：{Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "名称或组织是空字符串。"
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "serviceVersions 数组为空。"
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "properties 包含无效的属性：{Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "{PROPSVCPRIVILEGED} 属性必须包含布尔值（true 或 false）。"
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "未能获取名称为 {PROPNODEK8SNAMESPACE} 的约束，错误：{Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "约束 {Newconstr} 中定义的 kubernetesNamespace 与部署策略中指定的 clusterNamespace“{ClusterNSInPolicy}”不同，该策略可能导致没有服务部署"
   },
   {
     "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
@@ -992,6 +996,22 @@
     "translation": "对部署字段 {StringjsonBytes} 的 JSON 进行取消序列化失败：{Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "对集群部署字段 {StringjsonBytes} 的 JSON 取消编组失败：{Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "集群部署字段中显示的数据无效：{TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "集群部署中的元数据属性格式错误。"
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "无法从 Kube 操作程序获取名称空间。{Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "用户输入 {Name} 没有缺省值，未进行设置"
   },
@@ -1080,6 +1100,34 @@
     "translation": "服务没有节点类型“cluster”的集群部署配置。"
   },
   {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "输入节点的集群名称空间“{NodeNamespace}”与来自 Exchange {NodeId} 的节点的集群名称空间“{ExchNodeNamespace}”不匹配。"
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "输入节点的作用域“{NodeIsNamespaceScope}”与 Exchange {NodeId} 中节点的作用域“{ExchNodeIsNamespaceScope}”不匹配。"
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "部署策略或模式中指定的名称空间“{DeployerNamespace}”与代理程序的名称空间“{NodeNamespace}”不匹配"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "无法从服务获取集群部署。{Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "服务中指定的名称空间“{SvcNamespace}”与代理程序的名称空间“{NodeNamespace}”不匹配。请在部署策略或模式中将其覆盖。"
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "模式“{PatternId}”中指定的名称空间“{PatternNamespace}”为空或与名称空间作用域的代理程序“{NodeNamespace}”的名称空间不匹配。名称空间作用域的代理程序仅与与代理程序具有相同名称空间的模式兼容。"
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "模式“{PatternId}”中指定的集群名称空间为 {PatternNamespace}，只能为集群作用域的代理程序注册具有空集群名称空间的模式"
+  },
+  {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
     "translation": "无法从 {VersionRange} 创建版本表达式。 {Err}"
   },
@@ -1102,6 +1150,10 @@
   {
     "id": "Policy Incompatible",
     "translation": "策略不兼容"
+  },
+  {
+    "id": "{Err1}",
+    "translation": "{Err1}"
   },
   {
     "id": "Architecture does not match.",
@@ -1342,6 +1394,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "必须提供节点组织。"
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "私钥 {VaultSecretName} 在组织级别或用户级别的私钥管理器中不存在。"
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -1954,6 +2010,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "{Arg_1} 的节点管理状态已更改为 {Arg_2}。"
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "{Arg_1} 的节点管理状态已更改为 {Arg_2}。 错误消息：{Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "正在除去 {Arg_1} 的节点管理状态。"
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

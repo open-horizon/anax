@@ -160,6 +160,10 @@
     "translation": "API パスにユーザーを指定する必要があります"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "API パスにノードを指定する必要があります"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "秘密マネージャー内で秘密 {FullSecretName} を検査中にエラーが発生しました。"
   },
@@ -400,14 +404,6 @@
     "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "Name または Org は空ストリングです。"
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "serviceVersions 配列は空です。"
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
   },
@@ -416,8 +412,16 @@
     "translation": "プロパティー {PROPSVCPRIVILEGED} にはブール値 (true または false) が必要です。"
   },
   {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "名前 {PROPNODEK8SNAMESPACE}の制約の取得に失敗しました。エラー: {Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "制約 {Newconstr} で定義されている kubernetesNamespace は、デプロイメント・ポリシーで指定されている clusterNamespace '{ClusterNSInPolicy}' と異なるため、ポリシーにより、サービス・デプロイメントが行われない可能性があります。"
+  },
+  {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-    "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルト・ロケーション(http://localhost)でHorizon Agent APIを使用します (これをオーバーライドするには、「環境変数」セクションを参照してください)。\n\nサブコマンドの説明: \n agbot: Horizon契約ボットのリソースをリストおよび管理します。\n agreement: このエッジ・ノードでHorizon契約ボットで締結された契約をリストまたは管理します。\n architecture: このマシンのアーキテクチャーを表示します。\n attribute: このHorizonエッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n deploycheck: デプロイメントの互換性を確認します。\n dev: サービスの作成のための開発ツールです。\n env: Horizon環境変数を表示します。\n eventlog: 現行またはすべての登録のイベント・ログをリストします。\n exchange: Horizon Exchangeリソースをリストおよび管理します。\n key: 署名および検証に使用するサービスの鍵をリストおよび管理します。 \n mms: Horizonモデル管理サービス・リソースをリストおよび管理します。\n nmstatus: ローカル・ノード管理状況をリストおよび管理します。\n node: このHorizonエッジ・ノードの一般情報をリストおよび管理します。\n nodemanagement: ノード管理のマニフェスト・ファイルおよびエージェント・ファイルをリストおよび管理します。\n policy: このHorizonエッジ・ノードのポリシーをリストおよび管理します。 \n reginput:「hzn register」コマンドに使用できる、このパターンの入力ファイル・テンプレートを作成します。 \n register: 管理ハブを持つこのエッジ・ノードを登録します。\n secretsmanager: シークレット・マネージャー内のシークレットをリストおよび管理します。\n service: このHorizonエッジ・ノードに現在登録されているサービスをリストまたは管理します。\n status: ノードの現在のHorizon内部状況を表示します。\n unregister: このHorizonエッジ・ノードを登録解除します。\n userinput: このHorizonエッジ・ノードに現在登録されているサービス・ユーザー入力をリストまたは管理します。\n util: ユーティリティー・コマンド。\n version: Horizonバージョンを表示します。\n sdo: Horizon SDO所有権証明書および鍵をリストおよび管理 します。\n fdo: Horizon FDO所有権証明書および鍵をリストおよび管理します。\n\n環境変数:\n HORIZON_URL: hznがHorizonエージェントAPIに接続するURLをオーバーライドします。\n      これにより、sshトンネル経由でリモートHorizonエージェントを使用することが可能になります。\n HZN_EXCHANGE_URL:「hzn exchange」サブコマンドがHorizon Exchangeと通信するために\n      使用するURLをオーバーラードします。\n例: https://exchange.bluehorizon.network/api/v1。 (デフォルトでは、hznはHorizonエージェントに\n      URLを要求します。) \n HZN_ORG_ID: 'hzn exchange -o'フラグのデフォルト値。\n      組織IDを指定します。\n HZN_EXCHANGE_USER_AUTH:'[org/]user:pw'の形式の'hzn exchange -u'または'hzn\n  register -u'フラグのデフォルト値。 HZN_EXCHANGE_USER_AUTHが設定されているときに\n      組織が省略された場合は、HZN_ORG_IDを設定できます。\n HZN_FSS_CSSURL:「hzn mms」サブコマンドがHorizonモデル管理サービスとの通信に\n      使用するURLをオーバーライドします。\n 例: https://exchange.bluehorizon.network/css/ (デフォルトでは、\n      hznはHorizonエージェントにURLを要求します。) \n HZN_SDO_SVC_URL:「hzn sdo」サブコマンドがSDO所有者サービスとの通信に\n      使用するURLをオーバーライドします。 (デフォルトでは、hznはHorizonエージェントに\n      URLを要求します。) \n HZN_FDO_SVC_URL:「hzn fdo」サブコマンドがFDO所有者サービスとの通信に \n      使用するURLをオーバーライドします。 (デフォルトでは、hzn は Horizon エージェントに URL を要求します。) \n \n これらすべての環境変数と、コマンド・ヘルプに記載されている環境変数は、\n ユーザーの構成ファイル ~/.hzn/hzn.json に JSON 形式で指定できます。\n 例: \n {Com____}"
+    "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルト・ロケーション(http://localhost)でHorizon Agent APIを使用します (これをオーバーライドするには、「環境変数」セクションを参照してください)。\n\nサブコマンドの説明: \n agbot: Horizon契約ボットのリソースをリストおよび管理します。\n agreement: このエッジ・ノードでHorizon契約ボットで締結された契約をリストまたは管理します。\n architecture: このマシンのアーキテクチャーを表示します。\n attribute: このHorizonエッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。\n deploycheck: デプロイメントの互換性を確認します。\n dev: サービスの作成のための開発ツールです。\n env: Horizon環境変数を表示します。\n eventlog: 現行またはすべての登録のイベント・ログをリストします。\n exchange: Horizon Exchangeリソースをリストおよび管理します。\n key: 署名および検証に使用するサービスの鍵をリストおよび管理します。 \n mms: Horizonモデル管理サービス・リソースをリストおよび管理します。\n nmstatus: ローカル・ノード管理状況をリストおよび管理します。\n node: このHorizonエッジ・ノードの一般情報をリストおよび管理します。\n nodemanagement: ノード管理のマニフェスト・ファイルおよびエージェント・ファイルをリストおよび管理します。\n policy: このHorizonエッジ・ノードのポリシーをリストおよび管理します。 \n reginput:「hzn register」コマンドに使用できる、このパターンの入力ファイル・テンプレートを作成します。 \n register: 管理ハブを持つこのエッジ・ノードを登録します。\n secretsmanager: シークレット・マネージャー内のシークレットをリストおよび管理します。\n service: このHorizonエッジ・ノードに現在登録されているサービスをリストまたは管理します。\n status: ノードの現在のHorizon内部状況を表示します。\n unregister: このHorizonエッジ・ノードを登録解除します。\n userinput: このHorizonエッジ・ノードに現在登録されているサービス・ユーザー入力をリストまたは管理します。\n util: ユーティリティー・コマンド。\n version: Horizonバージョンを表示します。\n sdo: Horizon SDO所有権証明書および鍵をリストおよび管理 します。\n fdo: Horizon FDO所有権証明書および鍵をリストおよび管理します。\n\n環境変数:\n HORIZON_URL: hznがHorizonエージェントAPIに接続するURLをオーバーライドします。\n      これにより、sshトンネル経由でリモートHorizonエージェントを使用することが可能になります。\n HZN_EXCHANGE_URL:「hzn exchange」サブコマンドがHorizon Exchangeと通信するために\n      使用するURLをオーバーラードします。例:\n      https://exchange.bluehorizon.network/api/v1。 (デフォルトでは、hznはHorizonエージェントに\n      URLを要求します。) \n HZN_ORG_ID: 'hzn exchange -o'フラグのデフォルト値。\n      組織IDを指定します。\n HZN_EXCHANGE_USER_AUTH:'[org/]user:pw'の形式の'hzn exchange -u'または'hzn\n  register -u'フラグのデフォルト値。 HZN_EXCHANGE_USER_AUTHが設定されているときに\n      組織が省略された場合は、HZN_ORG_IDを設定できます。\n HZN_FSS_CSSURL:「hzn mms」サブコマンドがHorizonモデル管理サービスとの通信に\n      使用するURLをオーバーライドします。\n 例: https://exchange.bluehorizon.network/css/ (デフォルトでは、\n      hznはHorizonエージェントにURLを要求します。) \n HZN_SDO_SVC_URL:「hzn sdo」サブコマンドがSDO所有者サービスとの通信に\n      使用するURLをオーバーライドします。 (デフォルトでは、hznはHorizonエージェントに\n      URLを要求します。) \n HZN_FDO_SVC_URL:「hzn fdo」サブコマンドがFDO所有者サービスとの通信に \n      使用するURLをオーバーライドします。 (デフォルトでは、hzn は Horizon エージェントに URL を要求します。) \n \n これらすべての環境変数と、コマンド・ヘルプに記載されている環境変数は、\n ユーザーの構成ファイル ~/.hzn/hzn.json に JSON 形式で指定できます。\n 例: \n {Com____}"
   },
   {
     "id": "Verbose output.",
@@ -592,6 +596,14 @@
     "translation": "ノード・タイプ。 有効な値は「device」と「cluster」です。 省略した場合は、デフォルト値は -n または現在の登録済みデバイスによって提供されるノードのタイプです。"
   },
   {
+    "id": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+    "translation": "ノード・タイプが「cluster」の場合は、ノードの Kubernetes クラスター名前空間。 省略した場合、デフォルト値は「openhorizon-agent」です。 ノード・タイプが「device」の場合、この値は無視されます。"
+  },
+  {
+    "id": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+    "translation": "ノード・タイプが「cluster」の場合、ノードのクラスター有効範囲は名前空間有効範囲です。 省略した場合、デフォルト値は false です。 ノード・タイプが「device」の場合、この値は無視されます。"
+  },
+  {
     "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
     "translation": "ノードの組織。 省略した場合は、デフォルト値は -n または現在の登録済みデバイスによって提供されるノードの組織です。"
   },
@@ -600,8 +612,8 @@
     "translation": "Horizon Exchange ノード ID。 --ha-group、--node-pol、および --node-ui と同時に指定することはできません。 省略した場合は、現在のデバイスが登録されているノード ID が使用されます。 このフラグは、複数のノードを指定するために繰り返すことができます。 ノードIDの前に組織IDを付加していない場合、自動的に-o値が前に付加されます。"
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-    "translation": "HA グループの名前です。 -n、--node-pol、および --node-ui と同時に指定することはできません。"
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+    "translation": "HA グループの名前です。 デプロイメント検査は、指定された HA グループ内のすべてのノードに対して実行されます。 -n、--node-pol、および --node-ui と同時に指定することはできません。"
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
@@ -648,8 +660,8 @@
     "translation": "Horizon Exchange ノード ID。 --ha-group および --node-pol と同時に指定することはできません。 省略した場合は、現在のデバイスが登録されているノード ID が使用されます。 このフラグは、複数のノードを指定するために繰り返すことができます。 ノードIDの前に組織IDを付加していない場合、自動的に-o値が前に付加されます。"
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-    "translation": "HA グループの名前です。 -n および --node-pol と同時に指定することはできません。"
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+    "translation": "HA グループの名前です。 デプロイメント検査は、指定された HA グループ内のすべてのノードに対して実行されます。 -n および --node-pol と同時に指定することはできません。"
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
@@ -2448,8 +2460,8 @@
     "translation": "(Horizon でこのノードを使用しなくなるため、) Horizon Exchange からこのノード・リソースも削除します。"
   },
   {
-    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-    "translation": "過去の登録情報もすべて削除します。 これは、「hzn unregister」コマンドが失敗した後にのみ使用してください。 このフラグを使用する前に、「hzn eventlog list -a -l」コマンドを実行し、ログをキャプチャーしてください。"
+    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+    "translation": "また、以前の登録情報もすべて削除します。 これは、「hzn unregister」コマンドが失敗した後でのみ使用してください。 イベント・ログは、このコマンドの実行後に自動的に保存されます。"
   },
   {
     "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
@@ -2552,8 +2564,8 @@
     "translation": "想定される標準入力の署名。"
   },
   {
-    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-    "translation": "秘密マネージャー内の秘密をリストおよび管理します。 注: 組織全体で使用可能な秘密をリストするには、管理者として認証する必要があります。"
+    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+    "translation": "シークレット・マネージャーでシークレットをリストおよび管理します。 注: 組織全体で使用可能なシークレットをリストするには、管理者として認証する必要があります。 シークレットは、クラスター・エージェントではサポートされません。"
   },
   {
     "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
@@ -2568,6 +2580,10 @@
     "translation": "秘密マネージャー内の秘密の名前を表示します。"
   },
   {
+    "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+    "translation": "リストするノード・シークレットのノード ID。 このシークレットが単一ノードに固有のものである場合にのみ含めます。"
+  },
+  {
     "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
     "translation": "この 1 つの秘密のみをリストします。 秘密の存在を示すブール値を返します。 これは、秘密マネージャー内で使用される秘密の名前です。 秘密が存在しない場合、終了コード 1 で戻ります。"
   },
@@ -2578,6 +2594,10 @@
   {
     "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
     "translation": "秘密の名前。 組織内で固有である必要があります。 この名前は、デプロイメントのポリシーおよびパターンにおいて、サービス定義内の秘密名にこの秘密をバインドするために使用されます。"
+  },
+  {
+    "id": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+    "translation": "このシークレットを適用するノードの ID。 このシークレットが単一ノードに固有のものである場合にのみ含めます。"
   },
   {
     "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
@@ -2600,12 +2620,20 @@
     "translation": "秘密マネージャー内の秘密を削除します。"
   },
   {
+    "id": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+    "translation": "削除するシークレットのノード ID。 このシークレットが単一ノードに固有のものである場合にのみ含めます。"
+  },
+  {
     "id": "The name of the secret to be removed from the secrets manager.",
     "translation": "秘密マネージャーから削除される秘密の名前。"
   },
   {
     "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
     "translation": "秘密マネージャーに保管された秘密の詳細を読み取ります。 これは、秘密の作成時に指定されたキーと値のペアからなります。"
+  },
+  {
+    "id": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+    "translation": "読み取るノード・シークレットのノード ID。 このシークレットが単一ノードに固有のものである場合にのみ含めます。"
   },
   {
     "id": "The name of the secret to read in the secrets manager.",
@@ -3492,6 +3520,10 @@
     "translation": "「hzn deploycheck all」の出力のマーシャルに失敗しました: {Err}"
   },
   {
+    "id": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+    "translation": "-s は、-t によって指定されたノード・タイプが「cluster」の場合にのみ指定できます。"
+  },
+  {
     "id": "Please specify either deployment policy or pattern.",
     "translation": "デプロイメント・ポリシーまたはパターンのいずれかを指定してください。"
   },
@@ -3542,6 +3574,14 @@
   {
     "id": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
     "translation": "-t で指定されたノード・タイプ {InputType} は、ローカル・ノードのタイプ {NodeType} と一致していません。"
+  },
+  {
+    "id": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+    "translation": "-s で指定されたノード・クラスター名前空間 {InputNamespace} が、ローカル・ノード {Namespace}のクラスター名前空間と一致しません。"
+  },
+  {
+    "id": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+    "translation": "--is-namespace-scoped で指定されたノード is-namespace-scoped {InputIsNamespaceScoped} は、ローカル・ノード {IsNamespaceScoped}のエージェント・スコープと一致しません。"
   },
   {
     "id": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
@@ -4388,6 +4428,10 @@
     "translation": "デプロイメント・ポリシー: {PolOrg}/{Policy} は Horizon Exchange で追加されました"
   },
   {
+    "id": "Invalid format for service: {Err1}",
+    "translation": "サービスの形式が無効です: {Err1}"
+  },
+  {
     "id": "Invalid format for properties: {Err1}",
     "translation": "プロパティーのフォーマットが無効です: {Err1}"
   },
@@ -4428,8 +4472,8 @@
     "translation": "デプロイメント・ポリシー {PolOrg}/{Policy} は削除されました"
   },
   {
-    "id": "Failed to validate the secret binding. {Err}",
-    "translation": "秘密バインディングの検証に失敗しました。 {Err}"
+    "id": "{Err}",
+    "translation": "{Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
@@ -4460,6 +4504,18 @@
     "translation": "従属サービス {Id} の秘密バインディングの検証中にエラーが発生しました。 {Err}"
   },
   {
+    "id": "Warning: {Err}",
+    "translation": "警告: {Err}"
+  },
+  {
+    "id": "Failed to validate cluster namespace for service, error was: {Err}",
+    "translation": "サービスのクラスター名前空間の検証に失敗しました。エラー: {Err}"
+  },
+  {
+    "id": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+    "translation": "ClusterNamespace は、デバイス・サービスに対しては設定しないでください: {Org}/{Name} (arch を使用) {Arch}"
+  },
+  {
     "id": "Deployment policy label.",
     "translation": "デプロイメント・ポリシーのラベル。"
   },
@@ -4478,6 +4534,10 @@
   {
     "id": "Set to '*' to use services of any hardware architecture.",
     "translation": "あらゆるハードウェア・アーキテクチャーのサービスを使用するには、「*」に設定します。"
+  },
+  {
+    "id": "The cluster namespace of the service.",
+    "translation": "サービスのクラスター名前空間。"
   },
   {
     "id": "A list of service versions.",
@@ -5176,8 +5236,20 @@
     "translation": "パターン {Pattern} は組織 {PatOrg} 内で検出されませんでした"
   },
   {
-    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-    "translation": "更新するパターン属性が入力ファイル内で見つかりません。 次の属性がサポートされます: label、description、services、userInput、および secretBinding。"
+    "id": "Invalid format for services: {Err1}",
+    "translation": "サービスの形式が無効です: {Err1}"
+  },
+  {
+    "id": "Error checking service types for pattern {Pname}. {Err}",
+    "translation": "パターン {Pname}のサービス・タイプの検査中にエラーが発生しました。{Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+    "translation": "'clusterNamespace' が指定されていますが、パターン {Pname}のクラスター・デプロイメントを持つサービスがありません。"
+  },
+  {
+    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+    "translation": "更新するパターン属性が入力ファイルに見つかりません。 サポートされる属性は、label、description、clusterNamespace、services、userInput、および secretBinding です。"
   },
   {
     "id": "Pattern {PatOrg}/{Pattern} updated in the Horizon Exchange",
@@ -5198,6 +5270,18 @@
   {
     "id": "the pattern definition ({Services}) must contain services, unable to proceed",
     "translation": "パターン定義 ({Services}) にはサービスが含まれている必要があります。続行できません"
+  },
+  {
+    "id": "Error checking service types for pattern. {Err}",
+    "translation": "パターンのサービス・タイプの検査中にエラーが発生しました。{Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+    "translation": "'clusterNamespace' が指定されていますが、パターンのクラスター・デプロイメントを持つサービスがありません。"
+  },
+  {
+    "id": "Invalid format in pattern file {JsonFilePath}: {Err}",
+    "translation": "パターン・ファイル {JsonFilePath}の形式が無効です: {Err}"
   },
   {
     "id": "Signing deployment_overrides field in service {I__1}, serviceVersion number {J__1}",
@@ -5250,6 +5334,10 @@
   {
     "id": "key '{KeyName}' not found",
     "translation": "鍵「{KeyName}」が見つかりません"
+  },
+  {
+    "id": "Failed to validate the secret binding. {Err}",
+    "translation": "秘密バインディングの検証に失敗しました。 {Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this pattern:",
@@ -5706,6 +5794,18 @@
   {
     "id": "unable to read kube operator {DepoperatorYamlArchive}, error {Err}",
     "translation": "kube 演算子 {DepoperatorYamlArchive} を読み取ることができません。エラー {Err}"
+  },
+  {
+    "id": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+    "translation": "'clusterDeployment' 内の 'metadata' は設定しないでください。 サービスを公開する前に 'clusterDeployment' 内の 'metadata' を削除してください"
+  },
+  {
+    "id": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+    "translation": "kube オペレーターからの名前空間の取得に失敗しました {OperatorFilePath}、エラー {Err}"
+  },
+  {
+    "id": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+    "translation": "警告: オペレーター・ファイルで名前空間が検出されました。 サービス名前空間は、デプロイメント・ポリシーまたはパターンに設定する必要があります"
   },
   {
     "id": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
@@ -6244,8 +6344,8 @@
     "translation": "ノードは既に HA グループ「{HaGroupName}」に含まれています。"
   },
   {
-    "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-    "translation": "ノード {Org}/{NodeId} は HA グループ {HaGroupName}にあります。"
+    "id": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+    "translation": "ノード {Org}/{NodeId} は HA グループ {ExistingHagrName}にあります。"
   },
   {
     "id": "Updating the node policy...",
@@ -7380,6 +7480,10 @@
     "translation": "{Name} コンテナーを停止しました"
   },
   {
+    "id": "Configuration files {FileObjects} loaded into the File sync service.",
+    "translation": "構成ファイル {FileObjects} をファイル同期サービスにロードしました。"
+  },
+  {
     "id": "Loading {FileName} into CSS",
     "translation": "{FileName} を CSS にロード中"
   },
@@ -7394,10 +7498,6 @@
   {
     "id": "unable to add file {FileName} to the CSS, error {Err}",
     "translation": "ファイル {FileName} を CSS に追加できません、エラー {Err}"
-  },
-  {
-    "id": "Configuration files {FileObjects} loaded into the File sync service.",
-    "translation": "構成ファイル {FileObjects} をファイル同期サービスにロードしました。"
   },
   {
     "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
@@ -7442,6 +7542,10 @@
   {
     "id": "Cannot backup eventlogs: {Err}",
     "translation": "イベント・ログをバックアップできません: {Err}"
+  },
+  {
+    "id": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+    "translation": "このノードの登録解除、すべての契約の取り消し、すべてのワークロードの停止、HA グループ {HAGroup}からのこのノードの削除、Exchange からのこのノードの削除、および Horizon の再始動..."
   },
   {
     "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
@@ -7676,6 +7780,22 @@
     "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "クラスター・デプロイメント・フィールド {StringjsonBytes}の JSON のアンマーシャルに失敗しました: {Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "クラスター・デプロイメント・フィールドに無効なデータが指定されました: {TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "クラスター・デプロイメントのメタデータ属性の形式が正しくありません。"
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "Kube オペレーターから名前空間を取得できませんでした。{Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
   },
@@ -7758,6 +7878,34 @@
   {
     "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
     "translation": "サービスには、ノード・タイプ「cluster」のクラスター・デプロイメント構成はありません。"
+  },
+  {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "入力ノードのクラスター名前空間 '{NodeNamespace}' は、Exchange {NodeId}からのノードのクラスター名前空間 '{ExchNodeNamespace}' と一致しません。"
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "入力ノードのスコープ '{NodeIsNamespaceScope}' が、Exchange {NodeId}からのノードのスコープ '{ExchNodeIsNamespaceScope}' と一致しません。"
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "デプロイメント・ポリシーまたはパターンで指定された名前空間 '{DeployerNamespace}' が、エージェントの名前空間 '{NodeNamespace}' と一致しません。"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "サービスからクラスター・デプロイメントを取得できませんでした。{Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "サービスで指定された名前空間 '{SvcNamespace}' は、エージェントの名前空間 '{NodeNamespace}' と一致しません。デプロイメント・ポリシーまたはパターンで上書きしてください。"
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "パターン '{PatternId}' で指定された名前空間 '{PatternNamespace}' が空であるか、名前空間スコープ・エージェントの名前空間 '{NodeNamespace}' と一致しません。名前空間スコープ・エージェントは、エージェントと同じ名前空間を持つパターンとのみ互換性があります。"
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "パターン '{PatternId}' で指定されたクラスター名前空間は {PatternNamespace}です。クラスター・スコープ・エージェントに登録できるのは、空のクラスター名前空間を持つパターンのみです。"
   },
   {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
@@ -8022,6 +8170,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "ノード組織が指定されている必要があります。"
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "シークレット {VaultSecretName} は、組織レベルでもユーザー・レベルでもシークレット・マネージャーに存在しません。"
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -8302,6 +8454,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "{Arg_1}のノード管理状況が {Arg_2}に変更されました。"
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "{Arg_1}のノード管理状況が {Arg_2}に変更されました。 エラー・メッセージ: {Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "{Arg_1}のノード管理状況を除去しています。"
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
