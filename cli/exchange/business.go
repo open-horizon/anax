@@ -282,7 +282,7 @@ func verifySecretBindingForPolicy(policy *businesspolicy.BusinessPolicy, polOrg 
 	// make sure the vault secret exists
 	agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
 	vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
-	msgMap, err := compcheck.VerifyVaultSecrets(neededSB, polOrg, agbotUrl, vaultSecretExists, msgPrinter)
+	msgMap, err := compcheck.VerifyVaultSecrets(neededSB, polOrg, "", agbotUrl, vaultSecretExists, msgPrinter)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the binding secret in the secret manager. %v", err))
 	} else if msgMap != nil && len(msgMap) > 0 {

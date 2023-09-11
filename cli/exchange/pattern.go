@@ -551,7 +551,7 @@ func verifySecretBindingForPattern(secretBinding []exchangecommon.SecretBinding,
 		// make sure the vault secret exists.
 		agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
 		vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
-		msgMap, err := compcheck.VerifyVaultSecrets(neededSB, patOrg, agbotUrl, vaultSecretExists, msgPrinter)
+		msgMap, err := compcheck.VerifyVaultSecrets(neededSB, patOrg, "", agbotUrl, vaultSecretExists, msgPrinter)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the binding secret in the secret manager. %v", err))
 		} else if msgMap != nil && len(msgMap) > 0 {

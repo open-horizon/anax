@@ -229,7 +229,7 @@ type NamespaceCoreV1 struct {
 }
 
 func (n NamespaceCoreV1) Install(c KubeClient, namespace string) error {
-	glog.V(3).Infof(kwlog(fmt.Sprintf("Lily - namespace in operator is %v, service deploy namespace is: %v", n.Name(), namespace)))
+	glog.V(3).Infof(kwlog(fmt.Sprintf("namespace in operator is %v, service deploy namespace is: %v", n.Name(), namespace)))
 	// The deploy namespace has been added to the apiObjMap in client.go
 	if namespace != n.Name() {
 		glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' is ignored. Service will be deployed to '%v'.", n.Name(), namespace)))

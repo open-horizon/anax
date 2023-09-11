@@ -236,7 +236,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 						continue
 					}
 					sSpec := NewServiceSpec(serviceRef.ServiceURL, serviceRef.ServiceOrg, workload.Version, serviceRef.ServiceArch)
-					if compatible, reason, imap, topSvcDef, _, depSvcDefs, err := VerifySecretBindingForService(sSpec, serviceDefResolverHandler, vaultSecretExists, agbotUrl, secretBinding, resources.NodeOrg, msgPrinter); err != nil {
+					if compatible, reason, imap, topSvcDef, _, depSvcDefs, err := VerifySecretBindingForService(sSpec, serviceDefResolverHandler, vaultSecretExists, agbotUrl, secretBinding, resources.NodeOrg, resources.NodeId, msgPrinter); err != nil {
 						return nil, err
 					} else {
 						// for performance, save the services that gotten from the exchange for use later
@@ -258,6 +258,9 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 							service_compatible = true
 							service_comp[sId] = topSvcDef
 							messages[sId] = msg_compatible
+							if reason != "" {
+								messages[sId] = msgPrinter.Sprintf("%v, Warning: %v", msg_compatible, reason)
+							}
 							if !checkAllSvcs {
 								break
 							}
@@ -277,7 +280,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 							if !needHandleService(sId, input.ServiceToCheck) {
 								continue
 							}
-							if compatible, reason, imap, depSvcDefs, err := VerifySecretBindingForServiceDef(&svc, resources.DepServices, serviceDefResolverHandler, vaultSecretExists, agbotUrl, secretBinding, resources.NodeOrg, msgPrinter); err != nil {
+							if compatible, reason, imap, depSvcDefs, err := VerifySecretBindingForServiceDef(&svc, resources.DepServices, serviceDefResolverHandler, vaultSecretExists, agbotUrl, secretBinding, resources.NodeOrg, resources.NodeId, msgPrinter); err != nil {
 								return nil, err
 							} else {
 								// for performance, save the services that gotten from the exchange for use later
@@ -299,6 +302,9 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 									service_compatible = true
 									service_comp[sId] = &svc
 									messages[sId] = msg_compatible
+									if reason != "" {
+										messages[sId] = msgPrinter.Sprintf("%v, Warning: %v", msg_compatible, reason)
+									}
 									if !checkAllSvcs {
 										break
 									}
@@ -329,7 +335,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 					if useSDef.GetOrg() == "" {
 						useSDef.(*common.ServiceFile).Org = serviceRef.ServiceOrg
 					}
-					if compatible, reason, imap, depSvcDefs, err := VerifySecretBindingForServiceDef(useSDef, resources.DepServices, serviceDefResolverHandler, vaultSecretExists, agbotUrl, secretBinding, resources.NodeOrg, msgPrinter); err != nil {
+					if compatible, reason, imap, depSvcDefs, err := VerifySecretBindingForServiceDef(useSDef, resources.DepServices, serviceDefResolverHandler, vaultSecretExists, agbotUrl, secretBinding, resources.NodeOrg, resources.NodeId, msgPrinter); err != nil {
 						return nil, err
 					} else {
 						// for performance, save the services that gotten from the exchange for use later
@@ -351,6 +357,9 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 							service_compatible = true
 							service_comp[sId] = useSDef
 							messages[sId] = msg_compatible
+							if reason != "" {
+								messages[sId] = msgPrinter.Sprintf("%v, Warning: %v", msg_compatible, reason)
+							}
 							if !checkAllSvcs {
 								break
 							}
@@ -435,7 +444,7 @@ func VerifySecretBindingForServiceCache(sTopDef common.AbstractServiceFile,
 	dependentServices map[string]exchange.ServiceDefinition,
 	secretBinding []exchangecommon.SecretBinding,
 	vaultSecretExists exchange.VaultSecretExistsHandler,
-	agbotUrl string, nodeOrg string,
+	agbotUrl string, nodeOrg string, nodeId string,
 	msgPrinter *message.Printer) (bool, string, map[int]map[string]bool, error) {
 
 	// get default message printer if nil
@@ -474,7 +483,7 @@ func VerifySecretBindingForServiceCache(sTopDef common.AbstractServiceFile,
 	// verify secrets exist in the secret manager
 	if agbotUrl != "" && vaultSecretExists != nil {
 		neededSB, _ := GroupSecretBindings(secretBinding, index_map)
-		if verified, reason, err := VerifyVaultSecrets_strict(neededSB, nodeOrg, agbotUrl, vaultSecretExists, msgPrinter); err != nil {
+		if verified, reason, err := VerifyVaultSecrets_strict(neededSB, nodeOrg, nodeId, agbotUrl, vaultSecretExists, msgPrinter); err != nil {
 			return false, "", index_map, fmt.Errorf(msgPrinter.Sprintf("Error verifying secret in the secret manager. %v", err))
 		} else {
 			return verified, reason, index_map, nil
@@ -497,7 +506,7 @@ func VerifySecretBindingForServiceCache(sTopDef common.AbstractServiceFile,
 func VerifySecretBindingForService(svcSpec *ServiceSpec,
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	vaultSecretExists exchange.VaultSecretExistsHandler, agbotUrl string,
-	secretBinding []exchangecommon.SecretBinding, nodeOrg string,
+	secretBinding []exchangecommon.SecretBinding, nodeOrg string, nodeId string,
 	msgPrinter *message.Printer) (bool, string, map[int]map[string]bool, common.AbstractServiceFile, string, map[string]exchange.ServiceDefinition, error) {
 
 	// get default message printer if nil
@@ -517,7 +526,7 @@ func VerifySecretBindingForService(svcSpec *ServiceSpec,
 
 	compSDef := ServiceDefinition{svcSpec.ServiceOrgid, *sDef}
 
-	compatible, reason, inxex_map, err := VerifySecretBindingForServiceCache(&compSDef, svc_map, secretBinding, vaultSecretExists, agbotUrl, nodeOrg, msgPrinter)
+	compatible, reason, inxex_map, err := VerifySecretBindingForServiceCache(&compSDef, svc_map, secretBinding, vaultSecretExists, agbotUrl, nodeOrg, nodeId, msgPrinter)
 	return compatible, reason, inxex_map, &compSDef, sId, svc_map, err
 }
 
@@ -535,7 +544,7 @@ func VerifySecretBindingForServiceDef(sDef common.AbstractServiceFile,
 	dependentServices map[string]exchange.ServiceDefinition, // can be nil
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	vaultSecretExists exchange.VaultSecretExistsHandler, agbotUrl string,
-	secretBinding []exchangecommon.SecretBinding, nodeOrg string,
+	secretBinding []exchangecommon.SecretBinding, nodeOrg string, nodeId string,
 	msgPrinter *message.Printer) (bool, string, map[int]map[string]bool, map[string]exchange.ServiceDefinition, error) {
 
 	// get default message printer if nil
@@ -554,7 +563,7 @@ func VerifySecretBindingForServiceDef(sDef common.AbstractServiceFile,
 		return false, "", nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find the dependent services for %v/%v %v %v. %v", sDef.GetOrg(), sDef.GetURL(), sDef.GetArch(), sDef.GetVersion(), err)), COMPCHECK_GENERAL_ERROR)
 	}
 
-	compatible, reason, inxex_map, err := VerifySecretBindingForServiceCache(sDef, service_map, secretBinding, vaultSecretExists, agbotUrl, nodeOrg, msgPrinter)
+	compatible, reason, inxex_map, err := VerifySecretBindingForServiceCache(sDef, service_map, secretBinding, vaultSecretExists, agbotUrl, nodeOrg, nodeId, msgPrinter)
 
 	return compatible, reason, inxex_map, service_map, err
 }
@@ -706,7 +715,7 @@ func GetSecretBindingForService(secretBinding []exchangecommon.SecretBinding, sv
 // It does not return when the vault secret does not exist or there is an error accessing
 // the vault api. Instead it will return a messages for each vault secret name that could
 // not be verified.
-func VerifyVaultSecrets(secretBinding []exchangecommon.SecretBinding, nodeOrg string, agbotURL string,
+func VerifyVaultSecrets(secretBinding []exchangecommon.SecretBinding, nodeOrg string, nodeId string, agbotURL string,
 	vaultSecretExists exchange.VaultSecretExistsHandler, msgPrinter *message.Printer) (map[string]string, error) {
 
 	if secretBinding == nil || len(secretBinding) == 0 {
@@ -730,6 +739,7 @@ func VerifyVaultSecrets(secretBinding []exchangecommon.SecretBinding, nodeOrg st
 	ret := map[string]string{}
 	vs_checked := map[string]bool{}
 	for _, sn := range secretBinding {
+		enableNodeSecret := sn.EnableNodeLevelSecrets
 		for _, vbind := range sn.Secrets {
 
 			// make sure each vault get checked only once
@@ -740,7 +750,7 @@ func VerifyVaultSecrets(secretBinding []exchangecommon.SecretBinding, nodeOrg st
 				vs_checked[vaultSecretName] = true
 			}
 
-			if exists, err := VerifySingleVaultSecret(vaultSecretName, nodeOrg, agbotURL, vaultSecretExists, msgPrinter); err != nil {
+			if exists, err := VerifySingleVaultSecret(vaultSecretName, nodeOrg, nodeId, agbotURL, vaultSecretExists, enableNodeSecret, msgPrinter); err != nil {
 				ret[vaultSecretName] = err.Error()
 			} else if !exists {
 				msg := msgPrinter.Sprintf("Secret %v does not exist in the secret manager.", vaultSecretName)
@@ -758,7 +768,7 @@ func VerifyVaultSecrets(secretBinding []exchangecommon.SecretBinding, nodeOrg st
 // Call the agbot API to verify the vault secrets exists.
 // It returns immediately when a vault secret does not exist or there is an error accessing
 // the vault api.
-func VerifyVaultSecrets_strict(secretBinding []exchangecommon.SecretBinding, nodeOrg string, agbotURL string,
+func VerifyVaultSecrets_strict(secretBinding []exchangecommon.SecretBinding, nodeOrg string, nodeId string, agbotURL string,
 	vaultSecretExists exchange.VaultSecretExistsHandler, msgPrinter *message.Printer) (bool, string, error) {
 	if secretBinding == nil || len(secretBinding) == 0 {
 		return true, "", nil
@@ -780,6 +790,7 @@ func VerifyVaultSecrets_strict(secretBinding []exchangecommon.SecretBinding, nod
 	// go through each secret binding making sure the vault secret exist in vault
 	vs_checked := map[string]bool{}
 	for _, sn := range secretBinding {
+		enableNodeSecret := sn.EnableNodeLevelSecrets
 		for _, vbind := range sn.Secrets {
 			_, vaultSecretName := vbind.GetBinding()
 
@@ -790,8 +801,10 @@ func VerifyVaultSecrets_strict(secretBinding []exchangecommon.SecretBinding, nod
 				vs_checked[vaultSecretName] = true
 			}
 
-			if exists, err := VerifySingleVaultSecret(vaultSecretName, nodeOrg, agbotURL, vaultSecretExists, msgPrinter); err != nil {
+			if exists, err := VerifySingleVaultSecret(vaultSecretName, nodeOrg, nodeId, agbotURL, vaultSecretExists, enableNodeSecret, msgPrinter); !exists && err != nil {
 				return false, "", err
+			} else if exists && err != nil {
+				return true, msgPrinter.Sprintf("%v, use non node-level secret", err), nil
 			} else if !exists {
 				return false, msgPrinter.Sprintf("Secret %v does not exist in the secret manager.", vaultSecretName), nil
 			}
@@ -802,8 +815,8 @@ func VerifyVaultSecrets_strict(secretBinding []exchangecommon.SecretBinding, nod
 }
 
 // It calls the agbot API to verify whether the given secret name exist in vault or not.
-func VerifySingleVaultSecret(vaultSecretName string, nodeOrg string, agbotURL string,
-	vaultSecretExists exchange.VaultSecretExistsHandler, msgPrinter *message.Printer) (bool, error) {
+func VerifySingleVaultSecret(vaultSecretName string, nodeOrg string, nodeId string, agbotURL string,
+	vaultSecretExists exchange.VaultSecretExistsHandler, enableNodeSecret bool, msgPrinter *message.Printer) (bool, error) {
 
 	// get default message printer if nil
 	if msgPrinter == nil {
@@ -811,14 +824,28 @@ func VerifySingleVaultSecret(vaultSecretName string, nodeOrg string, agbotURL st
 	}
 
 	// parse the name
-	userName, nodeName, sName, err_parse := ParseVaultSecretName(vaultSecretName, msgPrinter)
+	userName, nName, sName, err_parse := ParseVaultSecretName(vaultSecretName, msgPrinter)
 	if err_parse != nil {
 		return false, fmt.Errorf(msgPrinter.Sprintf("Error parsing secret name in the secret binding. %v", err_parse))
 	}
 
+	// nName == "" from ParseVaultSecretName() function if this is deploycheck CLI
+	if nodeId != "" && nName == "" {
+		nodeName := exchange.GetId(nodeId)
+		nName = nodeName
+	}
+
 	// check the existance
-	if exists, err := vaultSecretExists(agbotURL, nodeOrg, userName, nodeName, sName); err != nil {
-		return false, fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager. %v", vaultSecretName, err))
+	if exists, err := vaultSecretExists(agbotURL, nodeOrg, userName, nName, sName); err != nil {
+		return false, fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v for node %v in the secret manager. %v", vaultSecretName, nName, err))
+	} else if !exists && nName != "" {
+		// then set nName == "" to check non-node level
+		if exists, err = vaultSecretExists(agbotURL, nodeOrg, userName, "", sName); err != nil {
+			return false, fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager. %v", vaultSecretName, err))
+		}
+
+		// return exists and
+		return exists, fmt.Errorf(msgPrinter.Sprintf("Node level secret %v doesn't exist for node %v", vaultSecretName, nName))
 	} else {
 		return exists, nil
 	}

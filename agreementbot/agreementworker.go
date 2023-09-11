@@ -873,6 +873,7 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 		nil,
 		"",
 		exchange.GetOrg(deviceId),
+		exchange.GetId(deviceId),
 		msgPrinter)
 
 	if err != nil {
