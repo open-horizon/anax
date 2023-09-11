@@ -11,10 +11,11 @@ type SecretUpdate struct {
 	SecretUpdateTime int64
 	PolicyNames      []string // An array of org qualified policy names
 	PatternNames     []string // An array of org qualified pattern names
+	NodeName         string // Name of node for node-specific secret. Empty if not node-specific
 }
 
 // Returns a new SecretUpdate object with a copied policy and pattern name list.
-func NewSecretUpdate(secretOrg, secretName string, secretUpdateTime int64, policyNames []string, patternNames []string) (su *SecretUpdate) {
+func NewSecretUpdate(secretOrg, secretName string, secretUpdateTime int64, policyNames []string, patternNames []string, secretNode string) (su *SecretUpdate) {
 	su = new(SecretUpdate)
 	su.SecretOrg = secretOrg
 	su.SecretFullName = secretName
@@ -23,6 +24,7 @@ func NewSecretUpdate(secretOrg, secretName string, secretUpdateTime int64, polic
 	copy(su.PolicyNames, policyNames)
 	su.PatternNames = make([]string, len(patternNames))
 	copy(su.PatternNames, patternNames)
+	su.NodeName = secretNode
 	return
 }
 
@@ -56,7 +58,7 @@ func (sus *SecretUpdates) Length() int {
 
 // Returns a list of the fully qualified secret names that have change recently, which are used/referenced
 // by the input policy.
-func (sus *SecretUpdates) GetUpdatedSecretsForPolicy(policyName string, lastUpdateTime uint64) (uint64, []string) {
+func (sus *SecretUpdates) GetUpdatedSecretsForPolicy(policyName string, nodeName string, lastUpdateTime uint64) (uint64, []string) {
 
 	res := make([]string, 0)
 	newestUpdate := uint64(0)
@@ -66,7 +68,7 @@ func (sus *SecretUpdates) GetUpdatedSecretsForPolicy(policyName string, lastUpda
 	}
 
 	for _, su := range sus.Updates {
-		if cutil.SliceContains(su.PolicyNames, policyName) && uint64(su.SecretUpdateTime) > lastUpdateTime {
+		if cutil.SliceContains(su.PolicyNames, policyName) && uint64(su.SecretUpdateTime) > lastUpdateTime && (su.NodeName == "" || nodeName == su.NodeName) {
 			if uint64(su.SecretUpdateTime) > newestUpdate {
 				newestUpdate = uint64(su.SecretUpdateTime)
 			}

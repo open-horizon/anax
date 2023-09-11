@@ -2080,7 +2080,7 @@ func (w *ExchangeChangeMessage) String() string {
 }
 
 func (w *ExchangeChangeMessage) ShortString() string {
-	return fmt.Sprintf("Event: %v, Change: %v", w.event, w.change)
+	return fmt.Sprintf("Event: %v, Change: %v, ResourceBeforeChange: %v", w.event, w.change, w.resourceBeforeChange)
 }
 
 func (w *ExchangeChangeMessage) SetChange(c interface{}) {
