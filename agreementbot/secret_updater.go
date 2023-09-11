@@ -108,9 +108,9 @@ func (sm *SecretUpdateManager) CheckForUpdates(secretProvider secrets.AgbotSecre
 
 		// If there are policies returned, then it means that the policy references the secret and the secret has been updated.
 		if len(policyNames) != 0 {
-			su := events.NewSecretUpdate(secretOrg, exchange.GetId(fullSecretName), secretMetadata.UpdateTime, policyNames, []string{})
+			su := events.NewSecretUpdate(secretOrg, exchange.GetId(fullSecretName), secretMetadata.UpdateTime, policyNames, []string{}, secretNode)
 			secretUpdates.AddSecretUpdate(su)
-			glog.V(5).Infof(smlogString(fmt.Sprintf("Policies affected by %s, %v", fullSecretName, policyNames)))
+			glog.V(5).Infof(smlogString(fmt.Sprintf("Policies affected by %s, %v Node: %s", fullSecretName, policyNames, secretNode)))
 		}
 
 		// Get a list of patterns that have a secret which has been updated.
@@ -122,14 +122,100 @@ func (sm *SecretUpdateManager) CheckForUpdates(secretProvider secrets.AgbotSecre
 
 		// If there are patterns returned, then it means that the secret has been updated.
 		if len(patternNames) != 0 {
-			su := events.NewSecretUpdate(secretOrg, exchange.GetId(fullSecretName), secretMetadata.UpdateTime, []string{}, patternNames)
+			su := events.NewSecretUpdate(secretOrg, exchange.GetId(fullSecretName), secretMetadata.UpdateTime, []string{}, patternNames, secretNode)
 			secretUpdates.AddSecretUpdate(su)
-			glog.V(5).Infof(smlogString(fmt.Sprintf("Patterns affected by %s, %v", fullSecretName, patternNames)))
+			glog.V(5).Infof(smlogString(fmt.Sprintf("Patterns affected by %s, %v Node: %v", fullSecretName, patternNames, secretNode)))
 		}
 
 	}
 
 	return secretUpdates, nil
+}
+
+// after each nodescan update the list of node secret managed by the agbot
+func (sm *SecretUpdateManager) UpdateNodeSecrets(org string, exchPolsMetadata map[string]exchange.ExchangeBusinessPolicy, secretProvider secrets.AgbotSecrets, db persistence.AgbotDatabase, agProtocol string) error {
+
+       for policyName, dpol := range exchPolsMetadata {
+
+                // Get the list of managed secrets for this policy from the DB.
+                secretNames, err := db.GetManagedPolicySecretNames(org, exchange.GetId(policyName))
+                if err != nil {
+                        glog.Errorf(smlogString(fmt.Sprintf("Error retrieving managed secret list for %s, error: %v", policyName, err)))
+                        continue
+                }
+
+                // Keep track of which secrets are being referenced so that unused secrets can be removed at the end.
+                referencedSecrets := make(map[string]bool)
+
+		// Iterate the list of secret bindings in the policy to get the secret manager secret names.
+                for _, sb := range dpol.SecretBinding {
+                        // Iterate each bound secret
+                        for _, bs := range sb.Secrets {
+                                // Extract the secret manager secret name
+                                _, secretFullName := bs.GetBinding()
+                                referencedSecrets[fmt.Sprintf("%s/%s", org, secretFullName)] = true
+
+				if !sb.EnableNodeLevelSecrets {
+                                	continue
+                        	}
+
+                                secretUser, _, secretName, err := compcheck.ParseVaultSecretName(secretFullName, nil)
+                                if err != nil {
+                                        glog.Errorf(smlogString(fmt.Sprintf("unable to parse secret name %s, error: %v", secretFullName, err)))
+                                        continue
+                                }
+
+                                pName := exchange.GetId(policyName)
+
+                                // Use now as the last update time for secrets that dont exist yet.
+                                secretLastUpdateTime := time.Now().Unix()
+
+				agList, err := db.FindAgreements([]persistence.AFilter{persistence.PolAFilter(policyName), persistence.UnarchivedAFilter()}, agProtocol)
+				for _, ag := range agList {
+					secretNode := ag.DeviceId
+
+					if secretUser != "" {
+						referencedSecrets[fmt.Sprintf("%s/user/%s/node/%s/%s", org, secretUser, secretNode, secretName)] = true
+					} else {
+						referencedSecrets[fmt.Sprintf("%s/node/%s/%s", org, secretNode, secretName)] = true
+					}
+
+                                	// Get the secret's metadata, if it exists
+                                	sm, err := secretProvider.GetSecretMetadata(org, secretUser, secretNode, secretName)
+                                	if err != nil {
+                                        	// The secret should be stored in the table even if it doesnt exist, so that if it is created later
+                                        	// changes to it will be recognized.
+                                        	glog.Warningf(smlogString(fmt.Sprintf("unable to retrieve metadata for %s %s, error: %v", org, secretFullName, err)))
+                                        	//continue
+                                	} else {
+                                        	secretLastUpdateTime = sm.UpdateTime
+                                	}
+
+                                	glog.V(5).Infof(smlogString(fmt.Sprintf("storing managed secret %v %v from %v/%v", org, secretFullName, org, pName)))
+
+                                	// Only secrets that have never been referenced before are added to the DB. DB rows that already exist will not be updated.
+                                	err = db.AddManagedPolicySecret(org, secretFullName, org, pName, secretLastUpdateTime)
+                                	if err != nil {
+                                        	glog.Errorf(smlogString(fmt.Sprintf("unable to persist secret %v %v from %v/%v, error: %v", org, secretFullName, org, pName, err)))
+                                	}
+				}
+                        }
+                }
+
+                // Look for unreferenced secrets and remove them.
+                for _, secretName := range secretNames {
+                        if _, ok := referencedSecrets[secretName]; !ok {
+
+                                glog.V(5).Infof(smlogString(fmt.Sprintf("deleting managed secret %s from %s because it is no longer used", secretName, policyName)))
+                                err = db.DeletePolicySecret(exchange.GetOrg(secretName), exchange.GetId(secretName), org, exchange.GetId(policyName))
+                                if err != nil {
+                                        glog.Errorf(smlogString(fmt.Sprintf("unable to delete %s from secrets DB, error: %v", secretName, err)))
+                                }
+                        }
+                }
+
+	}
+	return nil
 }
 
 // When policies are added, changed or deleted, the list of managed secrets in the DB might need to be updated.

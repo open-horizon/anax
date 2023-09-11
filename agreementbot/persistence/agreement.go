@@ -529,6 +529,10 @@ func DevPolAFilter(deviceId string, policyName string) AFilter {
 	return func(a Agreement) bool { return a.DeviceId == deviceId && a.PolicyName == policyName }
 }
 
+func PolAFilter(policyName string) AFilter {
+        return func(a Agreement) bool { return a.PolicyName == policyName }
+}
+
 func RunFilters(ag *Agreement, filters []AFilter) *Agreement {
 	for _, filterFn := range filters {
 		if !filterFn(*ag) {
