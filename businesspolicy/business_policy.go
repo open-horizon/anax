@@ -57,16 +57,19 @@ func (w ServiceRef) String() string {
 }
 
 func (w ServiceRef) Validate() error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	if w.Name == "" || w.Org == "" {
-		return fmt.Errorf("Name, or Org is empty string.")
+		return fmt.Errorf(msgPrinter.Sprintf("Name, or Org is empty string."))
 	} else if w.ServiceVersions == nil || len(w.ServiceVersions) == 0 {
-		return fmt.Errorf("The serviceVersions array is empty.")
+		return fmt.Errorf(msgPrinter.Sprintf("The serviceVersions array is empty."))
 	} else if len(w.ServiceVersions) != 0 {
 		for _, wc := range w.ServiceVersions {
 			if wc.Priority.PriorityValue != 0 && (wc.Priority.RetryDurationS == 0 || wc.Priority.Retries == 0) {
-				return fmt.Errorf("retry_durations and retries cannot be zero if priority_value is set to non-zero value")
+				return fmt.Errorf(msgPrinter.Sprintf("retry_durations and retries cannot be zero if priority_value is set to non-zero value"))
 			} else if wc.Priority.PriorityValue == 0 && (wc.Priority.RetryDurationS != 0 || wc.Priority.Retries != 0 || wc.Priority.VerifiedDurationS != 0) {
-				return fmt.Errorf("retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set")
+				return fmt.Errorf(msgPrinter.Sprintf("retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set"))
 			}
 		}
 	}
