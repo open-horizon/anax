@@ -133,7 +133,7 @@ func (sm *SecretUpdateManager) CheckForUpdates(secretProvider secrets.AgbotSecre
 }
 
 // after each nodescan update the list of node secret managed by the agbot
-func (sm *SecretUpdateManager) UpdateNodeSecrets(org string, exchPolsMetadata map[string]exchange.ExchangeBusinessPolicy, secretProvider secrets.AgbotSecrets, db persistence.AgbotDatabase, agProtocol string) error {
+func (sm *SecretUpdateManager) UpdateNodePolicySecrets(org string, exchPolsMetadata map[string]exchange.ExchangeBusinessPolicy, secretProvider secrets.AgbotSecrets, db persistence.AgbotDatabase, agProtocol string) error {
 
        for policyName, dpol := range exchPolsMetadata {
 
@@ -217,6 +217,93 @@ func (sm *SecretUpdateManager) UpdateNodeSecrets(org string, exchPolsMetadata ma
 	}
 	return nil
 }
+
+// periodically called to update the list of node secret managed by the agbot
+func (sm *SecretUpdateManager) UpdateNodePatternSecrets(org string, exchPatsMetadata map[string]exchange.Pattern, secretProvider secrets.AgbotSecrets, db persistence.AgbotDatabase, agProtocol string) error {
+
+       for patternName, dpol := range exchPatsMetadata {
+
+                // Get the list of managed secrets for this pattern from the DB.
+                secretNames, err := db.GetManagedPatternSecretNames(org, exchange.GetId(patternName))
+                if err != nil {
+                        glog.Errorf(smlogString(fmt.Sprintf("Error retrieving managed secret list for %s, error: %v", patternName, err)))
+                        continue
+                }
+
+                // Keep track of which secrets are being referenced so that unused secrets can be removed at the end.
+                referencedSecrets := make(map[string]bool)
+
+		// Iterate the list of secret bindings in the policy to get the secret manager secret names.
+                for _, sb := range dpol.SecretBinding {
+                        // Iterate each bound secret
+                        for _, bs := range sb.Secrets {
+                                // Extract the secret manager secret name
+                                _, secretFullName := bs.GetBinding()
+                                referencedSecrets[fmt.Sprintf("%s/%s", org, secretFullName)] = true
+
+				if !sb.EnableNodeLevelSecrets {
+                                	continue
+                        	}
+
+                                secretUser, _, secretName, err := compcheck.ParseVaultSecretName(secretFullName, nil)
+                                if err != nil {
+                                        glog.Errorf(smlogString(fmt.Sprintf("unable to parse secret name %s, error: %v", secretFullName, err)))
+                                        continue
+                                }
+
+                                pName := exchange.GetId(patternName)
+
+                                // Use now as the last update time for secrets that dont exist yet.
+                                secretLastUpdateTime := time.Now().Unix()
+
+				agList, err := db.FindAgreements([]persistence.AFilter{persistence.PatAFilter(patternName), persistence.UnarchivedAFilter()}, agProtocol)
+				for _, ag := range agList {
+					secretNode := ag.DeviceId
+
+					if secretUser != "" {
+						referencedSecrets[fmt.Sprintf("%s/user/%s/node/%s/%s", org, secretUser, secretNode, secretName)] = true
+					} else {
+						referencedSecrets[fmt.Sprintf("%s/node/%s/%s", org, secretNode, secretName)] = true
+					}
+
+                                	// Get the secret's metadata, if it exists
+                                	sm, err := secretProvider.GetSecretMetadata(org, secretUser, secretNode, secretName)
+                                	if err != nil {
+                                        	// The secret should be stored in the table even if it doesnt exist, so that if it is created later
+                                        	// changes to it will be recognized.
+                                        	glog.Warningf(smlogString(fmt.Sprintf("unable to retrieve metadata for %s %s, error: %v", org, secretFullName, err)))
+                                        	//continue
+                                	} else {
+                                        	secretLastUpdateTime = sm.UpdateTime
+                                	}
+
+                                	glog.V(5).Infof(smlogString(fmt.Sprintf("storing managed secret %v %v from %v/%v", org, secretFullName, org, pName)))
+
+                                	// Only secrets that have never been referenced before are added to the DB. DB rows that already exist will not be updated.
+                                	err = db.AddManagedPatternSecret(org, secretFullName, org, pName, secretLastUpdateTime)
+                                	if err != nil {
+                                        	glog.Errorf(smlogString(fmt.Sprintf("unable to persist secret %v %v from %v/%v, error: %v", org, secretFullName, org, pName, err)))
+                                	}
+				}
+                        }
+                }
+
+                // Look for unreferenced secrets and remove them.
+                for _, secretName := range secretNames {
+                        if _, ok := referencedSecrets[secretName]; !ok {
+
+                                glog.V(5).Infof(smlogString(fmt.Sprintf("deleting managed secret %s from %s because it is no longer used", secretName, patternName)))
+                                err = db.DeletePatternSecret(exchange.GetOrg(secretName), exchange.GetId(secretName), org, exchange.GetId(patternName))
+                                if err != nil {
+                                        glog.Errorf(smlogString(fmt.Sprintf("unable to delete %s from secrets DB, error: %v", secretName, err)))
+                                }
+                        }
+                }
+
+	}
+	return nil
+}
+
 
 // When policies are added, changed or deleted, the list of managed secrets in the DB might need to be updated.
 func (sm *SecretUpdateManager) UpdatePolicies(org string, exchPolsMetadata map[string]exchange.ExchangeBusinessPolicy, secretProvider secrets.AgbotSecrets, db persistence.AgbotDatabase) error {

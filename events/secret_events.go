@@ -79,7 +79,7 @@ func (sus *SecretUpdates) GetUpdatedSecretsForPolicy(policyName string, nodeName
 
 }
 
-func (sus *SecretUpdates) GetUpdatedSecretsForPattern(patternName string, lastUpdateTime uint64) (uint64, []string) {
+func (sus *SecretUpdates) GetUpdatedSecretsForPattern(patternName string, nodeName string, lastUpdateTime uint64) (uint64, []string) {
 
 	res := make([]string, 0)
 	newestUpdate := uint64(0)
@@ -89,7 +89,7 @@ func (sus *SecretUpdates) GetUpdatedSecretsForPattern(patternName string, lastUp
 	}
 
 	for _, su := range sus.Updates {
-		if cutil.SliceContains(su.PatternNames, patternName) && uint64(su.SecretUpdateTime) > lastUpdateTime {
+		if cutil.SliceContains(su.PatternNames, patternName) && uint64(su.SecretUpdateTime) > lastUpdateTime && (su.NodeName == "" || nodeName == su.NodeName) {
 			if uint64(su.SecretUpdateTime) > newestUpdate {
 				newestUpdate = uint64(su.SecretUpdateTime)
 			}
