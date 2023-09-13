@@ -67,11 +67,35 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 				getBusinessPolicies := exchange.GetHTTPBusinessPoliciesHandler(w)
 				if exchPolsMetadata, err = getBusinessPolicies(org, ""); err != nil {
 					glog.Errorf("unable to get business polices for org %v, error %v", org, err)
+					continue
 				}
 			}
-			err = w.secretUpdateManager.UpdateNodeSecrets(org, exchPolsMetadata, w.secretProvider, w.db, agp)
+			err = w.secretUpdateManager.UpdateNodePolicySecrets(org, exchPolsMetadata, w.secretProvider, w.db, agp)
 			if err != nil {
-				glog.Errorf("error updating node secrets %v", err)
+				glog.Errorf("error updating node policy secrets %v", err)
+			}
+		}
+
+		// Iterate over each org in the PatternManager and process all the patterns in that org
+		for _, org := range patternManager.GetAllPatternOrgs() {
+			var exchangePatternMetadata map[string]exchange.Pattern
+			var err error
+
+			// check if the org exists on the exchange or not
+			if _, err = exchange.GetOrganization(w.Config.Collaborators.HTTPClientFactory, org, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
+				// org does not exist is returned as an error
+				glog.V(5).Infof(AWlogString(fmt.Sprintf("unable to get organization %v: %v", org, err)))
+				exchangePatternMetadata = make(map[string]exchange.Pattern)
+			} else {
+				// Query exchange for all patterns in the org
+				if exchangePatternMetadata, err = exchange.GetPatterns(w.Config.Collaborators.HTTPClientFactory, org, "", w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
+					glog.Errorf("unable to get patterns for org %v, error %v", org, err)
+					continue
+				}
+			}
+			err = w.secretUpdateManager.UpdateNodePatternSecrets(org, exchangePatternMetadata, w.secretProvider, w.db, agp)
+			if err != nil {
+				glog.Errorf("error updating node pattern secrets %v", err)
 			}
 		}
 
@@ -143,7 +167,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 					var updatedSecrets []string
 					var newestUpdateTime uint64
 					if ag.Pattern != "" {
-						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPattern(ag.Pattern, ag.LastSecretUpdateTime)
+						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPattern(ag.Pattern, ag.DeviceId, ag.LastSecretUpdateTime)
 					} else {
 						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPolicy(ag.PolicyName, ag.DeviceId, ag.LastSecretUpdateTime)
 					}
