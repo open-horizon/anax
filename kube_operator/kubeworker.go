@@ -230,7 +230,7 @@ func (w *KubeWorker) operatorStatus(kd *persistence.KubeDeploymentConfig, intend
 }
 
 func (w *KubeWorker) updateKubeOperatorSecrets(kd *persistence.KubeDeploymentConfig, agId string, reqnamespace string, updatedSecrets []persistence.PersistedServiceSecret) error {
-	glog.V(5).Infof(kwlog(fmt.Sprintf("Lily - begin updating service secrets for operator %v", kd.ToString())))
+	glog.V(5).Infof(kwlog(fmt.Sprintf("begin updating service secrets for operator %v", kd.ToString())))
 
 	client, err := NewKubeClient()
 	if err != nil {
