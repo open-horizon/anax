@@ -530,11 +530,11 @@ func DevPolAFilter(deviceId string, policyName string) AFilter {
 }
 
 func PolAFilter(policyName string) AFilter {
-        return func(a Agreement) bool { return a.PolicyName == policyName }
+	return func(a Agreement) bool { return a.PolicyName == policyName }
 }
 
 func PatAFilter(patternName string) AFilter {
-        return func(a Agreement) bool { return a.Pattern == patternName }
+	return func(a Agreement) bool { return a.Pattern == patternName }
 }
 
 func RunFilters(ag *Agreement, filters []AFilter) *Agreement {

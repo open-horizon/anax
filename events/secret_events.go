@@ -11,7 +11,7 @@ type SecretUpdate struct {
 	SecretUpdateTime int64
 	PolicyNames      []string // An array of org qualified policy names
 	PatternNames     []string // An array of org qualified pattern names
-	NodeName         string // Name of node for node-specific secret. Empty if not node-specific
+	NodeName         string   // Name of node for node-specific secret. Empty if not node-specific
 }
 
 // Returns a new SecretUpdate object with a copied policy and pattern name list.

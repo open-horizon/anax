@@ -162,14 +162,13 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 				// If any secrets have changed, existing agreements will need to be updated with the new secrets. Check this agreement
 				// to see if it needs to be updated.
 				if secretUpdates != nil {
-
 					// Is the current agreement affected by secrets that have changed? If so, return the secrets that have changed.
 					var updatedSecrets []string
 					var newestUpdateTime uint64
 					if ag.Pattern != "" {
-						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPattern(ag.Pattern, ag.DeviceId, ag.LastSecretUpdateTime)
+						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPattern(ag.Pattern, exchange.GetId(ag.DeviceId), ag.LastSecretUpdateTime)
 					} else {
-						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPolicy(ag.PolicyName, ag.DeviceId, ag.LastSecretUpdateTime)
+						newestUpdateTime, updatedSecrets = secretUpdates.GetUpdatedSecretsForPolicy(ag.PolicyName, exchange.GetId(ag.DeviceId), ag.LastSecretUpdateTime)
 					}
 
 					// If there are secret updates for this agreement AND the agreement has not seen these updates yet, then process them for this agreement.
@@ -201,17 +200,17 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 									if glog.V(5) {
 										glog.Infof(logString(fmt.Sprintf("checking secret %v against %v", updatedSecretName, bs)))
 									}
-									if smSecretName == exchange.GetId(updatedSecretName) {
-										// Call the secret manager plugin to get the secret details.
-										secretUser, _, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
-										if err != nil {
-											glog.Errorf(logString(fmt.Sprintf("error parsing secret %s, error: %v", updatedSecretName, err)))
-											continue
-										}
+									// Call the secret manager plugin to get the secret details.
+									secretUser, _, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
+									if err != nil {
+										glog.Errorf(logString(fmt.Sprintf("error parsing secret %s, error: %v", updatedSecretName, err)))
+										continue
+									}
+									if smSecretName == exchange.GetId(updatedSecretName) || smSecretName == fmt.Sprintf("user/%s/%s", secretUser, secretName) || smSecretName == secretName {
 
 										newBS := make(exchangecommon.BoundSecret)
 										if binding.EnableNodeLevelSecrets {
-											secretNode := ag.DeviceId
+											secretNode := exchange.GetId(ag.DeviceId)
 											secretLookupKey := fmt.Sprintf("%v_%v_%v_%v", ag.Org, secretUser, secretNode, secretName)
 											//# check if new secret value already retrieved
 											if val, ok := updatedSecretsMap[secretLookupKey]; ok {
@@ -220,6 +219,29 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 												details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), exchange.GetOrg(updatedSecretName), secretUser, secretNode, secretName)
 												if err != nil {
 													glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
+												} else {
+													detailBytes, err := json.Marshal(details)
+													if err != nil {
+														glog.Errorf(logString(fmt.Sprintf("error marshalling secret details of %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
+														continue
+													} else {
+														encodedDetails := base64.StdEncoding.EncodeToString(detailBytes)
+														newBS[serviceSecretName] = encodedDetails
+														updatedSecretsMap[secretLookupKey] = encodedDetails
+													}
+												}
+											}
+										}
+										if len(newBS) == 0 {
+											secretLookupKey := fmt.Sprintf("%v_%v_%v_%v", ag.Org, secretUser, "", secretName)
+											//# check if new secret value already retrieved
+											if val, ok := updatedSecretsMap[secretLookupKey]; ok {
+												newBS[serviceSecretName] = val
+											} else {
+												details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), exchange.GetOrg(updatedSecretName), secretUser, "", secretName)
+												if err != nil {
+													glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
+													continue
 												}
 												detailBytes, err := json.Marshal(details)
 												if err != nil {
@@ -230,28 +252,6 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 													newBS[serviceSecretName] = encodedDetails
 													updatedSecretsMap[secretLookupKey] = encodedDetails
 												}
-											}
-										}
-										if len(newBS) == 0 {
-											secretLookupKey := fmt.Sprintf("%v_%v_%v_%v", ag.Org, secretUser, "", secretName)
-                                                                                        //# check if new secret value already retrieved
-                                                                                        if val, ok := updatedSecretsMap[secretLookupKey]; ok {
-                                                                                                newBS[serviceSecretName] = val
-                                                                                        } else {
-                                                                                                details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), exchange.GetOrg(updatedSecretName), secretUser, "", secretName)
-                                                                                                if err != nil {
-                                                                                                        glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
-                                                                                                	continue
-												}
-                                                                                        	detailBytes, err := json.Marshal(details)
-                                                                                        	if err != nil {
-                                                                                                	glog.Errorf(logString(fmt.Sprintf("error marshalling secret details of %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
-                                                                                                	continue
-                                                                                        	} else {
-                                                                                                	encodedDetails := base64.StdEncoding.EncodeToString(detailBytes)
-                                                                                                	newBS[serviceSecretName] = encodedDetails
-                                                                                                	updatedSecretsMap[secretLookupKey] = encodedDetails
-                                                                                        	}
 											}
 										}
 
