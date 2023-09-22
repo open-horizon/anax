@@ -196,6 +196,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 							for _, bs := range binding.Secrets {
 
 								serviceSecretName, smSecretName := bs.GetBinding()
+								smSecretName = strings.TrimPrefix(smSecretName, "/")
 								for _, updatedSecretName := range updatedSecrets {
 									if glog.V(5) {
 										glog.Infof(logString(fmt.Sprintf("checking secret %v against %v", updatedSecretName, bs)))
