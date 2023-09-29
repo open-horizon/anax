@@ -1200,11 +1200,11 @@ func (a *SecureAPI) errCheck(err error, action string, info *SecretRequestInfo) 
 		// build the original secret name
 		var secretName string
 		if info.user != "" && info.node != "" {
-			secretName = "user/" + info.user + "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+			secretName = "/user/" + info.user + "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 		} else if info.user != "" {
-			secretName = "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
+			secretName = "/user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
 		} else if info.node != "" {
-			secretName = "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+			secretName = "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 		} else {
 			secretName = info.vaultSecretName
 		}

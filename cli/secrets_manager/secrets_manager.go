@@ -81,8 +81,12 @@ func SecretList(org, credToUse, secretName, secretNodeId string) {
 		secretName = secretName[:len(secretName)-1]
 	}
 
-	if !strings.Contains(secretName, "/node") && secretNodeId != "" {
-		// add /node/{nodeID} to the path
+	if strings.HasPrefix(secretName, "/") {
+		secretName = strings.TrimPrefix(secretName, "/")
+	}
+
+	if !strings.Contains(secretName, "node/") && secretNodeId != "" {
+		// add node/{nodeID} to the path
 		secretName = getSecretPathForNodeLevelSecret(secretName, secretNodeId)
 	}
 	// if given secretName := "", nodeId is specified, then secretName will be convert to "node/{nodeId}"
@@ -166,8 +170,12 @@ func SecretAdd(org, credToUse, secretName, secretNodeId, secretFile, secretKey, 
 		secretName = secretName[:len(secretName)-1]
 	}
 
-	if !strings.Contains(secretName, "/node") && secretNodeId != "" {
-		// add /node/{nodeID} to the path
+	if strings.HasPrefix(secretName, "/") {
+		secretName = strings.TrimPrefix(secretName, "/")
+	}
+
+	if !strings.Contains(secretName, "node/") && secretNodeId != "" {
+		// add node/{nodeID} to the path
 		secretName = getSecretPathForNodeLevelSecret(secretName, secretNodeId)
 	}
 
@@ -259,8 +267,12 @@ func SecretRemove(org, credToUse, secretName, secretNodeId string, forceRemoval 
 		secretName = secretName[:len(secretName)-1]
 	}
 
-	if !strings.Contains(secretName, "/node") && secretNodeId != "" {
-		// add /node/{nodeID} to the path
+	if strings.HasPrefix(secretName, "/") {
+		secretName = strings.TrimPrefix(secretName, "/")
+	}
+
+	if !strings.Contains(secretName, "node/") && secretNodeId != "" {
+		// add node/{nodeID} to the path
 		secretName = getSecretPathForNodeLevelSecret(secretName, secretNodeId)
 	}
 
@@ -299,8 +311,12 @@ func SecretRead(org, credToUse, secretName, secretNodeId string) {
 		secretName = secretName[:len(secretName)-1]
 	}
 
-	if !strings.Contains(secretName, "/node") && secretNodeId != "" {
-		// add /node/{nodeID} to the path
+	if strings.HasPrefix(secretName, "/") {
+		secretName = strings.TrimPrefix(secretName, "/")
+	}
+
+	if !strings.Contains(secretName, "node/") && secretNodeId != "" {
+		// add node/{nodeID} to the path
 		secretName = getSecretPathForNodeLevelSecret(secretName, secretNodeId)
 	}
 
@@ -328,6 +344,7 @@ func SecretRead(org, credToUse, secretName, secretNodeId string) {
 
 func getSecretPathForNodeLevelSecret(secretName string, secretNodeId string) string {
 	secretName = strings.TrimSpace(secretName)
+	secretName = strings.TrimPrefix(secretName, "/")
 	if secretName == "" {
 		secretName = fmt.Sprintf("node/%v", secretNodeId)
 	} else {
