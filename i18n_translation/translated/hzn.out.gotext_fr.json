@@ -404,6 +404,22 @@
     "translation": "Erreur lors de la conversion des sélections en sélecteurs : {Err}"
   },
   {
+    "id": "Name, or Org is empty string.",
+    "translation": "Le nom ou l'organisation est une chaîne vide."
+  },
+  {
+    "id": "The serviceVersions array is empty.",
+    "translation": "Le tableau serviceVersions est vide."
+  },
+  {
+    "id": "retry_durations and retries cannot be zero if priority_value is set to non-zero value",
+    "translation": "retry_durations et retries ne peuvent pas être égales à zéro si priority_value est défini sur une valeur différente de zéro"
+  },
+  {
+    "id": "retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set",
+    "translation": "retry_durations, retries et verified_durations ne peuvent pas avoir une valeur différente de zéro si priority_value est égale à zéro ou n'est pas définie"
+  },
+  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "Les propriétés comportent une propriété non valide : {Err}"
   },
@@ -5368,6 +5384,14 @@
     "translation": "Service '{Service}' introuvable dans l'organisation {SvcOrg}"
   },
   {
+    "id": "failed to unmarshal ClusterDeployment in 'hzn exchange service list' output: {Err}",
+    "translation": "Echec de la désérialisation de ClusterDeployment dans la sortie 'hzn exchange service list' : {Err}"
+  },
+  {
+    "id": "failed to marshal truncked ClusterDeployment in 'hzn exchange service list' output: {Err}",
+    "translation": "Echec de la sérialisation de ClusterDeployment tronqué dans la sortie 'hzn exchange service list' : {Err}"
+  },
+  {
     "id": "Ignoring -f because the clusterDeployment attribute is empty for this service.",
     "translation": "-f est ignoré car l'attribut clusterDeployment est vide pour ce service."
   },
@@ -8092,10 +8116,6 @@
     "translation": "L'entrée SecretBindingCheck ne peut pas avoir pour valeur NULL"
   },
   {
-    "id": "Node type '{NodeType}' does not support secret binding check.",
-    "translation": "Le type de noeud '{NodeType}' ne prend pas en charge la vérification de liaison de secret."
-  },
-  {
     "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
     "translation": "Aucune version de service avec l'architecture {NodeArch} n'est spécifiée dans la règle de déploiement ou le pattern."
   },
@@ -8110,6 +8130,10 @@
   {
     "id": "Type Incompatible",
     "translation": "Type incompatible"
+  },
+  {
+    "id": "{Msgcompatible}, Warning: {Reason}",
+    "translation": "{Msgcompatible}, Avertissement : {Reason}"
   },
   {
     "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
@@ -8148,10 +8172,6 @@
     "translation": "Les services dépendants sont introuvables pour {Org}/{URL} {Arch} {Version}. {Err}"
   },
   {
-    "id": "Secret binding for a cluster service is not supported.",
-    "translation": "La liaison de secret pour un service de cluster n'est pas prise en charge."
-  },
-  {
     "id": "No secret binding found for the following service secrets: {NbArray}.",
     "translation": "Aucune liaison de secret n'a été trouvée pour les secrets de service suivants : {NbArray}."
   },
@@ -8176,12 +8196,24 @@
     "translation": "Le secret {VaultSecretName} n'existe pas dans le gestionnaire de secrets au niveau de l'organisation ou de l'utilisateur."
   },
   {
+    "id": "{Err}, use non node-level secret",
+    "translation": "{Err}, utilisent un secret qui n'est pas au niveau du noeud"
+  },
+  {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
     "translation": "Erreur lors de l'analyse syntaxique du nom de secret dans la liaison de secret. {Errparse}"
   },
   {
+    "id": "Error checking secret {VaultSecretName} for node {NName} in the secret manager. {Err}",
+    "translation": "Erreur lors de la vérification du secret {VaultSecretName} pour le noeud {NName} dans le gestionnaire de secrets. {Err}"
+  },
+  {
     "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
     "translation": "Erreur lors de la vérification du secret {VaultSecretName} dans le gestionnaire de secrets. {Err}"
+  },
+  {
+    "id": "Node level secret {VaultSecretName} doesn't exist for node {NName}",
+    "translation": "Le secret au niveau du noeud {VaultSecretName} n'existe pas pour le noeud {NName}"
   },
   {
     "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
