@@ -787,6 +787,8 @@ func VerifyVaultSecrets_strict(secretBinding []exchangecommon.SecretBinding, nod
 		return false, "", fmt.Errorf(msgPrinter.Sprintf("The node organization must be provided."))
 	}
 
+	reasons := []string{}
+
 	// go through each secret binding making sure the vault secret exist in vault
 	vs_checked := map[string]bool{}
 	for _, sn := range secretBinding {
@@ -804,14 +806,15 @@ func VerifyVaultSecrets_strict(secretBinding []exchangecommon.SecretBinding, nod
 			if exists, err := VerifySingleVaultSecret(vaultSecretName, nodeOrg, nodeId, agbotURL, vaultSecretExists, enableNodeSecret, msgPrinter); !exists && err != nil {
 				return false, "", err
 			} else if exists && err != nil {
-				return true, msgPrinter.Sprintf("%v, use non node-level secret", err), nil
+				reasons = append(reasons, msgPrinter.Sprintf("%v, use non node-level secret", err))
 			} else if !exists {
 				return false, msgPrinter.Sprintf("Secret %v does not exist in the secret manager.", vaultSecretName), nil
 			}
 		}
 	}
 
-	return true, "", nil
+	reason := fmt.Sprintf(strings.Join(reasons, "; "))
+	return true, reason, nil
 }
 
 // It calls the agbot API to verify whether the given secret name exist in vault or not.
@@ -830,15 +833,17 @@ func VerifySingleVaultSecret(vaultSecretName string, nodeOrg string, nodeId stri
 	}
 
 	// nName == "" from ParseVaultSecretName() function if this is deploycheck CLI
-	if nodeId != "" && nName == "" {
+	if enableNodeSecret && nodeId != "" && nName == "" {
 		nodeName := exchange.GetId(nodeId)
 		nName = nodeName
+	} else if !enableNodeSecret {
+		nName = ""
 	}
 
 	// check the existance
 	if exists, err := vaultSecretExists(agbotURL, nodeOrg, userName, nName, sName); err != nil {
 		return false, fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v for node %v in the secret manager. %v", vaultSecretName, nName, err))
-	} else if !exists && nName != "" {
+	} else if enableNodeSecret && !exists && nName != "" {
 		// then set nName == "" to check non-node level
 		if exists, err = vaultSecretExists(agbotURL, nodeOrg, userName, "", sName); err != nil {
 			return false, fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager. %v", vaultSecretName, err))
