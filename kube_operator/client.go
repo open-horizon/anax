@@ -46,18 +46,20 @@ const (
 
 	SECRETS_VOLUME_NAME = "service-secrets-vol"
 
-	K8S_ROLE_TYPE               = "Role"
-	K8S_ROLEBINDING_TYPE        = "RoleBinding"
-	K8S_DEPLOYMENT_TYPE         = "Deployment"
-	K8S_SERVICEACCOUNT_TYPE     = "ServiceAccount"
-	K8S_CRD_TYPE                = "CustomResourceDefinition"
-	K8S_NAMESPACE_TYPE          = "Namespace"
-	K8S_UNSTRUCTURED_TYPE       = "Unstructured"
-	K8S_OLM_OPERATOR_GROUP_TYPE = "OperatorGroup"
+	K8S_CLUSTER_ROLE_TYPE        = "ClusterRole"
+	K8S_CLUSTER_ROLEBINDING_TYPE = "ClusterRoleBinding"
+	K8S_ROLE_TYPE                = "Role"
+	K8S_ROLEBINDING_TYPE         = "RoleBinding"
+	K8S_DEPLOYMENT_TYPE          = "Deployment"
+	K8S_SERVICEACCOUNT_TYPE      = "ServiceAccount"
+	K8S_CRD_TYPE                 = "CustomResourceDefinition"
+	K8S_NAMESPACE_TYPE           = "Namespace"
+	K8S_UNSTRUCTURED_TYPE        = "Unstructured"
+	K8S_OLM_OPERATOR_GROUP_TYPE  = "OperatorGroup"
 )
 
 func getBaseK8sKinds() []string {
-	return []string{K8S_NAMESPACE_TYPE, K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_DEPLOYMENT_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_CRD_TYPE}
+	return []string{K8S_NAMESPACE_TYPE, K8S_CLUSTER_ROLE_TYPE, K8S_CLUSTER_ROLEBINDING_TYPE, K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_DEPLOYMENT_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_CRD_TYPE}
 }
 
 func getDangerKinds() []string {
