@@ -1060,60 +1060,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 			// Only non-pattern based agreements can use MMS object policy.
 			if agreement.GetDeviceType() == persistence.DEVICE_TYPE_DEVICE {
 				if b.GetCSSURL() != "" && agreement.Pattern == "" {
-
-					// Retrieve the node policy.
-					nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
-					msgPrinter := i18n.GetMessagePrinter()
-					_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId, msgPrinter)
-					if err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
-					} else if nodePolicy == nil {
-						glog.Warning(BAWlogstring(workerId, fmt.Sprintf("cannot find node policy for this node %v.", agreement.DeviceId)))
-					} else {
-						if glog.V(5) {
-							glog.Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
-						}
-					}
-
-					// Query the MMS cache to find objects with policies that refer to the agreed-to service(s). Service IDs are
-					// a concatenation of org '/' service name, hardware architecture and version, separated by underscores. We need
-					// all 3 pieces.
-					for _, serviceId := range agreement.ServiceId {
-
-						// Array to contain the decomposed pieces from the agreementServiceID
-						serviceNamePieces := make([]string, 3)
-
-						// Break the service id into the individual tuple pieces, service name (which includes org), arch and version.
-						// The id will be in the format of name_version_arch (ie. hello-world_1.0.0_am64)
-						// We can't just split the agreementServiceID with "_" since the name can contain "_" characters too.
-						// Instead, look at the last index and grab the arch first, then the version, and then the name
-						tmpServiceId := serviceId
-						for i := 2; i > 0; i-- {
-							idx := strings.LastIndex(tmpServiceId, "_")
-							serviceNamePieces[i] = tmpServiceId[idx+1:]
-							// Strip off the last _ found
-							tmpServiceId = tmpServiceId[0:idx]
-						}
-						// What remains is the service name
-						serviceNamePieces[0] = tmpServiceId
-
-						objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
-
-						destsToAddMap := make(map[string]*exchange.ObjectDestinationsToAdd, 0)
-						destsToDeleteMap := make(map[string]*exchange.ObjectDestinationsToDelete, 0)
-
-						if err := AssignObjectToNodes(b, objPolicies, agreement.DeviceId, nodePolicy, destsToAddMap, destsToDeleteMap, nil, false); err != nil {
-							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
-						}
-
-						if len(destsToAddMap) > 0 {
-							AddDestinationsForObjects(b, destsToAddMap)
-						}
-						if len(destsToDeleteMap) > 0 {
-							DeleteDestinationsForObjects(b, destsToDeleteMap)
-						}
-
-					}
+					AgreementHandleMMSObjectPolicy(b, b.mmsObjMgr, *agreement, workerId, BAWlogstring)
 				} else if b.GetCSSURL() == "" {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
 				}
@@ -1499,4 +1446,60 @@ func GetHAPartners(nodeID string, haGroupName string, httpClient *http.Client, u
 	}
 
 	return haPartners, nil
+}
+
+func AgreementHandleMMSObjectPolicy(ec exchange.ExchangeContext, mmsObjMgr *MMSObjectPolicyManager, agreement persistence.Agreement, workerId string, logFunction func(string, interface{}) string) {
+	// Retrieve the node policy.
+	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(ec)
+	msgPrinter := i18n.GetMessagePrinter()
+	_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId, msgPrinter)
+	if err != nil {
+		glog.Errorf(logFunction(workerId, fmt.Sprintf("%v", err)))
+	} else if nodePolicy == nil {
+		glog.Warning(logFunction(workerId, fmt.Sprintf("cannot find node policy for this node %v.", agreement.DeviceId)))
+	} else {
+		if glog.V(5) {
+			glog.Infof(logFunction(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
+		}
+	}
+
+	// Query the MMS cache to find objects with policies that refer to the agreed-to service(s). Service IDs are
+	// a concatenation of org '/' service name, hardware architecture and version, separated by underscores. We need
+	// all 3 pieces.
+	for _, serviceId := range agreement.ServiceId {
+
+		// Array to contain the decomposed pieces from the agreementServiceID
+		serviceNamePieces := make([]string, 3)
+
+		// Break the service id into the individual tuple pieces, service name (which includes org), arch and version.
+		// The id will be in the format of name_version_arch (ie. hello-world_1.0.0_am64)
+		// We can't just split the agreementServiceID with "_" since the name can contain "_" characters too.
+		// Instead, look at the last index and grab the arch first, then the version, and then the name
+		tmpServiceId := serviceId
+		for i := 2; i > 0; i-- {
+			idx := strings.LastIndex(tmpServiceId, "_")
+			serviceNamePieces[i] = tmpServiceId[idx+1:]
+			// Strip off the last _ found
+			tmpServiceId = tmpServiceId[0:idx]
+		}
+		// What remains is the service name
+		serviceNamePieces[0] = tmpServiceId
+
+		objPolicies := mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
+
+		destsToAddMap := make(map[string]*exchange.ObjectDestinationsToAdd, 0)
+		destsToDeleteMap := make(map[string]*exchange.ObjectDestinationsToDelete, 0)
+
+		if err := AssignObjectToNodes(ec, objPolicies, agreement.DeviceId, nodePolicy, destsToAddMap, destsToDeleteMap, nil, false); err != nil {
+			glog.Errorf(logFunction(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
+		}
+
+		if len(destsToAddMap) > 0 {
+			AddDestinationsForObjects(ec, destsToAddMap)
+		}
+		if len(destsToDeleteMap) > 0 {
+			DeleteDestinationsForObjects(ec, destsToDeleteMap)
+		}
+
+	}
 }
