@@ -61,7 +61,7 @@ func NodeBuiltInPropMap(nodeType string) map[string]string {
 		return map[string]string{PROP_NODE_CPU: "2.23.4", PROP_NODE_MEMORY: "2.23.4", PROP_NODE_ARCH: "2.23.4", PROP_NODE_HARDWAREID: "2.24.5", PROP_NODE_PRIVILEGED: "2.24.10",
 			PROP_NODE_OS: "2.30.0", PROP_NODE_CONTAINERIZED: "2.30.0"}
 	} else if nodeType == "cluster" {
-		return map[string]string{PROP_NODE_K8S_VERSION: "2.26.4", PROP_NODE_CPU: "2.23.4", PROP_NODE_MEMORY: "2.23.4", PROP_NODE_ARCH: "2.23.4", PROP_NODE_PRIVILEGED: "2.24.10"}
+		return map[string]string{PROP_NODE_K8S_NAMESPACE_SCOPED: "2.31.0", PROP_NODE_K8S_NAMESPACE: "2.31.0", PROP_NODE_K8S_VERSION: "2.26.4", PROP_NODE_CPU: "2.23.4", PROP_NODE_MEMORY: "2.23.4", PROP_NODE_ARCH: "2.23.4", PROP_NODE_PRIVILEGED: "2.24.10"}
 	}
 
 	return map[string]string{}

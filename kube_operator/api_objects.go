@@ -30,6 +30,7 @@ type APIObjectInterface interface {
 	Status(c KubeClient, namespace string) (interface{}, error)
 	Update(c KubeClient, namespace string) error
 	Name() string
+	Namespace() string
 }
 
 // Sort a slice of k8s api objects by kind of object
@@ -88,6 +89,38 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 				}
 			} else {
 				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
+			}
+		case K8S_CLUSTER_ROLE_TYPE:
+			if !cutil.IsNamespaceScoped() {
+				if typedRole, ok := obj.Object.(*rbacv1.ClusterRole); ok {
+					newRole := ClusterRoleRbacV1{ClusterRoleObject: typedRole}
+					if newRole.Name() != "" {
+						glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes cluster role object %s.", newRole.Name())))
+						objMap[K8S_CLUSTER_ROLE_TYPE] = append(objMap[K8S_CLUSTER_ROLE_TYPE], newRole)
+					} else {
+						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: cluster role object must have a name in its metadata section.")))
+					}
+				} else {
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: cluster role object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				}
+			} else {
+				glog.Warningf(kwlog(fmt.Sprintf("Ignore cluster role object because this agent is Namespace-scoped.")))
+			}
+		case K8S_CLUSTER_ROLEBINDING_TYPE:
+			if !cutil.IsNamespaceScoped() {
+				if typedRoleBinding, ok := obj.Object.(*rbacv1.ClusterRoleBinding); ok {
+					newRolebinding := ClusterRolebindingRbacV1{ClusterRolebindingObject: typedRoleBinding}
+					if newRolebinding.Name() != "" {
+						glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes cluser rolebinding object %s.", newRolebinding.Name())))
+						objMap[K8S_CLUSTER_ROLEBINDING_TYPE] = append(objMap[K8S_CLUSTER_ROLEBINDING_TYPE], newRolebinding)
+					} else {
+						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object must have a name in its metadata section.")))
+					}
+				} else {
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				}
+			} else {
+				glog.Warningf(kwlog(fmt.Sprintf("Ignore cluster rolebinding object because this agent is Namespace-scoped.")))
 			}
 		case K8S_DEPLOYMENT_TYPE:
 			if typedDeployment, ok := obj.Object.(*appsv1.Deployment); ok {
@@ -175,6 +208,10 @@ type OtherObject struct {
 func (o OtherObject) Install(c KubeClient, namespace string) error {
 	name := o.Name()
 	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to create object %v with GroupVersionResource %v", name, o.gvr())))
+	if o.Namespace() != "" && o.Namespace() != namespace {
+		glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' in object is ignored. Object will be created in '%v'.", o.Namespace(), namespace)))
+		o.Object.SetNamespace(namespace)
+	}
 
 	dynClient := c.DynClient.Resource(o.gvr())
 
@@ -191,7 +228,6 @@ func (o OtherObject) Install(c KubeClient, namespace string) error {
 
 func (o OtherObject) Uninstall(c KubeClient, namespace string) {
 	name := o.Name()
-	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to delete object %v with GroupVersionResource %v", name, o.gvr())))
 
 	dynClient := c.DynClient.Resource(o.gvr())
 
@@ -220,6 +256,10 @@ func (o OtherObject) Status(c KubeClient, namespace string) (interface{}, error)
 
 func (o OtherObject) gvr() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: o.GVK.Group, Version: o.GVK.Version, Resource: fmt.Sprintf("%ss", strings.ToLower(o.GVK.Kind))}
+}
+
+func (o OtherObject) Namespace() string {
+	return o.Object.GetNamespace()
 }
 
 //----------------Namespace----------------
@@ -274,6 +314,149 @@ func (n NamespaceCoreV1) Name() string {
 	return n.NamespaceObject.ObjectMeta.Name
 }
 
+func (n NamespaceCoreV1) Namespace() string {
+	return n.NamespaceObject.ObjectMeta.Namespace
+}
+
+//----------------ClusterRole----------------
+
+type ClusterRoleRbacV1 struct {
+	ClusterRoleObject *rbacv1.ClusterRole
+}
+
+func (cr ClusterRoleRbacV1) Install(c KubeClient, namespace string) error {
+	if cutil.IsNamespaceScoped() {
+		glog.Warningf(kwlog(fmt.Sprintf("Skip install cluster role because this agent is Namespace-scoped.")))
+		return nil
+	}
+	glog.V(3).Infof(kwlog(fmt.Sprintf("creating cluster role %v", cr)))
+
+	_, err := c.Client.RbacV1().ClusterRoles().Create(context.Background(), cr.ClusterRoleObject, metav1.CreateOptions{})
+	if err != nil && errors.IsAlreadyExists(err) {
+		glog.Warningf(kwlog(fmt.Sprintf("Skip install cluster role because it is already exists.")))
+	}
+	if err != nil {
+		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster role: %v", err)))
+	}
+	return nil
+}
+
+func (cr ClusterRoleRbacV1) Uninstall(c KubeClient, namespace string) {
+	if cutil.IsNamespaceScoped() {
+		glog.Warningf(kwlog(fmt.Sprintf("Skip uninstall cluster role because this agent is Namespace-scoped.")))
+		return
+	}
+	// delete only if there is no one else using this role
+	// 1. list all clusterrolebinding that associated with this clusterrole, clusterrolebindings in this operator should already being deleted at this point.
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting cluster role %s", cr.Name())))
+	ops := metav1.ListOptions{}
+	crbList, err := c.Client.RbacV1().ClusterRoleBindings().List(context.Background(), ops)
+	stillInUse := true
+	if err != nil && errors.IsNotFound(err) {
+		stillInUse = false
+	} else if err != nil {
+		glog.Warningf(kwlog(fmt.Sprintf("Failed to list cluster role binding, skip delete the cluster role %v", cr.Name())))
+	} else if crbList == nil || len(crbList.Items) == 0 {
+		stillInUse = false
+	} else {
+		stillInUse = false
+		for _, crb := range crbList.Items {
+			if crb.RoleRef.Name == cr.Name() {
+				stillInUse = true
+				break
+			}
+		}
+	}
+
+	if stillInUse {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Skip deleting cluster role %s, it is still in use", cr.Name())))
+
+	} else {
+		err := c.Client.RbacV1().ClusterRoles().Delete(context.Background(), cr.Name(), metav1.DeleteOptions{})
+		if err != nil {
+			glog.Errorf(kwlog(fmt.Sprintf("unable to delete role %s. Error: %v", cr.Name(), err)))
+		}
+	}
+
+}
+
+func (cr ClusterRoleRbacV1) Status(c KubeClient, namespace string) (interface{}, error) {
+	return &ClusterRoleRbacV1{}, nil
+}
+
+func (cr ClusterRoleRbacV1) Update(c KubeClient, namespace string) error {
+	return nil
+}
+
+func (cr ClusterRoleRbacV1) Name() string {
+	return cr.ClusterRoleObject.ObjectMeta.Name
+}
+
+func (cr ClusterRoleRbacV1) Namespace() string {
+	return ""
+}
+
+// ----------------ClusterRolebinding----------------
+type ClusterRolebindingRbacV1 struct {
+	ClusterRolebindingObject *rbacv1.ClusterRoleBinding
+}
+
+func (crb ClusterRolebindingRbacV1) Install(c KubeClient, namespace string) error {
+	if cutil.IsNamespaceScoped() {
+		glog.Warningf(kwlog(fmt.Sprintf("Skip install cluster role binding because this agent is Namespace-scoped.")))
+		return nil
+	}
+	glog.V(3).Infof(kwlog(fmt.Sprintf("creating cluster role binding %v", crb)))
+
+	// Do we need this for cluster role binding??
+	subs := []rbacv1.Subject{}
+	for _, sub := range crb.ClusterRolebindingObject.Subjects {
+		rb_sub := &sub
+		if sub.Namespace != "" && sub.Namespace != namespace {
+			rb_sub.Namespace = namespace
+		}
+		subs = append(subs, *rb_sub)
+	}
+	crb.ClusterRolebindingObject.Subjects = subs
+
+	_, err := c.Client.RbacV1().ClusterRoleBindings().Create(context.Background(), crb.ClusterRolebindingObject, metav1.CreateOptions{})
+	if err != nil && errors.IsAlreadyExists(err) {
+		glog.Warningf(kwlog(fmt.Sprintf("Skip install cluster role binding because it is already exists.")))
+	}
+	if err != nil {
+		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster rolebinding: %v", err)))
+	}
+	return nil
+}
+
+func (crb ClusterRolebindingRbacV1) Uninstall(c KubeClient, namespace string) {
+	if cutil.IsNamespaceScoped() {
+		glog.Warningf(kwlog(fmt.Sprintf("Skip uninstall cluster role binding because this agent is Namespace-scoped.")))
+		return
+	}
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting cluster role binding %s", crb.ClusterRolebindingObject.ObjectMeta.Name)))
+	err := c.Client.RbacV1().ClusterRoleBindings().Delete(context.Background(), crb.ClusterRolebindingObject.ObjectMeta.Name, metav1.DeleteOptions{})
+	if err != nil {
+		glog.Errorf(kwlog(fmt.Sprintf("unable to delete role binding %s. Error: %v", crb.ClusterRolebindingObject.ObjectMeta.Name, err)))
+	}
+}
+
+func (crb ClusterRolebindingRbacV1) Status(c KubeClient, namespace string) (interface{}, error) {
+	return nil, nil
+}
+
+func (crb ClusterRolebindingRbacV1) Update(c KubeClient, namespace string) error {
+	return nil
+}
+
+func (crb ClusterRolebindingRbacV1) Name() string {
+	return crb.ClusterRolebindingObject.ObjectMeta.Name
+}
+
+func (crb ClusterRolebindingRbacV1) Namespace() string {
+	return ""
+}
+
 //----------------Role----------------
 
 type RoleRbacV1 struct {
@@ -282,13 +465,18 @@ type RoleRbacV1 struct {
 
 func (r RoleRbacV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating role %v", r)))
+	if r.Namespace() != "" && r.Namespace() != namespace {
+		glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' in role is ignored. Role will be created in '%v'.", r.Namespace(), namespace)))
+		r.RoleObject.ObjectMeta.Namespace = namespace
+	}
+
 	_, err := c.Client.RbacV1().Roles(namespace).Create(context.Background(), r.RoleObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		r.Uninstall(c, namespace)
 		_, err = c.Client.RbacV1().Roles(namespace).Create(context.Background(), r.RoleObject, metav1.CreateOptions{})
 	}
 	if err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster role: %v", err)))
+		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the role: %v", err)))
 	}
 	return nil
 }
@@ -305,12 +493,16 @@ func (r RoleRbacV1) Status(c KubeClient, namespace string) (interface{}, error) 
 	return &RoleRbacV1{}, nil
 }
 
-func (o RoleRbacV1) Update(c KubeClient, namespace string) error {
+func (r RoleRbacV1) Update(c KubeClient, namespace string) error {
 	return nil
 }
 
 func (r RoleRbacV1) Name() string {
 	return r.RoleObject.ObjectMeta.Name
+}
+
+func (r RoleRbacV1) Namespace() string {
+	return r.RoleObject.ObjectMeta.Namespace
 }
 
 //----------------Rolebinding----------------
@@ -321,6 +513,21 @@ type RolebindingRbacV1 struct {
 
 func (rb RolebindingRbacV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating rolebinding %v", rb)))
+	if rb.Namespace() != "" && rb.Namespace() != namespace {
+		glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' in rolebinding is ignored. Rolebinding will be created in '%v'.", rb.Namespace(), namespace)))
+		rb.RolebindingObject.ObjectMeta.Namespace = namespace
+	}
+
+	subs := []rbacv1.Subject{}
+	for _, sub := range rb.RolebindingObject.Subjects {
+		rb_sub := &sub
+		if sub.Namespace != "" && sub.Namespace != namespace {
+			rb_sub.Namespace = namespace
+		}
+		subs = append(subs, *rb_sub)
+	}
+	rb.RolebindingObject.Subjects = subs
+
 	_, err := c.Client.RbacV1().RoleBindings(namespace).Create(context.Background(), rb.RolebindingObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		rb.Uninstall(c, namespace)
@@ -344,12 +551,16 @@ func (rb RolebindingRbacV1) Status(c KubeClient, namespace string) (interface{},
 	return nil, nil
 }
 
-func (o RolebindingRbacV1) Update(c KubeClient, namespace string) error {
+func (rb RolebindingRbacV1) Update(c KubeClient, namespace string) error {
 	return nil
 }
 
 func (rb RolebindingRbacV1) Name() string {
 	return rb.RolebindingObject.ObjectMeta.Name
+}
+
+func (rb RolebindingRbacV1) Namespace() string {
+	return rb.RolebindingObject.ObjectMeta.Namespace
 }
 
 // ----------------ServiceAccount----------------
@@ -359,6 +570,11 @@ type ServiceAccountCoreV1 struct {
 
 func (sa ServiceAccountCoreV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating service account %v", sa)))
+	if sa.Namespace() != "" && sa.Namespace() != namespace {
+		glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' in service account is ignored. Service account will be created in '%v'.", sa.Namespace(), namespace)))
+		sa.ServiceAccountObject.ObjectMeta.Namespace = namespace
+	}
+
 	_, err := c.Client.CoreV1().ServiceAccounts(namespace).Create(context.Background(), sa.ServiceAccountObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		sa.Uninstall(c, namespace)
@@ -382,12 +598,16 @@ func (sa ServiceAccountCoreV1) Status(c KubeClient, namespace string) (interface
 	return nil, nil
 }
 
-func (o ServiceAccountCoreV1) Update(c KubeClient, namespace string) error {
+func (sa ServiceAccountCoreV1) Update(c KubeClient, namespace string) error {
 	return nil
 }
 
 func (sa ServiceAccountCoreV1) Name() string {
 	return sa.ServiceAccountObject.ObjectMeta.Name
+}
+
+func (sa ServiceAccountCoreV1) Namespace() string {
+	return sa.ServiceAccountObject.ObjectMeta.Namespace
 }
 
 //----------------Deployment----------------
@@ -402,6 +622,10 @@ type DeploymentAppsV1 struct {
 
 func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating deployment %v", d)))
+	if d.Namespace() != "" && d.Namespace() != namespace {
+		glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' in deployment is ignored. Service will be deployed to '%v'.", d.Namespace(), namespace)))
+		d.DeploymentObject.ObjectMeta.Namespace = namespace
+	}
 
 	// The ESS is not supported in edge cluster services, so for now, remove the ESS env vars.
 	envAdds := cutil.RemoveESSEnvVars(d.EnvVarMap, config.ENVVAR_PREFIX)
@@ -528,6 +752,10 @@ func (d DeploymentAppsV1) Name() string {
 	return d.DeploymentObject.ObjectMeta.Name
 }
 
+func (d DeploymentAppsV1) Namespace() string {
+	return d.DeploymentObject.ObjectMeta.Namespace
+}
+
 //----------------CRD & CR----------------
 // A new version requires a new CRD client type and adding the version scheme in getK8sObjectFromYaml
 
@@ -586,6 +814,10 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 		// the cr cannot exist without the crd so we don't have to worry about it already existing
 		timeout := cr.InstallTimeout
 		glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, customResourceObject)))
+		if customResourceObject.GetNamespace() != "" && customResourceObject.GetNamespace() != namespace {
+			glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' in custom resource is ignored. Service will be deployed to '%v'.", customResourceObject.GetNamespace(), namespace)))
+			customResourceObject.SetNamespace(namespace)
+		}
 		for {
 			_, err = crClient.Namespace(namespace).Create(context.Background(), customResourceObject, metav1.CreateOptions{})
 			if err != nil && timeout > 0 {
@@ -725,12 +957,16 @@ func (cr CustomResourceV1Beta1) Status(c KubeClient, namespace string) (interfac
 	return statusArray, nil
 }
 
-func (o CustomResourceV1Beta1) Update(c KubeClient, namespace string) error {
+func (cr CustomResourceV1Beta1) Update(c KubeClient, namespace string) error {
 	return nil
 }
 
 func (cr CustomResourceV1Beta1) Name() string {
 	return cr.CustomResourceDefinitionObject.ObjectMeta.Name
+}
+
+func (cr CustomResourceV1Beta1) Namespace() string {
+	return cr.CustomResourceDefinitionObject.ObjectMeta.Namespace
 }
 
 func (cr CustomResourceV1Beta1) kind() string {
@@ -831,6 +1067,10 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 		// the cr cannot exist without the crd so we don't have to worry about it already existing
 		timeout := cr.InstallTimeout
 		glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, customResourceObject)))
+		if customResourceObject.GetNamespace() != "" && customResourceObject.GetNamespace() != namespace {
+			glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' in custom resource is ignored. Service will be deployed to '%v'.", customResourceObject.GetNamespace(), namespace)))
+			customResourceObject.SetNamespace(namespace)
+		}
 		for {
 			_, err = crClient.Namespace(namespace).Create(context.Background(), customResourceObject, metav1.CreateOptions{})
 			if err != nil && timeout > 0 {
@@ -970,12 +1210,16 @@ func (cr CustomResourceV1) Status(c KubeClient, namespace string) (interface{}, 
 	return statusArray, nil
 }
 
-func (o CustomResourceV1) Update(c KubeClient, namespace string) error {
+func (cr CustomResourceV1) Update(c KubeClient, namespace string) error {
 	return nil
 }
 
 func (cr CustomResourceV1) Name() string {
 	return cr.CustomResourceDefinitionObject.ObjectMeta.Name
+}
+
+func (cr CustomResourceV1) Namespace() string {
+	return cr.CustomResourceDefinitionObject.ObjectMeta.Namespace
 }
 
 func (cr CustomResourceV1) kind() string {
