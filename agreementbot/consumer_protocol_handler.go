@@ -620,6 +620,7 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePol
 }
 
 func (b *BaseConsumerProtocolHandler) HandleNodePolicyChanged(cmd *NodePolicyChangedCommand, cph ConsumerProtocolHandler) {
+	// TODO: Lily check here for handle node policy change. Need to get model policy re-evaluated
 	if glog.V(5) {
 		glog.Infof(BCPHlogstring(b.Name(), "recieved node policy change command."))
 	}
@@ -636,6 +637,9 @@ func (b *BaseConsumerProtocolHandler) HandleNodePolicyChanged(cmd *NodePolicyCha
 				if !agStillValid {
 					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a node policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
 					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph, policyMatches)
+				} else {
+					// If the agreement is still valid, then handlePolicyChangeFor MMS object
+					b.HandlePolicyChangeForMMSObject(ag, cph)
 				}
 			}
 		}
@@ -682,6 +686,23 @@ func (b *BaseConsumerProtocolHandler) HandleMMSObjectPolicy(cmd *MMSObjectPolicy
 	cph.WorkQueue().InboundHigh() <- &agreementWork
 	if glog.V(5) {
 		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued object policy change command.")))
+	}
+}
+
+// HandlePolicyChangeForMMSObject need to:
+// 1. for each service in agreement, grab object policy using service info
+// 2. AssignObjectToNode func (nodePlicy, objectPolicy ...), then add/delete destination
+func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForMMSObject(agreement persistence.Agreement, cph ConsumerProtocolHandler) {
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), "handle node policy change for MMS object."))
+	}
+
+	if agreement.GetDeviceType() == persistence.DEVICE_TYPE_DEVICE {
+		if b.GetCSSURL() != "" && agreement.Pattern == "" {
+			AgreementHandleMMSObjectPolicy(b, b.mmsObjMgr, agreement, b.Name(), BCPHlogstring)
+		} else if b.GetCSSURL() == "" {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to re-evaluate object placement because there is no CSS URL configured in this agbot")))
+		}
 	}
 }
 
