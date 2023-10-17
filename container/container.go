@@ -7,15 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"math/big"
-	"os"
-	"os/user"
-	"path"
-	"strconv"
-	"strings"
-
 	"github.com/boltdb/bolt"
 	"github.com/coreos/go-iptables/iptables"
 	docker "github.com/fsouza/go-dockerclient"
@@ -32,6 +23,14 @@ import (
 	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/sys/unix"
+	"io"
+	"io/ioutil"
+	"math/big"
+	"os"
+	"os/user"
+	"path"
+	"strconv"
+	"strings"
 )
 
 const LABEL_PREFIX = "openhorizon.anax"
@@ -373,6 +372,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				SecurityOpt:     service.SecurityOpt,
 				Sysctls:         service.Sysctls,
 				PidMode:         service.PID,
+				IpcMode:         service.Ipc,
 			},
 		}
 
