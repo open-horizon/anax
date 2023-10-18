@@ -1,6 +1,6 @@
 package bolt
 
-func (db *AgbotBoltDB) AddManagedPolicySecret(secretOrg, secretName, policyOrg, policyName string, updateTime int64) error {
+func (db *AgbotBoltDB) AddManagedPolicySecret(secretOrg, secretName, policyOrg, policyName string, secretExists bool, updateTime int64) error {
 	return nil
 }
 
@@ -8,11 +8,15 @@ func (db *AgbotBoltDB) GetManagedPolicySecretNames(policyOrg, policyName string)
 	return []string{}, nil
 }
 
-func (db *AgbotBoltDB) GetPoliciesWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64) ([]string, error) {
+func (db *AgbotBoltDB) GetPoliciesWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64, secretExists bool) ([]string, error) {
 	return []string{}, nil
 }
 
-func (db *AgbotBoltDB) SetSecretUpdate(secretOrg, secretName string, secretUpdateTime int64) error {
+func (db *AgbotBoltDB) SetSecretUpdate(secretOrg, secretName string, secretUpdateTime int64, secretExists bool) error {
+	return nil
+}
+
+func (db *AgbotBoltDB) SetSecretExists(secretOrg, secretName string, secretUpdateTime int64) error {
 	return nil
 }
 
@@ -28,7 +32,7 @@ func (db *AgbotBoltDB) DeletePolicySecret(secretOrg, secretName, policyOrg, poli
 	return nil
 }
 
-func (db *AgbotBoltDB) AddManagedPatternSecret(secretOrg, secretName, policyOrg, policyName string, updateTime int64) error {
+func (db *AgbotBoltDB) AddManagedPatternSecret(secretOrg, secretName, policyOrg, policyName string, secretExists bool, updateTime int64) error {
 	return nil
 }
 
@@ -36,7 +40,7 @@ func (db *AgbotBoltDB) GetManagedPatternSecretNames(policyOrg, policyName string
 	return []string{}, nil
 }
 
-func (db *AgbotBoltDB) GetPatternsWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64) ([]string, error) {
+func (db *AgbotBoltDB) GetPatternsWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64, secretExists bool) ([]string, error) {
 	return []string{}, nil
 }
 
