@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-02-05"
+lastupdated: "2023-10-19"
 title: "Deployment Policy"
 description: Description of Deployment policy json fields
 
@@ -36,6 +36,7 @@ Following are the fields in the JSON representation of a deployment policy:
   - `name`: The name (URL) of a service to be deployed. This is the same value as found in the `url` field [here](./service_def.md).
   - `org`: The organization in which the service in `name` is defined.
   - `arch`: The hardware architecture of the service in `name`, or `*` to indicate any compatible architecture. This is the same value as found in the `arch` field [here](./service_def.md).
+  - `clusterNamespace`: Namespace that this service will be deployed to. Only apply to cluster service.
   - `serviceVersions`: A list of versions of the service. At least one version must be specified.
     - `version`: One of the versions of the service in `name`. This is the same value as found in the `version` field [here](./service_def.md).
     - `priority`: The relative priority of deploying this version over another version in the list of service versions.
