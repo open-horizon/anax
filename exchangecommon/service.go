@@ -19,6 +19,7 @@ const SERVICE_SHARING_MODE_MULTIPLE = "multiple"
 // Types and functions used to work with the exchange's service objects.
 
 // This type is a tuple used to refer to a specific service that is a dependency for the referencing service.
+// swagger:model
 type ServiceDependency struct {
 	URL          string `json:"url"`
 	Org          string `json:"org"`

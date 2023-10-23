@@ -29,93 +29,24 @@
         "operationId": "deploy_compatible",
         "parameters": [
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
             "name": "checkAll",
             "in": "query"
           },
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Show the input which was used to come up with the result.",
             "name": "long",
             "in": "query"
           },
           {
-            "type": "string",
-            "description": "The exchange id of the node. Mutually exclusive with node_policy and node_user_input.",
-            "name": "node_id",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The architecture of the node.",
-            "name": "node_arch",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The organization of the node.",
-            "name": "node_org",
-            "in": "body"
-          },
-          {
-            "description": "The node policy that will be put in the exchange. Mutually exclusive with node_id.",
-            "name": "node_policy",
+            "description": "The payload body",
+            "name": "payload",
             "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/ExternalPolicy"
-            }
-          },
-          {
-            "description": "The user input that will be put in the exchange for the services. Mutually exclusive with node_id.",
-            "name": "node_user_input",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/UserInput"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy_id",
-            "in": "body"
-          },
-          {
-            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/BusinessPolicy"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern_id",
-            "in": "body"
-          },
-          {
-            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/PatternFile"
-            }
-          },
-          {
-            "description": "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy.",
-            "name": "service_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ExternalPolicy"
-            }
-          },
-          {
-            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange.",
-            "name": "service",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ServiceFile"
+              "$ref": "#/definitions/CompCheck"
             }
           }
         ],
@@ -123,7 +54,6 @@
           "200": {
             "description": "Success",
             "schema": {
-              "type": "compcheck.CompCheckOutput",
               "$ref": "#/definitions/CompCheckOutput"
             }
           },
@@ -161,57 +91,24 @@
         "operationId": "deployCheckPolicyCompatible",
         "parameters": [
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
             "name": "checkAll",
             "in": "query"
           },
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Show the input which was used to come up with the result.",
             "name": "long",
             "in": "query"
           },
           {
-            "type": "string",
-            "description": "The exchange id of the node. Mutually exclusive with node_policy.",
-            "name": "node_id",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The architecture of the node.",
-            "name": "node_arch",
-            "in": "body"
-          },
-          {
-            "description": "The node policy that will be put in the exchange. Mutually exclusive with node_id.",
-            "name": "node_policy",
+            "description": "The payload body",
+            "name": "payload",
             "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/ExternalPolicy"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy.",
-            "name": "business_policy_id",
-            "in": "body"
-          },
-          {
-            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id.",
-            "name": "business_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/BusinessPolicy"
-            }
-          },
-          {
-            "description": "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy.",
-            "name": "service_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ExternalPolicy"
+              "$ref": "#/definitions/PolicyCheck"
             }
           }
         ],
@@ -219,7 +116,6 @@
           "200": {
             "description": "Success",
             "schema": {
-              "type": "compcheck.CompCheckOutput",
               "$ref": "#/definitions/CompCheckOutput"
             }
           },
@@ -257,69 +153,24 @@
         "operationId": "secretbinding_compatible",
         "parameters": [
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
             "name": "checkAll",
             "in": "query"
           },
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Show the input which was used to come up with the result.",
             "name": "long",
             "in": "query"
           },
           {
-            "type": "string",
-            "description": "The exchange id of the node. Mutually exclusive with node_user_input.",
-            "name": "node_id",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The architecture of the node.",
-            "name": "node_arch",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The organization of the node.",
-            "name": "node_org",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy_id",
-            "in": "body"
-          },
-          {
-            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy",
+            "description": "The payload body",
+            "name": "payload",
             "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/BusinessPolicy"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern_id",
-            "in": "body"
-          },
-          {
-            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/PatternFile"
-            }
-          },
-          {
-            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange.",
-            "name": "service",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ServiceFile"
+              "$ref": "#/definitions/SecretBindingCheck"
             }
           }
         ],
@@ -327,7 +178,6 @@
           "200": {
             "description": "Success",
             "schema": {
-              "type": "compcheck.CompCheckOutput",
               "$ref": "#/definitions/CompCheckOutput"
             }
           },
@@ -365,71 +215,24 @@
         "operationId": "userinputCompatible",
         "parameters": [
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
             "name": "checkAll",
             "in": "query"
           },
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Show the input which was used to come up with the result.",
             "name": "long",
             "in": "query"
           },
           {
-            "type": "string",
-            "description": "The exchange id of the node. Mutually exclusive with node_user_input.",
-            "name": "node_id",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The architecture of the node.",
-            "name": "node_arch",
-            "in": "body"
-          },
-          {
-            "description": "The user input that will be put in the exchange for the services. Mutually exclusive with node_id.",
-            "name": "node_user_input",
+            "description": "The payload body",
+            "name": "payload",
             "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/UserInput"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy_id",
-            "in": "body"
-          },
-          {
-            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/BusinessPolicy"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern_id",
-            "in": "body"
-          },
-          {
-            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/PatternFile"
-            }
-          },
-          {
-            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange.",
-            "name": "service",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ServiceFile"
+              "$ref": "#/definitions/UserInputCheck"
             }
           }
         ],
@@ -437,7 +240,6 @@
           "200": {
             "description": "Success",
             "schema": {
-              "type": "compcheck.CompCheckOutput",
               "$ref": "#/definitions/CompCheckOutput"
             }
           },
@@ -462,11 +264,83 @@
         }
       }
     },
+    "/org/{org}/hagroup/{group}/nodemanagement/{node}/{nmpid}": {
+      "post": {
+        "description": "This API checks NMP update availability for the HA group node",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Check node NMP update in the HA group",
+        "operationId": "haNodeNMPUpdateRequest",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
+            "name": "org",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Show the input which was used to come up with the result.",
+            "name": "group",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The exchange id of the node. Mutually exclusive with node_policy.",
+            "name": "node",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The architecture of the node.",
+            "name": "nmpID",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created - Node can begin upgrad",
+            "schema": {
+              "$ref": "#/definitions/PutPostDeleteStandardResponse"
+            }
+          },
+          "400": {
+            "description": "Failure - Query parameter invalid",
+            "schema": {
+              "$ref": "#/definitions/PutPostDeleteStandardResponse"
+            }
+          },
+          "409": {
+            "description": "Conflict - Node can begin upgrade",
+            "schema": {
+              "$ref": "#/definitions/PutPostDeleteStandardResponse"
+            }
+          },
+          "500": {
+            "description": "Failure - Error",
+            "schema": {
+              "#ref": "#/definitions/PutPostDeleteStandardResponse"
+            }
+          }
+        }
+      }
+    },
     "/org/{org}/secrets": {},
     "/org/{org}/secrets/*": {
       "get": {
         "description": "Authenticates the node user with the exchange. Checks if the vault plugin being used is ready.\nPerforms sanity checks on the secret user and secret name provided.",
         "consumes": [
+          "application/json"
+        ],
+        "produces": [
           "application/json"
         ],
         "summary": "Common setup required before using the vault to manage secrets.",
@@ -483,6 +357,12 @@
             "type": "string",
             "description": "The user owning the secret.",
             "name": "user",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "The node the secret is for.",
+            "name": "node",
             "in": "query"
           },
           {
@@ -513,6 +393,9 @@
     "AbstractPatternFile": {
       "type": "object",
       "properties": {
+        "GetClusterNamespace": {
+          "type": "string"
+        },
         "GetOrg": {
           "type": "string"
         },
@@ -546,12 +429,8 @@
         "GetArch": {
           "type": "string"
         },
-        "GetClusterDeployment": {
-          "type": "object"
-        },
-        "GetDeployment": {
-          "type": "object"
-        },
+        "GetClusterDeployment": {},
+        "GetDeployment": {},
         "GetOrg": {
           "type": "string"
         },
@@ -694,6 +573,78 @@
       },
       "x-go-package": "github.com/open-horizon/anax/businesspolicy"
     },
+    "ChangeType": {
+      "description": "Can be one of:\n\n`0`: Modified (\"C\")\n`1`: Added (\"A\")\n`2`: Deleted (\"D\")",
+      "type": "integer",
+      "format": "uint8",
+      "title": "ChangeType Kind of change",
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "CompCheck": {
+      "description": "The input format for the comptible check",
+      "type": "object",
+      "properties": {
+        "business_policy": {
+          "$ref": "#/definitions/BusinessPolicy"
+        },
+        "business_policy_id": {
+          "type": "string",
+          "x-go-name": "BusinessPolId"
+        },
+        "node_arch": {
+          "type": "string",
+          "x-go-name": "NodeArch"
+        },
+        "node_cluster_namespace": {
+          "type": "string",
+          "x-go-name": "NodeClusterNS"
+        },
+        "node_id": {
+          "type": "string",
+          "x-go-name": "NodeId"
+        },
+        "node_namespace_scoped": {
+          "type": "boolean",
+          "x-go-name": "NodeNamespaceScoped"
+        },
+        "node_org": {
+          "type": "string",
+          "x-go-name": "NodeOrg"
+        },
+        "node_policy": {
+          "$ref": "#/definitions/NodePolicy"
+        },
+        "node_type": {
+          "type": "string",
+          "x-go-name": "NodeType"
+        },
+        "node_user_input": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          },
+          "x-go-name": "NodeUserInput"
+        },
+        "pattern": {
+          "$ref": "#/definitions/AbstractPatternFile"
+        },
+        "pattern_id": {
+          "type": "string",
+          "x-go-name": "PatternId"
+        },
+        "service": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AbstractServiceFile"
+          },
+          "x-go-name": "Service"
+        },
+        "service_policy": {
+          "$ref": "#/definitions/ExternalPolicy"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
     "CompCheckOutput": {
       "description": "CompCheckOutput The output format for the compatibility check",
       "type": "object",
@@ -752,9 +703,17 @@
           "type": "string",
           "x-go-name": "NodeArch"
         },
+        "node_cluster_namespace": {
+          "type": "string",
+          "x-go-name": "NodeClusterNS"
+        },
         "node_id": {
           "type": "string",
           "x-go-name": "NodeId"
+        },
+        "node_namespace_scoped": {
+          "type": "boolean",
+          "x-go-name": "NodeNamespaceScoped"
         },
         "node_org": {
           "type": "string",
@@ -806,49 +765,6 @@
       },
       "x-go-package": "github.com/open-horizon/anax/externalpolicy"
     },
-    "ContainerChangeResponseItem": {
-      "description": "ContainerChangeResponseItem change item in response to ContainerChanges operation",
-      "type": "object",
-      "required": [
-        "Kind",
-        "Path"
-      ],
-      "properties": {
-        "Kind": {
-          "description": "Kind of change",
-          "type": "integer",
-          "format": "uint8"
-        },
-        "Path": {
-          "description": "Path to file that has changed",
-          "type": "string"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerCreateCreatedBody": {
-      "description": "ContainerCreateCreatedBody OK response to ContainerCreate operation",
-      "type": "object",
-      "required": [
-        "Id",
-        "Warnings"
-      ],
-      "properties": {
-        "Id": {
-          "description": "The ID of the created container",
-          "type": "string",
-          "x-go-name": "ID"
-        },
-        "Warnings": {
-          "description": "Warnings encountered when creating the container",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
     "ContainerTopOKBody": {
       "description": "ContainerTopOKBody OK response to ContainerTop operation",
       "type": "object",
@@ -894,32 +810,26 @@
       },
       "x-go-package": "github.com/docker/docker/api/types/container"
     },
-    "ContainerWaitOKBody": {
-      "description": "ContainerWaitOKBody OK response to ContainerWait operation",
+    "CreateResponse": {
+      "description": "OK response to ContainerCreate operation",
       "type": "object",
+      "title": "CreateResponse ContainerCreateResponse",
       "required": [
-        "Error",
-        "StatusCode"
+        "Id",
+        "Warnings"
       ],
       "properties": {
-        "Error": {
-          "$ref": "#/definitions/ContainerWaitOKBodyError"
+        "Id": {
+          "description": "The ID of the created container",
+          "type": "string",
+          "x-go-name": "ID"
         },
-        "StatusCode": {
-          "description": "Exit code of the container",
-          "type": "integer",
-          "format": "int64"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerWaitOKBodyError": {
-      "description": "ContainerWaitOKBodyError container waiting error, if any",
-      "type": "object",
-      "properties": {
-        "Message": {
-          "description": "Details of an error",
-          "type": "string"
+        "Warnings": {
+          "description": "Warnings encountered when creating the container",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "x-go-package": "github.com/docker/docker/api/types/container"
@@ -971,13 +881,42 @@
       },
       "x-go-package": "github.com/open-horizon/anax/externalpolicy"
     },
+    "FilesystemChange": {
+      "type": "object",
+      "title": "FilesystemChange Change in the container's filesystem.",
+      "required": [
+        "Kind",
+        "Path"
+      ],
+      "properties": {
+        "Kind": {
+          "$ref": "#/definitions/ChangeType"
+        },
+        "Path": {
+          "description": "Path to file or directory that has changed.",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
     "HardwareRequirement": {
       "type": "object",
       "title": "This type is used to abstract the various edge node hardware requirements. The schema is left wide open.",
-      "additionalProperties": {
-        "type": "object"
-      },
+      "additionalProperties": {},
       "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "Input": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "value": {
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/policy"
     },
     "Meter": {
       "type": "object",
@@ -1054,6 +993,10 @@
           },
           "x-go-name": "AgreementProtocols"
         },
+        "clusterNamespace": {
+          "type": "string",
+          "x-go-name": "ClusterNamespace"
+        },
         "description": {
           "type": "string",
           "x-go-name": "Description"
@@ -1098,6 +1041,60 @@
       },
       "x-go-package": "github.com/open-horizon/anax/common"
     },
+    "PolicyCheck": {
+      "description": "The input format for the policy check",
+      "type": "object",
+      "properties": {
+        "business_policy": {
+          "$ref": "#/definitions/BusinessPolicy"
+        },
+        "business_policy_id": {
+          "type": "string",
+          "x-go-name": "BusinessPolId"
+        },
+        "dependent_services": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ServiceDefinition"
+          },
+          "x-go-name": "DepServices"
+        },
+        "node_arch": {
+          "type": "string",
+          "x-go-name": "NodeArch"
+        },
+        "node_cluster_namespace": {
+          "type": "string",
+          "x-go-name": "NodeClusterNS"
+        },
+        "node_id": {
+          "type": "string",
+          "x-go-name": "NodeId"
+        },
+        "node_namespace_scoped": {
+          "type": "boolean",
+          "x-go-name": "NodeNamespaceScoped"
+        },
+        "node_policy": {
+          "$ref": "#/definitions/NodePolicy"
+        },
+        "node_type": {
+          "type": "string",
+          "x-go-name": "NodeType"
+        },
+        "service": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AbstractServiceFile"
+          },
+          "x-go-name": "Service"
+        },
+        "service_policy": {
+          "$ref": "#/definitions/ExternalPolicy"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
     "Property": {
       "type": "object",
       "properties": {
@@ -1110,7 +1107,6 @@
           "x-go-name": "Type"
         },
         "value": {
-          "type": "object",
           "x-go-name": "Value"
         }
       },
@@ -1124,10 +1120,28 @@
       },
       "x-go-package": "github.com/open-horizon/anax/externalpolicy"
     },
+    "PutPostDeleteStandardResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "x-go-name": "Code"
+        },
+        "msg": {
+          "type": "string",
+          "x-go-name": "Msg"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
     "SecretBinding": {
       "description": "The secret binding that maps service secret names to secret manager secret names",
       "type": "object",
       "properties": {
+        "enableNodeLevelSecrets": {
+          "type": "boolean",
+          "x-go-name": "EnableNodeLevelSecrets"
+        },
         "secrets": {
           "type": "array",
           "items": {
@@ -1154,11 +1168,68 @@
       },
       "x-go-package": "github.com/open-horizon/anax/exchangecommon"
     },
+    "SecretBindingCheck": {
+      "description": "The input format for the userinput check",
+      "type": "object",
+      "properties": {
+        "business_policy": {
+          "$ref": "#/definitions/BusinessPolicy"
+        },
+        "business_policy_id": {
+          "type": "string",
+          "x-go-name": "BusinessPolId"
+        },
+        "dependent_services": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ServiceDefinition"
+          },
+          "x-go-name": "DepServices"
+        },
+        "node_arch": {
+          "type": "string",
+          "x-go-name": "NodeArch"
+        },
+        "node_id": {
+          "type": "string",
+          "x-go-name": "NodeId"
+        },
+        "node_org": {
+          "type": "string",
+          "x-go-name": "NodeOrg"
+        },
+        "node_type": {
+          "type": "string",
+          "x-go-name": "NodeType"
+        },
+        "pattern": {
+          "$ref": "#/definitions/AbstractPatternFile"
+        },
+        "pattern_id": {
+          "type": "string",
+          "x-go-name": "PatternId"
+        },
+        "service": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AbstractServiceFile"
+          },
+          "x-go-name": "Service"
+        },
+        "service_to_check": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "ServiceToCheck"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
     "ServiceChoiceFile": {
       "type": "object",
       "properties": {
         "deployment_overrides": {
-          "type": "object",
           "x-go-name": "DeploymentOverrides"
         },
         "deployment_overrides_signature": {
@@ -1295,7 +1366,6 @@
           "x-go-name": "Arch"
         },
         "clusterDeployment": {
-          "type": "object",
           "x-go-name": "ClusterDeployment"
         },
         "clusterDeploymentSignature": {
@@ -1303,7 +1373,6 @@
           "x-go-name": "ClusterDeploymentSignature"
         },
         "deployment": {
-          "type": "object",
           "x-go-name": "Deployment"
         },
         "deploymentSignature": {
@@ -1324,9 +1393,7 @@
         },
         "matchHardware": {
           "type": "object",
-          "additionalProperties": {
-            "type": "object"
-          },
+          "additionalProperties": {},
           "x-go-name": "MatchHardware"
         },
         "org": {
@@ -1372,6 +1439,10 @@
         "arch": {
           "type": "string",
           "x-go-name": "Arch"
+        },
+        "clusterNamespace": {
+          "type": "string",
+          "x-go-name": "ClusterNamespace"
         },
         "name": {
           "type": "string",
@@ -1501,9 +1572,116 @@
       },
       "x-go-package": "github.com/open-horizon/anax/exchangecommon"
     },
+    "UserInputCheck": {
+      "description": "The input format for the userinput check",
+      "type": "object",
+      "properties": {
+        "business_policy": {
+          "$ref": "#/definitions/BusinessPolicy"
+        },
+        "business_policy_id": {
+          "type": "string",
+          "x-go-name": "BusinessPolId"
+        },
+        "dependent_services": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ServiceDefinition"
+          },
+          "x-go-name": "DepServices"
+        },
+        "node_arch": {
+          "type": "string",
+          "x-go-name": "NodeArch"
+        },
+        "node_cluster_namespace": {
+          "type": "string",
+          "x-go-name": "NodeClusterNS"
+        },
+        "node_id": {
+          "type": "string",
+          "x-go-name": "NodeId"
+        },
+        "node_namespace_scoped": {
+          "type": "boolean",
+          "x-go-name": "NodeNamespaceScoped"
+        },
+        "node_type": {
+          "type": "string",
+          "x-go-name": "NodeType"
+        },
+        "node_user_input": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          },
+          "x-go-name": "NodeUserInput"
+        },
+        "pattern": {
+          "$ref": "#/definitions/AbstractPatternFile"
+        },
+        "pattern_id": {
+          "type": "string",
+          "x-go-name": "PatternId"
+        },
+        "service": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AbstractServiceFile"
+          },
+          "x-go-name": "Service"
+        },
+        "service_to_check": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "ServiceToCheck"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
+    "WaitExitError": {
+      "description": "WaitExitError container waiting error, if any",
+      "type": "object",
+      "properties": {
+        "Message": {
+          "description": "Details of an error",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "WaitResponse": {
+      "description": "OK response to ContainerWait operation",
+      "type": "object",
+      "title": "WaitResponse ContainerWaitResponse",
+      "required": [
+        "StatusCode"
+      ],
+      "properties": {
+        "Error": {
+          "$ref": "#/definitions/WaitExitError"
+        },
+        "StatusCode": {
+          "description": "Exit code of the container",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
     "WorkloadChoice": {
       "type": "object",
       "properties": {
+        "deployment_overrides": {
+          "type": "string",
+          "x-go-name": "DeploymentOverrides"
+        },
+        "deployment_overrides_signature": {
+          "type": "string",
+          "x-go-name": "DeploymentOverridesSignature"
+        },
         "priority": {
           "$ref": "#/definitions/WorkloadPriority"
         },
@@ -1515,7 +1693,7 @@
           "x-go-name": "Version"
         }
       },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
+      "x-go-package": "github.com/open-horizon/anax/exchange"
     },
     "WorkloadPriority": {
       "type": "object",

@@ -17,6 +17,7 @@ import (
 // Types and functions used to work with the exchange's service objects.
 
 // This type is used to abstract the various edge node hardware requirements. The schema is left wide open.
+// swagger:model
 type HardwareRequirement map[string]interface{}
 
 func (h HardwareRequirement) String() string {
@@ -33,6 +34,7 @@ func (h HardwareRequirement) String() string {
 }
 
 // This is the structure of the object returned on a GET /service.
+// swagger:model
 type ServiceDefinition struct {
 	Owner                      string                             `json:"owner,omitempty"`
 	Label                      string                             `json:"label"`

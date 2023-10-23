@@ -7,6 +7,7 @@ import (
 )
 
 // This type implements all the ConstraintLanguage Plugin methods and delegates to plugin system.
+// swagger:model
 type ConstraintExpression []string
 
 func (c *ConstraintExpression) Validate() ([]string, error) {

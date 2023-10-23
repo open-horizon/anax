@@ -21,8 +21,10 @@ const (
 )
 
 // This struct represents property values advertised by the policy
+// swagger:model
 type PropertyList []Property
 
+// swagger:model
 type Property struct {
 	Name  string      `json:"name"`           // The Property name
 	Value interface{} `json:"value"`          // The Property value

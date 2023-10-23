@@ -41,6 +41,7 @@ func GetId(id string) string {
 	}
 }
 
+// swagger:model
 type PutPostDeleteStandardResponse struct {
 	Code string `json:"code"`
 	Msg  string `json:"msg"`

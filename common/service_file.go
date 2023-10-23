@@ -11,6 +11,7 @@ import (
 	"golang.org/x/text/message"
 )
 
+// swagger:model
 type AbstractServiceFile interface {
 	GetOrg() string
 	GetURL() string

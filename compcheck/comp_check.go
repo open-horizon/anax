@@ -61,6 +61,7 @@ func NewCompCheckError(err error, errCode int) *CompCheckError {
 }
 
 // The input format for the comptible check
+// swagger:model
 type CompCheck struct {
 	NodeId              string                         `json:"node_id,omitempty"`
 	NodeArch            string                         `json:"node_arch,omitempty"`
@@ -164,6 +165,7 @@ func NewCompCheckOutput(compatible bool, reason map[string]string, input *CompCh
 }
 
 // To store the resource (pattern, bp, services etc) used for compatibility check
+// swagger:model
 type CompCheckResource struct {
 	NodeId              string                                   `json:"node_id,omitempty"`
 	NodeArch            string                                   `json:"node_arch,omitempty"`
