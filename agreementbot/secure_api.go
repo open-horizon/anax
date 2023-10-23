@@ -1325,6 +1325,35 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 
 	// handle API options
 	switch r.Method {
+	// swagger:operation GET /org/{org}/secrets/{secret} orgSecret
+        //
+        // List given secret belonging to the org.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: secrets.SecretDetails
+        //    "$ref": "#/definitions/SecretDetails"
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "GET":
 		// pull details for an org-level secret
 		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "", "", info.vaultSecretName)
@@ -1343,6 +1372,42 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
+        // swagger:operation POST /org/{org}/secrets/{secret} orgSecret
+        //
+        // Delete a given secret belonging to the org.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // parameters:
+        //   - name: secretDetails
+        //     in: query
+        //     type: secrets.SecretDetails
+        //     required: true
+        //     description: "The secret key and value."
+        //     schema:
+        //     "$ref": "#/definitions/SecretDetails"
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: string
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "POST":
 		// create an org-level secret
 
@@ -1359,6 +1424,34 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
+        // swagger:operation DELETE /org/{org}/secrets/{secret} orgSecret
+        //
+        // Delete a given secret belonging to the org.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: string
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "DELETE":
 		// delete an org-level secret
 		err := a.secretProvider.DeleteOrgSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.vaultSecretName)
@@ -1460,6 +1553,35 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	userPath := "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
+        // swagger:operation GET /org/{org}/secrets/user/{user}/{secret} userSecret
+        //
+        // List given secret belonging to the user.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: secrets.SecretDetails
+        //    "$ref": "#/definitions/SecretDetails"
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "GET":
 		// pull details for a user-level secret
 		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.user, "", info.vaultSecretName)
@@ -1478,6 +1600,42 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
+        // swagger:operation POST /org/{org}/secrets/user/{user}/{secret} userSecret
+        //
+        // Delete a given secret belonging to the user.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // parameters:
+        //   - name: secretDetails
+        //     in: query
+        //     type: secrets.SecretDetails
+        //     required: true
+        //     description: "The secret key and value."
+        //     schema:
+        //     "$ref": "#/definitions/SecretDetails"
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: string
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "POST":
 		// create a user-level secret
 
@@ -1494,6 +1652,34 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
+        // swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} userSecret
+        //
+        // Delete a given secret belonging to the user.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: string
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "DELETE":
 		err := a.secretProvider.DeleteOrgUserSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
 		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
@@ -1519,6 +1705,35 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	nodePath := "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
+        // swagger:operation GET /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+        //
+        // List given secret belonging to the org for a node.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: secrets.SecretDetails
+        //    "$ref": "#/definitions/SecretDetails"
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "GET":
 		// pull details for a node org-level secret
 		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "", info.node, info.vaultSecretName)
@@ -1537,6 +1752,42 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
+        // swagger:operation POST /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+        //
+        // Delete a given secret belonging to the org for a node.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // parameters:
+        //   - name: secretDetails
+        //     in: query
+        //     type: secrets.SecretDetails
+        //     required: true
+        //     description: "The secret key and value."
+        //     schema:
+        //     "$ref": "#/definitions/SecretDetails"
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: string
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "POST":
 		// create a node org-level secret
 
@@ -1553,6 +1804,34 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
+        // swagger:operation DELETE /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+        //
+        // Delete a given secret belonging to the org for a node.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: string
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "DELETE":
 		err := a.secretProvider.DeleteOrgNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodePath)
 		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
@@ -1578,6 +1857,35 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	nodeUserPath := "user/" + info.user + "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
+        // swagger:operation GET /org/{org}/secrets/user/{user}/node/{node}/{secret} nodeUserSecret
+        //
+        // List given secret belonging to the user for a node.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: secrets.SecretDetails
+        //    "$ref": "#/definitions/SecretDetails"
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "GET":
 		// pull details for a user-level secret
 		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.user, info.node, info.vaultSecretName)
@@ -1596,6 +1904,42 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
+        // swagger:operation POST /org/{org}/secrets/user/{user}/node/{node}/{secret} userSecret
+        //
+        // Delete a given secret belonging to the user for a node.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // parameters:
+        //   - name: secretDetails
+        //     in: query
+        //     type: secrets.SecretDetails
+        //     required: true
+        //     description: "The secret key and value."
+        //     schema:
+        //     "$ref": "#/definitions/SecretDetails"
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: string
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "POST":
 		// create a user-level secret
 
@@ -1612,6 +1956,34 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
+        // swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} nodeUserSecret
+        //
+        // Delete a given secret belonging to the user for a node.
+        //
+        // ---
+        // consumes:
+        //   - application/json
+        // produces:
+        //   - application/json
+        // responses:
+        //  '200':
+        //    description: "Success."
+        //    type: string
+        //  '401':
+        //    description: "Unauthenticated user."
+        //    type: string
+        //  '403':
+        //    description: "Secrets permission denied to user."
+        //    type: string
+        //  '404':
+        //    description: "Secret does not exist."
+        //    type: string
+        //  '503':
+        //    description: "Secret provider unavailable"
+        //    type: string
+        //  '500':
+        //    description: "Invalid vault response"
+        //    type: string
 	case "DELETE":
 		err := a.secretProvider.DeleteUserNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodeUserPath)
 		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
