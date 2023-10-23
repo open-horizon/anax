@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	docker "github.com/fsouza/go-dockerclient"
 	"reflect"
 	"strings"
-
-	docker "github.com/fsouza/go-dockerclient"
 )
 
 /*
@@ -176,6 +175,7 @@ type Service struct {
 	PID              string               `json:"pid,omitempty"`          // The process id that the container should run in, see docker run --pid
 	User             string               `json:"user,omitempty"`         // The linux user ID (UID format) in which the container should run, see docker run -user
 	Sysctls          map[string]string    `json:"sysctls,omitempty"`      // The namespaced kernel parameters (sysctls) for this container, see docker run --sysctls
+	Ipc              string               `json:"ipc,omitempty"`          // The ipc mode for this container, see docker run --ipc
 }
 
 func (s *Service) AddFilesystemBinding(bind string) {
