@@ -66,6 +66,7 @@ Because {{site.data.keyword.edge_notm}} uses the docker API to start the contain
     - `user`: Sets the username or UID used. root (id = 0) is the default user within a container. The image developer can create additional users. Those users are accessible by name. When passing a numeric ID, the user does not have to exist in the container.
     - `pid`: Set the PID (Process) Namespace mode for the container. `container:<name|id>` joins another container's PID namespace. `host` use the host's PID namespace inside the container. In certain cases you want your container to share the host’s process namespace, basically allowing processes within the container to see all of the processes on the system.
     - `sysctls`: Sysctl settings are exposed by Kubernetes, allowing users to modify certain kernel parameters at runtime for namespaces within a container. The parameters cover various subsystems, such as: networking (common prefix: net.), kernel (common prefix: kernel.), virtual memory (common prefix: vm.), MDADM (common prefix: dev.). To get a list of all parameters, you can run: `sudo sysctl -a`
+    - `ipc`: Sets the IPC mode for the container. Equivalent to the `docker run --ipc` flag. The accepted values are: `"", "none", "private", "shareable", "container:<name-or-id>", "host"`. If not specified, daemon default is used.
 
 ## clusterDeployment String Fields
 {: #clusterdeployment-fields}
