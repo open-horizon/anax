@@ -54,8 +54,14 @@
           },
           {
             "type": "string",
-            "description": "The organization of the node.",
-            "name": "node_org",
+            "description": "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified.",
+            "name": "node_type",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified or the node_type is device.",
+            "name": "node_cluster_namespace",
             "in": "body"
           },
           {
@@ -182,6 +188,18 @@
             "type": "string",
             "description": "The architecture of the node.",
             "name": "node_arch",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified.",
+            "name": "node_type",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified or the node_type is device.",
+            "name": "node_cluster_namespace",
             "in": "body"
           },
           {
@@ -389,6 +407,18 @@
             "in": "body"
           },
           {
+            "type": "string",
+            "description": "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified.",
+            "name": "node_type",
+            "in": "body"
+          },
+          {
+            "type": "string",
+            "description": "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified.",
+            "name": "node_cluster_namespace",
+            "in": "body"
+          },
+          {
             "description": "The user input that will be put in the exchange for the services. Mutually exclusive with node_id.",
             "name": "node_user_input",
             "in": "body",
@@ -487,23 +517,397 @@
           },
           {
             "type": "string",
+            "description": "The node the secret is for.",
+            "name": "node",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "description": "The secret key (name).",
             "name": "secret",
             "in": "query"
           }
+        ]
+      }
+    },
+    "/org/{org}/secrets/node/{node}/{secret}": {
+      "get": {
+        "consumes": [
+          "application/json"
         ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "List given secret belonging to the org for a node.",
+        "operationId": "nodeOrgSecret",
         "responses": {
-          "400": {
-            "description": "Secret org or name does not meet constraints.",
-            "schema": {
-              "type": "string"
-            }
+          "200": {
+            "description": "Success.",
+            "$ref": "#/definitions/SecretDetails"
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
           },
           "503": {
-            "description": "Secret provider not ready or not configured.",
-            "schema": {
-              "type": "string"
-            }
+            "description": "Secret provider unavailable"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Delete a given secret belonging to the org for a node.",
+        "operationId": "nodeOrgSecret",
+        "parameters": [
+          {
+            "$ref": "#/definitions/SecretDetails",
+            "type": "secrets.SecretDetails",
+            "description": "The secret key and value.",
+            "name": "secretDetails",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success."
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
+          }
+        }
+      },
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Delete a given secret belonging to the org for a node.",
+        "operationId": "nodeOrgSecret",
+        "responses": {
+          "200": {
+            "description": "Success."
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
+          }
+        }
+      }
+    },
+    "/org/{org}/secrets/user/{user}/node/{node}/{secret}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "List given secret belonging to the user for a node.",
+        "operationId": "nodeUserSecret",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "$ref": "#/definitions/SecretDetails"
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Delete a given secret belonging to the user for a node.",
+        "operationId": "userSecret",
+        "parameters": [
+          {
+            "$ref": "#/definitions/SecretDetails",
+            "type": "secrets.SecretDetails",
+            "description": "The secret key and value.",
+            "name": "secretDetails",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success."
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
+          }
+        }
+      }
+    },
+    "/org/{org}/secrets/user/{user}/{secret}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "List given secret belonging to the user.",
+        "operationId": "userSecret",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "$ref": "#/definitions/SecretDetails"
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Delete a given secret belonging to the user.",
+        "operationId": "userSecret",
+        "parameters": [
+          {
+            "$ref": "#/definitions/SecretDetails",
+            "type": "secrets.SecretDetails",
+            "description": "The secret key and value.",
+            "name": "secretDetails",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success."
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
+          }
+        }
+      },
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Delete a given secret belonging to the user for a node.",
+        "operationId": "nodeUserSecret",
+        "responses": {
+          "200": {
+            "description": "Success."
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
+          }
+        }
+      }
+    },
+    "/org/{org}/secrets/{secret}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "List given secret belonging to the org.",
+        "operationId": "orgSecret",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "$ref": "#/definitions/SecretDetails"
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Delete a given secret belonging to the org.",
+        "operationId": "orgSecret",
+        "parameters": [
+          {
+            "$ref": "#/definitions/SecretDetails",
+            "type": "secrets.SecretDetails",
+            "description": "The secret key and value.",
+            "name": "secretDetails",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success."
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
+          }
+        }
+      },
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Delete a given secret belonging to the org.",
+        "operationId": "orgSecret",
+        "responses": {
+          "200": {
+            "description": "Success."
+          },
+          "401": {
+            "description": "Unauthenticated user."
+          },
+          "403": {
+            "description": "Secrets permission denied to user."
+          },
+          "404": {
+            "description": "Secret does not exist."
+          },
+          "500": {
+            "description": "Invalid vault response"
+          },
+          "503": {
+            "description": "Secret provider unavailable"
           }
         }
       }
@@ -513,6 +917,9 @@
     "AbstractPatternFile": {
       "type": "object",
       "properties": {
+        "GetClusterNamespace": {
+          "type": "string"
+        },
         "GetOrg": {
           "type": "string"
         },
@@ -546,12 +953,8 @@
         "GetArch": {
           "type": "string"
         },
-        "GetClusterDeployment": {
-          "type": "object"
-        },
-        "GetDeployment": {
-          "type": "object"
-        },
+        "GetClusterDeployment": {},
+        "GetDeployment": {},
         "GetOrg": {
           "type": "string"
         },
@@ -694,6 +1097,13 @@
       },
       "x-go-package": "github.com/open-horizon/anax/businesspolicy"
     },
+    "ChangeType": {
+      "description": "Can be one of:\n\n`0`: Modified (\"C\")\n`1`: Added (\"A\")\n`2`: Deleted (\"D\")",
+      "type": "integer",
+      "format": "uint8",
+      "title": "ChangeType Kind of change",
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
     "CompCheckOutput": {
       "description": "CompCheckOutput The output format for the compatibility check",
       "type": "object",
@@ -752,9 +1162,17 @@
           "type": "string",
           "x-go-name": "NodeArch"
         },
+        "node_cluster_namespace": {
+          "type": "string",
+          "x-go-name": "NodeClusterNS"
+        },
         "node_id": {
           "type": "string",
           "x-go-name": "NodeId"
+        },
+        "node_namespace_scoped": {
+          "type": "boolean",
+          "x-go-name": "NodeNamespaceScoped"
         },
         "node_org": {
           "type": "string",
@@ -806,49 +1224,6 @@
       },
       "x-go-package": "github.com/open-horizon/anax/externalpolicy"
     },
-    "ContainerChangeResponseItem": {
-      "description": "ContainerChangeResponseItem change item in response to ContainerChanges operation",
-      "type": "object",
-      "required": [
-        "Kind",
-        "Path"
-      ],
-      "properties": {
-        "Kind": {
-          "description": "Kind of change",
-          "type": "integer",
-          "format": "uint8"
-        },
-        "Path": {
-          "description": "Path to file that has changed",
-          "type": "string"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerCreateCreatedBody": {
-      "description": "ContainerCreateCreatedBody OK response to ContainerCreate operation",
-      "type": "object",
-      "required": [
-        "Id",
-        "Warnings"
-      ],
-      "properties": {
-        "Id": {
-          "description": "The ID of the created container",
-          "type": "string",
-          "x-go-name": "ID"
-        },
-        "Warnings": {
-          "description": "Warnings encountered when creating the container",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
     "ContainerTopOKBody": {
       "description": "ContainerTopOKBody OK response to ContainerTop operation",
       "type": "object",
@@ -894,32 +1269,26 @@
       },
       "x-go-package": "github.com/docker/docker/api/types/container"
     },
-    "ContainerWaitOKBody": {
-      "description": "ContainerWaitOKBody OK response to ContainerWait operation",
+    "CreateResponse": {
+      "description": "OK response to ContainerCreate operation",
       "type": "object",
+      "title": "CreateResponse ContainerCreateResponse",
       "required": [
-        "Error",
-        "StatusCode"
+        "Id",
+        "Warnings"
       ],
       "properties": {
-        "Error": {
-          "$ref": "#/definitions/ContainerWaitOKBodyError"
+        "Id": {
+          "description": "The ID of the created container",
+          "type": "string",
+          "x-go-name": "ID"
         },
-        "StatusCode": {
-          "description": "Exit code of the container",
-          "type": "integer",
-          "format": "int64"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerWaitOKBodyError": {
-      "description": "ContainerWaitOKBodyError container waiting error, if any",
-      "type": "object",
-      "properties": {
-        "Message": {
-          "description": "Details of an error",
-          "type": "string"
+        "Warnings": {
+          "description": "Warnings encountered when creating the container",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "x-go-package": "github.com/docker/docker/api/types/container"
@@ -971,13 +1340,42 @@
       },
       "x-go-package": "github.com/open-horizon/anax/externalpolicy"
     },
+    "FilesystemChange": {
+      "type": "object",
+      "title": "FilesystemChange Change in the container's filesystem.",
+      "required": [
+        "Kind",
+        "Path"
+      ],
+      "properties": {
+        "Kind": {
+          "$ref": "#/definitions/ChangeType"
+        },
+        "Path": {
+          "description": "Path to file or directory that has changed.",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
     "HardwareRequirement": {
       "type": "object",
       "title": "This type is used to abstract the various edge node hardware requirements. The schema is left wide open.",
-      "additionalProperties": {
-        "type": "object"
-      },
+      "additionalProperties": {},
       "x-go-package": "github.com/open-horizon/anax/exchange"
+    },
+    "Input": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "value": {
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/policy"
     },
     "Meter": {
       "type": "object",
@@ -1013,7 +1411,7 @@
           "x-go-name": "MissingHBInterval"
         }
       },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
+      "x-go-package": "github.com/open-horizon/anax/exchange"
     },
     "NodePolicy": {
       "description": "NodePolicy the node policy\nThe properties and constraints defined in the top-level are common\nproperties and constraints that are used by both Deployment and Management.\nIf the same property name is defined in the second level (Deployment or Management),\nthe perperty value of the second level takes the precedence.\nIf there are constraints defined in the second level, all the constraints defined in\nthe top level will be ignored.",
@@ -1053,6 +1451,10 @@
             "$ref": "#/definitions/AgreementProtocol"
           },
           "x-go-name": "AgreementProtocols"
+        },
+        "clusterNamespace": {
+          "type": "string",
+          "x-go-name": "ClusterNamespace"
         },
         "description": {
           "type": "string",
@@ -1110,7 +1512,6 @@
           "x-go-name": "Type"
         },
         "value": {
-          "type": "object",
           "x-go-name": "Value"
         }
       },
@@ -1128,6 +1529,10 @@
       "description": "The secret binding that maps service secret names to secret manager secret names",
       "type": "object",
       "properties": {
+        "enableNodeLevelSecrets": {
+          "type": "boolean",
+          "x-go-name": "EnableNodeLevelSecrets"
+        },
         "secrets": {
           "type": "array",
           "items": {
@@ -1154,11 +1559,25 @@
       },
       "x-go-package": "github.com/open-horizon/anax/exchangecommon"
     },
+    "SecretDetails": {
+      "description": "SecretDetails The key value pair of one secret",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "x-go-name": "Key"
+        },
+        "value": {
+          "type": "string",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/open-horizon/anax/agreementbot/secrets"
+    },
     "ServiceChoiceFile": {
       "type": "object",
       "properties": {
         "deployment_overrides": {
-          "type": "object",
           "x-go-name": "DeploymentOverrides"
         },
         "deployment_overrides_signature": {
@@ -1295,7 +1714,6 @@
           "x-go-name": "Arch"
         },
         "clusterDeployment": {
-          "type": "object",
           "x-go-name": "ClusterDeployment"
         },
         "clusterDeploymentSignature": {
@@ -1303,7 +1721,6 @@
           "x-go-name": "ClusterDeploymentSignature"
         },
         "deployment": {
-          "type": "object",
           "x-go-name": "Deployment"
         },
         "deploymentSignature": {
@@ -1324,9 +1741,7 @@
         },
         "matchHardware": {
           "type": "object",
-          "additionalProperties": {
-            "type": "object"
-          },
+          "additionalProperties": {},
           "x-go-name": "MatchHardware"
         },
         "org": {
@@ -1372,6 +1787,10 @@
         "arch": {
           "type": "string",
           "x-go-name": "Arch"
+        },
+        "clusterNamespace": {
+          "type": "string",
+          "x-go-name": "ClusterNamespace"
         },
         "name": {
           "type": "string",
@@ -1476,34 +1895,79 @@
           "x-go-name": "Time"
         }
       },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
+      "x-go-package": "github.com/open-horizon/anax/exchange"
     },
     "UserInput": {
       "type": "object",
       "title": "UserInput This type is used to describe a configuration variable that the node owner/user has to set before the service is able to execute on the edge node.",
       "properties": {
-        "defaultValue": {
-          "type": "string",
-          "x-go-name": "DefaultValue"
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Input"
+          },
+          "x-go-name": "Inputs"
         },
-        "label": {
+        "serviceArch": {
           "type": "string",
-          "x-go-name": "Label"
+          "x-go-name": "ServiceArch"
         },
-        "name": {
+        "serviceOrgid": {
           "type": "string",
-          "x-go-name": "Name"
+          "x-go-name": "ServiceOrgid"
         },
-        "type": {
+        "serviceUrl": {
           "type": "string",
-          "x-go-name": "Type"
+          "x-go-name": "ServiceUrl"
+        },
+        "serviceVersionRange": {
+          "type": "string",
+          "x-go-name": "ServiceVersionRange"
         }
       },
-      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
+      "x-go-package": "github.com/open-horizon/anax/policy"
+    },
+    "WaitExitError": {
+      "description": "WaitExitError container waiting error, if any",
+      "type": "object",
+      "properties": {
+        "Message": {
+          "description": "Details of an error",
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
+    },
+    "WaitResponse": {
+      "description": "OK response to ContainerWait operation",
+      "type": "object",
+      "title": "WaitResponse ContainerWaitResponse",
+      "required": [
+        "StatusCode"
+      ],
+      "properties": {
+        "Error": {
+          "$ref": "#/definitions/WaitExitError"
+        },
+        "StatusCode": {
+          "description": "Exit code of the container",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "x-go-package": "github.com/docker/docker/api/types/container"
     },
     "WorkloadChoice": {
       "type": "object",
       "properties": {
+        "deployment_overrides": {
+          "type": "string",
+          "x-go-name": "DeploymentOverrides"
+        },
+        "deployment_overrides_signature": {
+          "type": "string",
+          "x-go-name": "DeploymentOverridesSignature"
+        },
         "priority": {
           "$ref": "#/definitions/WorkloadPriority"
         },
@@ -1515,7 +1979,7 @@
           "x-go-name": "Version"
         }
       },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
+      "x-go-package": "github.com/open-horizon/anax/exchange"
     },
     "WorkloadPriority": {
       "type": "object",
