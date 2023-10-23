@@ -45,6 +45,7 @@ func (s Input) IsSame(input Input) bool {
 	return true
 }
 
+// swagger:model
 type UserInput struct {
 	ServiceOrgid        string  `json:"serviceOrgid"`
 	ServiceUrl          string  `json:"serviceUrl"`

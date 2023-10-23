@@ -5,6 +5,7 @@ import (
 )
 
 // a binding that maps a secret name to a secret manager secret name.
+// swagger:model
 type BoundSecret map[string]string
 
 // return both service secret name and secret manager secret name
@@ -42,6 +43,7 @@ func (w BoundSecret) IsSame(other BoundSecret) bool {
 }
 
 // The secret binding that maps service secret names to secret manager secret names
+// swagger:model
 type SecretBinding struct {
 	ServiceOrgid           string        `json:"serviceOrgid"`
 	ServiceUrl             string        `json:"serviceUrl"`

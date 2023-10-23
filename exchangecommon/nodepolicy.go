@@ -14,6 +14,7 @@ const NODEPOLICY_VERSION_VERSION_2 = "v2"
 // the perperty value of the second level takes the precedence.
 // If there are constraints defined in the second level, all the constraints defined in
 // the top level will be ignored.
+// swagger:model
 type NodePolicy struct {
 	Label                         string                        `json:"label,omitempty"`
 	Description                   string                        `json:"description,omitempty"`

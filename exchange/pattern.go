@@ -191,6 +191,7 @@ type Blockchain struct {
 
 type BlockchainList []Blockchain
 
+// swagger:model
 type AgreementProtocol struct {
 	Name            string         `json:"name,omitempty"`            // The name of the agreement protocol to be used
 	ProtocolVersion int            `json:"protocolVersion,omitempty"` // The max protocol version supported

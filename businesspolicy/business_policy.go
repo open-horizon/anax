@@ -37,6 +37,7 @@ func (w BusinessPolicy) String() string {
 		w.SecretBinding)
 }
 
+// swagger:model
 type ServiceRef struct {
 	Name             string           `json:"name"`                       // refers to a service definition in the exchange
 	Org              string           `json:"org,omitempty"`              // the org holding the service definition

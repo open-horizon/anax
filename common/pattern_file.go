@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 )
 
+// swagger:model
 type AbstractPatternFile interface {
 	GetOrg() string
 	GetServices() []exchange.ServiceReference
@@ -92,6 +93,7 @@ func (p *PatternFile) GetClusterNamespace() string {
 	return p.ClusterNamespace
 }
 
+// swagger:model
 type ServiceReferenceFile struct {
 	ServiceURL      string                     `json:"serviceUrl"`                 // refers to a service definition in the exchange
 	ServiceOrg      string                     `json:"serviceOrgid"`               // the org holding the service definition
