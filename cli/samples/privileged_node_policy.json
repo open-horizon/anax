@@ -10,7 +10,7 @@ Set it to the top level because it is a built-in node property.
       "value": true
     }
   ],
-  "constraints": []
+  "constraints": [],
   "deployment": {
     "properties": [],
     "constraints": []
