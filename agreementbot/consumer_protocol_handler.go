@@ -24,7 +24,7 @@ import (
 	"time"
 )
 
-func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets) ConsumerProtocolHandler {
+func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets, nodeSearch *NodeSearch) ConsumerProtocolHandler {
 	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq, mmsObjMgr, secretsMgr); handler != nil {
 		return handler
 	} // Add new consumer side protocol handlers here
@@ -98,6 +98,7 @@ type BaseConsumerProtocolHandler struct {
 	messages         chan events.Message
 	mmsObjMgr        *MMSObjectPolicyManager
 	secretsMgr       secrets.AgbotSecrets
+	NodeSearch       *NodeSearch
 }
 
 func (b *BaseConsumerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {
@@ -620,7 +621,6 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePol
 }
 
 func (b *BaseConsumerProtocolHandler) HandleNodePolicyChanged(cmd *NodePolicyChangedCommand, cph ConsumerProtocolHandler) {
-	// TODO: Lily check here for handle node policy change. Need to get model policy re-evaluated
 	if glog.V(5) {
 		glog.Infof(BCPHlogstring(b.Name(), "recieved node policy change command."))
 	}
