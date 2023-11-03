@@ -3,6 +3,7 @@ name: build-push
 
 # Workflow triggers -- When a push (including merge) is made to the listed branches
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -143,17 +144,19 @@ jobs:
           path: go/src/github.com/${{ github.repository }}
 
       # Prepare the environment
-      - name: Set up golang 1.19
+      - name: Set up golang 1.21
         uses: actions/setup-go@v3
         with:
-          go-version: '1.19'
+          go-version: '1.21'
           check-latest: true
 
       # The go version will change, so we must get which one we are using for when we build the ppc64el images in the docker env.
       - name: Check Go Version
         id: get_go
         run: |
+          go version
           echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
+          
 
       # Configure version variables for later steps, stored in our workflow env. variables
       - name: Config Version Variables
@@ -334,10 +337,10 @@ jobs:
           path: go/src/github.com/${{ github.repository }}
 
       # Prepare the environment
-      - name: Set up golang 1.19
+      - name: Set up golang 1.21
         uses: actions/setup-go@v3
         with:
-          go-version: '1.19'
+          go-version: '1.21'
           check-latest: true
 
       # Configure version variables for later steps, stored in our workflow env. variables
