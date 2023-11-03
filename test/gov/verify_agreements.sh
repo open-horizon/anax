@@ -254,6 +254,7 @@ function verifyServices() {
   NUMSERV=$(echo ${ALLSERV} | jq -r '. | length')
 
   echo -e "There are ${NUMSERV} active services running"
+  echo -e "all services: ${ALLSERV}"
 
   for ((ix = 0; ix < $NUMSERV; ix++)); do
     INST=$(echo ${ALLSERV} | jq -r '.['$ix']')
@@ -263,6 +264,7 @@ function verifyServices() {
     echo -e "${PREFIX} working on service ${ix}, ${REFORG}/${REFURL}"
 
     if [ "${REFURL}" == "https://bluehorizon.network/services/location" ]; then
+      echo "location instance: ${INST}"
       handleLocation "${INST}"
     elif [ "${REFURL}" == "https://bluehorizon.network/service-cpu" ] && [ "${REFORG}" == "IBM" ] && [ "${HZN_REG_TEST}" != "1" ]; then
       handleCPU "${INST}"
