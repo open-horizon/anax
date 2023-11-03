@@ -404,6 +404,22 @@
     "translation": "Error converting the selections into Selectors: {Err}"
   },
   {
+    "id": "Name, or Org is empty string.",
+    "translation": "Name, or Org is empty string."
+  },
+  {
+    "id": "The serviceVersions array is empty.",
+    "translation": "The serviceVersions array is empty."
+  },
+  {
+    "id": "retry_durations and retries cannot be zero if priority_value is set to non-zero value",
+    "translation": "retry_durations and retries cannot be zero if priority_value is set to non-zero value"
+  },
+  {
+    "id": "retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set",
+    "translation": "retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set"
+  },
+  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "properties contains an invalid property: {Err}"
   },
@@ -5368,6 +5384,14 @@
     "translation": "service '{Service}' not found in org {SvcOrg}"
   },
   {
+    "id": "failed to unmarshal ClusterDeployment in 'hzn exchange service list' output: {Err}",
+    "translation": "failed to unmarshal ClusterDeployment in 'hzn exchange service list' output: {Err}"
+  },
+  {
+    "id": "failed to marshal truncked ClusterDeployment in 'hzn exchange service list' output: {Err}",
+    "translation": "failed to marshal truncked ClusterDeployment in 'hzn exchange service list' output: {Err}"
+  },
+  {
     "id": "Ignoring -f because the clusterDeployment attribute is empty for this service.",
     "translation": "Ignoring -f because the clusterDeployment attribute is empty for this service."
   },
@@ -8092,10 +8116,6 @@
     "translation": "The SecretBindingCheck input cannot be null"
   },
   {
-    "id": "Node type '{NodeType}' does not support secret binding check.",
-    "translation": "Node type '{NodeType}' does not support secret binding check."
-  },
-  {
     "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
     "translation": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern."
   },
@@ -8110,6 +8130,10 @@
   {
     "id": "Type Incompatible",
     "translation": "Type Incompatible"
+  },
+  {
+    "id": "{Msgcompatible}, Warning: {Reason}",
+    "translation": "{Msgcompatible}, Warning: {Reason}"
   },
   {
     "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
@@ -8148,10 +8172,6 @@
     "translation": "Failed to find the dependent services for {Org}/{URL} {Arch} {Version}. {Err}"
   },
   {
-    "id": "Secret binding for a cluster service is not supported.",
-    "translation": "Secret binding for a cluster service is not supported."
-  },
-  {
     "id": "No secret binding found for the following service secrets: {NbArray}.",
     "translation": "No secret binding found for the following service secrets: {NbArray}."
   },
@@ -8176,12 +8196,24 @@
     "translation": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level."
   },
   {
+    "id": "{Err}, use non node-level secret",
+    "translation": "{Err}, use non node-level secret"
+  },
+  {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
     "translation": "Error parsing secret name in the secret binding. {Errparse}"
   },
   {
+    "id": "Error checking secret {VaultSecretName} for node {NName} in the secret manager. {Err}",
+    "translation": "Error checking secret {VaultSecretName} for node {NName} in the secret manager. {Err}"
+  },
+  {
     "id": "Error checking secret {VaultSecretName} in the secret manager. {Err}",
     "translation": "Error checking secret {VaultSecretName} in the secret manager. {Err}"
+  },
+  {
+    "id": "Node level secret {VaultSecretName} doesn't exist for node {NName}",
+    "translation": "Node level secret {VaultSecretName} doesn't exist for node {NName}"
   },
   {
     "id": "The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.",
