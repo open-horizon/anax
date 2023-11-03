@@ -1,0 +1,436 @@
+name: Anax Release Manager
+
+on:
+  workflow_dispatch:
+    inputs:
+      AGBOT_VERSION:
+        description: 'Version of Agbot Image to be released, with build number'
+        required: true
+        type: string
+      ANAX_VERSION:
+        description: 'Version of Anax Images and Packages to be released, with build number'
+        required: true
+        type: string
+      ANAX_K8S_VERSION:
+        description: 'Version of Anax K8s Images to be released, with build number'
+        required: true
+        type: string
+      ANAX_CSS_VERSION:
+        description: 'Version of CSS Image to be released, with build number'
+        required: true
+        type: string
+      ANAX_ESS_VERSION:
+        description: 'Version of ESS Image to be released, with build number'
+        required: true
+        type: string
+      IS_LATEST:
+          description: 'Should we push the latest Dockerhub tags and mark releases as latest'
+          required: true
+          type: boolean
+          default: true
+
+env:
+  DOCKERHUB_REGISTRY: ${{ vars.DOCKERHUB_REPO }}
+  GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  # Variables to control GH CLI
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GH_REPO: ${{ github.repository }}
+  GH_HOST: github.com
+  # Bring GitHub Contexts into Environment
+  AGBOT_VERSION: ${{ github.event.inputs.AGBOT_VERSION }}
+  ANAX_VERSION: ${{ github.event.inputs.ANAX_VERSION }}
+  ANAX_K8S_VERSION: ${{ github.event.inputs.ANAX_K8S_VERSION }}
+  ANAX_CSS_VERSION: ${{ github.event.inputs.ANAX_CSS_VERSION }}
+  ANAX_ESS_VERSION: ${{ github.event.inputs.ANAX_ESS_VERSION }}
+  # Space delimited arrays used in shell scripts, specifying what images should be promoted to what tags in Dockerhub
+  AGBOT_VERSION_IMAGES: "amd64_agbot"
+  ANAX_VERSION_IMAGES: "amd64_anax arm64_anax ppc64el_anax s390x_anax"
+  ANAX_K8S_VERSION_IMAGES: "amd64_anax_k8s amd64_auto-upgrade-cronjob_k8s arm64_anax_k8s arm64_auto-upgrade-cronjob_k8s ppc64el_anax_k8s ppc64el_auto-upgrade-cronjob_k8s s390x_anax_k8s s390x_auto-upgrade-cronjob_k8s"
+  ANAX_CSS_VERSION_IMAGES: "amd64_cloud-sync-service"
+  ANAX_ESS_VERSION_IMAGES: "amd64_edge-sync-service arm64_edge-sync-service ppc64el_edge-sync-service s390x_edge-sync-service"
+
+jobs:
+  prepare-workflow:
+    runs-on: ubuntu-20.04
+    
+    environment: release_environment
+
+    steps:
+      # Ensure that the repo variables and secrets are set before running any other steps
+      - name: Check User Set Variables
+        run: |
+          if [[ -z "$DOCKER_USER" ]]; then \
+          echo "::error::Secret DOCKER_USER was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$DOCKER_TOKEN" ]]; then \
+          echo "::error::Secret DOCKER_TOKEN was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$DOCKERHUB_REGISTRY" ]]; then \
+          echo "::error::Variable DOCKERHUB_REPO was not set"; \
+          exit 1; \
+          fi
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+
+      # Check if Release Already Exists and fail so there is not an error when attempting to create the same release
+      - name: Check if Release Already Exists for Requested Version
+        run: |
+          RELEASE_STATUS=$(
+            curl -L \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ env.AGBOT_VERSION }} \
+              | jq -r '.html_url')
+          
+          sleep 10
+
+          if [[ $RELEASE_STATUS != 'null' ]]; then
+            echo "::error::Attempted to create a release for a version of Anax that already has a release page, see $RELEASE_STATUS"
+            exit 1
+          fi
+
+  promote-images:
+    needs: prepare-workflow
+
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        image-version: ['AGBOT_VERSION', 'ANAX_VERSION', 'ANAX_K8S_VERSION', 'ANAX_CSS_VERSION', 'ANAX_ESS_VERSION']
+
+    steps:
+      # Upgrade Docker engine version
+      - name: Install Latest Docker Version
+        run: |
+          sudo apt-get purge docker-ce docker-ce-cli containerd.io runc containerd moby-buildx moby-cli moby-compose moby-containerd moby-engine moby-runc
+
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+          sudo apt-get update
+          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+      # Authenticate Dockerhub to allow pushing to our image repo
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }} 
+          
+      # Get the images based on the inputted version
+      - name: Get and Promote ${{ matrix.image-version }} Images
+        run: |
+          IMAGE_LIST=$${{ matrix.image-version }}_IMAGES
+          IMAGE_VERSION=$${{ matrix.image-version }}
+
+          IMAGES_TO_LOAD=($IMAGE_LIST)
+          RELEASE_TAGS=($DOCKERHUB_REGISTRY_RELEASE_TAGS)
+          for image in "${IMAGES_TO_LOAD[@]}"; do
+
+            if gh run download -n anax-linux-${image}-image-v${IMAGE_VERSION}; then
+              echo "::debug::Using artifact from build-push.yml run"
+              cat ${image}.tar.gz | docker load
+            elif docker pull ${DOCKERHUB_REGISTRY}/${image}:${IMAGE_VERSION}; then
+              echo "::warning::Artifact anax-linux-${image}-image-v${IMAGE_VERSION} not found in build-push.yml workflow, using docker image, ${DOCKERHUB_REGISTRY}/${image}:${IMAGE_VERSION}"
+            else
+              echo "::error::Artifact anax-linux-${image}-image-v${IMAGE_VERSION} not found in build-push.yml artifacts and Docker image ${DOCKERHUB_REGISTRY}/${image}:${IMAGE_VERSION} not found in Dockerhub"
+              exit 1
+            fi
+
+            docker push ${DOCKERHUB_REGISTRY}/${image}:${IMAGE_VERSION}
+
+            if [[ "${{ github.event.inputs.IS_LATEST }}" == "true" ]]; then
+              docker tag ${DOCKERHUB_REGISTRY}/${image}:${IMAGE_VERSION} ${DOCKERHUB_REGISTRY}/${image}:latest
+              docker push ${DOCKERHUB_REGISTRY}/${image}:latest
+            fi
+          done
+        shell: bash
+
+      # Get and promote the Dockerhub images that contain our packages for backup purposes
+      - name: Get and Promote Package Artifacts to Dockerhub
+        if: matrix.image-version == 'AGBOT_VERSION'
+        run: |
+          mkdir -p $RUNNER_TEMP/artifact_promotion_dir && cd $RUNNER_TEMP/artifact_promotion_dir
+
+          DEB_PACKAGES_TO_LOAD=("amd64" "arm64" "armhf" "ppc64el" "s390x")
+          RPM_PACKAGES_TO_LOAD=("ppc64el" "amd64" "s390x")
+          MAC_PACKAGES_TO_LOAD=("amd64" "arm64")
+
+          ################################# BACKUP DEB PACKAGES #################################
+          touch Dockerfile.debs.tarball
+          echo "FROM alpine:latest" >> Dockerfile.debs.tarball
+          echo "ADD ./debs.tar.gz ." >> Dockerfile.debs.tarball
+
+          for arch_name in "${DEB_PACKAGES_TO_LOAD[@]}"; do
+            mkdir -p ./debs
+            # If the packages exist as artifacts we want to download them and make sure that we push the version number to dockerhub for fallback purposes
+            if gh run download -n anax-linux-${arch_name}-deb-package-v${AGBOT_VERSION} -D ./debs; then
+              echo "::debug::Using artifact from build-push.yml run"
+              tar -czvf debs.tar.gz debs/*.deb
+
+              docker build \
+                --no-cache \
+                -t ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION} \
+                -f Dockerfile.debs.tarball \
+                .
+
+              rm -rf ./debs.tar.gz
+
+              docker push ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION}
+
+              if [[ "${{ github.event.inputs.IS_LATEST }}" == "true" ]]; then 
+                docker tag ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION} ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:latest
+                docker push ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:latest
+              fi
+
+            # If the packages do not exist as artifacts we want to simply fallback to dockerhub and if we are on master then tie the latest release to that package
+            elif docker pull ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION}; then
+              echo "::warning::Artifact anax-linux-${arch_name}-deb-package-v${AGBOT_VERSION} not found in build-push.yml workflow, using docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION}"
+              if [[ "${{ github.event.inputs.IS_LATEST }}" == "true" ]]; then 
+                docker tag ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION} ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:latest
+                docker push ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:latest
+              fi
+            else
+              echo "::error::Artifact anax-linux-${arch_name}-deb-package-v${AGBOT_VERSION} not found in build-push.yml artifacts and Docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION} not found in Dockerhub"
+              exit 1
+            fi
+            rm -rf ./debs
+          done
+
+          ################################# BACKUP RPM PACKAGES #################################
+          touch Dockerfile.rpm.tarball
+          echo "FROM alpine:latest" >> Dockerfile.rpm.tarball
+          echo "ADD ./rpm.tar.gz ." >> Dockerfile.rpm.tarball
+
+          for arch_name in "${RPM_PACKAGES_TO_LOAD[@]}"; do
+            mkdir -p ./RPMS
+            # If the packages exist as artifacts we want to download them and make sure that we push the version number to dockerhub for fallback purposes
+            if gh run download -n anax-linux-${arch_name}-rpm-package-v${AGBOT_VERSION} -D ./RPMS; then
+              echo "::debug::Using artifact from build-push.yml run"
+              tar -czvf rpm.tar.gz RPMS/*.rpm
+
+              docker build \
+                --no-cache \
+                -t ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION} \
+                -f Dockerfile.rpm.tarball \
+                .
+
+              rm -rf ./rpm.tar.gz
+
+              docker push ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION}
+
+              if [[ "${{ github.event.inputs.IS_LATEST }}" == "true" ]]; then 
+                docker tag ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION} ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:latest
+                docker push ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:latest
+              fi
+
+            # If the packages do not exist as artifacts we want to simply fallback to dockerhub and if we are on master then tie the latest release to that package
+            elif docker pull ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION}; then
+              echo "::warning::Artifact anax-linux-${arch_name}-rpm-package-v${AGBOT_VERSION} not found in build-push.yml workflow, using docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION}"
+              if [[ "${{ github.event.inputs.IS_LATEST }}" == "true" ]]; then 
+                docker tag ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION} ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:latest
+                docker push ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:latest
+              fi
+            else
+              echo "::error::Artifact anax-linux-${arch_name}-rpm-package-v${AGBOT_VERSION} not found in build-push.yml artifacts and Docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION} not found in Dockerhub"
+              exit 1
+            fi
+            rm -rf ./RPMS
+          done
+
+          ################################# BACKUP MAC PACKAGES #################################
+          touch Dockerfile.macpkg.tarball
+          echo "FROM alpine:latest" >> Dockerfile.macpkg.tarball
+          echo "ADD ./macpkg.tar.gz ." >> Dockerfile.macpkg.tarball
+
+          for arch_name in "${MAC_PACKAGES_TO_LOAD[@]}"; do
+            mkdir -p ./macs
+            if gh run download -n anax-mac-${arch_name}-mac-package-v${AGBOT_VERSION} -D ./macs; then
+              echo "::debug::Using artifact from build-push.yml run"
+              tar -czvf macpkg.tar.gz macs
+
+              docker build \
+                --no-cache \
+                -t ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION} \
+                -f Dockerfile.macpkg.tarball \
+                .
+
+              rm -rf ./macpkg.tar.gz
+
+              docker push ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION}
+
+              if [[ "${{ github.event.inputs.IS_LATEST }}" == "true" ]]; then 
+                docker tag ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION} ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:latest
+                docker push ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:latest
+              fi
+
+            elif docker pull ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION}; then
+              echo "::warning::Artifact anax-mac-${arch_name}-mac-package-v${AGBOT_VERSION} not found in build-push.yml workflow, using docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION}"
+              if [[ "${{ github.event.inputs.IS_LATEST }}" == "true" ]]; then 
+                docker tag ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION} ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:latest
+                docker push ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:latest
+              fi
+            else
+              echo "::error::Artifact anax-mac-${arch_name}-mac-package-v${AGBOT_VERSION} not found in build-push.yml artifacts and Docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION} not found in Dockerhub"
+              exit 1
+            fi
+            rm -rf ./macs
+          done
+
+
+          ################################ BACKUP AGENT PACKAGES ################################
+          touch Dockerfile.agent.tarball
+          echo "FROM alpine:latest" >> Dockerfile.agent.tarball
+          echo "ADD ./agent.tar.gz ." >> Dockerfile.agent.tarball
+
+          mkdir -p ./agents
+          if gh run download -n anax-agent-files-v${AGBOT_VERSION} -D ./agents; then
+            echo "::debug::Using artifact from build-push.yml run"
+            tar -czvf agent.tar.gz agents
+
+            docker build \
+              --no-cache \
+              -t ${DOCKERHUB_REGISTRY}/anax_agent_files:${AGBOT_VERSION} \
+              -f Dockerfile.agent.tarball \
+              .
+
+            rm -rf ./agent.tar.gz
+
+            docker push ${DOCKERHUB_REGISTRY}/anax_agent_files:${AGBOT_VERSION}
+          fi
+          rm -rf ./agents
+        shell: bash
+
+  create-release:
+    needs: promote-images
+
+    runs-on: ubuntu-20.04
+
+    steps:
+      # Get the packages to be included in the release, we try to get them from the build-push.yml workflow artifacts and if they don't exist there we will attempt to get them from the dockerhub backups
+      - name: Get Packages & Files from Build Workflow Artifacts
+        run: |
+          mkdir -p $RUNNER_TEMP/release_files/upload && cd $RUNNER_TEMP/release_files
+
+          DEB_PACKAGES_TO_LOAD=("amd64" "arm64" "armhf" "ppc64el" "s390x")
+          RPM_PACKAGES_TO_LOAD=("ppc64el" "amd64" "s390x")
+          MAC_PACKAGES_TO_LOAD=("amd64" "arm64")
+
+          for arch_name in "${DEB_PACKAGES_TO_LOAD[@]}"; do
+            if gh run download -n anax-linux-${arch_name}-deb-package-v${AGBOT_VERSION}; then
+              echo "::debug::Using artifact from build-push.yml run"
+              tar -czvf upload/horizon-agent-linux-deb-${arch_name}.tar.gz *.deb
+              rm -rf *.deb
+            elif docker pull ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION}; then
+              echo "::warning::Artifact anax-linux-${arch_name}-deb-package-v${AGBOT_VERSION} not found in build-push.yml workflow, using docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION}"
+              id=$(docker create --name temp_image_grab ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION})
+              docker cp ${id}:debs . && cd debs
+              tar -czvf ../upload/horizon-agent-linux-deb-${arch_name}.tar.gz *.deb
+              cd ..
+              rm -rf ./debs
+              docker container rm ${id}
+              docker image rm ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION}
+            else
+              echo "::error::Artifact anax-linux-${arch_name}-deb-package-v${AGBOT_VERSION} not found in build-push.yml artifacts and Docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION} not found in Dockerhub"
+              exit 1
+            fi
+          done
+          
+          for arch_name in "${RPM_PACKAGES_TO_LOAD[@]}"; do
+
+            if [[ ${arch_name} == 'ppc64el' ]]; then
+              publish_name='ppc64le'
+            elif [[ ${arch_name} == 'amd64' ]]; then
+              publish_name='x86_64'
+            else
+              publish_name=$arch_name
+            fi
+
+            if gh run download -n anax-linux-${arch_name}-rpm-package-v${AGBOT_VERSION}; then
+              echo "::debug::Using artifact from build-push.yml run"
+              tar -czvf upload/horizon-agent-linux-rpm-${publish_name}.tar.gz *.rpm
+              rm -rf *.rpm
+            elif docker pull ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION}; then
+                echo "::warning::Artifact anax-linux-${arch_name}-rpm-package-v${AGBOT_VERSION} not found in build-push.yml workflow, using docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION}"
+                id=$(docker create --name temp_image_grab ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION})
+                docker cp ${id}:RPMS . && cd RPMS
+                tar -czvf ../upload/horizon-agent-linux-rpm-${publish_name}.tar.gz *.rpm
+                cd ..
+                rm -rf ./RPMS
+                docker container rm ${id}
+                docker image rm ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION}
+            else
+                echo "::error::Artifact anax-linux-${arch_name}-rpm-package-v${AGBOT_VERSION} not found in build-push.yml artifacts and Docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION} not found in Dockerhub"
+                exit 1
+            fi
+          done
+
+          for arch_name in "${MAC_PACKAGES_TO_LOAD[@]}"; do
+
+            if [[ ${arch_name} == 'amd64' ]]; then
+              publish_name='x86_64'
+            else
+              publish_name=$arch_name
+            fi
+
+            if gh run download -n anax-mac-${arch_name}-mac-package-v${AGBOT_VERSION}; then
+              echo "::debug::Using artifact from build-push.yml run"
+              tar -czvf upload/horizon-agent-macos-pkg-${publish_name}.tar.gz horizon*
+              rm -rf horizon*
+            elif docker pull ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION}; then
+              echo "::warning::Artifact anax-mac-${arch_name}-mac-package-v${AGBOT_VERSION} not found in build-push.yml workflow, using docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION}"
+              id=$(docker create --name temp_image_grab ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION})
+              docker cp ${id}:macs . && cd macs
+              tar -czvf ../upload/horizon-agent-macos-pkg-${publish_name}.tar.gz horizon*
+              cd ..
+              rm -rf ./macs
+              docker container rm ${id}
+              docker image rm ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION}
+            else
+              echo "::error::Artifact anax-mac-${arch_name}-mac-package-v${AGBOT_VERSION} not found in build-push.yml artifacts and Docker image ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION} not found in Dockerhub"
+              exit 1
+            fi
+          done
+          
+          # Agent Files
+          cd ./upload
+          if gh run download -n anax-agent-files-v${AGBOT_VERSION}; then
+            echo "::debug::Using artifact from build-push.yml run"
+          elif docker pull ${DOCKERHUB_REGISTRY}/anax_agent_files:${AGBOT_VERSION}; then
+            echo "::warning::Artifact anax-agent-files-v${AGBOT_VERSION} not found in build-push.yml workflow, using docker image ${DOCKERHUB_REGISTRY}/anax_agent_files:${AGBOT_VERSION}"
+            id=$(docker create --name temp_image_grab ${DOCKERHUB_REGISTRY}/anax_agent_files:${AGBOT_VERSION})
+            docker cp ${id}:agents .
+            cp ./agents/* .
+            rm -rf ./agents
+            ls -la
+            docker container rm ${id}
+            docker image rm ${DOCKERHUB_REGISTRY}/anax_agent_files:${AGBOT_VERSION}
+          else
+            echo "::error::Artifact anax-agent-files-v${AGBOT_VERSION} not found in build-push.yml artifacts and Docker image ${DOCKERHUB_REGISTRY}/anax_agent_files:${AGBOT_VERSION} not found in Dockerhub"
+            exit 1
+          fi
+
+      # Create GH release page
+      # The docker containers have a label with the short commit hash that is attached to the workflow which created them, we use the REST API to get the full commit hash that is required by the gh cli for release.
+      # This ties the release to whatever branch has the commit hash and created the artifacts.
+      - name: Create GitHub Release
+        run: |
+          docker pull ${DOCKERHUB_REGISTRY}/amd64_agbot:${AGBOT_VERSION}
+          SHORTCOMMIT=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:${AGBOT_VERSION} | jq -r .Labels.release)
+
+          COMMITISH=$(
+            curl -L \
+              -H "Accept: application/vnd.github.sha" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/${{ github.repository }}/commits/${SHORTCOMMIT})
+
+          gh release create v${AGBOT_VERSION} \
+            ${RUNNER_TEMP}/release_files/upload/*.tar.gz \
+            ${RUNNER_TEMP}/release_files/upload/agent-install.sh \
+            -t "v${AGBOT_VERSION} Packages" \
+            -n "Horizon agent packages from the ${AGBOT_VERSION} build" \
+            --target $COMMITISH
