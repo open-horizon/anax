@@ -145,6 +145,8 @@ function handleLocation() {
 
   # Grab the map of networks. There should be 3, each is a key in the map.
   NETS=$(echo $1 | jq -r '.containers[0].NetworkSettings.Networks')
+  echo -e "network for location service: $NETS"
+  docker network ls
   NUM_NETS=$(echo ${NETS} | jq -r '. | length')
   if [ "${NUM_NETS}" != "3" ]; then
     echo -e "${PREFIX} ${REFURL} should have 3 networks, but there are ${NUM_NETS}"
