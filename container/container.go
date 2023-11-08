@@ -1436,7 +1436,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 		if existingContainer == nil {
 			// only create container if there wasn't one
-			servicePair.serviceConfig.HostConfig.NetworkMode = bridgeName
+			servicePair.serviceConfig.HostConfig.NetworkMode = "bridge"
 			if err := serviceStart(b.client, agreementId, containerName, shareLabel, servicePair.serviceConfig, eps, ms_sharedendpoints, &postCreateContainers, fail, true); err != nil {
 				return nil, err
 			}
@@ -1456,6 +1456,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			return nil, err
 		} else {
 			for _, net := range networks {
+				// custom network has agreementId as bridge(network)  name, same as endpoint key
 				if isAnaxNetwork(&net, agreementId) {
 					glog.V(5).Infof("Found network %v already present", net.Name)
 					agBridge = &net
@@ -1481,7 +1482,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	// every one of these gets wired to both the agBridge and every shared bridge from this agreement
 	for serviceName, servicePair := range private {
 		if servicePair.serviceConfig.HostConfig.NetworkMode == "" {
-			servicePair.serviceConfig.HostConfig.NetworkMode = agreementId // custom bridge has agreementId as name, same as endpoint key
+			servicePair.serviceConfig.HostConfig.NetworkMode = "bridge"
 		}
 		var endpoints map[string]*docker.EndpointConfig
 		if servicePair.serviceConfig.HostConfig.NetworkMode != "host" {
