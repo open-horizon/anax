@@ -11,6 +11,7 @@ EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
 # Note: arch must prepend the following 2 variables when used - currently only amd64, arm64, s390x are built and pushed
 AGENT_IMAGE_TAR_FILE='_anax.tar.gz'
 AGENT_IMAGE='_anax'
+AGENT_IN_CONTAINER_ARCHITECTURES=("amd64" "arm64" "s390x")
 
 # Note: arch must prepend the following 4 variables when used - currently only amd64 and s390x are built and pushed
 AGENT_K8S_IMAGE_TAR_FILE='_anax_k8s.tar.gz'
@@ -39,7 +40,7 @@ AGENT_NAMESPACE=${AGENT_NAMESPACE:-openhorizon-agent}
 function scriptUsage() {
     cat << EOF
 
-Usage: ./edgeNodeFiles.sh <edge-node-type> [-o <hzn-org-id>] [-c] [-f <directory>] [-t] [-p <package_name>] [-s <edge-cluster-storage-class>] [-i <agent-image-tag>] [-m <agent-namespace>] [-r <registry/repo-path>] [-g <tag>] [-b] [-x <days>]
+Usage: ./edgeNodeFiles.sh <edge-node-type> [-o <hzn-org-id>] [-c] [-f <directory>] [-t] [-k <path_to_cert>] [-p <package_name>] [-s <edge-cluster-storage-class>] [-i <agent-image-tag>] [-m <agent-namespace>] [-r <registry/repo-path>] [-g <tag>] [-b] [-x <days>]
 
 Parameters:
   Required:
@@ -48,6 +49,7 @@ Parameters:
   Optional:
     -o <hzn-org-id>     The exchange org id that should be used for all edge nodes. If there will be multiple exchange orgs, do not set this.
     -c    Put the gathered files into the Cloud Sync Service (MMS). On the edge nodes agent-install.sh can pull the files from there.
+    -k <path_to_cert>  The path to the agent_install.crt file
     -f <directory>     The directory to put the gathered files in. Default is current directory.
     -t          Create agentInstallFiles-<edge-node-type>.tar.gz file containing gathered files. If this flag is not set, the gathered files will be placed in the current directory.
     -p <package_name>   The base name of the horizon content tar file (can include a path). Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<OS>/<pkg-type>/<arch>
@@ -59,7 +61,7 @@ Parameters:
     -x <days>   Sets the expiration field of the versioned files pushed to CSS. Should not be used unless artifacts are being produced and pushed by a CI/CD pipeline. Default is expiration not set.
 
 Required Environment Variables:
-    CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number>
+    CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number>, or HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_AGBOT_URL, HZN_FDO_SVC_URL
 
 Optional Environment Variables:
     PACKAGE_NAME: The base name of the horizon content tar file (can include a path). Default: $PACKAGE_NAME
@@ -118,6 +120,10 @@ while (( "$#" )); do
             EDGE_CLUSTER_STORAGE_CLASS=$2
             shift 2
             ;;
+        -k) # path to agent-install.crt
+            AGENT_INSTALL_CERT=$2
+            shift 2
+            ;;
         -m) # edge cluster namespace to install agent to
             AGENT_NAMESPACE=$2
             shift 2
@@ -154,10 +160,16 @@ fi
 
 function checkPrereqsAndInput () {
     echo "Checking system requirements..."
-    if ! command -v oc >/dev/null 2>&1; then
-        fatal 2 "oc is not installed."
+
+    # Need oc executable if one of these variables is not set
+    if [[ -z $HZN_EXCHANGE_USER_AUTH ]] || [[ -z ${AGENT_INSTALL_CERT} && ${HZN_EXCHANGE_URL} == "https://"* ]]; then
+        if ! command -v oc >/dev/null 2>&1; then
+            fatal 2 "oc is not installed."
+        fi
+        echo " - oc installed"
+    else
+        echo " - oc not needed"
     fi
-    echo " - oc installed"
 
     if ! command -v hzn >/dev/null 2>&1; then
         fatal 2 "hzn is not installed."
@@ -191,10 +203,30 @@ function checkPrereqsAndInput () {
 
     echo "Checking environment variables..."
     if [[ -z $CLUSTER_URL ]]; then
-        fatal 1 "CLUSTER_URL environment variable is not set.'"
+	    if [[  -z $HZN_EXCHANGE_URL ]] || [[ -z $HZN_FSS_CSSURL ]] || [[ -z $HZN_AGBOT_URL ]] || [[ -z $HZN_FDO_SVC_URL ]]; then
+                    fatal 1 "CLUSTER_URL or all of HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_AGBOT_URL, and HZN_FDO_SVC_URL environment variables not set. One or the other is required"
+            fi
     fi
-    echo " - CLUSTER_URL: $CLUSTER_URL"
+    if [[ -z $CLUSTER_URL ]]; then
+            echo " - HZN_EXCHANGE_URL: ${HZN_EXCHANGE_URL}"
+            echo " - HZN_FSS_CSSURL: ${HZN_FSS_CSSURL}"
+            echo " - HZN_AGBOT_URL: ${HZN_AGBOT_URL}"
+            echo " - HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL}"
+    else
+            echo " - CLUSTER_URL: ${CLUSTER_URL}"
+    fi
+
+    setMgmtHubURLs
+
     echo ""
+}
+
+function setMgmtHubURLs() {
+    # allow management hub urls to be overwritten
+    export HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL:-"$CLUSTER_URL/edge-exchange/v1"}
+    export HZN_FSS_CSSURL=${HZN_FSS_CSSURL:-"$CLUSTER_URL/edge-css/"}
+    export HZN_AGBOT_URL=${HZN_AGBOT_URL:-"$CLUSTER_URL/edge-agbot/"}
+    export HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL:-"$CLUSTER_URL/edge-fdo-ocs/api"}
 }
 
 # Method to store the software package version if it is not set yet
@@ -226,12 +258,8 @@ function manifestInitUpgradeFields() {
 # Remove files from previous run, so we know there won't be (for example) multiple versions of the horizon pkgs in the dir
 function cleanUpPreviousFiles() {
     echo "Removing any generated files from previous run..."
-    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "amd64${AGENT_IMAGE_TAR_FILE}" "arm64${AGENT_IMAGE_TAR_FILE}" deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*.{deb,rpm,pkg,crt}
+    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt *${AGENT_IMAGE_TAR_FILE} *${AGENT_K8S_IMAGE_TAR_FILE} *${AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE} deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*.{deb,rpm,pkg,crt}
     chk $? "removing previous files in $PWD"
-    for arch in ${AGENT_K8S_ARCHITECTURES[@]}; do
-         rm -f "${arch}$AGENT_K8S_IMAGE_TAR_FILE" "${arch}$AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE" 
-         chk $? "removing previous files in $PWD"
-    done
     echo
 }
 
@@ -328,10 +356,10 @@ function getAutoUpgradeCronjobK8sImageTarFile() {
 # Put 1 file into CSS in the IBM org as a public object.
 function putOneFileInCss() {
     local filename=${1:?} objectType=$2 addExpiration=$3 version=$4
-    local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
 
     # First get exchange root creds, if necessary
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
+        resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
         echo "Getting exchange root credentials to use to publish to CSS..."
         export HZN_EXCHANGE_USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
@@ -437,11 +465,11 @@ function getAgentFileTotal() {
 function test_IsFileInCss() {
 	local org=$1 objectType=$2 objectID=$3 
 
-	local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
 	local USER_AUTH=${HZN_EXCHANGE_USER_AUTH}
 
         # First get exchange root creds, if necessary
         if [[ -z ${USER_AUTH} ]]; then 
+	        resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
 		USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)" 
 		chk $? 'getting exchange root creds'
         fi
@@ -575,12 +603,11 @@ function createAgentInstallConfig () {
 	    if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ppc64le-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then   # if they chose ALL, the cluster agent-install.cfg is a superset 
 
 		    cat << EndOfContent > agent-install.cfg 
-HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
-HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
-HZN_AGBOT_URL=$CLUSTER_URL/edge-agbot/
-HZN_SDO_SVC_URL=$CLUSTER_URL/edge-sdo-ocs/api
-HZN_FDO_SVC_URL=$CLUSTER_URL/edge-fdo-ocs/api
-AGENT_NAMESPACE=$AGENT_NAMESPACE
+HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}
+HZN_FSS_CSSURL=${HZN_FSS_CSSURL}
+HZN_AGBOT_URL=${HZN_AGBOT_URL}
+HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL}
+AGENT_NAMESPACE=${AGENT_NAMESPACE}
 EndOfContent
 
         	      	# Only include these if they are not empty 
@@ -594,11 +621,10 @@ EndOfContent
 		else   # device 
 
 			cat << EndOfContent > agent-install.cfg
-HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
-HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
-HZN_AGBOT_URL=$CLUSTER_URL/edge-agbot/
-HZN_SDO_SVC_URL=$CLUSTER_URL/edge-sdo-ocs/api
-HZN_FDO_SVC_URL=$CLUSTER_URL/edge-fdo-ocs/api
+HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}
+HZN_FSS_CSSURL=${HZN_FSS_CSSURL}
+HZN_AGBOT_URL=${HZN_AGBOT_URL}
+HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL}
 EndOfContent
 
         		if [[ -n $ORG_ID ]]; then
@@ -630,33 +656,50 @@ EndOfContent
 function getClusterCert () {
 
     local upgradeFiles=$1
+    if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
+            if [[ -z ${AGENT_INSTALL_CERT} ]]; then
+                    echo "Getting the management hub self-signed certificate agent-install.crt..."
+                    oc get secret management-ingress-ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
+                    chk $? 'getting the management hub self-signed certificate'
+            else
+                    if [[ -f ${AGENT_INSTALL_CERT} ]]; then
+                            echo "Cert file ${AGENT_INSTALL_CERT} exist"
+                            if cmp --silent -- "${AGENT_INSTALL_CERT}" "agent-install.cert"; then
+                                    echo "files contents are identical"
+                            else
+                                    cp -f ${AGENT_INSTALL_CERT} ./agent-install.crt
+                                    chk $? "copying ${AGENT_INSTALL_CERT} to local directory"
+                            fi
+                    else
+                            fatal 2 "${AGENT_INSTALL_CERT} does not exist"
+                    fi
+            fi
 
-    echo "Getting the management hub self-signed certificate agent-install.crt..."
-    oc get secret management-ingress-ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
-    chk $? 'getting the management hub self-signed certificate'
+            local doUploadCert='true'
+            local doUploadCert_versioned='true' 
+            # Only upload cert if it doesn't exist in CSS.. ie. fresh install
+            if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+                    if test_IsFileInCss "IBM"  "agent_files" "agent-install.crt"; then 
+                            doUploadCert='false' 
+                    fi
 
-    local doUploadCert='true'
-    local doUploadCert_versioned='true' 
-    # Only upload cert if it doesn't exist in CSS.. ie. fresh install
-    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        if test_IsFileInCss "IBM"  "agent_files" "agent-install.crt"; then 
-            doUploadCert='false' 
-        fi
+                    if  test_IsFileInCss "IBM"  "agent_cert_files-1.0.0" "agent-install.crt"; then
+                            doUploadCert_versioned='false'
+                    fi
+            fi
 
-        if  test_IsFileInCss "IBM"  "agent_cert_files-1.0.0" "agent-install.crt"; then
-            doUploadCert_versioned='false'
-        fi
-    fi
+            if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+                    if [[ ${doUploadCert} == 'true' ]]; then 
+                            putOneFileInCss agent-install.crt agent_files false
+                    fi
 
-    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        if [[ ${doUploadCert} == 'true' ]]; then 
-            putOneFileInCss agent-install.crt agent_files false
-        fi
-
-        if [[ ${doUploadCert_versioned} == 'true' ]]; then 
-            putOneFileInCss agent-install.crt  "agent_cert_files-1.0.0" false  "1.0.0"
-            addElementToArray $upgradeFiles  "agent-install.crt"
-        fi
+                    if [[ ${doUploadCert_versioned} == 'true' ]]; then 
+                            putOneFileInCss agent-install.crt  "agent_cert_files-1.0.0" false  "1.0.0"
+                            addElementToArray $upgradeFiles  "agent-install.crt"
+                    fi
+            fi
+    else
+            echo  "Skipping cert since ${HZN_EXCHANGE_URL} is using http"
     fi
     echo ""
 }
@@ -905,13 +948,37 @@ function createTarFile () {
 
     local files_to_compress
     if [[ $EDGE_NODE_TYPE == 'ALL' ]]; then
-        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt amd64$AGENT_IMAGE_TAR_FILE arm64${AGENT_IMAGE_TAR_FILE} $AGENT_K8S_IMAGE_TAR_FILE $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*"
+        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml horizon*"
+
+	# Anax in container
+        for agent_arch in ${AGENT_IN_CONTAINER_ARCHITECTURES[@]}; do
+            tmp_files="${files_to_compress} ${agent_arch}${AGENT_IMAGE_TAR_FILE}"
+	    files_to_compress="${tmp_files}"
+        done
+
+	# Anax k8s
+        for agent_arch in ${AGENT_IN_CONTAINER_ARCHITECTURES[@]}; do
+            tmp_files="${files_to_compress} ${agent_arch}${AGENT_K8S_IMAGE_TAR_FILE} ${agent_arch}${AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE}"
+	    files_to_compress="${tmp_files}"
+        done
+
     elif [[ $EDGE_NODE_TYPE == "x86_64-Cluster" || $EDGE_NODE_TYPE == "ppc64le-Cluster" ]]; then
-        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_K8S_IMAGE_TAR_FILE $AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml"
+        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml"
+
+	# Anax k8s
+        for agent_arch in ${AGENT_IN_CONTAINER_ARCHITECTURES[@]}; do
+            tmp_files="${files_to_compress} ${agent_arch}${AGENT_K8S_IMAGE_TAR_FILE} ${agent_arch}${AUTO_UPGRADE_CRONJOB_K8S_IMAGE_TAR_FILE}"
+	    files_to_compress="${tmp_files}"
+        done
     elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
-        files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon-cli* amd64${AGENT_IMAGE_TAR_FILE}"
+        files_to_compress="agent-install.sh agent-install.cfg horizon-cli* amd64${AGENT_IMAGE_TAR_FILE} arm64${AGENT_IMAGE_TAR_FILE}"
     else   # linux device
-        files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon*"
+        files_to_compress="agent-install.sh agent-install.cfg horizon*"
+    fi
+
+    if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
+        tmp_files="${files_to_compress} agent-install.crt"
+	files_to_compress="${tmp_files}"
     fi
 
     echo "tar'ing into agentInstallFiles-$EDGE_NODE_TYPE.tar.gz: $(ls $files_to_compress)"
@@ -1112,8 +1179,8 @@ main() {
     # Publish manifest if artifacts were pushed to CSS which populated the upgradeManifest variable
     if [[ ! "${upgradeManifest}" == "{}" ]]; then
 	    publishUpgradeManifest "${upgradeManifest}" "${SOFTWARE_PACKAGE_VERSION}"
-        # add a 'total' object so that agbot knows how many agent files are there before updating AgentFileVersion object
-        getAgentFileTotal "${SOFTWARE_PACKAGE_VERSION}"
+            # add a 'total' object so that agbot knows how many agent files are there before updating AgentFileVersion object
+            getAgentFileTotal "${SOFTWARE_PACKAGE_VERSION}"
     fi
 
     echo "edgeNodeFiles.sh completed successfully."
