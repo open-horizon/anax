@@ -68,7 +68,7 @@ func (c *BasicProtocolHandler) Initialize() {
 
 	// Set up agreement worker pool based on the current technical config.
 	for ix := 0; ix < c.config.AgreementBot.AgreementWorkers; ix++ {
-		agw := NewBasicAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr, c.mmsObjMgr, c.secretsMgr)
+		agw := NewBasicAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr, c.mmsObjMgr, c.secretsMgr, c.NodeSearch)
 		go agw.start(c.Work, random)
 	}
 

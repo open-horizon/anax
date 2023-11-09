@@ -286,6 +286,7 @@ type BaseAgreementWorker struct {
 	ec         *worker.BaseExchangeContext
 	mmsObjMgr  *MMSObjectPolicyManager
 	secretsMgr secrets.AgbotSecrets
+	nodeSearch *NodeSearch
 }
 
 // A local implementation of the ExchangeContext interface because Agbot agreement workers are not full featured workers.
@@ -1130,6 +1131,8 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 	} else {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("received rejection from producer %v", reply)))
 
+		b.AddRetry(cph, reply.AgreementId(), workerId)
+
 		// Returns true if the protocol msg can be deleted.
 		ok := b.CancelAgreement(cph, reply.AgreementId(), cph.GetTerminationCode(TERM_REASON_NEGATIVE_REPLY), workerId)
 		deletedMessage = !ok
@@ -1250,6 +1253,19 @@ func (b *BaseAgreementWorker) CancelAgreementWithLock(cph ConsumerProtocolHandle
 	b.AgreementLockManager().deleteAgreementLock(agreementId)
 
 	return ok
+}
+
+func (b *BaseAgreementWorker) AddRetry(cph ConsumerProtocolHandler, agreementId string, workerId string) {
+	// Start timing out the agreement
+	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("add retry for agreement %v", agreementId)))
+	ag, err := b.db.AgreementTimedout(agreementId, cph.Name())
+	if err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error adding retry for agreement %v: %v", agreementId, err)))
+	} else if ag == nil {
+		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding adding retry process for agreement id %v not in this agbot's database", agreementId)))
+	} else {
+		b.nodeSearch.AddRetry(ag.PolicyName, ag.AgreementCreationTime-b.config.GetAgbotRetryLookBackWindow())
+	}
 }
 
 // Return true if the caller should delete the protocol message that initiated this cancel command.
