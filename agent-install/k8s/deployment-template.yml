@@ -29,7 +29,8 @@ spec:
       # START_NOT_FOR_OCP
       initContainers:
       - name: initcontainer
-        image: alpine:latest
+        image: public.ecr.aws/docker/library/alpine:latest
+        imagePullPolicy: IfNotPresent
         securityContext:
           runAsNonRoot: false
         command:
