@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/agreementbot/secrets"
+	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
@@ -110,15 +111,17 @@ func (sm *SecretUpdateManager) CheckForUpdates(secretProvider secrets.AgbotSecre
 
 		if !secretExists {
 			err := db.SetSecretExists(secretOrg, secretName, time.Now().Unix())
-			glog.Errorf(smlogString(fmt.Sprintf("Error updating secret %s in database: %v", fullSecretName, err)))
+			if err != nil {
+				glog.Errorf(smlogString(fmt.Sprintf("Error updating secret %s in database: %v", fullSecretName, err)))
+			}
 		}
 
 		// If there are policies returned, then it means that the policy references the secret and the secret has been updated.
 		if len(policyNames) != 0 {
 			updateTime := secretMetadata.UpdateTime
-                        if updateTime == 0 {
-                                updateTime = time.Now().Unix()
-                        }
+			if updateTime == 0 {
+				updateTime = time.Now().Unix()
+			}
 			su := events.NewSecretUpdate(secretOrg, exchange.GetId(fullSecretName), updateTime, policyNames, []string{}, secretNode)
 			secretUpdates.AddSecretUpdate(su)
 			glog.V(5).Infof(smlogString(fmt.Sprintf("Policies affected by %s, %v Node: %s", fullSecretName, policyNames, secretNode)))
@@ -224,7 +227,6 @@ func (sm *SecretUpdateManager) UpdateNodePolicySecrets(org string, exchPolsMetad
 		// Look for unreferenced secrets and remove them.
 		for _, secretName := range secretNames {
 			if _, ok := referencedSecrets[secretName]; !ok {
-
 				glog.V(5).Infof(smlogString(fmt.Sprintf("deleting managed secret %s from %s because it is no longer used", secretName, policyName)))
 				err = db.DeletePolicySecret(exchange.GetOrg(secretName), exchange.GetId(secretName), org, exchange.GetId(policyName))
 				if err != nil {
@@ -258,7 +260,7 @@ func (sm *SecretUpdateManager) UpdateNodePatternSecrets(org string, exchPatsMeta
 			for _, bs := range sb.Secrets {
 				// Extract the secret manager secret name
 				_, secretFullName := bs.GetBinding()
-				referencedSecrets[fmt.Sprintf("%s/%s", org, secretFullName)] = true
+				referencedSecrets[fmt.Sprintf("%s%s", org, cliutils.AddSlash(secretFullName))] = true
 
 				if !sb.EnableNodeLevelSecrets {
 					continue
@@ -372,7 +374,7 @@ func (sm *SecretUpdateManager) UpdatePolicies(org string, exchPolsMetadata map[s
 			for _, bs := range sb.Secrets {
 				// Extract the secret manager secret name
 				_, secretFullName := bs.GetBinding()
-				referencedSecrets[fmt.Sprintf("%s/%s", org, secretFullName)] = true
+				referencedSecrets[fmt.Sprintf("%s%s", org, cliutils.AddSlash(secretFullName))] = true
 
 				secretUser, secretNode, secretName, err := compcheck.ParseVaultSecretName(secretFullName, nil)
 				if err != nil {
@@ -411,7 +413,7 @@ func (sm *SecretUpdateManager) UpdatePolicies(org string, exchPolsMetadata map[s
 		// Look for unreferenced secrets and remove them.
 		for _, secretName := range secretNames {
 			if _, ok := referencedSecrets[secretName]; !ok {
-				if _, secretNode, _, err := compcheck.ParseVaultSecretName(exchange.GetId(secretName), nil); secretNode != "" {
+				if _, secretNode, _, err := compcheck.ParseVaultSecretName(exchange.GetId(secretName), nil); secretNode == "" {
 					glog.V(5).Infof(smlogString(fmt.Sprintf("deleting managed secret %s from %s because it is no longer used", secretName, policyName)))
 					err = db.DeletePolicySecret(exchange.GetOrg(secretName), exchange.GetId(secretName), org, exchange.GetId(policyName))
 					if err != nil {
@@ -520,7 +522,7 @@ func (sm *SecretUpdateManager) UpdatePatterns(org string, exchPatternMetadata ma
 		// Look for unreferenced secrets and remove them.
 		for _, secretName := range secretNames {
 			if _, ok := referencedSecrets[secretName]; !ok {
-				if _, secretNode, _, err := compcheck.ParseVaultSecretName(exchange.GetId(secretName), nil); secretNode != "" {
+				if _, secretNode, _, err := compcheck.ParseVaultSecretName(exchange.GetId(secretName), nil); secretNode == "" {
 					glog.V(5).Infof(smlogString(fmt.Sprintf("deleting managed secret %s from %s because it is no longer used", secretName, patName)))
 					err = db.DeletePatternSecret(exchange.GetOrg(secretName), exchange.GetId(secretName), org, exchange.GetId(patName))
 					if err != nil {

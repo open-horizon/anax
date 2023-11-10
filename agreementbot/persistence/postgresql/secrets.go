@@ -164,13 +164,13 @@ func (db *AgbotPostgresqlDB) GetPatternsForUpdatedSecretQuery() string {
 }
 
 func (db *AgbotPostgresqlDB) GetPoliciesForRemovedSecretQuery() string {
-        sql := strings.Replace(SECRET_POLICIES_TO_UPDATE_REMOVED_SECRET, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
-        return sql
+	sql := strings.Replace(SECRET_POLICIES_TO_UPDATE_REMOVED_SECRET, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
+	return sql
 }
 
 func (db *AgbotPostgresqlDB) GetPatternsForRemovedSecretQuery() string {
-        sql := strings.Replace(SECRET_PATTERNS_TO_UPDATE_REMOVED_SECRET, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(db.PrimaryPartition()), 1)
-        return sql
+	sql := strings.Replace(SECRET_PATTERNS_TO_UPDATE_REMOVED_SECRET, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(db.PrimaryPartition()), 1)
+	return sql
 }
 
 func (db *AgbotPostgresqlDB) GetUpdateSecretUpdateTimeQueryPolicy() string {
@@ -179,8 +179,8 @@ func (db *AgbotPostgresqlDB) GetUpdateSecretUpdateTimeQueryPolicy() string {
 }
 
 func (db *AgbotPostgresqlDB) GetUpdateSecretExistsUpdateTimeQueryPolicy() string {
-        sql := strings.Replace(SECRET_EXISTS_UPDATE_TIME_POLICY, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
-        return sql
+	sql := strings.Replace(SECRET_EXISTS_UPDATE_TIME_POLICY, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
+	return sql
 }
 
 func (db *AgbotPostgresqlDB) GetUpdateSecretUpdateTimeQueryPattern() string {
@@ -189,8 +189,8 @@ func (db *AgbotPostgresqlDB) GetUpdateSecretUpdateTimeQueryPattern() string {
 }
 
 func (db *AgbotPostgresqlDB) GetUpdateSecretExistsUpdateTimeQueryPattern() string {
-        sql := strings.Replace(SECRET_EXISTS_UPDATE_TIME_PATTERN, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(db.PrimaryPartition()), 1)
-        return sql
+	sql := strings.Replace(SECRET_EXISTS_UPDATE_TIME_PATTERN, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(db.PrimaryPartition()), 1)
+	return sql
 }
 
 func (db *AgbotPostgresqlDB) GetUniquePoliciesQuery() string {
@@ -349,17 +349,17 @@ func (db *AgbotPostgresqlDB) SetSecretUpdate(secretOrg, secretName string, secre
 
 func (db *AgbotPostgresqlDB) SetSecretExists(secretOrg, secretName string, secretUpdateTime int64) error {
 
-        err := db.setInternalSecretExistsUpdate(db.GetUpdateSecretExistsUpdateTimeQueryPolicy(), secretOrg, secretName, secretUpdateTime, true)
-        if err != nil {
-                return errors.New(fmt.Sprintf("error updating policy secret %s/%s: %v", secretOrg, secretName, err))
-        }
+	err := db.setInternalSecretExistsUpdate(db.GetUpdateSecretExistsUpdateTimeQueryPolicy(), secretOrg, secretName, secretUpdateTime, true)
+	if err != nil {
+		return errors.New(fmt.Sprintf("error updating policy secret %s/%s: %v", secretOrg, secretName, err))
+	}
 
-        err = db.setInternalSecretExistsUpdate(db.GetUpdateSecretExistsUpdateTimeQueryPattern(), secretOrg, secretName, secretUpdateTime, true)
-        if err != nil {
-                return errors.New(fmt.Sprintf("error updating pattern secret %s/%s: %v", secretOrg, secretName, err))
-        }
+	err = db.setInternalSecretExistsUpdate(db.GetUpdateSecretExistsUpdateTimeQueryPattern(), secretOrg, secretName, secretUpdateTime, true)
+	if err != nil {
+		return errors.New(fmt.Sprintf("error updating pattern secret %s/%s: %v", secretOrg, secretName, err))
+	}
 
-        return nil
+	return nil
 }
 
 func (db *AgbotPostgresqlDB) setInternalSecretUpdate(sql, secretOrg, secretName string, secretUpdateTime int64, secretExists bool) error {
@@ -383,20 +383,20 @@ func (db *AgbotPostgresqlDB) setInternalSecretUpdate(sql, secretOrg, secretName 
 
 func (db *AgbotPostgresqlDB) setInternalSecretExistsUpdate(sql, secretOrg, secretName string, secretUpdateTime int64, secretExists bool) error {
 
-        updated, err := db.db.Exec(sql, secretUpdateTime, secretOrg, secretName, secretExists)
-        if err != nil {
-                return errors.New(fmt.Sprintf("error setting update time for %s/%s: %v", secretOrg, secretName, err))
-        }
+	updated, err := db.db.Exec(sql, secretUpdateTime, secretOrg, secretName, secretExists)
+	if err != nil {
+		return errors.New(fmt.Sprintf("error setting update time for %s/%s: %v", secretOrg, secretName, err))
+	}
 
-        // Not all DB drivers support the rows affected function.
-        rowsAffected, err := updated.RowsAffected()
-        if err == nil {
-                glog.V(2).Infof("Succeeded setting update time in %v rows for %s/%s", rowsAffected, secretOrg, secretName)
-        } else {
-                glog.V(2).Infof("Succeeded setting update time for %s/%s", secretOrg, secretName)
-        }
+	// Not all DB drivers support the rows affected function.
+	rowsAffected, err := updated.RowsAffected()
+	if err == nil {
+		glog.V(2).Infof("Succeeded setting update time in %v rows for %s/%s", rowsAffected, secretOrg, secretName)
+	} else {
+		glog.V(2).Infof("Succeeded setting update time for %s/%s", secretOrg, secretName)
+	}
 
-        return nil
+	return nil
 
 }
 

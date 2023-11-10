@@ -221,7 +221,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 												details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), exchange.GetOrg(updatedSecretName), secretUser, secretNode, secretName)
 												if err != nil {
 													glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
-													if  updateSecretNode != "" {
+													if updateSecretNode != "" {
 														secretExistsMap[updatedSecretName] = false
 													}
 												} else {
