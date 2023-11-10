@@ -22,9 +22,9 @@ And depending on which PATTERN is chosen, a series of workload containers
   - `curl https://get.docker.com/ | sh`
 - Install make and jq
   - `apt update && apt install -y make jq build-essential`
-- Install `golang=^1.19.*`...
+- Install `golang=^1.21.*`...
   - `export ARCH=$(uname -m)`
-  - `curl https://dl.google.com/go/go1.19.linux-<ARCH>.tar.gz | tar -xzf- -C /usr/local/`
+  - `curl https://dl.google.com/go/go1.21.linux-<ARCH>.tar.gz | tar -xzf- -C /usr/local/`
   - `export PATH=$PATH:/usr/local/go/bin` (and modify your ~/.bashrc file with the same)
 - GOPATH cannot be set to the same path as GOROOT
   - `export GOPATH=</your/go/path>` (typically $HOME/go)

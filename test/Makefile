@@ -208,7 +208,8 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "HZN_AGBOT_URL"="$(AGBOT_SAPI_URL)" \
 		-e "TEST_PATTERNS"="$(TEST_PATTERNS)" \
 		-t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)
-	docker cp $(E2EDEVTEST_TEMPFS)/. $(DOCKER_TEST_CNAME):/
+	docker cp -a $(E2EDEVTEST_TEMPFS)/. $(DOCKER_TEST_CNAME):/
+	docker exec --user root $(DOCKER_TEST_CNAME) chown -R 1000:1000 /certs
 
 run-dockerreg: test-network
 	@echo "Handling Docker $(DOCKER_REG_CNAME)"
