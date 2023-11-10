@@ -46,6 +46,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 	// Grab the next set of secret updates to process.
 	secretUpdates := w.secretUpdateManager.GetNextUpdateEvent()
+	secretExistsMap := make(map[string]bool)
 
 	// Look at all agreements across all protocols
 	for _, agp := range policy.AllAgreementProtocols() {
@@ -202,13 +203,13 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 										glog.Infof(logString(fmt.Sprintf("checking secret %v against %v", updatedSecretName, bs)))
 									}
 									// Call the secret manager plugin to get the secret details.
-									secretUser, _, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
+									secretUser, updateSecretNode, secretName, err := compcheck.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
 									if err != nil {
 										glog.Errorf(logString(fmt.Sprintf("error parsing secret %s, error: %v", updatedSecretName, err)))
 										continue
 									}
 									if smSecretName == exchange.GetId(updatedSecretName) || smSecretName == fmt.Sprintf("user/%s/%s", secretUser, secretName) || smSecretName == secretName {
-
+										secretExistsMap[updatedSecretName] = true
 										newBS := make(exchangecommon.BoundSecret)
 										if binding.EnableNodeLevelSecrets {
 											secretNode := exchange.GetId(ag.DeviceId)
@@ -220,6 +221,9 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 												details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), exchange.GetOrg(updatedSecretName), secretUser, secretNode, secretName)
 												if err != nil {
 													glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
+													if  updateSecretNode != "" {
+														secretExistsMap[updatedSecretName] = false
+													}
 												} else {
 													detailBytes, err := json.Marshal(details)
 													if err != nil {
@@ -242,6 +246,9 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 												details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), exchange.GetOrg(updatedSecretName), secretUser, "", secretName)
 												if err != nil {
 													glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", updatedSecretName, ag.PolicyName, err)))
+													if updateSecretNode == "" {
+														secretExistsMap[updatedSecretName] = false
+													}
 													continue
 												}
 												detailBytes, err := json.Marshal(details)
@@ -314,8 +321,11 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 	if secretUpdates != nil {
 		for _, su := range secretUpdates.Updates {
 			glog.V(5).Infof(logString(fmt.Sprintf("updating secret DB %s/%s with time %v", su.SecretOrg, su.SecretFullName, su.SecretUpdateTime)))
-
-			err := w.db.SetSecretUpdate(su.SecretOrg, su.SecretFullName, su.SecretUpdateTime)
+			secretExists := true
+			if exists, ok := secretExistsMap[su.SecretFullName]; ok {
+				secretExists = exists
+			}
+			err := w.db.SetSecretUpdate(su.SecretOrg, su.SecretFullName, su.SecretUpdateTime, secretExists)
 			if err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to save secret update time for %s/%s, error: %v", su.SecretOrg, su.SecretFullName, err)))
 			}
