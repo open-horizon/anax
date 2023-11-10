@@ -2,6 +2,9 @@ apiVersion: __KubernetesApi__
 kind: CronJob
 metadata:
   name: auto-upgrade-cronjob
+  labels:
+    app: agent
+    openhorizon.org/component: agent
 spec:
   schedule: '*/1 * * * *'
   concurrencyPolicy: Forbid
@@ -11,11 +14,19 @@ spec:
     spec:
       backoffLimit: 0
       template:
+        metadata:
+          labels:
+            app: agent
+            openhorizon.org/component: agent
         spec:
           volumes:
           - name: agent-pvc-storage
             persistentVolumeClaim:
               claimName: openhorizon-agent-pvc
+          # START_REMOTE_ICR
+          imagePullSecrets:
+          - name: registry-creds
+          # END_REMOTE_ICR
           containers:
           - name: agent-auto-upgrade
             securityContext:
@@ -33,7 +44,7 @@ spec:
               - '-c'
               - >-
                 /usr/local/bin/auto-upgrade-cronjob.sh
-            imagePullPolicy: Always
+            imagePullPolicy: IfNotPresent
             volumeMounts:
             - mountPath: /var/horizon
               name: agent-pvc-storage

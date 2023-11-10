@@ -91,36 +91,28 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_CLUSTER_ROLE_TYPE:
-			if !cutil.IsNamespaceScoped() {
-				if typedRole, ok := obj.Object.(*rbacv1.ClusterRole); ok {
-					newRole := ClusterRoleRbacV1{ClusterRoleObject: typedRole}
-					if newRole.Name() != "" {
-						glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes cluster role object %s.", newRole.Name())))
-						objMap[K8S_CLUSTER_ROLE_TYPE] = append(objMap[K8S_CLUSTER_ROLE_TYPE], newRole)
-					} else {
-						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: cluster role object must have a name in its metadata section.")))
-					}
+			if typedRole, ok := obj.Object.(*rbacv1.ClusterRole); ok {
+				newRole := ClusterRoleRbacV1{ClusterRoleObject: typedRole}
+				if newRole.Name() != "" {
+					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes cluster role object %s.", newRole.Name())))
+					objMap[K8S_CLUSTER_ROLE_TYPE] = append(objMap[K8S_CLUSTER_ROLE_TYPE], newRole)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: cluster role object has unrecognized type %T: %v", obj.Object, obj.Object)))
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: cluster role object must have a name in its metadata section.")))
 				}
 			} else {
-				glog.Warningf(kwlog(fmt.Sprintf("Ignore cluster role object because this agent is Namespace-scoped.")))
+				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: cluster role object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_CLUSTER_ROLEBINDING_TYPE:
-			if !cutil.IsNamespaceScoped() {
-				if typedRoleBinding, ok := obj.Object.(*rbacv1.ClusterRoleBinding); ok {
-					newRolebinding := ClusterRolebindingRbacV1{ClusterRolebindingObject: typedRoleBinding}
-					if newRolebinding.Name() != "" {
-						glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes cluser rolebinding object %s.", newRolebinding.Name())))
-						objMap[K8S_CLUSTER_ROLEBINDING_TYPE] = append(objMap[K8S_CLUSTER_ROLEBINDING_TYPE], newRolebinding)
-					} else {
-						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object must have a name in its metadata section.")))
-					}
+			if typedRoleBinding, ok := obj.Object.(*rbacv1.ClusterRoleBinding); ok {
+				newRolebinding := ClusterRolebindingRbacV1{ClusterRolebindingObject: typedRoleBinding}
+				if newRolebinding.Name() != "" {
+					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes cluser rolebinding object %s.", newRolebinding.Name())))
+					objMap[K8S_CLUSTER_ROLEBINDING_TYPE] = append(objMap[K8S_CLUSTER_ROLEBINDING_TYPE], newRolebinding)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object must have a name in its metadata section.")))
 				}
 			} else {
-				glog.Warningf(kwlog(fmt.Sprintf("Ignore cluster rolebinding object because this agent is Namespace-scoped.")))
+				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_DEPLOYMENT_TYPE:
 			if typedDeployment, ok := obj.Object.(*appsv1.Deployment); ok {
@@ -325,27 +317,18 @@ type ClusterRoleRbacV1 struct {
 }
 
 func (cr ClusterRoleRbacV1) Install(c KubeClient, namespace string) error {
-	if cutil.IsNamespaceScoped() {
-		glog.Warningf(kwlog(fmt.Sprintf("Skip install cluster role because this agent is Namespace-scoped.")))
-		return nil
-	}
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating cluster role %v", cr)))
 
 	_, err := c.Client.RbacV1().ClusterRoles().Create(context.Background(), cr.ClusterRoleObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		glog.Warningf(kwlog(fmt.Sprintf("Skip install cluster role because it is already exists.")))
-	}
-	if err != nil {
+	} else if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster role: %v", err)))
 	}
 	return nil
 }
 
 func (cr ClusterRoleRbacV1) Uninstall(c KubeClient, namespace string) {
-	if cutil.IsNamespaceScoped() {
-		glog.Warningf(kwlog(fmt.Sprintf("Skip uninstall cluster role because this agent is Namespace-scoped.")))
-		return
-	}
 	// delete only if there is no one else using this role
 	// 1. list all clusterrolebinding that associated with this clusterrole, clusterrolebindings in this operator should already being deleted at this point.
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting cluster role %s", cr.Name())))
@@ -370,14 +353,12 @@ func (cr ClusterRoleRbacV1) Uninstall(c KubeClient, namespace string) {
 
 	if stillInUse {
 		glog.V(3).Infof(kwlog(fmt.Sprintf("Skip deleting cluster role %s, it is still in use", cr.Name())))
-
 	} else {
 		err := c.Client.RbacV1().ClusterRoles().Delete(context.Background(), cr.Name(), metav1.DeleteOptions{})
 		if err != nil {
 			glog.Errorf(kwlog(fmt.Sprintf("unable to delete role %s. Error: %v", cr.Name(), err)))
 		}
 	}
-
 }
 
 func (cr ClusterRoleRbacV1) Status(c KubeClient, namespace string) (interface{}, error) {
@@ -402,42 +383,76 @@ type ClusterRolebindingRbacV1 struct {
 }
 
 func (crb ClusterRolebindingRbacV1) Install(c KubeClient, namespace string) error {
-	if cutil.IsNamespaceScoped() {
-		glog.Warningf(kwlog(fmt.Sprintf("Skip install cluster role binding because this agent is Namespace-scoped.")))
-		return nil
-	}
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating cluster role binding %v", crb)))
 
-	// Do we need this for cluster role binding??
-	subs := []rbacv1.Subject{}
-	for _, sub := range crb.ClusterRolebindingObject.Subjects {
-		rb_sub := &sub
-		if sub.Namespace != "" && sub.Namespace != namespace {
-			rb_sub.Namespace = namespace
+	// checking the serviceaccount for clusterrolebinding if it is namespace-scoped agent:
+	//   - If the namespace of serviceaccount is defined in yaml, but is different from namespace for operator, replace the sa namespace with namespace to deploy operator.
+	if cutil.IsNamespaceScoped() {
+		// normalize the namespace of service account for namespace scoped agent
+		subs := []rbacv1.Subject{}
+		for _, sub := range crb.ClusterRolebindingObject.Subjects {
+			rb_sub := &sub
+			if sub.Namespace != "" && sub.Namespace != namespace {
+				rb_sub.Namespace = namespace
+			}
+			subs = append(subs, *rb_sub)
 		}
-		subs = append(subs, *rb_sub)
+		crb.ClusterRolebindingObject.Subjects = subs
 	}
-	crb.ClusterRolebindingObject.Subjects = subs
 
-	_, err := c.Client.RbacV1().ClusterRoleBindings().Create(context.Background(), crb.ClusterRolebindingObject, metav1.CreateOptions{})
-	if err != nil && errors.IsAlreadyExists(err) {
-		glog.Warningf(kwlog(fmt.Sprintf("Skip install cluster role binding because it is already exists.")))
-	}
-	if err != nil {
+	// get clusterrolebinding
+	existingCRB, err := c.Client.RbacV1().ClusterRoleBindings().Get(context.Background(), crb.Name(), metav1.GetOptions{})
+	if err == nil && existingCRB != nil {
+		glog.Warningf(kwlog(fmt.Sprintf("clusterrolebinding %v exists, updating it...", crb.Name())))
+
+		glog.V(3).Infof(kwlog(fmt.Sprintf("combining subjects in existing clusterrolebindg and subjects in clusterrolebinding yaml, subjects in existing clusterrolebinding: %v, subjects in clusterrolebinding yaml: %v", existingCRB.Subjects, crb.ClusterRolebindingObject.Subjects)))
+		subjectsNoDup := combineRoleBindingSubjects(existingCRB.Subjects, crb.ClusterRolebindingObject.Subjects)
+		existingCRB.Subjects = subjectsNoDup
+
+		updatedCRB, err := c.Client.RbacV1().ClusterRoleBindings().Update(context.Background(), existingCRB, metav1.UpdateOptions{})
+		glog.V(3).Infof(kwlog(fmt.Sprintf("updated clusterrolebinding: %v", updatedCRB)))
+		if err != nil {
+			return fmt.Errorf(kwlog(fmt.Sprintf("Error updating the existing cluster rolebinding: %v", err)))
+		}
+	} else if _, err := c.Client.RbacV1().ClusterRoleBindings().Create(context.Background(), crb.ClusterRolebindingObject, metav1.CreateOptions{}); err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster rolebinding: %v", err)))
 	}
+
 	return nil
 }
 
 func (crb ClusterRolebindingRbacV1) Uninstall(c KubeClient, namespace string) {
-	if cutil.IsNamespaceScoped() {
-		glog.Warningf(kwlog(fmt.Sprintf("Skip uninstall cluster role binding because this agent is Namespace-scoped.")))
-		return
-	}
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting cluster role binding %s", crb.ClusterRolebindingObject.ObjectMeta.Name)))
-	err := c.Client.RbacV1().ClusterRoleBindings().Delete(context.Background(), crb.ClusterRolebindingObject.ObjectMeta.Name, metav1.DeleteOptions{})
-	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to delete role binding %s. Error: %v", crb.ClusterRolebindingObject.ObjectMeta.Name, err)))
+	if cutil.IsNamespaceScoped() {
+		// normalize the namespace of service account for namespace scoped agent
+		subs := []rbacv1.Subject{}
+		for _, sub := range crb.ClusterRolebindingObject.Subjects {
+			rb_sub := &sub
+			if sub.Namespace != "" && sub.Namespace != namespace {
+				rb_sub.Namespace = namespace
+			}
+			subs = append(subs, *rb_sub)
+		}
+		crb.ClusterRolebindingObject.Subjects = subs
+	}
+	existingCRB, err := c.Client.RbacV1().ClusterRoleBindings().Get(context.Background(), crb.Name(), metav1.GetOptions{})
+	if err == nil && existingCRB != nil {
+		remainSubjects := removeRoleBindingSubjects(existingCRB.Subjects, crb.ClusterRolebindingObject.Subjects)
+		if len(remainSubjects) == 0 {
+			glog.V(3).Infof(kwlog(fmt.Sprintf("no Subjects remain in clusterrolebinding %v, deleting it...", crb.ClusterRolebindingObject.ObjectMeta.Name)))
+			err := c.Client.RbacV1().ClusterRoleBindings().Delete(context.Background(), crb.ClusterRolebindingObject.ObjectMeta.Name, metav1.DeleteOptions{})
+			if err != nil {
+				glog.Errorf(kwlog(fmt.Sprintf("unable to delete role binding %s. Error: %v", crb.ClusterRolebindingObject.ObjectMeta.Name, err)))
+			}
+		} else {
+			glog.V(3).Infof(kwlog(fmt.Sprintf("assign remaining subjects %v to existing clusterrolebinding: %v", remainSubjects, existingCRB)))
+			existingCRB.Subjects = remainSubjects
+			updatedCRB, err := c.Client.RbacV1().ClusterRoleBindings().Update(context.Background(), existingCRB, metav1.UpdateOptions{})
+			glog.V(3).Infof(kwlog(fmt.Sprintf("updated clusterrolebinding: %v", updatedCRB)))
+			if err != nil {
+				glog.Errorf(kwlog(fmt.Sprintf("Error deleting subjects in existing clusterrolebinding: %v", err)))
+			}
+		}
 	}
 }
 
@@ -1306,4 +1321,35 @@ func decodeServiceSecret(serviceSecrets map[string]string) (map[string]string, e
 		decodedSec[secName] = string(decodedSecValueBytes)
 	}
 	return decodedSec, nil
+}
+
+func combineRoleBindingSubjects(subjects1 []rbacv1.Subject, subjects2 []rbacv1.Subject) []rbacv1.Subject {
+	subs := subjects1
+	subs = append(subs, subjects2...)
+
+	// remove duplicate in the subjects array
+	submap := make(map[string]rbacv1.Subject)
+	for _, sub := range subs {
+		key := fmt.Sprintf("%v/%v/%v", sub.Namespace, sub.Kind, sub.Kind) // key is <namespace>/<kind>/<name>
+		submap[key] = sub
+	}
+
+	subjectsNoDup := []rbacv1.Subject{}
+	for _, sub := range submap {
+		subjectsNoDup = append(subjectsNoDup, sub)
+	}
+
+	return subjectsNoDup
+}
+
+func removeRoleBindingSubjects(allSubjects []rbacv1.Subject, subjectsToRemove []rbacv1.Subject) []rbacv1.Subject {
+	for _, subToRemove := range subjectsToRemove {
+		for i, sub := range allSubjects {
+			if subToRemove == sub {
+				allSubjects = append(allSubjects[:i], allSubjects[i+1:]...)
+				break
+			}
+		}
+	}
+	return allSubjects
 }

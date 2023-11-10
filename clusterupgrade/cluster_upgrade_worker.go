@@ -50,7 +50,8 @@ const (
 )
 
 const (
-	DEFAULT_CERT_PATH = "/etc/default/cert/"
+	DEFAULT_CERT_PATH                    = "/etc/default/cert/"
+	DEFAULT_IMAGE_REGISTRY_IN_DEPLOYMENT = "__ImageRegistryHost__"
 )
 
 const (
@@ -702,8 +703,9 @@ func checkAgentImage(kubeClient *KubeClient, workDir string) (bool, string, stri
 	}
 	glog.Infof(cuwlog(fmt.Sprintf("Get image %v from tar file, extracted image tag: %v", fullImageTag, imageTag)))
 
-	if currentAgentVersion != imageTag {
-		// push image to image registry
+	if currentAgentVersion != imageTag && !agentUseRemoteRegistry() {
+		// push image to image registry if use edge cluster local registry
+		// If AGENT_CLUSTER_IMAGE_REGISTRY_HOST env is not set, it means agent is using remote image registry, and no need to push image
 		imageRegistry := os.Getenv("AGENT_CLUSTER_IMAGE_REGISTRY_HOST")
 		if imageRegistry == "" {
 			return false, "", "", fmt.Errorf("failed to get edge cluster image registry host from environment veriable: %v", imageRegistry)
@@ -751,7 +753,6 @@ func checkAgentImage(kubeClient *KubeClient, workDir string) (bool, string, stri
 		}
 		glog.Infof(cuwlog(fmt.Sprintf("Successfully pushed image %v", newImageRepoWithTag)))
 	}
-
 	return (currentAgentVersion == imageTag), imageTag, currentAgentVersion, nil
 }
 
@@ -766,4 +767,13 @@ func checkAgentImageAgainstStatusFile(workDir string) (bool, error) {
 	} else {
 		return true, nil
 	}
+}
+
+func agentUseRemoteRegistry() bool {
+	useRemoteRegistry := false
+	imageRegistry := os.Getenv("AGENT_CLUSTER_IMAGE_REGISTRY_HOST")
+	if imageRegistry == DEFAULT_IMAGE_REGISTRY_IN_DEPLOYMENT {
+		useRemoteRegistry = true
+	}
+	return useRemoteRegistry
 }
