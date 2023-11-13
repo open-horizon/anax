@@ -3537,7 +3537,7 @@ function check_cluster_agent_scope() {
 
             IFS="," read -ra namespace_array <<< "$namespaces_have_agent"
             namespace_to_check=${namespace_array[0]}
-            local namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${namespace_to_check} -o jsonpath='{.spec.template.spec.containers[0].env}' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
+            local namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${namespace_to_check} -o json | jq '.spec.template.spec.containers[0].env' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
             log_debug "Current HZN_NAMESPACE_SCOPED in agent deployment under namespace $namespace_to_check is: $namespace_scoped_env_value_in_use"
             log_debug "NAMESPACE_SCOPED passed to this script is: $NAMESPACE_SCOPED" # namespace scoped
 
@@ -3574,7 +3574,7 @@ function check_agent_deployment_exist() {
             log_fatal 3 "Previous agent pod in not in RUNNING status, please run agent-uninstall.sh to clean up and re-run the agent-install.sh"
         else
             # check 0) agent scope in deployment
-            local namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env}' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
+            local namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o json | jq '.spec.template.spec.containers[0].env' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
             log_debug "Current HZN_NAMESPACE_SCOPED in agent deployment is $namespace_scoped_env_value_in_use"
             log_debug "NAMESPACE_SCOPED passed to this script is: $NAMESPACE_SCOPED"
 
@@ -3637,7 +3637,7 @@ function check_agent_deployment_exist() {
             fi
 
             # check 3) HZN_ORG_ID set in deployment
-            local horizon_org_id_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env}' | jq -r '.[] | select(.name=="HZN_ORG_ID").value')
+            local horizon_org_id_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o json | jq '.spec.template.spec.containers[0].env' | jq -r '.[] | select(.name=="HZN_ORG_ID").value')
             log_debug "Current HZN_ORG_ID in agent deployment is: $horizon_org_id_env_value_in_use"
             log_debug "HZN_ORG_ID passed to this script is: $HZN_ORG_ID"
 
