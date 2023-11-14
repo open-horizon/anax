@@ -5,6 +5,7 @@ metadata:
   labels:
     app: agent
     openhorizon.org/component: agent
+    type: auto-upgrade-cronjob
 spec:
   schedule: '*/1 * * * *'
   concurrencyPolicy: Forbid
@@ -18,6 +19,7 @@ spec:
           labels:
             app: agent
             openhorizon.org/component: agent
+            type: auto-upgrade-cronjob
         spec:
           volumes:
           - name: agent-pvc-storage

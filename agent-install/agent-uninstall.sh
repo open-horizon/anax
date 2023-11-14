@@ -198,7 +198,7 @@ function validate_positive_int() {
 
 function get_agent_pod_id() {
     log_debug "get_agent_pod_id() begin"
-    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
 	    AGENT_POD_READY="false"
     else
 	    AGENT_POD_READY="true"
@@ -335,23 +335,23 @@ function deleteAgentResources() {
     # give pods sometime to terminate by themselves
     sleep 10
 
-    log_info "Checking if pods are deleted"
-    PODS=$($KUBECTL get pod -n $AGENT_NAMESPACE 2>/dev/null)
+    log_info "Checking if agent pods are deleted"
+    PODS=$($KUBECTL get pod -l app=agent -n $AGENT_NAMESPACE 2>/dev/null)
     if [[ -n "$PODS" ]]; then
-        log_info "Pods are not deleted by deleting deployment, delete pods now"
+        log_info "Agent pods are not deleted by deleting deployment, delete pods now"
         if [ "$USE_DELETE_FORCE" != true ]; then
-            $KUBECTL delete --all pods --namespace=$AGENT_NAMESPACE --grace-period=$DELETE_TIMEOUT
+            $KUBECTL delete pods -l app=agent --namespace=$AGENT_NAMESPACE --grace-period=$DELETE_TIMEOUT
 
-            PODS=$($KUBECTL get pod -n $AGENT_NAMESPACE 2>/dev/null) 
+            PODS=$($KUBECTL get pod -l app=agent -n $AGENT_NAMESPACE 2>/dev/null) 
             if [[ -n "$PODS" ]]; then
-                log_info "Pods still exist"
+                log_info "Agent pods still exist"
                 PODS_STILL_EXIST="true"
             fi
         fi
 
         if [ "$USE_DELETE_FORCE" == true ] || [ "$PODS_STILL_EXIST" == true ]; then
-            log_info "Force deleting all the pods under $AGENT_NAMESPACE"
-            $KUBECTL delete --all pods --namespace=$AGENT_NAMESPACE --force=true --grace-period=0
+            log_info "Force deleting agent pods under $AGENT_NAMESPACE"
+            $KUBECTL delete pods -l app=agent --namespace=$AGENT_NAMESPACE --force=true --grace-period=0
             pkill -f anax.service
         fi
     fi
@@ -383,8 +383,15 @@ function deleteAgentResources() {
     log_info "Deleting serviceaccount..."
     $KUBECTL delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE
 
-    log_info "Deleting namespace..."
-    $KUBECTL delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
+    log_info "Checking deployment and statefulset under namespace $AGENT_NAMESPACE"
+    deployment=$($KUBECTL get deployment -n $AGENT_NAMESPACE)
+    statefulset=$($KUBECTL get statefulset -n $AGENT_NAMESPACE)
+    if [[ -z "$deployment" ]] && [[ -z "$statefulset" ]]; then
+        log_info "No deployment and statefulset left under namespace $AGENT_NAMESPACE, deleting it..."
+        $KUBECTL delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
+    else
+        log_info "Deployment or statefulset exists in the namespace $AGENT_NAMESPACE, skip deleting namespace $AGENT_NAMESPACE. Please delete namespace manually"
+    fi   
 
     log_info "Deleting cert file from /etc/default/cert ..."
     rm /etc/default/cert/agent-install.crt
@@ -402,6 +409,8 @@ function uninstall_cluster() {
 
     if [[ "$AGENT_POD_READY" == "true" ]]; then
     	removeNodeFromLocalAndManagementHub
+    else 
+        log_info "agent pod under $AGENT_NAMESPACE is not ready, skip unregister process. Please remove node from management hub later if needed"
     fi
     
     deleteAgentResources
