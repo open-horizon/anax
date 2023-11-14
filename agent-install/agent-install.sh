@@ -150,6 +150,7 @@ Optional Edge Device Environment Variables For Testing New Distros - Not For Pro
 
 
 Additional Edge Cluster Variables (in environment or config file):
+    ENABLE_AUTO_UPGRADE_CRONJOB: specify this value to false to skip installing agent auto upgrade cronjob. Default: true
     IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to
     CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the auto-upgrade-cronjob cronjob image path (without tag) if you want it to be different from what this script will default it to
     INIT_CONTAINER_IMAGE: specify this value if init container is needed and is different from default: public.ecr.aws/docker/library/alpine:latest
@@ -1186,6 +1187,7 @@ function get_all_variables() {
         get_variable NAMESPACE_SCOPED 'false'
         get_variable USE_EDGE_CLUSTER_REGISTRY 'true'
         get_variable AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS '300'
+        get_variable ENABLE_AUTO_UPGRADE_CRONJOB 'true'
 
         local image_arch=$(get_cluster_image_arch)
         check_support "${SUPPORTED_EDGE_CLUSTER_ARCH[*]}" "${image_arch}" 'kubernetes edge cluster architectures'
@@ -1212,13 +1214,18 @@ function get_all_variables() {
 
             get_variable INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY
         fi
+        get_variable AGENT_K8S_IMAGE_TAR_FILE "$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE"
         # not use edge cluster local registry, use remote
         get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_image_registry_on_edge_cluster" ${isImageVariableRequired}
 	    log_debug "default_image_registry_on_edge_cluster: $default_image_registry_on_edge_cluster, IMAGE_ON_EDGE_CLUSTER_REGISTRY: $IMAGE_ON_EDGE_CLUSTER_REGISTRY"
 
-        # set $CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY from $IMAGE_ON_EDGE_CLUSTER_REGISTRY
-        auto_upgrade_cronjob_image_registry_on_edge_cluster="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%%_*}_auto-upgrade-cronjob_k8s"
-        get_variable CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY "$auto_upgrade_cronjob_image_registry_on_edge_cluster"
+        if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+             # set $CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY from $IMAGE_ON_EDGE_CLUSTER_REGISTRY
+            auto_upgrade_cronjob_image_registry_on_edge_cluster="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%%_*}_auto-upgrade-cronjob_k8s"
+            get_variable CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY "$auto_upgrade_cronjob_image_registry_on_edge_cluster"
+            get_variable CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE "$DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE"
+        fi
+       
         get_variable INIT_CONTAINER_IMAGE "$DEFAULT_INIT_CONTAINER_IMAGE_PATH"
         
         get_variable EDGE_CLUSTER_REGISTRY_USERNAME
@@ -1226,8 +1233,6 @@ function get_all_variables() {
         if [[ ( -z $EDGE_CLUSTER_REGISTRY_USERNAME && -n $EDGE_CLUSTER_REGISTRY_TOKEN ) || ( -n $EDGE_CLUSTER_REGISTRY_USERNAME && -z $EDGE_CLUSTER_REGISTRY_TOKEN ) ]]; then
             log_fatal 1 "EDGE_CLUSTER_REGISTRY_USERNAME and EDGE_CLUSTER_REGISTRY_TOKEN should be set/unset together"
         fi
-        get_variable AGENT_K8S_IMAGE_TAR_FILE "$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE"
-        get_variable CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE "$DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE"
     else
         log_fatal 1 "Invalid AGENT_DEPLOY_TYPE value: $AGENT_DEPLOY_TYPE"
     fi
@@ -1350,7 +1355,7 @@ function check_variables() {
         fi
     fi
 
-    if is_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
+    if is_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]] && [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
         parts=$(echo $CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print NF}')
         if [[ "$parts" != "3" ]]; then
             log_fatal 1 "CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>"
@@ -1365,7 +1370,7 @@ function check_variables() {
         log_fatal 1 "AGENT_K8S_IMAGE_TAR_FILE must be in tar.gz format"
     fi
 
-    if [[ -n $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE && $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE != *.tar.gz ]]; then
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]] && [[ -n $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE && $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE != *.tar.gz ]]; then
         log_fatal 1 "CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE must be in tar.gz format"
     fi
     log_debug "check_variables() begin"
@@ -3413,10 +3418,12 @@ function pushImagesToEdgeClusterRegistry() {
     runCmdQuietly ${DOCKER_ENGINE} push ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
     log_verbose "successfully pushed image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
 
-    log_info "Pushing docker image $CRONJOB_AUTO_UPGRADE_IMAGE to $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
-    docker tag ${CRONJOB_AUTO_UPGRADE_IMAGE} ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-    runCmdQuietly docker push ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-    log_verbose "successfully pushed image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        log_info "Pushing docker image $CRONJOB_AUTO_UPGRADE_IMAGE to $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
+        docker tag ${CRONJOB_AUTO_UPGRADE_IMAGE} ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+        runCmdQuietly docker push ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+        log_verbose "successfully pushed image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+    fi
 
     log_debug "pushImagesToEdgeClusterRegistry() end"
 }
@@ -3616,23 +3623,28 @@ function check_agent_deployment_exist() {
                 IS_AGENT_IMAGE_VERSION_SAME="true"
             fi
 
+            
             # check 2) auto-upgrade-cronjob cronjob image in cronjob yml
             # eg: {image-registry}:5000/{repo}/{image-name}:{version}
-            local auto_upgrade_cronjob_image_in_use=$($KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -o jsonpath='{$.spec.jobTemplate.spec.template.spec.containers[:1].image}' -n ${AGENT_NAMESPACE})
+            if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+                local auto_upgrade_cronjob_image_in_use=$($KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -o jsonpath='{$.spec.jobTemplate.spec.template.spec.containers[:1].image}' -n ${AGENT_NAMESPACE})
 
-            # {image-registry}:5000/{repo}
-            local auto_upgrade_cronjob_image_on_edge_cluster_registry=${auto_upgrade_cronjob_image_in_use%:*}
-            if [[ "$auto_upgrade_cronjob_image_on_edge_cluster_registry" != "$CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY" ]]; then
-                log_fatal 3 "Current auto-upgrade-cronjob cronjob image registry cannot be updated, please run agent-uninstall.sh and re-run agent-install.sh"
-            fi
+                # {image-registry}:5000/{repo}
+                local auto_upgrade_cronjob_image_on_edge_cluster_registry=${auto_upgrade_cronjob_image_in_use%:*}
+                if [[ "$auto_upgrade_cronjob_image_on_edge_cluster_registry" != "$CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY" ]]; then
+                    log_fatal 3 "Current auto-upgrade-cronjob cronjob image registry cannot be updated, please run agent-uninstall.sh and re-run agent-install.sh"
+                fi
 
-            # {image-name}:{version}
-            local auto_upgrade_cronjob_image_name_with_tag=$(echo $auto_upgrade_cronjob_image_in_use | awk -F'/' '{print $3}')
-            # {version}
-            local auto_upgrade_cronjob_image_version_in_use=$(echo $auto_upgrade_cronjob_image_name_with_tag | awk -F':' '{print $2}')
+                # {image-name}:{version}
+                local auto_upgrade_cronjob_image_name_with_tag=$(echo $auto_upgrade_cronjob_image_in_use | awk -F'/' '{print $3}')
+                # {version}
+                local auto_upgrade_cronjob_image_version_in_use=$(echo $auto_upgrade_cronjob_image_name_with_tag | awk -F':' '{print $2}')
 
-            log_debug "Current auto-upgrade-cronjob cronjob image version is: $auto_upgrade_cronjob_image_version_in_use, auto-upgrade-cronjob cronjob image version in tar file is: $CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR"
-            if [[ "$CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR" == "$auto_upgrade_cronjob_image_version_in_use" ]]; then
+                log_debug "Current auto-upgrade-cronjob cronjob image version is: $auto_upgrade_cronjob_image_version_in_use, auto-upgrade-cronjob cronjob image version in tar file is: $CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR"
+                if [[ "$CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR" == "$auto_upgrade_cronjob_image_version_in_use" ]]; then
+                    IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME="true"
+                fi
+            else
                 IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME="true"
             fi
 
@@ -3670,12 +3682,15 @@ function get_edge_cluster_files() {
         rm "$EDGE_CLUSTER_TAR_FILE_NAME"
     fi
 
-    for f in deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml agent-uninstall.sh; do
+    for f in deployment-template.yml persistentClaim-template.yml agent-uninstall.sh; do
         if [[ ! -f $f ]]; then
             log_fatal 1 "file $f not found"
         fi
     done
 
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]] && [[ ! -f auto-upgrade-cronjob-template.yml ]]; then
+        log_fatal 1 "auto-upgrade-cronjob-template.yml not found"
+    fi
     log_debug "get_edge_cluster_files() end"
 }
 
@@ -3697,7 +3712,7 @@ function generate_installation_files() {
         log_verbose "kubernete deployment files are done."
     fi
 
-    if [[ "$IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME" == "true" ]]; then
+    if [[ "$IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME" == "true" ]] || [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" != "true" ]] ; then
         log_verbose "auto-upgrade-cronjob cronjob image version is the same with existing deployment, skip updating auto-upgrade-cronjob.yml"
     else
         log_verbose "Preparing kubernete cronjob files"
@@ -3903,7 +3918,9 @@ function create_cluster_resources() {
     create_service_account
     create_secret
     create_configmap
-    create_cronjobs
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        create_cronjobs
+    fi
     create_persistent_volume
 
     log_debug "create_cluster_resources() end"
@@ -3915,10 +3932,11 @@ function update_cluster_resources() {
 
     update_secret
     update_configmap
-    update_cronjobs
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        update_cronjobs
+    fi
 
     log_debug "update_cluster_resources() end"
-
 }
 
 # Cluster only: to create namespace that agent will be deployed
@@ -4135,8 +4153,12 @@ function check_resources_for_deployment() {
     $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null
     configmap_ready=$?
 
-    $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null
-    auto_upgrade_cronjob_ready=$?
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null
+        auto_upgrade_cronjob_ready=$?
+    else
+        auto_upgrade_cronjob_ready=0
+    fi
 
     $KUBECTL get pvc ${PVC_NAME} -n ${AGENT_NAMESPACE} >/dev/null
     pvc_ready=$?
@@ -4321,7 +4343,9 @@ function install_update_cluster() {
     check_cluster_agent_scope   # sets AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE
 
     loadClusterAgentImage   # create the cluster agent docker image locally
-    loadClusterAgentAutoUpgradeCronJobImage # create the cluster cronjob docker images locally
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        loadClusterAgentAutoUpgradeCronJobImage # create the cluster cronjob docker images locally
+    fi
 
     getImageRegistryInfo # set $EDGE_CLUSTER_REGISTRY_HOST, and login to registry
 
