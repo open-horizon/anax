@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eo pipefail
+
 # Deal with Debian Package First
 # Make the temp Dockerfile for the debs only tarball image
 ## Chose alpine:latest b/c of small size, tried FROM scratch but couldn't run container

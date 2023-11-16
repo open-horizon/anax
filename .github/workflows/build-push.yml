@@ -289,18 +289,65 @@ jobs:
 
       # Build Docker Images
       - name: Build Docker Images
+        shell: bash
         if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
-        run: |
+        run: | 
+          # Makes and pushes arch_cloud-sync-service and arch_edge-sync-service images
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/docker_build_script.sh
+          if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' || ${arch} == 's390x' ]]; then
+              make ess-docker-image
+              make css-docker-image
+          fi
+
+          # Makes and pushes amd64_agbot image
+          if [[ ${arch} == 'amd64' ]]; then
+              make agbot-image
+          fi
+
+          # Specify if we should use buildx for multiarch, github runner is amd64 so we only need this for arm and ppc
+          if [[ ${arch} == 'arm64' || ${arch} == 'ppc64el' || ${arch} == 's390x' ]]; then
+              export USE_DOCKER_BUILDX=true
+          fi
+
+          make anax-image                         # Makes and pushes arch_anax
+          make anax-k8s-image                     # Makes and pushes arch_anax_k8s
+          make auto-upgrade-cronjob-k8s-image     # Makes and pushes arch_auto-upgrade-cronjob-k8s
+
+          # Outputs created docker images for viewing
+          echo "**************"
+          docker images
+          echo "**************" 
 
       # Push Docker Images to Dockerhub
       - name: Push Docker Images
+        shell: bash
         if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/docker_push_script.sh
+          # Names of the images created for each architecture
+          if [[ ${arch} == 'amd64' ]]; then
+              images=('amd64_agbot' 'amd64_anax' 'amd64_anax_k8s' 'amd64_auto-upgrade-cronjob_k8s' 'amd64_cloud-sync-service' 'amd64_edge-sync-service')
+          elif [[ ${arch} == 'ppc64el' ]]; then
+              images=('ppc64el_anax' 'ppc64el_anax_k8s' 'ppc64el_auto-upgrade-cronjob_k8s' 'ppc64el_edge-sync-service')
+          elif [[ ${arch} == 'arm64' ]]; then
+              images=('arm64_anax' 'arm64_anax_k8s' 'arm64_auto-upgrade-cronjob_k8s' 'arm64_edge-sync-service')
+          elif [[ ${arch} == 's390x' ]]; then
+              images=('s390x_anax' 's390x_anax_k8s' 's390x_auto-upgrade-cronjob_k8s' 's390x_edge-sync-service')
+          fi
 
+          # Push those images
+          for image in "${images[@]}"; do
+              if [[ ${GITHUB_REF} == 'refs/heads/master' ]]; then
+                  docker push ${IMAGE_REPO}/${image}:testing
+                  docker tag ${IMAGE_REPO}/${image}:testing ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
+                  docker push ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
+              else
+                  # append the branch name to testing tags for when we're building older versions of anax for testing
+                  docker tag ${IMAGE_REPO}/${image}:testing ${IMAGE_REPO}/${image}:testing_${GH_BRANCH}
+                  docker push ${IMAGE_REPO}/${image}:testing_${GH_BRANCH}
+              fi
+
+          done
 
   # Build our mac packages on a macOS runner
   mac-build:
