@@ -25,7 +25,7 @@ import (
 )
 
 func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets, nodeSearch *NodeSearch) ConsumerProtocolHandler {
-	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq, mmsObjMgr, secretsMgr); handler != nil {
+	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq, mmsObjMgr, secretsMgr, nodeSearch); handler != nil {
 		return handler
 	} // Add new consumer side protocol handlers here
 	return nil
@@ -98,7 +98,7 @@ type BaseConsumerProtocolHandler struct {
 	messages         chan events.Message
 	mmsObjMgr        *MMSObjectPolicyManager
 	secretsMgr       secrets.AgbotSecrets
-	NodeSearch       *NodeSearch
+	nodeSearch       *NodeSearch
 }
 
 func (b *BaseConsumerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {

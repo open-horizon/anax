@@ -24,7 +24,7 @@ type BasicProtocolHandler struct {
 	Work        *PrioritizedWorkQueue
 }
 
-func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets) *BasicProtocolHandler {
+func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets, nodeSearch *NodeSearch) *BasicProtocolHandler {
 	if name == basicprotocol.PROTOCOL_NAME {
 		return &BasicProtocolHandler{
 			BaseConsumerProtocolHandler: &BaseConsumerProtocolHandler{
@@ -39,6 +39,7 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 				messages:         messages,
 				mmsObjMgr:        mmsObjMgr,
 				secretsMgr:       secretsMgr,
+				nodeSearch:       nodeSearch,
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			// Allow the main agbot thread to distribute protocol msgs and agreement handling to the worker pool.
@@ -68,7 +69,7 @@ func (c *BasicProtocolHandler) Initialize() {
 
 	// Set up agreement worker pool based on the current technical config.
 	for ix := 0; ix < c.config.AgreementBot.AgreementWorkers; ix++ {
-		agw := NewBasicAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr, c.mmsObjMgr, c.secretsMgr, c.NodeSearch)
+		agw := NewBasicAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr, c.mmsObjMgr, c.secretsMgr, c.nodeSearch)
 		go agw.start(c.Work, random)
 	}
 
