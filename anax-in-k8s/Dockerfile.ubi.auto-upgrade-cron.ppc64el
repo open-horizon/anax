@@ -13,7 +13,9 @@ COPY EPEL.repo /etc/yum.repos.d
 # Create required directories
 # Create cronjobuser
 ARG REQUIRED_RPMS="shadow-utils jq"
-RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
+RUN microdnf clean all \
+  && rm -rf /var/cache/dnf /var/cache/PackageKit \
+  && microdnf update -y --nodocs --nobest --setopt=install_weak_deps=0 --disableplugin=subscription-manager \ 
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && microdnf clean all --disableplugin=subscription-manager \
   && rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \

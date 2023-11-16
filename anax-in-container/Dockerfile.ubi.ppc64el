@@ -15,7 +15,9 @@ COPY EPEL.repo /etc/yum.repos.d
 # Install docker cli, which requires tar / gunzip to unpack, then remove tar / gzip packages
 # Create required directories
 ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng tar gzip"
-RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
+RUN  microdnf clean all \
+  && rm -rf /var/cache/dnf /var/cache/PackageKit \
+  && microdnf update -y --nodocs --nobest --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && curl -4fsSLO https://download.docker.com/linux/static/stable/ppc64le/docker-${DOCKER_VER}.tgz \
   && tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \
