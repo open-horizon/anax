@@ -1330,7 +1330,7 @@ func combineRoleBindingSubjects(subjects1 []rbacv1.Subject, subjects2 []rbacv1.S
 	// remove duplicate in the subjects array
 	submap := make(map[string]rbacv1.Subject)
 	for _, sub := range subs {
-		key := fmt.Sprintf("%v/%v/%v", sub.Namespace, sub.Kind, sub.Kind) // key is <namespace>/<kind>/<name>
+		key := fmt.Sprintf("%v/%v/%v", sub.Namespace, sub.Kind, sub.Name) // key is <namespace>/<kind>/<name>
 		submap[key] = sub
 	}
 
