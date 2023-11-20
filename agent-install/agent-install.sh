@@ -3420,8 +3420,8 @@ function pushImagesToEdgeClusterRegistry() {
 
     if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
         log_info "Pushing docker image $CRONJOB_AUTO_UPGRADE_IMAGE to $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
-        docker tag ${CRONJOB_AUTO_UPGRADE_IMAGE} ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-        runCmdQuietly docker push ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+        ${DOCKER_ENGINE} tag ${CRONJOB_AUTO_UPGRADE_IMAGE} ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+        runCmdQuietly ${DOCKER_ENGINE} push ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
         log_verbose "successfully pushed image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
     fi
 
@@ -3451,7 +3451,7 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
             local image_arch=$(get_cluster_image_arch)
             local image_path="openhorizon/${image_arch}_auto-upgrade-cronjob_k8s:$image_tag"
             log_info "Pulling $image_path from docker hub..."
-            docker pull "$image_path"
+            ${DOCKER_ENGINE} pull "$image_path"
             chk $? "pulling $image_path"
             CRONJOB_AUTO_UPGRADE_IMAGE=$image_path
             CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR=${CRONJOB_AUTO_UPGRADE_IMAGE##*:}
@@ -3806,7 +3806,7 @@ function prepare_k8s_deployment_file() {
 
         log_info "Checking if image exists in remote registry..."
         set +e
-        docker manifest inspect $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+        ${DOCKER_ENGINE} manifest inspect $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
         chk $? "checking existence of image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
         set -e
 
@@ -3859,7 +3859,7 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
         log_info "This agent install on edge cluster is using a remote registry: $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
         log_info "Checking if image exists in remote registry..."
         set +e
-        docker manifest inspect $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+        ${DOCKER_ENGINE} manifest inspect $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
         chk $? "checking existence of image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
         set -e
 
