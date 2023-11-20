@@ -3603,7 +3603,7 @@ function check_agent_deployment_exist() {
                 log_fatal 3 "Current deployment image registry cannot be updated, please run agent-uninstall.sh and re-run agent-install.sh"
             fi
 
-            local image_pull_secrets_length=$($KUBECTL get deployment agent -n agent-ns4 -o jsonpath='{.spec.template.spec.imagePullSecrets}' | jq length)
+            local image_pull_secrets_length=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.imagePullSecrets}' | jq length)
             local use_image_pull_secrets
             if [[ "$image_pull_secrets_length" == "1" ]]; then
                 use_image_pull_secrets="true"
