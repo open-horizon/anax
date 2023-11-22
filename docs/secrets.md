@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-02-05"
+lastupdated: "2023-11-20"
 title: "Secrets"
 description: Secrets Management
 

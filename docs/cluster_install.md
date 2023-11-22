@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2022-01-29"
+lastupdated: "2023-10-19"
 
 title: "All-in-One cluster agent"
 
@@ -305,22 +305,7 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
     chmod +x agent-install.sh
     ```
 
-5. The agent-install.sh script will store the Open Horizon agent in the edge cluster image registry. Set the full image path (minus the tag) that should be used.
-
-    On k3s:
-
-    ```bash
-    REGISTRY_ENDPOINT=$(kubectl get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
-    export IMAGE_ON_EDGE_CLUSTER_REGISTRY=$REGISTRY_ENDPOINT/openhorizon-agent/amd64_anax_k8s
-    ```
-
-    On microk8s:
-
-    ```bash
-    export IMAGE_ON_EDGE_CLUSTER_REGISTRY=localhost:32000/openhorizon-agent/amd64_anax_k8s
-    ```
-
-6. Instruct agent-install.sh to use the default storage class:
+5. Instruct agent-install.sh to use the default storage class:
 
     On k3s:
 
@@ -334,29 +319,47 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
     export EDGE_CLUSTER_STORAGE_CLASS=microk8s-hostpath
     ```
 
-7. Run agent-install.sh to get the necessary files from Github, install and configure the Horizon agent, and register your edge cluster with policy.
-
+6. Run agent-install.sh to get the necessary files from Github, install and configure the Horizon agent, and register your edge cluster with policy.
+    
+    Set `AGENT_NAMESPACE` to the namespace that will install the cluster agent. If not set, the agent will be installed to `openhorizon-agent` default namespace
     ```bash
-    ./agent-install.sh -D cluster -i anax: -c css: -k css:
+    AGENT_NAMESPACE=<namespace-to-install-agent>
     ```
 
-8. Verify that the agent pod is running:
+    To install a cluster-scoped agent: 
+    ```bash
+    ./agent-install.sh -D cluster -i anax: -c css: -k css: --namespace $AGENT_NAMESPACE
+    ```
+
+    To install a namespace-scoped agent:
+    ```bash
+    ./agent-install.sh -D cluster -i anax: -c css: -k css: --namespace $AGENT_NAMESPACE --namespace-scoped
+    ```
+
+7. Verify that the agent pod is running:
 
     ```bash
     kubectl get namespaces
+    kubectl -n $AGENT_NAMESPACE get pods
+    ```
+
+    If `AGENT_NAMESPACE` is not set in step 6, check agent pod in `openhorizon-agent`:
+    ```bash
     kubectl -n openhorizon-agent get pods
     ```
+    **Note**: See [here](./agent_in_multi_namespace.md) for more information about agent in multi-namespace.
 
-9. Use the following command to connect to a bash instance on the agent pod to execute hzn commands
+
+8. Use the following command to connect to a bash instance on the agent pod to execute hzn commands
 
     ```bash
-    kubectl exec -it $(kubectl get pod -l app=agent -n openhorizon-agent | grep "agent-" | cut -d " " -f1) -n openhorizon-agent -- bash
+    kubectl exec -it $(kubectl get pod -l app=agent -n openhorizon-agent | grep "agent-" | cut -d " " -f1) -n $AGENT_NAMESPACE -- bash
     ```
 
-10. As a test, execute the following hzn command on the agent pod:
+9. As a test, execute the following hzn command on the agent pod:
 
     ```bash
     hzn node ls
     ```
 
-11. The Open Horizon cluster agent is now successfully installed and ready to deploy services
+10. The Open Horizon cluster agent is now successfully installed and ready to deploy services

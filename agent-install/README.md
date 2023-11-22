@@ -140,6 +140,10 @@ Command line flags override the corresponding environment variables or config fi
 
 `--container` - Install the agent in a container
 
+`--namespace` - The namespace that the cluster agent will be installed to. The default is 'openhorizon-agent'
+
+`--namespace-scoped` - The cluster agent will only have namespace scope. The default is 'false'
+
 ### anax-in-container
 
 To install more than 1 agent in a container, the horizon-container command is used (which is included with the horizon-cli package). Instructions can be found below:
