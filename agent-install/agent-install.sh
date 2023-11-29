@@ -3413,17 +3413,36 @@ function getImageRegistryInfo() {
 function pushImagesToEdgeClusterRegistry() {
     log_debug "pushImagesToEdgeClusterRegistry() begin"
 
-    log_info "Pushing docker image $AGENT_IMAGE to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
-    ${DOCKER_ENGINE} tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-    runCmdQuietly ${DOCKER_ENGINE} push ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-    log_verbose "successfully pushed image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+    log_info "Checking if docker image $AGENT_IMAGE exists on the $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
+    set +e
+    ${DOCKER_ENGINE} manifest inspect $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+    rc=$?
+    set -e
+    if [[ $rc -eq 0 ]]; then
+        log_info "$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY already exists, skip image push"
+    else
+        log_info "Pushing docker image $AGENT_IMAGE to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
+        ${DOCKER_ENGINE} tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+        runCmdQuietly ${DOCKER_ENGINE} push ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+        log_verbose "successfully pushed image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+    fi
 
     if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
-        log_info "Pushing docker image $CRONJOB_AUTO_UPGRADE_IMAGE to $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
-        ${DOCKER_ENGINE} tag ${CRONJOB_AUTO_UPGRADE_IMAGE} ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-        runCmdQuietly ${DOCKER_ENGINE} push ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-        log_verbose "successfully pushed image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
-    fi
+        log_info "Checking if docker image $CRONJOB_AUTO_UPGRADE_IMAGE exists on the $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
+        set +e
+        ${DOCKER_ENGINE} manifest inspect $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+        rc=$?
+        set -e
+
+        if [[ $rc -eq 0 ]]; then
+            log_info "$CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY already exists, skip image push"
+        else
+            log_info "Pushing docker image $CRONJOB_AUTO_UPGRADE_IMAGE to $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
+            ${DOCKER_ENGINE} tag ${CRONJOB_AUTO_UPGRADE_IMAGE} ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+            runCmdQuietly ${DOCKER_ENGINE} push ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+            log_verbose "successfully pushed image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+        fi
+    fi 
 
     log_debug "pushImagesToEdgeClusterRegistry() end"
 }
@@ -4354,13 +4373,14 @@ function install_update_cluster() {
         if is_ocp_cluster; then
             create_namespace
             create_image_stream
-        fi
-        pushImagesToEdgeClusterRegistry
+        fi   
     else
         log_info "Use remote registry"
         create_namespace
         create_image_pull_secrets # create image pull secrets if use private registry (if edge cluster registry username/password are provided), sets USE_PRIVATE_REGISTRY
     fi
+
+    pushImagesToEdgeClusterRegistry
 
     if [[ "$AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE" == "true" ]]; then
         check_agent_deployment_exist   # sets AGENT_DEPLOYMENT_UPDATE POD_ID
