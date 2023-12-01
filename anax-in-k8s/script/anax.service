@@ -49,7 +49,7 @@ editFSSAPIListen() {
 	checkrc $? "back up anax.json"
 
 	hostname=$(cat /etc/hostname)
-        anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"$hostname\" " <<< $anaxJson)
+    anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"$hostname\" " <<< $anaxJson)
 	checkrc $? "change FileSyncService.APIListen"
 
 	anaxJson=$(jq ".Edge.FileSyncService.APIProtocol = \"https\" " <<< $anaxJson)
@@ -76,6 +76,13 @@ start() {
 	fi
 
 	editFSSAPIListen
+
+	if [[ ! -d /var/horizon/policy.d ]]; then
+		echo "creating directory: /var/horizon/policy.d"
+		mkdir 744 /var/horizon/policy.d
+	else
+		chmod +wx /var/horizon/policy.d
+	fi
 
 	# Now repeatedly run anax...
 	numInvocations=0

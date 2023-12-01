@@ -3595,7 +3595,7 @@ function check_agent_deployment_exist() {
         AGENT_DEPLOYMENT_UPDATE="false"
     else
         # already have an agent deplyment in ${AGENT_NAMESPACE}, check the agent pod status
-        if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+        if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
             # agent deployment does not have agent pod in RUNNING status
             log_fatal 3 "Previous agent pod in not in RUNNING status, please run agent-uninstall.sh to clean up and re-run the agent-install.sh"
         else
@@ -3781,7 +3781,8 @@ function prepare_k8s_deployment_file() {
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
 
     # InitContainer needs to be removed for ocp because it breaks mounted directory permisson. In ocp, the permission of volume is configured by scc.
-    if is_ocp_cluster; then
+    if is_ocp_cluster && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-file* ]] && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-vpc-file* ]]; then
+        log_info "remove initContainer"
         sed -i -e '/START_NOT_FOR_OCP/,/END_NOT_FOR_OCP/d' deployment-template.yml
     fi
 
@@ -3830,6 +3831,7 @@ function prepare_k8s_deployment_file() {
         set -e
 
         sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
+        sed -i -e "s#__ImageRegistryHost__#${EDGE_CLUSTER_REGISTRY_HOST}#g" deployment.yml
 
         if [[ "$USE_PRIVATE_REGISTRY" != "true" ]]; then
             log_debug "remote image registry is not private, remove ImagePullSecret..."
@@ -3900,7 +3902,7 @@ function prepare_k8s_pvc_file() {
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
     local pvc_mode="ReadWriteOnce"
     number_of_nodes=$($KUBECTL get node | grep "Ready" -c)
-    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]]); then
+    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == rook-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]]); then
         pvc_mode="ReadWriteMany"
     fi
 
@@ -3974,7 +3976,7 @@ function create_namespace() {
         log_info "namespace ${AGENT_NAMESPACE} exists, skip creating namespace"
     fi
 
-    if ! is_small_kube && [[ "$AGENT_NAMESPACE" != "$DEFAULT_AGENT_NAMESPACE" ]] ; then
+    if is_ocp_cluster ; then
         # if it is ocp cluster and not in default namespace, then update the annotation of namespace
         log_info "update annotation of namespace ${AGENT_NAMESPACE}"
         $KUBECTL annotate namespace ${AGENT_NAMESPACE} openshift.io/sa.scc.uid-range='1000/1000' openshift.io/sa.scc.supplemental-groups='1000/1000' --overwrite
@@ -4268,11 +4270,11 @@ function check_deployment_status() {
 function get_pod_id() {
     log_debug "get_pod_id() begin"
 
-    if ! wait_for '[[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o "jsonpath={..status.conditions[?(@.type==\"Ready\")].status}") == "True" ]]' 'Horizon agent pod ready' $AGENT_WAIT_MAX_SECONDS; then
+    if ! wait_for '[[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o "jsonpath={..status.conditions[?(@.type==\"Ready\")].status}") == "True" ]]' 'Horizon agent pod ready' $AGENT_WAIT_MAX_SECONDS; then
         log_fatal 3 "Horizon agent pod did not start successfully"
     fi
 
-    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
         log_fatal 3 "Failed to get agent pod in Ready status"
     fi
 
