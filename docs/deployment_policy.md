@@ -61,6 +61,7 @@ Following are the fields in the JSON representation of a deployment policy:
   - `serviceOrgid`: The organization in which the service in `serviceUrl` is defined.
   - `serviceArch`: The hardware architecture of the service in `serviceUrl`, or `*` to indicate any compatible architecture. This is the same value as found in the `arch` field [here](./service_def.md).
   - `serviceVersionRange`: A version range indicating the set of service versions to which this secret binding should be applied.
+  - `enableNodeLevelSecrets`: Set to true to allow the secrets listed to be filled by node-specific secrets created in the secret manager as `node/<nodename>/<secretname>` or `user/<username>/node/<nodename>/<secretname>`.
   - `secrets`: A list of secret bindings. Each elelment is a map of string keyed by the name of the secret in the service. The value is the name of the secret in the secret provider. The valid formats for the secret provider secret names are: `<secretname>` for the organization level secret; `user/<username>/<secretname>` for the user level secret.
 
 The following is an example of a deployment policy that deploys a service called `my.company.com.service.this-service`.
@@ -131,6 +132,7 @@ Both `2.3.0` and `2.3.1` versions of the services have a secret `ai_secret` defi
       "serviceUrl": "my.company.com.service.this-service",
       "serviceArch": "*",
       "serviceVersionRange": "2.3.0",
+      "enableNodeLevelSecrets": true,
       "secrets": [
         {
           "ai_secret": "cloud_ai_secret_name"
