@@ -1541,7 +1541,7 @@ function confirmCmds() {
 
 function ensureWeAreRoot() {
     if [[ $(whoami) != 'root' ]]; then
-        log_fatal 2 "must be root to run ${0##*/}. Run 'sudo -iE' and then run ${0##*/}"
+        log_fatal 2 "must be root to run ${0##*/}. Run 'sudo -sE' and then run ${0##*/}"
     fi
     # or could check: [[ $(id -u) -ne 0 ]]
 }
