@@ -3830,8 +3830,12 @@ function prepare_k8s_deployment_file() {
         chk $? "checking existence of image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
         set -e
 
+        # REMOTE_IMAGE_REGISTRY_PATH is parts before /{arch}_anax_k8s, for example if using quay.io, this value will be quay.io/<username>
+        local image_arch=$(get_cluster_image_arch)
+        REMOTE_IMAGE_REGISTRY_PATH="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%%/${image_arch}*}"
+        log_info "REMOTE_IMAGE_REGISTRY_PATH: $REMOTE_IMAGE_REGISTRY_PATH"
         sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
-        sed -i -e "s#__ImageRegistryHost__#${EDGE_CLUSTER_REGISTRY_HOST}#g" deployment.yml
+        sed -i -e "s#__ImageRegistryHost__#${REMOTE_IMAGE_REGISTRY_PATH}#g" deployment.yml
 
         if [[ "$USE_PRIVATE_REGISTRY" != "true" ]]; then
             log_debug "remote image registry is not private, remove ImagePullSecret..."
@@ -3976,8 +3980,10 @@ function create_namespace() {
         log_info "namespace ${AGENT_NAMESPACE} exists, skip creating namespace"
     fi
 
-    if is_ocp_cluster ; then
-        # if it is ocp cluster and not in default namespace, then update the annotation of namespace
+    local ocp_supplemental_groups=$($KUBECTL get namespace ${AGENT_NAMESPACE}  -o json | jq -r '.metadata.annotations' | jq '.["openshift.io/sa.scc.supplemental-groups"]')
+    local ocp_scc_uid_range=$($KUBECTL get namespace ${AGENT_NAMESPACE}  -o json | jq -r '.metadata.annotations' | jq '.["openshift.io/sa.scc.uid-range"]')
+    if [[ -n $ocp_supplemental_groups ]] && [[ "$ocp_supplemental_groups" != "null" ]]  && [[ -n $occ_scc_uid_range ]] && [[ "$occ_scc_uid_range" != "null" ]]; then
+        # if it has ocp supplementl group and uid range annotation, then update the annotation of namespace
         log_info "update annotation of namespace ${AGENT_NAMESPACE}"
         $KUBECTL annotate namespace ${AGENT_NAMESPACE} openshift.io/sa.scc.uid-range='1000/1000' openshift.io/sa.scc.supplemental-groups='1000/1000' --overwrite
     fi

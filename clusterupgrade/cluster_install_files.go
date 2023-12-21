@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
@@ -521,4 +523,22 @@ func addFiles(w *tar.Writer, srcPath, base string) error {
 		}
 	}
 	return nil
+}
+
+func imageExistInRemoteRegistry(fullTag string, versiontTag string, kc authn.Keychain) bool {
+	repo := fullTag
+	if idx := strings.Index(fullTag, ":"); idx != -1 {
+		repo = fullTag[:idx]
+	}
+	allTags, err := crane.ListTags(repo, crane.WithAuthFromKeychain(kc))
+	glog.Infof(cuwlog(fmt.Sprintf("all tags under repo %v are: %v", repo, allTags)))
+	if err != nil {
+		return false
+	}
+	for _, t := range allTags {
+		if t == versiontTag {
+			return true
+		}
+	}
+	return false
 }

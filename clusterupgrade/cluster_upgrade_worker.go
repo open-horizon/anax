@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/open-horizon/anax/cli/cliutils"
@@ -37,10 +38,11 @@ const (
 )
 
 const (
-	AGENT_CONFIGMAP       = "openhorizon-agent-config"
-	AGENT_SECRET          = "openhorizon-agent-secrets"
-	AGENT_SERVICE_ACCOUNT = "agent-service-account"
-	AGENT_DEPLOYMENT      = "agent"
+	AGENT_CONFIGMAP               = "openhorizon-agent-config"
+	AGENT_SECRET                  = "openhorizon-agent-secrets"
+	AGENT_SERVICE_ACCOUNT         = "agent-service-account"
+	AGENT_DEPLOYMENT              = "agent"
+	AGENT_IMAGE_PULL_SECRETS_NAME = "registry-creds"
 )
 
 const (
@@ -703,9 +705,8 @@ func checkAgentImage(kubeClient *KubeClient, workDir string) (bool, string, stri
 	}
 	glog.Infof(cuwlog(fmt.Sprintf("Get image %v from tar file, extracted image tag: %v", fullImageTag, imageTag)))
 
-	if currentAgentVersion != imageTag && !agentUseRemoteRegistry() {
-		// push image to image registry if use edge cluster local registry
-		// If AGENT_CLUSTER_IMAGE_REGISTRY_HOST env is not set, it means agent is using remote image registry, and no need to push image
+	if currentAgentVersion != imageTag {
+		// push image to image registry
 		imageRegistry := os.Getenv("AGENT_CLUSTER_IMAGE_REGISTRY_HOST")
 		if imageRegistry == "" {
 			return false, "", "", fmt.Errorf("failed to get edge cluster image registry host from environment veriable: %v", imageRegistry)
@@ -727,18 +728,22 @@ func checkAgentImage(kubeClient *KubeClient, workDir string) (bool, string, stri
 			return false, "", "", err
 		}
 
-		kc, err := kubeClient.GetKeyChain(AGENT_NAMESPACE, AGENT_SERVICE_ACCOUNT)
-		if err != nil {
-			glog.Errorf(cuwlog(fmt.Sprintf("Failed to get key chain from serviceaccount, error: %v", err)))
-			return false, "", "", err
+		usingRemoteICR := false
+		if hasPullSecrets, _ := kubeClient.DeploymentHasImagePullSecrets(AGENT_NAMESPACE, AGENT_DEPLOYMENT); hasPullSecrets {
+			glog.Infof(cuwlog(fmt.Sprintf("detected deployment has pull secrets, %v", hasPullSecrets)))
+			usingRemoteICR = true
 		}
 
 		// docker tag hyc-edge-team-staging-docker-local.artifactory.swg-devops.com/amd64_anax_k8s:2.30.0-689 default-route-openshift-image-registry.apps.prowler.cp.fyre.ibm.com/openhorizon-agent/amd64_anax_k8s:2.30.0-689
 		// docker tag ${fullImageTag} ${newImageTag}
-		// new tag:
+		// new tag for agent using local registry:
 		//  - ocp: default-route-openshift-image-registry.apps.prowler.cp.fyre.ibm.com/openhorizon-agent/amd64_anax_k8s:2.30.0-689
 		//  - k3s: 10.43.100.65:5000/openhorizon-agent/amd64_anax_k8s:2.30.0-689
+		//  - cluster use remote ICR: <remote-host>/<agent-namespace>/amd64_anax_k8s:2.30.0-689
 		newImageRepoWithTag := fmt.Sprintf("%s/%s/%s:%s", imageRegistry, AGENT_NAMESPACE, AGENT_IMAGE_NAME, imageTag)
+		if usingRemoteICR {
+			newImageRepoWithTag = fmt.Sprintf("%s/%s:%s", imageRegistry, AGENT_IMAGE_NAME, imageTag)
+		}
 		glog.Infof(cuwlog(fmt.Sprintf("New image repo with tag: %v", newImageRepoWithTag)))
 
 		tag, err := name.NewTag(newImageRepoWithTag)
@@ -747,11 +752,45 @@ func checkAgentImage(kubeClient *KubeClient, workDir string) (bool, string, stri
 			return false, "", "", err
 		}
 
-		if err := crane.Push(loadImage, tag.String(), crane.WithAuthFromKeychain(kc)); err != nil {
-			glog.Errorf(cuwlog(fmt.Sprintf("Failed to push image %v, error: %v", newImageRepoWithTag, err)))
-			return false, "", "", err
+		// If deployment have image pull secret, it means it uses remote image registry
+		var kc authn.Keychain
+		skipImagePush := false
+		if usingRemoteICR {
+			_, err := kubeClient.GetSecret(AGENT_NAMESPACE, AGENT_IMAGE_PULL_SECRETS_NAME)
+			if err != nil {
+				glog.Errorf(cuwlog(fmt.Sprintf("Failed to get image pull secrets %v, error: %v", AGENT_IMAGE_PULL_SECRETS_NAME, err)))
+				return false, "", "", err
+			}
+			imagePullSecrets := []string{AGENT_IMAGE_PULL_SECRETS_NAME}
+			kc, err = kubeClient.GetImagePullSecretKeyChain(AGENT_NAMESPACE, AGENT_SERVICE_ACCOUNT, imagePullSecrets)
+			if err != nil {
+				glog.Errorf(cuwlog(fmt.Sprintf("Failed to get key chain from serviceaccount and imagePullSecrets, error: %v", err)))
+				return false, "", "", err
+			}
+
+			// if image exists skip pushing
+			glog.Infof(cuwlog(fmt.Sprintf("checking if image %v exists on remote registry...", tag.String())))
+			if imageExistInRemoteRegistry(tag.String(), imageTag, kc) {
+				glog.Infof(cuwlog(fmt.Sprintf("image tag %v exists on remote registry, skip pushing image", tag.String())))
+				skipImagePush = true
+			}
+		} else {
+			kc, err = kubeClient.GetKeyChain(AGENT_NAMESPACE, AGENT_SERVICE_ACCOUNT)
+			if err != nil {
+				glog.Errorf(cuwlog(fmt.Sprintf("Failed to get key chain from serviceaccount, error: %v", err)))
+				return false, "", "", err
+			}
 		}
-		glog.Infof(cuwlog(fmt.Sprintf("Successfully pushed image %v", newImageRepoWithTag)))
+
+		if !skipImagePush {
+			glog.Infof(cuwlog(fmt.Sprintf("pushing image %v...", newImageRepoWithTag)))
+			if err := crane.Push(loadImage, tag.String(), crane.WithAuthFromKeychain(kc)); err != nil {
+				glog.Errorf(cuwlog(fmt.Sprintf("Failed to push image %v, error: %v", newImageRepoWithTag, err)))
+				return false, "", "", err
+			}
+			glog.Infof(cuwlog(fmt.Sprintf("Successfully pushed image %v", newImageRepoWithTag)))
+		}
+
 	}
 	return (currentAgentVersion == imageTag), imageTag, currentAgentVersion, nil
 }
