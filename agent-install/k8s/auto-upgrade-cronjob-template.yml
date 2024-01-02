@@ -50,7 +50,6 @@ spec:
             volumeMounts:
             - mountPath: /var/horizon
               name: agent-pvc-storage
-              subPath: horizon
             env:
             - name: CRONJOB_POD_NAME
               valueFrom:
