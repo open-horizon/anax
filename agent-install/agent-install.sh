@@ -150,6 +150,7 @@ Optional Edge Device Environment Variables For Testing New Distros - Not For Pro
 
 
 Additional Edge Cluster Variables (in environment or config file):
+    KUBECTL: specify this value if you have multiple kubectl CLI installed in your enviroment. Otherwise the script will detect in this order: k3s kubectl, microk8s.kubectl, oc, kubectl.
     ENABLE_AUTO_UPGRADE_CRONJOB: specify this value to false to skip installing agent auto upgrade cronjob. Default: true
     IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to
     CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the auto-upgrade-cronjob cronjob image path (without tag) if you want it to be different from what this script will default it to
@@ -3982,7 +3983,7 @@ function create_namespace() {
 
     local ocp_supplemental_groups=$($KUBECTL get namespace ${AGENT_NAMESPACE}  -o json | jq -r '.metadata.annotations' | jq '.["openshift.io/sa.scc.supplemental-groups"]')
     local ocp_scc_uid_range=$($KUBECTL get namespace ${AGENT_NAMESPACE}  -o json | jq -r '.metadata.annotations' | jq '.["openshift.io/sa.scc.uid-range"]')
-    if [[ -n $ocp_supplemental_groups ]] && [[ "$ocp_supplemental_groups" != "null" ]]  && [[ -n $occ_scc_uid_range ]] && [[ "$occ_scc_uid_range" != "null" ]]; then
+    if [[ -n $ocp_supplemental_groups ]] && [[ "$ocp_supplemental_groups" != "null" ]]  && [[ -n $ocp_scc_uid_range ]] && [[ "$ocp_scc_uid_range" != "null" ]]; then
         # if it has ocp supplementl group and uid range annotation, then update the annotation of namespace
         log_info "update annotation of namespace ${AGENT_NAMESPACE}"
         $KUBECTL annotate namespace ${AGENT_NAMESPACE} openshift.io/sa.scc.uid-range='1000/1000' openshift.io/sa.scc.supplemental-groups='1000/1000' --overwrite

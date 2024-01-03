@@ -79,7 +79,7 @@ start() {
 
 	if [[ ! -d /var/horizon/policy.d ]]; then
 		echo "creating directory: /var/horizon/policy.d"
-		mkdir 744 /var/horizon/policy.d
+		mkdir -m 744 /var/horizon/policy.d
 	else
 		chmod +wx /var/horizon/policy.d
 	fi
