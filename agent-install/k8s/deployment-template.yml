@@ -57,7 +57,7 @@ spec:
         volumeMounts:
         - mountPath: /etc/default/horizon
           name: agent-etc-vol
-          subPath: horizon
+          subPath: horizon # this subPath is needed because /etc/default/horizon needs to be mount as a file
         # START_CERT_VOL
         - mountPath: /etc/default/cert
           name: agent-cert-volume
