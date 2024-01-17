@@ -114,6 +114,15 @@ func GetHTTPExchangePatternHandlerWithContext(cfg *config.HorizonConfig) Pattern
 	}
 }
 
+// A handler for getting all the nodes in an org from the exchange
+type OrgDevicesHandler func(orgId string, credId string, token string) (map[string]Device, error)
+
+func GetOrgDevicesHandler(orgId string, ec ExchangeContext) OrgDevicesHandler {
+	return func(orgId string, credId string, token string) (map[string]Device, error) {
+		return GetExchangeOrgDevices(ec.GetHTTPFactory(), orgId, ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL())
+	}
+}
+
 // A handler for getting the device information from the exchange
 type DeviceHandler func(id string, token string) (*Device, error)
 

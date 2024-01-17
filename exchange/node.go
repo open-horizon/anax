@@ -178,6 +178,20 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	}
 }
 
+func GetExchangeOrgDevices(httpClientFactory *config.HTTPClientFactory, orgId string, credId string, credPasswd string, exchangeUrl string) (map[string]Device, error) {
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieving devices from org %v from exchange", orgId)))
+
+	var resp interface{}
+	resp = new(GetDevicesResponse)
+	targetURL := exchangeUrl + "orgs/" + orgId + "/nodes"
+
+	if err := InvokeExchangeRetryOnTransportError(httpClientFactory, "GET", targetURL, credId, credPasswd, nil, &resp); err != nil {
+		glog.Errorf(err.Error())
+		return nil, err
+	}
+	return resp.(*GetDevicesResponse).Devices, nil
+}
+
 type PutDeviceResponse map[string]string
 
 type PostDeviceResponse struct {
