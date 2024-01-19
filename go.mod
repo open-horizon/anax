@@ -21,10 +21,10 @@ require (
 	github.com/operator-framework/api v0.17.1
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
 	github.com/satori/go.uuid v1.2.0
-	github.com/stretchr/testify v1.8.1
-	golang.org/x/crypto v0.1.0
-	golang.org/x/sys v0.11.0
-	golang.org/x/text v0.9.0
+	github.com/stretchr/testify v1.8.2
+	golang.org/x/crypto v0.18.0
+	golang.org/x/sys v0.16.0
+	golang.org/x/text v0.14.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.26.1
@@ -40,7 +40,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
-	github.com/Azure/go-autorest/autorest/adal v0.9.20 // indirect
+	github.com/Azure/go-autorest/autorest/adal v0.9.23 // indirect
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11 // indirect
 	github.com/Azure/go-autorest/autorest/azure/cli v0.4.5 // indirect
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
@@ -85,7 +85,7 @@ require (
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
@@ -115,10 +115,10 @@ require (
 	github.com/vbatts/tar-split v0.11.5 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
 	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
+	golang.org/x/term v0.16.0 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
 	golang.org/x/tools v0.8.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
@@ -137,7 +137,7 @@ require (
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.5
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
+	golang.org/x/crypto => golang.org/x/crypto v0.18.0
 	golang.org/x/text => golang.org/x/text v0.5.0
 	k8s.io/apimachinery => k8s.io/apimachinery v0.26.1
 )
