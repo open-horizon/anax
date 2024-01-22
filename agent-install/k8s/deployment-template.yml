@@ -37,18 +37,14 @@ spec:
         image: __InitContainerImagePath__
         imagePullPolicy: IfNotPresent
         securityContext:
-          runAsNonRoot: false
+          runAsUser: 0
         command:
-        - sh
-        - -c
-        - (chown -R 1000:1000 /horizon /policy)
+          - sh
+          - -c
+          - (chown 1000:1000 /mount)
         volumeMounts:
-        - mountPath: /policy
+        - mountPath: /mount
           name: agent-pvc-storage
-          subPath: policy
-        - mountPath: /horizon
-          name: agent-pvc-storage
-          subPath: horizon
       # END_NOT_FOR_OCP
       # START_REMOTE_ICR
       imagePullSecrets:
@@ -60,18 +56,14 @@ spec:
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - mountPath: /etc/default/horizon
-          subPath: horizon
           name: agent-etc-vol
+          subPath: horizon # this subPath is needed because /etc/default/horizon needs to be mount as a file
         # START_CERT_VOL
         - mountPath: /etc/default/cert
           name: agent-cert-volume
         # END_CERT_VOL
         - mountPath: /var/horizon
           name: agent-pvc-storage
-          subPath: horizon
-        - mountPath: /etc/horizon/policy.d
-          name: agent-pvc-storage
-          subPath: policy
         ports:
         - containerPort: 8510
         securityContext:

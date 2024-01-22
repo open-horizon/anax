@@ -14,6 +14,7 @@ CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
 CRONJOB_AUTO_UPGRADE_NAME="auto-upgrade-cronjob"
 DEFAULT_AGENT_NAMESPACE="openhorizon-agent"
+SKIP_DELETE_AGENT_NAMESPACE=false
 USE_DELETE_FORCE=false
 DELETE_TIMEOUT=10 # Default delete timeout
 
@@ -94,8 +95,14 @@ Options/Flags:
     -u    management hub user authorization credentials (or can set HZN_EXCHANGE_USER_AUTH environment variable)
     -d    delete node from the management hub
     -m    agent namespace to uninstall
+    -k    to skip the deletion of agent namespace (if not specified, agent namespace will be deleted)
     -f    force delete cluster resources
     -t    cluster resource delete timeout (specified timeout should > 0)
+
+Environment Variables:
+    KUBECTL: specify this value if you have multiple kubectl CLI installed in your enviroment. Otherwise the script will detect in this order: k3s kubectl, microk8s.kubectl, oc, kubectl.
+    HZN_EXCHANGE_USER_AUTH: management hub user authorization credentials (or use -u flag)
+    AGENT_NAMESPACE: The cluster namespace that the agent will be uninstalled from (or use -m flag)
 
 Example: ./$(basename "$0") -u <hzn-exchange-user-auth> -d
 
@@ -110,6 +117,7 @@ function show_config() {
     echo "HZN_EXCHANGE_USER_AUTH: <specified>"
     echo "Delete node: ${DELETE_EX_NODE}"
     echo "Agent namespace to uninstall: ${AGENT_NAMESPACE}"
+    echo "Skip deleting agent namespace: ${SKIP_DELETE_AGENT_NAMESPACE}"
     echo "Force delete cluster resources: ${USE_DELETE_FORCE}"
     echo "Cluster resource delete timeout: ${DELETE_TIMEOUT}"
     echo "Verbosity is ${AGENT_VERBOSITY}"
@@ -136,6 +144,8 @@ function validate_args(){
             KUBECTL="k3s kubectl"
         elif command -v microk8s.kubectl >/dev/null 2>&1; then
             KUBECTL=microk8s.kubectl
+        elif command -v oc >/dev/null 2>&1; then
+            KUBECTL=oc
         elif command -v kubectl >/dev/null 2>&1; then
             KUBECTL=kubectl
         else
@@ -383,15 +393,19 @@ function deleteAgentResources() {
     log_info "Deleting serviceaccount..."
     $KUBECTL delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE
 
-    log_info "Checking deployment and statefulset under namespace $AGENT_NAMESPACE"
-    deployment=$($KUBECTL get deployment -n $AGENT_NAMESPACE)
-    statefulset=$($KUBECTL get statefulset -n $AGENT_NAMESPACE)
-    if [[ -z "$deployment" ]] && [[ -z "$statefulset" ]]; then
-        log_info "No deployment and statefulset left under namespace $AGENT_NAMESPACE, deleting it..."
-        $KUBECTL delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
+    if [[ "$SKIP_DELETE_AGENT_NAMESPACE" != "true" ]]; then
+        log_info "Checking deployment and statefulset under namespace $AGENT_NAMESPACE"
+        deployment=$($KUBECTL get deployment -n $AGENT_NAMESPACE)
+        statefulset=$($KUBECTL get statefulset -n $AGENT_NAMESPACE)
+        if [[ -z "$deployment" ]] && [[ -z "$statefulset" ]]; then
+            log_info "No deployment and statefulset left under namespace $AGENT_NAMESPACE, deleting it..."
+            $KUBECTL delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
+        else
+            log_info "Deployment or statefulset exists in the namespace $AGENT_NAMESPACE, skip deleting namespace $AGENT_NAMESPACE. Please delete namespace manually"
+        fi
     else
-        log_info "Deployment or statefulset exists in the namespace $AGENT_NAMESPACE, skip deleting namespace $AGENT_NAMESPACE. Please delete namespace manually"
-    fi   
+        log_info "SKIP_DELETE_AGENT_NAMESPACE is set to: $SKIP_DELETE_AGENT_NAMESPACE, skip deleting namespace $AGENT_NAMESPACE."
+    fi
 
     log_info "Deleting cert file from /etc/default/cert ..."
     rm /etc/default/cert/agent-install.crt
@@ -417,7 +431,7 @@ function uninstall_cluster() {
 }
 
 # Accept the parameters from command line
-while getopts "u:hvl:dm:ft:" opt; do
+while getopts "u:hvl:dm:kft:" opt; do
 	case $opt in
 		u) HZN_EXCHANGE_USER_AUTH="$OPTARG"
 		;;
@@ -431,10 +445,12 @@ while getopts "u:hvl:dm:ft:" opt; do
 		;;
 		m) AGENT_NAMESPACE="$OPTARG"
 		;;
+		k) SKIP_DELETE_AGENT_NAMESPACE=true
+		;;
 		f) USE_DELETE_FORCE=true
-                ;;
+		;;
 		t) validate_positive_int "$OPTARG"; DELETE_TIMEOUT="$OPTARG"
-        	;;
+		;;
 		\?) echo "Invalid option: -$OPTARG"; help; exit 1
 		;;
 		:) echo "Option -$OPTARG requires an argument"; help; exit 1

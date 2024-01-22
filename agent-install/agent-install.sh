@@ -150,6 +150,7 @@ Optional Edge Device Environment Variables For Testing New Distros - Not For Pro
 
 
 Additional Edge Cluster Variables (in environment or config file):
+    KUBECTL: specify this value if you have multiple kubectl CLI installed in your enviroment. Otherwise the script will detect in this order: k3s kubectl, microk8s.kubectl, oc, kubectl.
     ENABLE_AUTO_UPGRADE_CRONJOB: specify this value to false to skip installing agent auto upgrade cronjob. Default: true
     IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to
     CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the auto-upgrade-cronjob cronjob image path (without tag) if you want it to be different from what this script will default it to
@@ -1541,7 +1542,7 @@ function confirmCmds() {
 
 function ensureWeAreRoot() {
     if [[ $(whoami) != 'root' ]]; then
-        log_fatal 2 "must be root to run ${0##*/}. Run 'sudo -iE' and then run ${0##*/}"
+        log_fatal 2 "must be root to run ${0##*/}. Run 'sudo -sE' and then run ${0##*/}"
     fi
     # or could check: [[ $(id -u) -ne 0 ]]
 }
@@ -3595,7 +3596,7 @@ function check_agent_deployment_exist() {
         AGENT_DEPLOYMENT_UPDATE="false"
     else
         # already have an agent deplyment in ${AGENT_NAMESPACE}, check the agent pod status
-        if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+        if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
             # agent deployment does not have agent pod in RUNNING status
             log_fatal 3 "Previous agent pod in not in RUNNING status, please run agent-uninstall.sh to clean up and re-run the agent-install.sh"
         else
@@ -3781,7 +3782,8 @@ function prepare_k8s_deployment_file() {
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
 
     # InitContainer needs to be removed for ocp because it breaks mounted directory permisson. In ocp, the permission of volume is configured by scc.
-    if is_ocp_cluster; then
+    if is_ocp_cluster && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-file* ]] && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-vpc-file* ]]; then
+        log_info "remove initContainer"
         sed -i -e '/START_NOT_FOR_OCP/,/END_NOT_FOR_OCP/d' deployment-template.yml
     fi
 
@@ -3829,7 +3831,12 @@ function prepare_k8s_deployment_file() {
         chk $? "checking existence of image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
         set -e
 
+        # REMOTE_IMAGE_REGISTRY_PATH is parts before /{arch}_anax_k8s, for example if using quay.io, this value will be quay.io/<username>
+        local image_arch=$(get_cluster_image_arch)
+        REMOTE_IMAGE_REGISTRY_PATH="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%%/${image_arch}*}"
+        log_info "REMOTE_IMAGE_REGISTRY_PATH: $REMOTE_IMAGE_REGISTRY_PATH"
         sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
+        sed -i -e "s#__ImageRegistryHost__#${REMOTE_IMAGE_REGISTRY_PATH}#g" deployment.yml
 
         if [[ "$USE_PRIVATE_REGISTRY" != "true" ]]; then
             log_debug "remote image registry is not private, remove ImagePullSecret..."
@@ -3900,7 +3907,7 @@ function prepare_k8s_pvc_file() {
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
     local pvc_mode="ReadWriteOnce"
     number_of_nodes=$($KUBECTL get node | grep "Ready" -c)
-    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]]); then
+    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == rook-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]]); then
         pvc_mode="ReadWriteMany"
     fi
 
@@ -3974,8 +3981,10 @@ function create_namespace() {
         log_info "namespace ${AGENT_NAMESPACE} exists, skip creating namespace"
     fi
 
-    if ! is_small_kube && [[ "$AGENT_NAMESPACE" != "$DEFAULT_AGENT_NAMESPACE" ]] ; then
-        # if it is ocp cluster and not in default namespace, then update the annotation of namespace
+    local ocp_supplemental_groups=$($KUBECTL get namespace ${AGENT_NAMESPACE}  -o json | jq -r '.metadata.annotations' | jq '.["openshift.io/sa.scc.supplemental-groups"]')
+    local ocp_scc_uid_range=$($KUBECTL get namespace ${AGENT_NAMESPACE}  -o json | jq -r '.metadata.annotations' | jq '.["openshift.io/sa.scc.uid-range"]')
+    if [[ -n $ocp_supplemental_groups ]] && [[ "$ocp_supplemental_groups" != "null" ]]  && [[ -n $ocp_scc_uid_range ]] && [[ "$ocp_scc_uid_range" != "null" ]]; then
+        # if it has ocp supplementl group and uid range annotation, then update the annotation of namespace
         log_info "update annotation of namespace ${AGENT_NAMESPACE}"
         $KUBECTL annotate namespace ${AGENT_NAMESPACE} openshift.io/sa.scc.uid-range='1000/1000' openshift.io/sa.scc.supplemental-groups='1000/1000' --overwrite
     fi
@@ -4268,11 +4277,11 @@ function check_deployment_status() {
 function get_pod_id() {
     log_debug "get_pod_id() begin"
 
-    if ! wait_for '[[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o "jsonpath={..status.conditions[?(@.type==\"Ready\")].status}") == "True" ]]' 'Horizon agent pod ready' $AGENT_WAIT_MAX_SECONDS; then
+    if ! wait_for '[[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o "jsonpath={..status.conditions[?(@.type==\"Ready\")].status}") == "True" ]]' 'Horizon agent pod ready' $AGENT_WAIT_MAX_SECONDS; then
         log_fatal 3 "Horizon agent pod did not start successfully"
     fi
 
-    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
         log_fatal 3 "Failed to get agent pod in Ready status"
     fi
 

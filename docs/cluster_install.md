@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-10-19"
+lastupdated: "2024-01-16"
 
 title: "All-in-One cluster agent"
 
@@ -34,148 +34,176 @@ This content provides a summary of how to install k3s, a lightweight and small K
    curl -sfL https://get.k3s.io | sh -
    ```
 
-4. Create the image registry service:
+4. Choose the image registry types: remote image registry or edge cluster local registry. Image registry is the place that will hold the agent image and agent cronjob image. 
 
-   a. Create a file called **k3s-persistent-claim.yml** with this content
+- [Remote image registry](#remote-image-registry)
+- [Setup edge cluster local image registry for k3s](#k3s-local-image-registry-setup)
 
-   ```yaml
-   apiVersion: v1
-   kind: PersistentVolumeClaim
-   metadata:
-     name: docker-registry-pvc
-   spec:
-     storageClassName: "local-path"
-     accessModes:
-       - ReadWriteOnce
-     resources:
-       requests:
-         storage: 10Gi
-   ```
+### <a id="remote-image-registry"></a>Remote image registry
+{: #remote-image-registry}
 
-    b. Create the persistent volume claim:
+Set `USE_EDGE_CLUSTER_REGISTRY` environment variable to `false` to instruct `agent-install.sh` script to use remote image registry. The following environment variables need to be set if use remote image registry:
 
-    ```bash
-    kubectl apply -f k3s-persistent-claim.yml
-    ```
+```bash
+export USE_EDGE_CLUSTER_REGISTRY=false
+export EDGE_CLUSTER_REGISTRY_USERNAME=<remote-image-registry-username>
+export EDGE_CLUSTER_REGISTRY_TOKEN=<remote-image-registry-password>
+export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-name>/amd64_anax_k8s
+or
+export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-name>/s390x_anax_k8s
+```
+{: codeblock}
 
-    c. Verify that the persistent volume claim was created, and it is in "Pending" status
 
-    ```bash
-    kubectl get pvc
-    ```
+### <a id="k3s-local-image-registry-setup"></a>Setup edge cluster local image registry for k3s
+{: #k3s-local-image-registry-setup}
 
-    d. Create a file called **k3s-registry-deployment.yml** with this content:
+**Note: Skip this section if using remote image registry**
 
-    ```yaml
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
+1. Create the k3s image registry service:
+
+   a. set `USE_EDGE_CLUSTER_REGISTRY` environment variable to `true`. This env indicates `agent-install.sh` script to use local image registry
+
+      ```bash
+      export USE_EDGE_CLUSTER_REGISTRY=true
+      ```
+      {: codeblock}
+
+   b. Create a file called **k3s-persistent-claim.yml** with this content:
+      ```yaml
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+      name: docker-registry-pvc
+      spec:
+      storageClassName: "local-path"
+      accessModes:
+         - ReadWriteOnce
+      resources:
+         requests:
+            storage: 10Gi
+      ```
+      {: codeblock}
+
+   c. Create the persistent volume claim:
+
+      ```bash
+      kubectl apply -f k3s-persistent-claim.yml
+      ```
+      {: codeblock}
+
+   d. Verify that the persistent volume claim was created and it is in "Pending" status
+
+      ```bash
+      kubectl get pvc
+      ```
+      {: codeblock}
+
+   e. Create a file called **k3s-registry-deployment.yml** with this content:
+
+      ```yaml
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
       name: docker-registry
       labels:
-        app: docker-registry
-    spec:
+         app: docker-registry
+      spec:
       replicas: 1
       selector:
-        matchLabels:
-          app: docker-registry
-      template:
-        metadata:
-          labels:
+         matchLabels:
             app: docker-registry
-        spec:
-          volumes:
-          - name: registry-pvc-storage
+      template:
+         metadata:
+            labels:
+            app: docker-registry
+         spec:
+            volumes:
+            - name: registry-pvc-storage
             persistentVolumeClaim:
-              claimName: docker-registry-pvc
-          containers:
-          - name: docker-registry
+               claimName: docker-registry-pvc
+            containers:
+            - name: docker-registry
             image: registry
             ports:
             - containerPort: 5000
             volumeMounts:
             - name: registry-pvc-storage
-              mountPath: /var/lib/registry
-    ---
-    apiVersion: v1
-    kind: Service
-    metadata:
+               mountPath: /var/lib/registry
+      ---
+      apiVersion: v1
+      kind: Service
+      metadata:
       name: docker-registry-service
-    spec:
+      spec:
       selector:
-        app: docker-registry
+         app: docker-registry
       type: NodePort
       ports:
-        - protocol: TCP
-          port: 5000
+         - protocol: TCP
+            port: 5000
+      ```
+      {: codeblock}
 
-   ```
+   f. Create the registry deployment and service:
 
-    e. Create the registry deployment and service:
+      ```bash
+      kubectl apply -f k3s-registry-deployment.yml
+      ```
+      {: codeblock}
 
-    ```bash
-    kubectl apply -f k3s-registry-deployment.yml
-    ```
+   g. Verify that the service was created:
 
-    f. Verify that the docker-registry deployment and docker-registry-service service were created:
+      ```bash
+      kubectl get deployment
+      kubectl get service
+      ```
+      {: codeblock}
 
-    ```bash
-    kubectl get deployment
-    kubectl get service
-    ```
+   h. Define the registry endpoint:
 
-    g. Define the registry endpoint:
-
-    ```bash
-    export REGISTRY_ENDPOINT=$(kubectl get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
-    cat << EOF >> /etc/rancher/k3s/registries.yaml
-    mirrors:
+      ```bash
+      export REGISTRY_ENDPOINT=$(kubectl get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
+      cat << EOF >> /etc/rancher/k3s/registries.yaml
+      mirrors:
       "$REGISTRY_ENDPOINT":
-        endpoint:
-          - "http://$REGISTRY_ENDPOINT"
-    EOF
-    ```
+         endpoint:
+            - "http://$REGISTRY_ENDPOINT"
+      EOF
+      ```
+      {: codeblock}
 
-    h. Restart k3s to pick up the change to /etc/rancher/k3s/registries.yaml:
+   i. Restart k3s to pick up the change to **/etc/rancher/k3s/registries.yaml**:
 
-    ```bash
-    systemctl restart k3s
-    ```
+      ```bash
+      systemctl restart k3s
+      ```
+      {: codeblock}
 
-5. Install docker (if not already installed):
+2. Define this registry to docker as an insecure registry:
 
-   ```bash
-   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-   add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-   apt-get install docker-ce docker-ce-cli containerd.io
-   ```
+   a. Install docker (if not already installed):
 
-6. Install jq (if not already installed):
+      ```bash
+      curl -fsSL get.docker.com | sh
+      ```
+      {: codeblock}
 
-   ```bash
-   apt-get install jq
-   ```
+   b. Create or add to **/etc/docker/daemon.json** (replacing `<registry-endpoint>` with the value of the `$REGISTRY_ENDPOINT` environment variable you obtained in a previous step).
 
-7. Define this registry to docker as an insecure registry:
+      ```json
+      {
+         "insecure-registries": [ "<registry-endpoint>" ]
+      }
+      ```
+      {: codeblock}
 
-    a. Run the following to define an insecure registry route using the value of the $REGISTRY_ENDPOINT environment variable obtained in the last step and append it to the /etc/docker/daemon.json file.
+   c. Restart docker to pick up the change:
 
-    ```bash
-    echo "{
-        \"insecure-registries\": [ \"$REGISTRY_ENDPOINT\" ]
-    }" >> /etc/docker/daemon.json
-    ```
-
-    b. (optional) Verify that docker is on your machine:
-
-    ```bash
-    curl -fsSL get.docker.com | sh
-    ```
-
-    c. Restart docker to pick up the change:
-
-    ```bash
-    systemctl restart docker
-    ```
+      ```bash
+      systemctl restart docker
+      ```
+      {: codeblock}
 
 ## Install and configure a microk8s edge cluster
 
@@ -229,49 +257,57 @@ This content provides a summary of how to install microk8s, a lightweight and sm
     source ~/.bash_aliases
     ```
 
-6. Enable the container registry and configure docker to tolerate the insecure registry:
+6. Choose the image registry types: remote image registry or edge cluster local registry. Image registry is the place that will hold the agent image and agent cronjob image. 
 
-    a. Enable the container registry
+- [Remote image registry](#remote-image-registry)
+- [Setup edge cluster local image registry for microk8s](#microk8s-local-image-registry-setup)
 
-    ```bash
-    microk8s.enable registry
-    export REGISTRY_ENDPOINT=localhost:32000
-    export REGISTRY_IP_ENDPOINT=$(kubectl get service registry -n container-registry | grep registry | awk '{print $3;}'):5000
-    ```
+### <a id="microk8s-local-image-registry-setup"></a>Setup edge cluster local image registry for microk8s
+{: #microk8s-local-image-registry-setup}
 
-    b. Install docker (if not already installed):
+**Note: Skip this section if using remote image registry.** Enable the container registry and configure docker to tolerate the insecure registry:
 
-    ```bash
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    apt-get install docker-ce docker-ce-cli containerd.io
-    ```
+1. Enable the container registry
 
-    c. Install jq (if not already installed):
+  ```bash
+  microk8s.enable registry
+  export REGISTRY_ENDPOINT=localhost:32000
+  export REGISTRY_IP_ENDPOINT=$(kubectl get service registry -n container-registry | grep registry | awk '{print $3;}'):5000
+  ```
 
-    ```bash
-    apt-get install jq
-    ```
+2. Install docker (if not already installed):
 
-    d. Define this registry as insecure to docker. Create or add to /etc/docker/daemon.json.
+  ```bash
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  apt-get install docker-ce docker-ce-cli containerd.io
+  ```
 
-    ```bash
-    echo "{
-        \"insecure-registries\": [ \"$REGISTRY_ENDPOINT\", \"$REGISTRY_IP_ENDPOINT\" ]
-    }" >> /etc/docker/daemon.json
-    ```
+3. Install jq (if not already installed):
 
-    e. (optional) Verify that docker is on your machine:
+  ```bash
+  apt-get install jq
+  ```
 
-    ```bash
-    curl -fsSL get.docker.com | sh
-    ```
+4. Define this registry as insecure to docker. Create or add to `/etc/docker/daemon.json.`
 
-    f. Restart docker to pick up the change:
+  ```bash
+  echo "{
+      \"insecure-registries\": [ \"$REGISTRY_ENDPOINT\", \"$REGISTRY_IP_ENDPOINT\" ]
+  }" >> /etc/docker/daemon.json
+  ```
 
-    ```bash
-    sudo systemctl restart docker
-    ```
+5. (optional) Verify that docker is on your machine:
+
+  ```bash
+  curl -fsSL get.docker.com | sh
+  ```
+
+6. Restart docker to pick up the change:
+
+  ```bash
+  sudo systemctl restart docker
+  ```
 
 ## Install Agent on Edge Cluster
 
@@ -319,6 +355,8 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
     export EDGE_CLUSTER_STORAGE_CLASS=microk8s-hostpath
     ```
 
+    If the cluster agent will use other storageclass than the above, please find the storage class satisfy [these attributes](#storageclass_attribute)
+
 6. Run agent-install.sh to get the necessary files from Github, install and configure the Horizon agent, and register your edge cluster with policy.
     
     Set `AGENT_NAMESPACE` to the namespace that will install the cluster agent. If not set, the agent will be installed to `openhorizon-agent` default namespace
@@ -363,3 +401,12 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
     ```
 
 10. The Open Horizon cluster agent is now successfully installed and ready to deploy services
+
+## <a id="storageclass_attribute"></a>StorageClass attribute
+{: #storageclass_attribute}
+
+A PersistentVolumeClaim will be created during the agent install process. It will be used by agent to store data for agent and cronjob. The storageclass will need to satisfy the following requirements:
+
+- supports both read and write
+- can be made available immediately
+- supports `ReadWriteMany` mode if agent is running in multi-node cluster

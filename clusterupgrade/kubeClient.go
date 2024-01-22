@@ -402,6 +402,19 @@ func (c KubeClient) GetKeyChain(namespace string, serviceAccountName string) (au
 	return kc, err
 }
 
+func (c KubeClient) GetImagePullSecretKeyChain(namespace string, serviceAccountName string, imagePullSecets []string) (authn.Keychain, error) {
+	kc, err := k8schain.NewInCluster(context.Background(), k8schain.Options{
+		Namespace:          namespace,
+		ServiceAccountName: serviceAccountName,
+		ImagePullSecrets:   imagePullSecets,
+	})
+	if err != nil {
+		return kc, err
+	}
+
+	return kc, err
+}
+
 // ----------------Deployment----------------
 func (c KubeClient) GetDeployment(namespace string, deploymentName string) (*appsv1.Deployment, error) {
 	glog.V(3).Infof(cuwlog(fmt.Sprintf("Get deployment %v under agent namespace %v", deploymentName, namespace)))
@@ -436,5 +449,20 @@ func (c KubeClient) UpdateAgentDeploymentImageVersion(namespace string, deployme
 			glog.V(3).Infof(cuwlog("Agent deployment is updated successfully"))
 		}
 		return err
+	}
+}
+
+func (c KubeClient) DeploymentHasImagePullSecrets(namespace string, deploymentName string) (bool, error) {
+	glog.V(3).Infof(cuwlog(fmt.Sprintf("Get deployment pull secrets for deployment %v under agent namespace %v", deploymentName, namespace)))
+	if agentDep, err := c.GetDeployment(namespace, deploymentName); err != nil {
+		return false, err
+	} else if agentDep == nil {
+		return false, fmt.Errorf("get nil agent deployment")
+	} else {
+		imagePullSecrets := agentDep.Spec.Template.Spec.ImagePullSecrets
+		if len(imagePullSecrets) == 0 {
+			return false, fmt.Errorf("get 0 image pull secrets from agent deployment")
+		}
+		return true, nil
 	}
 }
