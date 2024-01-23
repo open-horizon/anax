@@ -30,6 +30,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/text/message"
@@ -188,6 +189,8 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycheck/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/secretbindingcompatible", a.secretbinding_compatible).Methods("GET", "OPTIONS")
+		router.HandleFunc("/compatibility/constraints/node/{policyType}", a.policyCompatibleNodeList).Methods("GET", "OPTIONS")
+		router.HandleFunc("/compatibility/patterns/node", a.patternCompatibleNodeList).Methods("GET", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/user/{user}", a.userSecrets).Methods("LIST", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/node/{node}", a.nodeSecrets).Methods("LIST", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/user/{user}/node/{node}", a.nodeUserSecrets).Methods("LIST", "OPTIONS")
@@ -257,6 +260,141 @@ func (a *SecureAPI) haNodeNMPUpdateRequest(w http.ResponseWriter, r *http.Reques
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *SecureAPI) policyCompatibleNodeList(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("/compatibility/constraints/node called.")))
+
+		matchingNodes := []string{}
+
+		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/compatibility/constraints/node", UserTypeCred, w, r); ok {
+			body, _ := ioutil.ReadAll(r.Body)
+			if len(body) == 0 {
+				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
+				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
+			} else if input, err := a.decodePolicyCompatibleNodeInputBody(body, msgPrinter); err != nil {
+				writeResponse(w, err.Error(), http.StatusBadRequest)
+			} else {
+				nodes, err := exchange.GetExchangeOrgDevices(user_ec.GetHTTPFactory(), input.NodeOrg, user_ec.GetExchangeId(), user_ec.GetExchangeToken(), user_ec.GetExchangeURL())
+				if err != nil {
+					writeResponse(w, msgPrinter.Sprintf("Failed to get nodes from the exchange."), http.StatusInternalServerError)
+				}
+
+				pathVars := mux.Vars(r)
+				policyType := pathVars["policyType"]
+				if policyType != "nmp" && policyType != "dp" {
+					writeResponse(w, msgPrinter.Sprintf("Invalid node policy type %v. Allowed types are \"dp\" or \"nmp\".", policyType), http.StatusBadRequest)
+				}
+
+				for nodeId, _ := range nodes {
+					pol, err := exchange.GetNodePolicy(user_ec, nodeId)
+					if err != nil {
+						writeResponse(w, msgPrinter.Sprintf("Failed to get node policy from the exchange."), http.StatusInternalServerError)
+					} else if pol == nil {
+						continue
+					}
+
+					nodePol := &externalpolicy.ExternalPolicy{}
+					if policyType == "nmp" {
+						nodePol = pol.GetManagementPolicy()
+					} else if policyType == "dp" {
+						nodePol = pol.GetDeploymentPolicy()
+					}
+
+					if err = (&input.Constraints).IsSatisfiedBy(nodePol.Properties); err == nil {
+						matchingNodes = append(matchingNodes, nodeId)
+					}
+				}
+			}
+		}
+		a.writeCompCheckResponse(w, matchingNodes, nil, nil)
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+	return
+}
+
+type policyNodeCompatibleInputBody struct {
+	NodeOrg     string                              `json:"node_org"`
+	Constraints externalpolicy.ConstraintExpression `json:"constraints"`
+}
+
+func (a *SecureAPI) decodePolicyCompatibleNodeInputBody(body []byte, msgPrinter *message.Printer) (*policyNodeCompatibleInputBody, error) {
+	var js map[string]interface{}
+	if err := json.Unmarshal(body, &js); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+	} else {
+		var input policyNodeCompatibleInputBody
+		if err := json.Unmarshal(body, &input); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to policyNodeCompatibleInputBody object. %v", err)))
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to policyNodeCompatibleInputBody object. %v", err))
+		} else {
+			return &input, nil
+		}
+	}
+}
+
+func (a *SecureAPI) patternCompatibleNodeList(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("/compatibility/patterns/node called.")))
+
+		matchingNodes := []string{}
+
+		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/compatibility/patterns/node", UserTypeCred, w, r); ok {
+			body, _ := ioutil.ReadAll(r.Body)
+			if len(body) == 0 {
+				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
+				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
+			} else if input, err := a.decodePatternCompatibleNodeInputBody(body, msgPrinter); err != nil {
+				writeResponse(w, err.Error(), http.StatusBadRequest)
+			} else {
+				nodes, err := exchange.GetExchangeOrgDevices(user_ec.GetHTTPFactory(), input.NodeOrg, user_ec.GetExchangeId(), user_ec.GetExchangeToken(), user_ec.GetExchangeURL())
+				if err != nil {
+					writeResponse(w, msgPrinter.Sprintf("Failed to get nodes from the exchange."), http.StatusInternalServerError)
+				}
+				for nodeId, node := range nodes {
+					if cutil.SliceContains(input.Patterns, node.Pattern) {
+						matchingNodes = append(matchingNodes, nodeId)
+					}
+				}
+			}
+		}
+		a.writeCompCheckResponse(w, matchingNodes, nil, nil)
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+	return
+}
+
+type patternNodeCompatibleInputBody struct {
+	NodeOrg  string   `json:"node_org"`
+	Patterns []string `json:"patterns"`
+}
+
+func (a *SecureAPI) decodePatternCompatibleNodeInputBody(body []byte, msgPrinter *message.Printer) (*patternNodeCompatibleInputBody, error) {
+	var js map[string]interface{}
+	if err := json.Unmarshal(body, &js); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+	} else {
+		var input patternNodeCompatibleInputBody
+		if err := json.Unmarshal(body, &input); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to patternNodeCompatibleInputBody object. %v", err)))
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to patternNodeCompatibleInputBody object. %v", err))
+		} else {
+			return &input, nil
+		}
 	}
 }
 
