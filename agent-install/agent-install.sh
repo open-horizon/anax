@@ -101,7 +101,7 @@ Required Input Variables (via flag, environment, or config file):
 Options/Flags:
     -c                  Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the certificate file from the MMS. If only 'css:' is specified, the path for the highest certificate file version $CSS_OBJ_AGENT_CERT_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
     -k                  Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the config file from the MMS. If only 'css:' is specified, the path for the highest config file version $CSS_OBJ_AGENT_CONFIG_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. All other variables for this script can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
-    -i                  Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the path for the highest package file version $CSS_OBJ_AGENT_SOFTWARE_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
+    -i                  Installation packages/files/image location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the path for the highest package file version $CSS_OBJ_AGENT_SOFTWARE_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. If the argument is 'remote:', the agent deployment will reference the image in remote image registry. 'remote:' only applies for cluster agent installation. If using 'remote:', values for 'IMAGE_ON_EDGE_CLUSTER_REGISTRY' is required for providing the image container registry info. Values for 'EDGE_CLUSTER_REGISTRY_USERNAME', 'EDGE_CLUSTER_REGISTRY_USERNAME' are required if remote image registry is protected. (This flag is equivalent to INPUT_FILE_PATH)
     -z                  The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (This flag is equivalent to AGENT_INSTALL_ZIP)
     -j                  File location for the public key for an APT repository specified with '-i' (This flag is equivalent to PKG_APT_KEY)
     -t                  Branch to use in the APT repo specified with -i. Default is 'updates' (This flag is equivalent to APT_REPO_BRANCH)
@@ -391,9 +391,14 @@ function get_input_file_css_path() {
 
     local input_file_path
 
-    if [[ $INPUT_FILE_PATH == css:* ]]; then
+    if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == remote:* ]]; then
         # split the input into 2 parts
-        local part2=${INPUT_FILE_PATH#"css:"}
+        local part2
+        if [[ $INPUT_FILE_PATH == css:* ]]; then
+            part2=${INPUT_FILE_PATH#"css:"}
+        elif [[ $INPUT_FILE_PATH == remote:* ]]; then
+            part2=${INPUT_FILE_PATH#"remote:"}
+        fi
 
         if [[ -n $part2 ]]; then
             if [[ $part2 == /* ]]; then
@@ -444,6 +449,8 @@ function adjust_input_file_path() {
         log_info "Using INPUT_FILE_PATH value $INPUT_FILE_PATH as an APT repository"
         PKG_APT_REPO="$INPUT_FILE_PATH"
         INPUT_FILE_PATH='.'   # not sure this is necessary
+    elif [[ $INPUT_FILE_PATH == remote:* ]]; then
+        log_info "Using INPUT_FILE_PATH value $INPUT_FILE_PATH as cluster agent image input path"
     elif [[ ! -d $INPUT_FILE_PATH ]]; then
         log_fatal 1 "INPUT_FILE_PATH directory '$INPUT_FILE_PATH' does not exist"
     fi
@@ -1082,6 +1089,10 @@ function get_all_variables() {
     # Next get config file values (cmd line has already been parsed), so get_variable can apply the whole precedence order
     get_variable INPUT_FILE_PATH '.'
     adjust_input_file_path
+    if [[ !is_cluster && $INPUT_FILE_PATH == remote:* ]]; then 
+        log_fatal 1 "\$INPUT_FILE_PATH cannot set to 'remote:<version>' if \$AGENT_DEPLOY_TYPE is 'device'"
+    fi
+
     get_variable AGENT_CFG_FILE "$(get_cfg_file_default)"
 
     if [[ -n $AGENT_CFG_FILE && -f $AGENT_CFG_FILE ]] || ! using_remote_input_files 'cfg'; then
@@ -1141,7 +1152,23 @@ function get_all_variables() {
     get_variable AGENT_DEPLOY_TYPE 'device'
     get_variable AGENT_WAIT_MAX_SECONDS '30'
 
-    if is_cluster; then
+    if is_device; then
+        get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
+        get_variable PKG_APT_KEY
+        get_variable APT_REPO_BRANCH 'updates'
+
+        local image_arch=$(get_image_arch)
+        # Currently only support a few architectures for anax-in-container; if anax-in-container specified, check the architecture
+	if is_macos; then
+                : # do not need to check
+        else 
+                if [[ $AGENT_IN_CONTAINER == 'true' ]]; then
+                        check_support "${SUPPORTED_ANAX_IN_CONTAINER_ARCH[*]}" "${image_arch}" 'anax-in-container architectures'
+                fi
+        fi
+
+        get_variable AGENT_IMAGE_TAR_FILE "${image_arch}${DEFAULT_AGENT_IMAGE_TAR_FILE}"
+    elif is_cluster; then
         # check kubectl is available
         if [ "${KUBECTL}" != "" ]; then   # If user set KUBECTL env variable, check that it exists
             if command -v $KUBECTL > /dev/null 2>&1; then
@@ -1164,25 +1191,8 @@ function get_all_variables() {
             fi
         fi
         log_info "KUBECTL is set to $KUBECTL"
-    fi
 
-    if is_device; then
-        get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
-        get_variable PKG_APT_KEY
-        get_variable APT_REPO_BRANCH 'updates'
-
-        local image_arch=$(get_image_arch)
-        # Currently only support a few architectures for anax-in-container; if anax-in-container specified, check the architecture
-	if is_macos; then
-                : # do not need to check
-        else 
-                if [[ $AGENT_IN_CONTAINER == 'true' ]]; then
-                        check_support "${SUPPORTED_ANAX_IN_CONTAINER_ARCH[*]}" "${image_arch}" 'anax-in-container architectures'
-                fi
-        fi
-
-        get_variable AGENT_IMAGE_TAR_FILE "${image_arch}${DEFAULT_AGENT_IMAGE_TAR_FILE}"
-    elif is_cluster; then
+        # get other variables for cluster agent 
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE "$DEFAULT_AGENT_NAMESPACE"
         get_variable NAMESPACE_SCOPED 'false'
@@ -1199,6 +1209,10 @@ function get_all_variables() {
         local default_auto_upgrade_cronjob_image_registry_on_edge_cluster
         isImageVariableRequired=true
         if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
+            if [[ $INPUT_FILE_PATH == remote:* ]]; then
+                log_fatal 1 "Cannot use local cluster registry if \$INPUT_FILE_PATH is set to 'remote:<version>', please set \$USE_EDGE_CLUSTER_REGISTRY to 'false' or change \$INPUT_FILE_PATH to 'css:'."
+            fi
+
             if [[ $KUBECTL == "microk8s.kubectl" ]]; then
                 default_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
                 isImageVariableRequired=false
@@ -1214,9 +1228,19 @@ function get_all_variables() {
 	        # image variable $IMAGE_ON_EDGE_CLUSTER_REGISTRY is required
 
             get_variable INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY
+        else
+            # need to validate image arch in IMAGE_ON_EDGE_CLUSTER_REGISTRY
+            if [[ -z $IMAGE_ON_EDGE_CLUSTER_REGISTRY ]]; then
+                log_fatal 1 "A value for \$IMAGE_ON_EDGE_CLUSTER_REGISTRY must be specified"
+            fi
+            last_part="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%%_*}" # <registry-host>/<registry-repo>/<arch>
+            image_arch_in_param="${last_part##*/}" #<arch>
+            if [[ "$image_arch" != "$image_arch_in_param" ]]; then
+                log_fatal 1 "Cannot use agent image with $image_arch_in_param arch to install on $image_arch cluster, please use agent image with '$image_arch'"
+            fi
         fi
         get_variable AGENT_K8S_IMAGE_TAR_FILE "$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE"
-        # not use edge cluster local registry, use remote
+        # default_image_registry_on_edge_cluster is not set if use remote image registry
         get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_image_registry_on_edge_cluster" ${isImageVariableRequired}
 	    log_debug "default_image_registry_on_edge_cluster: $default_image_registry_on_edge_cluster, IMAGE_ON_EDGE_CLUSTER_REGISTRY: $IMAGE_ON_EDGE_CLUSTER_REGISTRY"
 
@@ -1580,8 +1604,12 @@ function using_remote_input_files() {
         if [[ $INPUT_FILE_PATH == css:* || $AGENT_CFG_FILE == css:* ]]; then
             return 0
         fi
-    else   # the other files (pkg, yml, uninstall) are available from either
-        if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+    elif [[ $whichFile == 'pkg' ]]; then
+        if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* || $INPUT_FILE_PATH == remote:* ]]; then
+            return 0
+        fi
+    else   # the other files (yml, uninstall) are available from either
+        if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* || $INPUT_FILE_PATH == remote:* ]]; then
             return 0
         fi
     fi
@@ -3369,6 +3397,15 @@ function loadClusterAgentImage() {
             AGENT_IMAGE=$image_path
             AGENT_IMAGE_VERSION_IN_TAR=${AGENT_IMAGE##*:}
             IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
+            log_info "IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is set to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+            return
+        elif [[ $INPUT_FILE_PATH == remote:* ]]; then
+            # input file path is: "remote:<image_tag>"" Get the docker image tag INPUT_FILE_PATH
+            local image_tag=${INPUT_FILE_PATH##*:} #version
+            AGENT_IMAGE_VERSION_IN_TAR=$image_tag
+            IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
+            AGENT_IMAGE=$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
+            log_info "IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is set to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
             return
         fi
     elif [[ ! -f $AGENT_K8S_IMAGE_TAR_FILE ]]; then
@@ -3399,7 +3436,7 @@ function getImageRegistryInfo() {
     EDGE_CLUSTER_REGISTRY_HOST=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print $1}')
     log_info "Edge cluster registry host: $EDGE_CLUSTER_REGISTRY_HOST"
 
-    if [[ -z $EDGE_CLUSTER_REGISTRY_USERNAME && -z $EDGE_CLUSTER_REGISTRY_TOKEN ]]; then
+    if [[ $INPUT_FILE_PATH == remote:* || (-z $EDGE_CLUSTER_REGISTRY_USERNAME && -z $EDGE_CLUSTER_REGISTRY_TOKEN) ]]; then
         : # even for a registry in the insecure-registries list, if we don't specify user/pw it will prompt for it
         #docker login $EDGE_CLUSTER_REGISTRY_HOST
     else
@@ -3476,6 +3513,15 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
             CRONJOB_AUTO_UPGRADE_IMAGE=$image_path
             CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR=${CRONJOB_AUTO_UPGRADE_IMAGE##*:}
             CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY:$CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR"
+            log_info "CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+            return
+        elif [[ $INPUT_FILE_PATH == remote:* ]]; then
+            # input file path is: "remote:<image_tag>"" Get the docker image tag INPUT_FILE_PATH
+            local image_tag=${INPUT_FILE_PATH##*:}
+            CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR=$image_tag
+            CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY:$CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR"
+            CRONJOB_AUTO_UPGRADE_IMAGE=$CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
+            log_info "CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
             return
         fi
     elif [[ ! -f $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE ]]; then
@@ -3502,9 +3548,12 @@ function create_image_pull_secrets() {
     log_debug "create_image_pull_secrets() begin"
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "false" ]]; then
         if [[ -n $EDGE_CLUSTER_REGISTRY_USERNAME && -n $EDGE_CLUSTER_REGISTRY_TOKEN && -n $EDGE_CLUSTER_REGISTRY_HOST ]]; then
-            log_verbose "checking if private registry is accessible..."
-            echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | ${DOCKER_ENGINE} login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
-            chk $? "logging into remote private registry: $EDGE_CLUSTER_REGISTRY_HOST"
+            # if $INPUT_FILE_PATH is "remote:*", we want to avoid the requirment of "docker/podman"
+            if [[ $INPUT_FILE_PATH != remote:* ]]; then
+                log_verbose "checking if private registry is accessible..."
+                echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | ${DOCKER_ENGINE} login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
+                chk $? "logging into remote private registry: $EDGE_CLUSTER_REGISTRY_HOST"
+            fi
 
             log_verbose "checking if secret ${IMAGE_PULL_SECRET_NAME} exist..."
             USE_PRIVATE_REGISTRY="true"
@@ -3690,7 +3739,7 @@ function get_edge_cluster_files() {
     log_debug "get_edge_cluster_files() begin"
     if using_remote_input_files 'yml'; then
         log_verbose "Getting template.yml files and agent-uninstall.sh from $INPUT_FILE_PATH ..."
-        if [[ $INPUT_FILE_PATH == css:* ]]; then
+        if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == remote:* ]]; then
             local input_path
             get_input_file_css_path input_path
             download_css_file "$input_path/$EDGE_CLUSTER_TAR_FILE_NAME"
@@ -3796,7 +3845,7 @@ function prepare_k8s_deployment_file() {
     chk $? 'creating deployment.yml'
 
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
-        sed -i -e '{/START_REMOTE_ICR/,/END_REMOTE_ICR/d;}' deployment.yml
+        sed -i -e '{/START_REMOTE_ICR/,/END_REMOTE_ICR/d;}' deployment.yml # remove imagePullSecrets section from template
         EDGE_CLUSTER_REGISTRY_PROJECT_NAME=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print $2}')
         EDGE_CLUSTER_AGENT_IMAGE_AND_TAG=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print $3}')
         local image_full_path_on_edge_cluster_registry_internal_url
@@ -3824,12 +3873,14 @@ function prepare_k8s_deployment_file() {
         fi
     else
         log_info "This agent install on edge cluster is using a remote registry: $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
-
-        log_info "Checking if image exists in remote registry..."
-        set +e
-        ${DOCKER_ENGINE} manifest inspect $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
-        chk $? "checking existence of image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
-        set -e
+        ## We want to avoid the requirement of docker/podman if $INPUT_FILE_PATH is "remote:*"
+        if [[ $INPUT_FILE_PATH != remote:* ]]; then
+            log_info "Checking if image exists in remote registry..."
+            set +e
+            ${DOCKER_ENGINE} manifest inspect $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+            chk $? "checking existence of image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+            set -e
+        fi
 
         # REMOTE_IMAGE_REGISTRY_PATH is parts before /{arch}_anax_k8s, for example if using quay.io, this value will be quay.io/<username>
         local image_arch=$(get_cluster_image_arch)
@@ -3883,11 +3934,14 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
         sed -i -e "s#__ImagePath__#${auto_upgrade_cronjob_image_full_path_on_edge_cluster_registry_internal_url}#g" auto-upgrade-cronjob.yml
     else
         log_info "This agent install on edge cluster is using a remote registry: $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
-        log_info "Checking if image exists in remote registry..."
-        set +e
-        ${DOCKER_ENGINE} manifest inspect $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
-        chk $? "checking existence of image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
-        set -e
+        ## We want to avoid the requirement of docker/podman if $INPUT_FILE_PATH is "remote:*"
+        if [[ $INPUT_FILE_PATH != remote:* ]]; then
+            log_info "Checking if image exists in remote registry..."
+            set +e
+            ${DOCKER_ENGINE} manifest inspect $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+            chk $? "checking existence of image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+            set -e
+        fi
 
         sed -i -e "s#__ImagePath__#${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" auto-upgrade-cronjob.yml
 
@@ -4366,7 +4420,12 @@ function patch_deployment_with_image_registry_volume() {
 # Cluster only: to install/update agent in cluster
 function install_update_cluster() {
     log_debug "install_update_cluster() begin"
-    confirmCmds ${DOCKER_ENGINE} jq
+
+    if [[ $INPUT_FILE_PATH != remote:* ]]; then
+        confirmCmds ${DOCKER_ENGINE}
+    fi
+
+    confirmCmds jq
 
     check_existing_exch_node_is_correct_type "cluster"
 
@@ -4391,8 +4450,10 @@ function install_update_cluster() {
         create_image_pull_secrets # create image pull secrets if use private registry (if edge cluster registry username/password are provided), sets USE_PRIVATE_REGISTRY
     fi
 
-    pushImagesToEdgeClusterRegistry
-
+    if [[ $INPUT_FILE_PATH != remote:* ]]; then
+        pushImagesToEdgeClusterRegistry
+    fi
+    
     if [[ "$AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE" == "true" ]]; then
         check_agent_deployment_exist   # sets AGENT_DEPLOYMENT_UPDATE POD_ID
     fi
@@ -4411,7 +4472,6 @@ function install_update_cluster() {
 # Cluster only: to install agent in cluster
 function install_cluster() {
     log_debug "install_cluster() begin"
-    confirmCmds ${DOCKER_ENGINE} jq
 
     # generate files based on templates
     generate_installation_files
