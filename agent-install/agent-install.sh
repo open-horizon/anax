@@ -4307,7 +4307,9 @@ function setup_cluster_image_registry_cert() {
         create_secret_for_image_reigstry_cert
     fi
 
+    $KUBECTL scale --replicas=0 deployment.app/agent -n ${AGENT_NAMESPACE}
     patch_deployment_with_image_registry_volume
+    $KUBECTL scale --replicas=1 deployment.app/agent -n ${AGENT_NAMESPACE}
 
     log_debug "setup_cluster_image_registry_cert() end"
 }
