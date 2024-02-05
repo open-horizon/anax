@@ -353,13 +353,11 @@ jobs:
   mac-build:
     needs: offset-build-number
 
-    # Do not use any 'xl' version of macos or you will pay (literally)
-    # When mac silicon runner comes out we can update this runs-on to ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macSiliconVersion' }}
-    runs-on: macos-12
+    runs-on: ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macos-14' }}
 
     strategy:
       matrix:
-        architecture: ['amd64']
+        architecture: ['amd64', 'arm64']
         platform: ['mac']
 
     env:
@@ -466,7 +464,7 @@ jobs:
 
       strategy:
         matrix:
-          architecture: ['amd64']
+          architecture: ['amd64', 'arm64']
           platform: ['mac']
 
       steps:
