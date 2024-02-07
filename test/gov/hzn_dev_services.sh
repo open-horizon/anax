@@ -268,7 +268,7 @@ if [ "${startedServices}" != "${NUMBER_SERVICES}" ]; then
 fi
 
 echo -e "Waiting for services to run a bit before stopping them."
-sleep 15
+sleep 60
 
 containers=$(docker ps -a)
 restarting=$(echo ${containers} | grep "Restarting")

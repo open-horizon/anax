@@ -41,18 +41,17 @@ block() {
 editFSSAPIListen() {
 	echo "Edit FileSyncService.APIListen"
 	anaxJsonFile='/etc/horizon/anax.json'
-	echo "Modifying $anaxJsonFile for anax-in-container..."
+	echo "Modifying $anaxJsonFile for anax-in-k8s..."
 
 	anaxJson=$(jq . $anaxJsonFile)
 	checkrc $? "read anax.json"
 	cp $anaxJsonFile $anaxJsonFile.orig
 	checkrc $? "back up anax.json"
 
-	hostname=$(cat /etc/hostname)
-    anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"$hostname\" " <<< $anaxJson)
+	anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"0.0.0.0\" " <<< $anaxJson)
 	checkrc $? "change FileSyncService.APIListen"
 
-	anaxJson=$(jq ".Edge.FileSyncService.APIProtocol = \"https\" " <<< $anaxJson)
+	anaxJson=$(jq ".Edge.FileSyncService.APIProtocol = \"secure\" " <<< $anaxJson)
 	checkrc $? "change FileSyncService.APIProtocol"
 	
 	echo "$anaxJson" > $anaxJsonFile

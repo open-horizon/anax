@@ -529,7 +529,7 @@ endif
 
 realclean: i18n-clean clean
 
-mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean css-clean ess-clean
+mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean auto-upgrade-cronjob-k8s-clean css-clean ess-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	rm -Rf vendor

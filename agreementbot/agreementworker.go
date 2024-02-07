@@ -1083,12 +1083,10 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 			// For the purposes of compatibility, skip this function if the agbot config has not been updated to point to the CSS.
 			// Only non-pattern based agreements can use MMS object policy.
-			if agreement.GetDeviceType() == persistence.DEVICE_TYPE_DEVICE {
-				if b.GetCSSURL() != "" && agreement.Pattern == "" {
-					AgreementHandleMMSObjectPolicy(b, b.mmsObjMgr, *agreement, workerId, BAWlogstring)
-				} else if b.GetCSSURL() == "" {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
-				}
+			if b.GetCSSURL() != "" && agreement.Pattern == "" {
+				AgreementHandleMMSObjectPolicy(b, b.mmsObjMgr, *agreement, workerId, BAWlogstring)
+			} else if b.GetCSSURL() == "" {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
 			}
 
 			// Send the reply Ack if it's still valid.
