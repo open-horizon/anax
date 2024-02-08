@@ -1089,9 +1089,6 @@ function get_all_variables() {
     # Next get config file values (cmd line has already been parsed), so get_variable can apply the whole precedence order
     get_variable INPUT_FILE_PATH '.'
     adjust_input_file_path
-    if [[ !is_cluster && $INPUT_FILE_PATH == remote:* ]]; then 
-        log_fatal 1 "\$INPUT_FILE_PATH cannot set to 'remote:<version>' if \$AGENT_DEPLOY_TYPE is 'device'"
-    fi
 
     get_variable AGENT_CFG_FILE "$(get_cfg_file_default)"
 
@@ -1151,6 +1148,10 @@ function get_all_variables() {
     get_variable AGENT_INSTALL_ZIP 'agent-install-files.tar.gz'
     get_variable AGENT_DEPLOY_TYPE 'device'
     get_variable AGENT_WAIT_MAX_SECONDS '30'
+
+    if ! is_cluster && [[ $INPUT_FILE_PATH == remote:* ]]; then
+        log_fatal 1 "\$INPUT_FILE_PATH cannot set to 'remote:<version>' if \$AGENT_DEPLOY_TYPE is 'device'"
+    fi
 
     if is_device; then
         get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
