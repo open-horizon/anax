@@ -19,6 +19,8 @@ type AgbotSecrets interface {
 	IsReady() bool
 	GetLastVaultStatus() uint64
 
+	ListAllSecrets(user, token, org, path string) ([]string, error)
+
 	ListOrgSecret(user, token, org, path string) error
 	ListOrgSecrets(user, token, org, path string) ([]string, error)
 	CreateOrgSecret(user, token, org, path string, data SecretDetails) error
