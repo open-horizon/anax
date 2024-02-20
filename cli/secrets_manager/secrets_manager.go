@@ -72,7 +72,7 @@ func queryWithRetry(query func() int, retryCount, retryInterval int) (httpCode i
 // If the name provided is a directory,
 // - nodeId is empty: lists all the secrets in the directory
 // - else: list all the node secrets for the given directory
-func SecretList(org, credToUse, secretName, secretNodeId string) {
+func SecretList(org, credToUse, secretName, secretNodeId string, listAll bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -101,8 +101,13 @@ func SecretList(org, credToUse, secretName, secretNodeId string) {
 		//            org/secrets/user/{userId}/node/{nodeId}
 		//            org/secrets/node/{nodeId}/test-password
 		//            org/secrets/user/{userId}/node/{nodeId}/test-password
-		return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
-			[]int{200, 400, 401, 403, 404, 503, 504}, &resp)
+		if listAll {
+			return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/allsecrets", cliutils.OrgAndCreds(org, credToUse),
+                                []int{200, 400, 401, 403, 404, 503, 504}, &resp)
+		} else {
+			return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
+				[]int{200, 400, 401, 403, 404, 503, 504}, &resp)
+		}
 	}
 	retCode := queryWithRetry(listQuery, 3, 1)
 

@@ -119,6 +119,16 @@ func (vs *AgbotVaultSecrets) listSecret(user, token, org, name, url string) erro
 	return nil
 }
 
+// List all secrets in the specified org in vault.
+func (vs *AgbotVaultSecrets) ListAllSecrets(user, token, org, path string) ([]string, error) {
+
+        glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list all secrets in %v", org)))
+
+        url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+        glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing all secrets in org %s", org)))
+        return vs.listSecrets(user, token, org, url, path, true)
+}
+
 // List all org-level secrets at a specified path in vault.
 func (vs *AgbotVaultSecrets) ListOrgSecrets(user, token, org, path string) ([]string, error) {
 
@@ -126,7 +136,7 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, token, org, path string) ([]st
 
 	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets in org %s", org)))
-	return vs.listSecrets(user, token, org, url, path)
+	return vs.listSecrets(user, token, org, url, path, false)
 }
 
 // List all user-level secrets at a specified path in vault.
@@ -135,7 +145,7 @@ func (vs *AgbotVaultSecrets) ListOrgUserSecrets(user, token, org, path string) (
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets for user %v in %v", user, org)))
 
 	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
-	secrets, err := vs.listSecrets(user, token, org, url, path)
+	secrets, err := vs.listSecrets(user, token, org, url, path, false)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +164,7 @@ func (vs *AgbotVaultSecrets) ListOrgNodeSecrets(user, token, org, node, path str
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets for node %v in %v", node, org)))
 
 	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
-	secrets, err := vs.listSecrets(user, token, org, url, path)
+	secrets, err := vs.listSecrets(user, token, org, url, path, false)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +183,7 @@ func (vs *AgbotVaultSecrets) ListUserNodeSecrets(user, token, org, node, path st
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets for node %v in %v as user %v", node, org, user)))
 
 	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
-	secrets, err := vs.listSecrets(user, token, org, url, path)
+	secrets, err := vs.listSecrets(user, token, org, url, path, false)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +222,7 @@ func (vs *AgbotVaultSecrets) gatherSecretNames(user, token, org, path string, qu
 }
 
 // List the secrets at a specified path within the vault
-func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url, path string) ([]string, error) {
+func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url, path string, allSecrets bool) ([]string, error) {
 
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("url: %s", url)))
 
@@ -272,7 +282,7 @@ func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url, path string) ([]
 	secrets := make([]string, 0)
 	if path == "" {
 		for _, secret := range respMsg.Data.Keys {
-			if secret != "user/" && secret != "node/" {
+			if allSecrets || (secret != "user/" && secret != "node/") {
 				secrets = append(secrets, secret)
 			}
 		}

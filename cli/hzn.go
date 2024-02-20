@@ -801,6 +801,7 @@ Environment Variables:
 	smUserPw := smCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
 	smSecretCmd := smCmd.Command("secret", msgPrinter.Sprintf("List and manage secrets in the secrets manager."))
 	smSecretListCmd := smSecretCmd.Command("list | ls", msgPrinter.Sprintf("Display the names of the secrets in the secrets manager.")).Alias("ls").Alias("list")
+	smSecretListAll := smSecretListCmd.Flag("listAll", msgPrinter.Sprintf("List all secrets in the given org in the secrets manager.")).Short('a').Bool()
 	smSecretListNodeId := smSecretListCmd.Flag("nodeId", msgPrinter.Sprintf("The node id of the node secret to list. Include only if this secret is specific to a single node.")).Short('n').String()
 	smSecretListName := smSecretListCmd.Arg("secretName", msgPrinter.Sprintf("List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.")).String()
 	smSecretAddCmd := smSecretCmd.Command("add", msgPrinter.Sprintf("Add a secret to the secrets manager."))
@@ -1508,7 +1509,7 @@ Environment Variables:
 		fdo.VoucherDownload(*fdoOrg, *fdoUserPw, *fdoVoucherDownloadDevice, *fdoVoucherDownloadFile, *fdoVoucherDownloadOverwrite)
 
 	case smSecretListCmd.FullCommand():
-		secret_manager.SecretList(*smOrg, *smUserPw, *smSecretListName, *smSecretListNodeId)
+		secret_manager.SecretList(*smOrg, *smUserPw, *smSecretListName, *smSecretListNodeId, *smSecretListAll)
 	case smSecretAddCmd.FullCommand():
 		secret_manager.SecretAdd(*smOrg, *smUserPw, *smSecretAddName, *smSecretAddNodeId, *smSecretAddFile, *smSecretAddKey, *smSecretAddDetail, *smSecretAddOverwrite)
 	case smSecretRemoveCmd.FullCommand():
