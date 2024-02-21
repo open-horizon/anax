@@ -409,6 +409,38 @@ func FindEventLogs(db *bolt.DB, filters []EventLogFilter) ([]EventLog, error) {
 	}
 }
 
+// delete event logs from the db that match the given selectors
+func DeleteEventLogsWithSelectors(db *bolt.DB, selectors map[string][]Selector, msgPrinter *message.Printer) error {
+	// separate base selectors from the source selectors
+	base_selectors, source_selectors := GroupSelectors(selectors)
+
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	return db.Update(func(tx *bolt.Tx) error {
+		if b := tx.Bucket([]byte(EVENT_LOGS)); b != nil {
+			b.ForEach(func(k, v []byte) error {
+				var el EventLogRaw
+
+				if err := json.Unmarshal(v, &el); err != nil {
+					glog.Errorf("Unable to deserialize event log db record: %v. Error: %v", v, err)
+				} else {
+					if el.EventLogBase.Matches(base_selectors) {
+						if esrc, err := GetRealEventSource(el.SourceType, el.Source); err != nil {
+							glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
+						} else if (*esrc).Matches(source_selectors) {
+							b.Delete(k)
+						}
+					}
+				}
+				return nil
+			})
+		}
+		return nil
+	})
+}
+
 // find event logs from the db for the given given selectors.
 // If all_logs is false, only the event logs for the current registration is returned.
 func FindEventLogsWithSelectors(db *bolt.DB, all_logs bool, selectors map[string][]Selector, msgPrinter *message.Printer) ([]EventLog, error) {

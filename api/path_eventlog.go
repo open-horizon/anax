@@ -32,6 +32,35 @@ func FindEventLogsForOutput(db *bolt.DB, all_logs bool, selections map[string][]
 	}
 }
 
+// This API deletes the selected event logs saved on the db.
+func DeleteEventLogs(db *bolt.DB, prune bool, selections map[string][]string, msgPrinter *message.Printer) error {
+	s := map[string][]persistence.Selector{}
+	if prune {
+		lastUnreg, err := persistence.GetLastUnregistrationTime(db)
+		if err != nil {
+			return fmt.Errorf("Failed to get the last unregistration time stamp from db. %v", err)
+		}
+
+		s["timestamp"] = []persistence.Selector{persistence.Selector{Op: "<", MatchValue: lastUnreg}}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Selectors for pruning are: %v.", s)))
+	} else {
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Deleting event logs from the db. The selectors are: %v.", selections)))
+
+		//convert to selectors
+		var err error
+		s, err = persistence.ConvertToSelectors(selections)
+		if err != nil {
+			return fmt.Errorf(msgPrinter.Sprintf("Error converting the selections into Selectors: %v", err))
+		} else {
+			glog.V(5).Infof(apiLogString(fmt.Sprintf("Converted selections into a map of persistence.Selector arrays: %v.", s)))
+		}
+	}
+
+	err := eventlog.DeleteEventLogs(db, s, msgPrinter)
+	return err
+}
+
 func FindSurfaceLogsForOutput(db *bolt.DB, msgPrinter *message.Printer) ([]persistence.SurfaceError, error) {
 	outputLogs := make([]persistence.SurfaceError, 0)
 	surfaceLogs, err := persistence.FindSurfaceErrors(db)

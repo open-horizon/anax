@@ -1189,7 +1189,7 @@ type SecretRequestInfo struct {
 	user            string // if applicable, the user whose resources are being accessed
 	node            string // if applicable, the node whose resources are being accessed
 	vaultSecretName string // the name of the secret being accessed
-	listAll		bool   // true to indicate listing all secrets in the org including node and user-level
+	listAll         bool   // true to indicate listing all secrets in the org including node and user-level
 
 	msgPrinter *message.Printer
 }
@@ -1448,54 +1448,54 @@ func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *SecureAPI) allSecrets(w http.ResponseWriter, r *http.Request) {
-        info := a.secretsSetup(w, r)
-        if info == nil {
-                return
-        }
+	info := a.secretsSetup(w, r)
+	if info == nil {
+		return
+	}
 
 	info.listAll = true
 
-        // handle API options
-        switch r.Method {
-        // swagger:operation LIST /org/{org}/allsecrets allSecrets
-        //
-        // List all secrets belonging to the org including node and user-level secrets.
-        //
-        // ---
-        // consumes:
-        //   - application/json
-        // produces:
-        //   - application/json
-        // responses:
-        //  '200':
-        //    description: "Success or no secrets found."
-        //    type: array
-        //    items: string
-        //  '401':
-        //    description: "Unauthenticated user."
-        //    type: string
-        //  '403':
-        //    description: "Secrets permission denied to user."
-        //    type: string
-        //  '503':
-        //    description: "Secret provider unavailable"
-        //    type: string
-        //  '500':
-        //    description: "Invalid vault response"
-        //    type: string
-        case "LIST":
-                if payload, err, httpCode := a.listVaultSecret(info); err != nil {
-                        glog.Errorf(APIlogString(err.Error()))
-                        writeResponse(w, err.Error(), httpCode)
-                } else {
-                        writeResponse(w, payload, http.StatusOK)
-                }
-        case "OPTIONS":
-                w.Header().Set("Allow", "LIST, OPTIONS")
-                w.WriteHeader(http.StatusOK)
-        default:
-                w.WriteHeader(http.StatusMethodNotAllowed)
-        }
+	// handle API options
+	switch r.Method {
+	// swagger:operation LIST /org/{org}/allsecrets allSecrets
+	//
+	// List all secrets belonging to the org including node and user-level secrets.
+	//
+	// ---
+	// consumes:
+	//   - application/json
+	// produces:
+	//   - application/json
+	// responses:
+	//  '200':
+	//    description: "Success or no secrets found."
+	//    type: array
+	//    items: string
+	//  '401':
+	//    description: "Unauthenticated user."
+	//    type: string
+	//  '403':
+	//    description: "Secrets permission denied to user."
+	//    type: string
+	//  '503':
+	//    description: "Secret provider unavailable"
+	//    type: string
+	//  '500':
+	//    description: "Invalid vault response"
+	//    type: string
+	case "LIST":
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
+		} else {
+			writeResponse(w, payload, http.StatusOK)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "LIST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
 }
 
 // handler for /org/<org>/secrets/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
@@ -2228,8 +2228,8 @@ func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error
 		secretNames := make([]string, 0)
 		var err error
 		if info.listAll {
-			// listing all secrets in the org including node and user-level 
-                        secretNames, err = a.secretProvider.ListAllSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "")
+			// listing all secrets in the org including node and user-level
+			secretNames, err = a.secretProvider.ListAllSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "")
 		} else if info.user != "" && info.node != "" {
 			// listing node user level secrets
 			secretNames, err = a.secretProvider.ListUserNodeSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.node, userNodePath)

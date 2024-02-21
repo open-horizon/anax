@@ -122,11 +122,11 @@ func (vs *AgbotVaultSecrets) listSecret(user, token, org, name, url string) erro
 // List all secrets in the specified org in vault.
 func (vs *AgbotVaultSecrets) ListAllSecrets(user, token, org, path string) ([]string, error) {
 
-        glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list all secrets in %v", org)))
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list all secrets in %v", org)))
 
-        url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
-        glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing all secrets in org %s", org)))
-        return vs.listSecrets(user, token, org, url, path, true)
+	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing all secrets in org %s", org)))
+	return vs.listSecrets(user, token, org, url, path, true)
 }
 
 // List all org-level secrets at a specified path in vault.
