@@ -45,9 +45,9 @@ func Test_workload_pw_hash(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		password := rpw(random)
 		// Perform the hash twice
-		if hash1, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
+		if hash1, err := GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
 			t.Error(err)
-		} else if hash2, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
+		} else if hash2, err := GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
 			t.Error(err)
 		} else if bytes.Compare(hash1, hash2) == 0 {
 			t.Errorf("2 calls to generate hash for %v result in equivalent hashes %v, but should not", password, hash1)
@@ -78,7 +78,7 @@ func Test_workload_pw_hash(t *testing.T) {
 //     hash := "$2a$10$kThocDiwbcdWWTxyiRd8A.YvmpWEncI9ip6vePTPTCFr2qPdw6pQm"
 
 //     // Perform the hash twice
-//     if hash1, err := bcrypt.GenerateFromPassword([]byte(password+agid), bcrypt.DefaultCost); err != nil {
+//     if hash1, err := GenerateFromPassword([]byte(password+agid), bcrypt.DefaultCost); err != nil {
 //         t.Error(err)
 //     } else if err := bcrypt.CompareHashAndPassword(hash1, []byte(password+agid)); err != nil {
 //         t.Error(err)
@@ -92,7 +92,7 @@ func Test_workload_pw_hash_error(t *testing.T) {
 
 	pw := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-	if hash1, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost); err != nil {
+	if hash1, err := GenerateFromPassword([]byte(pw), bcrypt.DefaultCost); err != nil {
 		t.Error(err)
 	} else if len(hash1) == 0 {
 		t.Errorf("bcrypt returned zero length hash\n")
