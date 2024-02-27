@@ -26,7 +26,7 @@ SUPPORTED_REDHAT_VARIANTS=(rhel redhatenterprise centos fedora $SUPPORTED_REDHAT
 SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 9.0 9.1 9.2 9.3 8 9 32 35 36 37 38 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le s390x  riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
 
-SUPPORTED_EDGE_CLUSTER_ARCH=(amd64 s390x)
+SUPPORTED_EDGE_CLUSTER_ARCH=(amd64 arm64 s390x)
 SUPPORTED_ANAX_IN_CONTAINER_ARCH=(amd64 arm64 s390x)
 
 SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
