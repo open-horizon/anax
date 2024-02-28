@@ -18,11 +18,11 @@ func Test_Construction(t *testing.T) {
 	pn = append(pn, "p2")
 	pn = append(pn, "p3")
 
-	su1 := NewSecretUpdate("org1", "mysecret1", 100, pn, []string{})
+	su1 := NewSecretUpdate("org1", "mysecret1", 100, pn, []string{}, "")
 
 	pn[1] = "p4"
 
-	su2 := NewSecretUpdate("org1", "mysecret2", 100, pn, []string{})
+	su2 := NewSecretUpdate("org1", "mysecret2", 100, pn, []string{}, "")
 
 	assert.True(t, su1.PolicyNames[1] == "p2", "The second element of policy names in su1 should have the value 'p2'")
 	assert.True(t, su2.PolicyNames[1] == "p4", "The second element of policy names in su2 should have the value 'p4'")
