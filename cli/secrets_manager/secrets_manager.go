@@ -103,7 +103,7 @@ func SecretList(org, credToUse, secretName, secretNodeId string, listAll bool) {
 		//            org/secrets/user/{userId}/node/{nodeId}/test-password
 		if listAll {
 			return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/allsecrets", cliutils.OrgAndCreds(org, credToUse),
-                                []int{200, 400, 401, 403, 404, 503, 504}, &resp)
+				[]int{200, 400, 401, 403, 404, 503, 504}, &resp)
 		} else {
 			return cliutils.AgbotList("org"+cliutils.AddSlash(org)+"/secrets"+cliutils.AddSlash(secretName), cliutils.OrgAndCreds(org, credToUse),
 				[]int{200, 400, 401, 403, 404, 503, 504}, &resp)

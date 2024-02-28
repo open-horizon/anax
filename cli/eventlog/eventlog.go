@@ -63,6 +63,44 @@ func getSelectionString(selections []string) (string, error) {
 	return strings.Join(sels, "&"), nil
 }
 
+func Delete(selections []string, force bool) {
+	// format the eventlog api string
+	url_s := "eventlog"
+
+	if len(selections) > 0 {
+		if s, err := getSelectionString(selections); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", err)
+		} else {
+			url_s = fmt.Sprintf("%v?%v", url_s, s)
+		}
+		if !force {
+			cliutils.ConfirmRemove(i18n.GetMessagePrinter().Sprintf("Are you sure you want to remove all event logs matching the given selectors?"))
+		}
+	} else if !force {
+		cliutils.ConfirmRemove(i18n.GetMessagePrinter().Sprintf("Are you sure you want to remove all event logs?"))
+	}
+
+	cliutils.HorizonDelete(url_s, []int{200, 204}, []int{}, false)
+
+	if len(selections) > 0 {
+		fmt.Println(i18n.GetMessagePrinter().Sprintf("Successfully deleted the selected eventlogs."))
+	} else {
+		fmt.Println(i18n.GetMessagePrinter().Sprintf("Successfully deleted the eventlogs."))
+	}
+}
+
+func Prune(force bool) {
+	url := "eventlog/prune"
+
+	if !force {
+		cliutils.ConfirmRemove(i18n.GetMessagePrinter().Sprintf("Are you sure you want to remove all event logs from previous registrations?"))
+	}
+
+	cliutils.HorizonDelete(url, []int{200, 204}, []int{}, false)
+
+	fmt.Println(i18n.GetMessagePrinter().Sprintf("Successfully pruned the eventlogs."))
+}
+
 func List(all bool, detail bool, selections []string, tailing bool) {
 
 	// format the eventlog api string

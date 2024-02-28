@@ -97,9 +97,12 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 
 	// Used to get the event logs on this node.
 	// get the eventlogs for current registration.
-	router.HandleFunc("/eventlog", a.eventlog).Methods("GET", "OPTIONS")
+	// delete eventlogs with selectors
+	router.HandleFunc("/eventlog", a.eventlog).Methods("GET", "DELETE", "OPTIONS")
 	// get the eventlogs for all registrations.
 	router.HandleFunc("/eventlog/all", a.eventlog).Methods("GET", "OPTIONS")
+	// delete all eventlogs from previous registrations
+	router.HandleFunc("/eventlog/prune", a.eventlog).Methods("DELETE", "OPTIONS")
 	//get the active surface errors for this node
 	router.HandleFunc("/eventlog/surface", a.surface).Methods("GET", "OPTIONS")
 

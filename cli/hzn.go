@@ -292,6 +292,11 @@ Environment Variables:
 	listAllEventlogs := eventlogListCmd.Flag("all", msgPrinter.Sprintf("List all the event logs including the previous registrations.")).Short('a').Bool()
 	listDetailedEventlogs := eventlogListCmd.Flag("long", msgPrinter.Sprintf("List event logs with details.")).Short('l').Bool()
 	listSelectedEventlogs := eventlogListCmd.Flag("select", msgPrinter.Sprintf("Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.")).Short('s').Strings()
+	eventlogDeleteCmd := eventlogCmd.Command("delete | del", msgPrinter.Sprintf("Delete the all event logs or those matching the provided selectors.")).Alias("del").Alias("delete")
+	deleteSelectedEventlogs := eventlogDeleteCmd.Flag("select", msgPrinter.Sprintf("Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or\"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.")).Short('s').Strings()
+	deleteEventLogsForce := eventlogDeleteCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
+	eventlogPruneCmd := eventlogCmd.Command("prune | pr", msgPrinter.Sprintf("Delete the all event logs from previous registrations.")).Alias("pr").Alias("prune")
+	pruneEventLogsForce := eventlogPruneCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	surfaceErrorsEventlogs := eventlogCmd.Command("surface | sf", msgPrinter.Sprintf("List all the active errors that will be shared with the Exchange if the node is online.")).Alias("sf").Alias("surface")
 	surfaceErrorsEventlogsLong := surfaceErrorsEventlogs.Flag("long", msgPrinter.Sprintf("List the full event logs of the surface errors.")).Short('l').Bool()
 
@@ -1403,6 +1408,10 @@ Environment Variables:
 		status.DisplayStatus(*statusLong, false)
 	case eventlogListCmd.FullCommand():
 		eventlog.List(*listAllEventlogs, *listDetailedEventlogs, *listSelectedEventlogs, *listTail)
+	case eventlogDeleteCmd.FullCommand():
+		eventlog.Delete(*deleteSelectedEventlogs, *deleteEventLogsForce)
+	case eventlogPruneCmd.FullCommand():
+		eventlog.Prune(*pruneEventLogsForce)
 	case surfaceErrorsEventlogs.FullCommand():
 		eventlog.ListSurfaced(*surfaceErrorsEventlogsLong)
 	case devServiceNewCmd.FullCommand():
