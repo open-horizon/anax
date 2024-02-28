@@ -152,7 +152,7 @@ Optional Edge Device Environment Variables For Testing New Distros - Not For Pro
 Additional Edge Cluster Variables (in environment or config file):
     KUBECTL: specify this value if you have multiple kubectl CLI installed in your enviroment. Otherwise the script will detect in this order: k3s kubectl, microk8s.kubectl, oc, kubectl.
     ENABLE_AUTO_UPGRADE_CRONJOB: specify this value to false to skip installing agent auto upgrade cronjob. Default: true
-    IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to
+    IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to, in format: <registry-host>/<repository>/\${ARCH}_anax_k8s
     CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the auto-upgrade-cronjob cronjob image path (without tag) if you want it to be different from what this script will default it to
     INIT_CONTAINER_IMAGE: specify this value if init container is needed and is different from default: public.ecr.aws/docker/library/alpine:latest
     EDGE_CLUSTER_REGISTRY_USERNAME: specify this value if the edge cluster registry requires authentication
@@ -423,6 +423,62 @@ function get_input_file_css_path() {
     eval $__resultvar="'${input_file_path}'"
 }
 
+function get_input_file_remote_path() {
+    local __resultvar=$1
+    local input_file_path
+
+    if [[ $INPUT_FILE_PATH == remote:* ]]; then
+        # split the input into 2 parts
+        local part2
+        if [[ $INPUT_FILE_PATH == remote:* ]]; then
+            part2=${INPUT_FILE_PATH#"remote:"}
+        fi
+
+        if [[ -n $part2 ]]; then
+            input_file_path=$INPUT_FILE_PATH
+        else
+            # 'remote:' case - need to query image registory to get the highest version
+            local highest
+            get_agent_version_from_repository highest
+            input_file_path="remote:$highest"
+        fi
+    fi
+
+    eval $__resultvar="'${input_file_path}'"
+}
+
+function get_agent_version_from_repository() {
+    local __resultvar=$1
+    local highest_var
+
+    if [[ -n $EDGE_CLUSTER_REGISTRY_USERNAME && -n $EDGE_CLUSTER_REGISTRY_TOKEN ]]; then
+        auth="-u $EDGE_CLUSTER_REGISTRY_USERNAME:$EDGE_CLUSTER_REGISTRY_TOKEN"
+    fi
+
+    IFS='/' read -r -a repoarray<<< $IMAGE_ON_EDGE_CLUSTER_REGISTRY
+    if [[ "${repoarray[0]}" == *"docker"* ]]; then
+        repository_url="https://registry.hub.docker.com/v2/repositories/${repoarray[1]}/${repoarray[2]}/tags"
+        agent_versions=$(curl $auth $repository_url 2>/dev/null | jq '.results[]["name"] | select(test("testing|latest") | not)' | sort -rV | tr '\n' ',') # "2.31.0-1495","2.31.0-1492","2.31.0-1021"
+    else
+        repository_url="https://${repoarray[0]}/v1/repositories/${repoarray[1]}/${repoarray[2]}/tags"
+        agent_versions=$(curl $auth $repository_url 2>/dev/null | jq 'keys[]' | sort -rV | tr '\n' ',') # "2.31.0-1495","2.31.0-1492","2.31.0-1021"
+    fi
+    IFS=',' read -r -a agent_version_array <<< $agent_versions
+    highest_var=${agent_version_array[0]}
+    if [ -z ${highest_var} ]; then
+        get_agent_file_versions
+        if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_SW_VERSIONS[@]} -gt 0 ]; then
+            highest_var=${AGENT_SW_VERSIONS[0]}
+        fi
+    fi
+
+    if [ -z ${highest_var} ]; then
+        log_fatal 3 "Unable to get image tags, exiting"
+    fi
+
+    eval $__resultvar="${highest_var}"
+}
+
 # If INPUT_FILE_PATH is a short-hand value, turn it into the long-hand value. There are several variants of INPUT_FILE_PATH. See the -i flag in the usage.
 # Side-effect: INPUT_FILE_PATH
 function adjust_input_file_path() {
@@ -556,9 +612,9 @@ function get_agent_file_versions() {
     fi
 
     log_debug "AGENT_FILE_VERSIONS_STATUS: $AGENT_FILE_VERSIONS_STATUS"
-    log_debug "AGENT_SW_VERSIONS: ${AGENT_SW_VERSIONS[@]} sizs=${#AGENT_SW_VERSIONS[@]}"
-    log_debug "AGENT_CERT_VERSIONS: ${AGENT_CERT_VERSIONS[@]} sizs=${#AGENT_CERT_VERSIONS[@]}"
-    log_debug "AGENT_CONFIG_VERSIONS: ${AGENT_CONFIG_VERSIONS[@]} sizs=${#AGENT_CONFIG_VERSIONS[@]}"
+    log_debug "AGENT_SW_VERSIONS from the exchange: ${AGENT_SW_VERSIONS[@]} sizs=${#AGENT_SW_VERSIONS[@]}"
+    log_debug "AGENT_CERT_VERSIONS from the exchange: ${AGENT_CERT_VERSIONS[@]} sizs=${#AGENT_CERT_VERSIONS[@]}"
+    log_debug "AGENT_CONFIG_VERSIONS from the exchange: ${AGENT_CONFIG_VERSIONS[@]} sizs=${#AGENT_CONFIG_VERSIONS[@]}"
 
     log_debug "get_agent_file_versions() end"
 }
@@ -1234,8 +1290,8 @@ function get_all_variables() {
             if [[ -z $IMAGE_ON_EDGE_CLUSTER_REGISTRY ]]; then
                 log_fatal 1 "A value for \$IMAGE_ON_EDGE_CLUSTER_REGISTRY must be specified"
             fi
-            last_part="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%%_*}" # <registry-host>/<registry-repo>/<arch>
-            image_arch_in_param="${last_part##*/}" #<arch>
+            lastpart=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY | cut -d "/" -f 3) # <arch>_anax_k8s
+            image_arch_in_param=$(echo $lastpart | cut -d "_" -f 1)
             if [[ "$image_arch" != "$image_arch_in_param" ]]; then
                 log_fatal 1 "Cannot use agent image with $image_arch_in_param arch to install on $image_arch cluster, please use agent image with '$image_arch'"
             fi
@@ -3371,7 +3427,7 @@ function check_exch_url_and_cert() {
 }
 
 # Cluster only: to extract agent image tar.gz and load to docker
-# Side-effect: sets globals: AGENT_IMAGE, AGENT_IMAGE_VERSION_IN_TAR, IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
+# Side-effect: sets globals: AGENT_IMAGE, AGENT_IMAGE_VERSION_IN_TAR, IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY INPUT_FILE_PATH
 function loadClusterAgentImage() {
     log_debug "loadClusterAgentImage() begin"
 
@@ -3401,8 +3457,14 @@ function loadClusterAgentImage() {
             log_info "IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is set to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
             return
         elif [[ $INPUT_FILE_PATH == remote:* ]]; then
-            # input file path is: "remote:<image_tag>"" Get the docker image tag INPUT_FILE_PATH
-            local image_tag=${INPUT_FILE_PATH##*:} #version
+            # input file path is: "remote:<image_tag>" or "remote:", get the docker image tag INPUT_FILE_PATH
+            local input_path
+            get_input_file_remote_path input_path
+            local image_tag=${input_path##*:} # version
+            INPUT_FILE_PATH="remote:$image_tag" # update $INPUT_FILE_PATH
+
+            # local image_tag
+            # get_agent_version_from_repository image_tag
             AGENT_IMAGE_VERSION_IN_TAR=$image_tag
             IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
             AGENT_IMAGE=$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
@@ -3517,9 +3579,7 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
             log_info "CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
             return
         elif [[ $INPUT_FILE_PATH == remote:* ]]; then
-            # input file path is: "remote:<image_tag>"" Get the docker image tag INPUT_FILE_PATH
-            local image_tag=${INPUT_FILE_PATH##*:}
-            CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR=$image_tag
+            CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR=$AGENT_IMAGE_VERSION_IN_TAR # $AGENT_IMAGE_VERSION_IN_TAR was set in loadClusterAgentImage() function
             CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY:$CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR"
             CRONJOB_AUTO_UPGRADE_IMAGE=$CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
             log_info "CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
@@ -3908,7 +3968,7 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
     local kubernetes_api="batch/v1beta1"
     local kubernetes_version_to_compare=1.21
     local kubernetes_version=$(get_kubernetes_version)
-    log_debug "kubernetes version is $kubernete_version"
+    log_debug "kubernetes version is $kubernetes_version"
     if version_gt_or_equal $kubernetes_version $kubernetes_version_to_compare; then
         kubernetes_api="batch/v1"
     fi
