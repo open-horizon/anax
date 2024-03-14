@@ -184,6 +184,9 @@ fi
 
 echo -e "Begin hzn dev service testing."
 
+echo -e "check docker version"
+docker version
+
 export HZN_ORG_ID="e2edev@somecomp.com"
 export HZN_EXCHANGE_URL=$1
 export ARCH=${ARCH}
