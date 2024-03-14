@@ -5,22 +5,28 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
+	"path"
 )
 
 type KubeWorker struct {
 	worker.BaseWorker
+	config    *config.HorizonConfig
 	db        *bolt.DB
+	authMgr   *resource.AuthenticationManager
 	secretMgr *resource.SecretsManager
 }
 
-func NewKubeWorker(name string, config *config.HorizonConfig, db *bolt.DB, sm *resource.SecretsManager) *KubeWorker {
+func NewKubeWorker(name string, config *config.HorizonConfig, db *bolt.DB, am *resource.AuthenticationManager, sm *resource.SecretsManager) *KubeWorker {
 	worker := &KubeWorker{
 		BaseWorker: worker.NewBaseWorker(name, config, nil),
+		config:     config,
 		db:         db,
+		authMgr:    am,
 		secretMgr:  sm,
 	}
 	glog.Info(kwlog(fmt.Sprintf("Starting Kubernetes Worker")))
@@ -30,6 +36,10 @@ func NewKubeWorker(name string, config *config.HorizonConfig, db *bolt.DB, sm *r
 
 func (w *KubeWorker) Messages() chan events.Message {
 	return w.BaseWorker.Manager.Messages
+}
+
+func (kw *KubeWorker) GetAuthenticationManager() *resource.AuthenticationManager {
+	return kw.authMgr
 }
 
 func (w *KubeWorker) GetSecretManager() *resource.SecretsManager {
@@ -181,13 +191,39 @@ func (w *KubeWorker) processKubeOperator(lc *events.AgreementLaunchContext, kd *
 	}
 	// eg: secretsMap is map[secret1:eyJrZXki...]
 
-	client, err := NewKubeClient()
-	if err != nil {
-		return err
-	}
-	err = client.Install(kd.OperatorYamlArchive, kd.Metadata, *(lc.EnvironmentAdditions), secretsMap, lc.AgreementId, lc.Configure.ClusterNamespace, crInstallTimeout)
-	if err != nil {
-		return err
+	// create auth in agent pod and mount it to service pod
+	if ags, err := persistence.FindEstablishedAgreements(w.db, lc.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(lc.AgreementId)}); err != nil {
+		glog.Errorf("Unable to retrieve agreement %v from database, error %v", lc.AgreementId, err)
+	} else if len(ags) != 1 {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Ignoring the configure event for agreement %v, the agreement is no longer active.", lc.AgreementId)))
+		return nil
+	} else if ags[0].AgreementTerminatedTime != 0 {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Received configure command for agreement %v. Ignoring it because this agreement has been terminated.", lc.AgreementId)))
+		return nil
+	} else if ags[0].AgreementExecutionStartTime != 0 {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Received configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", lc.AgreementId)))
+		return nil
+	} else {
+		serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(ags[0].RunningWorkload.URL), ags[0].RunningWorkload.Org)
+		sVer := ags[0].RunningWorkload.Version
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Creating ESS creds for svc: %v svcVer: %v", serviceIdentity, sVer)))
+
+		_, err := w.GetAuthenticationManager().CreateCredential(lc.AgreementId, serviceIdentity, sVer, false)
+		if err != nil {
+			return err
+		}
+
+		client, err := NewKubeClient()
+		if err != nil {
+			return err
+		}
+
+		fssAuthFilePath := path.Join(w.GetAuthenticationManager().GetCredentialPath(lc.AgreementId), config.HZN_FSS_AUTH_FILE) // /var/horizon/ess-auth/<agreementId>/auth.json
+		fssCertFilePath := path.Join(w.config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_FILE)                             // /var/horizon/ess-auth/SSL/cert/cert.pem
+		err = client.Install(kd.OperatorYamlArchive, kd.Metadata, *(lc.EnvironmentAdditions), fssAuthFilePath, fssCertFilePath, secretsMap, lc.AgreementId, lc.Configure.ClusterNamespace, crInstallTimeout)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

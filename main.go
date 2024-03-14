@@ -188,7 +188,7 @@ func main() {
 		if imageWorker := imagefetch.NewImageFetchWorker("ImageFetch", cfg, db); imageWorker != nil {
 			workers.Add(imageWorker)
 		}
-		workers.Add(kube_operator.NewKubeWorker("Kube", cfg, db, secretm))
+		workers.Add(kube_operator.NewKubeWorker("Kube", cfg, db, authm, secretm))
 		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
 		workers.Add(changes.NewChangesWorker("ExchangeChanges", cfg, db))
 		workers.Add(nodemanagement.NewNodeManagementWorker("NodeManagement", cfg, db))

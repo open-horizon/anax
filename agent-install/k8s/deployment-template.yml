@@ -65,7 +65,8 @@ spec:
         - mountPath: /var/horizon
           name: agent-pvc-storage
         ports:
-        - containerPort: 8510
+        - containerPort: 8443
+          name: ess-secure
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
@@ -91,3 +92,21 @@ spec:
         - name: HZN_MGMT_HUB_CERT_PATH
           value: /etc/default/cert/agent-install.crt
         # END_CERT_VOL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-service
+  namespace: __AgentNameSpace__
+  labels:
+    app: agent
+    openhorizon.org/component: agent
+spec:
+  selector:
+    app: agent
+    openhorizon.org/component: agent
+  ports:
+    - name: ess-secure-port-name
+      protocol: TCP
+      port: 8443
+      targetPort: 8443

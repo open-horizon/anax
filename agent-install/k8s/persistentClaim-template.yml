@@ -9,4 +9,4 @@ spec:
     - __PVCAccessMode__
   resources:
     requests:
-      storage: 10Gi
+      storage: __PVCStorageSize__ # need to be configurable
