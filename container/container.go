@@ -2,7 +2,7 @@ package container
 
 import (
 	"bytes"
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -190,7 +190,7 @@ func hashService(service *containermessage.Service) (string, error) {
 
 	glog.V(5).Infof("Hashing Service: %v", string(b))
 
-	h := sha1.New()
+	h := sha256.New()
 	if _, err := io.Copy(h, bytes.NewBuffer(b)); err != nil {
 		return "", err
 	}
