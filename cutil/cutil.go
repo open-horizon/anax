@@ -2,8 +2,8 @@ package cutil
 
 import (
 	"bufio"
-	"crypto/md5"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -779,9 +779,9 @@ func RemoveArchFromServiceId(sId string) string {
 	return sId_no_arch
 }
 
-// GetHashFromString returns the md5 hash for given string
+// GetHashFromString returns the sha256 hash for given string
 func GetHashFromString(str string) string {
-	hasher := md5.New()
+	hasher := sha256.New()
 	hasher.Write([]byte(str))
 	return hex.EncodeToString(hasher.Sum(nil))
 }
