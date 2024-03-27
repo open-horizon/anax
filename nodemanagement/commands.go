@@ -2,6 +2,7 @@ package nodemanagement
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/events"
 )
 
@@ -141,4 +142,22 @@ func NewNmpStatusChangeCommand(msg *events.ExchangeChangeMessage) *NmpStatusChan
 	return &NmpStatusChangeCommand{
 		Msg: msg,
 	}
+}
+
+type ImageFetchedCommand struct {
+	DeploymentDescription *containermessage.DeploymentDescription
+}
+
+func NewImageFetchedCommand(dd *containermessage.DeploymentDescription) *ImageFetchedCommand {
+	return &ImageFetchedCommand{
+		DeploymentDescription: dd,
+	}
+}
+
+func (i ImageFetchedCommand) String() string {
+	return fmt.Sprintf("DeploymentDescription: %v", i.DeploymentDescription)
+}
+
+func (i ImageFetchedCommand) ShortString() string {
+	return i.String()
 }
