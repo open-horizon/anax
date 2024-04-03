@@ -2,16 +2,12 @@ package sync_service
 
 import (
 	"bytes"
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha1"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
@@ -346,9 +342,9 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		objectMeta.MetaOnly = true
 	} else if !skipDigitalSig {
 
-		hashAlgorithm := common.Sha1
-		if dsHashAlgo == common.Sha256 {
-			hashAlgorithm = common.Sha256
+		hashAlgorithm := common.Sha256
+		if dsHashAlgo == common.Sha1 {
+			hashAlgorithm = common.Sha1
 		}
 
 		msgPrinter.Printf("Digital sign with %s will be performed for data integrity. It will delay the MMS object publish.\n", hashAlgorithm)
@@ -574,7 +570,7 @@ func SignObjData(objData io.Reader, dsHashAlgo string, dsHash string, privKeyFil
 		msgPrinter.Printf("Start hashing the file...")
 		msgPrinter.Println()
 
-		if fileHash, err = GetHash(dsHashAlgo); err != nil {
+		if fileHash, err = cutil.GetHash(dsHashAlgo); err != nil {
 			return "", "", err
 		} else if _, err = io.Copy(fileHash, objData); err != nil {
 			return "", "", err
@@ -600,7 +596,7 @@ func SignObjData(objData io.Reader, dsHashAlgo string, dsHash string, privKeyFil
 
 	if publicKeyBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey); err != nil {
 		return "", "", err
-	} else if cryptoHash, err := GetCryptoHashType(dsHashAlgo); err != nil {
+	} else if cryptoHash, err := cutil.GetCryptoHashType(dsHashAlgo); err != nil {
 		return "", "", err
 	} else if signature, err := rsa.SignPSS(rand.Reader, privateKey, cryptoHash, fileHashSum, nil); err != nil {
 		return "", "", err
@@ -609,33 +605,6 @@ func SignObjData(objData io.Reader, dsHashAlgo string, dsHash string, privKeyFil
 		signatureString := base64.StdEncoding.EncodeToString(signature)
 
 		return publicKeyString, signatureString, nil
-	}
-}
-
-func GetHash(hashAlgo string) (hash.Hash, error) {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
-
-	if hashAlgo == common.Sha1 {
-		return sha1.New(), nil
-	} else if hashAlgo == common.Sha256 {
-		return sha256.New(), nil
-	} else {
-		return nil, errors.New(msgPrinter.Sprintf("Hash algorithm %s is not supported", hashAlgo))
-	}
-
-}
-
-func GetCryptoHashType(hashAlgo string) (crypto.Hash, error) {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
-
-	if hashAlgo == common.Sha1 {
-		return crypto.SHA1, nil
-	} else if hashAlgo == common.Sha256 {
-		return crypto.SHA256, nil
-	} else {
-		return 0, errors.New(msgPrinter.Sprintf("Hash algorithm %s is not supported", hashAlgo))
 	}
 }
 
@@ -668,7 +637,6 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 
 	var endOffset int64
 	var dataLength int64
-	var mmsOwnerID string
 	retryCount := 0
 	for int64(startOffset) < fileInfo.Size() {
 		dataLength = int64(chunkSize)
@@ -697,7 +665,7 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 			msgPrinter.Printf("\r")
 		}
 
-		makeHeaderMap(headers, startOffset, endOffset, fileInfo.Size(), dataLength, mmsOwnerID, creds)
+		makeHeaderMap(headers, startOffset, endOffset, fileInfo.Size(), dataLength, creds)
 		resp, err := makeChunkUploadRequest(httpClient, mmsUrl, headers, chunkData, closeRequest)
 
 		// In order for HTTP client connection to be re-used, the response body must be fully read. Do it here
@@ -758,7 +726,7 @@ func makeChunkUploadRequest(httpClient *http.Client, mmsUrl string, headers map[
 	return httpClient.Do(req)
 }
 
-func makeHeaderMap(headers map[string]string, startOffset int64, endOffset int64, fileSize int64, dataLength int64, mmsOwnerID string, creds string) {
+func makeHeaderMap(headers map[string]string, startOffset int64, endOffset int64, fileSize int64, dataLength int64, creds string) {
 	headers["Content-Range"] = fmt.Sprintf("bytes %d-%d/%d", startOffset, endOffset, fileSize)
 	headers["Content-Length"] = strconv.FormatInt(dataLength, 10)
 	headers["Authorization"] = fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(creds)))

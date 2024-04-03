@@ -202,9 +202,9 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType, dsHashA
 	// Sign the manifest object for integrity during upload to CSS
 	if !skipDigitalSig {
 
-		hashAlgorithm := common.Sha1
-		if dsHashAlgo == common.Sha256 {
-			hashAlgorithm = common.Sha256
+		hashAlgorithm := common.Sha256
+		if dsHashAlgo == common.Sha1 {
+			hashAlgorithm = common.Sha1
 		}
 
 		msgPrinter.Printf("Digital sign with %s will be performed for data integrity.\n", hashAlgorithm)
