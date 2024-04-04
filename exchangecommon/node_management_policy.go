@@ -20,6 +20,7 @@ type ExchangeNodeManagementPolicy struct {
 	PolicyUpgradeTime      string                              `json:"start"`
 	UpgradeWindowDuration  int                                 `json:"startWindow"`
 	AgentAutoUpgradePolicy *ExchangeAgentUpgradePolicy         `json:"agentUpgradePolicy,omitempty"`
+	AgentImagePolicy       *ExchangeAgentImagePolicy           `json:"agentImagePolicy,omitempty"`
 	LastUpdated            string                              `json:"lastUpdated,omitempty"`
 	Created                string                              `json:"created,omitempty"`
 }
@@ -134,4 +135,22 @@ type AgentFileVersions struct {
 
 func (a AgentFileVersions) String() string {
 	return fmt.Sprintf("SoftwareVersions: %v, ConfigVersions: %v, CertVersions: %v", a.SoftwareVersions, a.ConfigVersions, a.CertVersions)
+}
+
+type ExchangeAgentImagePolicy struct {
+	Removal []ImageRemovalPolicy `json:"imageRemovalPolicies,omitempty"`
+}
+
+func (e ExchangeAgentImagePolicy) String() string {
+	str := "Removal: "
+	for _, pol := range e.Removal {
+		str = str + fmt.Sprintf(" %v", pol)
+	}
+	return str
+}
+
+type ImageRemovalPolicy struct {
+	ImageId             string `json:"imageId"`
+	DeleteAfterMinutes  uint64 `json:"deleteAfterMinutes"`
+	AgentDownloadedOnly bool   `json:"agentDownloadedOnly"`
 }
