@@ -385,20 +385,18 @@ type ClusterRolebindingRbacV1 struct {
 func (crb ClusterRolebindingRbacV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating cluster role binding %v", crb)))
 
-	// checking the serviceaccount for clusterrolebinding if it is namespace-scoped agent:
-	//   - If the namespace of serviceaccount is defined in yaml, but is different from namespace for operator, replace the sa namespace with namespace to deploy operator.
-	if cutil.IsNamespaceScoped() {
-		// normalize the namespace of service account for namespace scoped agent
-		subs := []rbacv1.Subject{}
-		for _, sub := range crb.ClusterRolebindingObject.Subjects {
-			rb_sub := &sub
-			if sub.Namespace != "" && sub.Namespace != namespace {
-				rb_sub.Namespace = namespace
-			}
-			subs = append(subs, *rb_sub)
+	// checking the serviceaccount for clusterrolebinding:
+	//   - namespace-scoped agent: Normalize the namespace of service account for namespace scoped agent. If the namespace of serviceaccount is defined in yaml, but is different from namespace for operator, replace the sa namespace with namespace to deploy operator.
+	//   - cluster-scoped agent: If the namespace of the serviceaccount is absent, add namespace
+	subs := []rbacv1.Subject{}
+	for _, sub := range crb.ClusterRolebindingObject.Subjects {
+		rb_sub := &sub
+		if (cutil.IsNamespaceScoped() && sub.Namespace != "" && sub.Namespace != namespace) || (!cutil.IsNamespaceScoped() && sub.Namespace == "") {
+			rb_sub.Namespace = namespace
 		}
-		crb.ClusterRolebindingObject.Subjects = subs
+		subs = append(subs, *rb_sub)
 	}
+	crb.ClusterRolebindingObject.Subjects = subs
 
 	// get clusterrolebinding
 	existingCRB, err := c.Client.RbacV1().ClusterRoleBindings().Get(context.Background(), crb.Name(), metav1.GetOptions{})
