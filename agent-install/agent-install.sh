@@ -628,7 +628,7 @@ function get_certificate() {
 
     if [[ -n $css_cert_path ]]; then
         download_css_file "$css_cert_path"
-        
+
     fi
 
     #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
@@ -785,13 +785,13 @@ function download_css_file() {
                     # write AGENT_CERT_VERSION in file comment as ------OpenHorizon Version x.x.x-----
                     version_to_add="-----OpenHorizon Version $AGENT_CERT_VERSION-----"
                     log_debug "add this line $version_to_add to cert file: $AGENT_CERT_FILE"
-                
+
                     echo "-----OpenHorizon Version $AGENT_CERT_VERSION-----" > tmp-agent-install.crt
                     cat $AGENT_CERT_FILE >> tmp-agent-install.crt
                     mv tmp-agent-install.crt $AGENT_CERT_FILE
                 elif [[ "$AGENT_CERT_VERSION" != "$version_from_cert_file" ]]; then
                     # if version in cert != version in css filename, overwrite to use version in css filename
-                    sed -i "s#$version_from_cert_file#${AGENT_CERT_VERSION}#g" $AGENT_CERT_FILE 
+                    sed -i "s#$version_from_cert_file#${AGENT_CERT_VERSION}#g" $AGENT_CERT_FILE
                 fi
             fi
         fi
@@ -853,7 +853,7 @@ function getCertVersionFromCertFile() {
 
     log_debug "cert_ver_from_file=$cert_ver_from_file"
     eval $__resultvar="'${cert_ver_from_file}'"
-    log_debug "getCertVersionFromCertFile() end" 
+    log_debug "getCertVersionFromCertFile() end"
 }
 
 function download_anax_release_file() {
@@ -1205,6 +1205,9 @@ function get_all_variables() {
     get_variable AGENT_DEPLOY_TYPE 'device'
     get_variable AGENT_WAIT_MAX_SECONDS '30'
 
+    # Update HZN_ENV_FILE to be unique for this installation
+    HZN_ENV_FILE="$HZN_ENV_FILE-$HZN_NODE_ID"
+
     if ! is_cluster && [[ $INPUT_FILE_PATH == remote:* ]]; then
         log_fatal 1 "\$INPUT_FILE_PATH cannot set to 'remote:<version>' if \$AGENT_DEPLOY_TYPE is 'device'"
     fi
@@ -1218,7 +1221,7 @@ function get_all_variables() {
         # Currently only support a few architectures for anax-in-container; if anax-in-container specified, check the architecture
 	if is_macos; then
                 : # do not need to check
-        else 
+        else
                 if [[ $AGENT_IN_CONTAINER == 'true' ]]; then
                         check_support "${SUPPORTED_ANAX_IN_CONTAINER_ARCH[*]}" "${image_arch}" 'anax-in-container architectures'
                 fi
@@ -1249,7 +1252,7 @@ function get_all_variables() {
         fi
         log_info "KUBECTL is set to $KUBECTL"
 
-        # get other variables for cluster agent 
+        # get other variables for cluster agent
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE "$DEFAULT_AGENT_NAMESPACE"
         get_variable NAMESPACE_SCOPED 'false'
@@ -1307,9 +1310,9 @@ function get_all_variables() {
             get_variable CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY "$auto_upgrade_cronjob_image_registry_on_edge_cluster"
             get_variable CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE "$DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE"
         fi
-       
+
         get_variable INIT_CONTAINER_IMAGE "$DEFAULT_INIT_CONTAINER_IMAGE_PATH"
-        
+
         get_variable EDGE_CLUSTER_REGISTRY_USERNAME
         get_variable EDGE_CLUSTER_REGISTRY_TOKEN
         if [[ ( -z $EDGE_CLUSTER_REGISTRY_USERNAME && -n $EDGE_CLUSTER_REGISTRY_TOKEN ) || ( -n $EDGE_CLUSTER_REGISTRY_USERNAME && -z $EDGE_CLUSTER_REGISTRY_TOKEN ) ]]; then
@@ -3543,7 +3546,7 @@ function pushImagesToEdgeClusterRegistry() {
             runCmdQuietly ${DOCKER_ENGINE} push ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
             log_verbose "successfully pushed image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
         fi
-    fi 
+    fi
 
     log_debug "pushImagesToEdgeClusterRegistry() end"
 }
@@ -3657,7 +3660,7 @@ function check_cluster_agent_scope() {
         # check namespace
         namespaces_have_agent=$($KUBECTL get deployment --field-selector metadata.name=agent -A -o jsonpath="{.items[*].metadata.namespace}" | tr -s '[[:space:]]' ',')
         log_info "Already have agent deployment in namespaces: $namespaces_have_agent, checking scope of existing agent"
-        
+
         if [[ "$namespaces_have_agent" == *"$AGENT_NAMESPACE"* ]]; then
             log_debug "Namespaces array contains current namespace"
             # continue to check_agent_deployment_exist() to check scope
@@ -3682,7 +3685,7 @@ function check_cluster_agent_scope() {
                 log_fatal 3 "A cluster scoped agent detected in $namespace_to_check. A namespace scoped agent cannot be installed to the same cluster that has a cluster scoped agent"
             fi
         fi
- 
+
     else
         # no agent deployment in any namespace, can proceed to install this agent
         log_debug "No agent deployment in any namespace, can proceed to install this agent"
@@ -3753,7 +3756,7 @@ function check_agent_deployment_exist() {
                 IS_AGENT_IMAGE_VERSION_SAME="true"
             fi
 
-            
+
             # check 2) auto-upgrade-cronjob cronjob image in cronjob yml
             # eg: {image-registry}:5000/{repo}/{image-name}:{version}
             if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
@@ -4504,7 +4507,7 @@ function install_update_cluster() {
         if is_ocp_cluster; then
             create_namespace
             create_image_stream
-        fi   
+        fi
     else
         log_info "Use remote registry"
         create_namespace
@@ -4514,7 +4517,7 @@ function install_update_cluster() {
     if [[ $INPUT_FILE_PATH != remote:* ]]; then
         pushImagesToEdgeClusterRegistry
     fi
-    
+
     if [[ "$AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE" == "true" ]]; then
         check_agent_deployment_exist   # sets AGENT_DEPLOYMENT_UPDATE POD_ID
     fi
