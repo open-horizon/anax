@@ -1,22 +1,22 @@
 ---
 copyright:
-years: 2022 - 2023
-lastupdated: "2024-01-16"
+years: 2022 - 2024
+lastupdated: "2024-04-09"
 
-title: "All-in-One cluster agent"
+title: "All-in-One (AIO) cluster agent"
 
 parent: Agent (anax)
 nav_order: 20
 ---
-# How to install an edge cluster agent and register with the All-in-1 Management Hub
+# How to install an edge cluster agent and register with the All-in-1 (AIO) Management Hub
 
-This guide is for installing a microk8s or k3s cluster agent and registering the agent with a previously installed All-in-1 Management Hub. For more information on installing the Hub, see the guide [here](./all-in-1-setup.md). This guide assumes the Management Hub is already running, and was configured to use SSL transport and is listening on an external IP that can be reached outside of the local network.
+This guide is for installing a microk8s or K3s cluster agent and registering the agent with a previously installed All-in-1 (AIO) Management Hub. For more information on installing the Hub, see the guide [here](./all-in-1-setup.md). This guide assumes the Management Hub is already running, and was configured to use SSL transport and is listening on an external IP that can be reached outside of the local network.
 
-## Install and configure a k3s edge cluster
+## Install and configure a K3s edge cluster
 
-**Note**: If you already have a k3s cluster installed, skip to the next section: Installing the Cluster Agent.
+**Note**: If you already have a K3s cluster installed, skip to the next section: [Installing the Cluster Agent](#install-agent-on-edge-cluster).
 
-This content provides a summary of how to install k3s, a lightweight and small Kubernetes cluster, on Ubuntu 18.04. For more information, see the k3s documentation.
+This content provides a summary of how to install K3s, a lightweight and small Kubernetes cluster, on [Ubuntu 22.04.4 LTS ](https://ubuntu.com/download/server){:target="_blank"}{: .externalLink}. For more information, see [the K3s documentation ](https://docs.k3s.io/){:target="_blank"}{: .externalLink}.
 
 **Note**: If installed, uninstall kubectl before completing the following steps.
 
@@ -28,7 +28,13 @@ This content provides a summary of how to install k3s, a lightweight and small K
    hostname
    ```
 
-3. Install k3s:
+   If you need to update it (for example, from `k3s` to `k.3.s`), use the following pattern:
+
+   ```bash
+   hostnamectl hostname k.3.s
+   ```
+
+3. Install K3s:
 
    ```bash
    curl -sfL https://get.k3s.io | sh -
@@ -37,7 +43,7 @@ This content provides a summary of how to install k3s, a lightweight and small K
 4. Choose the image registry types: remote image registry or edge cluster local registry. Image registry is the place that will hold the agent image and agent cronjob image. 
 
 - [Remote image registry](#remote-image-registry)
-- [Setup edge cluster local image registry for k3s](#k3s-local-image-registry-setup)
+- [Setup edge cluster local image registry for K3s](#k3s-local-image-registry-setup)
 
 ### <a id="remote-image-registry"></a>Remote image registry
 {: #remote-image-registry}
@@ -55,12 +61,12 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
 {: codeblock}
 
 
-### <a id="k3s-local-image-registry-setup"></a>Setup edge cluster local image registry for k3s
+### <a id="k3s-local-image-registry-setup"></a>Setup edge cluster local image registry for K3s
 {: #k3s-local-image-registry-setup}
 
 **Note: Skip this section if using remote image registry**
 
-1. Create the k3s image registry service:
+1. Create the K3s image registry service:
 
    a. set `USE_EDGE_CLUSTER_REGISTRY` environment variable to `true`. This env indicates `agent-install.sh` script to use local image registry
 
@@ -84,6 +90,12 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
             storage: 10Gi
       ```
       {: codeblock}
+
+      or download it from the server:
+
+      ```bash
+      curl -sSLO https://raw.githubusercontent.com/open-horizon/open-horizon.github.io/master/docs/installing/k3s-persistent-claim.yaml
+      ```
 
    c. Create the persistent volume claim:
 
@@ -145,6 +157,12 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       ```
       {: codeblock}
 
+      or download it from the server:
+
+      ```bash
+      curl -sSLO https://raw.githubusercontent.com/open-horizon/open-horizon.github.io/master/docs/installing/k3s-registry-deployment.yaml
+      ```
+
    f. Create the registry deployment and service:
 
       ```bash
@@ -173,7 +191,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       ```
       {: codeblock}
 
-   i. Restart k3s to pick up the change to **/etc/rancher/k3s/registries.yaml**:
+   i. Restart K3s to pick up the change to **/etc/rancher/k3s/registries.yaml**:
 
       ```bash
       systemctl restart k3s
@@ -182,7 +200,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
 
 2. Define this registry to docker as an insecure registry:
 
-   a. Install docker (if not already installed):
+   a. Install docker (if not already installed, `docker --version` to check):
 
       ```bash
       curl -fsSL get.docker.com | sh
@@ -204,6 +222,12 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       systemctl restart docker
       ```
       {: codeblock}
+   
+   d. Install `jq`:
+
+   ```bash
+   apt-get -y install jq
+   ```
 
 ## Install and configure a microk8s edge cluster
 
@@ -310,8 +334,9 @@ This content provides a summary of how to install microk8s, a lightweight and sm
   ```
 
 ## Install Agent on Edge Cluster
+{: #install-agent-on-edge-cluster}
 
-This content describes how to install the Open Horizon agent on k3s or microk8s - lightweight and small Kubernetes cluster solutions.
+This content describes how to install the Open Horizon agent on K3s or microk8s - lightweight and small Kubernetes cluster solutions.
 
 **Note** These instructions assume that the Hub was configured to listen on an external IP using SSL transport. For more information about setting up an All-in-1 Management Hub see [here](./all-in-1-setup.md)
 
@@ -343,7 +368,7 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
 
 5. Instruct agent-install.sh to use the default storage class:
 
-    On k3s:
+    On K3s:
 
     ```bash
     export EDGE_CLUSTER_STORAGE_CLASS=local-path
@@ -372,6 +397,30 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
     To install a namespace-scoped agent:
     ```bash
     ./agent-install.sh -D cluster -i anax: -c css: -k css: --namespace $AGENT_NAMESPACE --namespace-scoped
+    ```
+
+    **Note** If your server is not configured with the certificate, config, and agent files you will need to use the following alternative steps to install:
+
+    a. Create an empty certificate:
+
+    ```bash
+    touch agent-install.crt
+    ```
+
+    b. Create a local install configuration file named `agent-install.cfg` containing (change "http" to "https" if secure transport is configured):
+
+    ```text
+    HZN_EXCHANGE_URL=http://<ip-address-here>:3090/v1
+    HZN_FSS_CSSURL=http://<ip-address-here>:9443/
+    HZN_AGBOT_URL=http://<ip-address-here>:3111
+    HZN_SDO_SVC_URL=<ip-address-here>:9008/api
+    HZN_FDO_SVC_URL=<ip-address-here>:9008/api
+    ```
+
+    c. Install a cluster-scoped agent using the local configuration:
+
+    ```bash
+    ./agent-install.sh -D cluster -i anax: -c css: -k ./agent-install.cfg --namespace $AGENT_NAMESPACE
     ```
 
 7. Verify that the agent pod is running:
