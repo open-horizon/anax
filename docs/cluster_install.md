@@ -198,7 +198,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       ```
       {: codeblock}
 
-2. Define this registry to docker as an insecure registry:
+2. Define this registry to Docker as an insecure registry:
 
    a. Install Docker (if not already installed, `docker --version` to check):
 
@@ -216,7 +216,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       ```
       {: codeblock}
 
-   c. Restart docker to pick up the change:
+   c. Restart Docker to pick up the change:
 
       ```bash
       systemctl restart docker
@@ -289,7 +289,7 @@ This content provides a summary of how to install MicroK8s, a lightweight and sm
 ### <a id="microk8s-local-image-registry-setup"></a>Setup edge cluster local image registry for MicroK8s
 {: #microk8s-local-image-registry-setup}
 
-**Note: Skip this section if using remote image registry.** Enable the container registry and configure docker to tolerate the insecure registry:
+**Note: Skip this section if using remote image registry.** Enable the container registry and configure Docker to tolerate the insecure registry:
 
 1. Enable the container registry
 
@@ -312,7 +312,7 @@ This content provides a summary of how to install MicroK8s, a lightweight and sm
   apt-get -y install jq
   ```
 
-4. Define this registry as insecure to docker. Create or add to `/etc/docker/daemon.json`.
+4. Define this registry as insecure to Docker. Create or add to `/etc/docker/daemon.json`.
 
   ```bash
   echo "{
@@ -320,7 +320,7 @@ This content provides a summary of how to install MicroK8s, a lightweight and sm
   }" >> /etc/docker/daemon.json
   ```
 
-5. Restart docker to pick up the change:
+5. Restart Docker to pick up the change:
 
   ```bash
   systemctl restart docker
