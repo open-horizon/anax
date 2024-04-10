@@ -419,7 +419,7 @@ This content describes how to install the Open Horizon agent on K3s or MicroK8s 
 8. Use the following command to connect to a bash instance on the agent pod to execute hzn commands
 
     ```bash
-    kubectl exec -it $(kubectl get pod -l app=agent -n openhorizon-agent | grep "agent-" | cut -d " " -f1) -n $AGENT_NAMESPACE -- bash
+    kubectl exec -it $(kubectl get pod -l app=agent -n $AGENT_NAMESPACE | grep "agent-" | cut -d " " -f1) -n $AGENT_NAMESPACE -- bash
     ```
 
 9. As a test, execute the following hzn command on the agent pod:
