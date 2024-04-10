@@ -10,7 +10,7 @@ nav_order: 20
 ---
 # How to install an edge cluster agent and register with the All-in-1 Management Hub
 
-This guide is for installing a microk8s or K3s cluster agent and registering the agent with a previously installed All-in-1 Management Hub. For more information on installing the Hub, see the guide [here](./all-in-1-setup.md). This guide assumes the Management Hub is already running, and was configured to use SSL transport and is listening on an external IP that can be reached outside of the local network.
+This guide is for installing a MicroK8s or K3s cluster agent and registering the agent with a previously installed All-in-1 Management Hub. For more information on installing the Hub, see the guide [here](./all-in-1-setup.md). This guide assumes the Management Hub is already running, and was configured to use SSL transport and is listening on an external IP that can be reached outside of the local network.
 
 ## Install and configure a K3s edge cluster
 
@@ -229,21 +229,21 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
    apt-get -y install jq
    ```
 
-## Install and configure a microk8s edge cluster
+## Install and configure a MicroK8s edge cluster
 
-**Note**: If you already have a microk8s cluster installed, skip to the next section: Installing the Cluster Agent.
+**Note**: If you already have a MicroK8s cluster installed, skip to the next section: Installing the Cluster Agent.
 
-This content provides a summary of how to install microk8s, a lightweight and small Kubernetes cluster, on Ubuntu 18.04. (For more information, see the microk8s documentation.)
+This content provides a summary of how to install MicroK8s, a lightweight and small Kubernetes cluster, on Ubuntu 18.04. (For more information, see the MicroK8s documentation.)
 
 **Note**: This type of edge cluster is meant for development and test because a single worker node Kubernetes cluster does not provide scalability or high availability.
 
-1. Install microk8s:
+1. Install MicroK8s:
 
     ```bash
     sudo snap install microk8s --classic --channel=stable
     ```
 
-2. If you are not running as root, add your user to the microk8s group:
+2. If you are not running as root, add your user to the MicroK8s group:
 
     ```bash
     sudo usermod -a -G microk8s $USER
@@ -251,14 +251,14 @@ This content provides a summary of how to install microk8s, a lightweight and sm
     su - $USER
     ```
 
-3. Enable dns and storage modules in microk8s:
+3. Enable dns and storage modules in MicroK8s:
 
     ```bash
     microk8s.enable dns
     microk8s.enable storage
     ```
 
-    **Note**: Microk8s uses 8.8.8.8 and 8.8.4.4 as upstream name servers by default. If these name servers cannot resolve the management hub hostname, you must change the name servers that microk8s is using:
+    **Note**: MicroK8s uses 8.8.8.8 and 8.8.4.4 as upstream name servers by default. If these name servers cannot resolve the management hub hostname, you must change the name servers that MicroK8s is using:
 
     a. Retrieve the list of upstream name servers in `/etc/resolv.conf` or `/run/system/resolve/resolv.conf`
 
@@ -274,7 +274,7 @@ This content provides a summary of how to install microk8s, a lightweight and sm
     microk8s.status --wait-ready
     ```
 
-5. The microk8s kubectl command is called microk8s.kubectl to prevent conflicts with an already install kubectl command. Assuming that kubectl is not installed, add this alias for microk8s.kubectl:
+5. The MicroK8s kubectl command is called microk8s.kubectl to prevent conflicts with an already install kubectl command. Assuming that kubectl is not installed, add this alias for microk8s.kubectl:
 
     ```bash
     echo 'alias kubectl=microk8s.kubectl' >> ~/.bash_aliases
@@ -284,9 +284,9 @@ This content provides a summary of how to install microk8s, a lightweight and sm
 6. Choose the image registry types: remote image registry or edge cluster local registry. Image registry is the place that will hold the agent image and agent cronjob image. 
 
 - [Remote image registry](#remote-image-registry)
-- [Setup edge cluster local image registry for microk8s](#microk8s-local-image-registry-setup)
+- [Setup edge cluster local image registry for MicroK8s](#microk8s-local-image-registry-setup)
 
-### <a id="microk8s-local-image-registry-setup"></a>Setup edge cluster local image registry for microk8s
+### <a id="microk8s-local-image-registry-setup"></a>Setup edge cluster local image registry for MicroK8s
 {: #microk8s-local-image-registry-setup}
 
 **Note: Skip this section if using remote image registry.** Enable the container registry and configure docker to tolerate the insecure registry:
@@ -336,7 +336,7 @@ This content provides a summary of how to install microk8s, a lightweight and sm
 ## Install Agent on Edge Cluster
 {: #install-agent-on-edge-cluster}
 
-This content describes how to install the Open Horizon agent on K3s or microk8s - lightweight and small Kubernetes cluster solutions.
+This content describes how to install the Open Horizon agent on K3s or MicroK8s - lightweight and small Kubernetes cluster solutions.
 
 **Note**: These instructions assume that the Hub was configured to listen on an external IP using SSL transport. For more information about setting up an All-in-1 Management Hub see [here](./all-in-1-setup.md)
 
@@ -374,7 +374,7 @@ This content describes how to install the Open Horizon agent on K3s or microk8s 
     export EDGE_CLUSTER_STORAGE_CLASS=local-path
     ```
 
-    On microk8s:
+    On MicroK8s:
 
     ```bash
     export EDGE_CLUSTER_STORAGE_CLASS=microk8s-hostpath
