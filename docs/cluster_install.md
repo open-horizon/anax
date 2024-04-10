@@ -383,6 +383,8 @@ This content describes how to install the Open Horizon agent on K3s or microk8s 
     If the cluster agent will use other storageclass than the above, please find the storage class satisfy [these attributes](#storageclass_attribute)
 
 6. Run agent-install.sh to get the necessary files from Github, install and configure the Horizon agent, and register your edge cluster with policy.
+
+    **Note** You should be logged in as root or elevated to root.  If you are not, preface the agent-install.sh script command below with `sudo -s -E`.
     
     Set `AGENT_NAMESPACE` to the namespace that will install the cluster agent. If not set, the agent will be installed to `openhorizon-agent` default namespace
     ```bash
