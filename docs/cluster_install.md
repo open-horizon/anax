@@ -200,7 +200,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
 
 2. Define this registry to docker as an insecure registry:
 
-   a. Install docker (if not already installed, `docker --version` to check):
+   a. Install Docker (if not already installed, `docker --version` to check):
 
       ```bash
       curl -fsSL get.docker.com | sh
@@ -233,7 +233,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
 
 **Note**: If you already have a MicroK8s cluster installed, skip to the next section: Installing the Cluster Agent.
 
-This content provides a summary of how to install MicroK8s, a lightweight and small Kubernetes cluster, on Ubuntu 18.04. (For more information, see the MicroK8s documentation.)
+This content provides a summary of how to install MicroK8s, a lightweight and small Kubernetes cluster, on Ubuntu 22.04.4 LTS. (For more information, see the MicroK8s documentation.)
 
 **Note**: This type of edge cluster is meant for development and test because a single worker node Kubernetes cluster does not provide scalability or high availability.
 
@@ -255,7 +255,7 @@ This content provides a summary of how to install MicroK8s, a lightweight and sm
 
     ```bash
     microk8s.enable dns
-    microk8s.enable storage
+    microk8s.enable hostpath-storage
     ```
 
     **Note**: MicroK8s uses 8.8.8.8 and 8.8.4.4 as upstream name servers by default. If these name servers cannot resolve the management hub hostname, you must change the name servers that MicroK8s is using:
@@ -299,21 +299,20 @@ This content provides a summary of how to install MicroK8s, a lightweight and sm
   export REGISTRY_IP_ENDPOINT=$(kubectl get service registry -n container-registry | grep registry | awk '{print $3;}'):5000
   ```
 
-2. Install docker (if not already installed):
+2. Install Docker (if not already installed, `docker --version` to check):
 
-  ```bash
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  apt-get install docker-ce docker-ce-cli containerd.io
-  ```
+      ```bash
+      curl -fsSL get.docker.com | sh
+      ```
+      {: codeblock}
 
 3. Install jq (if not already installed):
 
   ```bash
-  apt-get install jq
+  apt-get -y install jq
   ```
 
-4. Define this registry as insecure to docker. Create or add to `/etc/docker/daemon.json.`
+4. Define this registry as insecure to docker. Create or add to `/etc/docker/daemon.json`.
 
   ```bash
   echo "{
@@ -321,16 +320,10 @@ This content provides a summary of how to install MicroK8s, a lightweight and sm
   }" >> /etc/docker/daemon.json
   ```
 
-5. (optional) Verify that docker is on your machine:
+5. Restart docker to pick up the change:
 
   ```bash
-  curl -fsSL get.docker.com | sh
-  ```
-
-6. Restart docker to pick up the change:
-
-  ```bash
-  sudo systemctl restart docker
+  systemctl restart docker
   ```
 
 ## Install Agent on Edge Cluster
