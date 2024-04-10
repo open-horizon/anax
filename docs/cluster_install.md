@@ -18,7 +18,7 @@ This guide is for installing a microk8s or K3s cluster agent and registering the
 
 This content provides a summary of how to install K3s, a lightweight and small Kubernetes cluster, on [Ubuntu 22.04.4 LTS ](https://ubuntu.com/download/server){:target="_blank"}{: .externalLink}. For more information, see [the K3s documentation ](https://docs.k3s.io/){:target="_blank"}{: .externalLink}.
 
-**Note**: If installed, uninstall kubectl before completing the following steps.
+**Note:**: If installed, uninstall kubectl before completing the following steps.
 
 1. Either login as root or elevate to root with sudo -i
 
@@ -338,7 +338,7 @@ This content provides a summary of how to install microk8s, a lightweight and sm
 
 This content describes how to install the Open Horizon agent on K3s or microk8s - lightweight and small Kubernetes cluster solutions.
 
-**Note** These instructions assume that the Hub was configured to listen on an external IP using SSL transport. For more information about setting up an All-in-1 Management Hub see [here](./all-in-1-setup.md)
+**Note**: These instructions assume that the Hub was configured to listen on an external IP using SSL transport. For more information about setting up an All-in-1 Management Hub see [here](./all-in-1-setup.md)
 
 1. Log in to your edge cluster as root
 
@@ -384,11 +384,16 @@ This content describes how to install the Open Horizon agent on K3s or microk8s 
 
 6. Run agent-install.sh to get the necessary files from Github, install and configure the Horizon agent, and register your edge cluster with policy.
 
-    **Note** You should be logged in as root or elevated to root.  If you are not, preface the agent-install.sh script command below with `sudo -s -E`.
+    **Note**: You should be logged in as root or elevated to root.  If you are not, preface the agent-install.sh script command below with `sudo -s -E`.
     
-    Set `AGENT_NAMESPACE` to the namespace that will install the cluster agent. If not set, the agent will be installed to `openhorizon-agent` default namespace
+    Set `AGENT_NAMESPACE` to the namespace that will install the cluster agent. If not set, the agent will be installed to `openhorizon-agent` default namespace.
     ```bash
     AGENT_NAMESPACE=<namespace-to-install-agent>
+    ```
+
+    If you are not using `https` as the transport, you need to create an empty installation certificate file in the current directory:
+    ```bash
+    touch agent-install.crt
     ```
 
     To install a cluster-scoped agent: 
@@ -399,29 +404,6 @@ This content describes how to install the Open Horizon agent on K3s or microk8s 
     To install a namespace-scoped agent:
     ```bash
     ./agent-install.sh -D cluster -i anax: -c css: -k css: --namespace $AGENT_NAMESPACE --namespace-scoped
-    ```
-
-    **Note** If your server is not configured with the certificate, config, and agent files you will need to use the following alternative steps to install:
-
-    a. Create an empty certificate:
-
-    ```bash
-    touch agent-install.crt
-    ```
-
-    b. Create a local install configuration file named `agent-install.cfg` containing (change "http" to "https" if secure transport is configured):
-
-    ```text
-    HZN_EXCHANGE_URL=http://<ip-address-here>:3090/v1
-    HZN_FSS_CSSURL=http://<ip-address-here>:9443/
-    HZN_AGBOT_URL=http://<ip-address-here>:3111
-    HZN_FDO_SVC_URL=<ip-address-here>:9008/api
-    ```
-
-    c. Install a cluster-scoped agent using the local configuration:
-
-    ```bash
-    ./agent-install.sh -D cluster -i anax: -c css: -k ./agent-install.cfg --namespace $AGENT_NAMESPACE
     ```
 
 7. Verify that the agent pod is running:
@@ -451,7 +433,7 @@ This content describes how to install the Open Horizon agent on K3s or microk8s 
 ## <a id="storageclass_attribute"></a>StorageClass attribute
 {: #storageclass_attribute}
 
-A PersistentVolumeClaim will be created during the agent install process. It will be used by agent to store data for agent and cronjob. The storageclass will need to satisfy the following requirements:
+A PersistentVolumeClaim will be created during the agent install process. It will be used by agent to store data for agent and cronjob. The storageclass must satisfy the following requirements:
 
 - supports both read and write
 - can be made available immediately
