@@ -1,16 +1,16 @@
 ---
 copyright:
 years: 2022 - 2024
-lastupdated: "2024-04-09"
+lastupdated: "2024-04-10"
 
-title: "All-in-One (AIO) cluster agent"
+title: "All-in-One cluster agent"
 
 parent: Agent (anax)
 nav_order: 20
 ---
-# How to install an edge cluster agent and register with the All-in-1 (AIO) Management Hub
+# How to install an edge cluster agent and register with the All-in-1 Management Hub
 
-This guide is for installing a microk8s or K3s cluster agent and registering the agent with a previously installed All-in-1 (AIO) Management Hub. For more information on installing the Hub, see the guide [here](./all-in-1-setup.md). This guide assumes the Management Hub is already running, and was configured to use SSL transport and is listening on an external IP that can be reached outside of the local network.
+This guide is for installing a microk8s or K3s cluster agent and registering the agent with a previously installed All-in-1 Management Hub. For more information on installing the Hub, see the guide [here](./all-in-1-setup.md). This guide assumes the Management Hub is already running, and was configured to use SSL transport and is listening on an external IP that can be reached outside of the local network.
 
 ## Install and configure a K3s edge cluster
 
@@ -413,7 +413,6 @@ This content describes how to install the Open Horizon agent on K3s or microk8s 
     HZN_EXCHANGE_URL=http://<ip-address-here>:3090/v1
     HZN_FSS_CSSURL=http://<ip-address-here>:9443/
     HZN_AGBOT_URL=http://<ip-address-here>:3111
-    HZN_SDO_SVC_URL=<ip-address-here>:9008/api
     HZN_FDO_SVC_URL=<ip-address-here>:9008/api
     ```
 
@@ -430,10 +429,6 @@ This content describes how to install the Open Horizon agent on K3s or microk8s 
     kubectl -n $AGENT_NAMESPACE get pods
     ```
 
-    If `AGENT_NAMESPACE` is not set in step 6, check agent pod in `openhorizon-agent`:
-    ```bash
-    kubectl -n openhorizon-agent get pods
-    ```
     **Note**: See [here](./agent_in_multi_namespace.md) for more information about agent in multi-namespace.
 
 
