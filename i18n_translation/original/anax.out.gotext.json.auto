@@ -2288,6 +2288,34 @@
             "fuzzy": true
         },
         {
+            "id": "Name, or Org is empty string.",
+            "message": "Name, or Org is empty string.",
+            "translation": "Name, or Org is empty string.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The serviceVersions array is empty.",
+            "message": "The serviceVersions array is empty.",
+            "translation": "The serviceVersions array is empty.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "retry_durations and retries cannot be zero if priority_value is set to non-zero value",
+            "message": "retry_durations and retries cannot be zero if priority_value is set to non-zero value",
+            "translation": "retry_durations and retries cannot be zero if priority_value is set to non-zero value",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set",
+            "message": "retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set",
+            "translation": "retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "properties contains an invalid property: {Err}",
             "message": "properties contains an invalid property: {Err}",
             "translation": "properties contains an invalid property: {Err}",
@@ -6505,23 +6533,6 @@
             "fuzzy": true
         },
         {
-            "id": "Node type '{NodeType}' does not support secret binding check.",
-            "message": "Node type '{NodeType}' does not support secret binding check.",
-            "translation": "Node type '{NodeType}' does not support secret binding check.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "NodeType",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "nodeType"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
             "message": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
             "translation": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
@@ -6557,6 +6568,31 @@
             "message": "Type Incompatible",
             "translation": "Type Incompatible",
             "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "{Msgcompatible}, Warning: {Reason}",
+            "message": "{Msgcompatible}, Warning: {Reason}",
+            "translation": "{Msgcompatible}, Warning: {Reason}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Msgcompatible",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "msg_compatible"
+                },
+                {
+                    "id": "Reason",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "reason"
+                }
+            ],
             "fuzzy": true
         },
         {
@@ -6729,13 +6765,6 @@
             "fuzzy": true
         },
         {
-            "id": "Secret binding for a cluster service is not supported.",
-            "message": "Secret binding for a cluster service is not supported.",
-            "translation": "Secret binding for a cluster service is not supported.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "No secret binding found for the following service secrets: {NbArray}.",
             "message": "No secret binding found for the following service secrets: {NbArray}.",
             "translation": "No secret binding found for the following service secrets: {NbArray}.",
@@ -6874,6 +6903,23 @@
             "fuzzy": true
         },
         {
+            "id": "{Err}, use non node-level secret",
+            "message": "{Err}, use non node-level secret",
+            "translation": "{Err}, use non node-level secret",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Error parsing secret name in the secret binding. {Errparse}",
             "message": "Error parsing secret name in the secret binding. {Errparse}",
             "translation": "Error parsing secret name in the secret binding. {Errparse}",
@@ -6886,6 +6932,39 @@
                     "underlyingType": "interface{Error() string}",
                     "argNum": 1,
                     "expr": "err_parse"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error checking secret {VaultSecretName} for node {NName} in the secret manager. {Err}",
+            "message": "Error checking secret {VaultSecretName} for node {NName} in the secret manager. {Err}",
+            "translation": "Error checking secret {VaultSecretName} for node {NName} in the secret manager. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "VaultSecretName",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "vaultSecretName"
+                },
+                {
+                    "id": "NName",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "nName"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[3]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 3,
+                    "expr": "err"
                 }
             ],
             "fuzzy": true
@@ -6911,6 +6990,31 @@
                     "underlyingType": "interface{Error() string}",
                     "argNum": 2,
                     "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Node level secret {VaultSecretName} doesn't exist for node {NName}",
+            "message": "Node level secret {VaultSecretName} doesn't exist for node {NName}",
+            "translation": "Node level secret {VaultSecretName} doesn't exist for node {NName}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "VaultSecretName",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "vaultSecretName"
+                },
+                {
+                    "id": "NName",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "nName"
                 }
             ],
             "fuzzy": true
