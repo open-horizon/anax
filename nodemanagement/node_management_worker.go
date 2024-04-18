@@ -299,6 +299,15 @@ func (n *NodeManagementWorker) DownloadComplete(cmd *NMPDownloadCompleteCommand)
 	}
 }
 
+func (n *NodeManagementWorker) HandleImageFetchedCommand(cmd *ImageFetchedCommand) {
+	for _, svc := range cmd.DeploymentDescription.Services {
+		imgRec := persistence.NewServiceImageUsage(svc.Image)
+		if err := persistence.SaveOrUpdateServiceImage(n.db, imgRec); err != nil {
+			glog.Errorf(nmwlog(fmt.Sprintf("Failed to save image download record to db: %v", err)))
+		}
+	}
+}
+
 func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 	glog.Infof(nmwlog(fmt.Sprintf("Handling command %v", command)))
 	switch command.(type) {
@@ -330,6 +339,9 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 		n.HandleAgentFilesVersionChange(cmd)
 	case *NmpStatusChangeCommand:
 		n.HandleNmpStatusReset()
+	case *ImageFetchedCommand:
+		cmd := command.(*ImageFetchedCommand)
+		n.HandleImageFetchedCommand(cmd)
 	default:
 		return false
 	}
@@ -519,6 +531,12 @@ func (n *NodeManagementWorker) NewEvent(incoming events.Message) {
 			n.Commands <- NewAgentFileVersionChangeCommand(msg)
 		case events.CHANGE_NMP_STATUS:
 			n.Commands <- NewNmpStatusChangeCommand(msg)
+		}
+	case *events.ImageFetchMessage:
+		msg, _ := incoming.(*events.ImageFetchMessage)
+		switch msg.Event().Id {
+		case events.IMAGE_FETCHED:
+			n.Commands <- NewImageFetchedCommand(msg.DeploymentDescription)
 		}
 	}
 }
