@@ -12,6 +12,16 @@ spec:
       backoffLimit: 0
       template:
         spec:
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                  - key: openhorizon.org/component
+                    operator: In
+                    values:
+                    - agent
+                topologyKey: kubernetes.io/hostname
           volumes:
           - name: agent-pvc-storage
             persistentVolumeClaim:

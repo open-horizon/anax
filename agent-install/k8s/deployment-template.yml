@@ -13,6 +13,16 @@ spec:
       labels:
         app: agent
     spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: openhorizon.org/component
+                operator: In
+                values:
+                - agent
+            topologyKey: kubernetes.io/hostname
       serviceAccountName: agent-service-account
       volumes:
       - name: agent-etc-vol
