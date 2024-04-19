@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/edge-sync-service/common"
 	"github.com/open-horizon/edge-sync-service/core/base"
 	"github.com/open-horizon/edge-sync-service/core/security"
@@ -20,23 +21,25 @@ import (
 )
 
 type ResourceManager struct {
-	config  *config.HorizonConfig
-	org     string
-	pattern string
-	id      string
-	token   string
+	config   *config.HorizonConfig
+	org      string
+	pattern  string
+	id       string
+	token    string
+	nodeType string
 }
 
-func NewResourceManager(cfg *config.HorizonConfig, org string, pattern string, id string, token string) *ResourceManager {
+func NewResourceManager(cfg *config.HorizonConfig, org string, pattern string, id string, token string, nodeType string) *ResourceManager {
 	if id != "" && pattern == "" {
 		pattern = "openhorizon/openhorizon.edgenode"
 	}
 	return &ResourceManager{
-		config:  cfg,
-		pattern: pattern,
-		id:      id,
-		org:     org,
-		token:   token,
+		config:   cfg,
+		pattern:  pattern,
+		id:       id,
+		org:      org,
+		token:    token,
+		nodeType: nodeType,
 	}
 }
 
@@ -44,19 +47,21 @@ func (r *ResourceManager) Configured() bool {
 	return r.id != ""
 }
 
-func (r *ResourceManager) NodeConfigUpdate(org string, pattern string, id string, token string) {
+func (r *ResourceManager) NodeConfigUpdate(org string, pattern string, id string, token string, nodeType string) {
 	r.pattern = pattern
 	r.id = id
 	r.org = org
 	r.token = token
+	r.nodeType = nodeType
 }
 
 func (r ResourceManager) String() string {
 	return fmt.Sprintf("ResourceManager: Org %v"+
 		", Pattern: %v"+
 		", ID: %v"+
-		", Token: %v",
-		r.org, r.pattern, r.id, r.token)
+		", Token: %v"+
+		", NodeType: %v",
+		r.org, r.pattern, r.id, r.token, r.nodeType)
 }
 
 func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
@@ -85,7 +90,7 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 	} else if essCertKeyBytes, err := ioutil.ReadAll(essCertKey); err != nil {
 		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
 	} else {
-		// create path for ListeningAddress if it does not exist
+		// For device agent, create path for ListeningAddress if it does not exist
 		listenAddrPath := r.config.GetFileSyncServiceAPIUnixDomainSocketPath()
 		if listenAddrPath != "" {
 			if _, err := os.Stat(listenAddrPath); os.IsNotExist(err) {
@@ -98,7 +103,7 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 		common.Configuration.DestinationType = exchange.GetId(r.pattern)
 		common.Configuration.DestinationID = r.id
 		common.Configuration.OrgID = r.org
-		common.Configuration.ListeningType = r.config.GetFileSyncServiceProtocol()
+		common.Configuration.ListeningType = r.config.GetFileSyncServiceProtocol() // secure for cluster, unix-secure for e2edev and device
 		common.Configuration.ListeningAddress = r.config.GetFileSyncServiceAPIListen()
 		common.Configuration.SecureListeningPort = r.config.GetFileSyncServiceAPIPort()
 		common.Configuration.ServerCertificate = string(essCertBytes)
@@ -107,13 +112,18 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 		common.Configuration.EnableDataChunk = r.config.IsDataChunkEnabled()
 		common.Configuration.MaxDataChunkSize = r.config.GetFileSyncServiceMaxDataChunkSize()
 		common.Configuration.HTTPPollingInterval = r.config.GetESSPollingRate()
-		common.Configuration.PersistenceRootPath = r.config.GetFileSyncServiceStoragePath()
+		common.Configuration.PersistenceRootPath = r.config.GetFileSyncServiceStoragePath() // /var/horizon/ess-store/, the db file will be inside: /var/horizon/ess-store/sync/db/ess-sync.db
 		common.Configuration.HTTPCSSUseSSL = true
 		common.Configuration.HTTPCSSCACertificate = r.config.GetCSSSSLCert()
 		common.Configuration.LogTraceDestination = "glog"
 		common.Configuration.ObjectQueueBufferSize = r.config.GetFSSObjectQueueSize()
 		common.Configuration.HTTPESSClientTimeout = r.config.GetHTTPESSClientTimeout()
 		common.Configuration.HTTPESSObjClientTimeout = r.config.GetHTTPESSObjClientTimeout()
+	}
+
+	if r.nodeType == persistence.DEVICE_TYPE_CLUSTER {
+		common.Configuration.ServerCertificate = certFile
+		common.Configuration.ServerKey = certKeyFile
 	}
 
 	if glog.V(5) {
@@ -156,9 +166,7 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 
 	// Set the authenticator that we're going to use.
 	security.SetAuthentication(&FSSAuthenticate{nodeOrg: r.org, nodeID: r.id, nodeToken: r.token, AuthMgr: am})
-
 	return nil
-
 }
 
 func (r ResourceManager) setupSecretsAPI(am *AuthenticationManager, db *bolt.DB) {

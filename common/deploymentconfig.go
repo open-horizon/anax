@@ -221,6 +221,6 @@ func GetClusterDeploymentMetadata(clusterDeployment interface{}, inspectOperator
 }
 
 func GetKubeOperatorNamespace(tar string) (string, error) {
-	_, namespace, err := kube_operator.ProcessDeployment(tar, nil, map[string]string{}, map[string]string{}, "", 0)
+	_, namespace, err := kube_operator.ProcessDeployment(tar, nil, map[string]string{}, "", "", map[string]string{}, "", 0)
 	return namespace, err
 }
