@@ -1,7 +1,7 @@
 ---
 copyright:
-years: 2022 - 2023
-lastupdated: "2024-01-16"
+years: 2022 - 2024
+lastupdated: "2024-04-10"
 
 title: "All-in-One cluster agent"
 
@@ -10,15 +10,15 @@ nav_order: 20
 ---
 # How to install an edge cluster agent and register with the All-in-1 Management Hub
 
-This guide is for installing a microk8s or k3s cluster agent and registering the agent with a previously installed All-in-1 Management Hub. For more information on installing the Hub, see the guide [here](./all-in-1-setup.md). This guide assumes the Management Hub is already running, and was configured to use SSL transport and is listening on an external IP that can be reached outside of the local network.
+This guide is for installing a MicroK8s or K3s cluster agent and registering the agent with a previously installed All-in-1 Management Hub. For more information on installing the Hub, see the guide [here](./all-in-1-setup.md). This guide assumes the Management Hub is already running, and was configured to use SSL transport and is listening on an external IP that can be reached outside of the local network.
 
-## Install and configure a k3s edge cluster
+## Install and configure a K3s edge cluster
 
-**Note**: If you already have a k3s cluster installed, skip to the next section: Installing the Cluster Agent.
+**Note**: If you already have a K3s cluster installed, skip to the next section: [Installing the Cluster Agent](#install-agent-on-edge-cluster).
 
-This content provides a summary of how to install k3s, a lightweight and small Kubernetes cluster, on Ubuntu 18.04. For more information, see the k3s documentation.
+This content provides a summary of how to install K3s, a lightweight and small Kubernetes cluster, on [Ubuntu 22.04.4 LTS ](https://ubuntu.com/download/server){:target="_blank"}{: .externalLink}. For more information, see [the K3s documentation ](https://docs.k3s.io/){:target="_blank"}{: .externalLink}.
 
-**Note**: If installed, uninstall kubectl before completing the following steps.
+**Note:**: If installed, uninstall kubectl before completing the following steps.
 
 1. Either login as root or elevate to root with sudo -i
 
@@ -28,7 +28,13 @@ This content provides a summary of how to install k3s, a lightweight and small K
    hostname
    ```
 
-3. Install k3s:
+   If you need to update it (for example, from `k3s` to `k.3.s`), use the following pattern:
+
+   ```bash
+   hostnamectl hostname k.3.s
+   ```
+
+3. Install K3s:
 
    ```bash
    curl -sfL https://get.k3s.io | sh -
@@ -37,7 +43,7 @@ This content provides a summary of how to install k3s, a lightweight and small K
 4. Choose the image registry types: remote image registry or edge cluster local registry. Image registry is the place that will hold the agent image and agent cronjob image. 
 
 - [Remote image registry](#remote-image-registry)
-- [Setup edge cluster local image registry for k3s](#k3s-local-image-registry-setup)
+- [Setup edge cluster local image registry for K3s](#k3s-local-image-registry-setup)
 
 ### <a id="remote-image-registry"></a>Remote image registry
 {: #remote-image-registry}
@@ -55,12 +61,12 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
 {: codeblock}
 
 
-### <a id="k3s-local-image-registry-setup"></a>Setup edge cluster local image registry for k3s
+### <a id="k3s-local-image-registry-setup"></a>Setup edge cluster local image registry for K3s
 {: #k3s-local-image-registry-setup}
 
 **Note: Skip this section if using remote image registry**
 
-1. Create the k3s image registry service:
+1. Create the K3s image registry service:
 
    a. set `USE_EDGE_CLUSTER_REGISTRY` environment variable to `true`. This env indicates `agent-install.sh` script to use local image registry
 
@@ -84,6 +90,12 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
             storage: 10Gi
       ```
       {: codeblock}
+
+      or download it from the server:
+
+      ```bash
+      curl -sSLO https://raw.githubusercontent.com/open-horizon/open-horizon.github.io/master/docs/installing/k3s-persistent-claim.yaml
+      ```
 
    c. Create the persistent volume claim:
 
@@ -145,6 +157,12 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       ```
       {: codeblock}
 
+      or download it from the server:
+
+      ```bash
+      curl -sSLO https://raw.githubusercontent.com/open-horizon/open-horizon.github.io/master/docs/installing/k3s-registry-deployment.yaml
+      ```
+
    f. Create the registry deployment and service:
 
       ```bash
@@ -173,16 +191,16 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       ```
       {: codeblock}
 
-   i. Restart k3s to pick up the change to **/etc/rancher/k3s/registries.yaml**:
+   i. Restart K3s to pick up the change to **/etc/rancher/k3s/registries.yaml**:
 
       ```bash
       systemctl restart k3s
       ```
       {: codeblock}
 
-2. Define this registry to docker as an insecure registry:
+2. Define this registry to Docker as an insecure registry:
 
-   a. Install docker (if not already installed):
+   a. Install Docker (if not already installed, `docker --version` to check):
 
       ```bash
       curl -fsSL get.docker.com | sh
@@ -198,28 +216,34 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       ```
       {: codeblock}
 
-   c. Restart docker to pick up the change:
+   c. Restart Docker to pick up the change:
 
       ```bash
       systemctl restart docker
       ```
       {: codeblock}
+   
+   d. Install `jq`:
 
-## Install and configure a microk8s edge cluster
+   ```bash
+   apt-get -y install jq
+   ```
 
-**Note**: If you already have a microk8s cluster installed, skip to the next section: Installing the Cluster Agent.
+## Install and configure a MicroK8s edge cluster
 
-This content provides a summary of how to install microk8s, a lightweight and small Kubernetes cluster, on Ubuntu 18.04. (For more information, see the microk8s documentation.)
+**Note**: If you already have a MicroK8s cluster installed, skip to the next section: Installing the Cluster Agent.
+
+This content provides a summary of how to install MicroK8s, a lightweight and small Kubernetes cluster, on Ubuntu 22.04.4 LTS. (For more information, see the MicroK8s documentation.)
 
 **Note**: This type of edge cluster is meant for development and test because a single worker node Kubernetes cluster does not provide scalability or high availability.
 
-1. Install microk8s:
+1. Install MicroK8s:
 
     ```bash
     sudo snap install microk8s --classic --channel=stable
     ```
 
-2. If you are not running as root, add your user to the microk8s group:
+2. If you are not running as root, add your user to the MicroK8s group:
 
     ```bash
     sudo usermod -a -G microk8s $USER
@@ -227,14 +251,14 @@ This content provides a summary of how to install microk8s, a lightweight and sm
     su - $USER
     ```
 
-3. Enable dns and storage modules in microk8s:
+3. Enable dns and storage modules in MicroK8s:
 
     ```bash
     microk8s.enable dns
-    microk8s.enable storage
+    microk8s.enable hostpath-storage
     ```
 
-    **Note**: Microk8s uses 8.8.8.8 and 8.8.4.4 as upstream name servers by default. If these name servers cannot resolve the management hub hostname, you must change the name servers that microk8s is using:
+    **Note**: MicroK8s uses 8.8.8.8 and 8.8.4.4 as upstream name servers by default. If these name servers cannot resolve the management hub hostname, you must change the name servers that MicroK8s is using:
 
     a. Retrieve the list of upstream name servers in `/etc/resolv.conf` or `/run/system/resolve/resolv.conf`
 
@@ -250,7 +274,7 @@ This content provides a summary of how to install microk8s, a lightweight and sm
     microk8s.status --wait-ready
     ```
 
-5. The microk8s kubectl command is called microk8s.kubectl to prevent conflicts with an already install kubectl command. Assuming that kubectl is not installed, add this alias for microk8s.kubectl:
+5. The MicroK8s kubectl command is called microk8s.kubectl to prevent conflicts with an already install kubectl command. Assuming that kubectl is not installed, add this alias for microk8s.kubectl:
 
     ```bash
     echo 'alias kubectl=microk8s.kubectl' >> ~/.bash_aliases
@@ -260,12 +284,12 @@ This content provides a summary of how to install microk8s, a lightweight and sm
 6. Choose the image registry types: remote image registry or edge cluster local registry. Image registry is the place that will hold the agent image and agent cronjob image. 
 
 - [Remote image registry](#remote-image-registry)
-- [Setup edge cluster local image registry for microk8s](#microk8s-local-image-registry-setup)
+- [Setup edge cluster local image registry for MicroK8s](#microk8s-local-image-registry-setup)
 
-### <a id="microk8s-local-image-registry-setup"></a>Setup edge cluster local image registry for microk8s
+### <a id="microk8s-local-image-registry-setup"></a>Setup edge cluster local image registry for MicroK8s
 {: #microk8s-local-image-registry-setup}
 
-**Note: Skip this section if using remote image registry.** Enable the container registry and configure docker to tolerate the insecure registry:
+**Note: Skip this section if using remote image registry.** Enable the container registry and configure Docker to tolerate the insecure registry:
 
 1. Enable the container registry
 
@@ -275,21 +299,20 @@ This content provides a summary of how to install microk8s, a lightweight and sm
   export REGISTRY_IP_ENDPOINT=$(kubectl get service registry -n container-registry | grep registry | awk '{print $3;}'):5000
   ```
 
-2. Install docker (if not already installed):
+2. Install Docker (if not already installed, `docker --version` to check):
 
-  ```bash
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  apt-get install docker-ce docker-ce-cli containerd.io
-  ```
+      ```bash
+      curl -fsSL get.docker.com | sh
+      ```
+      {: codeblock}
 
 3. Install jq (if not already installed):
 
   ```bash
-  apt-get install jq
+  apt-get -y install jq
   ```
 
-4. Define this registry as insecure to docker. Create or add to `/etc/docker/daemon.json.`
+4. Define this registry as insecure to Docker. Create or add to `/etc/docker/daemon.json`.
 
   ```bash
   echo "{
@@ -297,23 +320,18 @@ This content provides a summary of how to install microk8s, a lightweight and sm
   }" >> /etc/docker/daemon.json
   ```
 
-5. (optional) Verify that docker is on your machine:
+5. Restart Docker to pick up the change:
 
   ```bash
-  curl -fsSL get.docker.com | sh
-  ```
-
-6. Restart docker to pick up the change:
-
-  ```bash
-  sudo systemctl restart docker
+  systemctl restart docker
   ```
 
 ## Install Agent on Edge Cluster
+{: #install-agent-on-edge-cluster}
 
-This content describes how to install the Open Horizon agent on k3s or microk8s - lightweight and small Kubernetes cluster solutions.
+This content describes how to install the Open Horizon agent on K3s or MicroK8s - lightweight and small Kubernetes cluster solutions.
 
-**Note** These instructions assume that the Hub was configured to listen on an external IP using SSL transport. For more information about setting up an All-in-1 Management Hub see [here](./all-in-1-setup.md)
+**Note**: These instructions assume that the Hub was configured to listen on an external IP using SSL transport. For more information about setting up an All-in-1 Management Hub see [here](./all-in-1-setup.md)
 
 1. Log in to your edge cluster as root
 
@@ -343,13 +361,13 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
 
 5. Instruct agent-install.sh to use the default storage class:
 
-    On k3s:
+    On K3s:
 
     ```bash
     export EDGE_CLUSTER_STORAGE_CLASS=local-path
     ```
 
-    On microk8s:
+    On MicroK8s:
 
     ```bash
     export EDGE_CLUSTER_STORAGE_CLASS=microk8s-hostpath
@@ -358,10 +376,17 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
     If the cluster agent will use other storageclass than the above, please find the storage class satisfy [these attributes](#storageclass_attribute)
 
 6. Run agent-install.sh to get the necessary files from Github, install and configure the Horizon agent, and register your edge cluster with policy.
+
+    **Note**: You should be logged in as root or elevated to root.  If you are not, preface the agent-install.sh script command below with `sudo -s -E`.
     
-    Set `AGENT_NAMESPACE` to the namespace that will install the cluster agent. If not set, the agent will be installed to `openhorizon-agent` default namespace
+    Set `AGENT_NAMESPACE` to the namespace that will install the cluster agent. If not set, the agent will be installed to `openhorizon-agent` default namespace.
     ```bash
     AGENT_NAMESPACE=<namespace-to-install-agent>
+    ```
+
+    If you are not using `https` as the transport, you need to create an empty installation certificate file in the current directory:
+    ```bash
+    touch agent-install.crt
     ```
 
     To install a cluster-scoped agent: 
@@ -381,17 +406,13 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
     kubectl -n $AGENT_NAMESPACE get pods
     ```
 
-    If `AGENT_NAMESPACE` is not set in step 6, check agent pod in `openhorizon-agent`:
-    ```bash
-    kubectl -n openhorizon-agent get pods
-    ```
     **Note**: See [here](./agent_in_multi_namespace.md) for more information about agent in multi-namespace.
 
 
 8. Use the following command to connect to a bash instance on the agent pod to execute hzn commands
 
     ```bash
-    kubectl exec -it $(kubectl get pod -l app=agent -n openhorizon-agent | grep "agent-" | cut -d " " -f1) -n $AGENT_NAMESPACE -- bash
+    kubectl exec -it $(kubectl get pod -l app=agent -n $AGENT_NAMESPACE | grep "agent-" | cut -d " " -f1) -n $AGENT_NAMESPACE -- bash
     ```
 
 9. As a test, execute the following hzn command on the agent pod:
@@ -405,7 +426,7 @@ This content describes how to install the Open Horizon agent on k3s or microk8s 
 ## <a id="storageclass_attribute"></a>StorageClass attribute
 {: #storageclass_attribute}
 
-A PersistentVolumeClaim will be created during the agent install process. It will be used by agent to store data for agent and cronjob. The storageclass will need to satisfy the following requirements:
+A PersistentVolumeClaim will be created during the agent install process. It will be used by agent to store data for agent and cronjob. The storageclass must satisfy the following requirements:
 
 - supports both read and write
 - can be made available immediately
