@@ -66,6 +66,7 @@ CRONJOB_AUTO_UPGRADE_NAME="auto-upgrade-cronjob"
 IMAGE_REGISTRY_SECRET_NAME="openhorizon-agent-secrets-docker-cert"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
+DEFAULT_PVC_SIZE="10Gi"
 GET_RESOURCE_MAX_TRY=5
 POD_ID=""
 HZN_ENV_FILE="/tmp/agent-install-horizon-env"
@@ -158,6 +159,7 @@ Additional Edge Cluster Variables (in environment or config file):
     EDGE_CLUSTER_REGISTRY_USERNAME: specify this value if the edge cluster registry requires authentication
     EDGE_CLUSTER_REGISTRY_TOKEN: specify this value if the edge cluster registry requires authentication
     EDGE_CLUSTER_STORAGE_CLASS: the storage class to use for the agent and edge services. Default: gp2
+    EDGE_CLUSTER_PVC_SIZE: the requested size in the agent persistent volume to use for the agent. Default: 10Gi
     AGENT_NAMESPACE: The namespace the agent should run in. Default: openhorizon-agent
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
     AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS: Maximum seconds to wait for the agent deployment rollout status to be successful. Default: 300
@@ -1254,6 +1256,7 @@ function get_all_variables() {
 
         # get other variables for cluster agent
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
+        get_variable EDGE_CLUSTER_PVC_SIZE "$DEFAULT_PVC_SIZE"
         get_variable AGENT_NAMESPACE "$DEFAULT_AGENT_NAMESPACE"
         get_variable NAMESPACE_SCOPED 'false'
         get_variable USE_EDGE_CLUSTER_REGISTRY 'true'
@@ -4029,7 +4032,11 @@ function prepare_k8s_pvc_file() {
         pvc_mode="ReadWriteMany"
     fi
 
-    sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" -e "s#__PVCAccessMode__#${pvc_mode}#g" persistentClaim-template.yml >persistentClaim.yml
+    if [[ -z $CLUSTER_PVC_SIZE ]]; then
+        CLUSTER_PVC_SIZE=$DEFAULT_PVC_SIZE
+    fi
+
+    sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" -e "s#__PVCAccessMode__#${pvc_mode}#g" -e "s#__PVCStorageSize__#${CLUSTER_PVC_SIZE}#g" persistentClaim-template.yml >persistentClaim.yml
     chk $? 'creating persistentClaim.yml'
 
     log_debug "prepare_k8s_pvc_file() end"

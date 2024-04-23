@@ -22,6 +22,8 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	v1scheme "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	v1beta1scheme "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/conversion"
@@ -31,6 +33,7 @@ import (
 	dynamic "k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
+	"os"
 	"reflect"
 	"strings"
 )
@@ -46,20 +49,34 @@ const (
 
 	SECRETS_VOLUME_NAME = "service-secrets-vol"
 
-	K8S_CLUSTER_ROLE_TYPE        = "ClusterRole"
-	K8S_CLUSTER_ROLEBINDING_TYPE = "ClusterRoleBinding"
-	K8S_ROLE_TYPE                = "Role"
-	K8S_ROLEBINDING_TYPE         = "RoleBinding"
-	K8S_DEPLOYMENT_TYPE          = "Deployment"
-	K8S_SERVICEACCOUNT_TYPE      = "ServiceAccount"
-	K8S_CRD_TYPE                 = "CustomResourceDefinition"
-	K8S_NAMESPACE_TYPE           = "Namespace"
-	K8S_UNSTRUCTURED_TYPE        = "Unstructured"
-	K8S_OLM_OPERATOR_GROUP_TYPE  = "OperatorGroup"
+	MMS_VOLUME_NAME = "mms-shared-storage"
+
+	K8S_CLUSTER_ROLE_TYPE          = "ClusterRole"
+	K8S_CLUSTER_ROLEBINDING_TYPE   = "ClusterRoleBinding"
+	K8S_ROLE_TYPE                  = "Role"
+	K8S_ROLEBINDING_TYPE           = "RoleBinding"
+	K8S_DEPLOYMENT_TYPE            = "Deployment"
+	K8S_SERVICEACCOUNT_TYPE        = "ServiceAccount"
+	K8S_CRD_TYPE                   = "CustomResourceDefinition"
+	K8S_NAMESPACE_TYPE             = "Namespace"
+	K8S_UNSTRUCTURED_TYPE          = "Unstructured"
+	K8S_OLM_OPERATOR_GROUP_TYPE    = "OperatorGroup"
+	K8S_MMS_SHARED_PVC_NAME        = "mms-shared-storage-pvc"
+	STORAGE_CLASS_USERINPUT_NAME   = "MMS_K8S_STORAGE_CLASS"
+	PVC_SIZE_USERINPUT_NAME        = "MMS_K8S_STORAGE_SIZE"
+	PVC_ACCESS_MODE_USERINPUT_NAME = "MMS_K8S_PVC_ACCESS_MODE"
+	DEFAULT_PVC_SIZE_IN_STRING     = "10"
+)
+
+var (
+	accessModeMap = map[string]corev1.PersistentVolumeAccessMode{
+		"ReadWriteOnce": corev1.ReadWriteOnce,
+		"ReadWriteMany": corev1.ReadWriteMany,
+	}
 )
 
 func getBaseK8sKinds() []string {
-	return []string{K8S_NAMESPACE_TYPE, K8S_CLUSTER_ROLE_TYPE, K8S_CLUSTER_ROLEBINDING_TYPE, K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_DEPLOYMENT_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_CRD_TYPE}
+	return []string{K8S_NAMESPACE_TYPE, K8S_CLUSTER_ROLE_TYPE, K8S_CLUSTER_ROLEBINDING_TYPE, K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_CRD_TYPE, K8S_DEPLOYMENT_TYPE}
 }
 
 func getDangerKinds() []string {
@@ -130,9 +147,9 @@ func NewDynamicKubeClient() (dynamic.Interface, error) {
 }
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
-func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars map[string]string, secretsMap map[string]string, agId string, reqNamespace string, crInstallTimeout int64) error {
+func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars map[string]string, fssAuthFilePath string, fssCertFilePath string, secretsMap map[string]string, agId string, reqNamespace string, crInstallTimeout int64) error {
 
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, envVars, secretsMap, agId, crInstallTimeout)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, envVars, fssAuthFilePath, fssCertFilePath, secretsMap, agId, crInstallTimeout)
 	if err != nil {
 		return err
 	}
@@ -181,7 +198,7 @@ func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
 func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId string, reqNamespace string) error {
 
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, map[string]string{}, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, "", "", map[string]string{}, agId, 0)
 	if err != nil {
 		return err
 	}
@@ -220,7 +237,7 @@ func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId 
 	return nil
 }
 func (c KubeClient) OperatorStatus(tar string, metadata map[string]interface{}, agId string, reqNamespace string) (interface{}, error) {
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, map[string]string{}, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, "", "", map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +255,7 @@ func (c KubeClient) OperatorStatus(tar string, metadata map[string]interface{}, 
 }
 
 func (c KubeClient) Status(tar string, metadata map[string]interface{}, agId string, reqNamespace string) ([]ContainerStatus, error) {
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, map[string]string{}, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, "", "", map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +311,7 @@ func (c KubeClient) Update(tar string, metadata map[string]interface{}, agId str
 	}
 
 	// Current implementaion only updatedSecrets will be passed into this function
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, updatedEnv, updatedSecretsMap, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, updatedEnv, "", "", updatedSecretsMap, agId, 0)
 	if err != nil {
 		return err
 	}
@@ -315,7 +332,7 @@ func (c KubeClient) Update(tar string, metadata map[string]interface{}, agId str
 }
 
 // processDeployment takes the deployment string and converts it to a map with the k8s objects, the namespace to be used, and an error if one occurs
-func ProcessDeployment(tar string, metadata map[string]interface{}, envVars map[string]string, secretsMap map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func ProcessDeployment(tar string, metadata map[string]interface{}, envVars map[string]string, fssAuthFilePath string, fssCertFilePath string, secretsMap map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	// Read the yaml files from the commpressed tar files
 	yamls, err := getYamlFromTarGz(tar)
 	if err != nil {
@@ -338,7 +355,7 @@ func ProcessDeployment(tar string, metadata map[string]interface{}, envVars map[
 	}
 
 	// Sort the k8s api objects by kind
-	return sortAPIObjects(k8sObjs, customResourceKindMap, metadata, envVars, secretsMap, agId, crInstallTimeout)
+	return sortAPIObjects(k8sObjs, customResourceKindMap, metadata, envVars, fssAuthFilePath, fssCertFilePath, secretsMap, agId, crInstallTimeout)
 }
 
 // CreateConfigMap will create a config map with the provided environment variable map
@@ -350,12 +367,94 @@ func (c KubeClient) CreateConfigMap(envVars map[string]string, agId string, name
 		}
 		delete(envVars, "")
 	}
+	// hzn-env-vars-<agId>
 	hznEnvConfigMap := corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-%s", HZN_ENV_VARS, agId)}, Data: envVars}
 	res, err := c.Client.CoreV1().ConfigMaps(namespace).Create(context.Background(), &hznEnvConfigMap, metav1.CreateOptions{})
 	if err != nil {
 		return "", fmt.Errorf("Error: failed to create config map for %s: %v", agId, err)
 	}
 	return res.ObjectMeta.Name, nil
+}
+
+// CreateConfigMap will create a config map with the provided environment variable map
+func (c KubeClient) DeleteConfigMap(agId string, namespace string) error {
+	// hzn-env-vars-<agId>
+	hznEnvConfigmapName := fmt.Sprintf("%s-%s", HZN_ENV_VARS, agId)
+	err := c.Client.CoreV1().ConfigMaps(namespace).Delete(context.Background(), hznEnvConfigmapName, metav1.DeleteOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("Error: failed to delete config map for %s: %v", agId, err)
+	}
+	return nil
+}
+
+// CreateESSSecret will create a k8s secrets object from the ess auth file
+func (c KubeClient) CreateESSAuthSecrets(fssAuthFilePath string, agId string, namespace string) (string, error) {
+	if essAuth, err := os.Open(fssAuthFilePath); err != nil {
+		return "", err
+	} else if essAuthBytes, err := ioutil.ReadAll(essAuth); err != nil {
+		return "", err
+	} else {
+		secretData := make(map[string][]byte)
+		secretData[config.HZN_FSS_AUTH_FILE] = essAuthBytes
+		fssSecret := corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%s", config.HZN_FSS_AUTH_PATH, agId), // ess-auth-<agId>
+				Namespace: namespace,
+			},
+			Data: secretData,
+		}
+		res, err := c.Client.CoreV1().Secrets(namespace).Create(context.Background(), &fssSecret, metav1.CreateOptions{})
+		if err != nil {
+			return "", fmt.Errorf("Error: failed to create ess auth secret for %s: %v", agId, err)
+		}
+		return res.ObjectMeta.Name, nil
+	}
+
+}
+
+func (c KubeClient) DeleteESSAuthSecrets(agId string, namespace string) error {
+	essAuthSecretName := fmt.Sprintf("%s-%s", config.HZN_FSS_AUTH_PATH, agId)
+	err := c.Client.CoreV1().Secrets(namespace).Delete(context.Background(), essAuthSecretName, metav1.DeleteOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("Error: failed to delete ess auth secret for %s: %v", agId, err)
+	}
+	return nil
+}
+
+func (c KubeClient) CreateESSCertSecrets(fssCertFilePath string, agId string, namespace string) (string, error) {
+	if essCert, err := os.Open(fssCertFilePath); err != nil {
+		return "", err
+	} else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
+		return "", err
+	} else {
+		secretData := make(map[string][]byte)
+		secretData[config.HZN_FSS_CERT_FILE] = essCertBytes
+		certSecret := corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%s", config.HZN_FSS_CERT_PATH, agId), // ess-cert-<agId>
+				Namespace: namespace,
+			},
+			Data: secretData,
+		}
+
+		res, err := c.Client.CoreV1().Secrets(namespace).Create(context.Background(), &certSecret, metav1.CreateOptions{})
+		if err != nil && errors.IsAlreadyExists(err) {
+			_, err = c.Client.CoreV1().Secrets(namespace).Update(context.Background(), &certSecret, metav1.UpdateOptions{})
+		}
+		if err != nil {
+			return "", fmt.Errorf("Error: failed to create ess cert secret for %s: %v", agId, err)
+		}
+		return res.ObjectMeta.Name, nil
+	}
+}
+
+func (c KubeClient) DeleteESSCertSecrets(agId string, namespace string) error {
+	essCertSecretName := fmt.Sprintf("%s-%s", config.HZN_FSS_CERT_PATH, agId)
+	err := c.Client.CoreV1().Secrets(namespace).Delete(context.Background(), essCertSecretName, metav1.DeleteOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("Error: failed to delete ess cert secret for %s: %v", agId, err)
+	}
+	return nil
 }
 
 // CreateK8SSecrets will create a k8s secrets object which contains the service secret name and value
@@ -367,6 +466,71 @@ func (c KubeClient) CreateK8SSecrets(serviceSecretsMap map[string]string, agId s
 		return "", fmt.Errorf("Error: failed to create k8s secrets that contains service secrets for %s: %v", agId, err)
 	}
 	return res.ObjectMeta.Name, nil
+}
+
+// DeleteK8SSecrets will delete k8s secrets object which contains the service secret name and value
+func (c KubeClient) DeleteK8SSecrets(agId string, namespace string) error {
+	// delete the secrets contains agreement service vault secrets
+	secretsName := fmt.Sprintf("%s-%s", HZN_SERVICE_SECRETS, agId)
+	err := c.Client.CoreV1().Secrets(namespace).Delete(context.Background(), secretsName, metav1.DeleteOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("Error: failed to delete k8s secrets that contains service secrets for %s: %v", agId, err)
+	}
+	return nil
+}
+
+func (c KubeClient) CreateMMSPVC(envVars map[string]string, agId string, namespace string) (string, error) {
+	storageClass, accessModes, _ := cutil.GetAgentPVCInfo()
+	if scInUserinput, ok := envVars[STORAGE_CLASS_USERINPUT_NAME]; ok {
+		storageClass = scInUserinput
+	}
+
+	if accessModeInUserinput, ok := envVars[PVC_ACCESS_MODE_USERINPUT_NAME]; ok {
+		if m, ok := accessModeMap[accessModeInUserinput]; ok {
+			accessModes = []corev1.PersistentVolumeAccessMode{m}
+		}
+	}
+
+	pvcSizeInString := DEFAULT_PVC_SIZE_IN_STRING
+	if pvcSizeInUserInput, ok := envVars[PVC_SIZE_USERINPUT_NAME]; ok {
+		pvcSizeInString = pvcSizeInUserInput
+	}
+
+	mmsPvcName := fmt.Sprintf("%s-%s", K8S_MMS_SHARED_PVC_NAME, agId)
+	mmsPVC := corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      mmsPvcName,
+			Namespace: namespace,
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			StorageClassName: &storageClass,
+			AccessModes:      accessModes,
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceStorage: resource.MustParse(fmt.Sprintf("%vGi", pvcSizeInString)),
+				},
+			},
+		},
+	}
+
+	res, err := c.Client.CoreV1().PersistentVolumeClaims(namespace).Create(context.Background(), &mmsPVC, metav1.CreateOptions{})
+	if err != nil && errors.IsAlreadyExists(err) {
+		_, err = c.Client.CoreV1().PersistentVolumeClaims(namespace).Update(context.Background(), &mmsPVC, metav1.UpdateOptions{})
+	}
+	if err != nil {
+		return "", fmt.Errorf("Error: failed to create mms pvc for %s: %v", agId, err)
+	}
+	return res.ObjectMeta.Name, nil
+}
+
+func (c KubeClient) DeleteMMSPVC(agId string, namespace string) error {
+	mmsPvcName := fmt.Sprintf("%s-%s", K8S_MMS_SHARED_PVC_NAME, agId)
+
+	err := c.Client.CoreV1().PersistentVolumeClaims(namespace).Delete(context.Background(), mmsPvcName, metav1.DeleteOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("Error: failed to delete mms pvc for %s: %v", agId, err)
+	}
+	return nil
 }
 
 func unstructuredObjectFromYaml(crStr YamlFile) (*unstructured.Unstructured, error) {

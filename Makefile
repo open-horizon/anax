@@ -14,7 +14,7 @@ SHELL := /bin/bash
 # DO NOT set this variable to the branch in which you are doing development work.
 BRANCH_NAME ?= ""
 
-export VERSION ?= 2.31.0
+export VERSION ?= 2.32.0
 # BUILD_NUMBER will be added to the version if set. It can be a simple number or something like a numeric timestamp or jenkins hash.
 # It can NOT contain dashes, but can contain: plus, period, and tilde.
 export BUILD_NUMBER
@@ -529,7 +529,7 @@ endif
 
 realclean: i18n-clean clean
 
-mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean css-clean ess-clean
+mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean auto-upgrade-cronjob-k8s-clean css-clean ess-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	rm -Rf vendor

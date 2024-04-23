@@ -21,6 +21,16 @@ spec:
             openhorizon.org/component: agent
             type: auto-upgrade-cronjob
         spec:
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                  - key: openhorizon.org/component
+                    operator: In
+                    values:
+                    - agent
+                topologyKey: kubernetes.io/hostname
           volumes:
           - name: agent-pvc-storage
             persistentVolumeClaim:

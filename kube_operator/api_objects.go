@@ -36,7 +36,7 @@ type APIObjectInterface interface {
 // Sort a slice of k8s api objects by kind of object
 // Returns a map of object type names to api object interfaces types, the namespace to be used for the operator, and an error if one occurs
 // Also verifies that all objects are named so they can be found and uninstalled
-func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstructured.Unstructured, metadata map[string]interface{}, envVarMap map[string]string, secretsMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstructured.Unstructured, metadata map[string]interface{}, envVarMap map[string]string, fssAuthFilePath string, fssCertFilePath string, secretsMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	namespace := ""
 
 	// get the namespace from metadata
@@ -123,7 +123,7 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedDeployment.ObjectMeta.Namespace)))
 					}
 				}
-				newDeployment := DeploymentAppsV1{DeploymentObject: typedDeployment, EnvVarMap: envVarMap, ServiceSecrets: secretsMap, AgreementId: agreementId}
+				newDeployment := DeploymentAppsV1{DeploymentObject: typedDeployment, EnvVarMap: envVarMap, FssAuthFilePath: fssAuthFilePath, FssCertFilePath: fssCertFilePath, ServiceSecrets: secretsMap, AgreementId: agreementId}
 				if newDeployment.Name() != "" {
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes deployment object %s.", newDeployment.Name())))
 					objMap[K8S_DEPLOYMENT_TYPE] = append(objMap[K8S_DEPLOYMENT_TYPE], newDeployment)
@@ -385,20 +385,18 @@ type ClusterRolebindingRbacV1 struct {
 func (crb ClusterRolebindingRbacV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating cluster role binding %v", crb)))
 
-	// checking the serviceaccount for clusterrolebinding if it is namespace-scoped agent:
-	//   - If the namespace of serviceaccount is defined in yaml, but is different from namespace for operator, replace the sa namespace with namespace to deploy operator.
-	if cutil.IsNamespaceScoped() {
-		// normalize the namespace of service account for namespace scoped agent
-		subs := []rbacv1.Subject{}
-		for _, sub := range crb.ClusterRolebindingObject.Subjects {
-			rb_sub := &sub
-			if sub.Namespace != "" && sub.Namespace != namespace {
-				rb_sub.Namespace = namespace
-			}
-			subs = append(subs, *rb_sub)
+	// checking the serviceaccount for clusterrolebinding:
+	//   - namespace-scoped agent: Normalize the namespace of service account for namespace scoped agent. If the namespace of serviceaccount is defined in yaml, but is different from namespace for operator, replace the sa namespace with namespace to deploy operator.
+	//   - cluster-scoped agent: If the namespace of the serviceaccount is absent, add namespace
+	subs := []rbacv1.Subject{}
+	for _, sub := range crb.ClusterRolebindingObject.Subjects {
+		rb_sub := &sub
+		if (cutil.IsNamespaceScoped() && sub.Namespace != "" && sub.Namespace != namespace) || (!cutil.IsNamespaceScoped() && sub.Namespace == "") {
+			rb_sub.Namespace = namespace
 		}
-		crb.ClusterRolebindingObject.Subjects = subs
+		subs = append(subs, *rb_sub)
 	}
+	crb.ClusterRolebindingObject.Subjects = subs
 
 	// get clusterrolebinding
 	existingCRB, err := c.Client.RbacV1().ClusterRoleBindings().Get(context.Background(), crb.Name(), metav1.GetOptions{})
@@ -631,6 +629,8 @@ func (sa ServiceAccountCoreV1) Namespace() string {
 type DeploymentAppsV1 struct {
 	DeploymentObject *appsv1.Deployment
 	EnvVarMap        map[string]string
+	FssAuthFilePath  string
+	FssCertFilePath  string
 	ServiceSecrets   map[string]string
 	AgreementId      string
 }
@@ -643,21 +643,50 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 	}
 
 	// The ESS is not supported in edge cluster services, so for now, remove the ESS env vars.
-	envAdds := cutil.RemoveESSEnvVars(d.EnvVarMap, config.ENVVAR_PREFIX)
+	//envAdds := cutil.RemoveESSEnvVars(d.EnvVarMap, config.ENVVAR_PREFIX)
+	cutil.SetESSEnvVarsForClusterAgent(d.EnvVarMap, config.ENVVAR_PREFIX, d.AgreementId)
 
 	// Create the config map.
-	mapName, err := c.CreateConfigMap(envAdds, d.AgreementId, namespace)
+	mapName, err := c.CreateConfigMap(d.EnvVarMap, d.AgreementId, namespace)
 	if err != nil && errors.IsAlreadyExists(err) {
-		d.Uninstall(c, namespace)
-		mapName, err = c.CreateConfigMap(envAdds, d.AgreementId, namespace)
+		c.DeleteConfigMap(d.AgreementId, namespace)
+		mapName, err = c.CreateConfigMap(d.EnvVarMap, d.AgreementId, namespace)
 	}
 	if err != nil {
 		return err
 	}
 
+	// create k8s secrets object from ess auth file. d.FssAuthFilePath == "" if kubeworker is updating service vault secret
+	if d.FssAuthFilePath != "" {
+		essAuthSecretName, err := c.CreateESSAuthSecrets(d.FssAuthFilePath, d.AgreementId, namespace)
+		if err != nil && errors.IsAlreadyExists(err) {
+			c.DeleteESSAuthSecrets(d.AgreementId, namespace)
+			essAuthSecretName, _ = c.CreateESSAuthSecrets(d.FssAuthFilePath, d.AgreementId, namespace)
+		}
+		glog.V(3).Infof(kwlog(fmt.Sprintf("ess auth secret %v is created under namespace: %v", essAuthSecretName, namespace)))
+	}
+
+	if d.FssCertFilePath != "" {
+		essCertSecretName, err := c.CreateESSCertSecrets(d.FssCertFilePath, d.AgreementId, namespace)
+		if err != nil && errors.IsAlreadyExists(err) {
+			c.DeleteESSCertSecrets(d.AgreementId, namespace)
+			essCertSecretName, _ = c.CreateESSCertSecrets(d.FssCertFilePath, d.AgreementId, namespace)
+		}
+		glog.V(3).Infof(kwlog(fmt.Sprintf("ess cert secret %v is created under namespace: %v", essCertSecretName, namespace)))
+	}
+
+	// create MMS pvc
+	pvcName, err := c.CreateMMSPVC(d.EnvVarMap, d.AgreementId, namespace)
+	if err != nil && errors.IsAlreadyExists(err) {
+		c.DeleteMMSPVC(d.AgreementId, namespace)
+		pvcName, _ = c.CreateMMSPVC(d.EnvVarMap, d.AgreementId, namespace)
+	}
+	glog.V(3).Infof(kwlog(fmt.Sprintf("MMS pvc %v is created under namespace: %v", pvcName, namespace)))
+
 	// Let the operator know about the config map
 	dWithEnv := addConfigMapVarToDeploymentObject(*d.DeploymentObject, mapName)
 
+	// handle service vault secrets
 	if len(d.ServiceSecrets) > 0 {
 		glog.V(3).Infof(kwlog(fmt.Sprintf("creating k8s secrets for service secret %v", d.ServiceSecrets)))
 
@@ -669,7 +698,7 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 
 		secretsName, err := c.CreateK8SSecrets(decodedSecrets, d.AgreementId, namespace)
 		if err != nil && errors.IsAlreadyExists(err) {
-			d.Uninstall(c, namespace)
+			c.DeleteK8SSecrets(d.AgreementId, namespace)
 			secretsName, err = c.CreateK8SSecrets(d.ServiceSecrets, d.AgreementId, namespace)
 		}
 		if err != nil {
@@ -682,7 +711,7 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 	_, err = c.Client.AppsV1().Deployments(namespace).Create(context.Background(), &dWithEnv, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
 		d.Uninstall(c, namespace)
-		mapName, err = c.CreateConfigMap(envAdds, d.AgreementId, namespace)
+		_, _ = c.CreateConfigMap(d.EnvVarMap, d.AgreementId, namespace)
 		_, err = c.Client.AppsV1().Deployments(namespace).Create(context.Background(), &dWithEnv, metav1.CreateOptions{})
 	}
 	if err != nil {
@@ -733,21 +762,31 @@ func (d DeploymentAppsV1) Uninstall(c KubeClient, namespace string) {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete deployment %s. Error: %v", d.DeploymentObject.ObjectMeta.Name, err)))
 	}
 
-	configMapName := fmt.Sprintf("%s-%s", HZN_ENV_VARS, d.AgreementId)
-	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting config map %v in namespace %v", configMapName, namespace)))
-	// Delete the agreement config map
-	err = c.Client.CoreV1().ConfigMaps(namespace).Delete(context.Background(), configMapName, metav1.DeleteOptions{})
-	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to delete config map %s. Error: %v", configMapName, err)))
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting config map for agreement %v in namespace %v", d.AgreementId, namespace)))
+	if err = c.DeleteConfigMap(d.AgreementId, namespace); err != nil {
+		glog.Errorf(kwlog(err.Error()))
 	}
 
-	// delete the secrets contains agreement service vault secrets
-	secretsName := fmt.Sprintf("%s-%s", HZN_SERVICE_SECRETS, d.AgreementId)
-	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting secrets %v in namespace %v", secretsName, namespace)))
-	err = c.Client.CoreV1().Secrets(namespace).Delete(context.Background(), secretsName, metav1.DeleteOptions{})
-	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to delete secrets %s in namespace %v. Error: %v", secretsName, namespace, err)))
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting ess auth secret for agreement %v in namespace %v", d.AgreementId, namespace)))
+	if err = c.DeleteESSAuthSecrets(d.AgreementId, namespace); err != nil {
+		glog.Errorf(kwlog(err.Error()))
 	}
+
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting ess cert secret for agreement %v in namespace %v", d.AgreementId, namespace)))
+	if err = c.DeleteESSCertSecrets(d.AgreementId, namespace); err != nil {
+		glog.Errorf(kwlog(err.Error()))
+	}
+
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting secrets for agreement %v in namespace %v", d.AgreementId, namespace)))
+	if err = c.DeleteK8SSecrets(d.AgreementId, namespace); err != nil {
+		glog.Errorf(kwlog(err.Error()))
+	}
+
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting mms pvc for agreement %v in namespace %v", d.AgreementId, namespace)))
+	if err = c.DeleteMMSPVC(d.AgreementId, namespace); err != nil {
+		glog.Errorf(kwlog(err.Error()))
+	}
+
 }
 
 // Status will be the status of the operator pod
@@ -758,7 +797,7 @@ func (d DeploymentAppsV1) Status(c KubeClient, namespace string) (interface{}, e
 		return nil, err
 	} else if podList == nil || len(podList.Items) == 0 {
 		labelSelector := metav1.LabelSelector{MatchLabels: d.DeploymentObject.Spec.Selector.MatchLabels}
-		podList, err = c.Client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: labels.Set(labelSelector.MatchLabels).String()})
+		podList, _ = c.Client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: labels.Set(labelSelector.MatchLabels).String()})
 	}
 	return podList, nil
 }
