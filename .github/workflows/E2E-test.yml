@@ -6,6 +6,7 @@ on:
   pull_request:
     branches:
       - master
+      - v2.31
       - v2.30
       - v2.29
 
