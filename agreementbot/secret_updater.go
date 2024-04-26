@@ -278,6 +278,7 @@ func (sm *SecretUpdateManager) UpdateNodePatternSecrets(org string, exchPatsMeta
 				secretLastUpdateTime := time.Now().Unix()
 
 				agList, err := db.FindAgreements([]persistence.AFilter{persistence.PatAFilter(patternName), persistence.UnarchivedAFilter()}, agProtocol)
+
 				for _, ag := range agList {
 					secretNode := exchange.GetId(ag.DeviceId)
 
@@ -315,11 +316,12 @@ func (sm *SecretUpdateManager) UpdateNodePatternSecrets(org string, exchPatsMeta
 		// Look for unreferenced secrets and remove them.
 		for _, secretName := range secretNames {
 			if _, ok := referencedSecrets[secretName]; !ok {
-
-				glog.V(5).Infof(smlogString(fmt.Sprintf("deleting managed secret %s from %s because it is no longer used", secretName, patternName)))
-				err = db.DeletePatternSecret(exchange.GetOrg(secretName), exchange.GetId(secretName), org, exchange.GetId(patternName))
-				if err != nil {
-					glog.Errorf(smlogString(fmt.Sprintf("unable to delete %s from secrets DB, error: %v", secretName, err)))
+				if _, sNode, _, err := compcheck.ParseVaultSecretName(secretName, nil); err == nil && sNode != "" {
+					glog.V(5).Infof(smlogString(fmt.Sprintf("deleting managed secret %s from %s because it is no longer used", secretName, patternName)))
+					err = db.DeletePatternSecret(exchange.GetOrg(secretName), exchange.GetId(secretName), org, exchange.GetId(patternName))
+					if err != nil {
+						glog.Errorf(smlogString(fmt.Sprintf("unable to delete %s from secrets DB, error: %v", secretName, err)))
+					}
 				}
 			}
 		}
@@ -502,13 +504,12 @@ func (sm *SecretUpdateManager) UpdatePatterns(org string, exchPatternMetadata ma
 					if err != nil {
 						// The secret should be stored in the table even if it doesnt exist, so that if it is created later
 						// changes to it will be recognized.
-						glog.Warningf(smlogString(fmt.Sprintf("unable to retrieve metadata for %s %s, error: %v", org, secretFullName, err)))
+						glog.V(5).Infof(smlogString(fmt.Sprintf("unable to retrieve metadata for %s %s, error: %v", org, secretFullName, err)))
 						secretExists = false
 					} else {
+						glog.V(5).Infof(smlogString(fmt.Sprintf("storing managed secret %v %v from %v/%v", org, secretFullName, org, pName)))
 						secretLastUpdateTime = sm.UpdateTime
 					}
-
-					glog.V(5).Infof(smlogString(fmt.Sprintf("storing managed secret %v %v from %v/%v", org, secretFullName, org, pName)))
 
 					// Only secrets that have never been referenced before are added to the DB. DB rows that already exist will not be updated.
 					err = db.AddManagedPatternSecret(secretOrg, secretFullName, org, pName, secretExists, secretLastUpdateTime)
