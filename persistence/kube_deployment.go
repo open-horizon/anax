@@ -10,6 +10,7 @@ type KubeDeploymentConfig struct {
 	Metadata            map[string]interface{} `json:"metadata,omitempty"`
 	OperatorYamlArchive string                 `json:"operatorYamlArchive"`
 	Secrets             map[string]interface{} `json:"secrets,omitempty"`
+	MMSPVC              map[string]interface{} `json:"mmspvc,omitempty"`
 }
 
 func (k *KubeDeploymentConfig) ToString() string {

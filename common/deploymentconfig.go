@@ -112,6 +112,7 @@ type ClusterDeploymentConfig struct {
 	Metadata            map[string]interface{}             `json:"metadata,omitempty"`
 	OperatorYamlArchive string                             `json:"operatorYamlArchive"`
 	Secrets             map[string]containermessage.Secret `json:"secrets"`
+	MMSPVC              map[string]interface{}             `json:"mmspvc,omitempty"`
 }
 
 // Take the deployment field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
@@ -221,6 +222,6 @@ func GetClusterDeploymentMetadata(clusterDeployment interface{}, inspectOperator
 }
 
 func GetKubeOperatorNamespace(tar string) (string, error) {
-	_, namespace, err := kube_operator.ProcessDeployment(tar, nil, map[string]string{}, "", "", map[string]string{}, "", 0)
+	_, namespace, err := kube_operator.ProcessDeployment(tar, nil, nil, map[string]string{}, "", "", map[string]string{}, "", 0)
 	return namespace, err
 }
