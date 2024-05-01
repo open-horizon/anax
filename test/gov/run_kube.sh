@@ -16,10 +16,10 @@ DOCKER_TEST_NETWORK=$4
 AGENT_NAME_SPACE="agent-namespace"
 NAMESPACE_IN_POLICY="ns-in-policy"
 SVC_EMBEDDED_NAMESPACE="operator-embedded-ns"
-OPERATOR_DEPLOYMENT_NAME="topservice-operator"
+OPERATOR_DEPLOYMENT_NAME="topserviceoperators"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
-PVC_NAME="agent-pvc-horizon"
+PVC_NAME="openhorizon-agent-pvc"
 WAIT_POD_MAX_TRY=30
 
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"

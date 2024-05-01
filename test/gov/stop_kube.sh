@@ -5,6 +5,7 @@
 NAME_SPACE="agent-namespace"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
+PVC_NAME="openhorizon-agent-pvc"
 
 isRoot=$(id -u)
 cprefix="sudo -E"
@@ -52,6 +53,10 @@ if [ $RC -ne 0 ]; then echo "Error deleting configmap ${CONFIGMAP_NAME}: $RC"; f
 $cprefix microk8s.kubectl delete secret ${SECRET_NAME} -n ${NAME_SPACE}
 RC=$?
 if [ $RC -ne 0 ]; then echo "Error deleting secret ${SECRET_NAME}: $RC"; fi
+
+$cprefix microk8s.kubectl delete pvc ${PVC_NAME} -n ${NAME_SPACE}
+RC=$?
+if [ $RC -ne 0 ]; then echo "Error deleting pvc ${PVC_NAME}: $RC"; fi
 
 $cprefix microk8s.kubectl delete namespace ${NAME_SPACE}
 RC=$?
