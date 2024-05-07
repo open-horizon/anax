@@ -220,7 +220,7 @@ func (w *KubeWorker) processKubeOperator(lc *events.AgreementLaunchContext, kd *
 
 		fssAuthFilePath := path.Join(w.GetAuthenticationManager().GetCredentialPath(lc.AgreementId), config.HZN_FSS_AUTH_FILE) // /var/horizon/ess-auth/<agreementId>/auth.json
 		fssCertFilePath := path.Join(w.config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_FILE)                             // /var/horizon/ess-auth/SSL/cert/cert.pem
-		err = client.Install(kd.OperatorYamlArchive, kd.Metadata, *(lc.EnvironmentAdditions), fssAuthFilePath, fssCertFilePath, secretsMap, lc.AgreementId, lc.Configure.ClusterNamespace, crInstallTimeout)
+		err = client.Install(kd.OperatorYamlArchive, kd.Metadata, kd.MMSPVC, *(lc.EnvironmentAdditions), fssAuthFilePath, fssCertFilePath, secretsMap, lc.AgreementId, lc.Configure.ClusterNamespace, crInstallTimeout)
 		if err != nil {
 			return err
 		}

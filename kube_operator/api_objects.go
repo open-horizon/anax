@@ -36,7 +36,7 @@ type APIObjectInterface interface {
 // Sort a slice of k8s api objects by kind of object
 // Returns a map of object type names to api object interfaces types, the namespace to be used for the operator, and an error if one occurs
 // Also verifies that all objects are named so they can be found and uninstalled
-func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstructured.Unstructured, metadata map[string]interface{}, envVarMap map[string]string, fssAuthFilePath string, fssCertFilePath string, secretsMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstructured.Unstructured, metadata map[string]interface{}, mmsPVCConfig map[string]interface{}, envVarMap map[string]string, fssAuthFilePath string, fssCertFilePath string, secretsMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	namespace := ""
 
 	// get the namespace from metadata
@@ -123,7 +123,7 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedDeployment.ObjectMeta.Namespace)))
 					}
 				}
-				newDeployment := DeploymentAppsV1{DeploymentObject: typedDeployment, EnvVarMap: envVarMap, FssAuthFilePath: fssAuthFilePath, FssCertFilePath: fssCertFilePath, ServiceSecrets: secretsMap, AgreementId: agreementId}
+				newDeployment := DeploymentAppsV1{DeploymentObject: typedDeployment, EnvVarMap: envVarMap, FssAuthFilePath: fssAuthFilePath, FssCertFilePath: fssCertFilePath, MMSPVCConfig: mmsPVCConfig, ServiceSecrets: secretsMap, AgreementId: agreementId}
 				if newDeployment.Name() != "" {
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes deployment object %s.", newDeployment.Name())))
 					objMap[K8S_DEPLOYMENT_TYPE] = append(objMap[K8S_DEPLOYMENT_TYPE], newDeployment)
@@ -631,6 +631,7 @@ type DeploymentAppsV1 struct {
 	EnvVarMap        map[string]string
 	FssAuthFilePath  string
 	FssCertFilePath  string
+	MMSPVCConfig     map[string]interface{}
 	ServiceSecrets   map[string]string
 	AgreementId      string
 }
@@ -676,12 +677,17 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 	}
 
 	// create MMS pvc
-	pvcName, err := c.CreateMMSPVC(d.EnvVarMap, d.AgreementId, namespace)
-	if err != nil && errors.IsAlreadyExists(err) {
-		c.DeleteMMSPVC(d.AgreementId, namespace)
-		pvcName, _ = c.CreateMMSPVC(d.EnvVarMap, d.AgreementId, namespace)
+	if !IsMMSPVCEnabled(d.MMSPVCConfig) {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("MMSPVCConfig is not enabled %v, skip creating the MMS PVC", d.MMSPVCConfig)))
+	} else {
+		glog.V(3).Infof(kwlog(fmt.Sprintf("MMSPVCConfig is enabled %v, creating the MMS PVC", d.MMSPVCConfig)))
+		pvcName, err := c.CreateMMSPVC(d.EnvVarMap, d.MMSPVCConfig, d.AgreementId, namespace)
+		if err != nil && errors.IsAlreadyExists(err) {
+			c.DeleteMMSPVC(d.AgreementId, namespace)
+			pvcName, _ = c.CreateMMSPVC(d.EnvVarMap, d.MMSPVCConfig, d.AgreementId, namespace)
+		}
+		glog.V(3).Infof(kwlog(fmt.Sprintf("MMS pvc %v is created under namespace: %v", pvcName, namespace)))
 	}
-	glog.V(3).Infof(kwlog(fmt.Sprintf("MMS pvc %v is created under namespace: %v", pvcName, namespace)))
 
 	// Let the operator know about the config map
 	dWithEnv := addConfigMapVarToDeploymentObject(*d.DeploymentObject, mapName)
@@ -1391,4 +1397,16 @@ func removeRoleBindingSubjects(allSubjects []rbacv1.Subject, subjectsToRemove []
 		}
 	}
 	return allSubjects
+}
+
+func IsMMSPVCEnabled(MMSPVCConfig map[string]interface{}) bool {
+	if MMSPVCConfig == nil {
+		return false
+	}
+
+	enableVal, ok := MMSPVCConfig["enable"]
+	if !ok || !enableVal.(bool) {
+		return false
+	}
+	return true
 }

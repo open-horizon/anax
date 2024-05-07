@@ -35,6 +35,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -147,9 +148,9 @@ func NewDynamicKubeClient() (dynamic.Interface, error) {
 }
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
-func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars map[string]string, fssAuthFilePath string, fssCertFilePath string, secretsMap map[string]string, agId string, reqNamespace string, crInstallTimeout int64) error {
+func (c KubeClient) Install(tar string, metadata map[string]interface{}, mmsPVCConfig map[string]interface{}, envVars map[string]string, fssAuthFilePath string, fssCertFilePath string, secretsMap map[string]string, agId string, reqNamespace string, crInstallTimeout int64) error {
 
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, envVars, fssAuthFilePath, fssCertFilePath, secretsMap, agId, crInstallTimeout)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, mmsPVCConfig, envVars, fssAuthFilePath, fssCertFilePath, secretsMap, agId, crInstallTimeout)
 	if err != nil {
 		return err
 	}
@@ -198,7 +199,7 @@ func (c KubeClient) Install(tar string, metadata map[string]interface{}, envVars
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
 func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId string, reqNamespace string) error {
 
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, "", "", map[string]string{}, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, nil, map[string]string{}, "", "", map[string]string{}, agId, 0)
 	if err != nil {
 		return err
 	}
@@ -237,7 +238,7 @@ func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId 
 	return nil
 }
 func (c KubeClient) OperatorStatus(tar string, metadata map[string]interface{}, agId string, reqNamespace string) (interface{}, error) {
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, "", "", map[string]string{}, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, nil, map[string]string{}, "", "", map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +256,7 @@ func (c KubeClient) OperatorStatus(tar string, metadata map[string]interface{}, 
 }
 
 func (c KubeClient) Status(tar string, metadata map[string]interface{}, agId string, reqNamespace string) ([]ContainerStatus, error) {
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, map[string]string{}, "", "", map[string]string{}, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, nil, map[string]string{}, "", "", map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +312,7 @@ func (c KubeClient) Update(tar string, metadata map[string]interface{}, agId str
 	}
 
 	// Current implementaion only updatedSecrets will be passed into this function
-	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, updatedEnv, "", "", updatedSecretsMap, agId, 0)
+	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, nil, updatedEnv, "", "", updatedSecretsMap, agId, 0)
 	if err != nil {
 		return err
 	}
@@ -332,7 +333,7 @@ func (c KubeClient) Update(tar string, metadata map[string]interface{}, agId str
 }
 
 // processDeployment takes the deployment string and converts it to a map with the k8s objects, the namespace to be used, and an error if one occurs
-func ProcessDeployment(tar string, metadata map[string]interface{}, envVars map[string]string, fssAuthFilePath string, fssCertFilePath string, secretsMap map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
+func ProcessDeployment(tar string, metadata map[string]interface{}, mmsPVCConfig map[string]interface{}, envVars map[string]string, fssAuthFilePath string, fssCertFilePath string, secretsMap map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	// Read the yaml files from the commpressed tar files
 	yamls, err := getYamlFromTarGz(tar)
 	if err != nil {
@@ -355,7 +356,7 @@ func ProcessDeployment(tar string, metadata map[string]interface{}, envVars map[
 	}
 
 	// Sort the k8s api objects by kind
-	return sortAPIObjects(k8sObjs, customResourceKindMap, metadata, envVars, fssAuthFilePath, fssCertFilePath, secretsMap, agId, crInstallTimeout)
+	return sortAPIObjects(k8sObjs, customResourceKindMap, metadata, mmsPVCConfig, envVars, fssAuthFilePath, fssCertFilePath, secretsMap, agId, crInstallTimeout)
 }
 
 // CreateConfigMap will create a config map with the provided environment variable map
@@ -479,8 +480,9 @@ func (c KubeClient) DeleteK8SSecrets(agId string, namespace string) error {
 	return nil
 }
 
-func (c KubeClient) CreateMMSPVC(envVars map[string]string, agId string, namespace string) (string, error) {
+func (c KubeClient) CreateMMSPVC(envVars map[string]string, mmsPVCConfig map[string]interface{}, agId string, namespace string) (string, error) {
 	storageClass, accessModes, _ := cutil.GetAgentPVCInfo()
+
 	if scInUserinput, ok := envVars[STORAGE_CLASS_USERINPUT_NAME]; ok {
 		storageClass = scInUserinput
 	}
@@ -492,6 +494,13 @@ func (c KubeClient) CreateMMSPVC(envVars map[string]string, agId string, namespa
 	}
 
 	pvcSizeInString := DEFAULT_PVC_SIZE_IN_STRING
+	if size, ok := mmsPVCConfig["pvcSize"]; ok {
+		sizeInServiceDef := int64(size.(float64))
+		if sizeInServiceDef > 0 {
+			pvcSizeInString = strconv.FormatInt(sizeInServiceDef, 10)
+		}
+	}
+
 	if pvcSizeInUserInput, ok := envVars[PVC_SIZE_USERINPUT_NAME]; ok {
 		pvcSizeInString = pvcSizeInUserInput
 	}
