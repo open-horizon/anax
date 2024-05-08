@@ -5,6 +5,7 @@
 set -e
 
 DEPLOYMENT_NAME="agent"
+SERVICE_NAME="agent-service"
 SERVICE_ACCOUNT_NAME="agent-service-account"
 CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
 SECRET_NAME="openhorizon-agent-secrets"
@@ -377,6 +378,9 @@ function deleteAgentResources() {
             pkill -f anax.service
         fi
     fi
+
+    log_info "Deleting agent service..."
+    $KUBECTL delete svc $SERVICE_NAME -n $AGENT_NAMESPACE
 
     log_info "Deleting configmap..."
     $KUBECTL delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE
