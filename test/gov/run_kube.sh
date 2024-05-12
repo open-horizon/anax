@@ -26,10 +26,12 @@ USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
 isRoot=$(id -u)
 cprefix="sudo -E"
+sudoprefix="sudo"
 
 if [ "${isRoot}" == "0" ]
 then
 	cprefix=""
+	sudoprefix=""
 fi
 
 #
@@ -164,7 +166,7 @@ do
 done
 
 # Debug help - microk8s.ctr images ls
-$cprefix microk8s.ctr --namespace k8s.io image import /tmp/agent-in-kube.tar
+$cprefix microk8s.ctr --namespace k8s.io image import /tmp/agent-in-kube.tar --base-name docker.io/openhorizon/amd64_anax_k8s
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -172,6 +174,9 @@ then
 	$cprefix microk8s.ctr images ls
 	exit 1
 fi
+
+$sudoprefix apparmor_parser -R /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
+$sudoprefix apparmor_parser -a /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
 
 #
 # Now start deploying the agent, running in it's own namespace.
