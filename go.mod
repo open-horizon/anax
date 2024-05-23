@@ -22,7 +22,7 @@ require (
 	github.com/operator-framework/operator-lifecycle-manager v0.27.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.18.0
+	golang.org/x/crypto v0.21.0
 	golang.org/x/sys v0.18.0
 	golang.org/x/text v0.14.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
@@ -115,7 +115,7 @@ require (
 	github.com/vbatts/tar-split v0.11.5 // indirect
 	go.etcd.io/bbolt v1.3.8 // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.20.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/oauth2 v0.14.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
