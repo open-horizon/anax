@@ -3869,8 +3869,6 @@ function create_horizon_env() {
     if [[ -f $AGENT_CERT_FILE ]]; then
         local cert_name=$(basename ${AGENT_CERT_FILE})
         local cluster_cert_path="/etc/default/cert"
-        log_verbose "copy cert file to $cluster_cert_path ..."
-        mkdir -p $cluster_cert_path && cp ${AGENT_CERT_FILE} $cluster_cert_path
         echo "HZN_MGMT_HUB_CERT_PATH=$cluster_cert_path/$cert_name" >>$HZN_ENV_FILE
     fi
 
