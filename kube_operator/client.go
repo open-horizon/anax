@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	v1scheme "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	v1beta1scheme "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -161,6 +162,16 @@ func (c KubeClient) Install(tar string, metadata map[string]interface{}, mmsPVCC
 	nodeIsNamespaceScope := cutil.IsNamespaceScoped()
 	if namespace != nodeNamespace && nodeIsNamespaceScope {
 		return fmt.Errorf("Service failed to start for agreement %v. Could not deploy service into namespace %v because the agent's namespace is namespace scoped, and it restricts all services to the agent namespace %v", agId, namespace, nodeNamespace)
+	} else if namespace != nodeNamespace {
+		// create network policies to allow traffic between the node and service 
+		ingress := networkingv1.NetworkPolicyIngressRule{From: []networkingv1.NetworkPolicyPeer{networkingv1.NetworkPolicyPeer{NamespaceSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"kubernetes.io/metadata.name": namespace}}}}}
+		egress := networkingv1.NetworkPolicyEgressRule{To: []networkingv1.NetworkPolicyPeer{networkingv1.NetworkPolicyPeer{NamespaceSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"kubernetes.io/metadata.name": namespace}}}}}
+		spec := networkingv1.NetworkPolicySpec{PodSelector: metav1.LabelSelector{}, Ingress: []networkingv1.NetworkPolicyIngressRule{ingress}, Egress: []networkingv1.NetworkPolicyEgressRule{egress}, PolicyTypes: []networkingv1.PolicyType{"Ingress","Egress"}}
+		netPol := networkingv1.NetworkPolicy{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-networkPolicy", agId), Namespace: nodeNamespace}, Spec: spec}
+		_, err := c.Client.NetworkingV1().NetworkPolicies(nodeNamespace).Create(context.Background(), &netPol, metav1.CreateOptions{})
+		if err != nil {
+			glog.Errorf(kwlog(fmt.Sprintf("Error creating network policy: %v. Continuing installation.", err)))
+		}
 	}
 
 	// If the namespace was specified in the deployment then create the namespace object so it can be created
@@ -221,6 +232,12 @@ func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId 
 	if _, ok := apiObjMap[K8S_NAMESPACE_TYPE]; !ok && namespace != nodeNamespace && !nodeIsNamespaceScope {
 		nsObj := corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace"}, ObjectMeta: metav1.ObjectMeta{Name: namespace}}
 		apiObjMap[K8S_NAMESPACE_TYPE] = []APIObjectInterface{NamespaceCoreV1{NamespaceObject: &nsObj}}
+	} else if namespace != nodeNamespace {
+		// delete the network policy that allows traffic between the node and service 
+		err := c.Client.NetworkingV1().NetworkPolicies(nodeNamespace).Delete(context.Background(), fmt.Sprintf("%s-networkPolicy", agId) , metav1.DeleteOptions{})
+		if err != nil {
+			glog.Errorf(kwlog(fmt.Sprintf("Error deleting network policy: %v", err)))
+		}
 	}
 
 	baseK8sComponents := getBaseK8sKinds()
@@ -377,7 +394,7 @@ func (c KubeClient) CreateConfigMap(envVars map[string]string, agId string, name
 	return res.ObjectMeta.Name, nil
 }
 
-// CreateConfigMap will create a config map with the provided environment variable map
+// DeleteConfigMap will delete the config map with the provided name
 func (c KubeClient) DeleteConfigMap(agId string, namespace string) error {
 	// hzn-env-vars-<agId>
 	hznEnvConfigmapName := fmt.Sprintf("%s-%s", HZN_ENV_VARS, agId)
