@@ -56,7 +56,7 @@ echo -e "${PREFIX} START_SECOND_AGBOT setting is ${START_SECOND_AGBOT}."
 
 cd /tmp
 rm -f deploy-mgmt-hub.sh
-wget https://raw.githubusercontent.com/open-horizon/devops/master/mgmt-hub/deploy-mgmt-hub.sh
+wget https://raw.githubusercontent.com/open-horizon/devops/new-mongodb/mgmt-hub/deploy-mgmt-hub.sh
 if [ $? -ne 0 ]; then
   echo -e "${PREFIX} Failed to download deploy-mgmt-hub.sh file."
   exit 1
