@@ -17,6 +17,10 @@ fi
 #
 # Check if microk8s is running.
 #
+
+$sudoprefix apparmor_parser -R /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
+$sudoprefix apparmor_parser -a /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
+
 echo "Preparing to cleanup Kube test environment"
 OUT=$($cprefix microk8s.status)
 RC=$?
