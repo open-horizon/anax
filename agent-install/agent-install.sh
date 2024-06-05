@@ -1559,7 +1559,7 @@ function get_kubernetes_version() {
     major_version=$($KUBECTL version -o json | jq '.serverVersion.major' | sed s/\"//g)
     minor_version=$($KUBECTL version -o json | jq '.serverVersion.minor' | sed s/\"//g)
     if [ "${minor_version:0-1}" == "+" ]; then
-        minor_version=${minor_version::-1}
+        minor_version=${minor_version::$((${#minor_version} - 1))}
     fi
 
     full_version="$major_version.$minor_version"
