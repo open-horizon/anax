@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -20,8 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	dynamic "k8s.io/client-go/dynamic"
-	"strings"
-	"time"
 )
 
 type APIObjectInterface interface {
@@ -113,6 +114,25 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 				}
 			} else {
 				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
+			}
+		case K8S_SECRET_TYPE:
+			if typedSecret, ok := obj.Object.(*corev1.Secret); ok {
+				if typedSecret.ObjectMeta.Namespace != "" {
+					if namespace == "" {
+						namespace = typedSecret.ObjectMeta.Namespace
+					} else if namespace != typedSecret.ObjectMeta.Namespace {
+						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedSecret.ObjectMeta.Namespace)))
+					}
+				}
+				newSecret := SecretCoreV1{SecretObject: typedSecret}
+				if newSecret.Name() != "" {
+					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes secret object %s.", newSecret.Name())))
+					objMap[K8S_SECRET_TYPE] = append(objMap[K8S_SECRET_TYPE], newSecret)
+				} else {
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: secret object must have a name in its metadata section.")))
+				}
+			} else {
+				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: secret object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_DEPLOYMENT_TYPE:
 			if typedDeployment, ok := obj.Object.(*appsv1.Deployment); ok {
@@ -621,6 +641,73 @@ func (sa ServiceAccountCoreV1) Name() string {
 
 func (sa ServiceAccountCoreV1) Namespace() string {
 	return sa.ServiceAccountObject.ObjectMeta.Namespace
+}
+
+// ----------------Secret----------------
+type SecretCoreV1 struct {
+	SecretObject *corev1.Secret
+}
+
+func (s SecretCoreV1) Install(c KubeClient, namespace string) error {
+	glog.V(3).Infof(kwlog(fmt.Sprintf("attempting to create secret %v", s.Name()))) // Don't display the whole object to avoid logging secret data
+	if namespace != s.Namespace() {
+		glog.Warningf(kwlog(fmt.Sprintf("Embedded namespace '%v' is ignored. Service will be deployed to '%v'.", s.Namespace(), namespace)))
+		s.SecretObject.ObjectMeta.Namespace = namespace
+	}
+
+	_, err := c.Client.CoreV1().Secrets(namespace).Create(context.Background(), s.SecretObject, metav1.CreateOptions{})
+	if err != nil && errors.IsAlreadyExists(err) {
+		glog.Warningf(kwlog(fmt.Sprintf("Secret %s already exists, deleting and re-creating", s.Name())))
+		s.Uninstall(c, s.Name())
+		_, err = c.Client.CoreV1().Secrets(namespace).Create(context.Background(), s.SecretObject, metav1.CreateOptions{})
+	}
+	if err != nil {
+		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the secret: %v", err)))
+	}
+	return nil
+}
+
+func (s SecretCoreV1) Uninstall(c KubeClient, secretName string) {
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting secret %v", secretName)))
+	err := c.Client.CoreV1().Secrets(s.Namespace()).Delete(context.Background(), secretName, metav1.DeleteOptions{})
+	if err != nil {
+		glog.Errorf(kwlog(fmt.Sprintf("unable to delete secret %s. Error: %v", secretName, err)))
+	}
+}
+
+func (s SecretCoreV1) Status(c KubeClient, namespace string) (interface{}, error) {
+	secretFromKube, err := c.Client.CoreV1().Secrets(namespace).Get(context.Background(), s.Name(), metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error getting secret status: %v", err)))
+	}
+	return secretFromKube, nil
+}
+
+func (s SecretCoreV1) Update(c KubeClient, namespace string) error {
+	if secretFromKube, err := c.Client.CoreV1().Secrets(namespace).Get(context.Background(), s.SecretObject.Name, metav1.GetOptions{}); err != nil {
+		return fmt.Errorf(kwlog(fmt.Sprintf("Error getting secret from kube: %v", err)))
+	} else if secretFromKube == nil {
+		// invalid, return err
+		return fmt.Errorf(kwlog(fmt.Sprintf("Error updating secret %v in namespace %v: secret doesn't exist", s.SecretObject.Name, namespace)))
+	} else {
+		//Update the secret retrieved from kube with the new data
+		secretFromKube.Data = s.SecretObject.Data
+		updatedSecret, err := c.Client.CoreV1().Secrets(namespace).Update(context.Background(), secretFromKube, metav1.UpdateOptions{})
+		if err != nil {
+			return fmt.Errorf(kwlog(fmt.Sprintf("Error updating secret %v in namespace %v: %v", s.SecretObject.Name, namespace, err)))
+		}
+		glog.V(3).Infof(kwlog(fmt.Sprintf("Secret %v in namespace %v updated successfully", updatedSecret.Name, namespace)))
+	}
+
+	return nil
+}
+
+func (s SecretCoreV1) Name() string {
+	return s.SecretObject.ObjectMeta.Name
+}
+
+func (s SecretCoreV1) Namespace() string {
+	return s.SecretObject.ObjectMeta.Namespace
 }
 
 //----------------Deployment----------------
