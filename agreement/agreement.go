@@ -648,9 +648,11 @@ func (w *AgreementWorker) syncOnInit() error {
 
 			} else if proposal, err := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "", "").DemarshalProposal(ag.Proposal); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
-			} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy()); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
+			} else if nodePol, err := persistence.FindNodePolicy(w.db); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to read node policy from the local database. %v", err)))
 
+			} else if pol, err := policy.GenPolicyFromExternalPolicy(nodePol.GetDeploymentPolicy(), policy.MakeExternalPolicyHeaderName(w.GetExchangeId())); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
 			} else if policies, err := w.pm.GetPolicyList(exchange.GetOrg(w.GetExchangeId()), pol); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to get policy list for producer policy in agreement %v, error: %v", ag.CurrentAgreementId, err)))
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
