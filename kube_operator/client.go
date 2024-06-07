@@ -6,6 +6,11 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"reflect"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -15,8 +20,6 @@ import (
 	olmv1client "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1"
 	olmv1alpha1client "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1"
 	yaml "gopkg.in/yaml.v2"
-	"io"
-	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -31,8 +34,6 @@ import (
 	dynamic "k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	"reflect"
-	"strings"
 )
 
 const (
@@ -54,12 +55,16 @@ const (
 	K8S_SERVICEACCOUNT_TYPE      = "ServiceAccount"
 	K8S_CRD_TYPE                 = "CustomResourceDefinition"
 	K8S_NAMESPACE_TYPE           = "Namespace"
+	K8S_SECRET_TYPE              = "Secret"
 	K8S_UNSTRUCTURED_TYPE        = "Unstructured"
 	K8S_OLM_OPERATOR_GROUP_TYPE  = "OperatorGroup"
 )
 
+// Order is important here since it will be used to determine install order.
+// For example, secrets should be before deployments,
+// because it may be an image pull secret used by the deployment
 func getBaseK8sKinds() []string {
-	return []string{K8S_NAMESPACE_TYPE, K8S_CLUSTER_ROLE_TYPE, K8S_CLUSTER_ROLEBINDING_TYPE, K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_DEPLOYMENT_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_CRD_TYPE}
+	return []string{K8S_NAMESPACE_TYPE, K8S_CLUSTER_ROLE_TYPE, K8S_CLUSTER_ROLEBINDING_TYPE, K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_SECRET_TYPE, K8S_CRD_TYPE, K8S_DEPLOYMENT_TYPE}
 }
 
 func getDangerKinds() []string {
