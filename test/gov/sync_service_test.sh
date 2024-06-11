@@ -323,10 +323,10 @@ else
 fi
 
 #Create custom key pairs
-openssl genrsa -out /tmp/mms.private.key 2048
-openssl rsa -in /tmp/mms.private.key -outform PEM -pubout -out /tmp/mms.public.key
-openssl genrsa -out /tmp/env.private.key 2048
-openssl rsa -in /tmp/env.private.key -outform PEM -pubout -out /tmp/env.public.key
+openssl genrsa -traditional -out /tmp/mms.private.key 2048
+openssl rsa -traditional -in /tmp/mms.private.key -outform PEM -pubout -out /tmp/mms.public.key
+openssl genrsa -traditional -out /tmp/env.private.key 2048
+openssl rsa -traditional -in /tmp/env.private.key -outform PEM -pubout -out /tmp/env.public.key
 MADE_DEFAULT_KEYS=0
 if [ ! -f ~/.hzn/keys/service.private.key ] || [ ! -f ~/.hzn/keys/service.public.pem ]; 
 then
