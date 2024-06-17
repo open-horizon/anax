@@ -158,7 +158,7 @@ do
 done
 
 # Debug help - microk8s.ctr images ls
-$cprefix microk8s.ctr --namespace k8s.io image import /tmp/agent-in-kube.tar
+$cprefix microk8s.ctr --namespace k8s.io image import /tmp/agent-in-kube.tar --base-name docker.io/openhorizon/amd64_anax_k8s
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -266,4 +266,4 @@ $cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/node_ui.json ${NAME
 
 $cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui.json -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
 
-echo "Configured agent for policy, waiting for the agbot to start."
+echo -e "${PREFIX} complete cluster agent test"
