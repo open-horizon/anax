@@ -164,7 +164,7 @@ do
 done
 
 # Debug help - microk8s.ctr images ls
-$cprefix microk8s.ctr --namespace k8s.io image import /tmp/agent-in-kube.tar
+$cprefix microk8s.ctr --namespace k8s.io image import /tmp/agent-in-kube.tar --base-name docker.io/openhorizon/amd64_anax_k8s
 RC=$?
 if [ $RC -ne 0 ]
 then
