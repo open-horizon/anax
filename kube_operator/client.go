@@ -6,6 +6,13 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"reflect"
+	"strconv"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -15,8 +22,6 @@ import (
 	olmv1client "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1"
 	olmv1alpha1client "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1"
 	yaml "gopkg.in/yaml.v2"
-	"io"
-	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -34,10 +39,6 @@ import (
 	dynamic "k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	"os"
-	"reflect"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -61,6 +62,7 @@ const (
 	K8S_SERVICEACCOUNT_TYPE        = "ServiceAccount"
 	K8S_CRD_TYPE                   = "CustomResourceDefinition"
 	K8S_NAMESPACE_TYPE             = "Namespace"
+	K8S_SECRET_TYPE                = "Secret"
 	K8S_UNSTRUCTURED_TYPE          = "Unstructured"
 	K8S_OLM_OPERATOR_GROUP_TYPE    = "OperatorGroup"
 	K8S_MMS_SHARED_PVC_NAME        = "mms-shared-storage-pvc"
@@ -77,8 +79,11 @@ var (
 	}
 )
 
+// Order is important here since it will be used to determine install order.
+// For example, secrets should be before deployments,
+// because it may be an image pull secret used by the deployment
 func getBaseK8sKinds() []string {
-	return []string{K8S_NAMESPACE_TYPE, K8S_CLUSTER_ROLE_TYPE, K8S_CLUSTER_ROLEBINDING_TYPE, K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_CRD_TYPE, K8S_DEPLOYMENT_TYPE}
+	return []string{K8S_NAMESPACE_TYPE, K8S_CLUSTER_ROLE_TYPE, K8S_CLUSTER_ROLEBINDING_TYPE, K8S_ROLE_TYPE, K8S_ROLEBINDING_TYPE, K8S_SERVICEACCOUNT_TYPE, K8S_SECRET_TYPE, K8S_CRD_TYPE, K8S_DEPLOYMENT_TYPE}
 }
 
 func getDangerKinds() []string {
@@ -163,10 +168,10 @@ func (c KubeClient) Install(tar string, metadata map[string]interface{}, mmsPVCC
 	if namespace != nodeNamespace && nodeIsNamespaceScope {
 		return fmt.Errorf("Service failed to start for agreement %v. Could not deploy service into namespace %v because the agent's namespace is namespace scoped, and it restricts all services to the agent namespace %v", agId, namespace, nodeNamespace)
 	} else if namespace != nodeNamespace {
-		// create network policies to allow traffic between the node and service 
+		// create network policies to allow traffic between the node and service
 		ingress := networkingv1.NetworkPolicyIngressRule{From: []networkingv1.NetworkPolicyPeer{networkingv1.NetworkPolicyPeer{NamespaceSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"kubernetes.io/metadata.name": namespace}}}}}
 		egress := networkingv1.NetworkPolicyEgressRule{To: []networkingv1.NetworkPolicyPeer{networkingv1.NetworkPolicyPeer{NamespaceSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"kubernetes.io/metadata.name": namespace}}}}}
-		spec := networkingv1.NetworkPolicySpec{PodSelector: metav1.LabelSelector{}, Ingress: []networkingv1.NetworkPolicyIngressRule{ingress}, Egress: []networkingv1.NetworkPolicyEgressRule{egress}, PolicyTypes: []networkingv1.PolicyType{"Ingress","Egress"}}
+		spec := networkingv1.NetworkPolicySpec{PodSelector: metav1.LabelSelector{}, Ingress: []networkingv1.NetworkPolicyIngressRule{ingress}, Egress: []networkingv1.NetworkPolicyEgressRule{egress}, PolicyTypes: []networkingv1.PolicyType{"Ingress", "Egress"}}
 		netPol := networkingv1.NetworkPolicy{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-networkPolicy", agId), Namespace: nodeNamespace}, Spec: spec}
 		_, err := c.Client.NetworkingV1().NetworkPolicies(nodeNamespace).Create(context.Background(), &netPol, metav1.CreateOptions{})
 		if err != nil {
@@ -233,8 +238,8 @@ func (c KubeClient) Uninstall(tar string, metadata map[string]interface{}, agId 
 		nsObj := corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace"}, ObjectMeta: metav1.ObjectMeta{Name: namespace}}
 		apiObjMap[K8S_NAMESPACE_TYPE] = []APIObjectInterface{NamespaceCoreV1{NamespaceObject: &nsObj}}
 	} else if namespace != nodeNamespace {
-		// delete the network policy that allows traffic between the node and service 
-		err := c.Client.NetworkingV1().NetworkPolicies(nodeNamespace).Delete(context.Background(), fmt.Sprintf("%s-networkPolicy", agId) , metav1.DeleteOptions{})
+		// delete the network policy that allows traffic between the node and service
+		err := c.Client.NetworkingV1().NetworkPolicies(nodeNamespace).Delete(context.Background(), fmt.Sprintf("%s-networkPolicy", agId), metav1.DeleteOptions{})
 		if err != nil {
 			glog.Errorf(kwlog(fmt.Sprintf("Error deleting network policy: %v", err)))
 		}
