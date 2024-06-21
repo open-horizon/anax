@@ -75,7 +75,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       ```
       {: codeblock}
 
-   b. Create a file called **k3s-persistent-claim.yml** with this content:
+   b. Create a file called **k3s-persistent-claim.yaml** with this content:
       ```yaml
       apiVersion: v1
       kind: PersistentVolumeClaim
@@ -100,7 +100,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
    c. Create the persistent volume claim:
 
       ```bash
-      kubectl apply -f k3s-persistent-claim.yml
+      kubectl apply -f k3s-persistent-claim.yaml
       ```
       {: codeblock}
 
@@ -111,7 +111,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
       ```
       {: codeblock}
 
-   e. Create a file called **k3s-registry-deployment.yml** with this content:
+   e. Create a file called **k3s-registry-deployment.yaml** with this content:
 
       ```yaml
       apiVersion: apps/v1
@@ -166,7 +166,7 @@ export IMAGE_ON_EDGE_CLUSTER_REGISTRY=<remote-image-registry-host>/<repository-n
    f. Create the registry deployment and service:
 
       ```bash
-      kubectl apply -f k3s-registry-deployment.yml
+      kubectl apply -f k3s-registry-deployment.yaml
       ```
       {: codeblock}
 
