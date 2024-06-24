@@ -36,7 +36,7 @@ func LogDeviceEvent(db *bolt.DB, severity string, message *persistence.MessageMe
 			if d.Org != nil {
 				org = *d.Org
 			}
-			if d.Pattern != nil {
+			if d.Pattern != nil && *d.Pattern != "" {
 				pattern = fmt.Sprintf("%v/%v", org, *d.Pattern)
 			}
 			if d.Config != nil {
