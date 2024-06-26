@@ -197,3 +197,24 @@ func NewNodeUnconfigCommand(msg *events.NodeShutdownCompleteMessage) *NodeUnconf
 		msg: msg,
 	}
 }
+
+// ==============================================================================================================
+// This is an already running (singleton) microservice that a new agreement will also be using
+// This message is to allow the container worker to add any secrets to the secrets file mounted to the container
+type AgreementUsingMicroserviceCommand struct {
+	msg *events.AgreementAddedToExistingMicroserviceMessage
+}
+
+func (n AgreementUsingMicroserviceCommand) String() string {
+	return n.ShortString()
+}
+
+func (n AgreementUsingMicroserviceCommand) ShortString() string {
+	return fmt.Sprintf("AgreementUsingMicroserviceCommand, Msg: %v", n.msg)
+}
+
+func NewAgreementUsingMicroserviceCommand(msg *events.AgreementAddedToExistingMicroserviceMessage) *AgreementUsingMicroserviceCommand {
+	return &AgreementUsingMicroserviceCommand{
+		msg: msg,
+	}
+}
