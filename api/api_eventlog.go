@@ -61,14 +61,16 @@ func (a *API) eventlog(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v with selection %v. Language: %v", r.Method, resource, r.Form, lan)))
 
-		if err := DeleteEventLogs(a.db, prune, r.Form, msgPrinter); err != nil {
+		if count, err := DeleteEventLogs(a.db, prune, r.Form, msgPrinter); err != nil {
 			errorHandler(NewSystemError(msgPrinter.Sprintf("Error deleting %v, error %v", resource, err)))
-		} else {
+		} else if count > 0 {
 			if prune {
-				writeResponse(w, "Successfully pruned event logs.", http.StatusOK)
+				writeResponse(w, fmt.Sprintf("%v", count), http.StatusOK)
 			} else {
-				writeResponse(w, "Successfully deleted event logs.", http.StatusOK)
+				writeResponse(w, fmt.Sprintf("%v", count), http.StatusOK)
 			}
+		} else {
+			writeResponse(w, fmt.Sprintf("No matching event log entries found."), http.StatusNoContent)
 		}
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")

@@ -2293,3 +2293,10 @@ func ValidateOrg(org string) bool {
 	}
 	return invalidCheck
 }
+
+// remove leading and trailing quotation marks if present
+func RemoveQuotes(s string) string {
+	s = strings.TrimPrefix(s, "\"")
+	s = strings.TrimSuffix(s, "\"")
+	return s
+}

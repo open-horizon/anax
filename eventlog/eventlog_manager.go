@@ -96,7 +96,7 @@ func GetEventLogs(db *bolt.DB, all_logs bool, selectors map[string][]persistence
 	return persistence.FindEventLogsWithSelectors(db, all_logs, selectors, msgPrinter)
 }
 
-func DeleteEventLogs(db *bolt.DB, selectors map[string][]persistence.Selector, msgPrinter *message.Printer) error {
+func DeleteEventLogs(db *bolt.DB, selectors map[string][]persistence.Selector, msgPrinter *message.Printer) (int, error) {
 	return persistence.DeleteEventLogsWithSelectors(db, selectors, msgPrinter)
 }
 
