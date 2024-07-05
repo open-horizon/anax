@@ -47,6 +47,9 @@ const (
 	EL_AG_TERM_UNABLE_SYNC_AGS                   = "anax terminating, unable to complete agreement sync up. %v"
 )
 
+// name for the subworker
+const NODE_POLICY_WATCHER = "NodePolicyWatcher"
+
 // This is does nothing useful at run time.
 // This code is only used at compile time to make the eventlog messages get into the catalog so that
 // they can be translated.
@@ -310,6 +313,9 @@ func (w *AgreementWorker) Initialize() bool {
 		}
 	}
 
+	// this subworker will catch if the node policy built-in properties have changed without the agent restarting
+	w.DispatchSubworker(NODE_POLICY_WATCHER, w.reconcileNodePolicy, 60, false)
+
 	glog.Info(logString(fmt.Sprintf("waiting for commands.")))
 
 	return true
@@ -339,6 +345,16 @@ func (w *AgreementWorker) syncNode() error {
 
 	glog.V(3).Infof(logString("node sync up completed normally."))
 	return nil
+}
+
+func (w *AgreementWorker) reconcileNodePolicy() int {
+	if w.hznOffline {
+		return 60
+	}
+
+	w.checkNodePolicyChanges()
+
+	return 60
 }
 
 // Enter the command processing loop. Initialization is complete so wait for commands to
