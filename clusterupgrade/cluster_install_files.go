@@ -406,7 +406,7 @@ func getImageTagFromManifestFile(manifestFolder string) (string, string, error) 
 	return "", "", fmt.Errorf("failed to get RepoTags from docker manifest file, docker manifest: %v", dockerManifestData)
 }
 
-func decompress(tarGZFilePath, targetFolder string) error {
+func getAgentTarballFromGzip(tarGZFilePath, imageTarballPath string) error {
 	reader, err := os.Open(tarGZFilePath)
 	if err != nil {
 		glog.Errorf(cuwlog(fmt.Sprintf("Failed to open %v, error was: %v", tarGZFilePath, err)))
@@ -421,6 +421,24 @@ func decompress(tarGZFilePath, targetFolder string) error {
 	}
 	defer uncompressStream.Close()
 
+	tarfile, err := os.Create(imageTarballPath)
+	if err != nil {
+		return err
+	}
+	defer tarfile.Close()
+
+	_, err = io.Copy(tarfile, uncompressStream)
+	return err
+}
+
+func extractImageManifest(tarballPath, targetFolder string) error {
+	reader, err := os.Open(tarballPath)
+	if err != nil {
+		glog.Errorf(cuwlog(fmt.Sprintf("Failed to open %v, error was: %v", tarballPath, err)))
+		return err
+	}
+	defer reader.Close()
+
 	// create the target folder if it is not exist
 	if _, err := os.Stat(targetFolder); err != nil {
 		if err := os.MkdirAll(targetFolder, 0755); err != nil {
@@ -428,7 +446,7 @@ func decompress(tarGZFilePath, targetFolder string) error {
 		}
 	}
 
-	tarReader := tar.NewReader(uncompressStream)
+	tarReader := tar.NewReader(reader)
 	for {
 		header, err := tarReader.Next()
 		switch {
@@ -444,85 +462,21 @@ func decompress(tarGZFilePath, targetFolder string) error {
 
 		target := path.Join(targetFolder, header.Name)
 		switch header.Typeflag {
-		// if its a dir and it doesn't exist create it
-		case tar.TypeDir:
-			if _, err := os.Stat(target); err != nil {
-				if err := os.MkdirAll(target, 0755); err != nil {
+		// if it's a manifest file, create it
+		case tar.TypeReg:
+			if header.Name == DOCKER_MANIFEST_FILE {
+				f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+				if err != nil {
 					return err
 				}
-			}
-
-		// if it's a file create it
-		case tar.TypeReg:
-			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
-			if err != nil {
-				return err
-			}
-			if _, err := io.Copy(f, tarReader); err != nil {
+				if _, err := io.Copy(f, tarReader); err != nil {
+					f.Close()
+					return err
+				}
 				f.Close()
-				return err
-			}
-			f.Close()
-		}
-	}
-}
-
-func createTarballWithFileAndFolder(tarballFilePath string, src string) error {
-	tarfile, err := os.Create(tarballFilePath)
-	if err != nil {
-		return err
-	}
-	defer tarfile.Close()
-
-	tarfileWriter := tar.NewWriter(tarfile)
-	defer tarfileWriter.Close()
-
-	return addFiles(tarfileWriter, src, "")
-}
-
-func addFiles(w *tar.Writer, srcPath, base string) error {
-	// Open the Directory
-	files, err := ioutil.ReadDir(path.Join(srcPath, base))
-	if err != nil {
-		return err
-	}
-
-	for _, fileInfo := range files {
-		if !fileInfo.IsDir() {
-			filePath := path.Join(srcPath, base, fileInfo.Name())
-			headerName := path.Join(base, fileInfo.Name())
-			file, err := os.Open(filePath)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-
-			// prepare the tar header
-			header := new(tar.Header)
-			header.Name = headerName
-			header.Size = fileInfo.Size()
-			header.Mode = int64(fileInfo.Mode())
-			header.ModTime = fileInfo.ModTime()
-
-			err = w.WriteHeader(header)
-			if err != nil {
-				return err
-			}
-
-			_, err = io.Copy(w, file)
-			if err != nil {
-				return err
-			}
-		} else if fileInfo.IsDir() {
-			// Recurse
-			newBase := base + fileInfo.Name() + "/"
-			err = addFiles(w, srcPath, newBase)
-			if err != nil {
-				return err
 			}
 		}
 	}
-	return nil
 }
 
 func imageExistInRemoteRegistry(fullTag string, versiontTag string, kc authn.Keychain) bool {
