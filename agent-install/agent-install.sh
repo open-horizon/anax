@@ -1256,6 +1256,8 @@ function get_all_variables() {
 
         # get other variables for cluster agent
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
+        check_cluster_storage_class "$EDGE_CLUSTER_STORAGE_CLASS"
+
         get_variable EDGE_CLUSTER_PVC_SIZE "$DEFAULT_PVC_SIZE"
         get_variable AGENT_NAMESPACE "$DEFAULT_AGENT_NAMESPACE"
         get_variable NAMESPACE_SCOPED 'false'
@@ -3305,6 +3307,18 @@ function get_cluster_image_arch() {
     # We assume that all nodes in the k8s cluster are the same so just look at the 1st one... which will always work even for a small k8s cluster w/ 1 node
     local image_arch=$( $KUBECTL get nodes -o json | jq '.items[0].status.nodeInfo.architecture' | sed 's/"//g' )
     echo $image_arch
+}
+
+# check if the storage class exists in the edge cluster
+function check_cluster_storage_class() {
+    log_debug "check_cluster_storage_class() begin"
+    local storage_class=$1
+    if $KUBECTL get storageclass ${storage_class} >/dev/null 2>&1; then
+        log_verbose "storage class $storage_class exists in the edge cluster"
+    else
+        log_fatal 2 "storage class $storage_class does not exist in the edge cluster"
+    fi
+    log_debug "check_cluster_storage_class() end"
 }
 
 # checks if OS/distribution/codename/arch is supported
