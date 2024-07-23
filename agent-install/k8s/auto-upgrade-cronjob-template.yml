@@ -2,6 +2,10 @@ apiVersion: __KubernetesApi__
 kind: CronJob
 metadata:
   name: auto-upgrade-cronjob
+  labels:
+    app: agent
+    openhorizon.org/component: agent
+    type: auto-upgrade-cronjob
 spec:
   schedule: '*/1 * * * *'
   concurrencyPolicy: Forbid
@@ -11,6 +15,11 @@ spec:
     spec:
       backoffLimit: 0
       template:
+        metadata:
+          labels:
+            app: agent
+            openhorizon.org/component: agent
+            type: auto-upgrade-cronjob
         spec:
           affinity:
             podAffinity:
