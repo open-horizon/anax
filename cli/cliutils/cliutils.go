@@ -1098,29 +1098,29 @@ func GetIcpCertPath() string {
 
 // TrustIcpCert adds the icp cert file to be trusted in calls made by the given http client
 func TrustIcpCert(httpClient *http.Client) error {
-        icpCertPath := GetIcpCertPath()
+	icpCertPath := GetIcpCertPath()
 
-        var caCertPool *x509.CertPool
-        var err error
+	var caCertPool *x509.CertPool
+	var err error
 
-        // Trust the system certs like the anax agent code can
-        caCertPool, err = x509.SystemCertPool()
-        if err != nil {
+	// Trust the system certs like the anax agent code can
+	caCertPool, err = x509.SystemCertPool()
+	if err != nil {
 		// Decided not to fail and return here but just create a new pool
 		caCertPool = x509.NewCertPool()
-        }
+	}
 
-        if icpCertPath != "" {
-                icpCert, err := ioutil.ReadFile(icpCertPath)
-                if err != nil {
-                        return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", icpCertPath, err))
-                }
-                caCertPool.AppendCertsFromPEM(icpCert)
-        }
+	if icpCertPath != "" {
+		icpCert, err := ioutil.ReadFile(icpCertPath)
+		if err != nil {
+			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", icpCertPath, err))
+		}
+		caCertPool.AppendCertsFromPEM(icpCert)
+	}
 
-        transport := httpClient.Transport.(*http.Transport)
-        transport.TLSClientConfig.RootCAs = caCertPool
-        return nil
+	transport := httpClient.Transport.(*http.Transport)
+	transport.TLSClientConfig.RootCAs = caCertPool
+	return nil
 }
 
 // Get exchange url from /etc/default/horizon file. if not set, check /etc/horizon/anax.json file
