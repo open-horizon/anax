@@ -3,15 +3,20 @@ kind: Deployment
 metadata:
   name: agent
   namespace: __AgentNameSpace__
+  labels:
+    app: agent
+    openhorizon.org/component: agent
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: agent
+      openhorizon.org/component: agent
   template:
     metadata:
       labels:
         app: agent
+        openhorizon.org/component: agent
     spec:
       affinity:
         podAffinity:
