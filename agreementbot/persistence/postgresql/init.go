@@ -140,15 +140,17 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 				for si := 0; si < len(migrationSQL[v].sql); si++ {
 					if _, err := db.db.Exec(migrationSQL[v].sql[si]); err != nil {
 						return errors.New(fmt.Sprintf("unable to run SQL migration statement version %v, index %v, statement %v, error: %v", v, si, migrationSQL[v].sql[si], err))
-					} else if _, err := db.db.Exec(VERSION_UPDATE, HIGHEST_DATABASE_VERSION, migrationSQL[v].description); err != nil {
-						return errors.New(fmt.Sprintf("unable to create version table, error: %v", err))
-					} else {
-						glog.V(3).Infof("Postgresql database tables upgraded to version %v, %v", v, migrationSQL[v].description)
 					}
 				}
-			}
+				glog.V(3).Infof("Postgresql database tables upgraded for version %v, %v", v, migrationSQL[v].description)
 
-			glog.V(3).Infof("Postgresql database tables upgraded to version %v", HIGHEST_DATABASE_VERSION)
+				if _, err := db.db.Exec(VERSION_UPDATE, v, migrationSQL[v].description); err != nil {
+					return errors.New(fmt.Sprintf("unable to create version table, error: %v", err))
+				} else {
+					glog.V(3).Infof("Postgresql database tables upgraded to version %v, %v", v, migrationSQL[v].description)
+				}
+			}
+			glog.V(3).Infof("Finished upgrading postgresql database tables. The version is now %v", HIGHEST_DATABASE_VERSION)
 		}
 
 		glog.V(3).Infof("Postgresql database tables initialized.")
