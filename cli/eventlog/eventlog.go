@@ -84,7 +84,7 @@ func Delete(selections []string, force bool) {
 	retCode, count := cliutils.HorizonDelete(url_s, []int{204}, []int{200}, false)
 
 	if retCode == http.StatusOK {
-		fmt.Println(i18n.GetMessagePrinter().Sprintf("Successfully deleted %v matching event log entries.", cliutils.RemoveQuotes(fmt.Sprintf("%v",count))))
+		fmt.Println(i18n.GetMessagePrinter().Sprintf("Successfully deleted %v matching event log entries.", cliutils.RemoveQuotes(fmt.Sprintf("%v", count))))
 	} else {
 		fmt.Println(i18n.GetMessagePrinter().Sprintf("No event log entries matching the given selectors were found."))
 	}
@@ -97,13 +97,13 @@ func Prune(force bool) {
 		cliutils.ConfirmRemove(i18n.GetMessagePrinter().Sprintf("Are you sure you want to remove all event logs from previous registrations?"))
 	}
 
-        retCode, count := cliutils.HorizonDelete(url, []int{204}, []int{200}, false)
+	retCode, count := cliutils.HorizonDelete(url, []int{204}, []int{200}, false)
 
-        if retCode == http.StatusOK {
-                fmt.Println(i18n.GetMessagePrinter().Sprintf("Successfully pruned %v matching event log entries.", cliutils.RemoveQuotes(fmt.Sprintf("%v",count))))
-        } else {
-                fmt.Println(i18n.GetMessagePrinter().Sprintf("No event log entries from previous registrations were found."))
-        }
+	if retCode == http.StatusOK {
+		fmt.Println(i18n.GetMessagePrinter().Sprintf("Successfully pruned %v matching event log entries.", cliutils.RemoveQuotes(fmt.Sprintf("%v", count))))
+	} else {
+		fmt.Println(i18n.GetMessagePrinter().Sprintf("No event log entries from previous registrations were found."))
+	}
 }
 
 func List(all bool, detail bool, selections []string, tailing bool) {

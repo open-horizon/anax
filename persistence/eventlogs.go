@@ -66,7 +66,7 @@ func (w EventLogBase) Matches(selectors map[string][]Selector) bool {
 		case "timestamp":
 			attr = w.Timestamp
 		case "time_since":
-			attr = (uint64(time.Now().Unix()) - w.Timestamp)/3600
+			attr = (uint64(time.Now().Unix()) - w.Timestamp) / 3600
 		default:
 			return false // not tolerate wrong attribute name in the selector
 		}
@@ -436,7 +436,7 @@ func DeleteEventLogsWithSelectors(db *bolt.DB, selectors map[string][]Selector, 
 							glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
 						} else if (*esrc).Matches(source_selectors) {
 							b.Delete(k)
-							count ++
+							count++
 						}
 					}
 				}
