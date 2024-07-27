@@ -40,11 +40,11 @@ echo "Editing the horizon/service.definition.json file to point to the operator'
 SERVICE_DEF_JSON= "horizon/service.definition.json"
 jq '.operatorYamlArchive = "../operator.tar.gz"' $SERVICE_DEF_JSON > temp.json && mv temp.json $SERVICE_DEF_JSON
 
-# Step 5: Publish operator service
+# Step 7: Publish operator service
 echo "Publishing operator service"
 hzn exchange service publish -f horizon/service.definition.json
 
-# Step 6: Create a deployment policy file:
+# Step 8: Create a deployment policy file:
 echo "Creating a deployment.policy.json file"
 cat << 'EOF' > horizon/deployment.policy.json
 {
@@ -72,11 +72,11 @@ cat << 'EOF' > horizon/deployment.policy.json
 EOF
 
 
-# Step 7: Publish your deployment policy
+# Step 9: Publish your deployment policy
 echo "Publishing your deployment policy"
 hzn exchange deployment addpolicy -f horizon/deployment.policy.json kubearmor-operator
 
-# Step 8: Create a node.policy.json file
+# Step 10: Create a node.policy.json file
 echo "Creating node policy file"
 cat << 'EOF' > node.policy.json
 {
@@ -86,13 +86,13 @@ cat << 'EOF' > node.policy.json
 }
 EOF
 
-# Step 9: Register your edge cluster with your new node policy
+# Step 11: Register your edge cluster with your new node policy
 echo "Registering edge cluster with new node policy"
 hznpod register -u $HZN_EXCHANGE_USER_AUTH
 cat node.policy.json | hznpod policy update -f-
 hznpod policy list
 
-# Step 10: Check to see the agreement has been created (this can take approximately 15 seconds)
+# Step 12: Check to see the agreement has been created (this can take approximately 15 seconds)
 echo "Checking for agreement creation"
 sleep 15
 hznpod agreement list
@@ -105,7 +105,7 @@ else
   exit 1
 fi
 
-# Step 11: Check if the operator is up in the cluster
+# Step 13: Check if the operator is up in the cluster
 echo "Checking if the operator is up in the cluster"
 kubectl get pods -n openhorizon-agent
 
@@ -122,15 +122,15 @@ else
   exit 1
 fi
 
-# Step 12: Download the sample configuration file
+# Step 14: Download the sample configuration file
 echo "Downloading sample configuration file"
 wget https://raw.githubusercontent.com/kubearmor/KubeArmor/main/pkg/KubeArmorOperator/config/samples/sample-config.yml -O sample-config.yml
 
-# Step 13: Modify the sample configuration file to set the namespace to openhorizon-agent
+# Step 15: Modify the sample configuration file to set the namespace to openhorizon-agent
 echo "Modifying sample configuration file to set the namespace to openhorizon-agent"
 sed -i 's/namespace: .*/namespace: openhorizon-agent/' sample-config.yml
 
-# Step 14: Apply the modified configuration file
+# Step 16: Apply the modified configuration file
 echo "Applying modified configuration file"
 kubectl apply -f sample-config.yml
 
