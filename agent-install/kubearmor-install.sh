@@ -18,6 +18,60 @@ fi
 echo "Create a new working directory for a new horizon project"
 hzn dev service new -V 1.0.0 -s kubearmor-operator -c cluster
 
+# Step 3: Making the Operator file
+echo "Making the operator file"
+helm repo add kubearmor https://kubearmor.github.io/charts
+helm repo update kubearmor
+helm template kubearmor/kubearmor-operator -n openhorizon-agent >> kubearmor-operator.yaml
+
+curl https://raw.githubusercontent.com/kubearmor/KubeArmor/main/deployments/helm/KubeArmorOperator/crds/operator.kubearmor.com_kubearmorconfigs.yaml > kubearmor-crd.yaml
+
+# Step 4: Compress the .yaml file
+echo "Compressing the .yaml helm file"
+tar -czvf operator.tar.gz kubearmor-operator.yaml
+
+# Step 5: Configure the KubeArmor operator
+echo "KubeArmor operator config"
+kubectl apply -f https://raw.githubusercontent.com/kubearmor/KubeArmor/main/deployments/helm/KubeArmorOperator/crds/operator.kubearmor.com_kubearmorconfigs.yaml
+
+# Step 6: Edit the horizon/service.definition.json file to point to the operator's yaml archive created in the previous step
+echo "Editing the horizon/service.definition.json file to point to the operator's yaml archive
+# Defining the JSON file
+SERVICE_DEF_JSON= "horizon/service.definition.json"
+jq '.operatorYamlArchive = "../operator.tar.gz"' $SERVICE_DEF_JSON > temp.json && mv temp.json $SERVICE_DEF_JSON
+
+# Step 5: Publish operator service
+echo "Publishing operator service"
+hzn exchange service publish -f horizon/service.definition.json
+
+# Step 6: Create a deployment policy file:
+echo "Creating a deployment.policy.json file"
+cat << 'EOF' > horizon/deployment.policy.json
+{
+  "label": "$SERVICE_NAME Deployment Policy",
+  "description": "A super-simple sample Horizon Deployment Policy",
+  "service": {
+    "name": "$SERVICE_NAME",
+    "org": "$HZN_ORG_ID",
+    "arch": "*",
+    "serviceVersions": [
+      {
+        "version": "$SERVICE_VERSION",
+        "priority":{}
+      }
+    ]
+  },
+  "properties": [
+  ],
+  "constraints": [
+    "example == kubearmor-operator"
+  ],
+  "userInput": [
+  ]
+}
+EOF
+
+
 # Step 7: Publish your deployment policy
 echo "Publishing your deployment policy"
 hzn exchange deployment addpolicy -f horizon/deployment.policy.json kubearmor-operator
