@@ -35,10 +35,12 @@ echo "KubeArmor operator config"
 kubectl apply -f https://raw.githubusercontent.com/kubearmor/KubeArmor/main/deployments/helm/KubeArmorOperator/crds/operator.kubearmor.com_kubearmorconfigs.yaml
 
 # Step 6: Edit the horizon/service.definition.json file to point to the operator's yaml archive created in the previous step
-echo "Editing the horizon/service.definition.json file to point to the operator's yaml archive
+echo "Editing the horizon/service.definition.json file to point to the operator's yaml archive"
 # Defining the JSON file
-SERVICE_DEF_JSON= "horizon/service.definition.json"
-jq '.operatorYamlArchive = "../operator.tar.gz"' $SERVICE_DEF_JSON > temp.json && mv temp.json $SERVICE_DEF_JSON
+SERVICE_DEF_JSON="horizon/service.definition.json"
+jq '.operatorYamlArchiv = "../operator.tar.gz"' $SERVICE_DEF_JSON > temp.json && mv temp.json $SERVICE_DEF_JSON
+
+
 
 # Step 7: Publish operator service
 echo "Publishing operator service"
