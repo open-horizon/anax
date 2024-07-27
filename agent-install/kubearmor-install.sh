@@ -97,9 +97,30 @@ echo "Checking for agreement creation"
 sleep 15
 hznpod agreement list
 
+# Check if the agreements list is not empty
+if [[ -n "$agreements" ]]; then
+  echo "Agreement created successfully"
+else
+  echo "Failed to create agreement" >&2
+  exit 1
+fi
+
 # Step 11: Check if the operator is up in the cluster
 echo "Checking if the operator is up in the cluster"
 kubectl get pods -n openhorizon-agent
+
+pod_status=$(kubectl get pods -n openhorizon-agent)
+if echo "$pod_status" | grep -q "kubearmor-operator"; then
+  if echo "$pod_status" | grep "kubearmor-operator" | grep -q "Running"; then
+    echo "Kubearmor-operator is running"
+  else
+    echo "Kubearmor-operator is not in Running state" >&2
+    exit 1
+  fi
+else
+  echo "Kubearmor-operator pod not found" >&2
+  exit 1
+fi
 
 # Step 12: Download the sample configuration file
 echo "Downloading sample configuration file"
