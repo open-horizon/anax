@@ -40,7 +40,7 @@ echo "Editing the horizon/service.definition.json file to point to the operator'
 SERVICE_DEF_JSON="horizon/service.definition.json"
 UPDATED_VAL="../operator.tar.gz"
 jq --arg updatedValue "$UPDATED_VAL" '.clusterDeployment.operatorYamlArchive = $updatedValue' "$SERVICE_DEF_JSON" > tmp.json && mv tmp.json "$SERVICE_DEF_JSON"
-echo "Updated operatorYamlArchive to point to: $NEW_VALUE"
+echo "Updated operatorYamlArchive to point to: $UPDATED_VAL"
 
 # Step 7: Publish operator service
 echo "Publishing operator service"
