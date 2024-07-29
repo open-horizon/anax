@@ -96,14 +96,27 @@ hznpod policy list
 
 # Step 12: Check to see the agreement has been created (this can take approximately 15 seconds)
 echo "Checking for agreement creation"
-sleep 15
-hznpod agreement list
 
-# Check if the agreements list is not empty
-if [[ -n "$agreements" ]]; then
-  echo "Agreement created successfully"
-else
-  echo "Failed to create agreement" >&2
+max_attempts=5
+attempt=1
+agreements=""
+
+while [ $attempt -le $max_attempts ]; do
+  echo "Attempt $attempt of $max_attempts..."
+  agreements=$(hznpod agreement list)
+  if [[ -n "$agreements" ]]; then
+    echo "Agreement created successfully"
+    echo "$agreements" > agreements_output.txt
+    break
+  else
+    echo "No agreements found. Waiting for 15 seconds before retrying..."
+    sleep 15
+  fi
+  attempt=$((attempt + 1))
+done
+
+if [[ -z "$agreements" ]]; then
+  echo "Failed to create agreement after $max_attempts attempts" >&2
   exit 1
 fi
 
