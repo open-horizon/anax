@@ -38,9 +38,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubearmor/KubeArmor/main/depl
 echo "Editing the horizon/service.definition.json file to point to the operator's yaml archive"
 # Defining the JSON file
 SERVICE_DEF_JSON="horizon/service.definition.json"
-jq '.operatorYamlArchiv = "../operator.tar.gz"' $SERVICE_DEF_JSON > temp.json && mv temp.json $SERVICE_DEF_JSON
-
-
+jq --arg newValue "../operator.tar.gz" '.clusterDeployment.operatorYamlArchive = $../operator.tar.gz' "$SERVICE_DEF_JSON" > tmp.json && mv tmp.json "$SERVICE_DEF_JSON"
 
 # Step 7: Publish operator service
 echo "Publishing operator service"
