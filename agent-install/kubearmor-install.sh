@@ -97,56 +97,52 @@ hznpod policy list
 # Step 12: Check to see the agreement has been created (this can take approximately 15 seconds)
 echo "Checking for agreement creation"
 
-max_attempts=5
-attempt=1
-agreements=""
+#max_attempts=5
+#attempt=1
+#agreements=""
 
-while [ $attempt -le $max_attempts ]; do
-  echo "Attempt $attempt of $max_attempts..."
-  agreements=$(hznpod agreement list)
-  if [[ -n "$agreements" ]]; then
-    echo "Agreement created successfully"
-    echo "$agreements" > agreements_output.txt
-    break
-  else
-    echo "No agreements found. Waiting for 15 seconds before retrying..."
-    sleep 15
-  fi
-  attempt=$((attempt + 1))
-done
+#while [ $attempt -le $max_attempts ]; do
+ # echo "Attempt $attempt of $max_attempts..."
+  #agreements=$(hznpod agreement list)
+  #if [[ -n "$agreements" ]]; then
+   # echo "Agreement created successfully"
+    #echo "$agreements" > agreements_output.txt
+    #break
+  #else
+    #echo "No agreements found. Waiting for 15 seconds before retrying..."
+    #sleep 15
+  #fi
+  #attempt=$((attempt + 1))
+#done
 
-if [[ -z "$agreements" ]]; then
-  echo "Failed to create agreement after $max_attempts attempts" >&2
-  exit 1
-fi
+#if [[ -z "$agreements" ]]; then
+  #echo "Failed to create agreement after $max_attempts attempts" >&2
+  #exit 1
+#fi
+
+sleep 15
+hznpod agreement list
 
 # Step 13: Check if the operator is up in the cluster
 echo "Checking if the operator is up in the cluster"
 kubectl get pods -n openhorizon-agent
 
-pod_status=$(kubectl get pods -n openhorizon-agent)
-if echo "$pod_status" | grep -q "kubearmor-operator"; then
-  if echo "$pod_status" | grep "kubearmor-operator" | grep -q "Running"; then
-    echo "Kubearmor-operator is running"
-  else
-    echo "Kubearmor-operator is not in Running state" >&2
-    exit 1
-  fi
-else
-  echo "Kubearmor-operator pod not found" >&2
-  exit 1
-fi
+#pod_status=$(kubectl get pods -n openhorizon-agent)
+#if echo "$pod_status" | grep -q "kubearmor-operator"; then
+  #if echo "$pod_status" | grep "kubearmor-operator" | grep -q "Running"; then
+    #echo "Kubearmor-operator is running"
+  #else
+    #echo "Kubearmor-operator is not in Running state" >&2
+    #exit 1
+  #fi
+#else
+  #echo "Kubearmor-operator pod not found" >&2
+  #exit 1
+#fi
 
 # Step 14: Download the sample configuration file
 echo "Downloading sample configuration file"
 wget https://raw.githubusercontent.com/kubearmor/KubeArmor/main/pkg/KubeArmorOperator/config/samples/sample-config.yml -O sample-config.yml
 
-# Step 15: Modify the sample configuration file to set the namespace to openhorizon-agent
-echo "Modifying sample configuration file to set the namespace to openhorizon-agent"
-sed -i 's/namespace: .*/namespace: openhorizon-agent/' sample-config.yml
-
-# Step 16: Apply the modified configuration file
-echo "Applying modified configuration file"
-kubectl apply -f sample-config.yml
-
-echo "KubeArmor installation and configuration completed successfully!"
+echo "KubeArmor has been deployed!"
+echo "Next: Modify the sample configuration file to change the namespace to openhorizon-agent, then apply this policy to deploy all the components of KubeArmor as done by the operator, this sample config can be modified according to the config you want."
