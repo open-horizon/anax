@@ -73,7 +73,7 @@ require (
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/cli v24.0.6+incompatible // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
-	github.com/docker/docker v25.0.5+incompatible // indirect
+	github.com/docker/docker v27.1.1+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -99,6 +99,7 @@ require (
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/sys/sequential v0.5.0 // indirect
 	github.com/moby/sys/user v0.1.0 // indirect
@@ -143,7 +144,7 @@ require (
 
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18
-	github.com/docker/docker => github.com/docker/docker v25.0.5+incompatible
+	github.com/docker/docker => github.com/docker/docker v27.1.1+incompatible
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.5
 	golang.org/x/crypto => golang.org/x/crypto v0.18.0
 	golang.org/x/text => golang.org/x/text v0.5.0
