@@ -28,7 +28,8 @@ END $$`
 
 const VERSION_UPDATE = `UPDATE version SET ver = $1, description = $2, updated = current_timestamp WHERE id = 1;`
 
-const HIGHEST_DATABASE_VERSION = v1
+const HIGHEST_DATABASE_VERSION = v2
+const v2 = 1
 const v1 = 0
 
 type SchemaUpdate struct {
@@ -36,4 +37,6 @@ type SchemaUpdate struct {
 	description string   // A description of the schema change.
 }
 
-var migrationSQL = map[int]SchemaUpdate{}
+var v2SchemaUpdate = SchemaUpdate{sql: []string{"ALTER TABLE secrets_policy ADD COLUMN IF NOT EXISTS \"secret_exists\" BOOLEAN NOT NULL DEFAULT true;", "ALTER TABLE secrets_pattern ADD COLUMN IF NOT EXISTS \"secret_exists\" BOOLEAN NOT NULL DEFAULT true;"}, description: "Add a column to the secrets table to indicate if the secret exists or not. This is necessary to support node-specific secrets."}
+
+var migrationSQL = map[int]SchemaUpdate{v2: v2SchemaUpdate}
