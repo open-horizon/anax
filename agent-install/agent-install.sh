@@ -458,12 +458,28 @@ function get_agent_version_from_repository() {
     fi
 
     IFS='/' read -r -a repoarray<<< $IMAGE_ON_EDGE_CLUSTER_REGISTRY
+    arrayLen=${#repoarray[@]}
     if [[ "${repoarray[0]}" == *"docker"* ]]; then
-        repository_url="https://registry.hub.docker.com/v2/repositories/${repoarray[1]}/${repoarray[2]}/tags"
+        repository_url="https://registry.hub.docker.com/v2/repositories"
+        for (( i=1 ; i<$arrayLen ; i++ ));
+        do
+            repository_url=$repository_url/${repoarray[i]}
+        done
+        repository_url=$repository_url/tags
         agent_versions=$(curl $auth $repository_url 2>/dev/null | jq '.results[]["name"] | select(test("testing|latest") | not)' | sort -rV | tr '\n' ',') # "2.31.0-1495","2.31.0-1492","2.31.0-1021"
     else
-        repository_url="https://${repoarray[0]}/v1/repositories/${repoarray[1]}/${repoarray[2]}/tags"
-        agent_versions=$(curl $auth $repository_url 2>/dev/null | jq 'keys[]' | sort -rV | tr '\n' ',') # "2.31.0-1495","2.31.0-1492","2.31.0-1021"
+        repository_url="https://${repoarray[0]}/v1/repositories"
+        for (( i=1 ; i<$arrayLen ; i++ ));
+        do
+            repository_url=$repository_url/${repoarray[i]}
+        done
+        repository_url=$repository_url/tags
+        http_code=$( curl $auth $repository_url  -o /dev/null  -w "%{http_code}" )
+        if [[ ${http_code} -eq 200 ]]; then
+                agent_versions=$(curl $auth $repository_url 2>/dev/null | jq 'keys[]' | sort -rV | tr '\n' ',') # "2.31.0-1495","2.31.0-1492","2.31.0-1021"                
+        else
+                agent_versions=""
+        fi
     fi
     IFS=',' read -r -a agent_version_array <<< $agent_versions
     highest_var=${agent_version_array[0]}
@@ -1298,10 +1314,12 @@ function get_all_variables() {
             if [[ -z $IMAGE_ON_EDGE_CLUSTER_REGISTRY ]]; then
                 log_fatal 1 "A value for \$IMAGE_ON_EDGE_CLUSTER_REGISTRY must be specified"
             fi
-            lastpart=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY | cut -d "/" -f 3) # <arch>_anax_k8s
+            firstpart="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%/*}"    # quay.io/zhangle/horizon
+            lastpart="${IMAGE_ON_EDGE_CLUSTER_REGISTRY##*/}"    # <arch>_anax_k8s
             image_arch_in_param=$(echo $lastpart | cut -d "_" -f 1)
             if [[ "$image_arch" != "$image_arch_in_param" ]]; then
-                log_fatal 1 "Cannot use agent image with $image_arch_in_param arch to install on $image_arch cluster, please use agent image with '$image_arch'"
+                log_warning "Cannot use agent image with $image_arch_in_param arch to install on $image_arch cluster, will change arch to '$image_arch'"
+                IMAGE_ON_EDGE_CLUSTER_REGISTRY=${firstpart}/${image_arch}_anax_k8s
             fi
         fi
         get_variable AGENT_K8S_IMAGE_TAR_FILE "$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE"
@@ -1436,20 +1454,6 @@ function check_variables() {
     # if a node policy is non-empty, check if the file exists
     if [[ -n $HZN_NODE_POLICY && ! -f $HZN_NODE_POLICY ]]; then
         log_fatal 1 "HZN_NODE_POLICY file '$HZN_NODE_POLICY' does not exist"
-    fi
-
-    if is_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
-        parts=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print NF}')
-        if [[ "$parts" != "3" ]]; then
-            log_fatal 1 "IMAGE_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>"
-        fi
-    fi
-
-    if is_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]] && [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
-        parts=$(echo $CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print NF}')
-        if [[ "$parts" != "3" ]]; then
-            log_fatal 1 "CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>"
-        fi
     fi
 
     if [[ -n $AGENT_IMAGE_TAR_FILE && $AGENT_IMAGE_TAR_FILE != *.tar.gz ]]; then
