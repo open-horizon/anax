@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-02-05"
+lastupdated: "2023-10-19"
 title: "Policy Properties"
 description: Built in Policy Properties
 
@@ -38,6 +38,8 @@ The user-defined policies (deployment policy, model policy, service policy) need
 | openhorizon.hardwareId| the device serial number if it can be found (from /proc/cpuinfo). A generated Id otherwise. | `string` |
 | openhorizon.allowPrivileged| a property set to determine if privileged services may be run on this device. Can be set by user, default is false. This is the only writable node property | `boolean` |
 | openhorizon.kubernetesVersion| Kubernetes version of the cluster the agent is running in | `string` for example 1.18 |
+| openhorizon.kubernetesNamespace| Kubernetes cluster namespace that the cluster agent is running in | `string` for example openhorizon-agent |
+| openhorizon.kubernetesNamespaceScoped| If the cluster agent is with namespace scope | `boolean` |
 | openhorizon.operatingSystem | the operating system the agent is running on. If the agent is containerized, this will be the host os | `string` for example ubuntu |
 | openhorizon.containerized | this indicates if the agent is running in a container or natively | `boolean` |
 {: caption="Table 1. {{site.data.keyword.edge_notm}} built-in node properties" caption-side="top"}

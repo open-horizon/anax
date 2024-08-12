@@ -5,15 +5,17 @@
 set -e
 
 DEPLOYMENT_NAME="agent"
+SERVICE_NAME="agent-service"
 SERVICE_ACCOUNT_NAME="agent-service-account"
 CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
 SECRET_NAME="openhorizon-agent-secrets"
+IMAGE_PULL_SECRET_NAME="registry-creds"
 IMAGE_REGISTRY_SECRET_NAME="openhorizon-agent-secrets-docker-cert"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
 CRONJOB_AUTO_UPGRADE_NAME="auto-upgrade-cronjob"
 DEFAULT_AGENT_NAMESPACE="openhorizon-agent"
-ADMIN_ROLE="agent-namespace-admin"
+SKIP_DELETE_AGENT_NAMESPACE=false
 USE_DELETE_FORCE=false
 DELETE_TIMEOUT=10 # Default delete timeout
 
@@ -94,8 +96,14 @@ Options/Flags:
     -u    management hub user authorization credentials (or can set HZN_EXCHANGE_USER_AUTH environment variable)
     -d    delete node from the management hub
     -m    agent namespace to uninstall
+    -k    to skip the deletion of agent namespace (if not specified, agent namespace will be deleted)
     -f    force delete cluster resources
     -t    cluster resource delete timeout (specified timeout should > 0)
+
+Environment Variables:
+    KUBECTL: specify this value if you have multiple kubectl CLI installed in your enviroment. Otherwise the script will detect in this order: k3s kubectl, microk8s.kubectl, oc, kubectl.
+    HZN_EXCHANGE_USER_AUTH: management hub user authorization credentials (or use -u flag)
+    AGENT_NAMESPACE: The cluster namespace that the agent will be uninstalled from (or use -m flag)
 
 Example: ./$(basename "$0") -u <hzn-exchange-user-auth> -d
 
@@ -110,6 +118,7 @@ function show_config() {
     echo "HZN_EXCHANGE_USER_AUTH: <specified>"
     echo "Delete node: ${DELETE_EX_NODE}"
     echo "Agent namespace to uninstall: ${AGENT_NAMESPACE}"
+    echo "Skip deleting agent namespace: ${SKIP_DELETE_AGENT_NAMESPACE}"
     echo "Force delete cluster resources: ${USE_DELETE_FORCE}"
     echo "Cluster resource delete timeout: ${DELETE_TIMEOUT}"
     echo "Verbosity is ${AGENT_VERBOSITY}"
@@ -136,6 +145,8 @@ function validate_args(){
             KUBECTL="k3s kubectl"
         elif command -v microk8s.kubectl >/dev/null 2>&1; then
             KUBECTL=microk8s.kubectl
+        elif command -v oc >/dev/null 2>&1; then
+            KUBECTL=oc
         elif command -v kubectl >/dev/null 2>&1; then
             KUBECTL=kubectl
         else
@@ -198,7 +209,7 @@ function validate_positive_int() {
 
 function get_agent_pod_id() {
     log_debug "get_agent_pod_id() begin"
-    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
 	    AGENT_POD_READY="false"
     else
 	    AGENT_POD_READY="true"
@@ -220,8 +231,7 @@ function removeNodeFromLocalAndManagementHub() {
     log_debug "removeNodeFromLocalAndManagementHub() begin"
     log_info "Check node status for agent pod: ${POD_ID}"
 
-    EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
-    NODE_INFO=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list")
+    NODE_INFO=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "hzn node list")
     NODE_STATE=$(echo $NODE_INFO | jq -r .configstate.state | sed 's/[^a-z]*//g')
     NODE_ID=$(echo $NODE_INFO | jq -r .id | sed 's/\r//g')
     log_debug "NODE config state for ${NODE_ID} is ${NODE_STATE}"
@@ -231,7 +241,7 @@ function removeNodeFromLocalAndManagementHub() {
             log_info "Process with unregister..."
             unregister $NODE_ID
             sleep 2
-        else 
+        else
             log_info "node state is empty"
         fi
     else
@@ -253,7 +263,6 @@ function unregister() {
     log_debug "unregister() begin"
     log_info "Unregister agent for pod: ${POD_ID}"
 
-    EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
     local node_id=$1
 
     if [[ "$DELETE_EX_NODE" == "true" ]]; then
@@ -265,11 +274,11 @@ function unregister() {
     fi
 
     set +e
-    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_UNREGISTER_CMD}"
+    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${HZN_UNREGISTER_CMD}"
     set -e
 
     # verify the node is unregistered
-    NODE_STATE=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
+    NODE_STATE=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
     log_debug "NODE config state is ${NODE_STATE}"
 
     if [[ "$NODE_STATE" != "unconfigured" ]] && [[ "$NODE_STATE" != "unconfiguring" ]]; then
@@ -279,10 +288,16 @@ function unregister() {
     log_debug "unregister() end"
 }
 
+function getEscapedExchangeUserAuth() {
+	local escaped_auth=$( echo "${HZN_EXCHANGE_USER_AUTH}" | sed 's/;/\\;/g;s/\$/\\$/g;s/\&/\\&/g;s/|/\\|/g' )
+	echo "${escaped_auth}"
+}
+
 function deleteNodeFromManagementHub() {
     log_debug "deleteNodeFromManagementHub() begin"
 
-    EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
+    escaped_USER_AUTH=$(getEscapedExchangeUserAuth)
+    EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${escaped_USER_AUTH}"
     local node_id=$1
 
     log_info "Deleting node ${node_id} from the management hub..."
@@ -297,10 +312,11 @@ function deleteNodeFromManagementHub() {
 function verifyNodeRemovedFromManagementHub() {
     log_debug "verifyNodeRemovedFromManagementHub() begin"
 
-    EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
+    escaped_USER_AUTH=$(getEscapedExchangeUserAuth)
+    EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${escaped_USER_AUTH}"
     local node_id=$1
 
-    log_info "Verifying node ${node_id} is from the management hub..."
+    log_info "Verifying node ${node_id} is removed from the management hub..."
 
     set +e
     $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node list ${node_id}" >/dev/null 2>&1
@@ -316,7 +332,7 @@ function deleteAgentResources() {
 
     set +e
     log_info "Deleting agent deployment..."
-    
+
     if [ "$USE_DELETE_FORCE" != true ]; then
         $KUBECTL delete deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE --grace-period=$DELETE_TIMEOUT
 
@@ -332,29 +348,39 @@ function deleteAgentResources() {
         $KUBECTL delete deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE --force=true --grace-period=0
     fi
 
+    log_info "Deleting auto-upgrade cronjob..."
+    if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+        $KUBECTL delete cronjob $CRONJOB_AUTO_UPGRADE_NAME -n $AGENT_NAMESPACE
+    else
+        log_info "cronjob ${CRONJOB_AUTO_UPGRADE_NAME} does not exist, skip deleting cronjob"
+    fi
+
     # give pods sometime to terminate by themselves
     sleep 10
 
-    log_info "Checking if pods are deleted"
-    PODS=$($KUBECTL get pod -n $AGENT_NAMESPACE 2>/dev/null)
+    log_info "Checking if agent pods are deleted"
+    PODS=$($KUBECTL get pod -l app=agent -n $AGENT_NAMESPACE 2>/dev/null)
     if [[ -n "$PODS" ]]; then
-        log_info "Pods are not deleted by deleting deployment, delete pods now"
+        log_info "Agent pods are not deleted by deleting deployment, delete pods now"
         if [ "$USE_DELETE_FORCE" != true ]; then
-            $KUBECTL delete --all pods --namespace=$AGENT_NAMESPACE --grace-period=$DELETE_TIMEOUT
+            $KUBECTL delete pods -l app=agent --namespace=$AGENT_NAMESPACE --grace-period=$DELETE_TIMEOUT
 
-            PODS=$($KUBECTL get pod -n $AGENT_NAMESPACE 2>/dev/null) 
+            PODS=$($KUBECTL get pod -l app=agent -n $AGENT_NAMESPACE 2>/dev/null)
             if [[ -n "$PODS" ]]; then
-                log_info "Pods still exist"
+                log_info "Agent pods still exist"
                 PODS_STILL_EXIST="true"
             fi
         fi
 
         if [ "$USE_DELETE_FORCE" == true ] || [ "$PODS_STILL_EXIST" == true ]; then
-            log_info "Force deleting all the pods under $AGENT_NAMESPACE"
-            $KUBECTL delete --all pods --namespace=$AGENT_NAMESPACE --force=true --grace-period=0
+            log_info "Force deleting agent pods under $AGENT_NAMESPACE"
+            $KUBECTL delete pods -l app=agent --namespace=$AGENT_NAMESPACE --force=true --grace-period=0
             pkill -f anax.service
         fi
     fi
+
+    log_info "Deleting agent service..."
+    $KUBECTL delete svc $SERVICE_NAME -n $AGENT_NAMESPACE
 
     log_info "Deleting configmap..."
     $KUBECTL delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE
@@ -363,37 +389,31 @@ function deleteAgentResources() {
     log_info "Deleting secret..."
     $KUBECTL delete secret $SECRET_NAME -n $AGENT_NAMESPACE
     $KUBECTL delete secret $IMAGE_REGISTRY_SECRET_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete secret $IMAGE_PULL_SECRET_NAME -n $AGENT_NAMESPACE
     $KUBECTL delete secret ${SECRET_NAME}-backup -n $AGENT_NAMESPACE
-    set -e
-
-    log_info "Deleting auto-upgrade cronjob..."
-    if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
-        $KUBECTL delete cronjob $CRONJOB_AUTO_UPGRADE_NAME -n $AGENT_NAMESPACE
-    else
-        log_info "cronjob ${CRONJOB_AUTO_UPGRADE_NAME} does not exist, skip deleting cronjob"
-    fi
-
-    set +e
-    if [[ "$AGENT_NAMESPACE" == "$DEFAULT_AGENT_NAMESPACE" ]]; then
-        log_info "Deleting clusterrolebinding..."
-        $KUBECTL delete clusterrolebinding $CLUSTER_ROLE_BINDING_NAME
-    else
-        log_info "Deleting rolebinding..."
-        ROLE_BINDING="$AGENT_NAMESPACE-role-binding"
-        $KUBECTL delete rolebinding $ROLE_BINDING -n $AGENT_NAMESPACE
-
-        log_info "Deleting role..."
-        $KUBECTL delete role $ADMIN_ROLE -n $AGENT_NAMESPACE
-    fi
 
     log_info "Deleting persistent volume..."
     $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
 
+    log_info "Deleting clusterrolebinding..."
+    $KUBECTL delete clusterrolebinding ${AGENT_NAMESPACE}-${CLUSTER_ROLE_BINDING_NAME}
+
     log_info "Deleting serviceaccount..."
     $KUBECTL delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE
 
-    log_info "Deleting namespace..."
-    $KUBECTL delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
+    if [[ "$SKIP_DELETE_AGENT_NAMESPACE" != "true" ]]; then
+        log_info "Checking deployment and statefulset under namespace $AGENT_NAMESPACE"
+        deployment=$($KUBECTL get deployment -n $AGENT_NAMESPACE)
+        statefulset=$($KUBECTL get statefulset -n $AGENT_NAMESPACE)
+        if [[ -z "$deployment" ]] && [[ -z "$statefulset" ]]; then
+            log_info "No deployment and statefulset left under namespace $AGENT_NAMESPACE, deleting it..."
+            $KUBECTL delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
+        else
+            log_info "Deployment or statefulset exists in the namespace $AGENT_NAMESPACE, skip deleting namespace $AGENT_NAMESPACE. Please delete namespace manually"
+        fi
+    else
+        log_info "SKIP_DELETE_AGENT_NAMESPACE is set to: $SKIP_DELETE_AGENT_NAMESPACE, skip deleting namespace $AGENT_NAMESPACE."
+    fi
 
     log_info "Deleting cert file from /etc/default/cert ..."
     rm /etc/default/cert/agent-install.crt
@@ -404,20 +424,22 @@ function deleteAgentResources() {
 
 function uninstall_cluster() {
     show_config
-    
+
     validate_args
 
     get_agent_pod_id
 
     if [[ "$AGENT_POD_READY" == "true" ]]; then
     	removeNodeFromLocalAndManagementHub
+    else
+        log_info "agent pod under $AGENT_NAMESPACE is not ready, skip unregister process. Please remove node from management hub later if needed"
     fi
-    
+
     deleteAgentResources
 }
 
 # Accept the parameters from command line
-while getopts "u:hvl:dm:ft:" opt; do
+while getopts "u:hvl:dm:kft:" opt; do
 	case $opt in
 		u) HZN_EXCHANGE_USER_AUTH="$OPTARG"
 		;;
@@ -431,10 +453,12 @@ while getopts "u:hvl:dm:ft:" opt; do
 		;;
 		m) AGENT_NAMESPACE="$OPTARG"
 		;;
+		k) SKIP_DELETE_AGENT_NAMESPACE=true
+		;;
 		f) USE_DELETE_FORCE=true
-                ;;
+		;;
 		t) validate_positive_int "$OPTARG"; DELETE_TIMEOUT="$OPTARG"
-        	;;
+		;;
 		\?) echo "Invalid option: -$OPTARG"; help; exit 1
 		;;
 		:) echo "Option -$OPTARG requires an argument"; help; exit 1

@@ -286,6 +286,7 @@ type BaseAgreementWorker struct {
 	ec         *worker.BaseExchangeContext
 	mmsObjMgr  *MMSObjectPolicyManager
 	secretsMgr secrets.AgbotSecrets
+	nodeSearch *NodeSearch
 }
 
 // A local implementation of the ExchangeContext interface because Agbot agreement workers are not full featured workers.
@@ -550,7 +551,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// for cluster type and check for namespace compatibility
 		consumerNamespace := ""
 		if nodeType == persistence.DEVICE_TYPE_CLUSTER {
-			t_comp, consumerNamespace, t_reason = compcheck.CheckClusterNamespaceCompatibility(nodeType, exchangeDev.ClusterNamespace, wi.ConsumerPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), false, msgPrinter)
+			t_comp, consumerNamespace, t_reason = compcheck.CheckClusterNamespaceCompatibility(nodeType, exchangeDev.ClusterNamespace, exchangeDev.IsNamespaceScoped, wi.ConsumerPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), wi.ConsumerPolicy.PatternId, false, msgPrinter)
 			if !t_comp {
 				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with node %v for service %v/%v %v. %v", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version, t_reason)))
 				return
@@ -675,7 +676,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 		// Make sure the deployment policy or pattern has all the right secret bindings in place and extract the secret details for the agent.
 		secrets_match := true
-		if policy_match && userInput_match && nodeType == persistence.DEVICE_TYPE_DEVICE {
+		if policy_match && userInput_match {
 
 			err := b.ValidateAndExtractSecrets(&wi.ConsumerPolicy, wi.Device.Id, &topSvcDef, depServices, workerId, msgPrinter)
 			if err != nil {
@@ -873,6 +874,7 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 		nil,
 		"",
 		exchange.GetOrg(deviceId),
+		exchange.GetId(deviceId),
 		msgPrinter)
 
 	if err != nil {
@@ -922,14 +924,27 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 				}
 
 				// The secret name might be a user private or org wide secret. Parse the name to determine which it is.
-				secretUser, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
+				secretUser, _, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error parsing secret %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))
 					return err
 				}
 
 				// Call the secret manager plugin to get the secret details.
-				details, err := b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, shortSecretName)
+				details := secrets.SecretDetails{}
+				if binding.EnableNodeLevelSecrets {
+					details, err = b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, exchange.GetId(deviceId), shortSecretName)
+					switch err.(type) {
+					case *secrets.NoSecretFound:
+						details, err = b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, "", shortSecretName)
+					}
+				} else {
+					details, err = b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, "", shortSecretName)
+				}
+
+				if err != nil {
+					return err
+				}
 
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error retrieving secret %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))
@@ -1068,65 +1083,10 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 			// For the purposes of compatibility, skip this function if the agbot config has not been updated to point to the CSS.
 			// Only non-pattern based agreements can use MMS object policy.
-			if agreement.GetDeviceType() == persistence.DEVICE_TYPE_DEVICE {
-				if b.GetCSSURL() != "" && agreement.Pattern == "" {
-
-					// Retrieve the node policy.
-					nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
-					msgPrinter := i18n.GetMessagePrinter()
-					_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId, msgPrinter)
-					if err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
-					} else if nodePolicy == nil {
-						glog.Warning(BAWlogstring(workerId, fmt.Sprintf("cannot find node policy for this node %v.", agreement.DeviceId)))
-					} else {
-						if glog.V(5) {
-							glog.Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
-						}
-					}
-
-					// Query the MMS cache to find objects with policies that refer to the agreed-to service(s). Service IDs are
-					// a concatenation of org '/' service name, hardware architecture and version, separated by underscores. We need
-					// all 3 pieces.
-					for _, serviceId := range agreement.ServiceId {
-
-						// Array to contain the decomposed pieces from the agreementServiceID
-						serviceNamePieces := make([]string, 3)
-
-						// Break the service id into the individual tuple pieces, service name (which includes org), arch and version.
-						// The id will be in the format of name_version_arch (ie. hello-world_1.0.0_am64)
-						// We can't just split the agreementServiceID with "_" since the name can contain "_" characters too.
-						// Instead, look at the last index and grab the arch first, then the version, and then the name
-						tmpServiceId := serviceId
-						for i := 2; i > 0; i-- {
-							idx := strings.LastIndex(tmpServiceId, "_")
-							serviceNamePieces[i] = tmpServiceId[idx+1:]
-							// Strip off the last _ found
-							tmpServiceId = tmpServiceId[0:idx]
-						}
-						// What remains is the service name
-						serviceNamePieces[0] = tmpServiceId
-
-						objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
-
-						destsToAddMap := make(map[string]*exchange.ObjectDestinationsToAdd, 0)
-						destsToDeleteMap := make(map[string]*exchange.ObjectDestinationsToDelete, 0)
-
-						if err := AssignObjectToNodes(b, objPolicies, agreement.DeviceId, nodePolicy, destsToAddMap, destsToDeleteMap, nil, false); err != nil {
-							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
-						}
-
-						if len(destsToAddMap) > 0 {
-							AddDestinationsForObjects(b, destsToAddMap)
-						}
-						if len(destsToDeleteMap) > 0 {
-							DeleteDestinationsForObjects(b, destsToDeleteMap)
-						}
-
-					}
-				} else if b.GetCSSURL() == "" {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
-				}
+			if b.GetCSSURL() != "" && agreement.Pattern == "" {
+				AgreementHandleMMSObjectPolicy(b, b.mmsObjMgr, *agreement, workerId, BAWlogstring)
+			} else if b.GetCSSURL() == "" {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
 			}
 
 			// Send the reply Ack if it's still valid.
@@ -1168,6 +1128,8 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 	} else {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("received rejection from producer %v", reply)))
+
+		b.AddRetry(cph, reply.AgreementId(), workerId)
 
 		// Returns true if the protocol msg can be deleted.
 		ok := b.CancelAgreement(cph, reply.AgreementId(), cph.GetTerminationCode(TERM_REASON_NEGATIVE_REPLY), workerId)
@@ -1289,6 +1251,19 @@ func (b *BaseAgreementWorker) CancelAgreementWithLock(cph ConsumerProtocolHandle
 	b.AgreementLockManager().deleteAgreementLock(agreementId)
 
 	return ok
+}
+
+func (b *BaseAgreementWorker) AddRetry(cph ConsumerProtocolHandler, agreementId string, workerId string) {
+	// Start timing out the agreement
+	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("add retry for agreement %v", agreementId)))
+	ag, err := b.db.AgreementTimedout(agreementId, cph.Name())
+	if err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error adding retry for agreement %v: %v", agreementId, err)))
+	} else if ag == nil {
+		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding adding retry process for agreement id %v not in this agbot's database", agreementId)))
+	} else {
+		b.nodeSearch.AddRetry(ag.PolicyName, ag.AgreementCreationTime-b.config.GetAgbotRetryLookBackWindow())
+	}
 }
 
 // Return true if the caller should delete the protocol message that initiated this cancel command.
@@ -1509,4 +1484,60 @@ func GetHAPartners(nodeID string, haGroupName string, httpClient *http.Client, u
 	}
 
 	return haPartners, nil
+}
+
+func AgreementHandleMMSObjectPolicy(ec exchange.ExchangeContext, mmsObjMgr *MMSObjectPolicyManager, agreement persistence.Agreement, workerId string, logFunction func(string, interface{}) string) {
+	// Retrieve the node policy.
+	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(ec)
+	msgPrinter := i18n.GetMessagePrinter()
+	_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId, msgPrinter)
+	if err != nil {
+		glog.Errorf(logFunction(workerId, fmt.Sprintf("%v", err)))
+	} else if nodePolicy == nil {
+		glog.Warning(logFunction(workerId, fmt.Sprintf("cannot find node policy for this node %v.", agreement.DeviceId)))
+	} else {
+		if glog.V(5) {
+			glog.Infof(logFunction(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
+		}
+	}
+
+	// Query the MMS cache to find objects with policies that refer to the agreed-to service(s). Service IDs are
+	// a concatenation of org '/' service name, hardware architecture and version, separated by underscores. We need
+	// all 3 pieces.
+	for _, serviceId := range agreement.ServiceId {
+
+		// Array to contain the decomposed pieces from the agreementServiceID
+		serviceNamePieces := make([]string, 3)
+
+		// Break the service id into the individual tuple pieces, service name (which includes org), arch and version.
+		// The id will be in the format of name_version_arch (ie. hello-world_1.0.0_am64)
+		// We can't just split the agreementServiceID with "_" since the name can contain "_" characters too.
+		// Instead, look at the last index and grab the arch first, then the version, and then the name
+		tmpServiceId := serviceId
+		for i := 2; i > 0; i-- {
+			idx := strings.LastIndex(tmpServiceId, "_")
+			serviceNamePieces[i] = tmpServiceId[idx+1:]
+			// Strip off the last _ found
+			tmpServiceId = tmpServiceId[0:idx]
+		}
+		// What remains is the service name
+		serviceNamePieces[0] = tmpServiceId
+
+		objPolicies := mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
+
+		destsToAddMap := make(map[string]*exchange.ObjectDestinationsToAdd, 0)
+		destsToDeleteMap := make(map[string]*exchange.ObjectDestinationsToDelete, 0)
+
+		if err := AssignObjectToNodes(ec, objPolicies, agreement.DeviceId, nodePolicy, destsToAddMap, destsToDeleteMap, nil, false); err != nil {
+			glog.Errorf(logFunction(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
+		}
+
+		if len(destsToAddMap) > 0 {
+			AddDestinationsForObjects(ec, destsToAddMap)
+		}
+		if len(destsToDeleteMap) > 0 {
+			DeleteDestinationsForObjects(ec, destsToDeleteMap)
+		}
+
+	}
 }

@@ -18,23 +18,24 @@ import (
 
 // The input format for the policy check
 type PolicyCheck struct {
-	NodeId         string                                `json:"node_id,omitempty"`
-	NodeArch       string                                `json:"node_arch,omitempty"`
-	NodeType       string                                `json:"node_type,omitempty"`              // can be omitted if node_id is specified
-	NodeClusterNS  string                                `json:"node_cluster_namespace,omitempty"` // can be omitted if node_id is specified. If node_id is not specified the default values is "openhorizon-gent". The value is ignored if the node type is device.
-	NodePolicy     *exchangecommon.NodePolicy            `json:"node_policy,omitempty"`
-	BusinessPolId  string                                `json:"business_policy_id,omitempty"`
-	BusinessPolicy *businesspolicy.BusinessPolicy        `json:"business_policy,omitempty"`
-	ServicePolicy  *externalpolicy.ExternalPolicy        `json:"service_policy,omitempty"`
-	Service        []common.AbstractServiceFile          `json:"service,omitempty"`            //only needed if the services are not in the exchange
-	DepServices    map[string]exchange.ServiceDefinition `json:"dependent_services,omitempty"` // for internal use for performance. A map of service definition keyed by id.
+	NodeId              string                                `json:"node_id,omitempty"`
+	NodeArch            string                                `json:"node_arch,omitempty"`
+	NodeType            string                                `json:"node_type,omitempty"`              // can be omitted if node_id is specified
+	NodeClusterNS       string                                `json:"node_cluster_namespace,omitempty"` // can be omitted if node_id is specified. If node_id is not specified the default values is "openhorizon-gent". The value is ignored if the node type is device.
+	NodeNamespaceScoped bool                                  `json:"node_namespace_scoped,omitempty"`
+	NodePolicy          *exchangecommon.NodePolicy            `json:"node_policy,omitempty"`
+	BusinessPolId       string                                `json:"business_policy_id,omitempty"`
+	BusinessPolicy      *businesspolicy.BusinessPolicy        `json:"business_policy,omitempty"`
+	ServicePolicy       *externalpolicy.ExternalPolicy        `json:"service_policy,omitempty"`
+	Service             []common.AbstractServiceFile          `json:"service,omitempty"`            //only needed if the services are not in the exchange
+	DepServices         map[string]exchange.ServiceDefinition `json:"dependent_services,omitempty"` // for internal use for performance. A map of service definition keyed by id.
 	// It is either empty or provides ALL the dependent services needed. It is expected the top level service definitions are provided
 	// in the 'Service' attribute when this attribute is not empty.
 }
 
 func (p PolicyCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeClusterNS: %v, NodePolicy: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v, Service：%v",
-		p.NodeId, p.NodeArch, p.NodeType, p.NodeClusterNS, p.NodePolicy, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeClusterNS: %v, NodeNamespaceScoped: %v, NodePolicy: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v, Service：%v",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodeClusterNS, p.NodeNamespaceScoped, p.NodePolicy, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy, p.Service)
 }
 
 // unmashal handler for PolicyCheck object to handle AbstractPatternFile and AbstractServiceFile
@@ -49,6 +50,7 @@ func (p *PolicyCheck) UnmarshalJSON(b []byte) error {
 	p.NodeArch = cc.NodeArch
 	p.NodeType = cc.NodeType
 	p.NodeClusterNS = cc.NodeClusterNS
+	p.NodeNamespaceScoped = cc.NodeNamespaceScoped
 	p.NodePolicy = cc.NodePolicy
 	p.BusinessPolId = cc.BusinessPolId
 	p.BusinessPolicy = cc.BusinessPolicy
@@ -131,6 +133,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 
 		resources.NodeType = node.NodeType
 		resources.NodeClusterNS = node.ClusterNamespace
+		resources.NodeNamespaceScoped = node.IsNamespaceScoped // resources.NodeNamespaceScoped will be false if node.IsNamespaceScoped is false or not set(omit)
 	}
 
 	// verify the input node type value and get the node type from
@@ -147,6 +150,13 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		return nil, err
 	} else {
 		resources.NodeClusterNS = nodeClusterNS
+	}
+
+	// verify the input node scope and exchange node scope are same
+	if nodeIsNamespaceScope, err := VerifyNodeScope(input.NodeNamespaceScoped, resources.NodeNamespaceScoped, nodeId, msgPrinter); err != nil {
+		return nil, err
+	} else {
+		resources.NodeNamespaceScoped = nodeIsNamespaceScope
 	}
 
 	// validate node policy and convert it to internal policy
@@ -170,16 +180,29 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		return nil, err1
 	}
 
+	msg_incompatible := msgPrinter.Sprintf("Policy Incompatible")
+	msg_compatible := msgPrinter.Sprintf("Compatible")
+
+	messages := map[string]string{}
+	if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER && resources.NodeNamespaceScoped {
+		// verify clusterNamespace vs openhorizon.kubernetesNamespace in the constraint
+		bpToValidate := *resources.BusinessPolicy
+		var hasWarning bool
+		hasWarning, err1 = businesspolicy.ValidateClusterNSWithConstraint(&bpToValidate)
+		if hasWarning {
+			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("%v", err1))
+			return NewCompCheckOutput(false, messages, resources), nil
+		} else if err1 != nil {
+			return nil, err1
+		}
+	}
+
 	// save all the services that are retrieved from the exchange so that
 	// they can be used later
 	dep_services := map[string]exchange.ServiceDefinition{}
 	top_services := []common.AbstractServiceFile{}
 
-	msg_incompatible := msgPrinter.Sprintf("Policy Incompatible")
-	msg_compatible := msgPrinter.Sprintf("Compatible")
-
 	// go through all the workloads and check if compatible or not
-	messages := map[string]string{}
 	overall_compatible := false
 	for _, workload := range bPolicy.Workloads {
 
@@ -235,7 +258,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 					if compatible {
 						// check namespace compatibility
 						if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
-							compatible, _, reason = CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, bPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), true, msgPrinter)
+							compatible, _, reason = CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, resources.NodeNamespaceScoped, bPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), bPolicy.PatternId, true, msgPrinter)
 						}
 						if compatible {
 							// policy compatibility check
@@ -286,7 +309,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 							if compatible {
 								// check namespace compatibility
 								if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
-									compatible, _, reason = CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, bPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), true, msgPrinter)
+									compatible, _, reason = CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, resources.NodeNamespaceScoped, bPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), bPolicy.PatternId, true, msgPrinter)
 								}
 								if compatible {
 									// policy compatibility check
@@ -344,7 +367,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 				if compatible {
 					// check namespace compatibility
 					if resources.NodeType == persistence.DEVICE_TYPE_CLUSTER {
-						compatible, _, reason = CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, bPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), true, msgPrinter)
+						compatible, _, reason = CheckClusterNamespaceCompatibility(resources.NodeType, resources.NodeClusterNS, resources.NodeNamespaceScoped, bPolicy.ClusterNamespace, topSvcDef.GetClusterDeployment(), bPolicy.PatternId, true, msgPrinter)
 					}
 					if compatible {
 						// policy compatibility check

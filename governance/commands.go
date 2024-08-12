@@ -193,14 +193,15 @@ func (w *GovernanceWorker) NewStartAgreementLessServicesCommand() *StartAgreemen
 // ==============================================================================================================
 // Node heartbeat restored
 type NodeHeartbeatRestoredCommand struct {
+	Retry bool
 }
 
 func (c NodeHeartbeatRestoredCommand) ShortString() string {
-	return fmt.Sprintf("NodeHeartbeatRestoredCommand.")
+	return fmt.Sprintf("NodeHeartbeatRestoredCommand: Retry %v.", c.Retry)
 }
 
-func (w *GovernanceWorker) NewNodeHeartbeatRestoredCommand() *NodeHeartbeatRestoredCommand {
-	return &NodeHeartbeatRestoredCommand{}
+func (w *GovernanceWorker) NewNodeHeartbeatRestoredCommand(retry bool) *NodeHeartbeatRestoredCommand {
+	return &NodeHeartbeatRestoredCommand{Retry: retry}
 }
 
 // ==============================================================================================================

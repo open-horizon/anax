@@ -20,7 +20,7 @@ type BasicAgreementWorker struct {
 	protocolHandler *BasicProtocolHandler
 }
 
-func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, alm *AgreementLockManager, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets) *BasicAgreementWorker {
+func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, alm *AgreementLockManager, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets, nodeSearch *NodeSearch) *BasicAgreementWorker {
 
 	id := uuid.NewV4()
 
@@ -35,6 +35,7 @@ func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig,
 			ec:         worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.GetAgbotCSSURL(), cfg.Edge.AgbotURL, cfg.Collaborators.HTTPClientFactory),
 			mmsObjMgr:  mmsObjMgr,
 			secretsMgr: secretsMgr,
+			nodeSearch: nodeSearch,
 		},
 		protocolHandler: c,
 	}

@@ -1,8 +1,8 @@
 /* 
 Sample input for 'hzn policy add -f' flag. It is used for the policy case.
-It provices properties and constrains to determin what services can run on this node.
-Optionally you can also add node management (node upgrade) related properties and constrains 
-under "management". Use command 'hzn policy new' to see the meaning of each attribute.
+It provides properties and constraints to determine what services can run on this node.
+Optionally you can also add node management (node upgrade) related properties and constraints 
+under "management". Use the command 'hzn policy new' to see the meaning of each attribute.
 */
 {
   "properties": [],

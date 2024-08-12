@@ -38,12 +38,12 @@ func (w BusinessPolicy) String() string {
 }
 
 type ServiceRef struct {
-	Name             string           `json:"name"`                      // refers to a service definition in the exchange
-	Org              string           `json:"org,omitempty"`             // the org holding the service definition
-	Arch             string           `json:"arch,omitempty"`            // the hardware architecture of the service definition
-	ClusterNamespace string           `json:"clusterNamespace"`          // the namespace ths service will be deployed to.
-	ServiceVersions  []WorkloadChoice `json:"serviceVersions,omitempty"` // a list of service version for rollback
-	NodeH            NodeHealth       `json:"nodeHealth"`                // policy for determining when a node's health is violating its agreements
+	Name             string           `json:"name"`                       // refers to a service definition in the exchange
+	Org              string           `json:"org,omitempty"`              // the org holding the service definition
+	Arch             string           `json:"arch,omitempty"`             // the hardware architecture of the service definition
+	ClusterNamespace string           `json:"clusterNamespace,omitempty"` // the namespace ths service will be deployed to.
+	ServiceVersions  []WorkloadChoice `json:"serviceVersions,omitempty"`  // a list of service version for rollback
+	NodeH            NodeHealth       `json:"nodeHealth"`                 // policy for determining when a node's health is violating its agreements
 }
 
 func (w ServiceRef) String() string {
@@ -57,16 +57,19 @@ func (w ServiceRef) String() string {
 }
 
 func (w ServiceRef) Validate() error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	if w.Name == "" || w.Org == "" {
-		return fmt.Errorf("Name, or Org is empty string.")
+		return fmt.Errorf(msgPrinter.Sprintf("Name, or Org is empty string."))
 	} else if w.ServiceVersions == nil || len(w.ServiceVersions) == 0 {
-		return fmt.Errorf("The serviceVersions array is empty.")
+		return fmt.Errorf(msgPrinter.Sprintf("The serviceVersions array is empty."))
 	} else if len(w.ServiceVersions) != 0 {
 		for _, wc := range w.ServiceVersions {
 			if wc.Priority.PriorityValue != 0 && (wc.Priority.RetryDurationS == 0 || wc.Priority.Retries == 0) {
-				return fmt.Errorf("retry_durations and retries cannot be zero if priority_value is set to non-zero value")
+				return fmt.Errorf(msgPrinter.Sprintf("retry_durations and retries cannot be zero if priority_value is set to non-zero value"))
 			} else if wc.Priority.PriorityValue == 0 && (wc.Priority.RetryDurationS != 0 || wc.Priority.Retries != 0 || wc.Priority.VerifiedDurationS != 0) {
-				return fmt.Errorf("retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set")
+				return fmt.Errorf(msgPrinter.Sprintf("retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set"))
 			}
 		}
 	}
@@ -267,4 +270,46 @@ func ConvertConstraints(constraints externalpolicy.ConstraintExpression, pol *po
 	}
 	pol.Constraints = *newconstr
 	return nil
+}
+
+// Validate cluster namespace specified in the deployment policy has no conflict with constraint, print warning message if conflict is detected
+// First return value is to indicate if it has a warning
+func ValidateClusterNSWithConstraint(policy *BusinessPolicy) (bool, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if policy == nil || &policy.Service == nil {
+		return false, nil
+	}
+
+	if policy.Service.ClusterNamespace != "" && !policy.HasNoConstraints() {
+		clusterNSInPolicy := policy.Service.ClusterNamespace
+
+		propList := new(externalpolicy.PropertyList)
+		propList.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_NODE_K8S_NAMESPACE, clusterNSInPolicy), false)
+
+		newconstr := externalpolicy.Constraint_Factory()
+		constrains := policy.Constraints.GetStrings()
+		for _, constrain := range constrains {
+			if strings.Contains(constrain, externalpolicy.PROP_NODE_K8S_NAMESPACE) {
+				// We only need to validate constraint that has "openhorizon.kubernetesNamespace"
+				newconstr.Add_Constraint(constrain)
+			} else {
+				continue
+			}
+		}
+
+		// all the "openhorizon.kubernetesNamespace" related constrain (along with other if in the same line) are added
+		if parsedConstrain, err := externalpolicy.GetParseConstraintWithName(newconstr, externalpolicy.PROP_NODE_K8S_NAMESPACE); err != nil {
+			return false, fmt.Errorf(msgPrinter.Sprintf("Failed to get constraint with name %v, error: %v", externalpolicy.PROP_NODE_K8S_NAMESPACE, err))
+		} else {
+			requiredProperties := externalpolicy.ConvertParsedConstraintToRequiredProperty(parsedConstrain)
+
+			if err = requiredProperties.IsSatisfiedBy(*propList); err != nil {
+				return true, fmt.Errorf(msgPrinter.Sprintf("kubernetesNamespace defined in the constraint %v is different from the clusterNamespace '%v' specified in the deployment policy, the policy might result in no service deployments", newconstr, clusterNSInPolicy))
+			}
+		}
+	}
+
+	return false, nil
 }

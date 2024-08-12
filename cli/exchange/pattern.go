@@ -56,6 +56,7 @@ type PatternInput struct {
 	Description        string                         `json:"description,omitempty"`
 	Public             bool                           `json:"public"`
 	Services           []ServiceReference             `json:"services,omitempty"`
+	ClusterNamespace   string                         `json:"clusterNamespace,omitempty"`
 	AgreementProtocols []exchange.AgreementProtocol   `json:"agreementProtocols,omitempty"`
 	UserInput          []policy.UserInput             `json:"userInput,omitempty"`
 	SecretBinding      []exchangecommon.SecretBinding `json:"secretBinding,omitempty"` // The secret binding from service secret names to vault secret names.
@@ -169,11 +170,30 @@ func PatternUpdate(org string, credToUse string, pattern string, filePath string
 	} else {
 		_, ok := findPatchType["label"]
 		_, ok2 := findPatchType["description"]
-		if ok || ok2 {
+		clusterNS, ok3 := findPatchType["clusterNamespace"]
+
+		// make sure the pattern contains services with cluster deplopyment
+		if ok3 && clusterNS != "" {
+			for p_name, p := range exchPatterns.Patterns {
+				ec := cliutils.GetUserExchangeContext(org, credToUse)
+				getService := exchange.GetHTTPServiceHandler(ec)
+				getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
+
+				clusterType, err := HasClusterTypeService(p.Services, getService, getSelectedServices, msgPrinter)
+				if err != nil {
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Error checking service types for pattern %v. %v", p_name, err))
+				} else if !clusterType {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'clusterNamespace' is specified, but no service has cluster deployment for pattern %v.", p_name))
+				}
+				break // only one pattern in the response
+			}
+		}
+
+		if ok || ok2 || ok3 {
 			patch = make(map[string]string)
 			err = json.Unmarshal([]byte(attribute), &patch)
 		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding."))
 		}
 	}
 
@@ -245,15 +265,29 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	if patFile.Org == "" {
 		patFile.Org = org
 	}
-	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, AgreementProtocols: patFile.AgreementProtocols, UserInput: patFile.UserInput, SecretBinding: patFile.SecretBinding}
+	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, ClusterNamespace: patFile.ClusterNamespace, AgreementProtocols: patFile.AgreementProtocols, UserInput: patFile.UserInput, SecretBinding: patFile.SecretBinding}
 
 	//issue 924: Patterns with no services are not allowed
 	if patFile.Services == nil || len(patFile.Services) == 0 {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the pattern definition (%s) must contain services, unable to proceed", patFile.Services))
 	}
 
-	// verify the secret binding
 	ec := cliutils.GetUserExchangeContext(org, userPw)
+
+	// make sure the cluster deployment is in the pattern if clusterNamespace is not empty
+	if patFile.ClusterNamespace != "" {
+		getService := exchange.GetHTTPServiceHandler(ec)
+		getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
+
+		clusterType, err := HasClusterTypeService(patFile.GetServices(), getService, getSelectedServices, msgPrinter)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Error checking service types for pattern. %v", err))
+		} else if !clusterType {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'clusterNamespace' is specified, but no service has cluster deployment for pattern."))
+		}
+	}
+
+	// verify the secret binding
 	verifySecretBindingForPattern(patFile.GetSecretBinding(), patFile.GetServices(), patFile.GetOrg(), ec, patFile.IsPublic())
 
 	// variables to store public key data
@@ -517,7 +551,7 @@ func verifySecretBindingForPattern(secretBinding []exchangecommon.SecretBinding,
 		// make sure the vault secret exists.
 		agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
 		vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
-		msgMap, err := compcheck.VerifyVaultSecrets(neededSB, patOrg, agbotUrl, vaultSecretExists, msgPrinter)
+		msgMap, err := compcheck.VerifyVaultSecrets(neededSB, patOrg, "", agbotUrl, vaultSecretExists, msgPrinter)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the binding secret in the secret manager. %v", err))
 		} else if msgMap != nil && len(msgMap) > 0 {
@@ -576,4 +610,46 @@ func ValidateSecretBinding(secretBinding []exchangecommon.SecretBinding,
 	// group needed and extraneous secret bindings
 	neededSB, extraneousSB := compcheck.GroupSecretBindings(secretBinding, index_map)
 	return neededSB, extraneousSB, nil
+}
+
+// Check all the services to see if any has cluster deployment
+func HasClusterTypeService(svcRefs []exchange.ServiceReference,
+	getService exchange.ServiceHandler,
+	getSelectedServices exchange.SelectedServicesHandler,
+	msgPrinter *message.Printer) (bool, error) {
+
+	for _, sref := range svcRefs {
+
+		svcDefs := []exchange.ServiceDefinition{}
+
+		// get all the top level services from the exchange for the pattern
+		for _, sv := range sref.ServiceVersions {
+			if sref.ServiceArch == "" || sref.ServiceArch == "*" {
+				if sMeta, err := getSelectedServices(sref.ServiceURL, sref.ServiceOrg, sv.Version, ""); err != nil {
+					return false, fmt.Errorf(msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all architectures. %v", sref.ServiceOrg, sref.ServiceURL, sv.Version, err))
+				} else {
+					for _, sdef := range sMeta {
+						svcDefs = append(svcDefs, sdef)
+					}
+
+				}
+			} else {
+				sdef, _, err := getService(sref.ServiceURL, sref.ServiceOrg, sv.Version, sref.ServiceArch)
+				if err != nil {
+					return false, fmt.Errorf(msgPrinter.Sprintf("Error retrieving service %v/%v version %v from the Exchange. %v", sref.ServiceOrg, sref.ServiceURL, sv.Version, err))
+				} else if sdef != nil {
+					svcDefs = append(svcDefs, *sdef)
+				}
+			}
+		}
+
+		// check if the service has cluster deployment
+		for _, sdef := range svcDefs {
+			if sdef.GetServiceType() != exchangecommon.SERVICE_TYPE_DEVICE {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }

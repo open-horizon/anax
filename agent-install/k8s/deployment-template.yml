@@ -3,63 +3,80 @@ kind: Deployment
 metadata:
   name: agent
   namespace: __AgentNameSpace__
+  labels:
+    app: agent
+    openhorizon.org/component: agent
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: agent
+      openhorizon.org/component: agent
   template:
     metadata:
       labels:
         app: agent
+        openhorizon.org/component: agent
     spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: openhorizon.org/component
+                operator: In
+                values:
+                - agent
+            topologyKey: kubernetes.io/hostname
       serviceAccountName: agent-service-account
       volumes:
       - name: agent-etc-vol
         configMap:
           name: openhorizon-agent-config
+      # START_CERT_VOL
       - name: agent-cert-volume
         secret:
           secretName: openhorizon-agent-secrets
+      # END_CERT_VOL
       - name: agent-pvc-storage
         persistentVolumeClaim:
           claimName: openhorizon-agent-pvc
       # START_NOT_FOR_OCP
       initContainers:
       - name: initcontainer
-        image: alpine:latest
+        image: __InitContainerImagePath__
+        imagePullPolicy: IfNotPresent
         securityContext:
-          runAsNonRoot: false
+          runAsUser: 0
         command:
-        - sh
-        - -c
-        - (chown -R 1000:1000 /horizon /policy)
+          - sh
+          - -c
+          - (chown 1000:1000 /mount)
         volumeMounts:
-        - mountPath: /policy
+        - mountPath: /mount
           name: agent-pvc-storage
-          subPath: policy
-        - mountPath: /horizon
-          name: agent-pvc-storage
-          subPath: horizon
       # END_NOT_FOR_OCP
+      # START_REMOTE_ICR
+      imagePullSecrets:
+      - name: registry-creds
+      # END_REMOTE_ICR
       containers:
       - name: anax
         image: __ImagePath__
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - mountPath: /etc/default/horizon
-          subPath: horizon
           name: agent-etc-vol
+          subPath: horizon # this subPath is needed because /etc/default/horizon needs to be mount as a file
+        # START_CERT_VOL
         - mountPath: /etc/default/cert
           name: agent-cert-volume
+        # END_CERT_VOL
         - mountPath: /var/horizon
           name: agent-pvc-storage
-          subPath: horizon
-        - mountPath: /etc/horizon/policy.d
-          name: agent-pvc-storage
-          subPath: policy
         ports:
-        - containerPort: 8510
+        - containerPort: 8443
+          name: ess-secure
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
@@ -76,8 +93,30 @@ spec:
         - name: HZN_ORG_ID
           value: __OrgId__
         - name: AGENT_NAMESPACE
-          value:  __AgentNameSpace__
+          value: __AgentNameSpace__
+        - name: HZN_NAMESPACE_SCOPED
+          value: __NamespaceScoped__
         - name: AGENT_CLUSTER_IMAGE_REGISTRY_HOST
           value: __ImageRegistryHost__
+        # START_CERT_VOL
         - name: HZN_MGMT_HUB_CERT_PATH
           value: /etc/default/cert/agent-install.crt
+        # END_CERT_VOL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-service
+  namespace: __AgentNameSpace__
+  labels:
+    app: agent
+    openhorizon.org/component: agent
+spec:
+  selector:
+    app: agent
+    openhorizon.org/component: agent
+  ports:
+    - name: ess-secure-port-name
+      protocol: TCP
+      port: 8443
+      targetPort: 8443

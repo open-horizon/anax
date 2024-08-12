@@ -228,6 +228,10 @@
     "translation": "使用者必須在 API 路徑中指定"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "必須在 API 路徑中指定節點"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "在密碼管理程式中檢查密碼 {FullSecretName} 時發生錯誤。"
   },
@@ -468,20 +472,20 @@
     "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "名稱或組織為空字串。"
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "serviceVersions 陣列為空。"
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "內容包含無效內容：{Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "內容 {PROPSVCPRIVILEGED} 必須具有布林值（true 或 false）。"
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "無法取得名稱為 {PROPNODEK8SNAMESPACE} 的限制，錯誤：{Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "限制 {Newconstr} 中定義的 kubernetesNamespace 與部署原則中指定的 clusterNamespace '{ClusterNSInPolicy}' 不同，該原則可能會導致無服務部署"
   },
   {
     "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
@@ -992,6 +996,22 @@
     "translation": "無法解除配置部署欄位 {StringjsonBytes} 的 JSON：{Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "無法解除配置叢集部署欄位 {StringjsonBytes} 的 JSON：{Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "叢集部署欄位中呈現的資料無效：{TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "叢集部署中的 meta 資料屬性格式錯誤。"
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "無法從 Kube 運算子取得名稱空間。{Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "使用者輸入 {Name} 沒有預設值且未設定"
   },
@@ -1080,6 +1100,34 @@
     "translation": "服務沒有節點類型 'cluster' 的叢集部署配置。"
   },
   {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "輸入節點的叢集名稱空間 '{NodeNamespace}' 不符合 Exchange {NodeId} 中節點的叢集名稱空間 '{ExchNodeNamespace}'。"
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "輸入節點的範圍 '{NodeIsNamespaceScope}' 與 Exchange {NodeId} 中節點的範圍 '{ExchNodeIsNamespaceScope}' 不相符。"
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "部署原則或型樣中指定的名稱空間 '{DeployerNamespace}' 不符合下列代理程式的名稱空間：'{NodeNamespace}'"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "無法從服務取得叢集部署。{Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "服務中指定的名稱空間 '{SvcNamespace}' 不符合下列代理程式的名稱空間：'{NodeNamespace}'。請在部署原則或型樣中將其改寫。"
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "型樣 '{PatternId}' 中指定的名稱空間 '{PatternNamespace}' 是空的，或不符合下列名稱空間範圍代理程式的名稱空間：'{NodeNamespace}'。名稱空間範圍代理程式僅與代理程式具有相同名稱空間的型樣相容。"
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "型樣 '{PatternId}' 中指定的叢集名稱空間是 {PatternNamespace}，只有具有空叢集名稱空間的型樣才能為叢集範圍代理程式登錄"
+  },
+  {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
     "translation": "無法從 {VersionRange} 建立版本表示式。 {Err}"
   },
@@ -1102,6 +1150,10 @@
   {
     "id": "Policy Incompatible",
     "translation": "原則不相容"
+  },
+  {
+    "id": "{Err1}",
+    "translation": "{Err1}"
   },
   {
     "id": "Architecture does not match.",
@@ -1342,6 +1394,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "必須提供節點組織。"
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "密碼 {VaultSecretName} 不存在於組織層次或使用者層次的密碼管理程式中。"
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -1954,6 +2010,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "{Arg_1} 的節點管理狀態已變更為 {Arg_2}。"
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "{Arg_1} 的節點管理狀態已變更為 {Arg_2}。 錯誤訊息：{Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "正在移除 {Arg_1} 的節點管理狀態。"
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

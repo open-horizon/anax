@@ -1,19 +1,29 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.0
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2
 
 LABEL vendor="IBM"
 LABEL summary="The agent auto upgrade cron job for edge clusters."
 LABEL description=""
 
-# yum is not installed, use microdnf instead
-# shadow-utils contains groupadd and adduser commands
-RUN microdnf update -y --nodocs && microdnf clean all && microdnf install --nodocs -y shadow-utils \
-    && microdnf install --nodocs -y openssl ca-certificates \
-    && microdnf install -y jq procps tar \
-    && curl -4LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/ppc64le/kubectl \
-    && chmod +x ./kubectl \
-    && mv ./kubectl /usr/local/bin \
-    && mkdir -p /tmp/agentbackup \
-    && adduser cronjobuser -u 1000 -U -f -1 -c "cronjob user,1,2,3" 
+# add EPEL repo with jq pkg and all deps
+COPY EPEL.repo /etc/yum.repos.d
+
+# The build calls adduser (from shadow-utils)
+# The auto-upgrade-cronjob.sh calls jq (from jq)
+# Download kubectl
+# Create required directories
+# Create cronjobuser
+ARG REQUIRED_RPMS="shadow-utils jq"
+RUN microdnf clean all \
+  && rm -rf /var/cache/dnf /var/cache/PackageKit \
+  && microdnf update -y --nodocs --nobest --setopt=install_weak_deps=0 --disableplugin=subscription-manager \ 
+  && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
+  && microdnf clean all --disableplugin=subscription-manager \
+  && rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \
+  && curl -4LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/ppc64le/kubectl \
+  && chmod +x ./kubectl \
+  && mv ./kubectl /usr/local/bin \
+  && mkdir -p /tmp/agentbackup \
+  && adduser cronjobuser -u 1000 -U -f -1 -c "cronjob user,1,2,3"
 
 # Copy cronjob script into container
 COPY cronjobs/auto-upgrade-cronjob.sh /usr/local/bin/

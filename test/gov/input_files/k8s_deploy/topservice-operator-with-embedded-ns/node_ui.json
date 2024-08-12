@@ -1,0 +1,23 @@
+[
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "k8s-service-embedded-ns",
+    "serviceArch": "${ARCH}",
+    "serviceVersionRange": "[1.0.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "var1",
+        "value": "k8s String"
+      },
+      {
+        "name": "var2",
+        "value": 7
+      },
+      {
+        "name": "var3",
+        "value": 88.8
+      }
+    ]
+  }
+]
+

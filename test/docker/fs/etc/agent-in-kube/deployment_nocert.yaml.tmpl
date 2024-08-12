@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent
-  namespace: openhorizon-agent
+  namespace: agent-namespace
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,7 @@ spec:
       volumes:
       - name: agent-pvc-vol
         persistentVolumeClaim:
-          claimName: agent-pvc-horizon
+          claimName: openhorizon-agent-pvc
       - name: agent-etc-vol
         configMap:
           name: agent-configmap-horizon
@@ -47,3 +47,21 @@ spec:
           value: "1"
         - name: ANAX_LOG_LEVEL
           value: "5"
+        - name: AGENT_NAMESPACE
+          value: "agent-namespace"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-service
+  namespace: agent-namespace
+  labels:
+    app: agent
+spec:
+  selector:
+    app: agent
+  ports:
+    - name: ess-secure-port-name
+      protocol: TCP
+      port: 8443
+      targetPort: 8443

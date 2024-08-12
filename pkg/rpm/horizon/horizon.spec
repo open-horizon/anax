@@ -15,7 +15,7 @@ Provides: horizon = %{version}
 
 # Note: in RHEL/CentOS 8.x, docker-ce does not automatically install cleanly.
 #	Must do this manually *before* installing this horizon pkg: https://linuxconfig.org/how-to-install-docker-in-rhel-8
-Requires: (horizon-cli and iptables and jq and (docker-ce or podman >= 1:4.0.0))
+Requires: (horizon-cli and iptables and jq and (moby-engine or docker-ce or podman >= 1:4.0.0))
 
 #Prefix: /usr/horizon
 #Vendor: ?
@@ -102,6 +102,7 @@ fi
 systemctl start horizon.service
 #fi
 mkdir -p /var/horizon/ /var/run/horizon/
+mkdir -p /etc/cron.d/
 
 # add cron job for agent auto-upgrade
 echo "*/5 * * * * root /usr/horizon/bin/agent-auto-upgrade.sh 2>&1|/usr/bin/logger -t AgentAutoUpgrade" > /etc/cron.d/horizon_agent_upgrade

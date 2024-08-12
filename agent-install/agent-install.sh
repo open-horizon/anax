@@ -19,15 +19,15 @@ VERB_DEBUG=5
 # You can add to these lists of supported values by setting/exporting the corresponding <varname>_APPEND variable to a string of space-separated words.
 # This allows you to experiment with platforms or variations that are not yet officially tested/supported.
 SUPPORTED_DEBIAN_VARIANTS=(ubuntu raspbian debian $SUPPORTED_DEBIAN_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
-SUPPORTED_DEBIAN_VERSION=(bullseye jammy focal bionic buster xenial stretch $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
-SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
+SUPPORTED_DEBIAN_VERSION=(noble bullseye jammy focal bionic buster xenial stretch bookworm $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
+SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf s390x $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel redhatenterprise centos fedora $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: version 8 and 9 are added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
-SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 9.0 9.1 8 9 32 35 36 37 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
-SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
+SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 9.0 9.1 9.2 9.3 9.4 8 9 32 35 36 37 38 39 40 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le s390x  riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
 
-SUPPORTED_EDGE_CLUSTER_ARCH=(amd64)
-SUPPORTED_ANAX_IN_CONTAINER_ARCH=(amd64 arm64)
+SUPPORTED_EDGE_CLUSTER_ARCH=(amd64 arm64 s390x)
+SUPPORTED_ANAX_IN_CONTAINER_ARCH=(amd64 arm64 s390x)
 
 SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
 SUPPORTED_LINUX_DISTRO=(${SUPPORTED_DEBIAN_VARIANTS[@]} ${SUPPORTED_REDHAT_VARIANTS[@]})   # compared to what our detect_distro() sets DISTRO to
@@ -48,7 +48,7 @@ CURL_RETRY_PARMS="--retry 5 --retry-connrefused --retry-max-time 120"
 
 SEMVER_REGEX='^[0-9]+\.[0-9]+(\.[0-9]+)+'   # matches a version like 1.2.3 (must be at least 3 fields). Also allows a bld num on the end like: 1.2.3-RC1
 
-# The following variable will need to have the $ARCH prepended to it before it can be used - currently only amd64 and arm64 are built
+# The following variable will need to have the $ARCH prepended to it before it can be used
 DEFAULT_AGENT_IMAGE_TAR_FILE='_anax.tar.gz'
 
 INSTALLED_AGENT_CFG_FILE="/etc/default/horizon"
@@ -58,21 +58,24 @@ AGENT_CONTAINER_PORT_BASE=8080
 DEFAULT_AGENT_NAMESPACE="openhorizon-agent"
 SERVICE_ACCOUNT_NAME="agent-service-account"
 CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
-CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES="cluster-role-get-k8s-nodes"
 ROLE_BINDING_NAME="role-binding"
 DEPLOYMENT_NAME="agent"
 SECRET_NAME="openhorizon-agent-secrets"
+IMAGE_PULL_SECRET_NAME="registry-creds"
 CRONJOB_AUTO_UPGRADE_NAME="auto-upgrade-cronjob"
 IMAGE_REGISTRY_SECRET_NAME="openhorizon-agent-secrets-docker-cert"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
+DEFAULT_PVC_SIZE="10Gi"
 GET_RESOURCE_MAX_TRY=5
 POD_ID=""
 HZN_ENV_FILE="/tmp/agent-install-horizon-env"
 DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY="image-registry.openshift-image-registry.svc:5000"
-DEFAULT_AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
-DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE='amd64_auto-upgrade-cronjob_k8s.tar.gz'
 EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
+# The following variables will need to have the $ARCH prepended before they can be used
+DEFAULT_AGENT_K8S_IMAGE_TAR_FILE='_anax_k8s.tar.gz'
+DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE='_auto-upgrade-cronjob_k8s.tar.gz'
+DEFAULT_INIT_CONTAINER_IMAGE_PATH="public.ecr.aws/docker/library/alpine:latest"
 
 # agent upgrade types. To update the certificate only, just do "-G cert" or set AGENT_UPGRADE_TYPES="cert"
 UPGRADE_TYPE_SW="software"
@@ -99,7 +102,7 @@ Required Input Variables (via flag, environment, or config file):
 Options/Flags:
     -c                  Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the certificate file from the MMS. If only 'css:' is specified, the path for the highest certificate file version $CSS_OBJ_AGENT_CERT_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
     -k                  Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the config file from the MMS. If only 'css:' is specified, the path for the highest config file version $CSS_OBJ_AGENT_CONFIG_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. All other variables for this script can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
-    -i                  Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the path for the highest package file version $CSS_OBJ_AGENT_SOFTWARE_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
+    -i                  Installation packages/files/image location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:, css:<version>, css:<path>), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the path for the highest package file version $CSS_OBJ_AGENT_SOFTWARE_BASE-<version> will be added if it can be found. Otherwise the default path $CSS_OBJ_PATH_DEFAULT will be added. If the argument is 'remote:', the agent deployment will reference the image in remote image registry. 'remote:' only applies for cluster agent installation. If using 'remote:', values for 'IMAGE_ON_EDGE_CLUSTER_REGISTRY' is required for providing the image container registry info. Values for 'EDGE_CLUSTER_REGISTRY_USERNAME', 'EDGE_CLUSTER_REGISTRY_USERNAME' are required if remote image registry is protected. (This flag is equivalent to INPUT_FILE_PATH)
     -z                  The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (This flag is equivalent to AGENT_INSTALL_ZIP)
     -j                  File location for the public key for an APT repository specified with '-i' (This flag is equivalent to PKG_APT_KEY)
     -t                  Branch to use in the APT repo specified with -i. Default is 'updates' (This flag is equivalent to APT_REPO_BRANCH)
@@ -124,6 +127,7 @@ Options/Flags:
         --auto-upgrade  Auto agent upgrade. It is used internally by the agent auto upgrade process. (This flag is equivalent to AGENT_AUTO_UPGRADE)
         --container     Install the agent in a container. This is the default behavior for MacOS installations. (This flag is equivalent to AGENT_IN_CONTAINER)
         --namespace     The namespace that the cluster agent will be installed to. The default is 'openhorizon-agent'
+        --namespace-scoped The cluster agent will only have namespace scope. The default is 'false'
     -N                  The container number to be upgraded. The default is 1 which means the container name is horizon1. It is used for upgrade only, the HORIZON_URL setting in /etc/horizon/hzn.json will not be changed. (This flag is equivalent to AGENT_CONTAINER_NUMBER)
     -h  --help          This usage
 
@@ -134,7 +138,7 @@ Additional Variables (in environment or config file):
 
 Additional Edge Device Variables (in environment or config file):
     NODE_ID_MAPPING_FILE: File to map hostname or IP to node id, for bulk install.  Default: node-id-mapping.csv
-    AGENT_IMAGE_TAR_FILE: the file name of the device agent docker image in tar.gz format. Default: $DEFAULT_AGENT_IMAGE_TAR_FILE
+    AGENT_IMAGE_TAR_FILE: the file name of the device agent docker image in tar.gz format. Default: \${ARCH}$DEFAULT_AGENT_IMAGE_TAR_FILE
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
 
 Optional Edge Device Environment Variables For Testing New Distros - Not For Production Use
@@ -147,16 +151,22 @@ Optional Edge Device Environment Variables For Testing New Distros - Not For Pro
 
 
 Additional Edge Cluster Variables (in environment or config file):
-    IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to
+    KUBECTL: specify this value if you have multiple kubectl CLI installed in your enviroment. Otherwise the script will detect in this order: k3s kubectl, microk8s.kubectl, oc, kubectl.
+    ENABLE_AUTO_UPGRADE_CRONJOB: specify this value to false to skip installing agent auto upgrade cronjob. Default: true
+    IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to, in format: <registry-host>/<repository>/\${ARCH}_anax_k8s
     CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the auto-upgrade-cronjob cronjob image path (without tag) if you want it to be different from what this script will default it to
+    INIT_CONTAINER_IMAGE: specify this value if init container is needed and is different from default: public.ecr.aws/docker/library/alpine:latest
     EDGE_CLUSTER_REGISTRY_USERNAME: specify this value if the edge cluster registry requires authentication
     EDGE_CLUSTER_REGISTRY_TOKEN: specify this value if the edge cluster registry requires authentication
     EDGE_CLUSTER_STORAGE_CLASS: the storage class to use for the agent and edge services. Default: gp2
+    EDGE_CLUSTER_PVC_SIZE: the requested size in the agent persistent volume to use for the agent. Default: 10Gi
     AGENT_NAMESPACE: The namespace the agent should run in. Default: openhorizon-agent
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
-    AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS: Maximum seconds to wait for the agent deployment rollout status to be successful. Default: 75
-    AGENT_K8S_IMAGE_TAR_FILE: the file name of the edge cluster agent docker image in tar.gz format. Default: $DEFAULT_AGENT_K8S_IMAGE_TAR_FILE
-    CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE: the file name of the edge cluster auto-upgrade-cronjob cronjob docker image in tar.gz format. Default: $DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE
+    AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS: Maximum seconds to wait for the agent deployment rollout status to be successful. Default: 300
+    AGENT_K8S_IMAGE_TAR_FILE: the file name of the edge cluster agent docker image in tar.gz format. Default: \${ARCH}$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE
+    CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE: the file name of the edge cluster auto-upgrade-cronjob cronjob docker image in tar.gz format. Default: \${ARCH}$DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE
+    AGENT_NAMESPACE: The cluster namespace that the agent will be installed in
+    NAMESPACE_SCOPED: specify this value if the edge cluster agent is namespace-scoped agent
 EndOfMessage
     exit $exit_code
 }
@@ -176,7 +186,9 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
     -)
         case "${OPTARG}" in
             ha-group)
-                ARG_HZN_HA_GROUP=${all_args[$OPTIND-1]}
+                eval nextopt=\${$OPTIND}
+                ARG_HZN_HA_GROUP=${nextopt}
+                OPTIND=$(( OPTIND + 1 ))
                 ;;
             container)
                 ARG_AGENT_IN_CONTAINER=true
@@ -185,7 +197,12 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:CG:N:-:" opt; do
                 ARG_AGENT_AUTO_UPGRADE=true
                 ;;
             namespace)
-                ARG_AGENT_NAMESPACE=${all_args[$OPTIND-1]}
+                eval nextopt=\${$OPTIND}
+                ARG_AGENT_NAMESPACE=${nextopt}
+                OPTIND=$(( OPTIND + 1 ))
+                ;;
+            namespace-scoped)
+                ARG_NAMESPACE_SCOPED=true
                 ;;
             help)
                 usage 0
@@ -376,9 +393,14 @@ function get_input_file_css_path() {
 
     local input_file_path
 
-    if [[ $INPUT_FILE_PATH == css:* ]]; then
+    if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == remote:* ]]; then
         # split the input into 2 parts
-        local part2=${INPUT_FILE_PATH#"css:"}
+        local part2
+        if [[ $INPUT_FILE_PATH == css:* ]]; then
+            part2=${INPUT_FILE_PATH#"css:"}
+        elif [[ $INPUT_FILE_PATH == remote:* ]]; then
+            part2=${INPUT_FILE_PATH#"remote:"}
+        fi
 
         if [[ -n $part2 ]]; then
             if [[ $part2 == /* ]]; then
@@ -401,6 +423,78 @@ function get_input_file_css_path() {
     fi
 
     eval $__resultvar="'${input_file_path}'"
+}
+
+function get_input_file_remote_path() {
+    local __resultvar=$1
+    local input_file_path
+
+    if [[ $INPUT_FILE_PATH == remote:* ]]; then
+        # split the input into 2 parts
+        local part2
+        if [[ $INPUT_FILE_PATH == remote:* ]]; then
+            part2=${INPUT_FILE_PATH#"remote:"}
+        fi
+
+        if [[ -n $part2 ]]; then
+            input_file_path=$INPUT_FILE_PATH
+        else
+            # 'remote:' case - need to query image registory to get the highest version
+            local highest
+            get_agent_version_from_repository highest
+            input_file_path="remote:$highest"
+        fi
+    fi
+
+    eval $__resultvar="'${input_file_path}'"
+}
+
+function get_agent_version_from_repository() {
+    local __resultvar=$1
+    local highest_var
+
+    if [[ -n $EDGE_CLUSTER_REGISTRY_USERNAME && -n $EDGE_CLUSTER_REGISTRY_TOKEN ]]; then
+        auth="-u $EDGE_CLUSTER_REGISTRY_USERNAME:$EDGE_CLUSTER_REGISTRY_TOKEN"
+    fi
+
+    IFS='/' read -r -a repoarray<<< $IMAGE_ON_EDGE_CLUSTER_REGISTRY
+    arrayLen=${#repoarray[@]}
+    if [[ "${repoarray[0]}" == *"docker"* ]]; then
+        repository_url="https://registry.hub.docker.com/v2/repositories"
+        for (( i=1 ; i<$arrayLen ; i++ ));
+        do
+            repository_url=$repository_url/${repoarray[i]}
+        done
+        repository_url=$repository_url/tags
+        agent_versions=$(curl $auth $repository_url 2>/dev/null | jq '.results[]["name"] | select(test("testing|latest") | not)' | sort -rV | tr '\n' ',') # "2.31.0-1495","2.31.0-1492","2.31.0-1021"
+    else
+        repository_url="https://${repoarray[0]}/v1/repositories"
+        for (( i=1 ; i<$arrayLen ; i++ ));
+        do
+            repository_url=$repository_url/${repoarray[i]}
+        done
+        repository_url=$repository_url/tags
+        http_code=$( curl $auth $repository_url  -o /dev/null  -w "%{http_code}" )
+        if [[ ${http_code} -eq 200 ]]; then
+                agent_versions=$(curl $auth $repository_url 2>/dev/null | jq 'keys[]' | sort -rV | tr '\n' ',') # "2.31.0-1495","2.31.0-1492","2.31.0-1021"                
+        else
+                agent_versions=""
+        fi
+    fi
+    IFS=',' read -r -a agent_version_array <<< $agent_versions
+    highest_var=${agent_version_array[0]}
+    if [ -z ${highest_var} ]; then
+        get_agent_file_versions
+        if [[ $AGENT_FILE_VERSIONS_STATUS -eq 1 ]] && [ ${#AGENT_SW_VERSIONS[@]} -gt 0 ]; then
+            highest_var=${AGENT_SW_VERSIONS[0]}
+        fi
+    fi
+
+    if [ -z ${highest_var} ]; then
+        log_fatal 3 "Unable to get image tags, exiting"
+    fi
+
+    eval $__resultvar="${highest_var}"
 }
 
 # If INPUT_FILE_PATH is a short-hand value, turn it into the long-hand value. There are several variants of INPUT_FILE_PATH. See the -i flag in the usage.
@@ -429,6 +523,8 @@ function adjust_input_file_path() {
         log_info "Using INPUT_FILE_PATH value $INPUT_FILE_PATH as an APT repository"
         PKG_APT_REPO="$INPUT_FILE_PATH"
         INPUT_FILE_PATH='.'   # not sure this is necessary
+    elif [[ $INPUT_FILE_PATH == remote:* ]]; then
+        log_info "Using INPUT_FILE_PATH value $INPUT_FILE_PATH as cluster agent image input path"
     elif [[ ! -d $INPUT_FILE_PATH ]]; then
         log_fatal 1 "INPUT_FILE_PATH directory '$INPUT_FILE_PATH' does not exist"
     fi
@@ -534,9 +630,9 @@ function get_agent_file_versions() {
     fi
 
     log_debug "AGENT_FILE_VERSIONS_STATUS: $AGENT_FILE_VERSIONS_STATUS"
-    log_debug "AGENT_SW_VERSIONS: ${AGENT_SW_VERSIONS[@]} sizs=${#AGENT_SW_VERSIONS[@]}"
-    log_debug "AGENT_CERT_VERSIONS: ${AGENT_CERT_VERSIONS[@]} sizs=${#AGENT_CERT_VERSIONS[@]}"
-    log_debug "AGENT_CONFIG_VERSIONS: ${AGENT_CONFIG_VERSIONS[@]} sizs=${#AGENT_CONFIG_VERSIONS[@]}"
+    log_debug "AGENT_SW_VERSIONS from the exchange: ${AGENT_SW_VERSIONS[@]} sizs=${#AGENT_SW_VERSIONS[@]}"
+    log_debug "AGENT_CERT_VERSIONS from the exchange: ${AGENT_CERT_VERSIONS[@]} sizs=${#AGENT_CERT_VERSIONS[@]}"
+    log_debug "AGENT_CONFIG_VERSIONS from the exchange: ${AGENT_CONFIG_VERSIONS[@]} sizs=${#AGENT_CONFIG_VERSIONS[@]}"
 
     log_debug "get_agent_file_versions() end"
 }
@@ -550,7 +646,7 @@ function get_certificate() {
 
     if [[ -n $css_cert_path ]]; then
         download_css_file "$css_cert_path"
-        
+
     fi
 
     #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
@@ -707,13 +803,13 @@ function download_css_file() {
                     # write AGENT_CERT_VERSION in file comment as ------OpenHorizon Version x.x.x-----
                     version_to_add="-----OpenHorizon Version $AGENT_CERT_VERSION-----"
                     log_debug "add this line $version_to_add to cert file: $AGENT_CERT_FILE"
-                
+
                     echo "-----OpenHorizon Version $AGENT_CERT_VERSION-----" > tmp-agent-install.crt
                     cat $AGENT_CERT_FILE >> tmp-agent-install.crt
                     mv tmp-agent-install.crt $AGENT_CERT_FILE
                 elif [[ "$AGENT_CERT_VERSION" != "$version_from_cert_file" ]]; then
                     # if version in cert != version in css filename, overwrite to use version in css filename
-                    sed -i "s#$version_from_cert_file#${AGENT_CERT_VERSION}#g" $AGENT_CERT_FILE 
+                    sed -i "s#$version_from_cert_file#${AGENT_CERT_VERSION}#g" $AGENT_CERT_FILE
                 fi
             fi
         fi
@@ -775,7 +871,7 @@ function getCertVersionFromCertFile() {
 
     log_debug "cert_ver_from_file=$cert_ver_from_file"
     eval $__resultvar="'${cert_ver_from_file}'"
-    log_debug "getCertVersionFromCertFile() end" 
+    log_debug "getCertVersionFromCertFile() end"
 }
 
 function download_anax_release_file() {
@@ -1067,6 +1163,7 @@ function get_all_variables() {
     # Next get config file values (cmd line has already been parsed), so get_variable can apply the whole precedence order
     get_variable INPUT_FILE_PATH '.'
     adjust_input_file_path
+
     get_variable AGENT_CFG_FILE "$(get_cfg_file_default)"
 
     if [[ -n $AGENT_CFG_FILE && -f $AGENT_CFG_FILE ]] || ! using_remote_input_files 'cfg'; then
@@ -1126,7 +1223,30 @@ function get_all_variables() {
     get_variable AGENT_DEPLOY_TYPE 'device'
     get_variable AGENT_WAIT_MAX_SECONDS '30'
 
-    if is_cluster; then
+    # Update HZN_ENV_FILE to be unique for this installation
+    HZN_ENV_FILE="$HZN_ENV_FILE-$HZN_NODE_ID"
+
+    if ! is_cluster && [[ $INPUT_FILE_PATH == remote:* ]]; then
+        log_fatal 1 "\$INPUT_FILE_PATH cannot set to 'remote:<version>' if \$AGENT_DEPLOY_TYPE is 'device'"
+    fi
+
+    if is_device; then
+        get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
+        get_variable PKG_APT_KEY
+        get_variable APT_REPO_BRANCH 'updates'
+
+        local image_arch=$(get_image_arch)
+        # Currently only support a few architectures for anax-in-container; if anax-in-container specified, check the architecture
+	if is_macos; then
+                : # do not need to check
+        else
+                if [[ $AGENT_IN_CONTAINER == 'true' ]]; then
+                        check_support "${SUPPORTED_ANAX_IN_CONTAINER_ARCH[*]}" "${image_arch}" 'anax-in-container architectures'
+                fi
+        fi
+
+        get_variable AGENT_IMAGE_TAR_FILE "${image_arch}${DEFAULT_AGENT_IMAGE_TAR_FILE}"
+    elif is_cluster; then
         # check kubectl is available
         if [ "${KUBECTL}" != "" ]; then   # If user set KUBECTL env variable, check that it exists
             if command -v $KUBECTL > /dev/null 2>&1; then
@@ -1149,59 +1269,77 @@ function get_all_variables() {
             fi
         fi
         log_info "KUBECTL is set to $KUBECTL"
-    fi
 
-    if is_device; then
-        get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
-        get_variable PKG_APT_KEY
-        get_variable APT_REPO_BRANCH 'updates'
-
-        local image_arch=$(get_image_arch)
-        # Currently only support a few architectures for anax-in-container; if anax-in-container specified, check the architecture
-	if is_macos; then
-                : # do not need to check
-        else 
-                if [[ $AGENT_IN_CONTAINER == 'true' ]]; then
-                        check_support "${SUPPORTED_ANAX_IN_CONTAINER_ARCH[*]}" "${image_arch}" 'anax-in-container architectures'
-                fi
-        fi
-
-        get_variable AGENT_IMAGE_TAR_FILE "${image_arch}${DEFAULT_AGENT_IMAGE_TAR_FILE}"
-    elif is_cluster; then
+        # get other variables for cluster agent
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
+        check_cluster_storage_class "$EDGE_CLUSTER_STORAGE_CLASS"
+
+        get_variable EDGE_CLUSTER_PVC_SIZE "$DEFAULT_PVC_SIZE"
         get_variable AGENT_NAMESPACE "$DEFAULT_AGENT_NAMESPACE"
-        USE_EDGE_CLUSTER_REGISTRY='true'   #get_variable USE_EDGE_CLUSTER_REGISTRY 'true'  # currently true is the only supported value
-        get_variable AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS '75'
+        get_variable NAMESPACE_SCOPED 'false'
+        get_variable USE_EDGE_CLUSTER_REGISTRY 'true'
+        get_variable AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS '300'
+        get_variable ENABLE_AUTO_UPGRADE_CRONJOB 'true'
 
         local image_arch=$(get_cluster_image_arch)
         check_support "${SUPPORTED_EDGE_CLUSTER_ARCH[*]}" "${image_arch}" 'kubernetes edge cluster architectures'
+        DEFAULT_AGENT_K8S_IMAGE_TAR_FILE=${image_arch}${DEFAULT_AGENT_K8S_IMAGE_TAR_FILE}
+        DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE=${image_arch}${DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE}
 
+        local default_image_registry_on_edge_cluster
+        local default_auto_upgrade_cronjob_image_registry_on_edge_cluster
+        isImageVariableRequired=true
         if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
-            local default_image_registry_on_edge_cluster
-            local default_auto_upgrade_cronjob_image_registry_on_edge_cluster
+            if [[ $INPUT_FILE_PATH == remote:* ]]; then
+                log_fatal 1 "Cannot use local cluster registry if \$INPUT_FILE_PATH is set to 'remote:<version>', please set \$USE_EDGE_CLUSTER_REGISTRY to 'false' or change \$INPUT_FILE_PATH to 'css:'."
+            fi
+
             if [[ $KUBECTL == "microk8s.kubectl" ]]; then
                 default_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
+                isImageVariableRequired=false
             elif [[ $KUBECTL == "k3s kubectl" ]]; then
                 local k3s_registry_endpoint=$($KUBECTL get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
                 default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
+                isImageVariableRequired=false
             elif is_ocp_cluster; then
                 local ocp_registry_endpoint=$($KUBECTL get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
                 default_image_registry_on_edge_cluster="$ocp_registry_endpoint/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
-            else
-		isImageVariableRequired=true
+                isImageVariableRequired=false
             fi
+	        # image variable $IMAGE_ON_EDGE_CLUSTER_REGISTRY is required
 
-            get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_image_registry_on_edge_cluster" ${isImageVariableRequired}
-	    log_debug "default_image_registry_on_edge_cluster: $default_image_registry_on_edge_cluster, IMAGE_ON_EDGE_CLUSTER_REGISTRY: $IMAGE_ON_EDGE_CLUSTER_REGISTRY"
-	    # set $default_auto_upgrade_cronjob_image_registry_on_edge_cluster from IMAGE_ON_EDGE_CLUSTER_REGISTRY
-            default_auto_upgrade_cronjob_image_registry_on_edge_cluster="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%/*}/${image_arch}_auto-upgrade-cronjob_k8s"
-	    log_debug "default_auto_upgrade_cronjob_image_registry_on_edge_cluster: $default_auto_upgrade_cronjob_image_registry_on_edge_cluster"
-            get_variable CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_auto_upgrade_cronjob_image_registry_on_edge_cluster"
-            get_variable EDGE_CLUSTER_REGISTRY_USERNAME
-            get_variable EDGE_CLUSTER_REGISTRY_TOKEN
             get_variable INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY
-            get_variable AGENT_K8S_IMAGE_TAR_FILE "$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE"
+        else
+            # need to validate image arch in IMAGE_ON_EDGE_CLUSTER_REGISTRY
+            if [[ -z $IMAGE_ON_EDGE_CLUSTER_REGISTRY ]]; then
+                log_fatal 1 "A value for \$IMAGE_ON_EDGE_CLUSTER_REGISTRY must be specified"
+            fi
+            firstpart="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%/*}"    # quay.io/zhangle/horizon
+            lastpart="${IMAGE_ON_EDGE_CLUSTER_REGISTRY##*/}"    # <arch>_anax_k8s
+            image_arch_in_param=$(echo $lastpart | cut -d "_" -f 1)
+            if [[ "$image_arch" != "$image_arch_in_param" ]]; then
+                log_warning "Cannot use agent image with $image_arch_in_param arch to install on $image_arch cluster, will change arch to '$image_arch'"
+                IMAGE_ON_EDGE_CLUSTER_REGISTRY=${firstpart}/${image_arch}_anax_k8s
+            fi
+        fi
+        get_variable AGENT_K8S_IMAGE_TAR_FILE "$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE"
+        # default_image_registry_on_edge_cluster is not set if use remote image registry
+        get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_image_registry_on_edge_cluster" ${isImageVariableRequired}
+	    log_debug "default_image_registry_on_edge_cluster: $default_image_registry_on_edge_cluster, IMAGE_ON_EDGE_CLUSTER_REGISTRY: $IMAGE_ON_EDGE_CLUSTER_REGISTRY"
+
+        if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+             # set $CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY from $IMAGE_ON_EDGE_CLUSTER_REGISTRY
+            auto_upgrade_cronjob_image_registry_on_edge_cluster="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%%_*}_auto-upgrade-cronjob_k8s"
+            get_variable CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY "$auto_upgrade_cronjob_image_registry_on_edge_cluster"
             get_variable CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE "$DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE"
+        fi
+
+        get_variable INIT_CONTAINER_IMAGE "$DEFAULT_INIT_CONTAINER_IMAGE_PATH"
+
+        get_variable EDGE_CLUSTER_REGISTRY_USERNAME
+        get_variable EDGE_CLUSTER_REGISTRY_TOKEN
+        if [[ ( -z $EDGE_CLUSTER_REGISTRY_USERNAME && -n $EDGE_CLUSTER_REGISTRY_TOKEN ) || ( -n $EDGE_CLUSTER_REGISTRY_USERNAME && -z $EDGE_CLUSTER_REGISTRY_TOKEN ) ]]; then
+            log_fatal 1 "EDGE_CLUSTER_REGISTRY_USERNAME and EDGE_CLUSTER_REGISTRY_TOKEN should be set/unset together"
         fi
     else
         log_fatal 1 "Invalid AGENT_DEPLOY_TYPE value: $AGENT_DEPLOY_TYPE"
@@ -1318,20 +1456,6 @@ function check_variables() {
         log_fatal 1 "HZN_NODE_POLICY file '$HZN_NODE_POLICY' does not exist"
     fi
 
-    if is_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
-        parts=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print NF}')
-        if [[ "$parts" != "3" ]]; then
-            log_fatal 1 "IMAGE_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>"
-        fi
-    fi
-
-    if is_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
-        parts=$(echo $CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print NF}')
-        if [[ "$parts" != "3" ]]; then
-            log_fatal 1 "CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>"
-        fi
-    fi
-
     if [[ -n $AGENT_IMAGE_TAR_FILE && $AGENT_IMAGE_TAR_FILE != *.tar.gz ]]; then
         log_fatal 1 "AGENT_IMAGE_TAR_FILE must be in tar.gz format"
     fi
@@ -1340,7 +1464,7 @@ function check_variables() {
         log_fatal 1 "AGENT_K8S_IMAGE_TAR_FILE must be in tar.gz format"
     fi
 
-    if [[ -n $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE && $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE != *.tar.gz ]]; then
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]] && [[ -n $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE && $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE != *.tar.gz ]]; then
         log_fatal 1 "CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE must be in tar.gz format"
     fi
     log_debug "check_variables() begin"
@@ -1426,7 +1550,7 @@ function is_small_kube() {
 }
 
 function is_ocp_cluster() {
-    $KUBECTL get routes default-route -n openshift-image-registry >/dev/null 2>&1
+    $KUBECTL get console -n openshift-console >/dev/null 2>&1
     if [[ $? -ne 0 ]]; then return 1 # we couldn't get the default route in openshift-image-registry namespace, so the current cluster is not ocp
     else return 0; fi
 }
@@ -1444,7 +1568,7 @@ function get_kubernetes_version() {
     major_version=$($KUBECTL version -o json | jq '.serverVersion.major' | sed s/\"//g)
     minor_version=$($KUBECTL version -o json | jq '.serverVersion.minor' | sed s/\"//g)
     if [ "${minor_version:0-1}" == "+" ]; then
-        minor_version=${minor_version::-1}
+        minor_version=${minor_version::$((${#minor_version} - 1))}
     fi
 
     full_version="$major_version.$minor_version"
@@ -1511,7 +1635,7 @@ function confirmCmds() {
 
 function ensureWeAreRoot() {
     if [[ $(whoami) != 'root' ]]; then
-        log_fatal 2 "must be root to run ${0##*/}. Run 'sudo -iE' and then run ${0##*/}"
+        log_fatal 2 "must be root to run ${0##*/}. Run 'sudo -sE' and then run ${0##*/}"
     fi
     # or could check: [[ $(id -u) -ne 0 ]]
 }
@@ -1549,8 +1673,12 @@ function using_remote_input_files() {
         if [[ $INPUT_FILE_PATH == css:* || $AGENT_CFG_FILE == css:* ]]; then
             return 0
         fi
-    else   # the other files (pkg, yml, uninstall) are available from either
-        if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+    elif [[ $whichFile == 'pkg' ]]; then
+        if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* || $INPUT_FILE_PATH == remote:* ]]; then
+            return 0
+        fi
+    else   # the other files (yml, uninstall) are available from either
+        if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* || $INPUT_FILE_PATH == remote:* ]]; then
             return 0
         fi
     fi
@@ -2294,7 +2422,11 @@ function redhat_device_install_prereqs() {
         fi
     fi
 
-    dnf install -yq curl jq cronie
+    # Curl likely already on a RHEL system so only try to install it if missing - caused a problem for RHEL 9.2
+    if ! isCmdInstalled curl; then
+        dnf install -yq curl
+    fi
+    dnf install -yq jq cronie
 
     # cron will be used for agent auto upgrade process
     systemctl start crond
@@ -3181,6 +3313,18 @@ function get_cluster_image_arch() {
     echo $image_arch
 }
 
+# check if the storage class exists in the edge cluster
+function check_cluster_storage_class() {
+    log_debug "check_cluster_storage_class() begin"
+    local storage_class=$1
+    if $KUBECTL get storageclass ${storage_class} >/dev/null 2>&1; then
+        log_verbose "storage class $storage_class exists in the edge cluster"
+    else
+        log_fatal 2 "storage class $storage_class does not exist in the edge cluster"
+    fi
+    log_debug "check_cluster_storage_class() end"
+}
+
 # checks if OS/distribution/codename/arch is supported
 function check_support() {
     log_debug "check_support() begin"
@@ -3307,7 +3451,7 @@ function check_exch_url_and_cert() {
 }
 
 # Cluster only: to extract agent image tar.gz and load to docker
-# Side-effect: sets globals: AGENT_IMAGE, AGENT_IMAGE_VERSION_IN_TAR, IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
+# Side-effect: sets globals: AGENT_IMAGE, AGENT_IMAGE_VERSION_IN_TAR, IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY INPUT_FILE_PATH
 function loadClusterAgentImage() {
     log_debug "loadClusterAgentImage() begin"
 
@@ -3334,6 +3478,21 @@ function loadClusterAgentImage() {
             AGENT_IMAGE=$image_path
             AGENT_IMAGE_VERSION_IN_TAR=${AGENT_IMAGE##*:}
             IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
+            log_info "IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is set to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+            return
+        elif [[ $INPUT_FILE_PATH == remote:* ]]; then
+            # input file path is: "remote:<image_tag>" or "remote:", get the docker image tag INPUT_FILE_PATH
+            local input_path
+            get_input_file_remote_path input_path
+            local image_tag=${input_path##*:} # version
+            INPUT_FILE_PATH="remote:$image_tag" # update $INPUT_FILE_PATH
+
+            # local image_tag
+            # get_agent_version_from_repository image_tag
+            AGENT_IMAGE_VERSION_IN_TAR=$image_tag
+            IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
+            AGENT_IMAGE=$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
+            log_info "IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is set to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
             return
         fi
     elif [[ ! -f $AGENT_K8S_IMAGE_TAR_FILE ]]; then
@@ -3352,18 +3511,19 @@ function loadClusterAgentImage() {
     # use the same tag for the image in the edge cluster registry as the tag they used for the image in the inputted tar file
     IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
 
+    log_debug "IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is set to: $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+
     log_debug "loadClusterAgentImage() end"
 }
 
-# Cluster only: to push agent and cronjob images to image registry that edge cluster can access
-function pushImagesToEdgeClusterRegistry() {
-    log_debug "pushImagesToEdgeClusterRegistry() begin"
-
+# Cluster only: to set $EDGE_CLUSTER_REGISTRY_HOST, and login to registry
+function getImageRegistryInfo() {
+    log_debug "getImageRegistryInfo() begin"
     # split $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY by "/"
     EDGE_CLUSTER_REGISTRY_HOST=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print $1}')
     log_info "Edge cluster registry host: $EDGE_CLUSTER_REGISTRY_HOST"
 
-    if [[ -z $EDGE_CLUSTER_REGISTRY_USERNAME && -z $EDGE_CLUSTER_REGISTRY_TOKEN ]]; then
+    if [[ $INPUT_FILE_PATH == remote:* || (-z $EDGE_CLUSTER_REGISTRY_USERNAME && -z $EDGE_CLUSTER_REGISTRY_TOKEN) ]]; then
         : # even for a registry in the insecure-registries list, if we don't specify user/pw it will prompt for it
         #docker login $EDGE_CLUSTER_REGISTRY_HOST
     else
@@ -3371,15 +3531,43 @@ function pushImagesToEdgeClusterRegistry() {
         chk $? "logging into edge cluster's registry: $EDGE_CLUSTER_REGISTRY_HOST"
     fi
 
-    log_info "Pushing docker image $AGENT_IMAGE to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
-    ${DOCKER_ENGINE} tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-    runCmdQuietly ${DOCKER_ENGINE} push ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-    log_verbose "successfully pushed image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+    log_debug "getImageRegistryInfo() end"
+}
 
-    log_info "Pushing docker image $CRONJOB_AUTO_UPGRADE_IMAGE to $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
-    docker tag ${CRONJOB_AUTO_UPGRADE_IMAGE} ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-    runCmdQuietly docker push ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
-    log_verbose "successfully pushed image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+# Cluster only: to push agent and cronjob images to image registry that edge cluster can access
+function pushImagesToEdgeClusterRegistry() {
+    log_debug "pushImagesToEdgeClusterRegistry() begin"
+
+    log_info "Checking if docker image $AGENT_IMAGE exists on the $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
+    set +e
+    ${DOCKER_ENGINE} manifest inspect $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+    rc=$?
+    set -e
+    if [[ $rc -eq 0 ]]; then
+        log_info "$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY already exists, skip image push"
+    else
+        log_info "Pushing docker image $AGENT_IMAGE to $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
+        ${DOCKER_ENGINE} tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+        runCmdQuietly ${DOCKER_ENGINE} push ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+        log_verbose "successfully pushed image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+    fi
+
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        log_info "Checking if docker image $CRONJOB_AUTO_UPGRADE_IMAGE exists on the $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
+        set +e
+        ${DOCKER_ENGINE} manifest inspect $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+        rc=$?
+        set -e
+
+        if [[ $rc -eq 0 ]]; then
+            log_info "$CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY already exists, skip image push"
+        else
+            log_info "Pushing docker image $CRONJOB_AUTO_UPGRADE_IMAGE to $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY ..."
+            ${DOCKER_ENGINE} tag ${CRONJOB_AUTO_UPGRADE_IMAGE} ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+            runCmdQuietly ${DOCKER_ENGINE} push ${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+            log_verbose "successfully pushed image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+        fi
+    fi
 
     log_debug "pushImagesToEdgeClusterRegistry() end"
 }
@@ -3407,11 +3595,18 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
             local image_arch=$(get_cluster_image_arch)
             local image_path="openhorizon/${image_arch}_auto-upgrade-cronjob_k8s:$image_tag"
             log_info "Pulling $image_path from docker hub..."
-            docker pull "$image_path"
+            ${DOCKER_ENGINE} pull "$image_path"
             chk $? "pulling $image_path"
             CRONJOB_AUTO_UPGRADE_IMAGE=$image_path
             CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR=${CRONJOB_AUTO_UPGRADE_IMAGE##*:}
             CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY:$CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR"
+            log_info "CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+            return
+        elif [[ $INPUT_FILE_PATH == remote:* ]]; then
+            CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR=$AGENT_IMAGE_VERSION_IN_TAR # $AGENT_IMAGE_VERSION_IN_TAR was set in loadClusterAgentImage() function
+            CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY:$CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR"
+            CRONJOB_AUTO_UPGRADE_IMAGE=$CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
+            log_info "CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY is $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
             return
         fi
     elif [[ ! -f $CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE ]]; then
@@ -3432,6 +3627,94 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
     log_debug "loadClusterAgentAutoUpgradeCronJobImage() end"
 }
 
+# Cluster only: create image pull secrets if use remote private registry, this function is called when USE_EDGE_CLUSTER_REGISTRY=false, and remote registry is private
+# Side-effect: set $USE_PRIVATE_REGISTRY
+function create_image_pull_secrets() {
+    log_debug "create_image_pull_secrets() begin"
+    if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "false" ]]; then
+        if [[ -n $EDGE_CLUSTER_REGISTRY_USERNAME && -n $EDGE_CLUSTER_REGISTRY_TOKEN && -n $EDGE_CLUSTER_REGISTRY_HOST ]]; then
+            # if $INPUT_FILE_PATH is "remote:*", we want to avoid the requirment of "docker/podman"
+            if [[ $INPUT_FILE_PATH != remote:* ]]; then
+                log_verbose "checking if private registry is accessible..."
+                echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | ${DOCKER_ENGINE} login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
+                chk $? "logging into remote private registry: $EDGE_CLUSTER_REGISTRY_HOST"
+            fi
+
+            log_verbose "checking if secret ${IMAGE_PULL_SECRET_NAME} exist..."
+            USE_PRIVATE_REGISTRY="true"
+
+            if $KUBECTL get secret ${IMAGE_PULL_SECRET_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+                $KUBECTL delete secret ${IMAGE_PULL_SECRET_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
+                chk $? "deleting image pull secret before installing"
+            fi
+
+            log_verbose "creating image pull secrets ${IMAGE_PULL_SECRET_NAME}..."
+            $KUBECTL create secret docker-registry ${IMAGE_PULL_SECRET_NAME} -n ${AGENT_NAMESPACE} --docker-server=${EDGE_CLUSTER_REGISTRY_HOST} --docker-username=${EDGE_CLUSTER_REGISTRY_USERNAME} --docker-password=${EDGE_CLUSTER_REGISTRY_TOKEN} --docker-email=""
+            chk $? "creating image pull secrets ${IMAGE_PULL_SECRET_NAME} from edge cluster registry info"
+            log_info "secret ${IMAGE_PULL_SECRET_NAME} created"
+        else
+            log_info "EDGE_CLUSTER_REGISTRY_USERNAME and/or EDGE_CLUSTER_REGISTRY_TOKEN is not specified, skip creating image pull secrets $IMAGE_PULL_SECRET_NAME"
+        fi
+    fi
+
+    log_debug "create_image_pull_secrets() end"
+}
+
+# Cluster only: check if there is scope conflict
+# check if there is another agent deployment in any namespace
+#   - NO: continue on agent fresh install
+#   - YES:
+#       1. same namespace: continue, the scope will be checked in check_agent_deployment_exist (set AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE=true)
+#       2. different namespace: greb 1 deployment and check scope
+#           a. current is cluster scoped agent => error
+#           b. current is namespace scoped agent:
+#               existing agent in other namespace is namespace scope: can proceed to install
+#               existing agent in other namespace is cluster scope: error
+# Side-effect: set AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE
+function check_cluster_agent_scope() {
+    log_debug "check_cluster_agent_scope() begin"
+    AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE="false"
+
+    if $KUBECTL get deployment --field-selector metadata.name=agent -A | grep -E '(^|\s)agent($|\s)' >/dev/null 2>&1; then
+        log_debug "Has agent deployment in this cluster"
+        # has agent deployment in the cluster
+        # check namespace
+        namespaces_have_agent=$($KUBECTL get deployment --field-selector metadata.name=agent -A -o jsonpath="{.items[*].metadata.namespace}" | tr -s '[[:space:]]' ',')
+        log_info "Already have agent deployment in namespaces: $namespaces_have_agent, checking scope of existing agent"
+
+        if [[ "$namespaces_have_agent" == *"$AGENT_NAMESPACE"* ]]; then
+            log_debug "Namespaces array contains current namespace"
+            # continue to check_agent_deployment_exist() to check scope
+            AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE="true"
+        else
+            # has agent in other namespace(s). Pick one agent deployment and check scope
+            #   current is cluster scoped agent => error
+            #   current is namespace scoped agent:
+            #       namespace scope agent in other namespace => can proceed to install
+            #       cluster scope agent in other namespace => error
+            if ! $NAMESPACE_SCOPED; then
+                log_fatal 3 "One or more agents detected in $namespaces_have_agent. A cluster scoped agent cannot be installed to the same cluster that has agent(s) already"
+            fi
+
+            IFS="," read -ra namespace_array <<< "$namespaces_have_agent"
+            namespace_to_check=${namespace_array[0]}
+            local namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${namespace_to_check} -o json | jq '.spec.template.spec.containers[0].env' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
+            log_debug "Current HZN_NAMESPACE_SCOPED in agent deployment under namespace $namespace_to_check is: $namespace_scoped_env_value_in_use"
+            log_debug "NAMESPACE_SCOPED passed to this script is: $NAMESPACE_SCOPED" # namespace scoped
+
+            if [[ "$namespace_scoped_env_value_in_use" == "" ]] || [[ "$namespace_scoped_env_value_in_use" == "false" ]] ; then
+                log_fatal 3 "A cluster scoped agent detected in $namespace_to_check. A namespace scoped agent cannot be installed to the same cluster that has a cluster scoped agent"
+            fi
+        fi
+
+    else
+        # no agent deployment in any namespace, can proceed to install this agent
+        log_debug "No agent deployment in any namespace, can proceed to install this agent"
+    fi
+    log_debug "check_cluster_agent_scope() end"
+
+}
+
 # Cluster only: check if agent deployment exists to determine whether to do agent install or agent update
 # Side-effect: sets AGENT_DEPLOYMENT_UPDATE, POD_ID, IS_AGENT_IMAGE_VERSION_SAME, IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME, IS_HORIZON_ORG_ID_SAME
 function check_agent_deployment_exist() {
@@ -3440,18 +3723,49 @@ function check_agent_deployment_exist() {
     IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME="false"
     IS_HORIZON_ORG_ID_SAME="false"
 
+    # has agent deployment, return 0 (true)
+    # doesn't have agent deployment, return 1 (false)
     if ! $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
         # agent deployment doesn't exist in ${AGENT_NAMESPACE}, fresh install
         AGENT_DEPLOYMENT_UPDATE="false"
     else
         # already have an agent deplyment in ${AGENT_NAMESPACE}, check the agent pod status
-        if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+        if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
             # agent deployment does not have agent pod in RUNNING status
             log_fatal 3 "Previous agent pod in not in RUNNING status, please run agent-uninstall.sh to clean up and re-run the agent-install.sh"
         else
+            # check 0) agent scope in deployment
+            local namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o json | jq '.spec.template.spec.containers[0].env' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
+            log_debug "Current HZN_NAMESPACE_SCOPED in agent deployment is $namespace_scoped_env_value_in_use"
+            log_debug "NAMESPACE_SCOPED passed to this script is: $NAMESPACE_SCOPED"
+
+            if [[ "$namespace_scoped_env_value_in_use" == "" ]]; then
+                namespace_scoped_env_value_in_use="false"
+            fi
+
+            if [[ "$namespace_scoped_env_value_in_use" != "$NAMESPACE_SCOPED" ]]; then
+                log_fatal 3 "Current agent scope cannot be updated, please run agent-uninstall.sh and re-run agent-install.sh"
+            fi
+
             # check 1) agent image in deployment
             # eg: {image-registry}:5000/{repo}/{image-name}:{version}
-            local agent_image_in_use=$($KUBECTL get deployment agent -o jsonpath='{$.spec.template.spec.containers[:1].image}' -n ${AGENT_NAMESPACE})
+            local agent_image_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o json | jq -r '.spec.template.spec.containers[0].image')
+
+            # {image-registry}:5000/{repo}
+            local agent_image_on_edge_cluster_registry=${agent_image_in_use%:*}
+            if [[ "$agent_image_on_edge_cluster_registry" != "$IMAGE_ON_EDGE_CLUSTER_REGISTRY" ]]; then
+                log_fatal 3 "Current deployment image registry cannot be updated, please run agent-uninstall.sh and re-run agent-install.sh"
+            fi
+
+            local image_pull_secrets_length=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o json | jq '.spec.template.spec.imagePullSecrets' | jq length)
+            local use_image_pull_secrets
+            if [[ "$image_pull_secrets_length" == "1" ]]; then
+                use_image_pull_secrets="true"
+            fi
+            if [[ "$use_image_pull_secrets" != "$USE_PRIVATE_REGISTRY" ]]; then
+                log_fatal 3 "Current deployment image registry pull secrets info cannot be updated, please run agent-uninstall.sh and re-run agent-install.sh"
+            fi
+
             # {image-name}:{version}
             local agent_image_name_with_tag=$(echo $agent_image_in_use | awk -F'/' '{print $3}')
             # {version}
@@ -3463,26 +3777,37 @@ function check_agent_deployment_exist() {
                 IS_AGENT_IMAGE_VERSION_SAME="true"
             fi
 
+
             # check 2) auto-upgrade-cronjob cronjob image in cronjob yml
             # eg: {image-registry}:5000/{repo}/{image-name}:{version}
-            local auto_upgrade_cronjob_image_in_use=$($KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -o jsonpath='{$.spec.jobTemplate.spec.template.spec.containers[:1].image}' -n ${AGENT_NAMESPACE})
-            # {image-name}:{version}
-            local auto_upgrade_cronjob_image_name_with_tag=$(echo $auto_upgrade_cronjob_image_in_use | awk -F'/' '{print $3}')
-            # {version}
-            local auto_upgrade_cronjob_image_version_in_use=$(echo $auto_upgrade_cronjob_image_name_with_tag | awk -F':' '{print $2}')
+            if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+                local auto_upgrade_cronjob_image_in_use=$($KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -o jsonpath='{$.spec.jobTemplate.spec.template.spec.containers[:1].image}' -n ${AGENT_NAMESPACE})
 
-            log_debug "Current auto-upgrade-cronjob cronjob image version is: $auto_upgrade_cronjob_image_version_in_use, auto-upgrade-cronjob cronjob image version in tar file is: $CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR"
-            if [[ "$CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR" == "$auto_upgrade_cronjob_image_version_in_use" ]]; then
+                # {image-registry}:5000/{repo}
+                local auto_upgrade_cronjob_image_on_edge_cluster_registry=${auto_upgrade_cronjob_image_in_use%:*}
+                if [[ "$auto_upgrade_cronjob_image_on_edge_cluster_registry" != "$CRONJOB_AUTO_UPGRADE_IMAGE_ON_EDGE_CLUSTER_REGISTRY" ]]; then
+                    log_fatal 3 "Current auto-upgrade-cronjob cronjob image registry cannot be updated, please run agent-uninstall.sh and re-run agent-install.sh"
+                fi
+
+                # {image-name}:{version}
+                local auto_upgrade_cronjob_image_name_with_tag=$(echo $auto_upgrade_cronjob_image_in_use | awk -F'/' '{print $3}')
+                # {version}
+                local auto_upgrade_cronjob_image_version_in_use=$(echo $auto_upgrade_cronjob_image_name_with_tag | awk -F':' '{print $2}')
+
+                log_debug "Current auto-upgrade-cronjob cronjob image version is: $auto_upgrade_cronjob_image_version_in_use, auto-upgrade-cronjob cronjob image version in tar file is: $CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR"
+                if [[ "$CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_IN_TAR" == "$auto_upgrade_cronjob_image_version_in_use" ]]; then
+                    IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME="true"
+                fi
+            else
                 IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME="true"
             fi
 
             # check 3) HZN_ORG_ID set in deployment
-            local horizon_org_id_env_name_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env[0].name}')
-            local horizon_org_id_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env[0].value}')
-            log_debug "Current HZN_ORG_ID in agent deployment is: env_name: $horizon_org_id_env_name_in_use, env_value: $horizon_org_id_env_value_in_use"
-            log_debug "HZN_ORG_ID passed to this script is: env_name: HZN_ORG_ID, env_value: $HZN_ORG_ID"
+            local horizon_org_id_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o json | jq '.spec.template.spec.containers[0].env' | jq -r '.[] | select(.name=="HZN_ORG_ID").value')
+            log_debug "Current HZN_ORG_ID in agent deployment is: $horizon_org_id_env_value_in_use"
+            log_debug "HZN_ORG_ID passed to this script is: $HZN_ORG_ID"
 
-            if [[ "$horizon_org_id_env_name_in_use" == "HZN_ORG_ID" ]] && [[ "$horizon_org_id_env_value_in_use" == "$HZN_ORG_ID" ]]; then
+            if [[ "$horizon_org_id_env_value_in_use" == "$HZN_ORG_ID" ]]; then
                 IS_HORIZON_ORG_ID_SAME="true"
             fi
 
@@ -3499,7 +3824,7 @@ function get_edge_cluster_files() {
     log_debug "get_edge_cluster_files() begin"
     if using_remote_input_files 'yml'; then
         log_verbose "Getting template.yml files and agent-uninstall.sh from $INPUT_FILE_PATH ..."
-        if [[ $INPUT_FILE_PATH == css:* ]]; then
+        if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == remote:* ]]; then
             local input_path
             get_input_file_css_path input_path
             download_css_file "$input_path/$EDGE_CLUSTER_TAR_FILE_NAME"
@@ -3511,12 +3836,15 @@ function get_edge_cluster_files() {
         rm "$EDGE_CLUSTER_TAR_FILE_NAME"
     fi
 
-    for f in deployment-template.yml persistentClaim-template.yml auto-upgrade-cronjob-template.yml agent-uninstall.sh role.yml; do
+    for f in deployment-template.yml persistentClaim-template.yml agent-uninstall.sh; do
         if [[ ! -f $f ]]; then
             log_fatal 1 "file $f not found"
         fi
     done
 
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]] && [[ ! -f auto-upgrade-cronjob-template.yml ]]; then
+        log_fatal 1 "auto-upgrade-cronjob-template.yml not found"
+    fi
     log_debug "get_edge_cluster_files() end"
 }
 
@@ -3538,7 +3866,7 @@ function generate_installation_files() {
         log_verbose "kubernete deployment files are done."
     fi
 
-    if [[ "$IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME" == "true" ]]; then
+    if [[ "$IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME" == "true" ]] || [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" != "true" ]] ; then
         log_verbose "auto-upgrade-cronjob cronjob image version is the same with existing deployment, skip updating auto-upgrade-cronjob.yml"
     else
         log_verbose "Preparing kubernete cronjob files"
@@ -3556,10 +3884,11 @@ function create_horizon_env() {
         log_verbose "$HZN_ENV_FILE already exists. Will overwrite it..."
         rm $HZN_ENV_FILE
     fi
-    local cert_name=$(basename ${AGENT_CERT_FILE})
-    local cluster_cert_path="/etc/default/cert"
-    log_verbose "copy cert file to $cluster_cert_path ..."
-    mkdir -p $cluster_cert_path && cp ${AGENT_CERT_FILE} $cluster_cert_path
+    if [[ -f $AGENT_CERT_FILE ]]; then
+        local cert_name=$(basename ${AGENT_CERT_FILE})
+        local cluster_cert_path="/etc/default/cert"
+        echo "HZN_MGMT_HUB_CERT_PATH=$cluster_cert_path/$cert_name" >>$HZN_ENV_FILE
+    fi
 
     echo "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}" >>$HZN_ENV_FILE
     echo "HZN_FSS_CSSURL=${HZN_FSS_CSSURL}" >>$HZN_ENV_FILE
@@ -3574,7 +3903,6 @@ function create_horizon_env() {
     fi
     echo "HZN_DEVICE_ID=${NODE_ID}" >>$HZN_ENV_FILE
     echo "HZN_NODE_ID=${NODE_ID}" >> $HZN_ENV_FILE
-    echo "HZN_MGMT_HUB_CERT_PATH=$cluster_cert_path/$cert_name" >>$HZN_ENV_FILE
     echo "HZN_AGENT_PORT=8510" >>$HZN_ENV_FILE
     echo "HZN_CONFIG_VERSION=${HZN_CONFIG_VERSION}" >> $HZN_ENV_FILE
     log_debug "create_horizon_env() end"
@@ -3586,17 +3914,23 @@ function prepare_k8s_deployment_file() {
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
 
     # InitContainer needs to be removed for ocp because it breaks mounted directory permisson. In ocp, the permission of volume is configured by scc.
-    if is_ocp_cluster; then
+    if is_ocp_cluster && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-file* ]] && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-vpc-file* ]]; then
+        log_info "remove initContainer"
         sed -i -e '/START_NOT_FOR_OCP/,/END_NOT_FOR_OCP/d' deployment-template.yml
     fi
 
-    sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
+    if [[ ! -f $AGENT_CERT_FILE ]]; then
+        log_debug "agent cert file is not used, remove secret and secret mount section from deployment-template.yml ..."
+        sed -i -e '{/START_CERT_VOL/,/END_CERT_VOL/d;}' deployment-template.yml
+    fi
+
+    sed -e "s#__AgentNameSpace__#\"${AGENT_NAMESPACE}\"#g" -e "s#__InitContainerImagePath__#${INIT_CONTAINER_IMAGE}#g" -e "s#__NamespaceScoped__#\"${NAMESPACE_SCOPED}\"#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
     chk $? 'creating deployment.yml'
 
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
+        sed -i -e '{/START_REMOTE_ICR/,/END_REMOTE_ICR/d;}' deployment.yml # remove imagePullSecrets section from template
         EDGE_CLUSTER_REGISTRY_PROJECT_NAME=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print $2}')
         EDGE_CLUSTER_AGENT_IMAGE_AND_TAG=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print $3}')
-
         local image_full_path_on_edge_cluster_registry_internal_url
         if [[ "$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY" == "" ]]; then
             if is_ocp_cluster; then
@@ -3621,7 +3955,27 @@ function prepare_k8s_deployment_file() {
             sed -i -e "s#__ImageRegistryHost__#${EDGE_CLUSTER_REGISTRY_HOST}#g" deployment.yml
         fi
     else
-        log_fatal 1 "Agent install on edge cluster requires using an edge cluster registry"
+        log_info "This agent install on edge cluster is using a remote registry: $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+        ## We want to avoid the requirement of docker/podman if $INPUT_FILE_PATH is "remote:*"
+        if [[ $INPUT_FILE_PATH != remote:* ]]; then
+            log_info "Checking if image exists in remote registry..."
+            set +e
+            ${DOCKER_ENGINE} manifest inspect $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+            chk $? "checking existence of image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+            set -e
+        fi
+
+        # REMOTE_IMAGE_REGISTRY_PATH is parts before /{arch}_anax_k8s, for example if using quay.io, this value will be quay.io/<username>
+        local image_arch=$(get_cluster_image_arch)
+        REMOTE_IMAGE_REGISTRY_PATH="${IMAGE_ON_EDGE_CLUSTER_REGISTRY%%/${image_arch}*}"
+        log_info "REMOTE_IMAGE_REGISTRY_PATH: $REMOTE_IMAGE_REGISTRY_PATH"
+        sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
+        sed -i -e "s#__ImageRegistryHost__#${REMOTE_IMAGE_REGISTRY_PATH}#g" deployment.yml
+
+        if [[ "$USE_PRIVATE_REGISTRY" != "true" ]]; then
+            log_debug "remote image registry is not private, remove ImagePullSecret..."
+            sed -i -e '{/START_REMOTE_ICR/,/END_REMOTE_ICR/d;}' deployment.yml
+        fi
     fi
 
     log_debug "prepare_k8s_deployment_file() end"
@@ -3636,7 +3990,7 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
     local kubernetes_api="batch/v1beta1"
     local kubernetes_version_to_compare=1.21
     local kubernetes_version=$(get_kubernetes_version)
-    log_debug "kubernetes version is $kubernete_version"
+    log_debug "kubernetes version is $kubernetes_version"
     if version_gt_or_equal $kubernetes_version $kubernetes_version_to_compare; then
         kubernetes_api="batch/v1"
     fi
@@ -3645,6 +3999,7 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
     chk $? 'creating auto-upgrade-cronjob.yml'
 
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
+        sed -i -e '{/START_REMOTE_ICR/,/END_REMOTE_ICR/d;}' auto-upgrade-cronjob.yml
         EDGE_CLUSTER_REGISTRY_PROJECT_NAME=$(echo $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print $2}')
         EDGE_CLUSTER_CRONJOB_AUTO_UPGRADE_IMAGE_AND_TAG=$(echo $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print $3}')
 
@@ -3661,7 +4016,22 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
         fi
         sed -i -e "s#__ImagePath__#${auto_upgrade_cronjob_image_full_path_on_edge_cluster_registry_internal_url}#g" auto-upgrade-cronjob.yml
     else
-        log_fatal 1 "Agent install on edge cluster requires using an edge cluster registry"
+        log_info "This agent install on edge cluster is using a remote registry: $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+        ## We want to avoid the requirement of docker/podman if $INPUT_FILE_PATH is "remote:*"
+        if [[ $INPUT_FILE_PATH != remote:* ]]; then
+            log_info "Checking if image exists in remote registry..."
+            set +e
+            ${DOCKER_ENGINE} manifest inspect $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY >/dev/null 2>&1
+            chk $? "checking existence of image $CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
+            set -e
+        fi
+
+        sed -i -e "s#__ImagePath__#${CRONJOB_AUTO_UPGRADE_IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" auto-upgrade-cronjob.yml
+
+        if [[ "$USE_PRIVATE_REGISTRY" != "true" ]]; then
+            log_debug "remote image registry is not private, remove ImagePullSecret..."
+            sed -i -e '{/START_REMOTE_ICR/,/END_REMOTE_ICR/d;}' auto-upgrade-cronjob.yml
+        fi
     fi
 
     log_debug "prepare_k8s_auto_upgrade_cronjob_file() end"
@@ -3674,11 +4044,15 @@ function prepare_k8s_pvc_file() {
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
     local pvc_mode="ReadWriteOnce"
     number_of_nodes=$($KUBECTL get node | grep "Ready" -c)
-    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]]); then
+    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == rook-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]]); then
         pvc_mode="ReadWriteMany"
     fi
 
-    sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" -e "s#__PVCAccessMode__#${pvc_mode}#g" persistentClaim-template.yml >persistentClaim.yml
+    if [[ -z $CLUSTER_PVC_SIZE ]]; then
+        CLUSTER_PVC_SIZE=$DEFAULT_PVC_SIZE
+    fi
+
+    sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" -e "s#__PVCAccessMode__#${pvc_mode}#g" -e "s#__PVCStorageSize__#${CLUSTER_PVC_SIZE}#g" persistentClaim-template.yml >persistentClaim.yml
     chk $? 'creating persistentClaim.yml'
 
     log_debug "prepare_k8s_pvc_file() end"
@@ -3711,7 +4085,9 @@ function create_cluster_resources() {
     create_service_account
     create_secret
     create_configmap
-    create_cronjobs
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        create_cronjobs
+    fi
     create_persistent_volume
 
     log_debug "create_cluster_resources() end"
@@ -3723,10 +4099,11 @@ function update_cluster_resources() {
 
     update_secret
     update_configmap
-    update_cronjobs
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        update_cronjobs
+    fi
 
     log_debug "update_cluster_resources() end"
-
 }
 
 # Cluster only: to create namespace that agent will be deployed
@@ -3745,8 +4122,10 @@ function create_namespace() {
         log_info "namespace ${AGENT_NAMESPACE} exists, skip creating namespace"
     fi
 
-    if ! is_small_kube && [[ "$AGENT_NAMESPACE" != "$DEFAULT_AGENT_NAMESPACE" ]] ; then
-        # if it is ocp cluster and not in default namespace, then update the annotation of namespace
+    local ocp_supplemental_groups=$($KUBECTL get namespace ${AGENT_NAMESPACE}  -o json | jq -r '.metadata.annotations' | jq '.["openshift.io/sa.scc.supplemental-groups"]')
+    local ocp_scc_uid_range=$($KUBECTL get namespace ${AGENT_NAMESPACE}  -o json | jq -r '.metadata.annotations' | jq '.["openshift.io/sa.scc.uid-range"]')
+    if [[ -n $ocp_supplemental_groups ]] && [[ "$ocp_supplemental_groups" != "null" ]]  && [[ -n $ocp_scc_uid_range ]] && [[ "$ocp_scc_uid_range" != "null" ]]; then
+        # if it has ocp supplementl group and uid range annotation, then update the annotation of namespace
         log_info "update annotation of namespace ${AGENT_NAMESPACE}"
         $KUBECTL annotate namespace ${AGENT_NAMESPACE} openshift.io/sa.scc.uid-range='1000/1000' openshift.io/sa.scc.supplemental-groups='1000/1000' --overwrite
     fi
@@ -3758,7 +4137,7 @@ function create_namespace() {
 function create_service_account() {
     log_debug "create_service_account() begin"
 
-    log_verbose "checking if serviceaccont exist..."
+    log_verbose "checking if serviceaccount exist..."
     if ! $KUBECTL get serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
         log_verbose "serviceaccount ${SERVICE_ACCOUNT_NAME} does not exist, creating..."
         $KUBECTL create serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${AGENT_NAMESPACE}
@@ -3769,46 +4148,9 @@ function create_service_account() {
         log_info "serviceaccount ${SERVICE_ACCOUNT_NAME} exists, skip creating serviceaccount"
     fi
 
-    if [[ "$AGENT_NAMESPACE" == "$DEFAULT_AGENT_NAMESPACE" ]]; then
-        log_info "agent namespace ($AGENT_NAMESPACE) is default namespace: $DEFAULT_AGENT_NAMESPACE, will create clusterrolebinding"
-        create_cluster_role_binding
-    else
-        log_info "creating rolebinding under agent namespace $AGENT_NAMESPACE"
-        create_namespace_admin_role
-        create_role_binding
-    fi
+    create_cluster_role_binding
 
     log_debug "create_service_account() end"
-}
-
-# Cluster only: to create a admin role under agent namespace and create clusterrole to list k8s nodes
-function create_namespace_admin_role() {
-    agent_namespace_admin_role_name="agent-namespace-admin"
-    log_debug "create_namespace_admin_role begin"
-    log_verbose "checking if $agent_namespace_admin_role_name role exists under namespace $AGENT_NAMESPACE..."
-
-    if ! $KUBECTL get role ${agent_namespace_admin_role_name} -n ${AGENT_NAMESPACE} 2>/dev/null; then
-        log_verbose "creating ${agent_namespace_admin_role_name} under agent namespace ${AGENT_NAMESPACE}..."
-        $KUBECTL apply -f role.yml -n ${AGENT_NAMESPACE}
-        chk $? "creating admin role under namespace ${AGENT_NAMESPACE}"
-        log_info "${agent_namespace_admin_role_name} is created under namespace ${AGENT_NAMESPACE}"
-    else
-        log_info "${agent_namespace_admin_role_name} exists, skip creating role"
-    fi
-
-    # namespace scoped agent will need cluster role to list all the k8s nodes. This is used to get kubernete information when set built-in node properties
-    clusterrole_get_nodes="cluster-admin-list-nodes"
-    log_verbose "checking if $clusterrole_get_nodes clusterrole exists"
-    if ! $KUBECTL get clusterrole ${clusterrole_get_nodes} 2>/dev/null; then
-        log_verbose "creating ${clusterrole_get_nodes}..."
-        $KUBECTL apply -f clusterrole-list-nodes.yml
-        chk $? "creating clusterrole to list nodes"
-        log_info "clusterrole ${clusterrole_get_nodes} is created"
-    else
-        log_info "${clusterrole_get_nodes} exists, skip creating clusterrole"
-    fi
-
-    log_debug "create_namespace_admin_role end"
 }
 
 # Cluster only: to create cluster role binding, bind service account to cluster admin
@@ -3817,62 +4159,38 @@ function create_cluster_role_binding() {
 
     log_verbose "checking if clusterrolebinding exist..."
 
-    if ! $KUBECTL get clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} 2>/dev/null; then
+    local clusterRoleBindingName=${AGENT_NAMESPACE}-${CLUSTER_ROLE_BINDING_NAME}
+    if ! $KUBECTL get clusterrolebinding ${clusterRoleBindingName} 2>/dev/null; then
         log_verbose "Binding ${SERVICE_ACCOUNT_NAME} to cluster admin..."
-        $KUBECTL create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin
+        $KUBECTL create clusterrolebinding ${clusterRoleBindingName} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin
         chk $? "creating clusterrolebinding for ${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}"
-        log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} created"
+        log_info "clusterrolebinding ${clusterRoleBindingName} created"
     else
-        log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} exists, skip creating clusterrolebinding"
+        log_info "clusterrolebinding ${clusterRoleBindingName} exists, skip creating clusterrolebinding"
     fi
 
     log_debug "create_cluster_role_binding() end"
-}
-
-# Cluster only: to create role binding, bind service account to admin (admin under agent namespace)
-function create_role_binding() {
-    log_debug "create_role_binding() begin"
-
-    AGENT_ROLE_BINDING="$AGENT_NAMESPACE-$ROLE_BINDING_NAME"
-    log_verbose "checking if rolebinding $AGENT_ROLE_BINDING exist..."
-
-    if ! $KUBECTL get rolebinding ${AGENT_ROLE_BINDING} -n ${AGENT_NAMESPACE} 2>/dev/null; then
-        log_verbose "Binding ${SERVICE_ACCOUNT_NAME} to admin..."
-        $KUBECTL create rolebinding ${AGENT_ROLE_BINDING} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --role=agent-namespace-admin -n ${AGENT_NAMESPACE}
-        chk $? "creating rolebinding for ${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}"
-        log_info "rolebinding ${AGENT_ROLE_BINDING} created"
-    else
-        log_info "rolebinding ${AGENT_ROLE_BINDING} exists, skip creating rolebinding"
-    fi
-
-    log_verbose "checking if clusterrolebinding $CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES exist..."
-    if ! $KUBECTL get clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES} 2>/dev/null; then
-        log_verbose "Binding ${SERVICE_ACCOUNT_NAME} to cluster role to get k8s nodes..."
-        $KUBECTL create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin-list-nodes
-        chk $? "creating clusterrolebinding for ${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}"
-        log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES} created"
-    else
-        log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME_GET_K8S_NODES} exists, skip creating clusterrolebinding"
-    fi
-
-    log_debug "create_role_binding() end"
 }
 
 # Cluster only: to create secret from cert file for agent deployment
 function create_secret() {
     log_debug "create_secrets() begin"
 
-    log_verbose "checking if secret ${SECRET_NAME} exist..."
-
-    if ! $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
-        log_verbose "creating secret for cert file..."
-        $KUBECTL create secret generic ${SECRET_NAME} --from-file=${AGENT_CERT_FILE} -n ${AGENT_NAMESPACE}
-        chk $? "creating secret ${SECRET_NAME} from cert file ${AGENT_CERT_FILE}"
-        log_info "secret ${SECRET_NAME} created"
+    if [[ ! -f $AGENT_CERT_FILE ]]; then
+        log_debug "agent cert file is not used, skip creating secret ..."
+        sed -i -e '{/START_CERT_VOL/,/END_CERT_VOL/d;}' deployment-template.yml
     else
-        log_info "secret ${SECRET_NAME} exists, skip creating secret"
-    fi
+        log_verbose "checking if secret ${SECRET_NAME} exist..."
 
+        if ! $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+            log_verbose "creating secret for cert file..."
+            $KUBECTL create secret generic ${SECRET_NAME} --from-file=${AGENT_CERT_FILE} -n ${AGENT_NAMESPACE}
+            chk $? "creating secret ${SECRET_NAME} from cert file ${AGENT_CERT_FILE}"
+            log_info "secret ${SECRET_NAME} created"
+        else
+            log_info "secret ${SECRET_NAME} exists, skip creating secret"
+        fi
+    fi
     log_debug "create_secrets() end"
 }
 
@@ -3960,16 +4278,16 @@ function update_cronjobs() {
     log_debug "update_cronjobs() begin"
 
     # For auto-upgrade-cronjob
-    if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
-        # cronjob exists, delete it
-        log_verbose "Found cronjob ${CRONJOB_AUTO_UPGRADE_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old cronjob..."
-        $KUBECTL delete cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
-        chk $? "deleting cronjob for auto-upgrade-cronjob on cluster"
-        log_verbose "Old cronjob ${CRONJOB_AUTO_UPGRADE_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
+    if [[ "$IS_CRONJOB_AUTO_UPGRADE_IMAGE_VERSION_SAME" != "true" ]]; then
+        if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
+            # cronjob exists, delete it
+            log_verbose "Found cronjob ${CRONJOB_AUTO_UPGRADE_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old cronjob..."
+            $KUBECTL delete cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
+            chk $? "deleting cronjob for auto-upgrade-cronjob on cluster"
+            log_verbose "Old cronjob ${CRONJOB_AUTO_UPGRADE_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
+        fi
+        create_cronjobs
     fi
-
-    create_cronjobs
-
     log_debug "update_cronjobs() end"
 }
 
@@ -3994,14 +4312,22 @@ function create_persistent_volume() {
 function check_resources_for_deployment() {
     log_debug "check_resources_for_deployment() begin"
     # check secrets/configmap/persistent
-    $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} >/dev/null
-    secret_ready=$?
+    if [[ -f $AGENT_CERT_FILE ]]; then
+        $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} >/dev/null
+        secret_ready=$?
+    else
+        secret_ready=0
+    fi
 
     $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null
     configmap_ready=$?
 
-    $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null
-    auto_upgrade_cronjob_ready=$?
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} >/dev/null
+        auto_upgrade_cronjob_ready=$?
+    else
+        auto_upgrade_cronjob_ready=0
+    fi
 
     $KUBECTL get pvc ${PVC_NAME} -n ${AGENT_NAMESPACE} >/dev/null
     pvc_ready=$?
@@ -4031,9 +4357,11 @@ function update_deployment() {
     log_debug "update_deployment() begin"
 
     if [[ "$IS_AGENT_IMAGE_VERSION_SAME" == "true" ]] && [[ "$IS_HORIZON_ORG_ID_SAME" == "true" ]]; then
-        log_info "Agent image version and HZN_ORG_ID are the same. Keeping the existing agent deployment."
+        log_info "Agent image version and HZN_ORG_ID are the same. Keeping the existing agent deployment. Deleting agent pod ${POD_ID} in namespace ${AGENT_NAMESPACE} to pickup changes in configmap and secrets"
+        $KUBECTL delete pod ${POD_ID} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
+        chk $? 'deleting the old pod for agent update on cluster'
     else
-	if $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
+        if $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
             # deployment exists, delete it
             log_verbose "Found deployment ${DEPLOYMENT_NAME} in ${AGENT_NAMESPACE} namespace, deleting it..."
             $KUBECTL delete deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
@@ -4090,11 +4418,11 @@ function check_deployment_status() {
 function get_pod_id() {
     log_debug "get_pod_id() begin"
 
-    if ! wait_for '[[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o "jsonpath={..status.conditions[?(@.type==\"Ready\")].status}") == "True" ]]' 'Horizon agent pod ready' $AGENT_WAIT_MAX_SECONDS; then
+    if ! wait_for '[[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o "jsonpath={..status.conditions[?(@.type==\"Ready\")].status}") == "True" ]]' 'Horizon agent pod ready' $AGENT_WAIT_MAX_SECONDS; then
         log_fatal 3 "Horizon agent pod did not start successfully"
     fi
 
-    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
         log_fatal 3 "Failed to get agent pod in Ready status"
     fi
 
@@ -4120,7 +4448,9 @@ function setup_cluster_image_registry_cert() {
         create_secret_for_image_reigstry_cert
     fi
 
+    $KUBECTL scale --replicas=0 deployment.app/agent -n ${AGENT_NAMESPACE}
     patch_deployment_with_image_registry_volume
+    $KUBECTL scale --replicas=1 deployment.app/agent -n ${AGENT_NAMESPACE}
 
     log_debug "setup_cluster_image_registry_cert() end"
 }
@@ -4166,7 +4496,7 @@ function patch_deployment_with_image_registry_volume() {
     log_debug "patch_deployment_with_image_registry_volume() begin"
 
     $KUBECTL patch deployment agent -n ${AGENT_NAMESPACE} -p "{\"spec\":{\"template\":{\"spec\":{\"volumes\":[{\"name\": \
-    \"agent-docker-cert-volume\",\"secret\":{\"secretName\":\"openhorizon-agent-secrets-docker-cert\"}}], \
+    \"agent-docker-cert-volume\",\"secret\":{\"secretName\":\"${IMAGE_REGISTRY_SECRET_NAME}\"}}], \
     \"containers\":[{\"name\":\"anax\",\"volumeMounts\":[{\"mountPath\":\"/etc/docker/certs.d/${EDGE_CLUSTER_REGISTRY_HOST}\" \
     ,\"name\":\"agent-docker-cert-volume\"},{\"mountPath\":\"/etc/docker/certs.d/${DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY}\" \
     ,\"name\":\"agent-docker-cert-volume\"}],\"env\":[{\"name\":\"SSL_CERT_FILE\",\"value\":\"/etc/docker/certs.d/${EDGE_CLUSTER_REGISTRY_HOST}/ca.crt\"}]}]}}}}"
@@ -4177,12 +4507,23 @@ function patch_deployment_with_image_registry_volume() {
 # Cluster only: to install/update agent in cluster
 function install_update_cluster() {
     log_debug "install_update_cluster() begin"
-    confirmCmds ${DOCKER_ENGINE} jq
+
+    if [[ $INPUT_FILE_PATH != remote:* ]]; then
+        confirmCmds ${DOCKER_ENGINE}
+    fi
+
+    confirmCmds jq
 
     check_existing_exch_node_is_correct_type "cluster"
 
+    check_cluster_agent_scope   # sets AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE
+
     loadClusterAgentImage   # create the cluster agent docker image locally
-    loadClusterAgentAutoUpgradeCronJobImage # create the cluster cronjob docker images locally
+    if [[ "$ENABLE_AUTO_UPGRADE_CRONJOB" == "true" ]]; then
+        loadClusterAgentAutoUpgradeCronJobImage # create the cluster cronjob docker images locally
+    fi
+
+    getImageRegistryInfo # set $EDGE_CLUSTER_REGISTRY_HOST, and login to registry
 
     # push agent and cronjob images to cluster's registry
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
@@ -4190,10 +4531,20 @@ function install_update_cluster() {
             create_namespace
             create_image_stream
         fi
+    else
+        log_info "Use remote registry"
+        create_namespace
+        create_image_pull_secrets # create image pull secrets if use private registry (if edge cluster registry username/password are provided), sets USE_PRIVATE_REGISTRY
+    fi
+
+    if [[ $INPUT_FILE_PATH != remote:* ]]; then
         pushImagesToEdgeClusterRegistry
     fi
 
-    check_agent_deployment_exist   # sets AGENT_DEPLOYMENT_UPDATE
+    if [[ "$AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE" == "true" ]]; then
+        check_agent_deployment_exist   # sets AGENT_DEPLOYMENT_UPDATE POD_ID
+    fi
+
     if [[ "$AGENT_DEPLOYMENT_UPDATE" == "true" ]]; then
         log_info "Update agent on edge cluster"
         update_cluster
@@ -4208,7 +4559,6 @@ function install_update_cluster() {
 # Cluster only: to install agent in cluster
 function install_cluster() {
     log_debug "install_cluster() begin"
-    confirmCmds ${DOCKER_ENGINE} jq
 
     # generate files based on templates
     generate_installation_files
@@ -4226,7 +4576,7 @@ function install_cluster() {
     create_deployment
     check_deployment_status
 
-    if is_ocp_cluster; then
+    if is_ocp_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
         # setup image registry cert. This will patch the running deployment
         local isUpdate='false'
         setup_cluster_image_registry_cert $isUpdate
@@ -4266,7 +4616,7 @@ function update_cluster() {
 
     update_deployment
     check_deployment_status
-    if is_ocp_cluster; then
+    if is_ocp_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
         # setup image registry cert. This will patch the running deployment
         local isUpdate='true'
         setup_cluster_image_registry_cert $isUpdate

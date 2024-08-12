@@ -30,6 +30,7 @@ type HorizonDevice struct {
 	Name               *string      `json:"name,omitempty"`
 	NodeType           *string      `json:"nodeType,omitempty"`
 	ClusterNamespace   *string      `json:"clusterNamespace"`
+	NamespaceScoped    *bool        `json:"NamespaceScoped,omitempty"`
 	Token              *string      `json:"token,omitempty"`
 	TokenLastValidTime *uint64      `json:"token_last_valid_time,omitempty"`
 	TokenValid         *bool        `json:"token_valid,omitempty"`
@@ -69,6 +70,11 @@ func (h HorizonDevice) String() string {
 		clusterNs = *h.ClusterNamespace
 	}
 
+	isNS := false
+	if h.NamespaceScoped != nil {
+		isNS = *h.NamespaceScoped
+	}
+
 	ha_group := ""
 	if h.HAGroup != nil {
 		ha_group = *h.HAGroup
@@ -89,7 +95,7 @@ func (h HorizonDevice) String() string {
 		tv = *h.TokenValid
 	}
 
-	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, NodeType: %v, ClusterNamespace: %v, HAGroup: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, %v", id, org, pat, name, nodeType, clusterNs, ha_group, cred, tlvt, tv, h.Config)
+	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, NodeType: %v, ClusterNamespace: %v, NamespaceScoped: %v, HAGroup: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, %v", id, org, pat, name, nodeType, clusterNs, isNS, ha_group, cred, tlvt, tv, h.Config)
 }
 
 // This is a type conversion function but note that the token field within the persistent
@@ -121,6 +127,9 @@ func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *Ho
 	if pDevice.NodeType == persistence.DEVICE_TYPE_CLUSTER {
 		ns := cutil.GetClusterNamespace()
 		hDevice.ClusterNamespace = &ns
+
+		isNS := cutil.IsNamespaceScoped()
+		hDevice.NamespaceScoped = &isNS
 	}
 
 	return &hDevice

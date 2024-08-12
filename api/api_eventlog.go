@@ -41,7 +41,37 @@ func (a *API) eventlog(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, out, http.StatusOK)
 		}
+	case "DELETE":
+		// get message printer with the language passed in from the header
+		lan := r.Header.Get("Accept-Language")
+		if lan == "" {
+			lan = i18n.DEFAULT_LANGUAGE
+		}
+		msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
 
+		prune := false
+		if r.URL != nil && strings.Contains(r.URL.Path, "prune") {
+			prune = true
+		}
+
+		if err := r.ParseForm(); err != nil {
+			errorHandler(NewAPIUserInputError(msgPrinter.Sprintf("Error parsing the selections %v. %v", r.Form, err), "selection"))
+			return
+		}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v with selection %v. Language: %v", r.Method, resource, r.Form, lan)))
+
+		if count, err := DeleteEventLogs(a.db, prune, r.Form, msgPrinter); err != nil {
+			errorHandler(NewSystemError(msgPrinter.Sprintf("Error deleting %v, error %v", resource, err)))
+		} else if count > 0 {
+			if prune {
+				writeResponse(w, fmt.Sprintf("%v", count), http.StatusOK)
+			} else {
+				writeResponse(w, fmt.Sprintf("%v", count), http.StatusOK)
+			}
+		} else {
+			writeResponse(w, fmt.Sprintf("No matching event log entries found."), http.StatusNoContent)
+		}
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")
 		w.WriteHeader(http.StatusOK)

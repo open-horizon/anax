@@ -267,7 +267,7 @@ fi
 # Test object publish with --hash and -a
 echo "Testing object publish with --hash and -a flags"
 SHA1_HASH=$(sha1sum /tmp/data-small.txt | awk '{print $1;}')
-hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA1_HASH >/dev/null
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA1_HASH -a SHA1 >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -290,7 +290,7 @@ fi
 # Test object publish signing with SHA256
 echo "Testing object publish signing with SHA256"
 SHA256_HASH=$(sha256sum /tmp/data-small.txt | awk '{print $1;}')
-hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA256_HASH -a SHA256 >/dev/null
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA256_HASH >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -323,10 +323,10 @@ else
 fi
 
 #Create custom key pairs
-openssl genrsa -out /tmp/mms.private.key 2048
-openssl rsa -in /tmp/mms.private.key -outform PEM -pubout -out /tmp/mms.public.key
-openssl genrsa -out /tmp/env.private.key 2048
-openssl rsa -in /tmp/env.private.key -outform PEM -pubout -out /tmp/env.public.key
+openssl genrsa -traditional -out /tmp/mms.private.key 2048
+openssl rsa -traditional -in /tmp/mms.private.key -outform PEM -pubout -out /tmp/mms.public.key
+openssl genrsa -traditional -out /tmp/env.private.key 2048
+openssl rsa -traditional -in /tmp/env.private.key -outform PEM -pubout -out /tmp/env.public.key
 MADE_DEFAULT_KEYS=0
 if [ ! -f ~/.hzn/keys/service.private.key ] || [ ! -f ~/.hzn/keys/service.public.pem ]; 
 then

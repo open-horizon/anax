@@ -134,7 +134,8 @@ const (
 	CHANGE_HA_GROUP                 EventId = "EXCHANGE_CHANGE_HA_GROUP"
 
 	// Secret related
-	UPDATED_SECRETS EventId = "SECRET_UPDATES"
+	UPDATED_SECRETS             EventId = "SECRET_UPDATES"
+	UPDATE_SECRETS_IN_AGREEMENT EventId = "AGREEMENT_UPDATE_SECRETS"
 
 	// ESS related
 	ESS_UNCONFIG EventId = "ESS_UNCONFIG"
@@ -2108,7 +2109,7 @@ func (w *ExchangeChangeMessage) String() string {
 }
 
 func (w *ExchangeChangeMessage) ShortString() string {
-	return fmt.Sprintf("Event: %v, Change: %v", w.event, w.change)
+	return fmt.Sprintf("Event: %v, Change: %v, ResourceBeforeChange: %v", w.event, w.change, w.resourceBeforeChange)
 }
 
 func (w *ExchangeChangeMessage) SetChange(c interface{}) {
@@ -2202,6 +2203,45 @@ func NewSecretUpdatesMessage(id EventId, sus *SecretUpdates) *SecretUpdatesMessa
 			Id: id,
 		},
 		Updates: *sus,
+	}
+}
+
+type WorkloadUpdateMessage struct {
+	event Event
+	//Message WorkloadAgreementUpdateMessage
+	AgreementProtocol           string
+	AgreementId                 string
+	ClusterNamespaceInAgreement string
+	Deployment                  persistence.DeploymentConfig
+	SecretsUpdate               []persistence.PersistedServiceSecret
+}
+
+func (w *WorkloadUpdateMessage) Event() Event {
+	return w.event
+}
+
+func (w *WorkloadUpdateMessage) String() string {
+	depStr := ""
+	if w.Deployment != nil {
+		depStr = w.Deployment.ToString()
+	}
+	return fmt.Sprintf("event: %v, AgreementProtocol: %v, agreementId: %v, clusterNamespaceInAgreement: %v, clusterDeployment: %v, secretsUpdate: %v", w.event, w.AgreementProtocol, w.AgreementId, w.ClusterNamespaceInAgreement, depStr, w.SecretsUpdate)
+}
+
+func (w *WorkloadUpdateMessage) ShortString() string {
+	return w.String()
+}
+
+func NewWorkloadUpdateMessage(id EventId, agreementId string, protocol string, clusterNamespaceInAgreement string, deployment persistence.DeploymentConfig, secretsUpdate []persistence.PersistedServiceSecret) *WorkloadUpdateMessage {
+	return &WorkloadUpdateMessage{
+		event: Event{
+			Id: id,
+		},
+		AgreementId:                 agreementId,
+		AgreementProtocol:           protocol,
+		ClusterNamespaceInAgreement: clusterNamespaceInAgreement,
+		Deployment:                  deployment,
+		SecretsUpdate:               secretsUpdate,
 	}
 }
 

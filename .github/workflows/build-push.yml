@@ -1,0 +1,551 @@
+# Name of the workflow
+name: build-push
+
+# Workflow triggers -- When a push (including merge) is made to the listed branches
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - v2.31
+      - v2.30
+      - v2.29
+        
+env:
+  IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
+  GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  RUN_NUMBER: ${{ github.run_number }}
+  RUN_NUMBER_OFFSET: ${{ vars.RUN_NUMBER_OFFSET }}
+  # used in docker_push_script.sh and package_push.sh scripts to push "testing" tags with the branch name appended to it
+  GH_BRANCH: ${{ github.ref_name }} 
+
+# Jobs executed when workflow is triggered
+jobs:
+
+  # Migrating workflow causes run number to be reset to 1, offset so our versions don't go back in time.
+  offset-build-number:
+    runs-on: ubuntu-20.04
+    outputs: 
+      BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
+    steps:
+      # Ensure that the repo variables and secrets are set before running any other steps
+      - name: Check User Set Variables
+        run: |
+          if [[ -z "$DOCKER_USER" ]]; then \
+          echo "::error::Secret DOCKER_USER was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$DOCKER_TOKEN" ]]; then \
+          echo "::error::Secret DOCKER_TOKEN was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_HORIZON_CLI_CRT" ]]; then \
+          echo "::error::Secret MACPKG_HORIZON_CLI_CRT was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_HORIZON_CLI_P12_BASE64_ENC" ]]; then \
+          echo "::error::Secret MACPKG_HORIZON_CLI_P12_BASE64_ENC was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_HORIZON_CLI_P12_PASSWORD" ]]; then \
+          echo "::error::Secret MACPKG_HORIZON_CLI_P12_PASSWORD was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_KEYCHAIN_PASSWORD" ]]; then \
+          echo "::error::Secret MACPKG_KEYCHAIN_PASSWORD was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$IMAGE_REPO" ]]; then \
+          echo "::error::Variable DOCKERHUB_REPO was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$RUN_NUMBER_OFFSET" ]]; then \
+          echo "::error::Variable RUN_NUMBER_OFFSET was not set"; \
+          exit 1; \
+          fi
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
+          MACPKG_HORIZON_CLI_P12_BASE64_ENC: ${{ secrets.MACPKG_HORIZON_CLI_P12_BASE64_ENC }}
+          MACPKG_HORIZON_CLI_P12_PASSWORD: ${{ secrets.MACPKG_HORIZON_CLI_P12_PASSWORD }}
+          MACPKG_KEYCHAIN_PASSWORD: ${{ secrets.MACPKG_KEYCHAIN_PASSWORD }}
+
+      # Offset the Build Number
+      - name: Offset
+        id: offset
+        run: |
+          echo "BUILD_NUMBER=$(($RUN_NUMBER + $RUN_NUMBER_OFFSET))" >> "$GITHUB_OUTPUT"
+
+  # Builds on Linux: Deb Packages, RPM Packages, Docker images, and pushes to Dockerhub
+  linux-build-push:
+    needs: offset-build-number
+
+    # The type of runner that the job will run on 
+    runs-on: ubuntu-20.04
+
+    # Strategy allows specifying matrix axis(es) that will run for the test
+    strategy:
+      matrix:
+        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x']
+        platform: ['linux']
+
+    # Variables that are available to all steps in the job
+    env:
+      arch: ${{ matrix.architecture }}
+      os: ${{ matrix.platform }}
+      BUILD_NUMBER: ${{ needs.offset-build-number.outputs.BUILD_NUMBER }}
+      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
+      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+      GOPATH: /home/runner/work/anax/anax/go
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Upgrade Docker engine version, needed for building images
+      - name: Install Latest Docker Version
+        run: |
+          sudo apt-get purge docker-ce docker-ce-cli containerd.io runc containerd moby-buildx moby-cli moby-compose moby-containerd moby-engine moby-runc
+
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+          sudo apt-get update
+          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+      # This is needed for our cross architecture docker image builds
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      # Buildx allows us to perform our cross architecture docker image builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
+
+      # Authenticate Dockerhub to allow pushing to our image repo
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }} 
+          
+      # Authenticate GHCR to allow pushing to our alternate image registry
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Checkout our Github repo
+      - name: Checkout Github Repo
+        uses: actions/checkout@v3
+        with:
+          path: go/src/github.com/${{ github.repository }}
+
+      # Prepare the environment
+      - name: Set up golang 1.21
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+          check-latest: true
+
+      # The go version will change, so we must get which one we are using for when we build the ppc64el images in the docker env.
+      - name: Check Go Version
+        id: get_go
+        run: |
+          go version
+          echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
+          
+
+      # Configure version variables for later steps, stored in our workflow env. variables
+      - name: Config Version Variables
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          ./.github/scripts/configure_versions_script.sh
+      
+      # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
+      - name: Build Anax Binaries
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          make temp-mod-version
+          make i18n-catalog
+          make
+      
+      # Make our debian packages
+      - name: Make Debian Packages
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          make debpkgs
+        env:
+          VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
+      
+      # Make our amd64 RPM packages (Default Github runners will always have amd64 architecture)
+      - name: Make amd64 RPM Packages
+        if: matrix.architecture == 'amd64'
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          make rpmpkgs
+        env:
+          VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+
+      # Make our ppc64el RPM packages in docker container to specify architecture
+      # Comes from open source action: https://github.com/uraimo/run-on-arch-action
+      ## By default this action will bind our $GITHUB_WORKSPACE to $GITHUB_WORKSPACE in the docker container
+      - name: Make ppc64el RPM Packages
+        if: matrix.architecture == 'ppc64el'
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          # Specify container arch and distro
+          arch: ppc64le
+          distro: ubuntu20.04
+
+          # Pass necessary env. variables to the new docker container env.
+          env: |
+            VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+            BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
+            GITHUB_REPOSITORY: ${{ github.repository }}
+            GO_VERSION: ${{ steps.get_go.outputs.GO_VERSION }}
+
+          # Specify which shell our commands will use (ubuntu distro so use bash)
+          shell : /bin/bash
+
+          # Install the necessary dependencies needed to make the rpm packages
+          # apt-get install golang, will get version 1.13 so we have to do it manually
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y build-essential
+            apt-get install -q -y make
+            apt-get install -q -y rpm
+            apt-get install -q -y ca-certificates
+            apt-get install -q -y wget
+            apt-get install -q -y sudo
+            apt-get install -q -y gettext
+          
+          # Commands that will be ran inside our docker container
+          run: |
+            cd /
+            wget https://go.dev/dl/${GO_VERSION}.linux-ppc64le.tar.gz 
+            sudo tar -C /usr/local -xf ${GO_VERSION}.linux-ppc64le.tar.gz
+            export GOPATH=/usr/local/go
+            export PATH=$PATH:/usr/local/go/bin
+            cp -R /home/runner/work/anax/anax/go/src/github.com /usr/local/go/src
+            cd /usr/local/go/src/github.com/${GITHUB_REPOSITORY}
+            make rpmpkgs
+            mkdir /home/runner/work/anax/anax/RPMS
+            cp /root/rpmbuild/RPMS/ppc64le/*.rpm /home/runner/work/anax/anax/RPMS
+
+      # Make our s390x RPM packages in docker container to specify architecture
+      # Comes from open source action: https://github.com/uraimo/run-on-arch-action
+      ## By default this action will bind our $GITHUB_WORKSPACE to $GITHUB_WORKSPACE in the docker container
+      - name: Make s390x RPM Packages
+        if: matrix.architecture == 's390x'
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          # Specify container arch and distro
+          arch: s390x
+          distro: ubuntu20.04
+
+          # Pass necessary env. variables to the new docker container env.
+          env: |
+            VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+            BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
+            GITHUB_REPOSITORY: ${{ github.repository }}
+            GO_VERSION: ${{ steps.get_go.outputs.GO_VERSION }}
+
+          # Specify which shell our commands will use (ubuntu distro so use bash)
+          shell : /bin/bash
+
+          # Install the necessary dependencies needed to make the rpm packages
+          # apt-get install golang, will get version 1.13 so we have to do it manually
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y build-essential
+            apt-get install -q -y make
+            apt-get install -q -y rpm
+            apt-get install -q -y ca-certificates
+            apt-get install -q -y wget
+            apt-get install -q -y sudo
+            apt-get install -q -y gettext
+          
+          # Commands that will be ran inside our docker container
+          run: |
+            cd /
+            wget https://go.dev/dl/${GO_VERSION}.linux-s390x.tar.gz 
+            sudo tar -C /usr/local -xf ${GO_VERSION}.linux-s390x.tar.gz
+            export GOPATH=/usr/local/go
+            export PATH=$PATH:/usr/local/go/bin
+            cp -R /home/runner/work/anax/anax/go/src/github.com /usr/local/go/src
+            cd /usr/local/go/src/github.com/${GITHUB_REPOSITORY}
+            make rpmpkgs
+            mkdir /home/runner/work/anax/anax/RPMS
+            cp /root/rpmbuild/RPMS/s390x/*.rpm /home/runner/work/anax/anax/RPMS
+            
+      # Create Docker images with only Debs and RPM packages in tar.gz then push to Dockerhub
+      - name: Push RPM/DEB Packages to Dockerhub
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          ./.github/scripts/package_push.sh
+
+      # Build Docker Images
+      - name: Build Docker Images
+        shell: bash
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
+        run: | 
+          # Makes and pushes arch_cloud-sync-service and arch_edge-sync-service images
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' || ${arch} == 's390x' ]]; then
+              make ess-docker-image
+              make css-docker-image
+          fi
+
+          # Makes and pushes amd64_agbot image
+          if [[ ${arch} == 'amd64' ]]; then
+              make agbot-image
+          fi
+
+          # Specify if we should use buildx for multiarch, github runner is amd64 so we only need this for arm and ppc
+          if [[ ${arch} == 'arm64' || ${arch} == 'ppc64el' || ${arch} == 's390x' ]]; then
+              export USE_DOCKER_BUILDX=true
+          fi
+
+          make anax-image                         # Makes and pushes arch_anax
+          make anax-k8s-image                     # Makes and pushes arch_anax_k8s
+          make auto-upgrade-cronjob-k8s-image     # Makes and pushes arch_auto-upgrade-cronjob-k8s
+
+          # Outputs created docker images for viewing
+          echo "**************"
+          docker images
+          echo "**************" 
+
+      # Push Docker Images to Dockerhub
+      - name: Push Docker Images
+        shell: bash
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          # Names of the images created for each architecture
+          if [[ ${arch} == 'amd64' ]]; then
+              images=('amd64_agbot' 'amd64_anax' 'amd64_anax_k8s' 'amd64_auto-upgrade-cronjob_k8s' 'amd64_cloud-sync-service' 'amd64_edge-sync-service')
+          elif [[ ${arch} == 'ppc64el' ]]; then
+              images=('ppc64el_anax' 'ppc64el_anax_k8s' 'ppc64el_auto-upgrade-cronjob_k8s' 'ppc64el_edge-sync-service')
+          elif [[ ${arch} == 'arm64' ]]; then
+              images=('arm64_anax' 'arm64_anax_k8s' 'arm64_auto-upgrade-cronjob_k8s' 'arm64_edge-sync-service')
+          elif [[ ${arch} == 's390x' ]]; then
+              images=('s390x_anax' 's390x_anax_k8s' 's390x_auto-upgrade-cronjob_k8s' 's390x_edge-sync-service')
+          fi
+
+          # Push those images
+          for image in "${images[@]}"; do
+              if [[ ${GITHUB_REF} == 'refs/heads/master' ]]; then
+                  docker push ${IMAGE_REPO}/${image}:testing
+                  docker tag ${IMAGE_REPO}/${image}:testing ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
+                  docker push ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
+              else
+                  # append the branch name to testing tags for when we're building older versions of anax for testing
+                  docker tag ${IMAGE_REPO}/${image}:testing ${IMAGE_REPO}/${image}:testing_${GH_BRANCH}
+                  docker push ${IMAGE_REPO}/${image}:testing_${GH_BRANCH}
+              fi
+
+          done
+
+  # Build our mac packages on a macOS runner
+  mac-build:
+    needs: offset-build-number
+    
+    runs-on: ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macos-14' }}
+
+    strategy:
+      matrix:
+        architecture: ['amd64', 'arm64']
+        platform: ['mac']
+
+    env:
+      arch: ${{ matrix.architecture }}
+      os: ${{ matrix.platform }}
+      BUILD_NUMBER: ${{ needs.offset-build-number.outputs.BUILD_NUMBER }}
+      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
+      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+      GOPATH: /Users/runner/work/anax/anax/go
+
+    # Specify outputs to be used in our push-macos job
+    outputs:
+      ANAX_VERSION: ${{ env.ANAX_IMAGE_VERSION }}
+
+    steps:
+      # Checkout our Github repo
+      - name: Checkout Github Repo
+        uses: actions/checkout@v3
+        with:
+          path: go/src/github.com/${{ github.repository }}
+
+      # Prepare the environment
+      - name: Set up golang 1.21
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+          check-latest: true
+
+      # Configure version variables for later steps, stored in our workflow env. variables
+      - name: Config Version Variables
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          ./.github/scripts/configure_versions_script.sh
+
+      # Configure the certificates for package signing
+      - name: Configure Certificates
+        run: |
+          # Navigate to our repo directory and setup important variables
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          CERTIFICATE_PATH=$RUNNER_TEMP/horizon-cli.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
+
+          # This does something important and the action will run indefinitely without it
+          sudo security authorizationdb write com.apple.trust-settings.admin allow
+
+          # Use our secret crt and P12 to create files
+          touch $RUNNER_TEMP/horizon-cli.crt
+          echo "$MACPKG_HORIZON_CLI_CRT" >> $RUNNER_TEMP/horizon-cli.crt
+          echo $MACPKG_HORIZON_CLI_P12_BASE64_ENC | base64 -d -o $CERTIFICATE_PATH
+
+          # Create a temporary keychain to bypass the prompts that cause the github action to run indefinitely
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security default-keychain -s $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Add our certificate first as a trusted certificate (so that it can be used) then import the whole pkcs12 certificate so the key is included
+          sudo security add-trusted-cert -d -r trustRoot -k $KEYCHAIN_PATH $RUNNER_TEMP/horizon-cli.crt
+          sudo security import $CERTIFICATE_PATH -P "$MACPKG_HORIZON_CLI_P12_PASSWORD" -k $KEYCHAIN_PATH -A
+
+          # This prevents other popups that cause the github action to run indefinitely
+          sudo security set-key-partition-list -S apple-tool:,apple:,pkgbuild:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Clean sensitive files
+          rm $CERTIFICATE_PATH
+        env:
+          MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}         # Contains the content of the horizon-cli.crt
+          MACPKG_HORIZON_CLI_P12_BASE64_ENC: ${{ secrets.MACPKG_HORIZON_CLI_P12_BASE64_ENC }}
+          MACPKG_HORIZON_CLI_P12_PASSWORD: ${{ secrets.MACPKG_HORIZON_CLI_P12_PASSWORD }}
+          MACPKG_KEYCHAIN_PASSWORD: ${{ secrets.MACPKG_KEYCHAIN_PASSWORD }}
+
+      # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
+      - name: Build Anax Binaries
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          make temp-mod-version
+          make i18n-catalog
+          make
+
+      # Make MacOS Packages
+      - name: Make MacOS Packages
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          make macpkg
+        env:
+          VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+
+      # Upload created package to artifacts to be used in next job
+      - name: Upload MacOS Package to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-${{ matrix.architecture }}-package
+          path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}/pkg/mac/build/*.pkg
+
+
+  # This will push our built mac packages to Dockerhub
+  mac-push:
+      # Specify that we wait for mac-build to run and create the packages
+      needs: mac-build
+
+      runs-on: ubuntu-20.04
+
+      strategy:
+        matrix:
+          architecture: ['amd64', 'arm64']
+          platform: ['mac']
+
+      steps:
+        # Upgrade Docker engine version, needed for building images
+        - name: Install Latest Docker Version
+          run: |
+            sudo apt-get purge docker-ce docker-ce-cli containerd.io runc containerd moby-buildx moby-cli moby-compose moby-containerd moby-engine moby-runc
+
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+            sudo apt-get update
+            sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+        # This is needed for our cross architecture docker image builds
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v2
+
+        # Buildx allows us to perform our cross architecture docker image builds
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v2
+          with:
+            driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
+
+        # Authenticate Dockerhub to allow pushing to our image repo
+        - name: Login to Dockerhub
+          uses: docker/login-action@v2
+          with:
+            username: ${{ secrets.DOCKER_USER }}
+            password: ${{ secrets.DOCKER_TOKEN }}
+
+        # Authenticate GHCR to allow pushing to our alternate image registry
+        - name: Login to Github Container Registry
+          uses: docker/login-action@v2
+          with:
+            registry: ghcr.io
+            username: ${{ github.repository_owner }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+        # Setup a working directory in the temp folder path
+        - name: Setup Working Directory and add Certificate File
+          id: workdir_setup
+          run: |
+            mkdir $RUNNER_TEMP/macs
+            touch $RUNNER_TEMP/macs/horizon-cli.crt
+            echo "$MACPKG_HORIZON_CLI_CRT" >> $RUNNER_TEMP/macs/horizon-cli.crt
+            echo "PKG_PATH="${RUNNER_TEMP}/macs"" >> $GITHUB_OUTPUT
+          env:
+            MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
+
+        # Retrieve artifact from previous job
+        - name: Download our MacOS Package Artifact
+          uses: actions/download-artifact@v3
+          with:
+            name: macos-${{ matrix.architecture }}-package
+            path: ${{ steps.workdir_setup.outputs.PKG_PATH }}
+
+        # Push our .crt and .pkg to Dockerhub
+        - name: Make MacOS Package Tarball and Upload to Dockerhub
+          run: |
+            cd $RUNNER_TEMP
+            touch Dockerfile.macpkg.tarball
+            echo "FROM alpine:latest" >> Dockerfile.macpkg.tarball
+            echo "ADD ./macpkg.tar.gz ." >> Dockerfile.macpkg.tarball
+            # Make mac tarball
+            tar -czvf macpkg.tar.gz macs
+
+            # Build docker image with only mac tarball
+            docker build \
+                --no-cache \
+                -t ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing \
+                -f Dockerfile.macpkg.tarball \
+                .
+
+            if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then 
+                docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing
+                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing 
+                docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing
+            else
+                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing_${GH_BRANCH} 
+                docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing_${GH_BRANCH}
+            fi
+          env:
+            ANAX_IMAGE_VERSION: ${{ needs.mac-build.outputs.ANAX_VERSION }}

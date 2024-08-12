@@ -624,6 +624,12 @@
       "fuzzy": true
     },
     {
+      "id": "Node must be specified in the API path",
+      "message": "Node must be specified in the API path",
+      "translation": "Knoten muss im API-Pfad angegeben sein",
+      "fuzzy": true
+    },
+    {
       "id": "Error checking secret {FullSecretName} in the secret manager.",
       "message": "Error checking secret {FullSecretName} in the secret manager.",
       "translation": "Fehler beim Überprüfen des geheimen Schlüssels {FullSecretName} im Manager für geheime Schlüssel.",
@@ -1820,18 +1826,6 @@
       "fuzzy": true
     },
     {
-      "id": "Name, or Org is empty string.",
-      "message": "Name, or Org is empty string.",
-      "translation": "Der Name oder die Organisation ist eine leere Zeichenfolge.",
-      "fuzzy": true
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "message": "The serviceVersions array is empty.",
-      "translation": "Das Array für die Serviceversionen (serviceVersions) ist leer.",
-      "fuzzy": true
-    },
-    {
       "id": "properties contains an invalid property: {Err}",
       "message": "properties contains an invalid property: {Err}",
       "translation": "Eigenschaften enthalten ungültige Eigenschaft: {Err}",
@@ -1864,9 +1858,57 @@
       "fuzzy": true
     },
     {
+      "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "message": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+      "translation": "Abrufen der Randbedingung mit dem Namen {PROPNODEK8SNAMESPACE}fehlgeschlagen; Fehler: {Err}",
+      "placeholders": [
+        {
+          "id": "PROPNODEK8SNAMESPACE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "externalpolicy.PROP_NODE_K8S_NAMESPACE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "message": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+      "translation": "Der kubernetesNamespace, der in der Randbedingung {Newconstr}definiert ist, deckt sich nicht mit dem clusterNamespace '{ClusterNSInPolicy}', der in der Bereitstellungsrichtlinie angegeben ist. Möglicherweise führt die Richtlinie zu keinen Servicebereitstellungen.",
+      "placeholders": [
+        {
+          "id": "Newconstr",
+          "string": "%[1]v",
+          "type": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "*github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "argNum": 1,
+          "expr": "newconstr"
+        },
+        {
+          "id": "ClusterNSInPolicy",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "clusterNSInPolicy"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Befehlszeilenschnittstelle für Horizon Agent. Die meisten der Unterbefehle nutzen die Horizon-Agent-API an der standardmäßigen Position http://localhost (siehe Abschnitt zu den jeweiligen Umgebungsvariablen zwecks Überschreibung).\n\nUnterbefehle Beschreibung:\n  agbot: Auflistung und Verwaltung der Bot-Ressourcen der Horizon-Vereinbarung.\n  agreement: Auflistung oder Verwaltung der Übereinstimmungen zwischen diesem Edge-Knoten und einem Horizon-Vereinbarungs-Bot.\n  architecture: Zeigt die Architektur dieses Systems an. \n  attribute: Auflistung oder Verwaltung der globalen Attribute, die aktuell an diesem Horizon-Edge-Knoten registriert sind.\n  deploycheck: Prüft die Bereitstellungskompatibilität.\n  dev: Entwicklungstools zur Erstellung von Services.\n  env: Zeigt die Horizon-Umgebungsvariablen an.\n  eventlog: Listet die Ereignisprotokolle für die aktuelle oder alle Registrierungen an.\n  exchange: Auflistung oder Verwaltung der Horizon Exchange-Ressourcen.\n  key: Auflistung und Verwaltung der Schlüssel für die Signatur und Verifizierung von Services. \n  mms: Listet die Ressourcen des Horizon Model Management Service auf und verwaltet sie.\n  nmstatus: Auflistung und Verwaltung des Knotenverwaltungsstatus für den lokalen Knoten.\n  node: Auflistung und Verwaltung von allgemeinen Informationen zu diesem Horizon Edge-Knoten.\n  nodemanagement: Auflistung und Verwaltung von Manifest- und Agentendateien für die Knotenverwaltung.\n  policy: Auflistung und Verwaltung der Richtlinie für diesen Horizon-Edge-Knoten. \n  reginput: Erstellen einer Eingabedateivorlage für dieses Muster, die für den Befehl 'hzn register' verwendet kann. \n  register: Registrierung dieses Edge-Knotens am Verwaltungs-Hub.\n  secretsmanager: Auflistung und Verwaltung von Secrets im Secrets-Manager.\n  service: Auflistung oder Verwaltung der Services, die derzeit an diesem Horizon-Edge-Knoten registriert sind.\n  status: Zeigt den aktuellen internen Horizon-Status für den Knoten an.\n  unregister: Hebt die Registrierung dieses Horizon-Edge-Knotens auf und setzt ihn zurück.\n  userinput: Auflistung oder Verwaltung der Servicebenutzereingaben, die derzeit an diesem Horizon-Edge-Knoten registriert sind.\n  util: Dienstprogrammbefehle.\n  version: Zeigt die Horizon-Version an.\n  sdo: Auflistung und Verwaltung von Horizon SDO Ownership Vouchers (Eigentumsnachweisen) und -Schlüsseln.\n  fdo: Auflistung und Verwaltung von Horizon FDO Ownership Vouchers (Eigentumsnachweisen) und -Schlüsseln.\n\nUmgebungsvariablen:\n  HORIZON_URL:  Überschreibt die URL, unter der hzn die Horizon Agent-API kontaktiert.\n      Dies kann die Nutzung eines entfernten Horizon Agent über einen ssh-Tunnel vereinfachen.\n  HZN_EXCHANGE_URL:  Überschreibt die URL, welche die  'hzn exchange'-Unterbefehle nutzen,\n      um mit Horizon Exchange zu kommunizieren, wie zum Beispiel:\n      https://exchange.bluehorizon.network/api/v1. (Standardmäßig fragt hzn den\n      Horizon-Agenten nach der URL.)\n HZN_ORG_ID: Standardwert für das Flag 'hzn exchange -o',\n      um die Organisations-ID anzugeben.\n HZN_EXCHANGE_USER_AUTH:  Standardwert für das Flag 'hzn exchange -u' oder 'hzn \n     register -u' im Format '[org/] user:pw'. Beachten Sie, dass HZN_ORG_ID festgelegt werden kann,\\     wenn beim Festlegen von HZN_EXCHANGE_USER_AUTH die Organisation weggelassen wird.\n   HZN_FSS_CSSURL:    Überschreiben Sie die URL, die die ' hzn mms'-Unterbefehle\n     für die Kommunikation mit dem Horizon Model Management Service verwenden, z. B.\n      https://exchange.bluehorizon.network/css/. (Standardmäßig fragt hzn den\n    Horizon-Agenten nach der URL.)\n HZN_SDO_SVC_URL:  Überschreiben Sie die URL, die die 'hzn sdo'-Unterbefehle\n      für die Kommunikation mit SDO-Eignerservices verwenden. (Standardmäßig fordert hzn die URL des\n          Horizon-Agenten an.)\n  HZN_FDO_SVC_URL:  Überschreiben Sie die URL, welche die 'hzn fdo'-Unterbefehle \n    für die Kommunikation mit FDO-Owner-Services verwenden. (Standardmäßig fragt hzn den\n         Horizon-Agenten nach der URL.)\n\n  Alle diese Umgebungsvariablen und die in der Hilfe für den Befehl genannten Umgebungsvariablen können\n   in der Konfigurationsdatei des Benutzers angegeben werden: ~/.hzn/hzn.json mit JSON-Format.\n   Beispiel:\n {Com____}",
+      "translation": "Befehlszeilenschnittstelle für Horizon Agent. Die meisten der Unterbefehle nutzen die Horizon-Agent-API an der standardmäßigen Position http://localhost (siehe Abschnitt zu den jeweiligen Umgebungsvariablen zwecks Überschreibung).\n\nUnterbefehle Beschreibung:\n  agbot: Auflistung und Verwaltung der Bot-Ressourcen der Horizon-Vereinbarung.\n  agreement: Auflistung oder Verwaltung der Übereinstimmungen zwischen diesem Edge-Knoten und einem Horizon-Vereinbarungs-Bot.\n  architecture: Zeigt die Architektur dieses Systems an. \n  attribute: Auflistung oder Verwaltung der globalen Attribute, die aktuell an diesem Horizon-Edge-Knoten registriert sind.\n  deploycheck: Prüft die Bereitstellungskompatibilität.\n  dev: Entwicklungstools zur Erstellung von Services.\n  env: Zeigt die Horizon-Umgebungsvariablen an.\n  eventlog: Listet die Ereignisprotokolle für die aktuelle oder alle Registrierungen an.\n  exchange: Auflistung oder Verwaltung der Horizon Exchange-Ressourcen.\n  key: Auflistung und Verwaltung der Schlüssel für die Signatur und Verifizierung von Services. \n  mms: Listet die Ressourcen des Horizon Model Management Service auf und verwaltet sie.\n  nmstatus: Auflistung und Verwaltung des Knotenverwaltungsstatus für den lokalen Knoten.\n  node: Auflistung und Verwaltung von allgemeinen Informationen zu diesem Horizon Edge-Knoten.\n  nodemanagement: Auflistung und Verwaltung von Manifest- und Agentendateien für die Knotenverwaltung.\n  policy: Auflistung und Verwaltung der Richtlinie für diesen Horizon-Edge-Knoten. \n  reginput: Erstellen einer Eingabedateivorlage für dieses Muster, die für den Befehl 'hzn register' verwendet kann. \n  register: Registrierung dieses Edge-Knotens am Verwaltungs-Hub.\n  secretsmanager: Auflistung und Verwaltung von Secrets im Secrets-Manager.\n  service: Auflistung oder Verwaltung der Services, die derzeit an diesem Horizon-Edge-Knoten registriert sind.\n  status: Zeigt den aktuellen internen Horizon-Status für den Knoten an.\n  unregister: Hebt die Registrierung dieses Horizon-Edge-Knotens auf und setzt ihn zurück.\n  userinput: Auflistung oder Verwaltung der Servicebenutzereingaben, die derzeit an diesem Horizon-Edge-Knoten registriert sind.\n  util: Dienstprogrammbefehle.\n  version: Zeigt die Horizon-Version an.\n  sdo: Auflistung und Verwaltung von Horizon SDO Ownership Vouchers (Eigentumsnachweisen) und -Schlüsseln.\n  fdo: Auflistung und Verwaltung von Horizon FDO Ownership Vouchers (Eigentumsnachweisen) und -Schlüsseln.\n\nUmgebungsvariablen:\n  HORIZON_URL:  Überschreibt die URL, unter der hzn die Horizon Agent-API kontaktiert.\n      Dies kann die Nutzung eines entfernten Horizon Agent über einen ssh-Tunnel vereinfachen.\n  HZN_EXCHANGE_URL:  Überschreibt die URL, welche die  'hzn exchange'-Unterbefehle nutzen,\n      um mit Horizon Exchange zu kommunizieren, wie zum Beispiel:\n      https://exchange.bluehorizon.network/api/v1. (Standardmäßig fragt hzn den\n      Horizon-Agenten nach der URL.)\n HZN_ORG_ID: Standardwert für das Flag 'hzn exchange -o',\n      um die Organisations-ID anzugeben.\n HZN_EXCHANGE_USER_AUTH:  Standardwert für das Flag 'hzn exchange -u' oder 'hzn \n     register -u' im Format '[org/] user:pw'. Beachten Sie, dass HZN_ORG_ID festgelegt werden kann,\n     wenn beim Festlegen von HZN_EXCHANGE_USER_AUTH die Organisation weggelassen wird.\n   HZN_FSS_CSSURL:    Überschreiben Sie die URL, die die ' hzn mms'-Unterbefehle\n     für die Kommunikation mit dem Horizon Model Management Service verwenden, z. B.\n      https://exchange.bluehorizon.network/css/. (Standardmäßig fragt hzn den\n    Horizon-Agenten nach der URL.)\n HZN_SDO_SVC_URL:  Überschreiben Sie die URL, die die 'hzn sdo'-Unterbefehle\n      für die Kommunikation mit SDO-Eignerservices verwenden. (Standardmäßig fordert hzn die URL des\n          Horizon-Agenten an.)\n  HZN_FDO_SVC_URL:  Überschreiben Sie die URL, welche die 'hzn fdo'-Unterbefehle \n    für die Kommunikation mit FDO-Owner-Services verwenden. (Standardmäßig fragt hzn den\n         Horizon-Agenten nach der URL.)\n\n  Alle diese Umgebungsvariablen und die in der Hilfe für den Befehl genannten Umgebungsvariablen können\n  in der Konfigurationsdatei des Benutzers angegeben werden: ~/.hzn/hzn.json mit JSON-Format.\n  Beispiel:\n {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -2138,6 +2180,18 @@
       "fuzzy": true
     },
     {
+      "id": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+      "message": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+      "translation": "Der Namensbereich des Kubernetes-Clusters für den Knoten, sofern der Knotentyp 'cluster' lautet. Wenn nicht angegeben, lautet der Standardwert 'openhorizon-agent'. Der Wert wird ignoriert, wenn der Knotentyp 'device' ist",
+      "fuzzy": true
+    },
+    {
+      "id": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+      "message": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+      "translation": "Der Clusterbereich für den Knoten ist namensbereichsorientiert, wenn der Knotentyp 'cluster' ist. Wenn nicht angegeben, lautet der Standardwert 'false'. Der Wert wird ignoriert, wenn der Knotentyp 'device' ist",
+      "fuzzy": true
+    },
+    {
       "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
       "message": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
       "translation": "Die Organisation des Knotens. Der Standardwert ist der durch '-n' angegebene Typ der Organisation oder der Typ der momentan registrierten Einheit, falls keine Angabe gemacht wurde.",
@@ -2150,9 +2204,9 @@
       "fuzzy": true
     },
     {
-      "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-      "message": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-      "translation": "Der Name einer HA-Gruppe. Diese Angabe und -n, --node-pol und --node-ui schließen sich gegenseitig aus.",
+      "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "message": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+      "translation": "Der Name einer HA-Gruppe. Die Bereitstellungsprüfung wird auf allen Knoten in der angegebenen HA-Gruppe ausgeführt. Diese Angabe und -n, --node-pol und --node-ui schließen sich gegenseitig aus.",
       "fuzzy": true
     },
     {
@@ -2222,9 +2276,9 @@
       "fuzzy": true
     },
     {
-      "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-      "message": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-      "translation": "Der Name einer HA-Gruppe. Diese Angabe und -n und -- node-pol schließen sich gegenseitig aus.",
+      "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+      "message": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+      "translation": "Der Name einer HA-Gruppe. Die Bereitstellungsprüfung wird auf allen Knoten in der angegebenen HA-Gruppe ausgeführt. Diese Angabe und -n und -- node-pol schließen sich gegenseitig aus.",
       "fuzzy": true
     },
     {
@@ -5018,9 +5072,9 @@
       "fuzzy": true
     },
     {
-      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-      "message": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-      "translation": "Entfernt auch alle früheren Registrierungsinformationen. Gehen Sie nur so vor, wenn der Befehl 'hzn unregister' fehlgeschlagen ist. Erfassen Sie die Protokolle durch Ausführen des Befehls 'hzn eventlog list -a -l', bevor Sie dieses Flag verwenden.",
+      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+      "message": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+      "translation": "Entfernen Sie auch alle vorherigen Registrierungsinformationen. Verwenden Sie sie nur, nachdem der Befehl 'hzn unregister' fehlgeschlagen ist. Das Ereignisprotokoll wird nach Ausführung dieses Befehls automatisch gespeichert.",
       "fuzzy": true
     },
     {
@@ -5174,9 +5228,9 @@
       "fuzzy": true
     },
     {
-      "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "message": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-      "translation": "Listet die geheimen Schlüssel im Manager für geheime Schlüssel auf und verwaltet sie. HINWEIS: Sie müssen sich als Administrator authentifizieren, damit Sie die für die gesamte Organisation verfügbaren geheimen Schlüssel auflisten können.",
+      "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+      "message": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+      "translation": "Listet die geheimen Schlüssel im Manager für geheime Schlüssel auf und verwaltet sie. HINWEIS: Sie müssen sich als Administrator authentifizieren, um geheime Schlüssel, die für die gesamte Organisation verfügbar sind, auflisten zu können. Geheime Schlüssel werden auf Clusteragenten nicht unterstützt.",
       "fuzzy": true
     },
     {
@@ -5198,6 +5252,12 @@
       "fuzzy": true
     },
     {
+      "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+      "message": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+      "translation": "Die Knoten-ID des aufzulistenden geheimen Schlüssels für den Knoten. Nur einbeziehen, wenn dieser geheime Schlüssel speziell für einen einzelnen Knoten gilt.",
+      "fuzzy": true
+    },
+    {
       "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
       "message": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
       "translation": "Listet nur diesen einen geheimen Schlüssel auf. Gibt einen booleschen Wert zurück, der angibt, ob der geheime Schlüssel vorhanden ist. Dies ist der Name des im Manager für geheime Schlüssel verwendeten geheimen Schlüssels. Ist der geheime Schlüssel nicht vorhanden, wird der Exit-Code 1 zurückgegeben.",
@@ -5213,6 +5273,12 @@
       "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
       "message": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
       "translation": "Der Name des geheimen Schlüssels. Er muss innerhalb der Organisation eindeutig sein. Dieser Name wird in Bereitstellungsrichtlinien und Mustern verwendet, um diesen geheimen Schlüssel in einer Servicedefinition an den Namen eines geheimen Schlüssels zu binden.",
+      "fuzzy": true
+    },
+    {
+      "id": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+      "message": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+      "translation": "Die ID des Knotens, auf den dieser geheime Schlüssel angewendet werden soll. Nur einbeziehen, wenn dieser geheime Schlüssel speziell für einen einzelnen Knoten gilt.",
       "fuzzy": true
     },
     {
@@ -5246,6 +5312,12 @@
       "fuzzy": true
     },
     {
+      "id": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+      "message": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+      "translation": "Die Knoten-ID des geheimen Schlüssels, der entfernt werden soll. Nur einbeziehen, wenn dieser geheime Schlüssel speziell für einen einzelnen Knoten gilt.",
+      "fuzzy": true
+    },
+    {
       "id": "The name of the secret to be removed from the secrets manager.",
       "message": "The name of the secret to be removed from the secrets manager.",
       "translation": "Der Name des geheimen Schlüssels, der aus dem Manager für geheime Schlüssel entfernt werden soll.",
@@ -5255,6 +5327,12 @@
       "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
       "message": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
       "translation": "Liest die Details eines im Manager für geheime Schlüssel gespeicherten geheimen Schlüssels. Zu den Details gehört das Schlüssel/Wert-Paar, das beim Erstellen des Schlüssels angegeben wurde.",
+      "fuzzy": true
+    },
+    {
+      "id": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+      "message": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+      "translation": "Die Knoten-ID des zu lesenden geheimen Schlüssels für den Knoten. Nur einbeziehen, wenn dieser geheime Schlüssel speziell für einen einzelnen Knoten gilt.",
       "fuzzy": true
     },
     {
@@ -8715,7 +8793,7 @@
           "id": "CompCheckInput",
           "string": "%[1]v",
           "type": "github.com/open-horizon/anax/compcheck.CompCheck",
-          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/exchangecommon.NodePolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
+          "underlyingType": "struct{NodeId string \"json:\\\"node_id,omitempty\\\"\"; NodeArch string \"json:\\\"node_arch,omitempty\\\"\"; NodeType string \"json:\\\"node_type,omitempty\\\"\"; NodeClusterNS string \"json:\\\"node_cluster_namespace,omitempty\\\"\"; NodeNamespaceScoped bool \"json:\\\"node_namespace_scoped,omitempty\\\"\"; NodeOrg string \"json:\\\"node_org,omitempty\\\"\"; NodePolicy *github.com/open-horizon/anax/exchangecommon.NodePolicy \"json:\\\"node_policy,omitempty\\\"\"; NodeUserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"node_user_input,omitempty\\\"\"; BusinessPolId string \"json:\\\"business_policy_id,omitempty\\\"\"; BusinessPolicy *github.com/open-horizon/anax/businesspolicy.BusinessPolicy \"json:\\\"business_policy,omitempty\\\"\"; PatternId string \"json:\\\"pattern_id,omitempty\\\"\"; Pattern github.com/open-horizon/anax/common.AbstractPatternFile \"json:\\\"pattern,omitempty\\\"\"; ServicePolicy *github.com/open-horizon/anax/externalpolicy.ExternalPolicy \"json:\\\"service_policy,omitempty\\\"\"; Service []github.com/open-horizon/anax/common.AbstractServiceFile \"json:\\\"service,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "compCheckInput"
         }
@@ -8736,6 +8814,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+      "message": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+      "translation": "Die Option -s kann nur angegeben werden, wenn der durch -t angegebene Knotentyp 'cluster' lautet.",
       "fuzzy": true
     },
     {
@@ -8858,6 +8942,54 @@
           "underlyingType": "string",
           "argNum": 2,
           "expr": "nodeType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+      "message": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+      "translation": "Der durch -s angegebene Namensbereich des Knotenclusters {InputNamespace} deckt sich nicht mit dem Clusternamensbereich des lokalen Knotens {Namespace}.",
+      "placeholders": [
+        {
+          "id": "InputNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "inputNamespace"
+        },
+        {
+          "id": "Namespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "namespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+      "message": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+      "translation": "Der mit '--is-namespace-scoped' {InputIsNamespaceScoped}angegebene Knoten 'is-namespace-scoped' stimmt nicht mit dem Agentenbereich des lokalen Knotens {IsNamespaceScoped} überein.",
+      "placeholders": [
+        {
+          "id": "InputIsNamespaceScoped",
+          "string": "%[1]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "inputIsNamespaceScoped"
+        },
+        {
+          "id": "IsNamespaceScoped",
+          "string": "%[2]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 2,
+          "expr": "isNamespaceScoped"
         }
       ],
       "fuzzy": true
@@ -13060,6 +13192,22 @@
       "fuzzy": true
     },
     {
+      "id": "Invalid format for service: {Err1}",
+      "message": "Invalid format for service: {Err1}",
+      "translation": "Ungültiges Format für Service: {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Invalid format for properties: {Err1}",
       "message": "Invalid format for properties: {Err1}",
       "translation": "Ungültiges Format für Eigenschaften: {Err1}",
@@ -13266,9 +13414,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to validate the secret binding. {Err}",
-      "message": "Failed to validate the secret binding. {Err}",
-      "translation": "Die Bindung des geheimen Schlüssels konnte nicht validiert werden. {Err}",
+      "id": "{Err}",
+      "message": "{Err}",
+      "translation": "{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13438,6 +13586,70 @@
       "fuzzy": true
     },
     {
+      "id": "Warning: {Err}",
+      "message": "Warning: {Err}",
+      "translation": "Warnung: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate cluster namespace for service, error was: {Err}",
+      "message": "Failed to validate cluster namespace for service, error was: {Err}",
+      "translation": "Der Clusternamensbereich für den Service konnte nicht überprüft werden. Der Fehler lautet wie folgt: {Err}.",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+      "message": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+      "translation": "ClusterNamespace sollte nicht für Einheitenservice festgelegt werden: {Org}/{Name} mit Arch {Arch}",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceRef.Org"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "serviceRef.Name"
+        },
+        {
+          "id": "Arch",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "serviceRef.Arch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Deployment policy label.",
       "message": "Deployment policy label.",
       "translation": "Bezeichnung der Bereitstellungsrichtlinie.",
@@ -13465,6 +13677,12 @@
       "id": "Set to '*' to use services of any hardware architecture.",
       "message": "Set to '*' to use services of any hardware architecture.",
       "translation": "Legen Sie '*' fest, um Services mit beliebiger Hardwarearchitektur zu verwenden.",
+      "fuzzy": true
+    },
+    {
+      "id": "The cluster namespace of the service.",
+      "message": "The cluster namespace of the service.",
+      "translation": "Der Clusternamensbereich des Service.",
       "fuzzy": true
     },
     {
@@ -15078,7 +15296,7 @@
           "id": "Device",
           "string": "%[1]s",
           "type": "github.com/open-horizon/anax/exchange.Device",
-          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; HAGroup string \"json:\\\"ha_group\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
+          "underlyingType": "struct{Token string \"json:\\\"token\\\"\"; Name string \"json:\\\"name\\\"\"; Owner string \"json:\\\"owner\\\"\"; NodeType string \"json:\\\"nodeType\\\"\"; ClusterNamespace string \"json:\\\"clusterNamespace,omitempty\\\"\"; IsNamespaceScoped bool \"json:\\\"isNamespaceScoped\\\"\"; Pattern string \"json:\\\"pattern\\\"\"; RegisteredServices []github.com/open-horizon/anax/exchange.Microservice \"json:\\\"registeredServices\\\"\"; MsgEndPoint string \"json:\\\"msgEndPoint\\\"\"; SoftwareVersions github.com/open-horizon/anax/exchange.SoftwareVersion \"json:\\\"softwareVersions\\\"\"; LastHeartbeat string \"json:\\\"lastHeartbeat\\\"\"; PublicKey string \"json:\\\"publicKey\\\"\"; Arch string \"json:\\\"arch\\\"\"; UserInput []github.com/open-horizon/anax/policy.UserInput \"json:\\\"userInput\\\"\"; HeartbeatIntv github.com/open-horizon/anax/exchange.HeartbeatIntervals \"json:\\\"heartbeatIntervals,omitempty\\\"\"; HAGroup string \"json:\\\"ha_group\\\"\"; LastUpdated string \"json:\\\"lastUpdated,omitempty\\\"\"}",
           "argNum": 1,
           "expr": "v"
         },
@@ -16390,9 +16608,65 @@
       "fuzzy": true
     },
     {
-      "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-      "message": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-      "translation": "Zu aktualisierendes Musterattribut konnte in Eingabedatei nicht gefunden werden. Unterstützte Attribute sind: 'label' (Bezeichnung), 'description' (Beschreibung ), 'services' (Services), 'userInput' (Benutzereingabe) und 'secretBinding' (Bindung des geheimen Schlüssels).",
+      "id": "Invalid format for services: {Err1}",
+      "message": "Invalid format for services: {Err1}",
+      "translation": "Ungültiges Format für Services: {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking service types for pattern {Pname}. {Err}",
+      "message": "Error checking service types for pattern {Pname}. {Err}",
+      "translation": "Fehler beim Prüfen der Servicetypen für Muster {Pname}. {Err}",
+      "placeholders": [
+        {
+          "id": "Pname",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "p_name"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+      "message": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+      "translation": "Es wurde 'clusterNamespace' angegeben, aber kein Service verfügt über eine Clusterbereitstellung für das Muster {Pname}.",
+      "placeholders": [
+        {
+          "id": "Pname",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "p_name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+      "message": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+      "translation": "Das Musterattribut, das aktualisiert werden soll, wurde nicht in der Eingabedatei gefunden. Die folgenden Attribute werden unterstützt: label, description, clusterNamespace, services, userInput und secretBinding.",
       "fuzzy": true
     },
     {
@@ -16503,6 +16777,52 @@
           "underlyingType": "[]github.com/open-horizon/anax/common.ServiceReferenceFile",
           "argNum": 1,
           "expr": "patFile.Services"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error checking service types for pattern. {Err}",
+      "message": "Error checking service types for pattern. {Err}",
+      "translation": "Fehler beim Überprüfen der Servicetypen auf Muster. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+      "message": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+      "translation": "Es wurde 'clusterNamespace' angegeben, aber kein Service verfügt über eine Clusterbereitstellung für das Muster.",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid format in pattern file {JsonFilePath}: {Err}",
+      "message": "Invalid format in pattern file {JsonFilePath}: {Err}",
+      "translation": "Ungültiges Format in Musterdatei {JsonFilePath}: {Err}",
+      "placeholders": [
+        {
+          "id": "JsonFilePath",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "jsonFilePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -16781,6 +17101,22 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "keyName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate the secret binding. {Err}",
+      "message": "Failed to validate the secret binding. {Err}",
+      "translation": "Die Bindung des geheimen Schlüssels konnte nicht validiert werden. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -18657,6 +18993,42 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+      "message": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+      "translation": "'metadata' in 'clusterDeployment' sollte nicht festgelegt werden. Entfernen Sie 'metadata' aus 'clusterDeployment', bevor Sie den Service publizieren.",
+      "fuzzy": true
+    },
+    {
+      "id": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+      "message": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+      "translation": "Abrufen des Namensbereichs von Kube-Operator {OperatorFilePath} fehlgeschlagen, Fehler {Err}",
+      "placeholders": [
+        {
+          "id": "OperatorFilePath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "operatorFilePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+      "message": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+      "translation": "Warnung: Namensbereich in Operatordatei erkannt. Servicenamensbereich muss in 'Bereitstellungsrichtlinie' oder 'Muster' festgelegt werden",
       "fuzzy": true
     },
     {
@@ -20584,9 +20956,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-      "message": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-      "translation": "Knoten {Org}/{NodeId} ist in HA-Gruppe {HaGroupName} enthalten.",
+      "id": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+      "message": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+      "translation": "Knoten {Org}/{NodeId} ist in HA-Gruppe {ExistingHagrName} enthalten.",
       "placeholders": [
         {
           "id": "Org",
@@ -20605,12 +20977,12 @@
           "expr": "nodeId"
         },
         {
-          "id": "HaGroupName",
+          "id": "ExistingHagrName",
           "string": "%[3]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 3,
-          "expr": "haGroupName"
+          "expr": "existingHagrName"
         }
       ],
       "fuzzy": true
@@ -24972,6 +25344,22 @@
       "fuzzy": true
     },
     {
+      "id": "Configuration files {FileObjects} loaded into the File sync service.",
+      "message": "Configuration files {FileObjects} loaded into the File sync service.",
+      "translation": "Die Konfigurationsdateien {FileObjects} wurden in den Dateisynchronisationsservice geladen.",
+      "placeholders": [
+        {
+          "id": "FileObjects",
+          "string": "%[1]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 1,
+          "expr": "fileObjects"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Loading {FileName} into CSS",
       "message": "Loading {FileName} into CSS",
       "translation": "{FileName} wird in CSS geladen",
@@ -25055,22 +25443,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Configuration files {FileObjects} loaded into the File sync service.",
-      "message": "Configuration files {FileObjects} loaded into the File sync service.",
-      "translation": "Die Konfigurationsdateien {FileObjects} wurden in den Dateisynchronisationsservice geladen.",
-      "placeholders": [
-        {
-          "id": "FileObjects",
-          "string": "%[1]v",
-          "type": "[]string",
-          "underlyingType": "[]string",
-          "argNum": 1,
-          "expr": "fileObjects"
         }
       ],
       "fuzzy": true
@@ -25254,7 +25626,26 @@
       "fuzzy": true
     },
     {
-      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
+      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+      "message": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+      "translation": "Registrierung dieses Knotens wird aufgehoben, alle Vereinbarungen werden storniert, alle Arbeitslasten werden angehalten, Knoten wird aus der HA-Gruppe {HAGroup}entfernt, Knoten wird aus Exchange entfernt, Horizon wird neu gestartet ...",
+      "placeholders": [
+        {
+          "id": "HAGroup",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "*horDevice.HAGroup"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "msg",
+        "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon..."
+      ],
       "message": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
       "translation": "Die Registrierung dieses Knotens wird aufgehoben, alle Vereinbarungen werden storniert, alle Workloads werden gestoppt und Horizon wird neu gestartet...",
       "fuzzy": true
@@ -25948,6 +26339,68 @@
       "fuzzy": true
     },
     {
+      "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "message": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+      "translation": "Ausführung von Unmarshalling von JSON für Clusterbereitstellungsfeld {StringjsonBytes}ist fehlgeschlagen: {Err}",
+      "placeholders": [
+        {
+          "id": "StringjsonBytes",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(jsonBytes)"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "message": "Invalid data presented in the cluster deployment field: {TempInterf}",
+      "translation": "Das Clusterbereitstellungsfeld weist ungültige Daten auf: {TempInterf}",
+      "placeholders": [
+        {
+          "id": "TempInterf",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "tempInterf"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The metadata attribute in the cluster deployment has wrong format.",
+      "message": "The metadata attribute in the cluster deployment has wrong format.",
+      "translation": "Das Metadatenattribut in der Clusterbereitstellung weist das falsche Format auf.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get the namespace from the Kube operator. {Err}",
+      "message": "Failed to get the namespace from the Kube operator. {Err}",
+      "translation": "Der Namensbereich konnte nicht vom Kube-Operator abgerufen werden. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "user input {Name} has no default value and is not set",
       "message": "user input {Name} has no default value and is not set",
       "translation": "Benutzereingabe {Name} weist keinen Standardwert auf und ist nicht definiert.",
@@ -26283,6 +26736,190 @@
       "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "message": "Service does not have cluster deployment configuration for node type 'cluster'.",
       "translation": "Der Service hat keine Clusterbereitstellungskonfiguration für den Knotentyp 'cluster'.",
+      "fuzzy": true
+    },
+    {
+      "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "message": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+      "translation": "Der Clusternamensbereich '{NodeNamespace}' des Eingabeknotens stimmt nicht mit dem Clusternamensbereich '{ExchNodeNamespace}' des Knotens aus Exchange {NodeId}überein.",
+      "placeholders": [
+        {
+          "id": "NodeNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeNamespace"
+        },
+        {
+          "id": "ExchNodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "exchNodeNamespace"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "message": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+      "translation": "Der Bereich '{NodeIsNamespaceScope}' des Eingabeknotens stimmt nicht mit dem Bereich '{ExchNodeIsNamespaceScope}' des Knotens von Exchange {NodeId}überein.",
+      "placeholders": [
+        {
+          "id": "NodeIsNamespaceScope",
+          "string": "%[1]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "nodeIsNamespaceScope"
+        },
+        {
+          "id": "ExchNodeIsNamespaceScope",
+          "string": "%[2]v",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 2,
+          "expr": "exchNodeIsNamespaceScope"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "message": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+      "translation": "Der in der Bereitstellungsrichtlinie oder im Bereitstellungsmuster angegebene Namensbereich '{DeployerNamespace}' deckt sich nicht mit dem Namensbereich des Agenten: '{NodeNamespace}'.",
+      "placeholders": [
+        {
+          "id": "DeployerNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "deployerNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get cluster deployment from the service. {Err}",
+      "message": "Failed to get cluster deployment from the service. {Err}",
+      "translation": "Abrufen der Clusterbereitstellung aus dem Service fehlgeschlagen. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "message": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+      "translation": "Der im Service angegebene Namensbereich '{SvcNamespace}' deckt sich nicht mit dem Namensbereich des '{NodeNamespace}' des Agenten. Überschreiben Sie ihn in der Bereitstellungsrichtlinie oder im -muster.",
+      "placeholders": [
+        {
+          "id": "SvcNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcNamespace"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "message": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+      "translation": "Der im Muster '{PatternId}' angegebene Namensbereich '{PatternNamespace}' ist leer oder deckt sich nicht mit dem Namensbereich des namensbereichsorientierten Agenten: '{NodeNamespace}'. Der namensbereichsorienterte Agent ist nur mit Mustern kompatibel, die denselben Namensbereich wie der Agent haben.",
+      "placeholders": [
+        {
+          "id": "PatternNamespace",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternNamespace"
+        },
+        {
+          "id": "PatternId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternId"
+        },
+        {
+          "id": "NodeNamespace",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeNamespace"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "message": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+      "translation": "Der Clusternamensbereich, der im Muster '{PatternId}' angegeben ist, lautet {PatternNamespace}. Für clusterbereichsorientierte Agenten können nur Muster mit leerem Clusternamensbereich registriert werden",
+      "placeholders": [
+        {
+          "id": "PatternId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternId"
+        },
+        {
+          "id": "PatternNamespace",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "patternNamespace"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -27389,6 +28026,22 @@
       "id": "The node organization must be provided.",
       "message": "The node organization must be provided.",
       "translation": "Die Knotenorganisation muss angegeben werden.",
+      "fuzzy": true
+    },
+    {
+      "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "message": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+      "translation": "Der geheime Schlüssel {VaultSecretName} ist in Secret Manager weder auf Organisationsebene noch auf Benutzerebene vorhanden.",
+      "placeholders": [
+        {
+          "id": "VaultSecretName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "vaultSecretName"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -28756,6 +29409,56 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_CHANGED_WITH_ERROR",
+        "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}"
+      ],
+      "message": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+      "translation": "Der Knotenmanagementstatus für {Arg_1} wurde in {Arg_2} geändert. Fehlernachricht: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_NMP_STATUS_DELETED",
+        "Removing node management status for {Arg_1}."
+      ],
+      "message": "Removing node management status for {Arg_1}.",
+      "translation": "Der Knotenmanagementstatus für {Arg_1}wird entfernt.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true

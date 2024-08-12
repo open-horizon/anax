@@ -21,7 +21,7 @@ import (
 )
 
 // check if the policies are compatible
-func AllCompatible(org string, userPw string, nodeIds []string, haGroupName string, nodeArch string, nodeType string, nodeNamespace string, nodeOrg string,
+func AllCompatible(org string, userPw string, nodeIds []string, haGroupName string, nodeArch string, nodeType string, nodeNamespace string, nodeIsNamespaceScoped bool, nodeOrg string,
 	nodePolFile string, nodeUIFile string, businessPolId string, businessPolFile string,
 	patternId string, patternFile string, servicePolFile string, svcDefFiles []string,
 	checkAllSvcs bool, showDetail bool) {
@@ -59,6 +59,7 @@ func AllCompatible(org string, userPw string, nodeIds []string, haGroupName stri
 		compCheckInput.NodeArch = nodeArch
 		compCheckInput.NodeType = nodeType
 		compCheckInput.NodeClusterNS = nodeNamespace
+		compCheckInput.NodeNamespaceScoped = nodeIsNamespaceScoped
 		compCheckInput.NodeOrg = nodeOrg
 		compCheckInput.BusinessPolicy = bp
 		compCheckInput.PatternId = patternId
@@ -119,7 +120,7 @@ func AllCompatible(org string, userPw string, nodeIds []string, haGroupName stri
 
 		if bUseLocalNodeForPolicy || bUseLocalNodeForUI {
 			// get id from local node, check arch
-			compCheckInput.NodeId, compCheckInput.NodeArch, compCheckInput.NodeType, compCheckInput.NodeClusterNS, compCheckInput.NodeOrg = getLocalNodeInfo(nodeArch, nodeType, nodeNamespace, nodeOrg)
+			compCheckInput.NodeId, compCheckInput.NodeArch, compCheckInput.NodeType, compCheckInput.NodeClusterNS, compCheckInput.NodeNamespaceScoped, compCheckInput.NodeOrg = getLocalNodeInfo(nodeArch, nodeType, nodeNamespace, nodeIsNamespaceScoped, nodeOrg)
 		}
 
 		if nodeType == "" && compCheckInput.NodeId != "" {
@@ -325,7 +326,7 @@ func verifyCompCheckParameters(org string, userPw string,
 }
 
 // get node info and check node arch and org against the input arch
-func getLocalNodeInfo(inputArch string, inputType string, inputNamespace string, inputOrg string) (string, string, string, string, string) {
+func getLocalNodeInfo(inputArch string, inputType string, inputNamespace string, inputIsNamespaceScoped bool, inputOrg string) (string, string, string, string, bool, string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -334,6 +335,7 @@ func getLocalNodeInfo(inputArch string, inputType string, inputNamespace string,
 	nodeOrg := ""
 	arch := cutil.ArchString()
 	namespace := ""
+	isNamespaceScoped := false
 
 	horDevice := api.HorizonDevice{}
 	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
@@ -359,7 +361,12 @@ func getLocalNodeInfo(inputArch string, inputType string, inputNamespace string,
 	}
 
 	if nodeType == persistence.DEVICE_TYPE_CLUSTER && namespace == "" {
+		// should inspect the namespace by k8s library?
 		namespace = externalpolicy.DEFAULT_NODE_K8S_NAMESPACE
+	}
+
+	if horDevice.NamespaceScoped != nil {
+		isNamespaceScoped = *horDevice.NamespaceScoped
 	}
 
 	// check node architecture
@@ -377,12 +384,17 @@ func getLocalNodeInfo(inputArch string, inputType string, inputNamespace string,
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node cluster namespace %v specified by -s does not match the cluster namespace of the local node %v.", inputNamespace, namespace))
 	}
 
+	// check cluster agent scope
+	if inputIsNamespaceScoped != isNamespaceScoped {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node is-namespace-scoped %v specified by --is-namespace-scoped does not match the agent scope of local node %v.", inputIsNamespaceScoped, isNamespaceScoped))
+	}
+
 	// check node organization
 	if inputOrg != "" && nodeOrg != "" && inputOrg != nodeOrg {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node organization %v specified by -O does not match the organization of the local node %v.", inputType, nodeOrg))
 	}
 
-	return id, arch, nodeType, namespace, nodeOrg
+	return id, arch, nodeType, namespace, isNamespaceScoped, nodeOrg
 }
 
 // get business policy from exchange or from file.

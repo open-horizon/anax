@@ -190,6 +190,7 @@ Environment Variables:
 	allCompNodeArch := allCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.")).Short('a').String()
 	allCompNodeType := allCompCmd.Flag("node-type", msgPrinter.Sprintf("The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.")).Short('t').String()
 	allCompNodeNs := allCompCmd.Flag("cluster-namespace", msgPrinter.Sprintf("The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'")).Short('s').String()
+	allCompNodIsNamespaceScoped := allCompCmd.Flag("is-namespace-scoped", msgPrinter.Sprintf("The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'")).Bool()
 	allCompNodeOrg := allCompCmd.Flag("node-org", msgPrinter.Sprintf("The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.")).Short('O').String()
 	allCompNodeId := allCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --ha-group, --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.")).Short('n').Strings()
 	allCompHAGroup := allCompCmd.Flag("ha-group", msgPrinter.Sprintf("The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.")).String()
@@ -207,6 +208,7 @@ Environment Variables:
 	policyCompNodeArch := policyCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility.")).Short('a').String()
 	policyCompNodeType := policyCompCmd.Flag("node-type", msgPrinter.Sprintf("The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.")).Short('t').String()
 	policyCompNodeNs := policyCompCmd.Flag("cluster-namespace", msgPrinter.Sprintf("The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'")).Short('s').String()
+	policyCompNodeIsNamespaceScoped := policyCompCmd.Flag("is-namespace-scoped", msgPrinter.Sprintf("The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'")).Bool()
 	policyCompNodeId := policyCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --ha-group and --node-pol. If omitted, the node ID that the current device is registered with will be used. This flag can be repeated to specify more than one nodes. If you don't prepend a node id with the organization id, it will automatically be prepended with the -o value.")).Short('n').Strings()
 	policyCompHAGroup := policyCompCmd.Flag("ha-group", msgPrinter.Sprintf("The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.")).String()
 	policyCompNodePolFile := policyCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.")).String()
@@ -289,7 +291,12 @@ Environment Variables:
 	listTail := eventlogListCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the event log to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	listAllEventlogs := eventlogListCmd.Flag("all", msgPrinter.Sprintf("List all the event logs including the previous registrations.")).Short('a').Bool()
 	listDetailedEventlogs := eventlogListCmd.Flag("long", msgPrinter.Sprintf("List event logs with details.")).Short('l').Bool()
-	listSelectedEventlogs := eventlogListCmd.Flag("select", msgPrinter.Sprintf("Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.")).Short('s').Strings()
+	listSelectedEventlogs := eventlogListCmd.Flag("select", msgPrinter.Sprintf("Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.")).Short('s').Strings()
+	eventlogDeleteCmd := eventlogCmd.Command("delete | del", msgPrinter.Sprintf("Delete all the event logs or those matching the provided selectors.")).Alias("del").Alias("delete")
+	deleteSelectedEventlogs := eventlogDeleteCmd.Flag("select", msgPrinter.Sprintf("Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or\"attribute<value\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.")).Short('s').Strings()
+	deleteEventLogsForce := eventlogDeleteCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
+	eventlogPruneCmd := eventlogCmd.Command("prune | pr", msgPrinter.Sprintf("Delete the all event logs from previous registrations.")).Alias("pr").Alias("prune")
+	pruneEventLogsForce := eventlogPruneCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	surfaceErrorsEventlogs := eventlogCmd.Command("surface | sf", msgPrinter.Sprintf("List all the active errors that will be shared with the Exchange if the node is online.")).Alias("sf").Alias("surface")
 	surfaceErrorsEventlogsLong := surfaceErrorsEventlogs.Flag("long", msgPrinter.Sprintf("List the full event logs of the surface errors.")).Short('l').Bool()
 
@@ -665,7 +672,7 @@ Environment Variables:
 	mmsObjectPublishNoChunkUpload := mmsObjectPublishCmd.Flag("disableChunkUpload", msgPrinter.Sprintf("The publish command will disable chunk upload. Data will stream to CSS.")).Bool()
 	mmsObjectPublishChunkUploadDataSize := mmsObjectPublishCmd.Flag("chunkSize", msgPrinter.Sprintf("The size of data chunk that will be published with. Ignored if --disableChunkUpload is specified.")).Default("52428800").Int()
 	mmsObjectPublishSkipIntegrityCheck := mmsObjectPublishCmd.Flag("noIntegrity", msgPrinter.Sprintf("The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash")).Bool()
-	mmsObjectPublishDSHashAlgo := mmsObjectPublishCmd.Flag("hashAlgo", msgPrinter.Sprintf("The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag")).Short('a').String()
+	mmsObjectPublishDSHashAlgo := mmsObjectPublishCmd.Flag("hashAlgo", msgPrinter.Sprintf("The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag")).Short('a').String()
 	mmsObjectPublishDSHash := mmsObjectPublishCmd.Flag("hash", msgPrinter.Sprintf("The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.")).String()
 	mmsObjectPublishPrivKeyFile := mmsObjectPublishCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.")).Short('k').ExistingFile()
 	mmsObjectTypesCmd := mmsObjectCmd.Command("types", msgPrinter.Sprintf("Display a list of object types stored in the Horizon Model Management Service."))
@@ -683,7 +690,7 @@ Environment Variables:
 	nmManifestAddType := nmManifestAddCmd.Flag("type", msgPrinter.Sprintf("The type of manifest to add. Valid values include 'agent_upgrade_manifests'.")).Required().Short('t').String()
 	nmManifestAddId := nmManifestAddCmd.Flag("id", msgPrinter.Sprintf("The id of the manifest to add.")).Required().Short('i').String()
 	nmManifestAddFile := nmManifestAddCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the manifest data. Specify -f- to read from stdin.")).Short('f').Required().String()
-	nmManifestAddDSHashAlgo := nmManifestAddCmd.Flag("hashAlgo", msgPrinter.Sprintf("The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag")).Short('a').String()
+	nmManifestAddDSHashAlgo := nmManifestAddCmd.Flag("hashAlgo", msgPrinter.Sprintf("The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag")).Short('a').String()
 	nmManifestAddDSHash := nmManifestAddCmd.Flag("hash", msgPrinter.Sprintf("The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.")).String()
 	nmManifestAddPrivKeyFile := nmManifestAddCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the manifest. The corresponding public key will be stored in the MMS to ensure integrity of the manifest. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.")).Short('k').ExistingFile()
 	nmManifestAddSkipIntegrityCheck := nmManifestAddCmd.Flag("noIntegrity", msgPrinter.Sprintf("The publish command will not perform a data integrity check on the uploaded manifest data. It is mutually exclusive with --hashAlgo and --hash")).Bool()
@@ -799,17 +806,22 @@ Environment Variables:
 	smUserPw := smCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
 	smSecretCmd := smCmd.Command("secret", msgPrinter.Sprintf("List and manage secrets in the secrets manager."))
 	smSecretListCmd := smSecretCmd.Command("list | ls", msgPrinter.Sprintf("Display the names of the secrets in the secrets manager.")).Alias("ls").Alias("list")
+	smSecretListAll := smSecretListCmd.Flag("listAll", msgPrinter.Sprintf("List all secrets in the given org in the secrets manager.")).Short('a').Bool()
+	smSecretListNodeId := smSecretListCmd.Flag("nodeId", msgPrinter.Sprintf("The node id of the node secret to list. Include only if this secret is specific to a single node.")).Short('n').String()
 	smSecretListName := smSecretListCmd.Arg("secretName", msgPrinter.Sprintf("List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.")).String()
 	smSecretAddCmd := smSecretCmd.Command("add", msgPrinter.Sprintf("Add a secret to the secrets manager."))
 	smSecretAddName := smSecretAddCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.")).Required().String()
+	smSecretAddNodeId := smSecretAddCmd.Flag("nodeId", msgPrinter.Sprintf("The id of the node to apply this secret to. Include only if this secret is specific to a single node.")).Short('n').String()
 	smSecretAddFile := smSecretAddCmd.Flag("secretFile", msgPrinter.Sprintf("Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.")).Short('f').String()
 	smSecretAddKey := smSecretAddCmd.Flag("secretKey", msgPrinter.Sprintf("A key for the secret.")).Required().String()
 	smSecretAddDetail := smSecretAddCmd.Flag("secretDetail", msgPrinter.Sprintf("The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.")).Short('d').String()
 	smSecretAddOverwrite := smSecretAddCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.")).Short('O').Bool()
 	smSecretRemoveCmd := smSecretCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a secret in the secrets manager.")).Alias("rm").Alias("remove")
+	smSecretRemoveNodeId := smSecretRemoveCmd.Flag("nodeId", msgPrinter.Sprintf("The node id of the secret to be removed. Include only if this secret is specific to a single node.")).Short('n').String()
 	smSecretRemoveForce := smSecretRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	smSecretRemoveName := smSecretRemoveCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret to be removed from the secrets manager.")).Required().String()
 	smSecretReadCmd := smSecretCmd.Command("read", msgPrinter.Sprintf("Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation."))
+	smSecretReadNodeId := smSecretReadCmd.Flag("nodeId", msgPrinter.Sprintf("The node id of the node secret to read. Include only if this secret is specific to a single node.")).Short('n').String()
 	smSecretReadName := smSecretReadCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret to read in the secrets manager.")).Required().String()
 
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
@@ -1353,13 +1365,13 @@ Environment Variables:
 	case policyRemoveCmd.FullCommand():
 		policy.Remove(*policyRemoveForce)
 	case policyCompCmd.FullCommand():
-		deploycheck.PolicyCompatible(*deploycheckOrg, *deploycheckUserPw, *policyCompNodeId, *policyCompHAGroup, *policyCompNodeArch, *policyCompNodeType, *policyCompNodeNs, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
+		deploycheck.PolicyCompatible(*deploycheckOrg, *deploycheckUserPw, *policyCompNodeId, *policyCompHAGroup, *policyCompNodeArch, *policyCompNodeType, *policyCompNodeNs, *policyCompNodeIsNamespaceScoped, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case userinputCompCmd.FullCommand():
 		deploycheck.UserInputCompatible(*deploycheckOrg, *deploycheckUserPw, *userinputCompNodeId, *userinputCompNodeArch, *userinputCompNodeType, *userinputCompNodeUIFile, *userinputCompBPolId, *userinputCompBPolFile, *userinputCompPatternId, *userinputCompPatternFile, *userinputCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case secretCompCmd.FullCommand():
 		deploycheck.SecretBindingCompatible(*deploycheckOrg, *deploycheckUserPw, *secretCompNodeId, *secretCompNodeArch, *secretCompNodeType, *secretCompNodeOrg, *secretCompDepPolId, *secretCompDepPolFile, *secretCompPatternId, *secretCompPatternFile, *secretCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case allCompCmd.FullCommand():
-		deploycheck.AllCompatible(*deploycheckOrg, *deploycheckUserPw, *allCompNodeId, *allCompHAGroup, *allCompNodeArch, *allCompNodeType, *allCompNodeNs, *allCompNodeOrg, *allCompNodePolFile, *allCompNodeUIFile, *allCompBPolId, *allCompBPolFile, *allCompPatternId, *allCompPatternFile, *allCompSPolFile, *allCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
+		deploycheck.AllCompatible(*deploycheckOrg, *deploycheckUserPw, *allCompNodeId, *allCompHAGroup, *allCompNodeArch, *allCompNodeType, *allCompNodeNs, *allCompNodIsNamespaceScoped, *allCompNodeOrg, *allCompNodePolFile, *allCompNodeUIFile, *allCompBPolId, *allCompBPolFile, *allCompPatternId, *allCompPatternFile, *allCompSPolFile, *allCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case agreementListCmd.FullCommand():
 		agreement.List(*listArchivedAgreements, *listAgreementId)
 	case agreementCancelCmd.FullCommand():
@@ -1396,6 +1408,10 @@ Environment Variables:
 		status.DisplayStatus(*statusLong, false)
 	case eventlogListCmd.FullCommand():
 		eventlog.List(*listAllEventlogs, *listDetailedEventlogs, *listSelectedEventlogs, *listTail)
+	case eventlogDeleteCmd.FullCommand():
+		eventlog.Delete(*deleteSelectedEventlogs, *deleteEventLogsForce)
+	case eventlogPruneCmd.FullCommand():
+		eventlog.Prune(*pruneEventLogsForce)
 	case surfaceErrorsEventlogs.FullCommand():
 		eventlog.ListSurfaced(*surfaceErrorsEventlogsLong)
 	case devServiceNewCmd.FullCommand():
@@ -1502,12 +1518,12 @@ Environment Variables:
 		fdo.VoucherDownload(*fdoOrg, *fdoUserPw, *fdoVoucherDownloadDevice, *fdoVoucherDownloadFile, *fdoVoucherDownloadOverwrite)
 
 	case smSecretListCmd.FullCommand():
-		secret_manager.SecretList(*smOrg, *smUserPw, *smSecretListName)
+		secret_manager.SecretList(*smOrg, *smUserPw, *smSecretListName, *smSecretListNodeId, *smSecretListAll)
 	case smSecretAddCmd.FullCommand():
-		secret_manager.SecretAdd(*smOrg, *smUserPw, *smSecretAddName, *smSecretAddFile, *smSecretAddKey, *smSecretAddDetail, *smSecretAddOverwrite)
+		secret_manager.SecretAdd(*smOrg, *smUserPw, *smSecretAddName, *smSecretAddNodeId, *smSecretAddFile, *smSecretAddKey, *smSecretAddDetail, *smSecretAddOverwrite)
 	case smSecretRemoveCmd.FullCommand():
-		secret_manager.SecretRemove(*smOrg, *smUserPw, *smSecretRemoveName, *smSecretRemoveForce)
+		secret_manager.SecretRemove(*smOrg, *smUserPw, *smSecretRemoveName, *smSecretRemoveNodeId, *smSecretRemoveForce)
 	case smSecretReadCmd.FullCommand():
-		secret_manager.SecretRead(*smOrg, *smUserPw, *smSecretReadName)
+		secret_manager.SecretRead(*smOrg, *smUserPw, *smSecretReadName, *smSecretReadNodeId)
 	}
 }

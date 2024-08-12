@@ -153,6 +153,15 @@ func (wl Workload) IsSame(compare Workload) bool {
 
 }
 
+// bcrypt limits passwords to 72 bytes. Older versions silently truncated the end of longer passwords, this behaviour has changed to error out on long passwords.
+// this function is to mimic the older behaviour to prevent an unexpected error
+func GenerateFromPassword(password []byte, cost int) ([]byte, error) {
+	if len(password) > 72 {
+		return bcrypt.GenerateFromPassword(password[:72], cost)
+	}
+	return bcrypt.GenerateFromPassword(password, cost)
+}
+
 func (w *Workload) Obscure(agreementId string, defaultPW string) error {
 
 	if w.WorkloadPassword == "" && defaultPW == "" {
@@ -166,7 +175,7 @@ func (w *Workload) Obscure(agreementId string, defaultPW string) error {
 	}
 
 	// Convert the workload password into a hash by first concatenating the agreement id onto the end of the password
-	if hash, err := bcrypt.GenerateFromPassword([]byte(wpw+agreementId), bcrypt.DefaultCost); err != nil {
+	if hash, err := GenerateFromPassword([]byte(wpw+agreementId), bcrypt.DefaultCost); err != nil {
 		return err
 	} else {
 		w.WorkloadPassword = string(hash)

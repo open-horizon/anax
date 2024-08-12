@@ -2,9 +2,10 @@
 
 # set -x
 
-NAME_SPACE="openhorizon-agent"
+NAME_SPACE="agent-namespace"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
+PVC_NAME="openhorizon-agent-pvc"
 
 isRoot=$(id -u)
 cprefix="sudo -E"
@@ -16,6 +17,10 @@ fi
 #
 # Check if microk8s is running.
 #
+
+$sudoprefix apparmor_parser -R /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
+$sudoprefix apparmor_parser -a /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
+
 echo "Preparing to cleanup Kube test environment"
 OUT=$($cprefix microk8s.status)
 RC=$?
@@ -52,6 +57,10 @@ if [ $RC -ne 0 ]; then echo "Error deleting configmap ${CONFIGMAP_NAME}: $RC"; f
 $cprefix microk8s.kubectl delete secret ${SECRET_NAME} -n ${NAME_SPACE}
 RC=$?
 if [ $RC -ne 0 ]; then echo "Error deleting secret ${SECRET_NAME}: $RC"; fi
+
+$cprefix microk8s.kubectl delete pvc ${PVC_NAME} -n ${NAME_SPACE}
+RC=$?
+if [ $RC -ne 0 ]; then echo "Error deleting pvc ${PVC_NAME}: $RC"; fi
 
 $cprefix microk8s.kubectl delete namespace ${NAME_SPACE}
 RC=$?

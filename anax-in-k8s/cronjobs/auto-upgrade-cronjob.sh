@@ -263,7 +263,7 @@ function rollback_agent_image() {
     local current_version
     old_image_version=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.k8s.imageVersion.from' | sed 's/\"//g')
     log_debug "Old image version: $old_image_version"
-    current_version=$($KUBECTL get deployment -n ${AGENT_NAMESPACE} agent -o=jsonpath='{..image}' | sed 's/.*://')
+    current_version=$($KUBECTL get deployment -n ${AGENT_NAMESPACE} agent -o=jsonpath='{$..spec.template.spec.containers[0].image}' | sed 's/.*://')
 
     # Download the agent deployment to a yaml file
     log_verbose "Dowloading agent deployment to yaml file..."
@@ -274,8 +274,10 @@ function rollback_agent_image() {
     fi
 
     # Replace the agent version in the yaml file to the version the agent attempted to upgrade from
+    current_anax_image_version="_anax_k8s:$current_version"
+    old_anax_image_version="_anax_k8s:$old_image_version"
     log_verbose "Downgrading version from $current_version to $old_image_version..."
-    sed -i "s/$current_version/$old_image_version/g" /tmp/agentbackup/deployment.yaml
+    sed -i "s/$current_anax_image_version/$old_anax_image_version/g" /tmp/agentbackup/deployment.yaml
 
     log_debug "New deployment.yaml file: $(cat /tmp/agentbackup/deployment.yaml)"
     

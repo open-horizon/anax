@@ -160,6 +160,10 @@
     "translation": "O usuário deve ser especificado no caminho da API"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "O nó deve ser especificado no caminho da API"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "Erro ao verificar segredo {FullSecretName} no gerenciador de segredos."
   },
@@ -400,20 +404,20 @@
     "translation": "Erro ao converter as seleções em Seletores: {Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "Name ou Org é uma sequência de caracteres vazia."
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "A matriz serviceVersions está vazia."
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "As propriedades contêm uma propriedade inválida: {Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "A propriedade {PROPSVCPRIVILEGED} deve ter um valor booleano (true ou false)."
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "Falha ao obter restrição com o nome {PROPNODEK8SNAMESPACE}, erro: {Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "O kubernetesNamespace definido na restrição {Newconstr} é diferente do clusterNamespace '{ClusterNSInPolicy}' especificado na política de implementação. A política pode resultar em nenhuma implementação de serviço"
   },
   {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
@@ -592,6 +596,14 @@
     "translation": "O tipo de nó. Os valores válidos são 'device' e 'cluster'. O valor padrão é o tipo do nó fornecido por -n ou o dispositivo registrado atual, se omitido."
   },
   {
+    "id": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+    "translation": "O namespace do cluster Kubernetes para o nó se o tipo de nó for 'cluster'. O valor padrão será 'openhorizon-agent', se omitido. O valor é ignorado quando o tipo de nó é 'device'"
+  },
+  {
+    "id": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+    "translation": "O escopo de cluster para o nó terá o escopo definido para o namespace se o tipo de nó for 'cluster'. O valor padrão será false, se omitido. O valor é ignorado quando o tipo de nó é 'device'"
+  },
+  {
     "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
     "translation": "A organização do nó. O valor padrão é a organização do nó fornecido por -n ou pelo dispositivo registrado atual, se omitido."
   },
@@ -600,8 +612,8 @@
     "translation": "O ID do nó do Horizon Exchange. Mutuamente exclusivo com --ha-group, --node-pol e --node-ui. Se omitido, o ID do nó com o qual o dispositivo atual está registrado será usado. Esta sinalização pode ser repetida para especificar mais de um nó. Se você não pré-anexar um ID do nó com o ID da organização, ele será pré-anexado automaticamente com o valor -o."
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-    "translation": "O nome de um grupo de alta disponibilidade. Mutuamente exclusivo com -n, --node-pol e --node-ui."
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+    "translation": "O nome de um grupo de alta disponibilidade. A verificação de implementação será executada em todos os nós dentro do grupo de alta disponibilidade fornecido. Mutuamente exclusivo com -n, --node-pol e --node-ui."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
@@ -648,8 +660,8 @@
     "translation": "O ID do nó do Horizon Exchange. Mutuamente exclusivo com --ha-group e --node-pol. Se omitido, o ID do nó com o qual o dispositivo atual está registrado será usado. Esta sinalização pode ser repetida para especificar mais de um nó. Se você não pré-anexar um ID do nó com o ID da organização, ele será pré-anexado automaticamente com o valor -o."
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-    "translation": "O nome de um grupo de alta disponibilidade. Mutuamente exclusivo com -n e --node-pol."
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+    "translation": "O nome de um grupo de alta disponibilidade. A verificação de implementação será executada em todos os nós dentro do grupo de alta disponibilidade fornecido. Mutuamente exclusivo com -n e --node-pol."
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
@@ -2448,8 +2460,8 @@
     "translation": "Remover também esse recurso de nó do Horizon Exchange (porque você não deseja mais usar esse nó com o Horizon)."
   },
   {
-    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-    "translation": "Remover também todas as informações de registro anteriores. Utilizar somente em caso de falha do comando 'hzn unregister'. Antes de usar essa sinalização, capture os logs, executando o comando 'hzn eventlog list -a -l'."
+    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+    "translation": "Remova também todas as informações de registro anteriores. Use-as apenas após o comando 'hzn unregister' falhar. O log de eventos é salvo automaticamente após a execução deste comando."
   },
   {
     "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
@@ -2552,8 +2564,8 @@
     "translation": "A suposta assinatura de stdin."
   },
   {
-    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-    "translation": "Listar e gerenciar segredos no gerenciador de segredos. NOTA: deve-se autenticar como um administrador para listar segredos disponíveis para toda a organização."
+    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+    "translation": "Listar e gerenciar segredos no gerenciador de segredos. NOTA: deve-se autenticar como um administrador para listar segredos disponíveis para toda a organização. Os segredos não são suportados em agentes de cluster."
   },
   {
     "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
@@ -2568,6 +2580,10 @@
     "translation": "Exibir os nomes dos segredos no gerenciador de segredos."
   },
   {
+    "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+    "translation": "O ID do nó do segredo de nó a ser listado. Inclua apenas se esse segredo for específico para um único nó."
+  },
+  {
     "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
     "translation": "Listar apenas este segredo. Retorna um booleano indicando a existência do segredo. Este é o nome do segredo usado no gerenciador de segredos. Se o segredo não existir, retornará com o código de saída 1."
   },
@@ -2578,6 +2594,10 @@
   {
     "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
     "translation": "O nome do segredo. Ele deve ser único dentro da sua organização. Este nome é usado em políticas e padrões de implementação para ligar este segredo a um nome secreto em uma definição de serviço."
+  },
+  {
+    "id": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+    "translation": "O ID do nó ao qual aplicar esse segredo. Inclua apenas se esse segredo for específico para um único nó."
   },
   {
     "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
@@ -2600,12 +2620,20 @@
     "translation": "Remover um segredo no gerenciador de segredos."
   },
   {
+    "id": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+    "translation": "O ID do nó do segredo a ser removido. Inclua apenas se esse segredo for específico para um único nó."
+  },
+  {
     "id": "The name of the secret to be removed from the secrets manager.",
     "translation": "O nome do segredo a ser removido do gerenciador de segredos."
   },
   {
     "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
     "translation": "Leia os detalhes de um segredo armazenado no gerenciador de segredos. Isso consiste no par chave-valor fornecido na criação do segredo."
+  },
+  {
+    "id": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+    "translation": "O ID do nó do segredo de nó a ser lido. Inclua apenas se esse segredo for específico para um único nó."
   },
   {
     "id": "The name of the secret to read in the secrets manager.",
@@ -3492,6 +3520,10 @@
     "translation": "falha ao serializar a saída 'hzn deploycheck all': {Err}"
   },
   {
+    "id": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+    "translation": "-s poderá ser especificado apenas quando o tipo de nó especificado por -t for 'cluster'"
+  },
+  {
     "id": "Please specify either deployment policy or pattern.",
     "translation": "Especifique a política de implementação ou o padrão."
   },
@@ -3542,6 +3574,14 @@
   {
     "id": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
     "translation": "O tipo de nó {InputType} especificado por -t não corresponde ao tipo do nó local {NodeType}."
+  },
+  {
+    "id": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+    "translation": "O namespace do cluster do nó {InputNamespace} especificado por -s não corresponde ao namespace do cluster do nó local {Namespace}."
+  },
+  {
+    "id": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+    "translation": "O nó is-namespace-scoped {InputIsNamespaceScoped} especificado por --is-namespace-scoped não corresponde ao escopo do agente do nó local {IsNamespaceScoped}."
   },
   {
     "id": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
@@ -4388,6 +4428,10 @@
     "translation": "Política de implementação: {PolOrg}/{Policy} incluída no Horizon Exchange"
   },
   {
+    "id": "Invalid format for service: {Err1}",
+    "translation": "Formato inválido para o serviço: {Err1}"
+  },
+  {
     "id": "Invalid format for properties: {Err1}",
     "translation": "Formato inválido para as propriedades: {Err1}"
   },
@@ -4428,8 +4472,8 @@
     "translation": "Política de implementação {PolOrg}/{Policy} removida"
   },
   {
-    "id": "Failed to validate the secret binding. {Err}",
-    "translation": "Falha ao validar a ligação do segredo. {Err}"
+    "id": "{Err}",
+    "translation": "{Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
@@ -4460,6 +4504,18 @@
     "translation": "Erro ao validar as ligações de segredo para o serviço dependente {Id}. {Err}"
   },
   {
+    "id": "Warning: {Err}",
+    "translation": "Aviso: {Err}"
+  },
+  {
+    "id": "Failed to validate cluster namespace for service, error was: {Err}",
+    "translation": "Falha ao validar o namespace do cluster para o serviço; o erro foi: {Err}"
+  },
+  {
+    "id": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+    "translation": "ClusterNamespace não deve ser configurado para o serviço de dispositivo: {Org}/{Name} com arch {Arch}"
+  },
+  {
     "id": "Deployment policy label.",
     "translation": "Rótulo da política de implementação."
   },
@@ -4478,6 +4534,10 @@
   {
     "id": "Set to '*' to use services of any hardware architecture.",
     "translation": "Configure como '*' para usar serviços de qualquer arquitetura de hardware."
+  },
+  {
+    "id": "The cluster namespace of the service.",
+    "translation": "O namespace do cluster do serviço."
   },
   {
     "id": "A list of service versions.",
@@ -5176,8 +5236,20 @@
     "translation": "Padrão {Pattern} não localizado na organização {PatOrg}"
   },
   {
-    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-    "translation": "O atributo padrão a ser atualizado não está localizado no arquivo de entrada. Os atributos suportados são: rótulo, descrição, serviços, userInput e secretBinding."
+    "id": "Invalid format for services: {Err1}",
+    "translation": "Formato inválido para serviços: {Err1}"
+  },
+  {
+    "id": "Error checking service types for pattern {Pname}. {Err}",
+    "translation": "Erro ao verificar tipos de serviço para o padrão {Pname}. {Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+    "translation": "'clusterNamespace' é especificado, mas nenhum serviço possui a implementação de cluster para o padrão {Pname}."
+  },
+  {
+    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+    "translation": "O atributo de padrão a ser atualizado não foi localizado no arquivo de entrada. Os atributos suportados são: label, description, clusterNamespace, services, userInput e secretBinding."
   },
   {
     "id": "Pattern {PatOrg}/{Pattern} updated in the Horizon Exchange",
@@ -5198,6 +5270,18 @@
   {
     "id": "the pattern definition ({Services}) must contain services, unable to proceed",
     "translation": "A definição de padrão ({Services}) deve conter serviços, não é possível continuar"
+  },
+  {
+    "id": "Error checking service types for pattern. {Err}",
+    "translation": "Erro ao verificar os tipos de serviço para o padrão. {Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+    "translation": "'clusterNamespace' foi especificado, mas nenhum serviço possui implementação de cluster para o padrão."
+  },
+  {
+    "id": "Invalid format in pattern file {JsonFilePath}: {Err}",
+    "translation": "Formato inválido no arquivo padrão {JsonFilePath}: {Err}"
   },
   {
     "id": "Signing deployment_overrides field in service {I__1}, serviceVersion number {J__1}",
@@ -5250,6 +5334,10 @@
   {
     "id": "key '{KeyName}' not found",
     "translation": "Chave '{KeyName}' não localizada"
+  },
+  {
+    "id": "Failed to validate the secret binding. {Err}",
+    "translation": "Falha ao validar a ligação do segredo. {Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this pattern:",
@@ -5706,6 +5794,18 @@
   {
     "id": "unable to read kube operator {DepoperatorYamlArchive}, error {Err}",
     "translation": "não é possível ler o operador kube {DepoperatorYamlArchive}, erro {Err}"
+  },
+  {
+    "id": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+    "translation": "O 'metadata' em 'clusterDeployment' não deve ser configurado. Remova 'metadata' dentro do 'clusterDeployment' antes de publicar o serviço"
+  },
+  {
+    "id": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+    "translation": "falha ao obter namespace do operador kube {OperatorFilePath}, erro {Err}"
+  },
+  {
+    "id": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+    "translation": "Aviso: o namespace é detectado no arquivo do operador. O namespace do serviço deve ser configurado na política ou no padrão de implementação"
   },
   {
     "id": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
@@ -6244,8 +6344,8 @@
     "translation": "O nó já está no grupo de alta disponibilidade '{HaGroupName}'."
   },
   {
-    "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-    "translation": "O nó {Org}/{NodeId} está no grupo de alta disponibilidade {HaGroupName}."
+    "id": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+    "translation": "O nó {Org}/{NodeId} está no grupo de alta disponibilidade {ExistingHagrName}."
   },
   {
     "id": "Updating the node policy...",
@@ -7380,6 +7480,10 @@
     "translation": "Contêiner {Name} parado"
   },
   {
+    "id": "Configuration files {FileObjects} loaded into the File sync service.",
+    "translation": "Arquivos de configuração {FileObjects} carregados no serviço de sincronização de arquivo."
+  },
+  {
     "id": "Loading {FileName} into CSS",
     "translation": "Carregando {FileName} no CSS"
   },
@@ -7394,10 +7498,6 @@
   {
     "id": "unable to add file {FileName} to the CSS, error {Err}",
     "translation": "Não é possível incluir o arquivo {FileName} no CSS, erro {Err}"
-  },
-  {
-    "id": "Configuration files {FileObjects} loaded into the File sync service.",
-    "translation": "Arquivos de configuração {FileObjects} carregados no serviço de sincronização de arquivo."
   },
   {
     "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
@@ -7442,6 +7542,10 @@
   {
     "id": "Cannot backup eventlogs: {Err}",
     "translation": "Não é possível fazer backup de eventlogs: {Err}"
+  },
+  {
+    "id": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+    "translation": "Cancelando o registro desse nó, cancelando todos os contratos, parando todas as cargas de trabalho, removendo esse nó do grupo de alta disponibilidade {HAGroup}, removendo esse nó do Exchange e reiniciando o Horizon..."
   },
   {
     "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
@@ -7676,6 +7780,22 @@
     "translation": "Falha ao desserializar o JSON para o campo de implementação {StringjsonBytes}: {Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "falha ao desserializar json para o campo de implementação de cluster {StringjsonBytes}: {Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "Dados inválidos apresentados no campo de implementação de cluster: {TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "O atributo de metadados na implementação de cluster possui formato incorreto."
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "Falha ao obter o namespace do operador Kube. {Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "A entrada do usuário {Name} não possui valor padrão e não está configurada"
   },
@@ -7758,6 +7878,34 @@
   {
     "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
     "translation": "O serviço não tem configuração de implementação de cluster para o tipo de nó 'cluster'."
+  },
+  {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "O namespace do cluster do nó de entrada '{NodeNamespace}' não corresponde ao namespace do cluster do nó '{ExchNodeNamespace}' da troca {NodeId}."
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "O escopo do nó de entrada '{NodeIsNamespaceScope}' não corresponde ao escopo do nó '{ExchNodeIsNamespaceScope}' da troca {NodeId}."
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "O namespace '{DeployerNamespace}' especificado na política ou no padrão de implementação não corresponde ao namespace do agente: '{NodeNamespace}'"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "Falha ao obter a implementação de cluster do serviço. {Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "O namespace '{SvcNamespace}' especificado no serviço não corresponde ao namespace do agente: '{NodeNamespace}'. Sobrescreva-o na política ou no padrão de implementação."
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "O namespace '{PatternNamespace}' especificado no padrão '{PatternId}' está vazio ou não corresponde ao namespace do agente com escopo definido no namespace: '{NodeNamespace}'. O agente com escopo definido no namespace é compatível apenas com o padrão que possui o mesmo namespace com o agente."
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "O namespace do cluster especificado no padrão '{PatternId}' é {PatternNamespace}, apenas o padrão com o namespace do cluster vazio pode ser registrado para o agente com escopo definido no cluster"
   },
   {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
@@ -8022,6 +8170,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "A organização do nó deve ser fornecida."
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "O segredo {VaultSecretName} não existe no gerenciador de segredo para o nível da organização ou nível do usuário."
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -8302,6 +8454,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "Status de gerenciamento do nó para {Arg_1} mudado para {Arg_2}."
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "Status de gerenciamento do nó para {Arg_1} mudado para {Arg_2}. Mensagem de erro: {Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "Removendo status de gerenciamento do nó para {Arg_1}."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

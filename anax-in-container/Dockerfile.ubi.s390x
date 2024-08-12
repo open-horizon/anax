@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.0
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2
 
 LABEL vendor="IBM"
 LABEL summary="The agent in a general purpose container."
@@ -6,29 +6,22 @@ LABEL description="A container which holds the edge node agent, to be used in en
 
 ARG DOCKER_VER=18.06.3-ce
 
-# yum is not installed, use microdnf instead
-# shadow-utils contains groupadd and adduser commands
-# build jq v1.6 from sources
-# install docker cli
-# create other required directories
-RUN microdnf update -y --nodocs && microdnf clean all && microdnf install --nodocs -y shadow-utils \
-    && microdnf install --nodocs -y openssl ca-certificates \
-    && microdnf install -y wget iptables vim-minimal procps tar gzip libtool autoconf make automake \
-    && microdnf update -y --nodocs --nobest && microdnf clean all \
-    && wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-1.6.tar.gz \
-    && tar -xvf jq-1.6.tar.gz \
-    && cd jq-1.6 \
-    && autoreconf -fi \
-    && ./configure --disable-dependency-tracking \
-    && make \
-    && make install \
-    && cd - \
-    && rm -rf jq-1.6 jq-1.6.tar.gz \
-    && curl -fsSLO https://download.docker.com/linux/static/stable/s390x/docker-${DOCKER_VER}.tgz \
-  	&& tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \
-  	&& rm docker-${DOCKER_VER}.tgz \
-    && mkdir -p /licenses && mkdir -p /usr/horizon/bin /usr/horizon/web /var/horizon \
-    && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust
+# The anax binary (secrets manager code) shells out to groupadd, groupdel (from shadow-utils), pkill (from procps-ng)
+# The anax.service calls jq (from jq) and killall (from psmisc)
+# anax does not use iptables directly but the github.com/coreos/go-iptables/iptables dependency needs the directory structure
+# Install docker cli, which requires tar / gunzip to unpack, then remove tar / gzip packages
+# Create required directories
+ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng tar gzip"
+RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
+  && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
+  && curl -4fsSLO https://download.docker.com/linux/static/stable/s390x/docker-${DOCKER_VER}.tgz \
+  && tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \
+  && rm docker-${DOCKER_VER}.tgz \
+  && microdnf remove -y --disableplugin=subscription-manager tar gzip \
+  && microdnf clean all --disableplugin=subscription-manager \
+  && rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \
+  && mkdir -p /licenses /usr/horizon/bin /usr/horizon/web /var/horizon \
+  && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust
 
 # add license file
 COPY LICENSE.txt /licenses

@@ -18,11 +18,11 @@ func Test_SUM_Queue(t *testing.T) {
 	pn = append(pn, "p2")
 	pn = append(pn, "p3")
 
-	su1 := events.NewSecretUpdate("org1", "mysecret1", 100, pn, []string{})
+	su1 := events.NewSecretUpdate("org1", "mysecret1", 100, pn, []string{}, "")
 
 	pn[1] = "p4"
 
-	su2 := events.NewSecretUpdate("org1", "mysecret2", 100, pn, []string{})
+	su2 := events.NewSecretUpdate("org1", "mysecret2", 100, pn, []string{}, "")
 
 	sus := events.NewSecretUpdates()
 	sus.AddSecretUpdate(su1)

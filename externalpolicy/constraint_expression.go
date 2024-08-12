@@ -212,3 +212,101 @@ func parseConstraintExpression(constraint string, handler plugin_registry.Constr
 
 	return nil, constraint, err
 }
+
+func getConstraintExpressionWithName(constraint string, handler plugin_registry.ConstraintLanguagePlugin, constrainName string) (map[string]interface{}, string, error) {
+	var err error
+	var nextProp string
+	var ctrlOp string
+	var subExpr map[string]interface{}
+
+	andArray := make([]interface{}, 0)
+	orArray := make([]interface{}, 0)
+
+	for err == nil {
+		// Start of property expression. This case will consume the entire expression.
+		nextProp, constraint, err = handler.GetNextExpression(constraint)
+		if err != nil {
+			return nil, constraint, err
+		}
+		if strings.TrimSpace(nextProp) != "" {
+			prop := strings.Split(nextProp, "\a")
+			if prop[0] == constrainName {
+				andArray = append(andArray, *PropertyExpression_Factory(prop[0], strings.TrimSpace(prop[2]), strings.TrimSpace(prop[1])))
+			}
+		}
+		ctrlOp, constraint, err = handler.GetNextOperator(constraint)
+		if err != nil {
+			return nil, constraint, err
+		}
+
+		if ctrlOp == "(" {
+			// handle a parenthetical expression as a seperate constraint expression
+			subExpr, constraint, err = getConstraintExpressionWithName(constraint, handler, constrainName)
+			if err != nil {
+				return nil, constraint, err
+			}
+
+			andArray = append(andArray, subExpr)
+
+			ctrlOp, constraint, err = handler.GetNextOperator(constraint)
+			if err != nil {
+				return nil, constraint, err
+			}
+		}
+		if ctrlOp == "||" || ctrlOp == "OR" {
+			innerAnd := map[string]interface{}{
+				OP_AND: andArray,
+			}
+			orArray = append(orArray, innerAnd)
+			andArray = make([]interface{}, 0)
+		} else if ctrlOp == ")" || ctrlOp == "" {
+			// end or expression. append andArray to orArray and append the result to allPropArray
+			innerAnd := map[string]interface{}{
+				OP_AND: andArray,
+			}
+			orArray = append(orArray, innerAnd)
+			newRP := map[string]interface{}{OP_OR: orArray}
+			return newRP, constraint, nil
+		}
+	}
+	return nil, constraint, err
+}
+
+func GetParseConstraintWithName(extConstraint *ConstraintExpression, constraintName string) ([]interface{}, error) {
+	if extConstraint == nil || len(*extConstraint) == 0 {
+		return nil, nil
+	}
+
+	var handler plugin_registry.ConstraintLanguagePlugin
+	var err error
+	allPropArray := make([]interface{}, 0)
+
+	for _, remainder := range *extConstraint {
+		remainder := strings.Replace(remainder, "\a", " ", -1)
+
+		// Get a handle to the specific language handler we will be using.
+		handler, err = extConstraint.GetLanguageHandler()
+		if err != nil {
+			return nil, fmt.Errorf("unable to obtain policy constraint language handler, error %v", err)
+		}
+
+		// Create a new Required Property structure and initialize it with a top level OR followed by a top level AND. This will allow us
+		// to drop expressions into the structure as they come in through the GetNextExpression function.
+
+		newPropArray, _, err := getConstraintExpressionWithName(remainder, handler, constraintName)
+		if err != nil {
+			return nil, err
+		}
+		allPropArray = append(allPropArray, newPropArray)
+	}
+
+	return allPropArray, err
+}
+
+func ConvertParsedConstraintToRequiredProperty(parsedConstraint []interface{}) *RequiredProperty {
+	allRP := RequiredProperty_Factory()
+	allRP.Initialize(&map[string]interface{}{
+		OP_AND: parsedConstraint,
+	})
+	return allRP
+}

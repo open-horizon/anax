@@ -160,6 +160,10 @@
     "translation": "使用者必須在 API 路徑中指定"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "必須在 API 路徑中指定節點"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "在密碼管理程式中檢查密碼 {FullSecretName} 時發生錯誤。"
   },
@@ -400,20 +404,20 @@
     "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "名稱或組織為空字串。"
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "serviceVersions 陣列為空。"
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "內容包含無效內容：{Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "內容 {PROPSVCPRIVILEGED} 必須具有布林值（true 或 false）。"
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "無法取得名稱為 {PROPNODEK8SNAMESPACE} 的限制，錯誤：{Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "限制 {Newconstr} 中定義的 kubernetesNamespace 與部署原則中指定的 clusterNamespace '{ClusterNSInPolicy}' 不同，該原則可能會導致無服務部署"
   },
   {
     "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nSubcommands Description:\n  agbot: List and manage Horizon agreement bot resources.\n  agreement: List or manage the agreements this edge node has made with a Horizon agreement bot.\n  architecture: Show the architecture of this machine. \n  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.\n  deploycheck: Check deployment compatibility.\n  dev: Development tools for creation of services.\n  env: Show the Horizon Environment Variables.\n  eventlog: List the event logs for the current or all registrations.\n  exchange: List and manage Horizon Exchange resources.\n  key: List and manage keys for signing and verifying services. \n  mms: List and manage Horizon Model Management Service resources.\n  nmstatus: List and manage node management status for the local node.\n  node: List and manage general information about this Horizon edge node.\n  nodemanagement: List and manage manifests and agent files for node management.\n  policy: List and manage policy for this Horizon edge node. \n  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command. \n  register: Register this edge node with the management hub.\n  secretsmanager: List and manage secrets in the secrets manager.\n  service: List or manage the services that are currently registered on this Horizon edge node.\n  status: Display the current horizon internal status for the node.\n  unregister: Unregister and reset this Horizon edge node.\n  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.\n  util: Utility commands.\n  version: Show the Horizon version.\n  sdo: List and manage Horizon SDO ownership vouchers and keys.\n  fdo: List and manage Horizon FDO ownership vouchers and keys.\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_SDO_SVC_URL:  Override the URL that the 'hzn sdo' sub-commands use\n\t  to communicate with SDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n  HZN_FDO_SVC_URL:  Override the URL that the 'hzn fdo' sub-commands use\n\t  to communicate with FDO owner services. (By default hzn will ask the\n\t\tHorizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
@@ -592,6 +596,14 @@
     "translation": "節點類型。 有效值為 device 和 cluster。 預設值是 -n 或現行已登錄裝置提供之節點的類型，如果已省略。"
   },
   {
+    "id": "The Kubernetes cluster namespace for the node if the node type is 'cluster'. The default value is 'openhorizon-agent', if omitted. The value is ignored when the node type is 'device'",
+    "translation": "如果節點類型為 'cluster'，則為節點的 Kubernetes 叢集名稱空間。 如果省略的話，預設值為 'openhorizon-agent'。 當節點類型為 'device' 時，會忽略此值"
+  },
+  {
+    "id": "The cluster scope for the node is namespace scoped if the node type is 'cluster'. The default value is false, if omitted. The value is ignored when the node type is 'device'",
+    "translation": "如果節點類型為 'cluster'，則節點的叢集範圍為名稱空間範圍。 如果省略的話，預設值為 false。 當節點類型為 'device' 時，會忽略此值"
+  },
+  {
     "id": "The organization of the node. The default value is the organization of the node provided by -n or current registered device, if omitted.",
     "translation": "節點的組織。 預設值是由 -n 或現行已登錄裝置提供之節點的組織（如果已省略的話）。"
   },
@@ -600,8 +612,8 @@
     "translation": "Horizon Exchange 節點 ID。 與 --ha-group、--node-pol 及 --node-ui 互斥。 如果省略，則將使用登錄現行裝置的節點 ID。 可以重複使用此旗標來指定多個節點。 如果您未在節點 ID 前面附加組織 ID，則會自動在節點 ID 前面附加 -o 值。"
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
-    "translation": "HA 群組的名稱。 與 -n、--node-pol 和 --node-ui 互斥。"
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n, --node-pol and --node-ui.",
+    "translation": "HA 群組的名稱。 將在給定 HA 群組內的所有節點上執行部署檢查。 與 -n、--node-pol 和 --node-ui 互斥。"
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group, -p and -P.",
@@ -648,8 +660,8 @@
     "translation": "Horizon Exchange 節點 ID。 與 --ha-group 和 --node-pol 互斥。 如果省略，則將使用登錄現行裝置的節點 ID。 可以重複使用此旗標來指定多個節點。 如果您未在節點 ID 前面附加組織 ID，則會自動在節點 ID 前面附加 -o 值。"
   },
   {
-    "id": "The name of an HA group. Mutually exclusive with -n and --node-pol.",
-    "translation": "HA 群組的名稱。 與 -n 和 --node-pol 互斥。"
+    "id": "The name of an HA group. The deployment check will be performed on all the nodes within the given HA group. Mutually exclusive with -n and --node-pol.",
+    "translation": "HA 群組的名稱。 將在給定 HA 群組內的所有節點上執行部署檢查。 與 -n 和 --node-pol 互斥。"
   },
   {
     "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, --ha-group.",
@@ -2448,8 +2460,8 @@
     "translation": "此外，還會從 Horizon Exchange 中移除這個節點資源（因為您不再想要將此節點與 Horizon 搭配使用）。"
   },
   {
-    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-    "translation": "還會移除所有先前的登錄資訊。 僅在 'hzn unregister' 指令失敗之後使用它。 請在使用此旗標之前透過執行 'hzn eventlog list -a -l' 指令來擷取日誌。"
+    "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. The eventlog is automatically saved after running this command.",
+    "translation": "同時移除所有先前的登錄資訊。 請只在 'hzn unregister' 指令失敗之後才使用它。 在執行此指令之後，會自動儲存事件日誌。"
   },
   {
     "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
@@ -2552,8 +2564,8 @@
     "translation": "stdin 的假定簽章。"
   },
   {
-    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization.",
-    "translation": "列出並管理密碼管理程式中的密碼。 附註：您必須以管理者身分進行鑑別，才能列出可供整個組織使用的密碼。"
+    "id": "List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. Secrets are not supported on cluster agents.",
+    "translation": "列出及管理密碼管理程式中的密碼。 附註：您必須以管理者身分進行鑑別，才能列出可供整個組織使用的密碼。 叢集代理程式不支援密碼。"
   },
   {
     "id": "Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
@@ -2568,6 +2580,10 @@
     "translation": "顯示密碼管理程式中的密碼名稱。"
   },
   {
+    "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
+    "translation": "要列出之節點密碼的節點 ID。 只有當此密碼與單一節點相關時才包含在內。"
+  },
+  {
     "id": "List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager. If the secret does not exist, returns with exit code 1.",
     "translation": "僅列出這一個密碼。 傳回一個布林值，指出密碼存在。 這是密碼管理程式中使用的密碼名稱。 如果密碼不存在，則傳回結束碼 1。"
   },
@@ -2578,6 +2594,10 @@
   {
     "id": "The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.",
     "translation": "密碼的名稱。 它在您的組織內必須是唯一的。 在部署原則和型樣中使用此名稱，以將此密碼連結至服務定義中的密碼名稱。"
+  },
+  {
+    "id": "The id of the node to apply this secret to. Include only if this secret is specific to a single node.",
+    "translation": "要套用此密碼的節點 ID。 只有當此密碼與單一節點相關時才包含在內。"
   },
   {
     "id": "Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.",
@@ -2600,12 +2620,20 @@
     "translation": "移除密碼管理程式中的密碼。"
   },
   {
+    "id": "The node id of the secret to be removed. Include only if this secret is specific to a single node.",
+    "translation": "要移除之密碼的節點 ID。 只有當此密碼與單一節點相關時才包含在內。"
+  },
+  {
     "id": "The name of the secret to be removed from the secrets manager.",
     "translation": "要從密碼管理程式中移除的密碼名稱。"
   },
   {
     "id": "Read the details of a secret stored in the secrets manager. This consists of the key and value pair provided on secret creation.",
     "translation": "讀取儲存在密碼管理程式中的密碼詳細資料。 其中包含建立密碼時提供的金鑰和值配對。"
+  },
+  {
+    "id": "The node id of the node secret to read. Include only if this secret is specific to a single node.",
+    "translation": "要讀取之節點密碼的節點 ID。 只有當此密碼與單一節點相關時才包含在內。"
   },
   {
     "id": "The name of the secret to read in the secrets manager.",
@@ -3492,6 +3520,10 @@
     "translation": "無法配置 'hzn deploycheck all' 輸出：{Err}"
   },
   {
+    "id": "-s can only be specified when the node type sepcified by -t is 'cluster'.",
+    "translation": "只有在使用 -t 指定的節點類型為 'cluster' 時，才可以指定 -s。"
+  },
+  {
     "id": "Please specify either deployment policy or pattern.",
     "translation": "請指定部署原則或型樣。"
   },
@@ -3542,6 +3574,14 @@
   {
     "id": "The node type {InputType} specified by -t does not match the type of the local node {NodeType}.",
     "translation": "由 -t 指定的節點類型 {InputType} 不符合本端節點類型 {NodeType}。"
+  },
+  {
+    "id": "The node cluster namespace {InputNamespace} specified by -s does not match the cluster namespace of the local node {Namespace}.",
+    "translation": "-s 指定的節點叢集名稱空間 {InputNamespace} 不符合本端節點 {Namespace}的叢集名稱空間。"
+  },
+  {
+    "id": "The node is-namespace-scoped {InputIsNamespaceScoped} specified by --is-namespace-scoped does not match the agent scope of local node {IsNamespaceScoped}.",
+    "translation": "以 --is-namespace-scoped 指定的節點 is-namespace-scoped {InputIsNamespaceScoped} 不符合本端節點 {IsNamespaceScoped} 的代理程式範圍。"
   },
   {
     "id": "The node organization {InputType} specified by -O does not match the organization of the local node {NodeOrg}.",
@@ -4388,6 +4428,10 @@
     "translation": "已在 Horizon Exchange 中新增部署原則：{PolOrg}/{Policy}"
   },
   {
+    "id": "Invalid format for service: {Err1}",
+    "translation": "下列服務的格式無效：{Err1}"
+  },
+  {
     "id": "Invalid format for properties: {Err1}",
     "translation": "內容的格式無效：{Err1}"
   },
@@ -4428,8 +4472,8 @@
     "translation": "已移除部署原則 {PolOrg}/{Policy}"
   },
   {
-    "id": "Failed to validate the secret binding. {Err}",
-    "translation": "無法驗證密碼連結。 {Err}"
+    "id": "{Err}",
+    "translation": "{Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this deployment policy:",
@@ -4460,6 +4504,18 @@
     "translation": "驗證相依服務 {Id} 的密碼連結時發生錯誤。 {Err}"
   },
   {
+    "id": "Warning: {Err}",
+    "translation": "警告： {Err}"
+  },
+  {
+    "id": "Failed to validate cluster namespace for service, error was: {Err}",
+    "translation": "無法驗證服務的叢集名稱空間，錯誤為：{Err}"
+  },
+  {
+    "id": "ClusterNamespace should not be set for device service: {Org}/{Name} with arch {Arch}",
+    "translation": "不應為裝置服務設定 ClusterNamespace：{Org}/{Name} 並具有架構 {Arch}"
+  },
+  {
     "id": "Deployment policy label.",
     "translation": "部署原則標籤。"
   },
@@ -4478,6 +4534,10 @@
   {
     "id": "Set to '*' to use services of any hardware architecture.",
     "translation": "設為 '*' 以使用任何硬體架構的服務。"
+  },
+  {
+    "id": "The cluster namespace of the service.",
+    "translation": "服務的叢集名稱空間。"
   },
   {
     "id": "A list of service versions.",
@@ -5176,8 +5236,20 @@
     "translation": "在組織 {PatOrg} 中找不到型樣 {Pattern}"
   },
   {
-    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding.",
-    "translation": "在輸入檔中找不到要更新的型樣屬性。 受支援的屬性為：標籤、說明、服務、使用者輸入和密碼連結。"
+    "id": "Invalid format for services: {Err1}",
+    "translation": "服務的格式無效：{Err1}"
+  },
+  {
+    "id": "Error checking service types for pattern {Pname}. {Err}",
+    "translation": "檢查型樣 {Pname} 的服務類型時發生錯誤。{Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern {Pname}.",
+    "translation": "已指定 'clusterNamespace'，但沒有服務具有型樣 {Pname} 的叢集部署。"
+  },
+  {
+    "id": "Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, clusterNamespace, services, userInput and secretBinding.",
+    "translation": "在輸入檔中找不到要更新的型樣屬性。 支援的屬性為：label、description、clusterNamespace、services、userInput 及 secretBinding。"
   },
   {
     "id": "Pattern {PatOrg}/{Pattern} updated in the Horizon Exchange",
@@ -5198,6 +5270,18 @@
   {
     "id": "the pattern definition ({Services}) must contain services, unable to proceed",
     "translation": "型樣定義 ({Services}) 必須包含服務，無法繼續"
+  },
+  {
+    "id": "Error checking service types for pattern. {Err}",
+    "translation": "檢查型樣的服務類型時發生錯誤。{Err}"
+  },
+  {
+    "id": "'clusterNamespace' is specified, but no service has cluster deployment for pattern.",
+    "translation": "已指定 'clusterNamespace'，但沒有服務具有型樣的叢集部署。"
+  },
+  {
+    "id": "Invalid format in pattern file {JsonFilePath}: {Err}",
+    "translation": "型樣檔案 {JsonFilePath} 中的格式無效：{Err}"
   },
   {
     "id": "Signing deployment_overrides field in service {I__1}, serviceVersion number {J__1}",
@@ -5250,6 +5334,10 @@
   {
     "id": "key '{KeyName}' not found",
     "translation": "找不到金鑰 '{KeyName}'"
+  },
+  {
+    "id": "Failed to validate the secret binding. {Err}",
+    "translation": "無法驗證密碼連結。 {Err}"
   },
   {
     "id": "Note: The following secret bindings are not required by any services for this pattern:",
@@ -5706,6 +5794,18 @@
   {
     "id": "unable to read kube operator {DepoperatorYamlArchive}, error {Err}",
     "translation": "無法讀取 kube 運算子 {DepoperatorYamlArchive}，錯誤為：{Err}"
+  },
+  {
+    "id": "'metadata' in 'clusterDeployment' should not be set. Remove 'metadata' inside 'clusterDeployment' before publishing service",
+    "translation": "不應該設定 'clusterDeployment' 中的 'metadata'。 在發佈服務之前，請先移除 'clusterDeployment' 內的 'metadata'"
+  },
+  {
+    "id": "failed to get namespace from kube operator {OperatorFilePath}, error {Err}",
+    "translation": "無法從 kube 運算子 {OperatorFilePath} 取得名稱空間，錯誤為 {Err}"
+  },
+  {
+    "id": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
+    "translation": "警告：在運算子檔案中偵測到名稱空間。 應該在部署原則或型樣中設定服務名稱空間"
   },
   {
     "id": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
@@ -6244,8 +6344,8 @@
     "translation": "節點已位於 HA 群組 '{HaGroupName}' 中。"
   },
   {
-    "id": "Node {Org}/{NodeId} is in HA group {HaGroupName}.",
-    "translation": "節點 {Org}/{NodeId} 位於 HA 群組 {HaGroupName} 中。"
+    "id": "Node {Org}/{NodeId} is in HA group {ExistingHagrName}.",
+    "translation": "節點 {Org}/{NodeId} 位於 HA 群組 {ExistingHagrName} 中。"
   },
   {
     "id": "Updating the node policy...",
@@ -7380,6 +7480,10 @@
     "translation": "已停止 {Name} 儲存器"
   },
   {
+    "id": "Configuration files {FileObjects} loaded into the File sync service.",
+    "translation": "配置檔 {FileObjects} 已載入檔案同步服務。"
+  },
+  {
     "id": "Loading {FileName} into CSS",
     "translation": "正在將 {FileName} 載入 CSS"
   },
@@ -7394,10 +7498,6 @@
   {
     "id": "unable to add file {FileName} to the CSS, error {Err}",
     "translation": "無法將檔案 {FileName} 新增至 CSS，錯誤為：{Err}"
-  },
-  {
-    "id": "Configuration files {FileObjects} loaded into the File sync service.",
-    "translation": "配置檔 {FileObjects} 已載入檔案同步服務。"
   },
   {
     "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
@@ -7442,6 +7542,10 @@
   {
     "id": "Cannot backup eventlogs: {Err}",
     "translation": "無法備份事件日誌：{Err}"
+  },
+  {
+    "id": "Unregistering this node, cancelling all agreements, stopping all workloads, removing this node from HA group {HAGroup}, removing this node from the Exchange and restarting Horizon...",
+    "translation": "正在取消登錄此節點、取消所有合約、停止所有工作量、從 HA 群組 {HAGroup} 中移除此節點、從 Exchange 中移除此節點並重新啟動 Horizon…"
   },
   {
     "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
@@ -7676,6 +7780,22 @@
     "translation": "無法解除配置部署欄位 {StringjsonBytes} 的 JSON：{Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "無法解除配置叢集部署欄位 {StringjsonBytes} 的 JSON：{Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "叢集部署欄位中呈現的資料無效：{TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "叢集部署中的 meta 資料屬性格式錯誤。"
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "無法從 Kube 運算子取得名稱空間。{Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "使用者輸入 {Name} 沒有預設值且未設定"
   },
@@ -7758,6 +7878,34 @@
   {
     "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
     "translation": "服務沒有節點類型 'cluster' 的叢集部署配置。"
+  },
+  {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "輸入節點的叢集名稱空間 '{NodeNamespace}' 不符合 Exchange {NodeId} 中節點的叢集名稱空間 '{ExchNodeNamespace}'。"
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "輸入節點的範圍 '{NodeIsNamespaceScope}' 與 Exchange {NodeId} 中節點的範圍 '{ExchNodeIsNamespaceScope}' 不相符。"
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "部署原則或型樣中指定的名稱空間 '{DeployerNamespace}' 不符合下列代理程式的名稱空間：'{NodeNamespace}'"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "無法從服務取得叢集部署。{Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "服務中指定的名稱空間 '{SvcNamespace}' 不符合下列代理程式的名稱空間：'{NodeNamespace}'。請在部署原則或型樣中將其改寫。"
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "型樣 '{PatternId}' 中指定的名稱空間 '{PatternNamespace}' 是空的，或不符合下列名稱空間範圍代理程式的名稱空間：'{NodeNamespace}'。名稱空間範圍代理程式僅與代理程式具有相同名稱空間的型樣相容。"
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "型樣 '{PatternId}' 中指定的叢集名稱空間是 {PatternNamespace}，只有具有空叢集名稱空間的型樣才能為叢集範圍代理程式登錄"
   },
   {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
@@ -8022,6 +8170,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "必須提供節點組織。"
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "密碼 {VaultSecretName} 不存在於組織層次或使用者層次的密碼管理程式中。"
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -8302,6 +8454,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "{Arg_1} 的節點管理狀態已變更為 {Arg_2}。"
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "{Arg_1} 的節點管理狀態已變更為 {Arg_2}。 錯誤訊息：{Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "正在移除 {Arg_1} 的節點管理狀態。"
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

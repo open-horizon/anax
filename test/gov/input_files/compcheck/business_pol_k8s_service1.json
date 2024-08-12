@@ -1,0 +1,34 @@
+{
+    "label": "business policy for k8s-service1",
+    "description": "deploycheck test for k8s-service1",
+    "service": {
+      "name": "k8s-service1",
+      "org": "e2edev@somecomp.com",
+      "arch": "__ARCH__",
+      "clusterNamespace": "ns-in-policy",
+      "serviceVersions": [
+        {
+          "version": "1.0.0",
+          "priority": {},
+          "upgradePolicy": {}
+        }
+      ],
+      "nodeHealth": {
+        "missing_heartbeat_interval": 1800,
+        "check_agreement_status": 1800
+      }
+    },
+    "properties": [
+      {
+        "name": "iame2edev",
+        "value": "true"
+      },
+      {
+        "name": "NOK8S",
+        "value": false
+      }
+    ],
+    "constraints": [
+      "purpose == network-testing && openhorizon.kubernetesNamespace == another-namespace"
+    ]
+}

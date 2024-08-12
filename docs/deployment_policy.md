@@ -1,7 +1,7 @@
 ---
 copyright:
 years: 2022 - 2023
-lastupdated: "2023-02-05"
+lastupdated: "2023-10-19"
 title: "Deployment Policy"
 description: Description of Deployment policy json fields
 
@@ -36,6 +36,7 @@ Following are the fields in the JSON representation of a deployment policy:
   - `name`: The name (URL) of a service to be deployed. This is the same value as found in the `url` field [here](./service_def.md).
   - `org`: The organization in which the service in `name` is defined.
   - `arch`: The hardware architecture of the service in `name`, or `*` to indicate any compatible architecture. This is the same value as found in the `arch` field [here](./service_def.md).
+  - `clusterNamespace`: Namespace that this service will be deployed to. Only apply to cluster service.
   - `serviceVersions`: A list of versions of the service. At least one version must be specified.
     - `version`: One of the versions of the service in `name`. This is the same value as found in the `version` field [here](./service_def.md).
     - `priority`: The relative priority of deploying this version over another version in the list of service versions.
@@ -60,6 +61,7 @@ Following are the fields in the JSON representation of a deployment policy:
   - `serviceOrgid`: The organization in which the service in `serviceUrl` is defined.
   - `serviceArch`: The hardware architecture of the service in `serviceUrl`, or `*` to indicate any compatible architecture. This is the same value as found in the `arch` field [here](./service_def.md).
   - `serviceVersionRange`: A version range indicating the set of service versions to which this secret binding should be applied.
+  - `enableNodeLevelSecrets`: Set to true to allow the secrets listed to be filled by node-specific secrets created in the secret manager as `node/<nodename>/<secretname>` or `user/<username>/node/<nodename>/<secretname>`.
   - `secrets`: A list of secret bindings. Each elelment is a map of string keyed by the name of the secret in the service. The value is the name of the secret in the secret provider. The valid formats for the secret provider secret names are: `<secretname>` for the organization level secret; `user/<username>/<secretname>` for the user level secret.
 
 The following is an example of a deployment policy that deploys a service called `my.company.com.service.this-service`.
@@ -130,6 +132,7 @@ Both `2.3.0` and `2.3.1` versions of the services have a secret `ai_secret` defi
       "serviceUrl": "my.company.com.service.this-service",
       "serviceArch": "*",
       "serviceVersionRange": "2.3.0",
+      "enableNodeLevelSecrets": true,
       "secrets": [
         {
           "ai_secret": "cloud_ai_secret_name"

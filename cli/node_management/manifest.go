@@ -202,9 +202,9 @@ func ManifestAdd(org, credToUse, manifestFile, manifestId, manifestType, dsHashA
 	// Sign the manifest object for integrity during upload to CSS
 	if !skipDigitalSig {
 
-		hashAlgorithm := common.Sha1
-		if dsHashAlgo == common.Sha256 {
-			hashAlgorithm = common.Sha256
+		hashAlgorithm := common.Sha256
+		if dsHashAlgo == common.Sha1 {
+			hashAlgorithm = common.Sha1
 		}
 
 		msgPrinter.Printf("Digital sign with %s will be performed for data integrity.\n", hashAlgorithm)
@@ -268,6 +268,9 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 		}
 		mmsSoftwareFiles := getAgentFiles(org, credToUse, "agent_software_files", manSoftwareFilesVersion)
 		for _, manFile := range manSoftwareFiles {
+			if manFile == "*" {
+				continue
+			}
 			found := false
 			for _, mmsFile := range mmsSoftwareFiles {
 				if mmsFile.AgentFileName == manFile {
@@ -296,6 +299,9 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 		}
 		mmsCertFiles := getAgentFiles(org, credToUse, "agent_cert_files", manCertFilesVersion)
 		for _, manFile := range manCertFiles {
+			if manFile == "*" {
+				continue
+			}
 			found := false
 			for _, mmsFile := range mmsCertFiles {
 				if mmsFile.AgentFileName == manFile {
@@ -324,6 +330,9 @@ func checkManifestFile(org, credToUse string, manifestData AgentUpgradeManifestD
 		}
 		mmsConfigFiles := getAgentFiles(org, credToUse, "agent_config_files", manConfigFilesVersion)
 		for _, manFile := range manConfigFiles {
+			if manFile == "*" {
+				continue
+			}
 			found := false
 			for _, mmsFile := range mmsConfigFiles {
 				if mmsFile.AgentFileName == manFile {

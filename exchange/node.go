@@ -17,7 +17,8 @@ type Device struct {
 	Name               string             `json:"name"`
 	Owner              string             `json:"owner"`
 	NodeType           string             `json:"nodeType"`
-	ClusterNamespace   string             `json:"clusterNamespace"`
+	ClusterNamespace   string             `json:"clusterNamespace,omitempty"`
+	IsNamespaceScoped  bool               `json:"isNamespaceScoped"`
 	Pattern            string             `json:"pattern"`
 	RegisteredServices []Microservice     `json:"registeredServices"`
 	MsgEndPoint        string             `json:"msgEndPoint"`
@@ -32,7 +33,7 @@ type Device struct {
 }
 
 func (d Device) String() string {
-	return fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, ClusterNamespace: %v, HAGroup: %v, Pattern: %v, SoftwareVersions: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.ClusterNamespace, d.HAGroup, d.Pattern, d.SoftwareVersions, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput, d.HeartbeatIntv)
+	return fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, ClusterNamespace: %v, IsNamespaceScoped: %v, HAGroup: %v, Pattern: %v, SoftwareVersions: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.ClusterNamespace, d.IsNamespaceScoped, d.HAGroup, d.Pattern, d.SoftwareVersions, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput, d.HeartbeatIntv)
 }
 
 func (d Device) ShortString() string {
@@ -44,7 +45,7 @@ func (d Device) ShortString() string {
 }
 
 func (n Device) DeepCopy() *Device {
-	nodeCopy := Device{Token: n.Token, Name: n.Name, Owner: n.Owner, NodeType: n.NodeType, ClusterNamespace: n.ClusterNamespace, HAGroup: n.HAGroup, Pattern: n.Pattern, MsgEndPoint: n.MsgEndPoint, LastHeartbeat: n.LastHeartbeat, PublicKey: n.PublicKey, Arch: n.Arch, HeartbeatIntv: n.HeartbeatIntv, LastUpdated: n.LastUpdated}
+	nodeCopy := Device{Token: n.Token, Name: n.Name, Owner: n.Owner, NodeType: n.NodeType, ClusterNamespace: n.ClusterNamespace, IsNamespaceScoped: n.IsNamespaceScoped, HAGroup: n.HAGroup, Pattern: n.Pattern, MsgEndPoint: n.MsgEndPoint, LastHeartbeat: n.LastHeartbeat, PublicKey: n.PublicKey, Arch: n.Arch, HeartbeatIntv: n.HeartbeatIntv, LastUpdated: n.LastUpdated}
 	if n.RegisteredServices == nil {
 		nodeCopy.RegisteredServices = nil
 	} else {
@@ -177,6 +178,20 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	}
 }
 
+func GetExchangeOrgDevices(httpClientFactory *config.HTTPClientFactory, orgId string, credId string, credPasswd string, exchangeUrl string) (map[string]Device, error) {
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieving devices from org %v from exchange", orgId)))
+
+	var resp interface{}
+	resp = new(GetDevicesResponse)
+	targetURL := exchangeUrl + "orgs/" + orgId + "/nodes"
+
+	if err := InvokeExchangeRetryOnTransportError(httpClientFactory, "GET", targetURL, credId, credPasswd, nil, &resp); err != nil {
+		glog.Errorf(err.Error())
+		return nil, err
+	}
+	return resp.(*GetDevicesResponse).Devices, nil
+}
+
 type PutDeviceResponse map[string]string
 
 type PostDeviceResponse struct {
@@ -189,6 +204,7 @@ type PutDeviceRequest struct {
 	Name               string             `json:"name"`
 	NodeType           string             `json:"nodeType"`
 	ClusterNamespace   *string            `json:"clusterNamespace,omitempty"`
+	IsNamespaceScoped  bool               `json:"isNamespaceScoped"`
 	Pattern            string             `json:"pattern"`
 	RegisteredServices []Microservice     `json:"registeredServices"`
 	MsgEndPoint        string             `json:"msgEndPoint"`
@@ -199,7 +215,7 @@ type PutDeviceRequest struct {
 }
 
 func (p PutDeviceRequest) String() string {
-	return fmt.Sprintf("Token: %v, Name: %v, NodeType: %v, ClusterNamespace: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x, Arch: %v, UserInput: %v", "*****", p.Name, p.NodeType, p.ClusterNamespace, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey, p.Arch, p.UserInput)
+	return fmt.Sprintf("Token: %v, Name: %v, NodeType: %v, ClusterNamespace: %v, IsNamespaceScoped: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x, Arch: %v, UserInput: %v", "*****", p.Name, p.NodeType, p.ClusterNamespace, p.IsNamespaceScoped, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey, p.Arch, p.UserInput)
 }
 
 func (p PutDeviceRequest) ShortString() string {
@@ -276,6 +292,7 @@ type PatchDeviceRequest struct {
 	Pattern            *string             `json:"pattern,omitempty"`
 	Arch               *string             `json:"arch,omitempty"`
 	ClusterNamespace   *string             `json:"clusterNamespace,omitempty"`
+	IsNamespaceScoped  *bool               `json:"isNamespaceScoped,omitempty"`
 	RegisteredServices *[]Microservice     `json:"registeredServices,omitempty"`
 	SoftwareVersions   SoftwareVersion     `json:"softwareVersions"`
 }
@@ -293,7 +310,11 @@ func (p PatchDeviceRequest) String() string {
 	if p.ClusterNamespace != nil {
 		clusterNs = *p.ClusterNamespace
 	}
-	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, ClusterNamespace: %v, SoftwareVersions: %v", p.UserInput, p.RegisteredServices, pattern, arch, clusterNs, p.SoftwareVersions)
+	isNs := "nil"
+	if p.IsNamespaceScoped != nil {
+		isNs = fmt.Sprintf("%v", *p.IsNamespaceScoped)
+	}
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, ClusterNamespace: %v, IsNamespaceScoped: %v, SoftwareVersions: %v", p.UserInput, p.RegisteredServices, pattern, arch, clusterNs, isNs, p.SoftwareVersions)
 }
 
 func (p PatchDeviceRequest) ShortString() string {
@@ -327,7 +348,12 @@ func (p PatchDeviceRequest) ShortString() string {
 		clusterNs = *p.ClusterNamespace
 	}
 
-	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, ClusterNamespace: %v, SoftwareVersions: %v", userInput, registeredServices, pattern, arch, clusterNs, p.SoftwareVersions)
+	isNs := "nil"
+	if p.IsNamespaceScoped != nil {
+		isNs = fmt.Sprintf("%v", *p.IsNamespaceScoped)
+	}
+
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v, ClusterNamespace: %v, IsNamespaceScoped: %v, SoftwareVersions: %v", userInput, registeredServices, pattern, arch, clusterNs, isNs, p.SoftwareVersions)
 }
 
 // patch the the device

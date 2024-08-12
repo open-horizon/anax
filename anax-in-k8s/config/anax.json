@@ -9,7 +9,7 @@
     "DefaultCPUSet": "",
     "ServiceStorage": "",
     "ExchangeURL": "",
-    "PolicyPath": "/etc/horizon/policy.d/",
+    "PolicyPath": "/var/horizon/policy.d/",
     "ExchangeHeartbeat": 60,
     "ExchangeVersionCheckIntervalM": 720,
     "ExchangeMessageTTL": 1800,

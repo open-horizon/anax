@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
 	"math/big"
@@ -24,6 +25,7 @@ const (
 	daysValidFor = 500
 )
 
+// Create ESS Cert file and key file if not exist
 func CreateCertificate(org string, keyPath string, certPath string) error {
 
 	// get message printer, this function is called by CLI
@@ -31,6 +33,11 @@ func CreateCertificate(org string, keyPath string, certPath string) error {
 
 	common.Configuration.ServerCertificate = path.Join(certPath, config.HZN_FSS_CERT_FILE)
 	common.Configuration.ServerKey = path.Join(keyPath, config.HZN_FSS_CERT_KEY_FILE)
+
+	if fileExists(common.Configuration.ServerCertificate) && fileExists(common.Configuration.ServerKey) {
+		glog.V(3).Infof(reslog(fmt.Sprintf("ESS self signed cert and key already exist in %v, %v, skip creating...", common.Configuration.ServerCertificate, common.Configuration.ServerKey)))
+		return nil
+	}
 
 	glog.V(5).Infof(reslog(fmt.Sprintf("creating self signed cert in %v", common.Configuration.ServerCertificate)))
 
@@ -52,6 +59,12 @@ func CreateCertificate(org string, keyPath string, certPath string) error {
 		return errors.New(msgPrinter.Sprintf("unable to generate private key for MMS API certificate, error %v", err))
 	}
 
+	ipAddress := []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("::1")}
+
+	agentNS := cutil.GetClusterNamespace()
+	dnsName1 := fmt.Sprintf("agent-service.%v.svc.cluster.local", agentNS)
+	dnsName2 := fmt.Sprintf("agent-service.%v.svc", agentNS)
+
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
@@ -65,8 +78,8 @@ func CreateCertificate(org string, keyPath string, certPath string) error {
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
-		DNSNames:              []string{"localhost"},
-		IPAddresses:           []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("::1")},
+		DNSNames:              []string{"localhost", "e2edevtest", dnsName1, "agent-service", dnsName2},
+		IPAddresses:           ipAddress,
 	}
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
@@ -103,4 +116,17 @@ func CreateCertificate(org string, keyPath string, certPath string) error {
 	glog.V(3).Infof(reslog(fmt.Sprintf("created MMS API SSL certificate at %v", common.Configuration.ServerCertificate)))
 
 	return nil
+}
+
+// This function checks if file exits or not
+func fileExists(filename string) bool {
+	fileinfo, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	if fileinfo.IsDir() {
+		return false
+	}
+
+	return true
 }

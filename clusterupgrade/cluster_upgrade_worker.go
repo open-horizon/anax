@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -23,6 +25,7 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"strconv"
 	"time"
 )
 
@@ -35,10 +38,11 @@ const (
 )
 
 const (
-	AGENT_CONFIGMAP       = "openhorizon-agent-config"
-	AGENT_SECRET          = "openhorizon-agent-secrets"
-	AGENT_SERVICE_ACCOUNT = "agent-service-account"
-	AGENT_DEPLOYMENT      = "agent"
+	AGENT_CONFIGMAP               = "openhorizon-agent-config"
+	AGENT_SECRET                  = "openhorizon-agent-secrets"
+	AGENT_SERVICE_ACCOUNT         = "agent-service-account"
+	AGENT_DEPLOYMENT              = "agent"
+	AGENT_IMAGE_PULL_SECRETS_NAME = "registry-creds"
 )
 
 const (
@@ -48,7 +52,13 @@ const (
 )
 
 const (
-	DEFAULT_CERT_PATH = "/etc/default/cert/"
+	DEFAULT_CERT_PATH                    = "/etc/default/cert/"
+	DEFAULT_IMAGE_REGISTRY_IN_DEPLOYMENT = "__ImageRegistryHost__"
+)
+
+const (
+	AGENT_NAMESPACE_ENV_NAME      = "AGENT_NAMESPACE"
+	HZN_NAMESPACE_SCOPED_ENV_NAME = "HZN_NAMESPACE_SCOPED"
 )
 
 var AGENT_NAMESPACE string
@@ -322,7 +332,7 @@ func (w *ClusterUpgradeWorker) CommandHandler(command worker.Command) bool {
 	switch command.(type) {
 	case *ClusterUpgradeCommand:
 		cmd := command.(*ClusterUpgradeCommand)
-		w.HandleClusterUpgrade(exchange.GetOrg(w.GetExchangeId()), cmd.Msg.Message.NMPStatus.AgentUpgrade.BaseWorkingDirectory, cmd.Msg.Message.NMPName)
+		w.HandleClusterUpgrade(exchange.GetOrg(w.GetExchangeId()), cmd.Msg.Message.NMPStatus.AgentUpgrade.BaseWorkingDirectory, cmd.Msg.Message.NMPName, cmd.Msg.Message.NMPStatus.AgentUpgrade.UpgradedVersions)
 	case *NodeRegisteredCommand:
 		w.EC = getEC(w.Config, w.db)
 	default:
@@ -351,7 +361,7 @@ func (w *ClusterUpgradeWorker) GetUncompletedAgreements() ([]string, error) {
 	return ag_ids, nil
 }
 
-func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir string, nmpName string) {
+func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir string, nmpName string, agentUpgradeVersions exchangecommon.AgentUpgradeVersions) {
 	// nmpName: {org}/{nmpName}
 	// baseWorkingDir: /var/horizon/nmp/
 	glog.Infof(cuwlog(fmt.Sprintf("Start handling edge cluster upgrade for nmp: %v", nmpName)))
@@ -453,7 +463,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 		glog.Infof(cuwlog(fmt.Sprintf("exchangeURL and/or cert are validated for nmp %v", nmpName)))
 	}
 
-	imageVersionIsSame, newImageVersion, currentImageVersion, err := checkAgentImage(w.kubeClient, workDir)
+	imageVersionIsSame, newImageVersion, currentImageVersion, err := checkAgentImage(w.kubeClient, workDir, agentUpgradeVersions.SoftwareVersion)
 	if err != nil {
 		errMessage = fmt.Sprintf("Failed to compare agent image version for nmp: %v, error: %v", nmpName, err)
 		glog.Errorf(cuwlog(errMessage))
@@ -609,6 +619,18 @@ func checkAgentConfig(kubeClient *KubeClient, workDir string) (bool, map[string]
 	if configInK8S, err = kubeClient.ReadConfigMap(AGENT_NAMESPACE, AGENT_CONFIGMAP); err != nil {
 		return false, configInAgentFile, configInK8S, err
 	}
+
+	// value of AGENT_NAMESPACE and HZN_NAMESPACE_SCOPED can't be changed during auto-upgrade
+	// change or add current AGENT_NAMESPACE value to config
+	if AGENT_NAMESPACE != configInAgentFile[AGENT_NAMESPACE_ENV_NAME] {
+		configInAgentFile[AGENT_NAMESPACE_ENV_NAME] = AGENT_NAMESPACE
+	}
+
+	if _, ok := configInAgentFile[HZN_NAMESPACE_SCOPED_ENV_NAME]; ok {
+		agentIsNamespaceScope := cutil.IsNamespaceScoped()
+		configInAgentFile[HZN_NAMESPACE_SCOPED_ENV_NAME] = strconv.FormatBool(agentIsNamespaceScope)
+	}
+
 	// compare to agent configmap
 	configIsSame := reflect.DeepEqual(configInAgentFile, configInK8S)
 	glog.Infof(cuwlog(fmt.Sprintf("agent install config is same: %v", configIsSame)))
@@ -655,45 +677,50 @@ func compareCertContent(certInAgentFile []byte, certInK8S []byte) bool {
 }
 
 // checkAgentImage returns compare result of current image version and image version to update, image version to update, current image version, error
-func checkAgentImage(kubeClient *KubeClient, workDir string) (bool, string, string, error) {
+func checkAgentImage(kubeClient *KubeClient, workDir string, agentSoftwareVersionToUpgrade string) (bool, string, string, error) {
 	// image file is: /var/horizon/nmp/<org>/nmpID/amd64_anax_k8s.tar.gz
 	currentAgentVersion := version.HORIZON_VERSION
-	imageTarGzFilePath := path.Join(workDir, AGENT_IMAGE_TAR_GZ)
-	glog.Infof(cuwlog(fmt.Sprintf("Getting image tar file: %v", imageTarGzFilePath)))
+	if currentAgentVersion != agentSoftwareVersionToUpgrade {
+		imageTarGzFilePath := path.Join(workDir, AGENT_IMAGE_TAR_GZ)
+		glog.Infof(cuwlog(fmt.Sprintf("Getting image tar file: %v", imageTarGzFilePath)))
 
-	if _, err := os.Stat(imageTarGzFilePath); os.IsNotExist(err) {
-		// image tar.gz is not exist, means download worker doesn't download it (same version of image)
-		return true, currentAgentVersion, currentAgentVersion, nil
-	}
+		if _, err := os.Stat(imageTarGzFilePath); os.IsNotExist(err) {
+			// image tar.gz is not exist, means download worker doesn't download it (same version of image)
+			return true, currentAgentVersion, currentAgentVersion, nil
+		}
 
-	imageTarballPath := path.Join(workDir, AGENT_IMAGE_TAR)
-	decompressTargetFolder := fmt.Sprintf("./%s", AGENT_IMAGE_NAME)
+		imageTarballPath := path.Join(workDir, AGENT_IMAGE_TAR)
 
-	// decompress image tar.gz
-	if err := decompress(imageTarGzFilePath, decompressTargetFolder); err != nil {
-		glog.Errorf(cuwlog(fmt.Sprintf("Failed to extract agent image tar.gz %v, error: %v", imageTarGzFilePath, err)))
-		return false, "", "", err
-	}
+		// get amd64_anax_k8s.tar from amd64_anax_k8s.tar.gz
+		if err := getAgentTarballFromGzip(imageTarGzFilePath, imageTarballPath); err != nil {
+			glog.Errorf(cuwlog(fmt.Sprintf("Failed to extract agent image tarball from %v, error: %v", imageTarGzFilePath, err)))
+			return false, "", "", err
+		}
 
-	fullImageTag, imageTag, err := getImageTagFromManifestFile(decompressTargetFolder)
-	if err != nil {
-		glog.Errorf(cuwlog(fmt.Sprintf("Failed to get image tag from manifest file in side %v, error: %v", imageTarGzFilePath, err)))
-		return false, "", currentAgentVersion, err
-	}
-	glog.Infof(cuwlog(fmt.Sprintf("Get image %v from tar file, extracted image tag: %v", fullImageTag, imageTag)))
+		decompressTargetFolder := fmt.Sprintf("./%s", AGENT_IMAGE_NAME)
 
-	if currentAgentVersion != imageTag {
+		// extract the docker manifest file from image tarball
+		if err := extractImageManifest(imageTarballPath, decompressTargetFolder); err != nil {
+			glog.Errorf(cuwlog(fmt.Sprintf("Failed to extract docker manifest file from agent image tallball %v, error: %v", imageTarballPath, err)))
+			return false, "", "", err
+		}
+
+		_, imageTagInPackage, err := getImageTagFromManifestFile(decompressTargetFolder)
+		if err != nil {
+			glog.Errorf(cuwlog(fmt.Sprintf("Failed to get image tag from manifest file in side %v, error: %v", imageTarGzFilePath, err)))
+			return false, "", "", err
+		}
+		glog.Infof(cuwlog(fmt.Sprintf("Get image from tar file, extracted image tag: %v", imageTagInPackage)))
+
+		if imageTagInPackage != agentSoftwareVersionToUpgrade {
+			glog.Errorf(cuwlog(fmt.Sprintf("mage version from docker manifest file (%v) does not match the image version specified in the NMP manifest (%v). Please check the %v of %v in the CSS.", imageTagInPackage, agentSoftwareVersionToUpgrade, AGENT_IMAGE_TAR_GZ, agentSoftwareVersionToUpgrade)))
+			return false, "", "", fmt.Errorf("image version from docker manifest file (%v) does not match the image version specified in the NMP manifest (%v)", imageTagInPackage, agentSoftwareVersionToUpgrade)
+		}
+
 		// push image to image registry
 		imageRegistry := os.Getenv("AGENT_CLUSTER_IMAGE_REGISTRY_HOST")
 		if imageRegistry == "" {
 			return false, "", "", fmt.Errorf("failed to get edge cluster image registry host from environment veriable: %v", imageRegistry)
-		}
-
-		// create tarball
-		glog.Infof(cuwlog(fmt.Sprintf("Making tarball %v", imageTarballPath)))
-		if err := createTarballWithFileAndFolder(imageTarballPath, decompressTargetFolder); err != nil {
-			glog.Errorf(cuwlog(fmt.Sprintf("Failed to create image tar at %v, error: %v", imageTarballPath, err)))
-			return false, "", currentAgentVersion, err
 		}
 
 		// $ docker load --input amd64_anax_k8s.tar.gz
@@ -705,18 +732,22 @@ func checkAgentImage(kubeClient *KubeClient, workDir string) (bool, string, stri
 			return false, "", "", err
 		}
 
-		kc, err := kubeClient.GetKeyChain(AGENT_NAMESPACE, AGENT_SERVICE_ACCOUNT)
-		if err != nil {
-			glog.Errorf(cuwlog(fmt.Sprintf("Failed to get key chain from serviceaccount, error: %v", err)))
-			return false, "", "", err
+		usingRemoteICR := false
+		if hasPullSecrets, _ := kubeClient.DeploymentHasImagePullSecrets(AGENT_NAMESPACE, AGENT_DEPLOYMENT); hasPullSecrets {
+			glog.Infof(cuwlog(fmt.Sprintf("detected deployment has pull secrets, %v", hasPullSecrets)))
+			usingRemoteICR = true
 		}
 
 		// docker tag hyc-edge-team-staging-docker-local.artifactory.swg-devops.com/amd64_anax_k8s:2.30.0-689 default-route-openshift-image-registry.apps.prowler.cp.fyre.ibm.com/openhorizon-agent/amd64_anax_k8s:2.30.0-689
 		// docker tag ${fullImageTag} ${newImageTag}
-		// new tag:
+		// new tag for agent using local registry:
 		//  - ocp: default-route-openshift-image-registry.apps.prowler.cp.fyre.ibm.com/openhorizon-agent/amd64_anax_k8s:2.30.0-689
 		//  - k3s: 10.43.100.65:5000/openhorizon-agent/amd64_anax_k8s:2.30.0-689
-		newImageRepoWithTag := fmt.Sprintf("%s/%s/%s:%s", imageRegistry, AGENT_NAMESPACE, AGENT_IMAGE_NAME, imageTag)
+		//  - cluster use remote ICR: <remote-host>/<agent-namespace>/amd64_anax_k8s:2.30.0-689
+		newImageRepoWithTag := fmt.Sprintf("%s/%s/%s:%s", imageRegistry, AGENT_NAMESPACE, AGENT_IMAGE_NAME, agentSoftwareVersionToUpgrade)
+		if usingRemoteICR {
+			newImageRepoWithTag = fmt.Sprintf("%s/%s:%s", imageRegistry, AGENT_IMAGE_NAME, agentSoftwareVersionToUpgrade)
+		}
 		glog.Infof(cuwlog(fmt.Sprintf("New image repo with tag: %v", newImageRepoWithTag)))
 
 		tag, err := name.NewTag(newImageRepoWithTag)
@@ -725,14 +756,47 @@ func checkAgentImage(kubeClient *KubeClient, workDir string) (bool, string, stri
 			return false, "", "", err
 		}
 
-		if err := crane.Push(loadImage, tag.String(), crane.WithAuthFromKeychain(kc)); err != nil {
-			glog.Errorf(cuwlog(fmt.Sprintf("Failed to push image %v, error: %v", newImageRepoWithTag, err)))
-			return false, "", "", err
-		}
-		glog.Infof(cuwlog(fmt.Sprintf("Successfully pushed image %v", newImageRepoWithTag)))
-	}
+		// If deployment have image pull secret, it means it uses remote image registry
+		var kc authn.Keychain
+		skipImagePush := false
+		if usingRemoteICR {
+			_, err := kubeClient.GetSecret(AGENT_NAMESPACE, AGENT_IMAGE_PULL_SECRETS_NAME)
+			if err != nil {
+				glog.Errorf(cuwlog(fmt.Sprintf("Failed to get image pull secrets %v, error: %v", AGENT_IMAGE_PULL_SECRETS_NAME, err)))
+				return false, "", "", err
+			}
+			imagePullSecrets := []string{AGENT_IMAGE_PULL_SECRETS_NAME}
+			kc, err = kubeClient.GetImagePullSecretKeyChain(AGENT_NAMESPACE, AGENT_SERVICE_ACCOUNT, imagePullSecrets)
+			if err != nil {
+				glog.Errorf(cuwlog(fmt.Sprintf("Failed to get key chain from serviceaccount and imagePullSecrets, error: %v", err)))
+				return false, "", "", err
+			}
 
-	return (currentAgentVersion == imageTag), imageTag, currentAgentVersion, nil
+			// if image exists skip pushing
+			glog.Infof(cuwlog(fmt.Sprintf("checking if image %v exists on remote registry...", tag.String())))
+			if imageExistInRemoteRegistry(tag.String(), agentSoftwareVersionToUpgrade, kc) {
+				glog.Infof(cuwlog(fmt.Sprintf("image tag %v exists on remote registry, skip pushing image", tag.String())))
+				skipImagePush = true
+			}
+		} else {
+			kc, err = kubeClient.GetKeyChain(AGENT_NAMESPACE, AGENT_SERVICE_ACCOUNT)
+			if err != nil {
+				glog.Errorf(cuwlog(fmt.Sprintf("Failed to get key chain from serviceaccount, error: %v", err)))
+				return false, "", "", err
+			}
+		}
+
+		if !skipImagePush {
+			glog.Infof(cuwlog(fmt.Sprintf("pushing image %v...", newImageRepoWithTag)))
+			if err := crane.Push(loadImage, tag.String(), crane.WithAuthFromKeychain(kc)); err != nil {
+				glog.Errorf(cuwlog(fmt.Sprintf("Failed to push image %v, error: %v", newImageRepoWithTag, err)))
+				return false, "", "", err
+			}
+			glog.Infof(cuwlog(fmt.Sprintf("Successfully pushed image %v", newImageRepoWithTag)))
+		}
+
+	}
+	return (currentAgentVersion == agentSoftwareVersionToUpgrade), agentSoftwareVersionToUpgrade, currentAgentVersion, nil
 }
 
 func checkAgentImageAgainstStatusFile(workDir string) (bool, error) {
@@ -746,4 +810,13 @@ func checkAgentImageAgainstStatusFile(workDir string) (bool, error) {
 	} else {
 		return true, nil
 	}
+}
+
+func agentUseRemoteRegistry() bool {
+	useRemoteRegistry := false
+	imageRegistry := os.Getenv("AGENT_CLUSTER_IMAGE_REGISTRY_HOST")
+	if imageRegistry == DEFAULT_IMAGE_REGISTRY_IN_DEPLOYMENT {
+		useRemoteRegistry = true
+	}
+	return useRemoteRegistry
 }

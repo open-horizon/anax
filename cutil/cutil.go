@@ -282,17 +282,31 @@ func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId st
 
 	// The name of the mounted file containing the FSS API SSL Certificate that the container should use.
 	envAdds[prefix+"ESS_CERT"] = path.Join(config.HZN_FSS_CERT_MOUNT, config.HZN_FSS_CERT_FILE)
-
 }
 
-// Temporary function to remove ESS env vars for the edge cluster case.
-func RemoveESSEnvVars(envAdds map[string]string, prefix string) map[string]string {
-	delete(envAdds, prefix+"ESS_API_PROTOCOL")
-	delete(envAdds, prefix+"ESS_API_ADDRESS")
-	delete(envAdds, prefix+"ESS_API_PORT")
-	delete(envAdds, prefix+"ESS_AUTH")
-	delete(envAdds, prefix+"ESS_CERT")
-	return envAdds
+func SetESSEnvVarsForClusterAgent(envAdds map[string]string, prefix string, agreementId string) {
+	// The address of the file sync service API.
+	namespace := GetClusterNamespace()
+	fssAddress := fmt.Sprintf("agent-service.%v.svc.cluster.local", namespace)
+	envAdds[prefix+"ESS_API_ADDRESS"] = fssAddress
+
+	fssPort := envAdds[prefix+"ESS_API_PORT"]
+	if strings.Contains(fssPort, "\"") {
+		fssPort = strings.ReplaceAll(fssPort, "\"", "")
+	}
+	envAdds[prefix+"ESS_API_PORT"] = fssPort
+
+	// The secret name of the FSS credentials that the operator should use.
+	envAdds[prefix+"ESS_AUTH"] = config.HZN_FSS_AUTH_PATH + "-" + agreementId
+
+	// The secret name of FSS API SSL Certificate that the operator should use.
+	envAdds[prefix+"ESS_CERT"] = config.HZN_FSS_CERT_PATH + "-" + agreementId
+
+	// The cluster agent namesace
+	envAdds[prefix+"AGENT_NAMESPACE"] = namespace
+
+	agentStorageClassNAME, _, _ := GetAgentPVCInfo()
+	envAdds[prefix+"AGENT_STORAGE_CLASS_NAME"] = agentStorageClassNAME
 }
 
 // This function is similar to the above, for env vars that are system related. It is only used by workloads.

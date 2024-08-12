@@ -659,7 +659,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator.tar.gz"
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator/topservice-operator.tar.gz"
    },
   "clusterDeploymentSignature": ""
 }
@@ -670,6 +670,95 @@ hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f 
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for k8s-service1."
+    exit 2
+fi
+
+cat <<EOF >$KEY_TEST_DIR/svc_k8s_embedded_ns.json
+{
+  "label":"Cluster service test for ${ARCH}",
+  "description":"Cluster Service with Embedded ns",
+  "public":true,
+  "sharable":"multiple",
+  "url":"k8s-service-embedded-ns",
+  "version":"$VERS",
+  "arch":"${ARCH}",
+  "requiredServices":[
+  ],
+  "userInput": [
+      {
+        "name": "var1",
+        "label": "",
+        "type": "string"
+       },
+      {
+        "name": "var2",
+        "label": "",
+        "type": "int"
+      },
+      {
+        "name": "var3",
+        "label": "",
+        "type": "float"
+      }
+  ],
+  "clusterDeployment": {
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator-with-embedded-ns/topservice-operator-with-embedded-ns.tar.gz"
+   },
+  "clusterDeploymentSignature": ""
+}
+EOF
+
+echo -e "Register k8s-service-embedded-ns $VERS:"
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_embedded_ns.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
+if [ $? -ne 0 ]
+then
+    echo -e "hzn exchange service publish failed for k8s-service-embedded-ns."
+    exit 2
+fi
+
+cat <<EOF >$KEY_TEST_DIR/svc_k8s_secret.json
+{
+  "label":"Cluster service test vault secret for amd64",
+  "description":"Cluster Service Test k8s-hello-secret",
+  "public":true,
+  "sharable":"multiple",
+  "url":"k8s-hello-secret",
+  "version":"$VERS",
+  "arch":"${ARCH}",
+  "requiredServices":[
+  ],
+  "userInput": [
+      {
+        "name": "var1",
+        "label": "",
+        "type": "string"
+       },
+      {
+        "name": "var2",
+        "label": "",
+        "type": "int"
+      },
+      {
+        "name": "var3",
+        "label": "",
+        "type": "float"
+      }
+  ],
+  "clusterDeployment": {
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s-secret-operator/k8s-secret-operator.tar.gz",
+    "secrets": {
+          "secret1": {"description": "Secret 1 for cluster hello-secret."}
+        }
+   },
+  "clusterDeploymentSignature": ""
+}
+EOF
+
+echo -e "Register k8s-hello-secret $VERS:"
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_secret.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
+if [ $? -ne 0 ]
+then
+    echo -e "hzn exchange service publish failed for k8s-hello-secret."
     exit 2
 fi
 
@@ -1013,11 +1102,100 @@ read -d '' sdef <<EOF
   ]
 }
 EOF
-echo -e "Register k8s service pattern $VERS:"
+echo -e "Register k8s service pattern $K8SVERS:"
 
   RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s" | jq -r '.')
 
 results "$RES"
+
+# k8s pattern with cluster namespace
+K8SVERS="1.0.0"
+read -d '' sdef <<EOF
+{
+  "label": "K8s",
+  "description": "a k8s pattern",
+  "public": true,
+  "clusterNamespace": "agent-namespace",
+  "services": [
+    {
+      "serviceUrl":"k8s-service1",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"${ARCH}",
+      "serviceVersions":[
+        {
+          "version":"$K8SVERS",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {}
+    }
+  ],
+  "agreementProtocols": [
+    {
+      "name": "Basic"
+    }
+  ]
+}
+EOF
+echo -e "Register k8s service pattern $K8SVERS:"
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-cluster-ns" | jq -r '.')
+
+results "$RES"
+
+# k8s pattern with service has embedded ns
+K8SVERS="1.0.0"
+read -d '' sdef <<EOF
+{
+  "label": "K8s",
+  "description": "k8s pattern with service that has embedded ns",
+  "public": true,
+  "services": [
+    {
+      "serviceUrl":"k8s-service-embedded-ns",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"${ARCH}",
+      "serviceVersions":[
+        {
+          "version":"$K8SVERS",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {}
+    }
+  ],
+  "agreementProtocols": [
+    {
+      "name": "Basic"
+    }
+  ]
+}
+EOF
+echo -e "Register k8s service with embedded namesapce pattern $K8SVERS:"
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-embedded-ns" | jq -r '.')
+
+results "$RES"
+
+if [ "${NOVAULT}" != "1" ]; then
+  K8S_SECRET_PATTERN="/root/patterns/e2edev@somecomp.com/sk8s_secrets.json"
+  cat $K8S_SECRET_PATTERN | envsubst > $KEY_TEST_DIR/pattern_k8s_secret.json
+
+  sdef=$(cat $KEY_TEST_DIR/pattern_k8s_secret.json)
+
+  echo -e "Register k8s service with secret pattern $K8SVERS:"
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-secrets" | jq -r '.')
+
+  results "$RES"
+
+
+
+fi
 
 
 # the sall pattern
@@ -1319,6 +1497,10 @@ read -d '' bpk8ssvc1def <<EOF
       {
           "name": "NOK8S",
           "value": false
+      },
+      {
+          "name": "has.service.embedded.ns",
+          "value": false
       }
   ],
   "constraints": [
@@ -1326,11 +1508,106 @@ read -d '' bpk8ssvc1def <<EOF
   ]
 }
 EOF
-echo -e "Register business policy for gpstest:"
+echo -e "Register business policy bp_k8s for k8s-service1:"
 
   RES=$(echo "$bpk8ssvc1def" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s" | jq -r '.')
 
 results "$RES"
+
+read -d '' bpk8swithembeddednsdef <<EOF
+{
+  "label": "business policy for k8s-service-embedded-ns",
+  "description": "for k8s embedded namespace test",
+  "service": {
+    "name": "k8s-service-embedded-ns",
+    "org": "e2edev@somecomp.com",
+    "arch": "${ARCH}",
+    "serviceVersions": [
+        {
+          "version":"$K8SVERS",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+     ]
+  },
+  "properties": [
+      {
+          "name": "iame2edev",
+          "value": "true"
+      },
+      {
+          "name": "NOK8S",
+          "value": false
+      },
+      {
+          "name": "service.embedded.ns",
+          "value": "operator-embedded-ns"
+      }
+  ],
+  "constraints": [
+    "purpose == network-testing"
+  ]
+}
+EOF
+echo -e "Register business policy bp_k8s_embedded_ns for k8s-service-embedded-ns:"
+
+  RES=$(echo "$bpk8swithembeddednsdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_embedded_ns" | jq -r '.')
+
+results "$RES"
+
+if [ "${NOVAULT}" != "1" ]; then
+read -d '' bpk8ssvc1def <<EOF
+{
+  "label": "business policy for k8s-hello-secret",
+  "description": "Deployment Policy for k8s-hello-secret using a secret",
+  "service": {
+    "name": "k8s-hello-secret",
+    "org": "e2edev@somecomp.com",
+    "arch": "${ARCH}",
+    "serviceVersions": [
+        {
+          "version":"$K8SVERS",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+    ]
+  },
+  "properties": [
+      {
+          "name": "iame2edev",
+          "value": "true"
+      },
+      {
+          "name": "NOK8S",
+          "value": false
+      },
+      {
+          "name": "policy.purpose",
+          "value": "k8s-service-secret-testing"
+      }
+  ],
+  "constraints": [
+    "purpose == k8s-service-secret-testing"
+  ],
+  "secretBinding": [
+    {
+      "serviceUrl": "k8s-hello-secret",
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceArch": "amd64",
+      "serviceVersionRange": "[0.0.0,INFINITY)",
+      "secrets": [
+        {"secret1": "k8s-hello-secret"}
+      ]
+    }
+  ]
+}
+EOF
+echo -e "Register business policy bp_k8s_secret for k8s-hello-secret:"
+
+  RES=$(echo "$bpk8ssvc1def" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_secret" | jq -r '.')
+
+results "$RES"
+fi
 
 
 # ======================= Service Policies that use top level services ======================

@@ -107,12 +107,13 @@ func (c *BasicProtocolHandler) VerifyAgreement(ag *persistence.EstablishedAgreem
 }
 
 // Returns 2 booleans, first is whether or not the message was handled, the second is whether or not to cancel the agreement in the protocol msg.
-func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, error) {
+func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, []persistence.PersistedServiceSecret, error) {
 
+	updatedSecs := []persistence.PersistedServiceSecret{}
 	// The agreement verification reply indicates whether or not the consumer thinks the agreement is still valid.
 	if verify, err := c.agreementPH.ValidateAgreementVerifyReply(msg.ProtocolMessage()); err == nil {
 		glog.V(5).Infof(BPHlogString(fmt.Sprintf("extension handler handled agreement verification reply for %v", verify.AgreementId())))
-		return true, !verify.Exists, verify.AgreementId(), nil
+		return true, !verify.Exists, verify.AgreementId(), updatedSecs, nil
 
 	} else if verify, err := c.agreementPH.ValidateAgreementVerify(msg.ProtocolMessage()); err == nil {
 		// This is a request to verify that an agreement exists.
@@ -138,7 +139,7 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 			}
 		}
 
-		return true, false, verify.AgreementId(), nil
+		return true, false, verify.AgreementId(), updatedSecs, nil
 
 	} else if update, err := c.agreementPH.ValidateUpdate(msg.ProtocolMessage()); err == nil {
 
@@ -161,14 +162,16 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 			} else {
 
 				// Store the secret updates in the agent DB.
-				allSecrets := persistence.PersistedSecretFromPolicySecret(updatedSecrets, update.AgreementId())
+				allUpdatedSecrets := persistence.PersistedSecretFromPolicySecret(updatedSecrets, update.AgreementId())
 
-				secManager := resource.NewSecretsManager(c.BaseProducerProtocolHandler.config.GetSecretsManagerFilePath(), c.db)
+				secManager := resource.NewSecretsManager(c.BaseProducerProtocolHandler.config, c.db)
 
-				if err = secManager.ProcessServiceSecretUpdates(update.AgreementId(), allSecrets); err != nil {
+				// update secret value for each microservice, if nodeType is device, also updating the secret file in agent
+				if err = secManager.ProcessServiceSecretUpdates(update.AgreementId(), allUpdatedSecrets); err != nil {
 					glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to process service secret updates, error: %v", update.AgreementId(), err)))
 					acceptedUpdate = false
 				}
+				updatedSecs = allUpdatedSecrets
 
 			}
 
@@ -226,11 +229,11 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 			}
 		}
 
-		return true, false, update.AgreementId(), nil
+		return true, false, update.AgreementId(), updatedSecs, nil
 
 	} else if reply, err := c.agreementPH.ValidateUpdateReply(msg.ProtocolMessage()); err == nil {
 		glog.Infof(BPHlogString(fmt.Sprintf("nothing to do for update reply %v", reply)))
-		return true, false, update.AgreementId(), nil
+		return true, false, update.AgreementId(), updatedSecs, nil
 
 	} else {
 
@@ -238,10 +241,10 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 		// so make sure it's not one of those, then we know if it's an unknown msg or not.
 		if _, err := c.agreementPH.ValidateProposal(msg.ProtocolMessage()); err == nil {
 			glog.V(5).Infof(BPHlogString(fmt.Sprintf("extension message handler ignoring message: %s because it is a proposal.", msg.ShortProtocolMessage())))
-			return false, false, "", nil
+			return false, false, "", updatedSecs, nil
 		} else {
 			glog.V(3).Infof(BPHlogString(fmt.Sprintf("extension message handler ignoring message: %s because it is not a known protocol msg.", msg.ShortProtocolMessage())))
-			return true, false, "", nil
+			return true, false, "", updatedSecs, nil
 		}
 	}
 
@@ -291,6 +294,8 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.CANCEL_NODE_USERINPUT_CHANGED
 	case TERM_REASON_NODE_PATTERN_CHANGED:
 		return basicprotocol.CANCEL_NODE_PATTERN_CHANGED
+	case TERM_FAILED_AGREEMENT_VERIFY:
+		return basicprotocol.CANCEL_FAILED_AGREEMENT_VERIFY
 	default:
 		return 999
 	}

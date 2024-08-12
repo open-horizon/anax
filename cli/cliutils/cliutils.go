@@ -1099,18 +1099,27 @@ func GetIcpCertPath() string {
 // TrustIcpCert adds the icp cert file to be trusted in calls made by the given http client
 func TrustIcpCert(httpClient *http.Client) error {
 	icpCertPath := GetIcpCertPath()
+
+	var caCertPool *x509.CertPool
+	var err error
+
+	// Trust the system certs like the anax agent code can
+	caCertPool, err = x509.SystemCertPool()
+	if err != nil {
+		// Decided not to fail and return here but just create a new pool
+		caCertPool = x509.NewCertPool()
+	}
+
 	if icpCertPath != "" {
 		icpCert, err := ioutil.ReadFile(icpCertPath)
 		if err != nil {
 			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", icpCertPath, err))
 		}
-		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(icpCert)
-
-		transport := httpClient.Transport.(*http.Transport)
-		transport.TLSClientConfig.RootCAs = caCertPool
-
 	}
+
+	transport := httpClient.Transport.(*http.Transport)
+	transport.TLSClientConfig.RootCAs = caCertPool
 	return nil
 }
 
@@ -2292,4 +2301,11 @@ func ValidateOrg(org string) bool {
 		Fatal(INTERNAL_ERROR, msgPrinter.Sprintf("Problem validating org name: %v", err))
 	}
 	return invalidCheck
+}
+
+// remove leading and trailing quotation marks if present
+func RemoveQuotes(s string) string {
+	s = strings.TrimPrefix(s, "\"")
+	s = strings.TrimSuffix(s, "\"")
+	return s
 }

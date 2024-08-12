@@ -14,7 +14,7 @@ SHELL := /bin/bash
 # DO NOT set this variable to the branch in which you are doing development work.
 BRANCH_NAME ?= ""
 
-export VERSION ?= 2.31.0
+export VERSION ?= 2.32.0
 # BUILD_NUMBER will be added to the version if set. It can be a simple number or something like a numeric timestamp or jenkins hash.
 # It can NOT contain dashes, but can contain: plus, period, and tilde.
 export BUILD_NUMBER
@@ -100,7 +100,7 @@ AGBOT_REGISTRY ?= $(DOCKER_REGISTRY)
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.10.0$(BRANCH_NAME)
+CSS_IMAGE_VERSION ?= 1.11.2$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -113,7 +113,7 @@ CSS_IMAGE_LABELS ?= --label "name=$(arch)_cloud-sync-service" --label "version=$
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.10.0$(BRANCH_NAME)
+ESS_IMAGE_VERSION ?= 1.11.2$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
@@ -196,7 +196,7 @@ ifdef GO_BUILD_LDFLAGS
 	GO_BUILD_LDFLAGS := -ldflags="$(GO_BUILD_LDFLAGS) -s -w"
 endif
 
-# Test if we can use Docker buildx if USE_DOCKER_BUILDX is set. If not, then we can't build multi-arch images on x86 but 
+# Test if we can use Docker buildx if USE_DOCKER_BUILDX is set. If not, then we can't build multi-arch images on x86 but
 #  will instead need to have a build platform of each arch to build images of different archs
 DOCKER_BUILDX_PLATFORM=$(arch)
 ifeq ($(arch),ppc64el)
@@ -228,10 +228,7 @@ $(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	    if [[ $(USE_UPX) == "true" ]]; then \
 			echo "Packing executable $(EXECUTABLE) with UPX"; \
 	    	upx $(EXECUTABLE); \
-	    fi; 
-
-	    
-
+	    fi;
 
 $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
@@ -255,7 +252,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 				HZN_LANG=$$loc $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1.$$loc; \
 			done && \
 	  		rm $(CLI_TEMP_EXECUTABLE); \
-	fi
+	fi;
 
 $(CSS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CSS_EXECUTABLE) given arch: $(arch)"
@@ -265,7 +262,7 @@ $(CSS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	if [[ $(USE_UPX) == "true" ]]; then \
 		echo "Packing executable $(CSS_EXECUTABLE) with UPX"; \
 		upx $(CSS_EXECUTABLE); \
-	fi; \
+	fi;
 
 $(ESS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(ESS_EXECUTABLE) given arch: $(arch)"
@@ -435,14 +432,14 @@ anax-k8s-image: anax-k8s-clean
 	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp -f $(LICENSE_FILE) $(ANAX_K8S_CONTAINER_DIR)
 	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" || $(arch) == "s390x" ]]; then \
 		cd $(ANAX_K8S_CONTAINER_DIR) && docker $(DOCKER_BUILD_CMD) $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_LABELS) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi.$(arch) .; \
 	fi
 	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
 
 auto-upgrade-cronjob-k8s-image: auto-upgrade-cronjob-k8s-clean
 	@echo "Producing Agent Auto Upgrade CronJob K8S docker image $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" || $(arch) == "s390x" ]]; then \
 		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LABELS) -t $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) -f Dockerfile.ubi.auto-upgrade-cron.$(arch) .; \
 	fi
 	docker tag $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):$(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION)
@@ -523,7 +520,7 @@ fss-package: ess-docker-image css-docker-image
 		else echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; fi \
 	fi
 
-clean: mostlyclean 
+clean: mostlyclean
 	@echo "Clean"
 ifneq ($(TMPGOPATH),$(GOPATH))
 	rm -rf $(TMPGOPATH)
@@ -532,7 +529,7 @@ endif
 
 realclean: i18n-clean clean
 
-mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean css-clean ess-clean 
+mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean auto-upgrade-cronjob-k8s-clean css-clean ess-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	rm -Rf vendor

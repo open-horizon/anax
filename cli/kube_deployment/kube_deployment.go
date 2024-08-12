@@ -75,6 +75,22 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, privKey *r
 	md["namespace"] = namespaceInOperator
 	dep["metadata"] = md
 
+	if _, ok := dep["mmsPVC"]; ok {
+		// mmsPVC field is defined
+		mmsPVCConfig := dep["mmsPVC"].(map[string]interface{})
+		enableVal, ok := mmsPVCConfig["enable"]
+		if !ok || !enableVal.(bool) {
+			msgPrinter.Printf("Warning: mmsPVC is not enabled for this cluster service")
+			// remove the "mmsPVC" section
+			delete(dep, "mmsPVC")
+		}
+
+		if pvcSizeVal, ok := mmsPVCConfig["pvcSizeGB"]; ok {
+			pvcSize := int64(pvcSizeVal.(float64))
+			msgPrinter.Printf("pvcSizeGB: %v\n", pvcSize)
+		}
+	}
+
 	// Stringify and sign the deployment string.
 	deployment, err := json.Marshal(dep)
 	if err != nil {
@@ -109,6 +125,10 @@ func (p *KubeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) interf
 func (p *KubeDeploymentConfigPlugin) DefaultClusterConfig() interface{} {
 	return map[string]interface{}{
 		"operatorYamlArchive": "",
+		"mmsPVC": map[string]interface{}{
+			"enable":    false,
+			"pvcSizeGB": 0,
+		},
 	}
 }
 

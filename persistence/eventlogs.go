@@ -19,7 +19,7 @@ const EVENT_LOGS = "event_logs"
 // table stores the timestamp of last unregistration
 const LAST_UNREG = "last_unreg"
 
-const BASE_SELECTORS = "source_type,severity,message,event_code,record_id,timestamp" // only support these 2 for now
+const BASE_SELECTORS = "source_type,severity,message,event_code,record_id,timestamp,time_since"
 
 // Each event source implements this interface.
 type EventSourceInterface interface {
@@ -65,6 +65,8 @@ func (w EventLogBase) Matches(selectors map[string][]Selector) bool {
 			attr = w.Id
 		case "timestamp":
 			attr = w.Timestamp
+		case "time_since":
+			attr = (uint64(time.Now().Unix()) - w.Timestamp) / 3600
 		default:
 			return false // not tolerate wrong attribute name in the selector
 		}
@@ -407,6 +409,44 @@ func FindEventLogs(db *bolt.DB, filters []EventLogFilter) ([]EventLog, error) {
 	} else {
 		return evlogs, nil
 	}
+}
+
+// delete event logs from the db that match the given selectors
+// returns the number of logs deleted
+func DeleteEventLogsWithSelectors(db *bolt.DB, selectors map[string][]Selector, msgPrinter *message.Printer) (int, error) {
+	// separate base selectors from the source selectors
+	base_selectors, source_selectors := GroupSelectors(selectors)
+
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	count := 0
+
+	dbErr := db.Update(func(tx *bolt.Tx) error {
+		if b := tx.Bucket([]byte(EVENT_LOGS)); b != nil {
+			b.ForEach(func(k, v []byte) error {
+				var el EventLogRaw
+
+				if err := json.Unmarshal(v, &el); err != nil {
+					glog.Errorf("Unable to deserialize event log db record: %v. Error: %v", v, err)
+				} else {
+					if el.EventLogBase.Matches(base_selectors) {
+						if esrc, err := GetRealEventSource(el.SourceType, el.Source); err != nil {
+							glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
+						} else if (*esrc).Matches(source_selectors) {
+							b.Delete(k)
+							count++
+						}
+					}
+				}
+				return nil
+			})
+		}
+		return nil
+	})
+
+	return count, dbErr
 }
 
 // find event logs from the db for the given given selectors.

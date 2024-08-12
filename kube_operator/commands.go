@@ -72,3 +72,33 @@ func NewMaintenanceCommand(protocol string, agreementId string, clusterNamespace
 		Deployment:        deployment,
 	}
 }
+
+type UpdateSecretCommand struct {
+	AgreementProtocol string
+	AgreementId       string
+	ClusterNamespace  string
+	Deployment        persistence.DeploymentConfig
+	UpdatedSecrets    []persistence.PersistedServiceSecret
+}
+
+func (u UpdateSecretCommand) String() string {
+	deployment_string := ""
+	if u.Deployment != nil {
+		deployment_string = u.Deployment.ToString()
+	}
+	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, ClusterNamespace: %v, Deployment: %v, UpdatedSecrets: %v", u.AgreementProtocol, u.AgreementId, u.ClusterNamespace, deployment_string, u.UpdatedSecrets)
+}
+
+func (u UpdateSecretCommand) ShortString() string {
+	return u.String()
+}
+
+func NewUpdateSecretCommand(protocol string, agreementId string, clusterNamespace string, deployment persistence.DeploymentConfig, updatedSecrets []persistence.PersistedServiceSecret) *UpdateSecretCommand {
+	return &UpdateSecretCommand{
+		AgreementProtocol: protocol,
+		AgreementId:       agreementId,
+		ClusterNamespace:  clusterNamespace,
+		Deployment:        deployment,
+		UpdatedSecrets:    updatedSecrets,
+	}
+}

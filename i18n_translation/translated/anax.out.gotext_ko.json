@@ -228,6 +228,10 @@
     "translation": "API 경로에 사용자를 지정해야 함"
   },
   {
+    "id": "Node must be specified in the API path",
+    "translation": "노드는 API 경로에 지정되어야 함"
+  },
+  {
     "id": "Error checking secret {FullSecretName} in the secret manager.",
     "translation": "시크릿 관리자에서 {FullSecretName} 시크릿 확인 중 오류가 발생했습니다."
   },
@@ -468,20 +472,20 @@
     "translation": "선택사항을 선택기로 변환하는 중에 오류 발생: {Err}"
   },
   {
-    "id": "Name, or Org is empty string.",
-    "translation": "이름 또는 조직이 빈 문자열입니다."
-  },
-  {
-    "id": "The serviceVersions array is empty.",
-    "translation": "serviceVersions 배열이 비어 있습니다."
-  },
-  {
     "id": "properties contains an invalid property: {Err}",
     "translation": "특성에 올바르지 않은 특성이 포함되어 있음: {Err}"
   },
   {
     "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
     "translation": "{PROPSVCPRIVILEGED} 특성은 부울 값(true 또는 false)을 가져야 합니다."
+  },
+  {
+    "id": "Failed to get constraint with name {PROPNODEK8SNAMESPACE}, error: {Err}",
+    "translation": "이름이 {PROPNODEK8SNAMESPACE}인 제한조건을 가져오는 데 실패했습니다. 오류: {Err}"
+  },
+  {
+    "id": "kubernetesNamespace defined in the constraint {Newconstr} is different from the clusterNamespace '{ClusterNSInPolicy}' specified in the deployment policy, the policy might result in no service deployments",
+    "translation": "제한조건 {Newconstr}에 정의된 kubernetesNamespace가 배치 정책에 지정된 clusterNamespace '{ClusterNSInPolicy}'과(와) 다릅니다. 정책으로 인해 서비스가 배치되지 않을 수 있습니다."
   },
   {
     "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
@@ -992,6 +996,22 @@
     "translation": "배치 필드 {StringjsonBytes}에 대한 JSON을 역마샬링하는 데 실패함: {Err}"
   },
   {
+    "id": "failed to unmarshal json for cluster deployment field {StringjsonBytes}: {Err}",
+    "translation": "클러스터 배치 필드 {StringjsonBytes}에 대해 json을 역마샬링하는 데 실패했습니다. {Err}"
+  },
+  {
+    "id": "Invalid data presented in the cluster deployment field: {TempInterf}",
+    "translation": "클러스터 배치 필드에 올바르지 않은 데이터가 표시되었습니다. {TempInterf}"
+  },
+  {
+    "id": "The metadata attribute in the cluster deployment has wrong format.",
+    "translation": "클러스터 배치의 메타데이터 속성의 형식이 잘못되었습니다."
+  },
+  {
+    "id": "Failed to get the namespace from the Kube operator. {Err}",
+    "translation": "Kube 연산자에서 네임스페이스를 가져오는 데 실패했습니다. {Err}"
+  },
+  {
     "id": "user input {Name} has no default value and is not set",
     "translation": "사용자 입력 {Name}이(가) 기본값을 갖고 있지 않으며 설정되지 않음"
   },
@@ -1080,6 +1100,34 @@
     "translation": "서비스에 노드 유형 'cluster'에 대한 클러스터 배치 구성이 없습니다."
   },
   {
+    "id": "The input node's cluster namespace '{NodeNamespace}' does not match the node's cluster namespace '{ExchNodeNamespace}' from the exchange {NodeId}.",
+    "translation": "입력 노드의 클러스터 네임스페이스 '{NodeNamespace}'이(가) Exchange {NodeId}의 노드 클러스터 네임스페이스 '{ExchNodeNamespace}'과(와) 일치하지 않습니다."
+  },
+  {
+    "id": "The input node's scope '{NodeIsNamespaceScope}' does not match the node's scope '{ExchNodeIsNamespaceScope}' from the exchange {NodeId}.",
+    "translation": "입력 노드의 범위 '{NodeIsNamespaceScope}'이(가) Exchange {NodeId}의 노드 범위 '{ExchNodeIsNamespaceScope}'과(와) 일치하지 않습니다."
+  },
+  {
+    "id": "The namespace '{DeployerNamespace}' specified in the deployment policy or pattern does not match the namespace of the agent: '{NodeNamespace}'",
+    "translation": "배치 정책 또는 패턴에 지정된 네임스페이스 '{DeployerNamespace}'이(가) 에이전트의 네임스페이스와 일치하지 않습니다. '{NodeNamespace}'"
+  },
+  {
+    "id": "Failed to get cluster deployment from the service. {Err}",
+    "translation": "서비스에서 클러스터 배치를 가져오는 데 실패했습니다. {Err}"
+  },
+  {
+    "id": "The namespace '{SvcNamespace}' specified in the service does not match the namespace of the agent: '{NodeNamespace}'. Please overwrite it in the deployment policy or pattern.",
+    "translation": "서비스에 지정된 '{SvcNamespace}' 네임스페이스가 에이전트의 네임스페이스와 일치하지 않습니다. '{NodeNamespace}'. 배치 정책 또는 패턴으로 겹쳐쓰십시오."
+  },
+  {
+    "id": "The namespace '{PatternNamespace}' specified in the pattern '{PatternId}' is empty or does not match the namespace of the namespace scoped agent: '{NodeNamespace}'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.",
+    "translation": "'{PatternId}' 패턴에 지정된 네임스페이스 '{PatternNamespace}'이(가) 비어 있거나 네임스페이스 범위 에이전트의 네임스페이스와 일치하지 않습니다. '{NodeNamespace}'. 네임스페이스 범위 에이전트는 에이전트와 네임스페이스가 동일한 패턴과만 호환 가능합니다."
+  },
+  {
+    "id": "The Cluster namespace specified in the pattern '{PatternId}' is {PatternNamespace}, only pattern with empty cluster namespace can be registered for cluster scoped agent",
+    "translation": "'{PatternId}' 패턴에 지정된 클러스터 네임스페이스는 {PatternNamespace}입니다. 클러스터 범위 에이전트에는 빈 클러스터 네임스페이스가 있는 패턴만 등록할 수 있습니다."
+  },
+  {
     "id": "Unable to create version expression from {VersionRange}. {Err}",
     "translation": "{VersionRange}에서 버전 표현식을 작성할 수 없습니다. {Err}"
   },
@@ -1102,6 +1150,10 @@
   {
     "id": "Policy Incompatible",
     "translation": "정책이 호환되지 않음"
+  },
+  {
+    "id": "{Err1}",
+    "translation": "{Err1}"
   },
   {
     "id": "Architecture does not match.",
@@ -1342,6 +1394,10 @@
   {
     "id": "The node organization must be provided.",
     "translation": "노드 조직을 제공해야 합니다."
+  },
+  {
+    "id": "Secret {VaultSecretName} does not exist in the secret manager for either org level or user level.",
+    "translation": "시크릿 {VaultSecretName}이(가) 조직 레벨 또는 사용자 레벨의 Secret Manager에 존재하지 않습니다."
   },
   {
     "id": "Error parsing secret name in the secret binding. {Errparse}",
@@ -1954,6 +2010,14 @@
   {
     "id": "Node management status for {Arg_1} changed to {Arg_2}.",
     "translation": "{Arg_1}에 대한 노드 관리 상태가 {Arg_2}(으)로 변경되었습니다."
+  },
+  {
+    "id": "Node management status for {Arg_1} changed to {Arg_2}. Error message: {Arg_3}",
+    "translation": "{Arg_1}에 대한 노드 관리 상태가 {Arg_2}(으)로 변경되었습니다. 오류 메시지: {Arg_3}"
+  },
+  {
+    "id": "Removing node management status for {Arg_1}.",
+    "translation": "{Arg_1}에 대한 노드 관리 상태를 제거 중입니다."
   },
   {
     "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",

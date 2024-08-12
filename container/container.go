@@ -2,20 +2,11 @@ package container
 
 import (
 	"bytes"
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"math/big"
-	"os"
-	"os/user"
-	"path"
-	"strconv"
-	"strings"
-
 	"github.com/boltdb/bolt"
 	"github.com/coreos/go-iptables/iptables"
 	docker "github.com/fsouza/go-dockerclient"
@@ -32,6 +23,14 @@ import (
 	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/sys/unix"
+	"io"
+	"io/ioutil"
+	"math/big"
+	"os"
+	"os/user"
+	"path"
+	"strconv"
+	"strings"
 )
 
 const LABEL_PREFIX = "openhorizon.anax"
@@ -191,7 +190,7 @@ func hashService(service *containermessage.Service) (string, error) {
 
 	glog.V(5).Infof("Hashing Service: %v", string(b))
 
-	h := sha1.New()
+	h := sha256.New()
 	if _, err := io.Copy(h, bytes.NewBuffer(b)); err != nil {
 		return "", err
 	}
@@ -373,6 +372,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				SecurityOpt:     service.SecurityOpt,
 				Sysctls:         service.Sysctls,
 				PidMode:         service.PID,
+				IpcMode:         service.Ipc,
 			},
 		}
 
@@ -598,7 +598,7 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		client:        client,
 		iptables:      nil,
 		authMgr:       resource.NewAuthenticationManager(config.GetFileSyncServiceAuthPath()),
-		secretMgr:     resource.NewSecretsManager(config.GetSecretsManagerFilePath(), nil),
+		secretMgr:     resource.NewSecretsManager(config, nil),
 		pattern:       "",
 		isDevInstance: true,
 		apiServerType: svType,
@@ -1442,7 +1442,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 		if existingContainer == nil {
 			// only create container if there wasn't one
-			servicePair.serviceConfig.HostConfig.NetworkMode = bridgeName
+			servicePair.serviceConfig.HostConfig.NetworkMode = "bridge"
 			if err := serviceStart(b.client, agreementId, containerName, shareLabel, servicePair.serviceConfig, eps, ms_sharedendpoints, &postCreateContainers, fail, true); err != nil {
 				return nil, err
 			}
@@ -1462,6 +1462,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			return nil, err
 		} else {
 			for _, net := range networks {
+				// custom network has agreementId as bridge(network)  name, same as endpoint key
 				if isAnaxNetwork(&net, agreementId) {
 					glog.V(5).Infof("Found network %v already present", net.Name)
 					agBridge = &net
@@ -1487,7 +1488,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	// every one of these gets wired to both the agBridge and every shared bridge from this agreement
 	for serviceName, servicePair := range private {
 		if servicePair.serviceConfig.HostConfig.NetworkMode == "" {
-			servicePair.serviceConfig.HostConfig.NetworkMode = agreementId // custom bridge has agreementId as name, same as endpoint key
+			servicePair.serviceConfig.HostConfig.NetworkMode = "bridge"
 		}
 		var endpoints map[string]*docker.EndpointConfig
 		if servicePair.serviceConfig.HostConfig.NetworkMode != "host" {

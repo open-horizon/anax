@@ -32,7 +32,7 @@ const (
 	MACPACKAGETYPE  = "pkg"
 
 	HZN_CLUSTER_FILE      = "horizon-agent-edge-cluster-files.tar.gz"
-	HZN_CLUSTER_IMAGE     = "amd64_anax_k8s.tar.gz"
+	HZN_CLUSTER_IMAGE     = "%v_anax_k8s.tar.gz"
 	HZN_CONTAINER_FILE    = "%v_anax.tar.gz"
 	HZN_EDGE_FILE         = "horizon-agent-%v-%v-%v.tar.gz"
 	HZN_CONFIG_FILE       = "agent-install.cfg"
@@ -486,18 +486,19 @@ func (w *DownloadWorker) formAgentUpgradePackageNames(dev *persistence.ExchangeD
 		return nil, "", fmt.Errorf("No node policy found in the local db.")
 	}
 
+	archProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_ARCH)
+	if err != nil {
+		return nil, "", err
+	}
+
 	if dev.GetNodeType() == persistence.DEVICE_TYPE_CLUSTER {
-		return &[]string{HZN_CLUSTER_FILE, HZN_CLUSTER_IMAGE}, "", nil
+		cluster_image := fmt.Sprintf(HZN_CLUSTER_IMAGE, archProp.Value)
+		return &[]string{HZN_CLUSTER_FILE, cluster_image}, "", nil
 	}
 
 	installTypeProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_OS)
 	if err != nil {
 		return nil, "", fmt.Errorf("Failed to find node os property: %v", err)
-	}
-
-	archProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_ARCH)
-	if err != nil {
-		return nil, "", err
 	}
 
 	allFiles := []string{}

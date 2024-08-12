@@ -23,7 +23,7 @@ import (
 var ExchangeNodePolicy *exchange.ExchangeNodePolicy
 
 const NUM_BUILT_INS = 7
-const CLUSTER_NUM_BUILT_INS = 4
+const CLUSTER_NUM_BUILT_INS = 6
 
 // Verify that a Node Policy Object can be created and saved the first time.
 func Test_UpdateNodePolicy(t *testing.T) {

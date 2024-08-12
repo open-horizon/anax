@@ -208,7 +208,8 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "HZN_AGBOT_URL"="$(AGBOT_SAPI_URL)" \
 		-e "TEST_PATTERNS"="$(TEST_PATTERNS)" \
 		-t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)
-	docker cp $(E2EDEVTEST_TEMPFS)/. $(DOCKER_TEST_CNAME):/
+	docker cp -a $(E2EDEVTEST_TEMPFS)/. $(DOCKER_TEST_CNAME):/
+	docker exec --user root $(DOCKER_TEST_CNAME) chown -R 1000:1000 /certs
 
 run-dockerreg: test-network
 	@echo "Handling Docker $(DOCKER_REG_CNAME)"
@@ -330,19 +331,19 @@ test: clean $(ANAX_SOURCE)/anax run-dockerreg run-mgmthub run-test
 
 test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg run-test copy-cert
 	@echo -e  "\nBootstrapping the exchange"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/init_exchange.sh"
+	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) NOKUBE=1; /root/init_exchange.sh"
 	@echo -e  "\nSetting up secrets in the vault"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) DOCKER_VAULT_CNAME=$(DOCKER_VAULT_CNAME); /root/setup_secrets.sh"
+	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) NOKUBE=1 DOCKER_VAULT_CNAME=$(DOCKER_VAULT_CNAME); /root/setup_secrets.sh"
 	@echo -e  "\nStarting tests"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/gov-combined.sh"
+	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) NOKUBE=1; /root/gov-combined.sh"
 
 test-remote-prebuilt: clean run-dockerreg download-agbot-image run-test copy-cert
 	@echo -e  "\nBootstrapping the exchange"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/init_exchange.sh"
+	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) NOKUBE=1; /root/init_exchange.sh"
 	@echo -e  "\nSetting up secrets in the vault"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) DOCKER_VAULT_CNAME=$(DOCKER_VAULT_CNAME); /root/setup_secrets.sh"
+	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) NOKUBE=1 DOCKER_VAULT_CNAME=$(DOCKER_VAULT_CNAME); /root/setup_secrets.sh"
 	@echo -e  "\nStarting tests"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/gov-combined.sh"
+	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) NOKUBE=1; /root/gov-combined.sh"
 
 copy-cert:
 	cp css.crt $(E2EDEVTEST_TEMPFS)/certs/css.crt

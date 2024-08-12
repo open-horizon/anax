@@ -114,6 +114,15 @@ func GetHTTPExchangePatternHandlerWithContext(cfg *config.HorizonConfig) Pattern
 	}
 }
 
+// A handler for getting all the nodes in an org from the exchange
+type OrgDevicesHandler func(orgId string, credId string, token string) (map[string]Device, error)
+
+func GetOrgDevicesHandler(orgId string, ec ExchangeContext) OrgDevicesHandler {
+	return func(orgId string, credId string, token string) (map[string]Device, error) {
+		return GetExchangeOrgDevices(ec.GetHTTPFactory(), orgId, ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL())
+	}
+}
+
 // A handler for getting the device information from the exchange
 type DeviceHandler func(id string, token string) (*Device, error)
 
@@ -480,11 +489,11 @@ func GetHTTPAgbotPatternNodeSearchHandler(ec ExchangeContext) AgbotPatternNodeSe
 }
 
 // A handler for checking if a vault secret exists.
-type VaultSecretExistsHandler func(agbotURL string, org string, userName string, secretName string) (bool, error)
+type VaultSecretExistsHandler func(agbotURL string, org string, userName string, nodeName string, secretName string) (bool, error)
 
 func GetHTTPVaultSecretExistsHandler(ec ExchangeContext) VaultSecretExistsHandler {
-	return func(agbotURL string, org string, userName string, secretName string) (bool, error) {
-		return VaultSecretExists(ec, agbotURL, org, userName, secretName)
+	return func(agbotURL string, org string, userName string, nodeName string, secretName string) (bool, error) {
+		return VaultSecretExists(ec, agbotURL, org, userName, nodeName, secretName)
 	}
 }
 

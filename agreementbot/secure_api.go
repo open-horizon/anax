@@ -30,6 +30,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/text/message"
@@ -188,9 +189,16 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycheck/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/secretbindingcompatible", a.secretbinding_compatible).Methods("GET", "OPTIONS")
+		router.HandleFunc("/compatibility/constraints/node/{policyType}", a.policyCompatibleNodeList).Methods("GET", "OPTIONS")
+		router.HandleFunc("/compatibility/patterns/node", a.patternCompatibleNodeList).Methods("GET", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/user/{user}", a.userSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/node/{node}", a.nodeSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/user/{user}/node/{node}", a.nodeUserSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc(`/org/{org}/secrets/user/{user}/node/{node}/{secret:[\w\/\-]+}`, a.nodeUserSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 		router.HandleFunc(`/org/{org}/secrets/user/{user}/{secret:[\w\/\-]+}`, a.userSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc(`/org/{org}/secrets/node/{node}/{secret:[\w\/\-]+}`, a.nodeSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets", a.orgSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc("/org/{org}/allsecrets", a.allSecrets).Methods("LIST", "OPTIONS")
 		router.HandleFunc(`/org/{org}/secrets/{secret:[\w\/\-]+}`, a.orgSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 		router.HandleFunc("/org/{org}/hagroup/{group}/nodemanagement/{node}/{nmpid}", a.haNodeNMPUpdateRequest).Methods("POST", "OPTIONS")
 
@@ -253,6 +261,141 @@ func (a *SecureAPI) haNodeNMPUpdateRequest(w http.ResponseWriter, r *http.Reques
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *SecureAPI) policyCompatibleNodeList(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("/compatibility/constraints/node called.")))
+
+		matchingNodes := []string{}
+
+		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/compatibility/constraints/node", UserTypeCred, w, r); ok {
+			body, _ := ioutil.ReadAll(r.Body)
+			if len(body) == 0 {
+				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
+				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
+			} else if input, err := a.decodePolicyCompatibleNodeInputBody(body, msgPrinter); err != nil {
+				writeResponse(w, err.Error(), http.StatusBadRequest)
+			} else {
+				nodes, err := exchange.GetExchangeOrgDevices(user_ec.GetHTTPFactory(), input.NodeOrg, user_ec.GetExchangeId(), user_ec.GetExchangeToken(), user_ec.GetExchangeURL())
+				if err != nil {
+					writeResponse(w, msgPrinter.Sprintf("Failed to get nodes from the exchange."), http.StatusInternalServerError)
+				}
+
+				pathVars := mux.Vars(r)
+				policyType := pathVars["policyType"]
+				if policyType != "nmp" && policyType != "dp" {
+					writeResponse(w, msgPrinter.Sprintf("Invalid node policy type %v. Allowed types are \"dp\" or \"nmp\".", policyType), http.StatusBadRequest)
+				}
+
+				for nodeId, _ := range nodes {
+					pol, err := exchange.GetNodePolicy(user_ec, nodeId)
+					if err != nil {
+						writeResponse(w, msgPrinter.Sprintf("Failed to get node policy from the exchange."), http.StatusInternalServerError)
+					} else if pol == nil {
+						continue
+					}
+
+					nodePol := &externalpolicy.ExternalPolicy{}
+					if policyType == "nmp" {
+						nodePol = pol.GetManagementPolicy()
+					} else if policyType == "dp" {
+						nodePol = pol.GetDeploymentPolicy()
+					}
+
+					if err = (&input.Constraints).IsSatisfiedBy(nodePol.Properties); err == nil {
+						matchingNodes = append(matchingNodes, nodeId)
+					}
+				}
+			}
+		}
+		a.writeCompCheckResponse(w, matchingNodes, nil, nil)
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+	return
+}
+
+type policyNodeCompatibleInputBody struct {
+	NodeOrg     string                              `json:"node_org"`
+	Constraints externalpolicy.ConstraintExpression `json:"constraints"`
+}
+
+func (a *SecureAPI) decodePolicyCompatibleNodeInputBody(body []byte, msgPrinter *message.Printer) (*policyNodeCompatibleInputBody, error) {
+	var js map[string]interface{}
+	if err := json.Unmarshal(body, &js); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+	} else {
+		var input policyNodeCompatibleInputBody
+		if err := json.Unmarshal(body, &input); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to policyNodeCompatibleInputBody object. %v", err)))
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to policyNodeCompatibleInputBody object. %v", err))
+		} else {
+			return &input, nil
+		}
+	}
+}
+
+func (a *SecureAPI) patternCompatibleNodeList(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("/compatibility/patterns/node called.")))
+
+		matchingNodes := []string{}
+
+		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/compatibility/patterns/node", UserTypeCred, w, r); ok {
+			body, _ := ioutil.ReadAll(r.Body)
+			if len(body) == 0 {
+				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
+				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
+			} else if input, err := a.decodePatternCompatibleNodeInputBody(body, msgPrinter); err != nil {
+				writeResponse(w, err.Error(), http.StatusBadRequest)
+			} else {
+				nodes, err := exchange.GetExchangeOrgDevices(user_ec.GetHTTPFactory(), input.NodeOrg, user_ec.GetExchangeId(), user_ec.GetExchangeToken(), user_ec.GetExchangeURL())
+				if err != nil {
+					writeResponse(w, msgPrinter.Sprintf("Failed to get nodes from the exchange."), http.StatusInternalServerError)
+				}
+				for nodeId, node := range nodes {
+					if cutil.SliceContains(input.Patterns, node.Pattern) {
+						matchingNodes = append(matchingNodes, nodeId)
+					}
+				}
+			}
+		}
+		a.writeCompCheckResponse(w, matchingNodes, nil, nil)
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+	return
+}
+
+type patternNodeCompatibleInputBody struct {
+	NodeOrg  string   `json:"node_org"`
+	Patterns []string `json:"patterns"`
+}
+
+func (a *SecureAPI) decodePatternCompatibleNodeInputBody(body []byte, msgPrinter *message.Printer) (*patternNodeCompatibleInputBody, error) {
+	var js map[string]interface{}
+	if err := json.Unmarshal(body, &js); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+	} else {
+		var input patternNodeCompatibleInputBody
+		if err := json.Unmarshal(body, &input); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to patternNodeCompatibleInputBody object. %v", err)))
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to patternNodeCompatibleInputBody object. %v", err))
+		} else {
+			return &input, nil
+		}
 	}
 }
 
@@ -1044,7 +1187,9 @@ type SecretRequestInfo struct {
 
 	// information about the resources being accessed
 	user            string // if applicable, the user whose resources are being accessed
+	node            string // if applicable, the node whose resources are being accessed
 	vaultSecretName string // the name of the secret being accessed
+	listAll         bool   // true to indicate listing all secrets in the org including node and user-level
 
 	msgPrinter *message.Printer
 }
@@ -1071,14 +1216,17 @@ type SecretRequestInfo struct {
 //     type: string
 //     required: false
 //     description: "The user owning the secret."
+//   - name: node
+//     in: query
+//     type: string
+//     required: false
+//     description: "The node the secret is for."
 //   - name: secret
 //     in: query
 //     type: string
 //     required: false
 //     description: "The secret key (name)."
-//
 // responses:
-//
 //	'400':
 //	  description: "Secret org or name does not meet constraints."
 //	  schema:
@@ -1087,18 +1235,26 @@ type SecretRequestInfo struct {
 //	  description: "Secret provider not ready or not configured."
 //	  schema:
 //	    type: string
+
 func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *SecretRequestInfo {
 
 	// Process in the inputs and verify that they are consistent with the logged in user.
 	pathVars := mux.Vars(r)
 	org := pathVars["org"]
 	user := pathVars["user"]
+	node := pathVars["node"]
 	vaultSecretName := pathVars["secret"]
 	api_url := "/org/%v/secrets/%v"
 	resourceString := fmt.Sprintf(api_url, "{org}", "{secret}")
-	if user != "" {
+	if user != "" && node != "" {
+		api_url = "/org/%v/secrets/user/%v/node/%v/%v"
+		resourceString = fmt.Sprintf(api_url, "{org}", "{user}", "{node}", "{secret}")
+	} else if user != "" {
 		api_url = "/org/%v/secrets/user/%v/%v"
 		resourceString = fmt.Sprintf(api_url, "{org}", "{user}", "{secret}")
+	} else if node != "" {
+		api_url = "/org/%v/secrets/node/%v/%v"
+		resourceString = fmt.Sprintf(api_url, "{org}", "{node}", "{secret}")
 	}
 
 	ec, exUser, msgPrinter, userAuthenticated := a.processExchangeCred(resourceString, UserTypeCred, w, r)
@@ -1119,14 +1275,18 @@ func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *Secret
 		writeResponse(w, msgPrinter.Sprintf(unavailMsg), http.StatusServiceUnavailable)
 	}
 
-	if user != "" {
+	if user != "" && node != "" {
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, user, node, vaultSecretName))))
+	} else if user != "" {
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, user, vaultSecretName))))
+	} else if node != "" {
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, node, vaultSecretName))))
 	} else {
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("%v %v called.", r.Method, fmt.Sprintf(api_url, org, vaultSecretName))))
 	}
 
 	// pre processing
-	if err, httpCode := a.vaultSecretPreCheck(ec, fmt.Sprint(r.URL), vaultSecretName, org, user, msgPrinter); err != nil {
+	if err, httpCode := a.vaultSecretPreCheck(ec, fmt.Sprint(r.URL), vaultSecretName, org, user, node, msgPrinter); err != nil {
 		glog.Errorf(APIlogString(err.Error()))
 		writeResponse(w, err.Error(), httpCode)
 		return nil
@@ -1140,7 +1300,7 @@ func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *Secret
 		}
 	}
 
-	return &SecretRequestInfo{org, ec, exUser, user, vaultSecretName, msgPrinter}
+	return &SecretRequestInfo{org, ec, exUser, user, node, vaultSecretName, false, msgPrinter}
 }
 
 func parseSecretDetails(w http.ResponseWriter, r *http.Request, msgPrinter *message.Printer) *secrets.SecretDetails {
@@ -1178,8 +1338,12 @@ func (a *SecureAPI) errCheck(err error, action string, info *SecretRequestInfo) 
 
 		// build the original secret name
 		var secretName string
-		if info.user != "" {
-			secretName = "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
+		if info.user != "" && info.node != "" {
+			secretName = "/user/" + info.user + "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+		} else if info.user != "" {
+			secretName = "/user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
+		} else if info.node != "" {
+			secretName = "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 		} else {
 			secretName = info.vaultSecretName
 		}
@@ -1283,6 +1447,57 @@ func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (a *SecureAPI) allSecrets(w http.ResponseWriter, r *http.Request) {
+	info := a.secretsSetup(w, r)
+	if info == nil {
+		return
+	}
+
+	info.listAll = true
+
+	// handle API options
+	switch r.Method {
+	// swagger:operation LIST /org/{org}/allsecrets allSecrets
+	//
+	// List all secrets belonging to the org including node and user-level secrets.
+	//
+	// ---
+	// consumes:
+	//   - application/json
+	// produces:
+	//   - application/json
+	// responses:
+	//  '200':
+	//    description: "Success or no secrets found."
+	//    type: array
+	//    items: string
+	//  '401':
+	//    description: "Unauthenticated user."
+	//    type: string
+	//  '403':
+	//    description: "Secrets permission denied to user."
+	//    type: string
+	//  '503':
+	//    description: "Secret provider unavailable"
+	//    type: string
+	//  '500':
+	//    description: "Invalid vault response"
+	//    type: string
+	case "LIST":
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
+		} else {
+			writeResponse(w, payload, http.StatusOK)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "LIST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 // handler for /org/<org>/secrets/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
 func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 	// check the provided secret name, <secret> can sometimes bind to user/<user>
@@ -1300,9 +1515,38 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 
 	// handle API options
 	switch r.Method {
+	// swagger:operation GET /org/{org}/secrets/{secret} orgSecret
+	//
+	// List given secret belonging to the org.
+	//
+	// ---
+	// consumes:
+	//   - application/json
+	// produces:
+	//   - application/json
+	// responses:
+	//  '200':
+	//    description: "Success."
+	//    type: secrets.SecretDetails
+	//    "$ref": "#/definitions/SecretDetails"
+	//  '401':
+	//    description: "Unauthenticated user."
+	//    type: string
+	//  '403':
+	//    description: "Secrets permission denied to user."
+	//    type: string
+	//  '404':
+	//    description: "Secret does not exist."
+	//    type: string
+	//  '503':
+	//    description: "Secret provider unavailable"
+	//    type: string
+	//  '500':
+	//    description: "Invalid vault response"
+	//    type: string
 	case "GET":
 		// pull details for an org-level secret
-		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "", info.vaultSecretName)
+		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "", "", info.vaultSecretName)
 		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
 			writeResponse(w, secretDetails, http.StatusOK)
 		} else {
@@ -1318,6 +1562,42 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
+		// swagger:operation POST /org/{org}/secrets/{secret} orgSecret
+		//
+		// Delete a given secret belonging to the org.
+		//
+		// ---
+		// consumes:
+		//   - application/json
+		// produces:
+		//   - application/json
+		// parameters:
+		//   - name: secretDetails
+		//     in: query
+		//     type: secrets.SecretDetails
+		//     required: true
+		//     description: "The secret key and value."
+		//     schema:
+		//     "$ref": "#/definitions/SecretDetails"
+		// responses:
+		//  '200':
+		//    description: "Success."
+		//    type: string
+		//  '401':
+		//    description: "Unauthenticated user."
+		//    type: string
+		//  '403':
+		//    description: "Secrets permission denied to user."
+		//    type: string
+		//  '404':
+		//    description: "Secret does not exist."
+		//    type: string
+		//  '503':
+		//    description: "Secret provider unavailable"
+		//    type: string
+		//  '500':
+		//    description: "Invalid vault response"
+		//    type: string
 	case "POST":
 		// create an org-level secret
 
@@ -1334,6 +1614,34 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
+		// swagger:operation DELETE /org/{org}/secrets/{secret} orgSecret
+		//
+		// Delete a given secret belonging to the org.
+		//
+		// ---
+		// consumes:
+		//   - application/json
+		// produces:
+		//   - application/json
+		// responses:
+		//  '200':
+		//    description: "Success."
+		//    type: string
+		//  '401':
+		//    description: "Unauthenticated user."
+		//    type: string
+		//  '403':
+		//    description: "Secrets permission denied to user."
+		//    type: string
+		//  '404':
+		//    description: "Secret does not exist."
+		//    type: string
+		//  '503':
+		//    description: "Secret provider unavailable"
+		//    type: string
+		//  '500':
+		//    description: "Invalid vault response"
+		//    type: string
 	case "DELETE":
 		// delete an org-level secret
 		err := a.secretProvider.DeleteOrgSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.vaultSecretName)
@@ -1341,6 +1649,31 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 			writeResponse(w, "Secret is deleted.", http.StatusNoContent)
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "LIST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// handler for /org/<org>/secrets/node/<node> - LIST, OPTIONS
+func (a *SecureAPI) nodeSecrets(w http.ResponseWriter, r *http.Request) {
+	info := a.secretsSetup(w, r)
+	if info == nil {
+		return
+	}
+
+	// handle API options
+	switch r.Method {
+	case "LIST":
+		// list node org-level secrets
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
+		} else {
+			writeResponse(w, payload, http.StatusOK)
 		}
 	case "OPTIONS":
 		w.Header().Set("Allow", "LIST, OPTIONS")
@@ -1375,6 +1708,31 @@ func (a *SecureAPI) userSecrets(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handler for /org/<org>/secrets/user/<user>/node/<node> - LIST, OPTIONS
+func (a *SecureAPI) nodeUserSecrets(w http.ResponseWriter, r *http.Request) {
+	info := a.secretsSetup(w, r)
+	if info == nil {
+		return
+	}
+
+	// handle API options
+	switch r.Method {
+	case "LIST":
+		// list user-level secrets
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
+		} else {
+			writeResponse(w, payload, http.StatusOK)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "LIST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 // handler for /org/<org>/secrets/user/<user>/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
 func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	info := a.secretsSetup(w, r)
@@ -1385,9 +1743,38 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	userPath := "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
+	// swagger:operation GET /org/{org}/secrets/user/{user}/{secret} userSecret
+	//
+	// List given secret belonging to the user.
+	//
+	// ---
+	// consumes:
+	//   - application/json
+	// produces:
+	//   - application/json
+	// responses:
+	//  '200':
+	//    description: "Success."
+	//    type: secrets.SecretDetails
+	//    "$ref": "#/definitions/SecretDetails"
+	//  '401':
+	//    description: "Unauthenticated user."
+	//    type: string
+	//  '403':
+	//    description: "Secrets permission denied to user."
+	//    type: string
+	//  '404':
+	//    description: "Secret does not exist."
+	//    type: string
+	//  '503':
+	//    description: "Secret provider unavailable"
+	//    type: string
+	//  '500':
+	//    description: "Invalid vault response"
+	//    type: string
 	case "GET":
 		// pull details for a user-level secret
-		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.user, info.vaultSecretName)
+		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.user, "", info.vaultSecretName)
 		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
 			writeResponse(w, secretDetails, http.StatusOK)
 		} else {
@@ -1403,6 +1790,42 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
+		// swagger:operation POST /org/{org}/secrets/user/{user}/{secret} userSecret
+		//
+		// Delete a given secret belonging to the user.
+		//
+		// ---
+		// consumes:
+		//   - application/json
+		// produces:
+		//   - application/json
+		// parameters:
+		//   - name: secretDetails
+		//     in: query
+		//     type: secrets.SecretDetails
+		//     required: true
+		//     description: "The secret key and value."
+		//     schema:
+		//     "$ref": "#/definitions/SecretDetails"
+		// responses:
+		//  '200':
+		//    description: "Success."
+		//    type: string
+		//  '401':
+		//    description: "Unauthenticated user."
+		//    type: string
+		//  '403':
+		//    description: "Secrets permission denied to user."
+		//    type: string
+		//  '404':
+		//    description: "Secret does not exist."
+		//    type: string
+		//  '503':
+		//    description: "Secret provider unavailable"
+		//    type: string
+		//  '500':
+		//    description: "Invalid vault response"
+		//    type: string
 	case "POST":
 		// create a user-level secret
 
@@ -1419,8 +1842,340 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
+		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} userSecret
+		//
+		// Delete a given secret belonging to the user.
+		//
+		// ---
+		// consumes:
+		//   - application/json
+		// produces:
+		//   - application/json
+		// responses:
+		//  '200':
+		//    description: "Success."
+		//    type: string
+		//  '401':
+		//    description: "Unauthenticated user."
+		//    type: string
+		//  '403':
+		//    description: "Secrets permission denied to user."
+		//    type: string
+		//  '404':
+		//    description: "Secret does not exist."
+		//    type: string
+		//  '503':
+		//    description: "Secret provider unavailable"
+		//    type: string
+		//  '500':
+		//    description: "Invalid vault response"
+		//    type: string
 	case "DELETE":
 		err := a.secretProvider.DeleteOrgUserSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
+		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
+			writeResponse(w, "Secret created/updated.", http.StatusNoContent)
+		} else {
+			writeResponse(w, errMsg, serr.ResponseCode)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "LIST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// handler for /org/<org>/secrets/node/<node>/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
+func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
+	info := a.secretsSetup(w, r)
+	if info == nil {
+		return
+	}
+
+	// handle API options
+	nodePath := "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+	switch r.Method {
+	// swagger:operation GET /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+	//
+	// List given secret belonging to the org for a node.
+	//
+	// ---
+	// consumes:
+	//   - application/json
+	// produces:
+	//   - application/json
+	// responses:
+	//  '200':
+	//    description: "Success."
+	//    type: secrets.SecretDetails
+	//    "$ref": "#/definitions/SecretDetails"
+	//  '401':
+	//    description: "Unauthenticated user."
+	//    type: string
+	//  '403':
+	//    description: "Secrets permission denied to user."
+	//    type: string
+	//  '404':
+	//    description: "Secret does not exist."
+	//    type: string
+	//  '503':
+	//    description: "Secret provider unavailable"
+	//    type: string
+	//  '500':
+	//    description: "Invalid vault response"
+	//    type: string
+	case "GET":
+		// pull details for a node org-level secret
+		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "", info.node, info.vaultSecretName)
+		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
+			writeResponse(w, secretDetails, http.StatusOK)
+		} else {
+			writeResponse(w, errMsg, serr.ResponseCode)
+		}
+	case "LIST":
+		// check existence of a node org-level secret
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
+		} else {
+			writeResponse(w, payload, http.StatusOK)
+		}
+	case "PUT":
+		fallthrough
+		// swagger:operation POST /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+		//
+		// Delete a given secret belonging to the org for a node.
+		//
+		// ---
+		// consumes:
+		//   - application/json
+		// produces:
+		//   - application/json
+		// parameters:
+		//   - name: secretDetails
+		//     in: query
+		//     type: secrets.SecretDetails
+		//     required: true
+		//     description: "The secret key and value."
+		//     schema:
+		//     "$ref": "#/definitions/SecretDetails"
+		// responses:
+		//  '200':
+		//    description: "Success."
+		//    type: string
+		//  '401':
+		//    description: "Unauthenticated user."
+		//    type: string
+		//  '403':
+		//    description: "Secrets permission denied to user."
+		//    type: string
+		//  '404':
+		//    description: "Secret does not exist."
+		//    type: string
+		//  '503':
+		//    description: "Secret provider unavailable"
+		//    type: string
+		//  '500':
+		//    description: "Invalid vault response"
+		//    type: string
+	case "POST":
+		// create a node org-level secret
+
+		// parse the request body
+		input := parseSecretDetails(w, r, info.msgPrinter)
+		if input == nil {
+			return
+		}
+
+		// create the secret
+		err := a.secretProvider.CreateOrgNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodePath, *input)
+		if serr, errMsg := a.errCheck(err, "create", info); serr == nil {
+			writeResponse(w, "Secret created/updated.", http.StatusCreated)
+		} else {
+			writeResponse(w, errMsg, serr.ResponseCode)
+		}
+		// swagger:operation DELETE /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+		//
+		// Delete a given secret belonging to the org for a node.
+		//
+		// ---
+		// consumes:
+		//   - application/json
+		// produces:
+		//   - application/json
+		// responses:
+		//  '200':
+		//    description: "Success."
+		//    type: string
+		//  '401':
+		//    description: "Unauthenticated user."
+		//    type: string
+		//  '403':
+		//    description: "Secrets permission denied to user."
+		//    type: string
+		//  '404':
+		//    description: "Secret does not exist."
+		//    type: string
+		//  '503':
+		//    description: "Secret provider unavailable"
+		//    type: string
+		//  '500':
+		//    description: "Invalid vault response"
+		//    type: string
+	case "DELETE":
+		err := a.secretProvider.DeleteOrgNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodePath)
+		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
+			writeResponse(w, "Secret created/updated.", http.StatusNoContent)
+		} else {
+			writeResponse(w, errMsg, serr.ResponseCode)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "LIST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// handler for /org/<org>/secrets/user/<user>/node/<node>/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
+func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
+	info := a.secretsSetup(w, r)
+	if info == nil {
+		return
+	}
+
+	// handle API options
+	nodeUserPath := "user/" + info.user + "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+	switch r.Method {
+	// swagger:operation GET /org/{org}/secrets/user/{user}/node/{node}/{secret} nodeUserSecret
+	//
+	// List given secret belonging to the user for a node.
+	//
+	// ---
+	// consumes:
+	//   - application/json
+	// produces:
+	//   - application/json
+	// responses:
+	//  '200':
+	//    description: "Success."
+	//    type: secrets.SecretDetails
+	//    "$ref": "#/definitions/SecretDetails"
+	//  '401':
+	//    description: "Unauthenticated user."
+	//    type: string
+	//  '403':
+	//    description: "Secrets permission denied to user."
+	//    type: string
+	//  '404':
+	//    description: "Secret does not exist."
+	//    type: string
+	//  '503':
+	//    description: "Secret provider unavailable"
+	//    type: string
+	//  '500':
+	//    description: "Invalid vault response"
+	//    type: string
+	case "GET":
+		// pull details for a user-level secret
+		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.user, info.node, info.vaultSecretName)
+		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
+			writeResponse(w, secretDetails, http.StatusOK)
+		} else {
+			writeResponse(w, errMsg, serr.ResponseCode)
+		}
+	case "LIST":
+		// check existence of a user-level secret
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
+		} else {
+			writeResponse(w, payload, http.StatusOK)
+		}
+	case "PUT":
+		fallthrough
+		// swagger:operation POST /org/{org}/secrets/user/{user}/node/{node}/{secret} userSecret
+		//
+		// Delete a given secret belonging to the user for a node.
+		//
+		// ---
+		// consumes:
+		//   - application/json
+		// produces:
+		//   - application/json
+		// parameters:
+		//   - name: secretDetails
+		//     in: query
+		//     type: secrets.SecretDetails
+		//     required: true
+		//     description: "The secret key and value."
+		//     schema:
+		//     "$ref": "#/definitions/SecretDetails"
+		// responses:
+		//  '200':
+		//    description: "Success."
+		//    type: string
+		//  '401':
+		//    description: "Unauthenticated user."
+		//    type: string
+		//  '403':
+		//    description: "Secrets permission denied to user."
+		//    type: string
+		//  '404':
+		//    description: "Secret does not exist."
+		//    type: string
+		//  '503':
+		//    description: "Secret provider unavailable"
+		//    type: string
+		//  '500':
+		//    description: "Invalid vault response"
+		//    type: string
+	case "POST":
+		// create a user-level secret
+
+		// parse the request body
+		input := parseSecretDetails(w, r, info.msgPrinter)
+		if input == nil {
+			return
+		}
+
+		// create the secret
+		err := a.secretProvider.CreateUserNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodeUserPath, *input)
+		if serr, errMsg := a.errCheck(err, "create", info); serr == nil {
+			writeResponse(w, "Secret created/updated.", http.StatusCreated)
+		} else {
+			writeResponse(w, errMsg, serr.ResponseCode)
+		}
+		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} nodeUserSecret
+		//
+		// Delete a given secret belonging to the user for a node.
+		//
+		// ---
+		// consumes:
+		//   - application/json
+		// produces:
+		//   - application/json
+		// responses:
+		//  '200':
+		//    description: "Success."
+		//    type: string
+		//  '401':
+		//    description: "Unauthenticated user."
+		//    type: string
+		//  '403':
+		//    description: "Secrets permission denied to user."
+		//    type: string
+		//  '404':
+		//    description: "Secret does not exist."
+		//    type: string
+		//  '503':
+		//    description: "Secret provider unavailable"
+		//    type: string
+		//  '500':
+		//    description: "Invalid vault response"
+		//    type: string
+	case "DELETE":
+		err := a.secretProvider.DeleteUserNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, nodeUserPath)
 		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
 			writeResponse(w, "Secret created/updated.", http.StatusNoContent)
 		} else {
@@ -1437,7 +2192,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 // This function does preprocessing for the secret APIs.
 // It returns error and http response code.
 func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
-	apiUrl string, vaultSecretName string, org string, user string,
+	apiUrl string, vaultSecretName string, org string, user string, node string,
 	msgPrinter *message.Printer) (error, int) {
 
 	// Check if vault is configured in the management hub, and the provider is ready to handle requests.
@@ -1455,6 +2210,8 @@ func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
 	} else if (strings.Contains(apiUrl, "/user/") && user == "") ||
 		(vaultSecretName == "user" && user == "") {
 		return fmt.Errorf(msgPrinter.Sprintf("User must be specified in the API path")), http.StatusBadRequest
+	} else if (strings.Contains(apiUrl, "/node") && node == "") || (vaultSecretName == "node" && node == "") {
+		return fmt.Errorf(msgPrinter.Sprintf("Node must be specified in the API path")), http.StatusBadRequest
 	}
 
 	return nil, 0
@@ -1465,10 +2222,21 @@ func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
 func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error, int) {
 
 	userPath := "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
+	orgNodePath := "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
+	userNodePath := "user/" + info.user + "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 	if info.vaultSecretName == "" {
 		secretNames := make([]string, 0)
 		var err error
-		if info.user != "" {
+		if info.listAll {
+			// listing all secrets in the org including node and user-level
+			secretNames, err = a.secretProvider.ListAllSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "")
+		} else if info.user != "" && info.node != "" {
+			// listing node user level secrets
+			secretNames, err = a.secretProvider.ListUserNodeSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.node, userNodePath)
+		} else if info.node != "" {
+			// listing node org level secrets
+			secretNames, err = a.secretProvider.ListOrgNodeSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.node, orgNodePath)
+		} else if info.user != "" {
 			// listing user level secrets
 			secretNames, err = a.secretProvider.ListOrgUserSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
 		} else {
@@ -1493,9 +2261,17 @@ func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error
 		}
 	} else {
 		var err error
-		if info.user != "" {
+		if info.user != "" && info.node != "" {
+			// listing node user level secret
+			err = a.secretProvider.ListUserNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userNodePath)
+		} else if info.node != "" {
+			// listing node org level secret
+			err = a.secretProvider.ListOrgNodeSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, orgNodePath)
+		} else if info.user != "" {
+			// listing user level secret
 			err = a.secretProvider.ListOrgUserSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
 		} else {
+			// listing org level secrets
 			err = a.secretProvider.ListOrgSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.vaultSecretName)
 		}
 
@@ -1533,7 +2309,7 @@ func (a *SecureAPI) verifySecretNames(ec exchange.ExchangeContext, exUser string
 			_, secretName := vbind.GetBinding()
 
 			//parse the bound secret name
-			secretUser, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
+			secretUser, secretNode, shortSecretName, err := compcheck.ParseVaultSecretName(secretName, msgPrinter)
 			if err != nil {
 				return false, "", err
 			}
@@ -1542,19 +2318,25 @@ func (a *SecureAPI) verifySecretNames(ec exchange.ExchangeContext, exUser string
 			// can use the agbot secure API precheck function vaultSecretPreCheck
 			agbotApiUrl := ""
 			fullSecretName := ""
-			if secretUser == "" {
-				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/%v", nodeOrg, shortSecretName)
-				fullSecretName = fmt.Sprintf("/openhorizon/%v/%v", nodeOrg, shortSecretName)
-			} else {
+			if secretUser != "" && secretNode != "" {
+				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/user/%v/node/%v/%v", nodeOrg, secretUser, secretNode, shortSecretName)
+				fullSecretName = fmt.Sprintf("/openhorizon/%v/user/%v/node/%v/%v", nodeOrg, secretUser, secretNode, shortSecretName)
+			} else if secretUser != "" {
 				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/user/%v/%v", nodeOrg, secretUser, shortSecretName)
 				fullSecretName = fmt.Sprintf("/openhorizon/%v/user/%v/%v", nodeOrg, secretUser, shortSecretName)
+			} else if secretNode != "" {
+				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/node/%v/%v", nodeOrg, secretNode, shortSecretName)
+				fullSecretName = fmt.Sprintf("/openhorizon/%v/node/%v/%v", nodeOrg, secretNode, shortSecretName)
+			} else {
+				agbotApiUrl = fmt.Sprintf("/org/%v/secrets/%v", nodeOrg, shortSecretName)
+				fullSecretName = fmt.Sprintf("/openhorizon/%v/%v", nodeOrg, shortSecretName)
 			}
-			if err, _ := a.vaultSecretPreCheck(ec, agbotApiUrl, shortSecretName, nodeOrg, secretUser, msgPrinter); err != nil {
+			if err, _ := a.vaultSecretPreCheck(ec, agbotApiUrl, shortSecretName, nodeOrg, secretUser, secretNode, msgPrinter); err != nil {
 				return false, "", err
 			}
 
 			// check if the bound secret exists or not{}
-			payload, err, _ := a.listVaultSecret(&SecretRequestInfo{nodeOrg, ec, exUser, secretUser, shortSecretName, msgPrinter})
+			payload, err, _ := a.listVaultSecret(&SecretRequestInfo{nodeOrg, ec, exUser, secretUser, secretNode, shortSecretName, false, msgPrinter})
 			if err != nil {
 				return false, "", fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager.", fullSecretName))
 			} else if payload != nil {

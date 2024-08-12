@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -61,6 +62,48 @@ func getSelectionString(selections []string) (string, error) {
 		}
 	}
 	return strings.Join(sels, "&"), nil
+}
+
+func Delete(selections []string, force bool) {
+	// format the eventlog api string
+	url_s := "eventlog"
+
+	if len(selections) > 0 {
+		if s, err := getSelectionString(selections); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", err)
+		} else {
+			url_s = fmt.Sprintf("%v?%v", url_s, s)
+		}
+		if !force {
+			cliutils.ConfirmRemove(i18n.GetMessagePrinter().Sprintf("Are you sure you want to remove all event logs matching the given selectors?"))
+		}
+	} else if !force {
+		cliutils.ConfirmRemove(i18n.GetMessagePrinter().Sprintf("Are you sure you want to remove all event logs?"))
+	}
+
+	retCode, count := cliutils.HorizonDelete(url_s, []int{204}, []int{200}, false)
+
+	if retCode == http.StatusOK {
+		fmt.Println(i18n.GetMessagePrinter().Sprintf("Successfully deleted %v matching event log entries.", cliutils.RemoveQuotes(fmt.Sprintf("%v", count))))
+	} else {
+		fmt.Println(i18n.GetMessagePrinter().Sprintf("No event log entries matching the given selectors were found."))
+	}
+}
+
+func Prune(force bool) {
+	url := "eventlog/prune"
+
+	if !force {
+		cliutils.ConfirmRemove(i18n.GetMessagePrinter().Sprintf("Are you sure you want to remove all event logs from previous registrations?"))
+	}
+
+	retCode, count := cliutils.HorizonDelete(url, []int{204}, []int{200}, false)
+
+	if retCode == http.StatusOK {
+		fmt.Println(i18n.GetMessagePrinter().Sprintf("Successfully pruned %v matching event log entries.", cliutils.RemoveQuotes(fmt.Sprintf("%v", count))))
+	} else {
+		fmt.Println(i18n.GetMessagePrinter().Sprintf("No event log entries from previous registrations were found."))
+	}
 }
 
 func List(all bool, detail bool, selections []string, tailing bool) {

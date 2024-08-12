@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
+	"time"
 )
 
 type ChangePattern struct {
@@ -34,7 +35,7 @@ func (c ChangePattern) Reset() {
 
 // This is called after the node heartneat is restored. For the basic protocol, it will contact the agbot to check if the current agreements are
 // still needed by the agbot.
-func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
+func (w *GovernanceWorker) handleNodeHeartbeatRestored(checkAll bool) error {
 	glog.V(5).Infof(logString(fmt.Sprintf("handling agreements after node heartbeat restored.")))
 
 	if ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
@@ -45,7 +46,8 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
 	} else {
 		veryfication_failed := false
 		for _, ag := range ags {
-			if ag.AgreementTerminatedTime == 0 {
+			timeSinceVer := uint64(time.Now().Unix()) - ag.LastVerAttemptUpdateTime
+			if ag.AgreementTerminatedTime == 0 && (checkAll || (ag.FailedVerAttempts != 0 && timeSinceVer > 60)) {
 				bcType, bcName, bcOrg := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
 
 				// Check to see if the agreement is valid. For agreement on the blockchain, we check the blockchain directly. This call to the blockchain
@@ -61,6 +63,15 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
 							persistence.EC_ERROR_AGREEMENT_VERIFICATION,
 							ag)
 						veryfication_failed = true
+						if ag.FailedVerAttempts > 5 {
+							reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_FAILED_AGREEMENT_VERIFY)
+							w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
+						}
+					} else {
+						_, err := persistence.SetFailedVerAttempts(w.db, ag.CurrentAgreementId, ag.AgreementProtocol, ag.FailedVerAttempts+1)
+						if err != nil {
+							glog.Errorf(logString(fmt.Sprintf("encountered error updating agreement %v, error %v", ag.CurrentAgreementId, err)))
+						}
 					}
 				}
 			}
@@ -68,7 +79,7 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
 
 		// put it to the deferred queue and retry
 		if veryfication_failed {
-			w.AddDeferredCommand(w.NewNodeHeartbeatRestoredCommand())
+			w.AddDeferredCommand(w.NewNodeHeartbeatRestoredCommand(true))
 		}
 	}
 	return nil

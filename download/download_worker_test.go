@@ -4,6 +4,7 @@
 package download
 
 import (
+	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -208,7 +209,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 		t.Errorf("Expected 2 files for download. Got %v.", downloadFiles)
 	} else if !cutil.SliceContains(*downloadFiles, HZN_CLUSTER_FILE) {
 		t.Errorf("Did not find expected file %s for download. Got %v.", HZN_CLUSTER_FILE, downloadFiles)
-	} else if !cutil.SliceContains(*downloadFiles, HZN_CLUSTER_IMAGE) {
+	} else if !cutil.SliceContains(*downloadFiles, fmt.Sprintf(HZN_CLUSTER_IMAGE, "amd64")) {
 		t.Errorf("Did not find expected file %s for download. Got %v.", HZN_CLUSTER_IMAGE, downloadFiles)
 	}
 

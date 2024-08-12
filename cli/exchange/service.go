@@ -86,16 +86,28 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool, filePath strin
 				svcId = sId
 			}
 
-			// only display 100 charactors for ClusterDeployment because it is usually very long
-			if s.ClusterDeployment != "" && len(s.ClusterDeployment) > 100 {
-				if service != "" && !namesOnly {
-					// if user specify a service name and -l is specified, then display all of ClusterDeployment
-					// this will give user a way to examine all of it.
-					continue
+			if s.ClusterDeployment != "" {
+				var kubeDeploymentConfig persistence.KubeDeploymentConfig
+				if err := json.Unmarshal([]byte(s.ClusterDeployment), &kubeDeploymentConfig); err != nil {
+					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal ClusterDeployment in 'hzn exchange service list' output: %v", err))
+				} else {
+					if len(kubeDeploymentConfig.OperatorYamlArchive) > 100 {
+						// only display 100 charactors for ClusterDeployment.OperatorYamlArchive because it is usually very long
+						if service != "" && !namesOnly {
+							// if user specify a service name and -l is specified, then display all of ClusterDeployment
+							// this will give user a way to examine all of it.
+							continue
+						}
+						kubeDeploymentConfig.OperatorYamlArchive = kubeDeploymentConfig.OperatorYamlArchive[0:100] + "..."
+						if truncatedKD, err := json.Marshal(&kubeDeploymentConfig); err != nil {
+							cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal truncked ClusterDeployment in 'hzn exchange service list' output: %v", err))
+						} else {
+							s_copy := exchange.ServiceDefinition(s)
+							s_copy.ClusterDeployment = string(truncatedKD)
+							exchServices[sId] = s_copy
+						}
+					}
 				}
-				s_copy := exchange.ServiceDefinition(s)
-				s_copy.ClusterDeployment = s.ClusterDeployment[0:100] + "..."
-				exchServices[sId] = s_copy
 			}
 		}
 		jsonBytes, err := json.MarshalIndent(exchServices, "", cliutils.JSON_INDENT)

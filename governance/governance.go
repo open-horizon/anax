@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/open-horizon/anax/basicprotocol"
 	"github.com/open-horizon/anax/cache"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -322,7 +323,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.NodeHeartbeatStateChangeMessage)
 		switch msg.Event().Id {
 		case events.NODE_HEARTBEAT_RESTORED:
-			cmd := w.NewNodeHeartbeatRestoredCommand()
+			cmd := w.NewNodeHeartbeatRestoredCommand(false)
 			w.Commands <- cmd
 
 			// Make sure device status is up to date since heartbeating is now restored. It means connectivity to
@@ -413,7 +414,7 @@ func (w *GovernanceWorker) governAgreements() {
 	if establishedAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), notTerminatedFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database. Error: %v", err)))
 	} else {
-
+		verifyAgreements := false
 		// If there are agreements in the database then we will assume that the device is already registered
 		for _, ag := range establishedAgreements {
 			bcType, bcName, bcOrg := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
@@ -522,11 +523,33 @@ func (w *GovernanceWorker) governAgreements() {
 
 						// The proposal for this agreement is no longer compatible with the node's policy, so cancel the agreement.
 						glog.V(3).Infof(logString(fmt.Sprintf("current proposal for %v is out of policy: %v", ag.CurrentAgreementId, err)))
+						glog.V(3).Infof(logString(fmt.Sprintf("terminating agreement %v because it cannot be verified by the agreement bot.", ag.CurrentAgreementId)))
+						reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED)
+						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+							persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+							persistence.EC_CANCEL_AGREEMENT, ag)
+						w.cancelGovernedAgreement(&ag, reason)
 
 					} else {
 						glog.V(5).Infof(logString(fmt.Sprintf("agreement %v is still in policy.", ag.CurrentAgreementId)))
 					}
+
+					timeSinceVer := uint64(time.Now().Unix()) - ag.LastVerAttemptUpdateTime
+					if ag.FailedVerAttempts > 5 {
+						glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it cannot be verified by the agreement bot.", ag.CurrentAgreementId)))
+						reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_FAILED_AGREEMENT_VERIFY)
+						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+							persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+							persistence.EC_ERROR_NODE_SYNC, ag)
+						w.cancelGovernedAgreement(&ag, reason)
+					} else if ag.FailedVerAttempts > 0 && timeSinceVer > 60 {
+						verifyAgreements = true
+					}
 				}
+			}
+			if verifyAgreements {
+				cmd := w.NewNodeHeartbeatRestoredCommand(false)
+				w.Commands <- cmd
 			}
 		}
 	}
@@ -1090,7 +1113,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			} else {
 
 				// Allow the message extension handler to see the message
-				handled, cancel, agid, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
+				handled, cancel, agid, updatedSecs, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
 				if err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to handle message %v , error: %v", protocolMsg, err)))
 				} else if cancel {
@@ -1123,6 +1146,32 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, msgProtocol, agid, clusterNamespace, ags[0].GetDeploymentConfig())
 						// clean up microservice instances if needed
 						w.handleMicroserviceInstForAgEnded(agid, false)
+					}
+				} else {
+					if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agid)}); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agid, err)))
+						eventlog.LogDatabaseEvent(
+							w.db,
+							persistence.SEVERITY_ERROR,
+							persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, agid, err.Error()),
+							persistence.EC_DATABASE_ERROR)
+					} else if len(ags) != 1 {
+						glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", agid, err)))
+						deleteMessage = true
+					} else {
+						_, err := persistence.SetFailedVerAttempts(w.db, ags[0].CurrentAgreementId, ags[0].AgreementProtocol, 0)
+						if err != nil {
+							glog.Errorf(logString(fmt.Sprintf("encountered error updating agreement %v, error %v", ags[0].CurrentAgreementId, err)))
+						}
+
+						if len(updatedSecs) != 0 {
+							clusterNamespaceInAg, err := w.GetRequestedClusterNamespaceFromAg(&ags[0])
+							if err != nil {
+								glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ags[0].CurrentAgreementId, err)))
+							}
+							// have updatedSecs, send out an event to let kube worker know about the secret update
+							w.Messages() <- events.NewWorkloadUpdateMessage(events.UPDATE_SECRETS_IN_AGREEMENT, agid, msgProtocol, clusterNamespaceInAg, ags[0].GetDeploymentConfig(), updatedSecs)
+						}
 					}
 				}
 
@@ -1228,7 +1277,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if agreement, err := persistence.AgreementStateAgreementProtocolTerminated(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error marking agreement %v agreement protocol terminated: %v", cmd.AgreementId, err)))
 				} else {
-					if agreement.WorkloadTerminatedTime != 0 {
+					if agreement.TerminatedReason == basicprotocol.CANCEL_NOT_EXECUTED_TIMEOUT || agreement.WorkloadTerminatedTime != 0 { //service timeout, this field is 0
 						archive = true
 					}
 				}
@@ -1377,7 +1426,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		cmd, _ := command.(*NodeHeartbeatRestoredCommand)
 		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
 
-		w.handleNodeHeartbeatRestored()
+		w.handleNodeHeartbeatRestored(!cmd.Retry)
 
 	case *ServiceSuspendedCommand:
 		cmd, _ := command.(*ServiceSuspendedCommand)
@@ -1599,10 +1648,12 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 		lc.EnvironmentAdditions = &envAdds
 
+		if err := w.processServiceSecrets(tcPolicy, proposal.AgreementId()); err != nil {
+			return err
+		}
+
 		if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
-			if err := w.processServiceSecrets(tcPolicy, proposal.AgreementId()); err != nil {
-				return err
-			}
+
 			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
 			deps := serviceDef.GetServiceDependencies()
 
@@ -1653,7 +1704,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 // Save the secrets by agreement id since we don't have an instance id for the services yet
 func (w *GovernanceWorker) processServiceSecrets(tcPolicy *policy.Policy, agId string) error {
-	glog.V(5).Infof(logString(fmt.Sprintf("process service secrets for agreement: %v", agId)))
+	glog.V(3).Infof(logString(fmt.Sprintf("process service secrets for agreement: %v, tcPolicy.SecretDetails: %v", agId, tcPolicy.SecretDetails)))
 
 	allSecrets := persistence.PersistedSecretFromPolicySecret(tcPolicy.SecretDetails, agId)
 
@@ -2092,6 +2143,4 @@ func (w *GovernanceWorker) GetRequestedClusterNamespaceFromAg(ag *persistence.Es
 	} else {
 		return tcPolicy.ClusterNamespace, nil
 	}
-
-	return "", nil
 }

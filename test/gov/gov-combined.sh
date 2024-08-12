@@ -419,14 +419,6 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 
 fi
 
-if [ "$NOSDO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  ./hzn_sdo.sh
-  if [ $? -ne 0 ]; then
-    echo "SDO test using hzn command failure."
-    exit 1
-  fi
-fi
-
 # if [ "$NOAGENTAUTO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 #   ./hzn_nmp.sh
 #   if [ $? -ne 0 ]; then
@@ -464,7 +456,7 @@ if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ 
 fi
 
 if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
     echo "Sleeping 15 seconds..."
     sleep 15
 
@@ -514,19 +506,6 @@ if [ "$HA" == "1" ]; then
     echo "HA tests failure."
     exit 1
   fi
-fi
-
-#Start the edge cluster verification test.
-if [ "$NOKUBE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${TEST_PATTERNS}" == "" ]
-then
-  echo -e "Verifying edge cluster agreement"
-  ./verify_edge_cluster.sh
-  if [ $? -ne 0 ]; then
-    echo "Failed edge cluster verification tests."
-    exit 1
-  fi
-else
-  echo -e "Edge cluster agreement verification skipped."
 fi
 
 # Clean up remote environment

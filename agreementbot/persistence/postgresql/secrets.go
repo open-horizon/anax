@@ -15,6 +15,7 @@ const SECRET_CREATE_MAIN_TABLE_POLICY = `CREATE TABLE IF NOT EXISTS secrets_poli
 	secret_name text NOT NULL,
 	policy_org text NOT NULL,
 	policy_name text NOT NULL,
+	secret_exists boolean NOT NULL,
 	last_update_check int NOT NULL,
 	partition text NOT NULL,
 	updated timestamp with time zone DEFAULT current_timestamp
@@ -25,6 +26,7 @@ const SECRET_CREATE_MAIN_TABLE_PATTERN = `CREATE TABLE IF NOT EXISTS secrets_pat
 	secret_name text NOT NULL,
 	pattern_org text NOT NULL,
 	pattern_name text NOT NULL,
+	secret_exists boolean NOT NULL,
 	last_update_check int NOT NULL,
 	partition text NOT NULL,
 	updated timestamp with time zone DEFAULT current_timestamp
@@ -51,12 +53,14 @@ const SECRET_TABLE_NAME_ROOT_POLICY = `secrets_policy_`
 const SECRET_TABLE_NAME_ROOT_PATTERN = `secrets_pattern_`
 const SECRET_PARTITION_FILLIN = `partition_name`
 
-const SECRET_INSERT_POLICY = `INSERT INTO "secrets_policy_ (secret_org, secret_name, policy_org, policy_name, last_update_check, partition) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING;`
-const SECRET_UPDATE_TIME_POLICY = `UPDATE "secrets_policy_ SET last_update_check = $1, updated = current_timestamp WHERE secret_org = $2 AND secret_name = $3;`
+const SECRET_INSERT_POLICY = `INSERT INTO "secrets_policy_ (secret_org, secret_name, policy_org, policy_name, secret_exists, last_update_check, partition) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING;`
+const SECRET_UPDATE_TIME_POLICY = `UPDATE "secrets_policy_ SET last_update_check = $1, updated = current_timestamp, secret_exists = $2 WHERE secret_org = $3 AND secret_name = $4;`
+const SECRET_EXISTS_UPDATE_TIME_POLICY = `UPDATE "secrets_policy_ SET last_update_check = $1, secret_exists = false WHERE secret_org = $2 AND secret_name = $3 AND secret_exists = $4;`
 const SECRET_DELETE_POLICY = `DELETE FROM "secrets_policy_ WHERE secret_org = $1 AND secret_name = $2 AND policy_org = $3 AND policy_name = $4;`
 
-const SECRET_INSERT_PATTERN = `INSERT INTO "secrets_pattern_ (secret_org, secret_name, pattern_org, pattern_name, last_update_check, partition) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING;`
-const SECRET_UPDATE_TIME_PATTERN = `UPDATE "secrets_pattern_ SET last_update_check = $1, updated = current_timestamp WHERE secret_org = $2 AND secret_name = $3;`
+const SECRET_INSERT_PATTERN = `INSERT INTO "secrets_pattern_ (secret_org, secret_name, pattern_org, pattern_name, secret_exists, last_update_check, partition) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING;`
+const SECRET_UPDATE_TIME_PATTERN = `UPDATE "secrets_pattern_ SET last_update_check = $1, updated = current_timestamp, secret_exists =$2 WHERE secret_org = $3 AND secret_name = $4;`
+const SECRET_EXISTS_UPDATE_TIME_PATTERN = `UPDATE "secrets_pattern_ SET last_update_check = $1, secret_exists = false WHERE secret_org = $2 AND secret_name = $3 AND secret_exists = $4;`
 const SECRET_DELETE_PATTERN = `DELETE FROM "secrets_pattern_ WHERE secret_org = $1 AND secret_name = $2 AND pattern_org = $3 AND pattern_name = $4;`
 
 const SECRET_MOVE = `WITH moved_rows AS (
@@ -77,6 +81,9 @@ const SECRET_DISTINCT_NAMES_BY_PATTERN = `SELECT DISTINCT secret_org, secret_nam
 
 const SECRET_POLICIES_TO_UPDATE = `SELECT DISTINCT policy_org, policy_name FROM "secrets_policy_ WHERE secret_org = $1 AND secret_name = $2 AND last_update_check < $3;`
 const SECRET_PATTERNS_TO_UPDATE = `SELECT DISTINCT pattern_org, pattern_name FROM "secrets_pattern_ WHERE secret_org = $1 AND secret_name = $2 AND last_update_check < $3;`
+
+const SECRET_POLICIES_TO_UPDATE_REMOVED_SECRET = `SELECT DISTINCT policy_org, policy_name FROM "secrets_policy_ WHERE secret_org = $1 AND secret_name = $2 AND (last_update_check < $3 OR secret_exists);`
+const SECRET_PATTERNS_TO_UPDATE_REMOVED_SECRET = `SELECT DISTINCT pattern_org, pattern_name FROM "secrets_pattern_ WHERE secret_org = $1 AND secret_name = $2 AND (last_update_check < $3 OR secret_exists);`
 
 const SECRET_DISTINCT_POLICIES = `SELECT DISTINCT policy_name FROM "secrets_policy_ WHERE policy_org = $1;`
 const SECRET_DISTINCT_PATTERNS = `SELECT DISTINCT pattern_name FROM "secrets_pattern_ WHERE pattern_org = $1;`
@@ -156,13 +163,33 @@ func (db *AgbotPostgresqlDB) GetPatternsForUpdatedSecretQuery() string {
 	return sql
 }
 
+func (db *AgbotPostgresqlDB) GetPoliciesForRemovedSecretQuery() string {
+	sql := strings.Replace(SECRET_POLICIES_TO_UPDATE_REMOVED_SECRET, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
+	return sql
+}
+
+func (db *AgbotPostgresqlDB) GetPatternsForRemovedSecretQuery() string {
+	sql := strings.Replace(SECRET_PATTERNS_TO_UPDATE_REMOVED_SECRET, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(db.PrimaryPartition()), 1)
+	return sql
+}
+
 func (db *AgbotPostgresqlDB) GetUpdateSecretUpdateTimeQueryPolicy() string {
 	sql := strings.Replace(SECRET_UPDATE_TIME_POLICY, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
 	return sql
 }
 
+func (db *AgbotPostgresqlDB) GetUpdateSecretExistsUpdateTimeQueryPolicy() string {
+	sql := strings.Replace(SECRET_EXISTS_UPDATE_TIME_POLICY, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
+	return sql
+}
+
 func (db *AgbotPostgresqlDB) GetUpdateSecretUpdateTimeQueryPattern() string {
 	sql := strings.Replace(SECRET_UPDATE_TIME_PATTERN, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(db.PrimaryPartition()), 1)
+	return sql
+}
+
+func (db *AgbotPostgresqlDB) GetUpdateSecretExistsUpdateTimeQueryPattern() string {
+	sql := strings.Replace(SECRET_EXISTS_UPDATE_TIME_PATTERN, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(db.PrimaryPartition()), 1)
 	return sql
 }
 
@@ -262,12 +289,18 @@ func (db *AgbotPostgresqlDB) getManagedSecretNames(sqlString, org, name string) 
 }
 
 // Returns a list of unique org qualified secret names.
-func (db *AgbotPostgresqlDB) GetPoliciesWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64) ([]string, error) {
-	return db.getUpdatedSecrets(db.GetPoliciesForUpdatedSecretQuery(), secretOrg, secretName, lastUpdate)
+func (db *AgbotPostgresqlDB) GetPoliciesWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64, secretExists bool) ([]string, error) {
+	if secretExists {
+		return db.getUpdatedSecrets(db.GetPoliciesForUpdatedSecretQuery(), secretOrg, secretName, lastUpdate)
+	}
+	return db.getUpdatedSecrets(db.GetPoliciesForRemovedSecretQuery(), secretOrg, secretName, lastUpdate)
 }
 
-func (db *AgbotPostgresqlDB) GetPatternsWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64) ([]string, error) {
-	return db.getUpdatedSecrets(db.GetPatternsForUpdatedSecretQuery(), secretOrg, secretName, lastUpdate)
+func (db *AgbotPostgresqlDB) GetPatternsWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64, secretExists bool) ([]string, error) {
+	if secretExists {
+		return db.getUpdatedSecrets(db.GetPatternsForUpdatedSecretQuery(), secretOrg, secretName, lastUpdate)
+	}
+	return db.getUpdatedSecrets(db.GetPatternsForRemovedSecretQuery(), secretOrg, secretName, lastUpdate)
 }
 
 func (db *AgbotPostgresqlDB) getUpdatedSecrets(sql, org, name string, lastUpdate int64) ([]string, error) {
@@ -299,14 +332,14 @@ func (db *AgbotPostgresqlDB) getUpdatedSecrets(sql, org, name string, lastUpdate
 	return names, nil
 }
 
-func (db *AgbotPostgresqlDB) SetSecretUpdate(secretOrg, secretName string, secretUpdateTime int64) error {
+func (db *AgbotPostgresqlDB) SetSecretUpdate(secretOrg, secretName string, secretUpdateTime int64, secretExists bool) error {
 
-	err := db.setInternalSecretUpdate(db.GetUpdateSecretUpdateTimeQueryPolicy(), secretOrg, secretName, secretUpdateTime)
+	err := db.setInternalSecretUpdate(db.GetUpdateSecretUpdateTimeQueryPolicy(), secretOrg, secretName, secretUpdateTime, secretExists)
 	if err != nil {
 		return errors.New(fmt.Sprintf("error updating policy secret %s/%s: %v", secretOrg, secretName, err))
 	}
 
-	err = db.setInternalSecretUpdate(db.GetUpdateSecretUpdateTimeQueryPattern(), secretOrg, secretName, secretUpdateTime)
+	err = db.setInternalSecretUpdate(db.GetUpdateSecretUpdateTimeQueryPattern(), secretOrg, secretName, secretUpdateTime, secretExists)
 	if err != nil {
 		return errors.New(fmt.Sprintf("error updating pattern secret %s/%s: %v", secretOrg, secretName, err))
 	}
@@ -314,9 +347,43 @@ func (db *AgbotPostgresqlDB) SetSecretUpdate(secretOrg, secretName string, secre
 	return nil
 }
 
-func (db *AgbotPostgresqlDB) setInternalSecretUpdate(sql, secretOrg, secretName string, secretUpdateTime int64) error {
+func (db *AgbotPostgresqlDB) SetSecretExists(secretOrg, secretName string, secretUpdateTime int64) error {
 
-	updated, err := db.db.Exec(sql, secretUpdateTime, secretOrg, secretName)
+	err := db.setInternalSecretExistsUpdate(db.GetUpdateSecretExistsUpdateTimeQueryPolicy(), secretOrg, secretName, secretUpdateTime, true)
+	if err != nil {
+		return errors.New(fmt.Sprintf("error updating policy secret %s/%s: %v", secretOrg, secretName, err))
+	}
+
+	err = db.setInternalSecretExistsUpdate(db.GetUpdateSecretExistsUpdateTimeQueryPattern(), secretOrg, secretName, secretUpdateTime, true)
+	if err != nil {
+		return errors.New(fmt.Sprintf("error updating pattern secret %s/%s: %v", secretOrg, secretName, err))
+	}
+
+	return nil
+}
+
+func (db *AgbotPostgresqlDB) setInternalSecretUpdate(sql, secretOrg, secretName string, secretUpdateTime int64, secretExists bool) error {
+
+	updated, err := db.db.Exec(sql, secretUpdateTime, secretExists, secretOrg, secretName)
+	if err != nil {
+		return errors.New(fmt.Sprintf("error setting update time for %s/%s: %v", secretOrg, secretName, err))
+	}
+
+	// Not all DB drivers support the rows affected function.
+	rowsAffected, err := updated.RowsAffected()
+	if err == nil {
+		glog.V(2).Infof("Succeeded setting update time in %v rows for %s/%s", rowsAffected, secretOrg, secretName)
+	} else {
+		glog.V(2).Infof("Succeeded setting update time for %s/%s. %v", secretOrg, secretName, err)
+	}
+
+	return nil
+
+}
+
+func (db *AgbotPostgresqlDB) setInternalSecretExistsUpdate(sql, secretOrg, secretName string, secretUpdateTime int64, secretExists bool) error {
+
+	updated, err := db.db.Exec(sql, secretUpdateTime, secretOrg, secretName, secretExists)
 	if err != nil {
 		return errors.New(fmt.Sprintf("error setting update time for %s/%s: %v", secretOrg, secretName, err))
 	}
@@ -411,11 +478,11 @@ func (db *AgbotPostgresqlDB) DeletePatternSecret(secretOrg, secretName, patternO
 	return nil
 }
 
-func (db *AgbotPostgresqlDB) AddManagedPolicySecret(secretOrg, secretName, policyOrg, policyName string, updateTime int64) error {
+func (db *AgbotPostgresqlDB) AddManagedPolicySecret(secretOrg, secretName, policyOrg, policyName string, secretExists bool, updateTime int64) error {
 
 	sql := strings.Replace(SECRET_INSERT_POLICY, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(db.PrimaryPartition()), 1)
 
-	if _, err := db.db.Exec(sql, secretOrg, secretName, policyOrg, policyName, updateTime, db.PrimaryPartition()); err != nil {
+	if _, err := db.db.Exec(sql, secretOrg, secretName, policyOrg, policyName, secretExists, updateTime, db.PrimaryPartition()); err != nil {
 		return err
 	} else {
 		glog.V(2).Infof("Succeeded creating managed policy secret record")
@@ -424,11 +491,11 @@ func (db *AgbotPostgresqlDB) AddManagedPolicySecret(secretOrg, secretName, polic
 	return nil
 }
 
-func (db *AgbotPostgresqlDB) AddManagedPatternSecret(secretOrg, secretName, patternOrg, patternName string, updateTime int64) error {
+func (db *AgbotPostgresqlDB) AddManagedPatternSecret(secretOrg, secretName, patternOrg, patternName string, secretExists bool, updateTime int64) error {
 
 	sql := strings.Replace(SECRET_INSERT_PATTERN, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(db.PrimaryPartition()), 1)
 
-	if _, err := db.db.Exec(sql, secretOrg, secretName, patternOrg, patternName, updateTime, db.PrimaryPartition()); err != nil {
+	if _, err := db.db.Exec(sql, secretOrg, secretName, patternOrg, patternName, secretExists, updateTime, db.PrimaryPartition()); err != nil {
 		return err
 	} else {
 		glog.V(2).Infof("Succeeded creating managed pattern secret record")

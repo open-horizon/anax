@@ -97,9 +97,12 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 
 	// Used to get the event logs on this node.
 	// get the eventlogs for current registration.
-	router.HandleFunc("/eventlog", a.eventlog).Methods("GET", "OPTIONS")
+	// delete eventlogs with selectors
+	router.HandleFunc("/eventlog", a.eventlog).Methods("GET", "DELETE", "OPTIONS")
 	// get the eventlogs for all registrations.
 	router.HandleFunc("/eventlog/all", a.eventlog).Methods("GET", "OPTIONS")
+	// delete all eventlogs from previous registrations
+	router.HandleFunc("/eventlog/prune", a.eventlog).Methods("DELETE", "OPTIONS")
 	//get the active surface errors for this node
 	router.HandleFunc("/eventlog/surface", a.surface).Methods("GET", "OPTIONS")
 
@@ -134,7 +137,7 @@ func (a *API) listen(cfg *config.HorizonConfig) {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 			w.Header().Add("Pragma", "no-cache, no-store")
-			w.Header().Add("Access-Control-Allow-Origin", "*")
+			w.Header().Add("Access-Control-Allow-Origin", r.Header.Get("Origin"))
 			w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
 			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
 			h.ServeHTTP(w, r)

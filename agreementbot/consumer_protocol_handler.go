@@ -24,8 +24,8 @@ import (
 	"time"
 )
 
-func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets) ConsumerProtocolHandler {
-	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq, mmsObjMgr, secretsMgr); handler != nil {
+func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets, nodeSearch *NodeSearch) ConsumerProtocolHandler {
+	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq, mmsObjMgr, secretsMgr, nodeSearch); handler != nil {
 		return handler
 	} // Add new consumer side protocol handlers here
 	return nil
@@ -98,6 +98,7 @@ type BaseConsumerProtocolHandler struct {
 	messages         chan events.Message
 	mmsObjMgr        *MMSObjectPolicyManager
 	secretsMgr       secrets.AgbotSecrets
+	nodeSearch       *NodeSearch
 }
 
 func (b *BaseConsumerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {
@@ -319,19 +320,33 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 					}
 					continue
 				} else if err := b.pm.MatchesMine(cmd.Msg.Org(), pol); err != nil {
+					if glog.V(5) {
+						glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cmd msg org matches mine for agreement %v", ag.CurrentAgreementId)))
+					}
 					agStillValid := false
 					policyMatches := true
 					noNewPriority := false
+					clusterNSNotChange := true
 
 					if ag.Pattern == "" {
-						policyMatches, noNewPriority = b.HandlePolicyChangeForAgreement(ag, cmd.Msg.OldPolicy(), cph)
+						policyMatches, noNewPriority, clusterNSNotChange = b.HandlePolicyChangeForAgreement(ag, cmd.Msg.OldPolicy(), cph)
 						agStillValid = policyMatches && noNewPriority
+						if ag.GetDeviceType() == persistence.DEVICE_TYPE_CLUSTER {
+							agStillValid = agStillValid && clusterNSNotChange
+						}
+					}
+
+					if glog.V(5) {
+						glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for current agreement %v: agStillValid: %v, policyMatches: %v, noNewPriority: %v, clusterNSNotChange: %v", ag.CurrentAgreementId, agStillValid, policyMatches, noNewPriority, clusterNSNotChange)))
 					}
 
 					if !agStillValid {
 						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed incompatibly. Cancelling agreement: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
 						b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph, policyMatches)
 					} else {
+						if glog.V(5) {
+							glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current agreement %v is still valid", ag.CurrentAgreementId)))
+						}
 						stillValidAgs = append(stillValidAgs, ag.CurrentAgreementId)
 					}
 				} else {
@@ -370,10 +385,11 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 
 // first bool is true if the policy still matches, false otherwise
 // second bool is true unless a higher priority workload than the current one has been added or changed
+// third bool is true if the cluster namespace is not changed, this return value should be check only when device type is cluster
 // if an error occurs, both will be false
-func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persistence.Agreement, oldPolicy *policy.Policy, cph ConsumerProtocolHandler) (bool, bool) {
+func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persistence.Agreement, oldPolicy *policy.Policy, cph ConsumerProtocolHandler) (bool, bool, bool) {
 	if glog.V(5) {
-		glog.Infof("attempting to update agreement %v due to change in policy", ag.CurrentAgreementId)
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("attempting to update agreement %v due to change in policy", ag.CurrentAgreementId)))
 	}
 
 	svcAllPol := externalpolicy.ExternalPolicy{}
@@ -381,7 +397,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	for _, svcId := range ag.ServiceId {
 		if svcPol, err := exchange.GetServicePolicyWithId(b, svcId); err != nil {
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get service policy for %v from the exchange: %v", svcId, err)))
-			return false, false
+			return false, false, false
 		} else if svcPol != nil {
 			svcAllPol.MergeWith(&svcPol.ExternalPolicy, false)
 		}
@@ -393,23 +409,23 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	_, busPol, err := compcheck.GetBusinessPolicy(busPolHandler, ag.PolicyName, true, msgPrinter)
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get business policy %v/%v from the exchange: %v", ag.Org, ag.PolicyName, err)))
-		return false, false
+		return false, false, false
 	}
 
 	nodePolHandler := exchange.GetHTTPNodePolicyHandler(b)
 	_, nodePol, err := compcheck.GetNodePolicy(nodePolHandler, ag.DeviceId, msgPrinter)
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get node policy for %v from the exchange.", ag.DeviceId)))
-		return false, false
+		return false, false, false
 	}
 
 	dev, err := exchange.GetExchangeDevice(b.GetHTTPFactory(), ag.DeviceId, b.GetExchangeId(), b.GetExchangeToken(), b.GetExchangeURL())
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get node %v from the exchange.", ag.DeviceId)))
-		return false, false
+		return false, false, false
 	} else if dev == nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Device %v does not exist in the exchange.", ag.DeviceId)))
-		return false, false
+		return false, false, false
 	}
 
 	nodeArch := dev.Arch
@@ -425,50 +441,67 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	// skip for now if not all built-in properties are in the node policy
 	// this will get called again after the node updates its policy with the built-ins
 	if !externalpolicy.ContainsAllBuiltInNodeProps(&nodePol.Properties, swVers, dev.GetNodeType()) {
-		return true, true
+		return true, true, true
 	}
 
 	match, reason, producerPol, consumerPol, err := compcheck.CheckPolicyCompatiblility(nodePol, busPol, &svcAllPol, nodeArch, nil)
 
 	if !match {
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v is not longer in policy. Reason is: %v", ag.CurrentAgreementId, reason)))
-		return false, true
+		return false, true, false
 	}
 
 	// don't send an update if the agreement is not finalized yet
 	if ag.AgreementFinalizedTime == 0 {
-		return true, true
+		return true, true, true
 	}
 
 	// for every priority (in order highest to lowest) in the new policy with priority lower than the current wl
 	// if it's not in the old policy, cancel
 	choice := -1
+
 	nextPriority := policy.GetNextWorkloadChoice(busPol.Workloads, choice)
 	wl := nextPriority
 
 	wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName)
 	if err != nil {
-		return false, false
+		return false, false, false
 	}
+	// wlUsage is nil if no prioriy is set in the previous policy
+	wlUsagePriority := 0
 	if wlUsage != nil {
-		if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsage.Priority); currentWL == nil {
-			// the current workload priority is no longer in the deployment policy
-			glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsage.Priority, ag.CurrentAgreementId)))
-			return true, false
-		} else {
-			wl = currentWL
+		wlUsagePriority = wlUsage.Priority
+	}
+
+	if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsagePriority); currentWL == nil {
+		// the current workload priority is no longer in the deployment policy
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsagePriority, ag.CurrentAgreementId)))
+		return true, false, false
+	} else {
+		wl = currentWL
+	}
+
+	if oldPolicy != nil {
+		for choice <= wlUsagePriority && nextPriority != nil {
+			choice = nextPriority.Priority.PriorityValue
+			matchingWL := policy.GetWorkloadWithPriority(oldPolicy.Workloads, choice)
+			if matchingWL == nil || !matchingWL.IsSame(*nextPriority) {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Higher priority version added or modified. Cancelling agreement %v", ag.CurrentAgreementId)))
+				return true, false, false
+			}
+			nextPriority = policy.GetNextWorkloadChoice(busPol.Workloads, choice)
 		}
 
-		if oldPolicy != nil {
-			for choice <= wlUsage.Priority && nextPriority != nil {
-				choice = nextPriority.Priority.PriorityValue
-				matchingWL := policy.GetWorkloadWithPriority(oldPolicy.Workloads, choice)
-				if matchingWL == nil || !matchingWL.IsSame(*nextPriority) {
-					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Higher priority version added or modified. Cancelling agreement %v", ag.CurrentAgreementId)))
-					return true, false
-				}
-				nextPriority = policy.GetNextWorkloadChoice(busPol.Workloads, choice)
+		// check if cluster namespace is changed in new policy
+		if dev.NodeType == persistence.DEVICE_TYPE_CLUSTER && busPol.ClusterNamespace != oldPolicy.ClusterNamespace {
+			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace is changed from %v to %v in busiess policy for agreement %v, checking cluster namespace compatibility ...", oldPolicy.ClusterNamespace, busPol.ClusterNamespace, ag.CurrentAgreementId)))
+			t_comp, consumerNamespace, t_reason := compcheck.CheckClusterNamespaceCompatibility(dev.NodeType, dev.ClusterNamespace, dev.IsNamespaceScoped, busPol.ClusterNamespace, wl.ClusterDeployment, ag.Pattern, false, msgPrinter)
+			if !t_comp {
+				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace %v is not longer compatible for agreement %v. Reason is: %v", consumerNamespace, ag.CurrentAgreementId, t_reason)))
+
 			}
+			// new cluster namespace is still compatible
+			return true, true, false
 		}
 	}
 
@@ -479,10 +512,10 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	// populate the workload with the deployment string
 	if svcDef, _, err := exchange.GetHTTPServiceHandler(b)(wl.WorkloadURL, wl.Org, wl.Version, wl.Arch); err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error getting service '%v' from the exchange, error: %v", wl, err)))
-		return false, false
+		return false, false, false
 	} else if svcDef == nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("Service %v not found in the exchange.", wl)))
-		return false, false
+		return false, false, false
 	} else {
 		if dev.NodeType == persistence.DEVICE_TYPE_CLUSTER {
 			wl.ClusterDeployment = svcDef.GetClusterDeploymentString()
@@ -496,14 +529,14 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	newTsCs, err := policy.Create_Terms_And_Conditions(producerPol, consumerPol, wl, ag.CurrentAgreementId, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, basicprotocol.PROTOCOL_CURRENT_VERSION)
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error creating new terms and conditions: %v", err)))
-		return false, false
+		return false, false, false
 	}
 
 	ag.LastPolicyUpdateTime = uint64(time.Now().Unix())
 
 	b.UpdateAgreement(&ag, basicprotocol.MsgUpdateTypePolicyChange, newTsCs, cph)
 
-	return true, true
+	return true, true, true
 }
 
 func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler) {
@@ -574,7 +607,7 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePol
 	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
 		for _, ag := range agreements {
 			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId[0] == cmd.Msg.ServiceId {
-				policyMatches, noNewPriority := b.HandlePolicyChangeForAgreement(ag, nil, cph)
+				policyMatches, noNewPriority, _ := b.HandlePolicyChangeForAgreement(ag, nil, cph)
 				agStillValid := policyMatches && noNewPriority
 				if !agStillValid {
 					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
@@ -599,11 +632,14 @@ func (b *BaseConsumerProtocolHandler) HandleNodePolicyChanged(cmd *NodePolicyCha
 	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
 		for _, ag := range agreements {
 			if ag.Pattern == "" && ag.DeviceId == cutil.FormOrgSpecUrl(cmd.Msg.NodeId, cmd.Msg.NodePolOrg) {
-				policyMatches, noNewPriority := b.HandlePolicyChangeForAgreement(ag, nil, cph)
+				policyMatches, noNewPriority, _ := b.HandlePolicyChangeForAgreement(ag, nil, cph)
 				agStillValid := policyMatches && noNewPriority
 				if !agStillValid {
 					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a node policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
 					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph, policyMatches)
+				} else {
+					// If the agreement is still valid, then handlePolicyChangeFor MMS object
+					b.HandlePolicyChangeForMMSObject(ag, cph)
 				}
 			}
 		}
@@ -650,6 +686,23 @@ func (b *BaseConsumerProtocolHandler) HandleMMSObjectPolicy(cmd *MMSObjectPolicy
 	cph.WorkQueue().InboundHigh() <- &agreementWork
 	if glog.V(5) {
 		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued object policy change command.")))
+	}
+}
+
+// HandlePolicyChangeForMMSObject need to:
+// 1. for each service in agreement, grab object policy using service info
+// 2. AssignObjectToNode func (nodePlicy, objectPolicy ...), then add/delete destination
+func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForMMSObject(agreement persistence.Agreement, cph ConsumerProtocolHandler) {
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), "handle node policy change for MMS object."))
+	}
+
+	if agreement.GetDeviceType() == persistence.DEVICE_TYPE_DEVICE {
+		if b.GetCSSURL() != "" && agreement.Pattern == "" {
+			AgreementHandleMMSObjectPolicy(b, b.mmsObjMgr, agreement, b.Name(), BCPHlogstring)
+		} else if b.GetCSSURL() == "" {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to re-evaluate object placement because there is no CSS URL configured in this agbot")))
+		}
 	}
 }
 

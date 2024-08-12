@@ -80,13 +80,14 @@ type AgbotDatabase interface {
 	DumpSearchSessions() error
 
 	// Functions related to persistence of secrets in use by active agreements.
-	AddManagedPolicySecret(secretOrg, secretName, policyOrg, policyName string, updateTime int64) error
-	AddManagedPatternSecret(secretOrg, secretName, patternOrg, patternName string, updateTime int64) error
+	AddManagedPolicySecret(secretOrg, secretName, policyOrg, policyName string, secretExists bool, updateTime int64) error
+	AddManagedPatternSecret(secretOrg, secretName, patternOrg, patternName string, secretExists bool, updateTime int64) error
 	GetManagedPolicySecretNames(policyOrg, policyName string) ([]string, error)
 	GetManagedPatternSecretNames(patternOrg, patternName string) ([]string, error)
-	GetPoliciesWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64) ([]string, error)
-	GetPatternsWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64) ([]string, error)
-	SetSecretUpdate(secretOrg, secretName string, secretUpdateTime int64) error
+	GetPoliciesWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64, secretExists bool) ([]string, error)
+	GetPatternsWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64, secretExists bool) ([]string, error)
+	SetSecretUpdate(secretOrg, secretName string, secretUpdateTime int64, secretExists bool) error
+	SetSecretExists(secretOrg, secretName string, secretUpdateTime int64) error
 	GetPoliciesInOrg(org string) ([]string, error)
 	GetPatternsInOrg(org string) ([]string, error)
 	DeleteSecretsForPolicy(polOrg, polName string) error

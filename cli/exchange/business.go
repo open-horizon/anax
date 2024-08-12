@@ -95,6 +95,8 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 	ec := cliutils.GetUserExchangeContext(org, credToUse)
 	verifySecretBindingForPolicy(&policyFile, polOrg, ec)
 
+	ValidateClusterNS(&policyFile, ec)
+
 	// if the --no-constraints flag is not specified and the given policy has no constraints, alert the user.
 	if (!noConstraints) && policyFile.HasNoConstraints() {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The deployment policy has no constraints which might result in the service being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable."))
@@ -162,6 +164,8 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 			if err1 != nil {
 				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for service: %v", err1))
 			}
+			ec := cliutils.GetUserExchangeContext(org, credToUse)
+			ValidateServiceClusterNS(&newValue, ec)
 		}
 	} else if _, ok := findPatchType["properties"]; ok {
 		props := make(map[string]externalpolicy.PropertyList)
@@ -278,7 +282,7 @@ func verifySecretBindingForPolicy(policy *businesspolicy.BusinessPolicy, polOrg 
 	// make sure the vault secret exists
 	agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
 	vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
-	msgMap, err := compcheck.VerifyVaultSecrets(neededSB, polOrg, agbotUrl, vaultSecretExists, msgPrinter)
+	msgMap, err := compcheck.VerifyVaultSecrets(neededSB, polOrg, "", agbotUrl, vaultSecretExists, msgPrinter)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the binding secret in the secret manager. %v", err))
 	} else if msgMap != nil && len(msgMap) > 0 {
@@ -411,6 +415,68 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 	return ret, nil
 }
 
+func ValidateClusterNS(policy *businesspolicy.BusinessPolicy, ec exchange.ExchangeContext) {
+	msgPrinter := i18n.GetMessagePrinter()
+	hasWarning, err := businesspolicy.ValidateClusterNSWithConstraint(policy)
+	if hasWarning {
+		msgPrinter.Printf("Warning: %v", err)
+		msgPrinter.Println()
+	} else if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("%v", err))
+	}
+
+	ValidateServiceClusterNS(&policy.Service, ec)
+}
+
+// Verify the clusterNamespace is not set for device service.
+func ValidateServiceClusterNS(serviceRef *businesspolicy.ServiceRef, ec exchange.ExchangeContext) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// No need to validate
+	if serviceRef == nil || serviceRef.ClusterNamespace == "" {
+		return
+	}
+
+	getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
+
+	found := false
+	for _, wl := range serviceRef.ServiceVersions {
+		if foundClusterTypeService, err := hasClusterTypeService(getSelectedServices, serviceRef.Org, serviceRef.Name, wl.Version, serviceRef.Arch, msgPrinter); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to validate cluster namespace for service, error was: %v", err))
+		} else if foundClusterTypeService {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("ClusterNamespace should not be set for device service: %v/%v with arch %v", serviceRef.Org, serviceRef.Name, serviceRef.Arch))
+	}
+
+	return
+}
+
+func hasClusterTypeService(getSelectedServices exchange.SelectedServicesHandler, svcOrg string, svcName string, svcVersion string, svcArch string, msgPrinter *message.Printer) (bool, error) {
+	// serviceName, serviceOrg, serviceVersion, ""
+	if svcArch == "*" {
+		svcArch = ""
+	}
+
+	if svcDefs, err := getSelectedServices(svcName, svcOrg, svcVersion, svcArch); err != nil {
+		return false, fmt.Errorf(msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all architectures. %v", svcOrg, svcName, svcVersion, err))
+	} else {
+		for _, svcDef := range svcDefs {
+			if svcDef.GetServiceType() != exchangecommon.SERVICE_TYPE_DEVICE {
+				return true, nil
+			}
+		}
+	}
+
+	// No cluster type service found
+	return false, nil
+}
+
 // Display an empty business policy template as an object.
 func BusinessNewPolicy() {
 	// get message printer
@@ -424,6 +490,7 @@ func BusinessNewPolicy() {
 		`    "name": "",      /* ` + msgPrinter.Sprintf("The name of the service.") + ` */`,
 		`    "org": "",       /* ` + msgPrinter.Sprintf("The org of the service.") + ` */`,
 		`    "arch": "",      /* ` + msgPrinter.Sprintf("Set to '*' to use services of any hardware architecture.") + ` */`,
+		`    "clusterNamespace": "",	/*` + msgPrinter.Sprintf("The cluster namespace of the service.") + ` */`,
 		`    "serviceVersions": [  /* ` + msgPrinter.Sprintf("A list of service versions.") + ` */`,
 		`      {`,
 		`        "version": "",`,
@@ -459,6 +526,7 @@ func BusinessNewPolicy() {
 		`      "serviceOrgid": "",         /* ` + msgPrinter.Sprintf("The org of the service.") + ` */`,
 		`      "serviceUrl": "",           /* ` + msgPrinter.Sprintf("The name of the service.") + ` */`,
 		`      "serviceVersionRange": "",  /* ` + msgPrinter.Sprintf("The service version range.") + ` */`,
+		`      "enableNodeLevelSecrets": false,	/*` + msgPrinter.Sprint("Boolean value to indicate if the secrets are node level secrets.") + ` */`,
 		`      "secrets": [                /* ` + msgPrinter.Sprintf("The secret bindings.") + ` */`,
 		`        {      `,
 		`          "<service-secret-name>": "<secret-provider-secret-name>"  /* ` + msgPrinter.Sprintf("The valid formats for secret provider secret names are:") + ` */`,
