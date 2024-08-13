@@ -2,10 +2,9 @@
 
 # Variables for interfacing with agent pod
 KUBECTL="kubectl"
-POD_ID=$($KUBECTL get pod -l app=agent -n ${AGENT_NAMESPACE} 2>/dev/null | grep "agent-" | cut -d " " -f1 2>/dev/null)
 
 # Timeout value for agent deployment
-AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS='75'
+AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS='300'
 
 # status.json status options
 STATUS_FAILED="failed"
@@ -47,9 +46,11 @@ AGENT_VERBOSITY=4
 
 # Get script flags (should never really run unless testing script manually)
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts begin"; fi
-while getopts "c:h" opt; do
+while getopts "c:h:l:" opt; do
     case $opt in
     h)  usage 0
+        ;;
+    l)  AGENT_VERBOSITY="$OPTARG"
         ;;
     \?) echo "Invalid option: -$OPTARG"
         usage 1
@@ -266,7 +267,7 @@ function rollback_agent_image() {
     current_version=$($KUBECTL get deployment -n ${AGENT_NAMESPACE} agent -o=jsonpath='{$..spec.template.spec.containers[0].image}' | sed 's/.*://')
 
     # Download the agent deployment to a yaml file
-    log_verbose "Dowloading agent deployment to yaml file..."
+    log_verbose "Downloading agent deployment to yaml file..."
     cmd_output=$( { $KUBECTL get deployment -n ${AGENT_NAMESPACE} agent -o yaml > /tmp/agentbackup/deployment.yaml; } 2>&1 )
     rc=$?
     if [[ $rc != 0 ]]; then
@@ -416,56 +417,46 @@ function restart_agent_pod() {
 
 #====================== Main  ======================
 
-log_info "cronjob under namesapce: $AGENT_NAMESPACE"
+log_info "cronjob under namespace: $AGENT_NAMESPACE"
 
 # Sets STATUS_PATH for rest of script
 get_status_path
 
-# Check agent deployment/pod status and status.json
-pod_status=$($KUBECTL get pods ${POD_ID} --no-headers -o custom-columns=":status.phase")
+dep_status=$($KUBECTL rollout status --timeout=${AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS}s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out")
+log_debug "deployment rollout status: $dep_status"
+
+POD_ID=$($KUBECTL get pod -l app=agent,type!=auto-upgrade-cronjob -n ${AGENT_NAMESPACE} 2>/dev/null | grep "agent-" | cut -d " " -f1 2>/dev/null)
+pod_status=$($KUBECTL get pods ${POD_ID} -n ${AGENT_NAMESPACE} --no-headers -o custom-columns=":status.phase" | sed -z  's/\n/ /g;s/ //g' )
 log_debug "Pod status: $pod_status"
-dep_status=$($KUBECTL rollout status deployment/agent -n ${AGENT_NAMESPACE} | awk '{ print $3 }' | sed 's/successfully/Running/g')
-log_debug "Deployment status: $dep_status"
-json_status=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.status' | sed 's/\"//g')
+
+# Check deployment/pod status
+# Instantaneous state where both could be running.... 
+if [[ "${pod_status}" ==  "RunningRunning"  ]] || [[ "${pod_status}" == "RunningSucceeded" ]]; then
+    log_info "Agent pod status is $pod_status; Exiting"
+    write_logs
+    exit 0
+fi
+
+log_info "Checking if there is any pending agent pod..."
+if [[ "$pod_status" == *Pending* ]]; then
+    log_info "Agent pod is still in pending. Keeping status as \"$CURRENT_STATUS\" and exiting."
+    write_logs
+    exit 0
+fi
+
+if [[ ! -f $STATUS_PATH ]]; then
+    log_debug "status file $STATUS_PATH not exist;  Exiting."
+    write_logs
+    exit 0
+fi
+
+json_status=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.status' | sed 's/\"//g') # directory will be deleted by NMP worker if the upgrade is successful
 log_debug "Cron Job status: $json_status"
 CURRENT_STATUS=$json_status
 panic_rollback=false
 
-# Check deployment/pod status
 log_info "Checking if agent is running and deployment is successful..."
-if [[ "$pod_status" != "Running" || "$dep_status" != "Running" ]]; then
-    
-    # Should never happen, but if k8s deployment status is "error" and if status.json has "rollback started", set status to "rollback failed" and exit
-    log_info "Agent is not running. Checking if rollback was already attempted..."
-    if [[ "$json_status" == "$STATUS_ROLLBACK_STARTED" ]]; then
-        log_info "Waiting up to $AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS seconds for the agent deployment to complete..."
-        dep_status=$($KUBECTL rollout status --timeout=${AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS}s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out")
-
-        # Agent is running, exit and let agent upgrade worker determine if agent upgrade was successful
-        if [[ ! -z "$dep_status" ]]; then
-            log_info "Agent pod is running successfully"
-            log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
-	    echo $(jq --arg updated_status "$STATUS_ROLLBACK_SUCCESSFUL" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
-            write_logs
-            exit 0
-        else
-            rollback_failed "Rollback was already attempted, but it failed. Deployment status: $dep_status"
-        fi
-    fi
-
-    # If k8s deployment status is "error" and status.json is "initiated" status, wait to see if pod is just waiting to spin back up
-    log_debug "Checking if agent upgrade was initiated..."
-    if [[ "$json_status" == "$STATUS_INITIATED" ]]; then
-        log_info "Waiting up to $AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS seconds for the agent deployment to complete..."
-        dep_status=$($KUBECTL rollout status --timeout=${AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS}s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out")
-        
-        # Agent is running, exit and let agent upgrade worker determine if agent upgrade was successful
-        if [[ ! -z "$dep_status" ]]; then
-            log_info "Agent is running. Keeping status as \"$CURRENT_STATUS\" and exiting."
-            write_logs
-            exit 0
-        fi
-    fi
+if [[ "$pod_status" != "Running" || -z "$dep_status" ]]; then # pod is not running, deployment rollout failed 
     panic_rollback=true
 
 # Should never happen, but if status is "rollback started" and agent is running properly, check agent pod for panic"
@@ -478,7 +469,7 @@ elif [[ "$json_status" == "$STATUS_ROLLBACK_STARTED" ]]; then
     if [[ $rc -eq 0 && "$cmd_output" == *"nodeType"*"cluster"* ]]; then
         log_info "Agent pod is running successfully."
         log_verbose "Setting the status to \"$STATUS_ROLLBACK_SUCCESSFUL\"..."
-	echo $(jq --arg updated_status "$STATUS_ROLLBACK_SUCCESSFUL" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
+        echo $(jq --arg updated_status "$STATUS_ROLLBACK_SUCCESSFUL" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
         write_logs
         exit 0
     fi
@@ -507,7 +498,7 @@ elif [[ "$json_status" == "$STATUS_INITIATED" ]]; then
     elif [[ "$old_image_version" == "null" || "$current_version" == "$old_image_version" ]]; then
         # set status to "failed"
         log_info "Agent pod is in panic state and the image version was not updated. Setting status to \"$ROLLBACK_FAILED\" and exiting."
-	echo $(jq --arg updated_status "$ROLLBACK_FAILED" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
+        echo $(jq --arg updated_status "$ROLLBACK_FAILED" '.agentUpgradePolicyStatus.status = $updated_status' $STATUS_PATH) > $STATUS_PATH
         log_debug "Output of \"hzn node list\": $cmd_output"
         write_logs
         log_fatal 1 "Agent pod is in panic state and the image version was not updated."
@@ -517,7 +508,7 @@ elif [[ "$json_status" == "$STATUS_INITIATED" ]]; then
         cmd_output=$(agent_cmd "hzn node list")
         log_info "Agent pod is in panic state. Rollback will be performed."
         log_debug "Output of \"hzn node list\": $cmd_output"
-	update_error_message "Agent pod is in panic state"
+        update_error_message "Agent pod is in panic state"
     fi
 
     panic_rollback=true
