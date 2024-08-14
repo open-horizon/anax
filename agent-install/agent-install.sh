@@ -3666,23 +3666,25 @@ function check_cluster_agent_scope() {
             # continue to check_agent_deployment_exist() to check scope
             AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE="true"
         else
-            # has agent in other namespace(s). Pick one agent deployment and check scope
-            #   current is cluster scoped agent => error
-            #   current is namespace scoped agent:
-            #       namespace scope agent in other namespace => can proceed to install
-            #       cluster scope agent in other namespace => error
+            # A namespace-scoped agent is allowed to install in a cluster with cluster-scoped agent or namespace-scoped agents
+            # A cluster-scoped agent is NOT allowed to be installed in a cluster which already had a cluster-scoped agent
             if ! $NAMESPACE_SCOPED; then
-                log_fatal 3 "One or more agents detected in $namespaces_have_agent. A cluster scoped agent cannot be installed to the same cluster that has agent(s) already"
-            fi
+                log_debug "NAMESPACE_SCOPED passed to this script is: $NAMESPACE_SCOPED" # namespace scoped
 
-            IFS="," read -ra namespace_array <<< "$namespaces_have_agent"
-            namespace_to_check=${namespace_array[0]}
-            local namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${namespace_to_check} -o json | jq '.spec.template.spec.containers[0].env' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
-            log_debug "Current HZN_NAMESPACE_SCOPED in agent deployment under namespace $namespace_to_check is: $namespace_scoped_env_value_in_use"
-            log_debug "NAMESPACE_SCOPED passed to this script is: $NAMESPACE_SCOPED" # namespace scoped
+                local namespace_to_check
+                local namespace_scoped_env_value_in_use
 
-            if [[ "$namespace_scoped_env_value_in_use" == "" ]] || [[ "$namespace_scoped_env_value_in_use" == "false" ]] ; then
-                log_fatal 3 "A cluster scoped agent detected in $namespace_to_check. A namespace scoped agent cannot be installed to the same cluster that has a cluster scoped agent"
+                IFS="," read -ra namespace_array <<< "$namespaces_have_agent"
+                arrayLen=${#namespace_array[@]}
+                for (( i=0 ; i<$arrayLen ; i++ ));
+                do
+                    namespace_to_check=${namespace_array[i]}
+                    namespace_scoped_env_value_in_use=$($KUBECTL get deployment agent -n ${namespace_to_check} -o json | jq '.spec.template.spec.containers[0].env' | jq -r '.[] | select(.name=="HZN_NAMESPACE_SCOPED").value')
+                    log_debug "Current HZN_NAMESPACE_SCOPED in agent deployment under namespace $namespace_to_check is: $namespace_scoped_env_value_in_use"
+                    if [[ "$namespace_scoped_env_value_in_use" == "" ]] || [[ "$namespace_scoped_env_value_in_use" == "false" ]] ; then
+                        log_fatal 3 "A cluster scoped agent detected in $namespace_to_check. A cluster scoped agent cannot be installed to the same cluster that already had a cluster scoped agent"
+                    fi 
+                done
             fi
         fi
 
