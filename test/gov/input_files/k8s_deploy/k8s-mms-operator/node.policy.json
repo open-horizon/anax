@@ -1,0 +1,1 @@
+{"properties":[{"name":"purpose","value":"k8s-service-mms-testing"}],"constraints":["policy.purpose == k8s-service-mms-testing"]}

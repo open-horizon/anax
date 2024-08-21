@@ -1,0 +1,27 @@
+[
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "k8s-hello-mms",
+    "serviceArch": "amd64",
+    "serviceVersionRange": "[1.0.0,INFINITY)",
+    "inputs": [
+      {
+        "name": "LISTEN_PORT",
+        "value": "8347"
+      },
+      {
+        "name": "MMS_OBJECT_TYPES",
+        "value": ["model", "model1", "model2"]
+      },
+      {
+        "name": "SERVICE_TO_START",
+        "value": "openhorizon/hello-k8s-mms-consumer_amd64:2.0.0"
+      },
+      {
+        "name": "MMS_HELPER_SERVICE_TO_START",
+        "value": "openhorizon/hello-k8s-mms-helper_amd64:2.0.0"
+      }
+    ]
+  }
+]
+
