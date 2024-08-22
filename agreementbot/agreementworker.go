@@ -529,15 +529,47 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 		// The arch field in the workload could be empty or a '*' meaning any arch. If that's the case, we will use the device's arch
 		// when we search for services.
+		workloadArch := ""
+
 		if workload.Arch == "" || workload.Arch == "*" {
-			workload.Arch = exchangeDev.Arch
+			//workload.Arch = exchangeDev.Arch
+			// Need to find if there is a service exists which arch matches the device arch
+			servicesMap, err := exchange.GetHTTPSelectedServicesHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workloadArch)
+			findService := false
+			if err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details with workload arch set to empty, error: %v", err)))
+				return
+			} else if len(servicesMap) == 0 {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintln("0 service details with empty workload arch is returned")))
+				return
+			} else {
+				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("services returned with empty workload arch are: %v", servicesMap)))
+
+				for _, service := range servicesMap {
+					if exchangeDev.Arch == service.Arch || exchangeDev.Arch == b.config.ArchSynonyms.GetCanonicalArch(service.Arch) {
+						glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("find service has same arch or synonym arch with device: %v", service)))
+						workload.Arch = service.Arch
+						findService = true
+					}
+				}
+				if !findService {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintln("failed to find service details with matched workload arch")))
+					return
+				}
+			}
+		} else {
+			workloadArch = workload.Arch
 		}
 
 		asl, workloadDetails, sIds, err := exchange.GetHTTPServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 		if err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details with workload arch:%v, %v, error: %v", workloadArch, workload, err)))
 			return
+		} else {
+			glog.V(2).Infof(BAWlogstring(workerId, fmt.Sprintf("get workload details with GetHTTPServiceResolverHandler: %v", workload.Arch)))
+
 		}
+
 		topSvcDef := compcheck.ServiceDefinition{Org: workload.Org, ServiceDefinition: *workloadDetails}
 		sIdTop := sIds[0]
 
