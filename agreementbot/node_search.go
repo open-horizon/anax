@@ -229,9 +229,12 @@ func (n *NodeSearch) findAndMakeAgreements() {
 			}
 
 		}
-		if searchError {
-			break
-		}
+
+                // Removed this break statement to enable other orgs to still be searched if an error in one org occurs
+                //if searchError {
+                //      break
+                //}
+
 	}
 
 	// Done scanning all nodes across all policies, and no errors were encountered.
