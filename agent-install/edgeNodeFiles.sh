@@ -372,6 +372,9 @@ function putOneFileInCss() {
 
     if [ ! -z ${version} ]; then 
 	    META_DATA=$( echo "${META_DATA}" | jq --arg VERSION ${version} '. + {version: $VERSION}' ) 
+
+            # Will set the software package version if not set yet
+            setSoftwarePackageVersion ${version}
     fi 
 
     if [[ $addExpiration == true ]]; then 
@@ -759,9 +762,6 @@ function putHorizonPkgsInCss() {
 
         # Add the tarFile name array for the manifest
         addElementToArray $horizonSoftwareFiles $tarFile 
-
-        # Will set the software package version if not set yet
-        setSoftwarePackageVersion ${pkgVersion}
     fi
 
     # Remove the tar file (it was only needed to put into CSS)
