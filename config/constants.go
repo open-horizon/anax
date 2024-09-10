@@ -111,6 +111,9 @@ const AgbotMessageQueueScale_DEFAULT = 33.0
 // The default number of prioritized queue history records to keep before aging out the old ones.
 const AgbotQueueHistorySize_DEFAULT = 30
 
+// The default full rescan interval if error happens during the node search
+const AgbotErrRescan_DEFAULT = 15
+
 // The default full rescan interval
 const AgbotFullRescan_DEFAULT = 600
 
