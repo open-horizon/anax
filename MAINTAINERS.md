@@ -9,7 +9,6 @@ See the information about [community membership roles](https://wiki.lfedge.org/d
 | Joe Pearson  | joewxboy    | <joe.pearson@us.ibm.com> |
 | John Walicki | johnwalicki | <johnwalicki@gmail.com>  |
 | Lily Zhang   | liilyZhang  | <zhangl@us.ibm.com>      |
-| Max McAdam   | maxmcadam   | <maxwell.mcAdam@ibm.com> |
 | Doug Larson  | dlarson04   | <larsond@us.ibm.com>     |
 
 # Emeritus Maintainers
@@ -18,3 +17,4 @@ The emeritus maintainers of this repository are:
 | Name         | GitHub      | email                    |
 | ------------ | ----------- | ------------------------ |
 | Ling Gao     | linggao     |                          |
+| Max McAdam   | maxmcadam   |                          |
