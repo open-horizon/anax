@@ -126,6 +126,7 @@ type AGConfig struct {
 	AgreementQueueSize            uint64           // The agreement bot work queue max size.
 	MessageQueueScale             float64          // Scaling factor applied to the AgreementQueueSize when determining how deep to keep the queues.
 	QueueHistorySize              int              // The number of statistics records to retain in the prioritized queue history.
+	ErrRescanS                    uint64           // The number of seconds between rescan if error occurs from last rescan
 	FullRescanS                   uint64           // The number of seconds between policy scans when there have been no changes reported by the exchange.
 	MaxExchangeChanges            int              // The maximum number of exchange changes to request on a given call the exchange /changes API.
 	RetryLookBackWindow           uint64           // The time window (in seconds) used by the agbot to look backward in time for node changes when node agreements are retried.
@@ -220,6 +221,10 @@ func (c *HorizonConfig) GetAgbotMessageQueueScale() float64 {
 
 func (c *HorizonConfig) GetAgbotQueueHistorySize() int {
 	return c.AgreementBot.QueueHistorySize
+}
+
+func (c *HorizonConfig) GetAgbotErrReschanInterval() uint64 {
+	return c.AgreementBot.ErrRescanS
 }
 
 func (c *HorizonConfig) GetAgbotFullRescan() uint64 {
@@ -397,6 +402,7 @@ func Read(file string) (*HorizonConfig, error) {
 				AgreementQueueSize:      AgbotAgreementQueueSize_DEFAULT,
 				MessageQueueScale:       AgbotMessageQueueScale_DEFAULT,
 				QueueHistorySize:        AgbotQueueHistorySize_DEFAULT,
+				ErrRescanS:              AgbotErrRescan_DEFAULT,
 				FullRescanS:             AgbotFullRescan_DEFAULT,
 				MaxExchangeChanges:      AgbotMaxChanges_DEFAULT,
 				RetryLookBackWindow:     AgbotRetryLookBackWindow_DEFAULT,
@@ -585,6 +591,7 @@ func (agc *AGConfig) String() string {
 		", MessageQueueScale: %v"+
 		", QueueHistorySize: %v"+
 		", FullRescanS: %v"+
+		", ErrRescanS: %v"+
 		", MaxExchangeChanges: %v"+
 		", RetryLookBackWindow: %v"+
 		", PolicySearchOrder: %v"+
@@ -596,7 +603,7 @@ func (agc *AGConfig) String() string {
 		mask, agc.DVPrefix, agc.ActiveDeviceTimeoutS, agc.ExchangeMessageTTL, agc.MessageKeyPath, mask, agc.APIListen,
 		agc.SecureAPIListenHost, agc.SecureAPIListenPort, agc.SecureAPIServerCert, agc.SecureAPIServerKey,
 		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.CSSDestinationBatchSize, agc.AgreementBatchSize,
-		agc.AgreementQueueSize, agc.MessageQueueScale, agc.QueueHistorySize, agc.FullRescanS, agc.MaxExchangeChanges,
+		agc.AgreementQueueSize, agc.MessageQueueScale, agc.QueueHistorySize, agc.FullRescanS, agc.ErrRescanS, agc.MaxExchangeChanges,
 		agc.RetryLookBackWindow, agc.PolicySearchOrder, agc.Vault)
 }
 
