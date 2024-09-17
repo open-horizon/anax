@@ -762,6 +762,50 @@ then
     exit 2
 fi
 
+cat <<EOF >$KEY_TEST_DIR/svc_k8s_mms.json
+{
+  "label":"MMS cluster service for amd64",
+  "description":"Cluster Service Test k8s-hello-mms",
+  "public":true,
+  "sharable":"multiple",
+  "url":"k8s-hello-mms",
+  "version":"$VERS",
+  "arch":"${ARCH}",
+  "requiredServices":[
+  ],
+  "userInput": [
+    {
+      "name": "LISTEN_PORT",
+      "value": "8347"
+    },
+    {
+      "name": "MMS_OBJECT_TYPES",
+      "value": ["model", "model1", "model2"]
+    },
+    {
+      "name": "SERVICE_TO_START",
+      "value": "openhorizon/hello-k8s-mms-consumer_amd64:2.0.0"
+    },
+    {
+      "name": "MMS_HELPER_SERVICE_TO_START",
+      "value": "openhorizon/hello-k8s-mms-helper_amd64:2.0.0"
+    }
+  ],
+  "clusterDeployment": {
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s-mms-operator/k8s-mms-operator.tar.gz"
+  },
+  "clusterDeploymentSignature": ""
+}
+EOF
+
+echo -e "Register k8s-hello-mms $VERS:"
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_mms.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
+if [ $? -ne 0 ]
+then
+    echo -e "hzn exchange service publish failed for k8s-hello-mms."
+    exit 2
+fi
+
 
 echo -e "Listing services:"
 hzn exchange service list -o e2edev@somecomp.com
@@ -1608,6 +1652,48 @@ echo -e "Register business policy bp_k8s_secret for k8s-hello-secret:"
 
 results "$RES"
 fi
+
+read -d '' bpk8smmsdef <<EOF
+{
+  "label": "business policy for k8s-hello-mms",
+  "description": "Deployment Policy for k8s-hello-mms",
+  "service": {
+    "name": "k8s-hello-mms",
+    "org": "e2edev@somecomp.com",
+    "arch": "${ARCH}",
+    "serviceVersions": [
+        {
+          "version":"$K8SVERS",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+    ]
+  },
+  "properties": [
+      {
+          "name": "iame2edev",
+          "value": "true"
+      },
+      {
+          "name": "NOK8S",
+          "value": false
+      },
+      {
+          "name": "policy.purpose",
+          "value": "k8s-service-mms-testing"
+      }
+  ],
+  "constraints": [
+    "purpose == k8s-service-mms-testing"
+  ]
+}
+EOF
+
+echo -e "Register business policy bp_k8s_mms for k8s-hello-mms service:"
+
+  RES=$(echo "$bpk8smmsdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_mms" | jq -r '.')
+
+results "$RES"
 
 
 # ======================= Service Policies that use top level services ======================
