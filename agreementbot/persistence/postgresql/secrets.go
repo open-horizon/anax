@@ -63,11 +63,18 @@ const SECRET_UPDATE_TIME_PATTERN = `UPDATE "secrets_pattern_ SET last_update_che
 const SECRET_EXISTS_UPDATE_TIME_PATTERN = `UPDATE "secrets_pattern_ SET last_update_check = $1, secret_exists = false WHERE secret_org = $2 AND secret_name = $3 AND secret_exists = $4;`
 const SECRET_DELETE_PATTERN = `DELETE FROM "secrets_pattern_ WHERE secret_org = $1 AND secret_name = $2 AND pattern_org = $3 AND pattern_name = $4;`
 
-const SECRET_MOVE = `WITH moved_rows AS (
-    DELETE FROM "secrets_pattern_ a
-    RETURNING a.secret_org, a.secret_name, a.pattern_org, a.pattern_name, a.last_update_check
+const SECRET_MOVE_POLICY = `WITH moved_rows AS (
+    DELETE FROM "secrets_policy_ a
+    RETURNING a.secret_org, a.secret_name, a.policy_org, a.policy_name, a.last_update_check, a.secret_exists
 )
-INSERT INTO "secrets_pattern_ (secret_org, secret_name, pattern_org, pattern_name, last_update_check, partition) SELECT secret_org, secret_name, pattern_org, pattern_name, last_update_check, 'partition_name' FROM moved_rows WHERE secret_org <> pattern_org ON CONFLICT DO NOTHING;
+INSERT INTO "secrets_policy_ (secret_org, secret_name, policy_org, policy_name, last_update_check, secret_exists, partition) SELECT secret_org, secret_name, policy_org, policy_name, last_update_check, secret_exists, 'partition_name' FROM moved_rows WHERE secret_org <> policy_org ON CONFLICT DO NOTHING;
+`
+
+const SECRET_MOVE_PATTERN = `WITH moved_rows AS (
+    DELETE FROM "secrets_pattern_ a
+    RETURNING a.secret_org, a.secret_name, a.pattern_org, a.pattern_name, a.last_update_check, a.secret_exists
+)
+INSERT INTO "secrets_pattern_ (secret_org, secret_name, pattern_org, pattern_name, last_update_check, secret_exists, partition) SELECT secret_org, secret_name, pattern_org, pattern_name, last_update_check, secret_exists, 'partition_name' FROM moved_rows WHERE secret_org <> pattern_org ON CONFLICT DO NOTHING;
 `
 
 const SECRET_DROP_PARTITION_POLICY = `DROP TABLE "secrets_policy_;`
@@ -224,9 +231,17 @@ func (db *AgbotPostgresqlDB) GetDeleteSecretPattern() string {
 }
 
 // The partition table name replacement scheme used in this function is slightly different from the others above.
-func (db *AgbotPostgresqlDB) GetSecretPartitionMove(fromPartition string, toPartition string) string {
-	sql := strings.Replace(SECRET_MOVE, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(toPartition), 2)
+func (db *AgbotPostgresqlDB) GetSecretPartitionMovePattern(fromPartition string, toPartition string) string {
+	sql := strings.Replace(SECRET_MOVE_PATTERN, SECRET_TABLE_NAME_ROOT_PATTERN, db.GetSecretPartitionTableNamePattern(toPartition), 2)
 	sql = strings.Replace(sql, db.GetSecretPartitionTableNamePattern(toPartition), db.GetSecretPartitionTableNamePattern(fromPartition), 1)
+	sql = strings.Replace(sql, SECRET_PARTITION_FILLIN, toPartition, 1)
+	return sql
+}
+
+// The partition table name replacement scheme used in this function is slightly different from the others above.
+func (db *AgbotPostgresqlDB) GetSecretPartitionMovePolicy(fromPartition string, toPartition string) string {
+	sql := strings.Replace(SECRET_MOVE_POLICY, SECRET_TABLE_NAME_ROOT_POLICY, db.GetSecretPartitionTableNamePolicy(toPartition), 2)
+	sql = strings.Replace(sql, db.GetSecretPartitionTableNamePolicy(toPartition), db.GetSecretPartitionTableNamePolicy(fromPartition), 1)
 	sql = strings.Replace(sql, SECRET_PARTITION_FILLIN, toPartition, 1)
 	return sql
 }
