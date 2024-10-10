@@ -1,0 +1,52 @@
+# This workflow is simply to verify that the Anax binaries build successfully, to be used for testing in forks
+name: Build Verification
+
+on: workflow_dispatch
+
+jobs:
+  build-verification:
+    
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        architecture: ['amd64']
+        platform: ['linux']
+
+    env:
+      arch: ${{ matrix.architecture }}
+      os: ${{ matrix.platform }}
+      BUILD_NUMBER: ${{ github.run_number }}
+      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
+      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+      GOPATH: /home/runner/work/anax/anax/go
+
+    steps:
+      # Checkout our Github repo
+      - name: Checkout Github Repo
+        uses: actions/checkout@v3
+        with:
+          path: go/src/github.com/${{ github.repository }}
+
+      # Prepare the environment
+      - name: Set up golang 1.19
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.19'
+          check-latest: true
+
+      # Configure version variables for later steps, stored in our workflow env. variables
+      - name: Config Version Variables
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          ./.github/scripts/configure_versions_script.sh
+
+      # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
+      - name: Build Anax Binaries
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          make temp-mod-version
+          make i18n-catalog
+          make
