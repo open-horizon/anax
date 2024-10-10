@@ -352,7 +352,9 @@ func (w *AgreementWorker) reconcileNodePolicy() int {
 		return 60
 	}
 
-	w.checkNodePolicyChanges()
+	if w.limitedRetryEC != nil {
+		w.checkNodePolicyChanges()
+	}
 
 	return 60
 }
@@ -501,7 +503,9 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 		w.checkNodeChanges()
 
 	case *NodePolicyChangeCommand:
-		w.checkNodePolicyChanges()
+		if w.limitedRetryEC != nil {
+			w.checkNodePolicyChanges()
+		}
 
 	case *NodeSvcConfigStateChangeCommand:
 		w.checkServiceConfigStateChanges()

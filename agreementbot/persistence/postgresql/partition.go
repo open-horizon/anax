@@ -262,7 +262,9 @@ func (db *AgbotPostgresqlDB) MovePartition(timeout uint64) (bool, error) {
 			return false, err
 		} else if _, err := tx.Exec(db.GetWorkloadUsagePartitionMove(fromPartition, db.PrimaryPartition())); err != nil {
 			return false, err
-		} else if _, err := tx.Exec(db.GetSecretPartitionMove(fromPartition, db.PrimaryPartition())); err != nil {
+		} else if _, err := tx.Exec(db.GetSecretPartitionMovePattern(fromPartition, db.PrimaryPartition())); err != nil {
+			return false, err
+		} else if _, err := tx.Exec(db.GetSecretPartitionMovePolicy(fromPartition, db.PrimaryPartition())); err != nil {
 			return false, err
 		} else if _, err := tx.Exec(db.GetAgreementPartitionTableDrop(fromPartition)); err != nil {
 			return false, err
