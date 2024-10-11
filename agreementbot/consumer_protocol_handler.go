@@ -460,9 +460,10 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	// if it's not in the old policy, cancel
 	choice := -1
 
-	nextPriority := policy.GetNextWorkloadChoice(busPol.Workloads, choice)
+	nextPriority := policy.GetNextWorkloadChoice(busPol.Workloads, choice) // return 6.0.0 workload
 	wl := nextPriority
 
+	// check what is returned as wlUsage
 	wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName)
 	if err != nil {
 		return false, false, false
@@ -472,20 +473,34 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	if wlUsage != nil {
 		wlUsagePriority = wlUsage.Priority
 	}
+	// wlUsage.Policy (string) is:
+	// {"header":{"name":"ScaleTenant101_Corp/com-ibm-mesh-agent","version":"2.0"},"agreementProtocols":[{"name":"Basic","protocolVersion":1}],"workloads":[{"cluster_deployment":"{\"operatorYamlArchive\":\"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\",\"secrets\":{\"observability\":{\"description\":\"Observability credentials\"},\"rabbitmq\":{\"description\":\"RabbitMQ credentials\"}}}","cluster_deployment_signature":"a1EM2VTq7PnPXy8hdzNu9q/X+W8eFBfONjUU12S0w9X80onaJXfG1aPMTVS6K3iypSyBjijaV0ZvSb9EKb9dT2T/Bey1b7xNsc+HdaYAqlaw77Qv6ZmITOtCK9DDrDGbE/TQuILLtOvIPRqxlk9qNfCKqPWgfxZqSHzb3JP5CiUGcI6nQU5/2JmuDbhGubHeMGF0ddSREWUckxNRNXGZQisjbVGD8PQUB4F8mcMzApmjzU44GCUjli2R60FeMOiQIABEPfLDypqXrvfK1IQt9dU8k/qkmDw0gDMAJjAFW40lJzJNXju1YfgH0gEj9LwWlb0iXNWFSFcVPvpUkNCeFg==","priority":{"priority_value":1,"retries":3,"retry_durations":60},"workloadUrl":"com.ibm.mesh.skupper.agent","organization":"IBM","version":"6.0.0","arch":"amd64"},{"priority":{"priority_value":2,"retries":3,"retry_durations":60},"workloadUrl":"com.ibm.mesh.skupper.agent","organization":"IBM","version":"5.0.0","arch":"*"}],"valueExchange":{},"dataVerification":{"metering":{}},"proposalRejection":{},"properties":[{"name":"openhorizon.service.url","value":"com.ibm.mesh.skupper.agent"},{"name":"openhorizon.service.name","value":"com.ibm.mesh.skupper.agent"},{"name":"openhorizon.service.org","value":"IBM"},{"name":"openhorizon.service.version","value":"6.0.0"},{"name":"openhorizon.service.arch","value":"amd64"},{"name":"openhorizon.allowPrivileged","value":false}],"constraints":["com.ibm.mesh.skupper-site == true"],"nodeHealth":{},"userInput":[{"serviceOrgid":"IBM","serviceUrl":"com.ibm.mesh.skupper.agent","serviceVersionRange":"[0.0.0,INFINITY]","inputs":[]}],"secretBinding":[{"serviceOrgid":"IBM","serviceUrl":"com.ibm.mesh.skupper.agent","serviceArch":"*","serviceVersionRange":"[0.0.0,INFINITY]","enableNodeLevelSecrets":true,"secrets":[{"rabbitmq":"rabbitmq"},{"observability":"observability"}]}],"secretDetails":[{"serviceOrgid":"IBM","serviceUrl":"com.ibm.mesh.skupper.agent","serviceArch":"*","serviceVersionRange":"[0.0.0,INFINITY]","enableNodeLevelSecrets":true,"secrets":[{"rabbitmq":"eyJrZXkiOiJlZGdlLW5vZGVzLXJ0cDEtMWEtYWdlbnQtZWRnZS1ub2Rlcy1ydHAxLTFhIiwidmFsdWUiOiJ1LXQ0YWVfUVd1Z2JiQVZoMU4xYWF3NUdEelp1dXJ2bDhtbXU0OTgzdDhLSGRPeC1TQlFlIn0="},{"observability":"eyJrZXkiOiJvYnMiLCJ2YWx1ZSI6InNlY3JldCJ9"}]}],"clusterNamespace":"edge-nodes-rtp1-1a"}
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement(%v), wlUsage is: %v", ag.CurrentAgreementId, wlUsage)))
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement(%v), nextPriority is: %v", ag.CurrentAgreementId, nextPriority)))
 
-	if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsagePriority); currentWL == nil {
-		// the current workload priority is no longer in the deployment policy
-		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsagePriority, ag.CurrentAgreementId)))
-		return true, false, false
-	} else {
-		wl = currentWL
 	}
+
+	// currentWl is from busPol, wlUsagePriority is from db
+	// if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsagePriority); currentWL == nil {
+	// 	// the current workload priority is no longer in the deployment policy
+	// 	glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsagePriority, ag.CurrentAgreementId)))
+	// 	return true, false, false
+	// } else {
+	// 	wl = currentWL
+	// }
 
 	if oldPolicy != nil {
 		for choice <= wlUsagePriority && nextPriority != nil {
-			choice = nextPriority.Priority.PriorityValue
+			choice = nextPriority.Priority.PriorityValue //1
 			matchingWL := policy.GetWorkloadWithPriority(oldPolicy.Workloads, choice)
-			if matchingWL == nil || !matchingWL.IsSame(*nextPriority) {
+			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement(%v), matchingWL (workload with choice %v in the old policy) is: %v", ag.CurrentAgreementId, choice, matchingWL)))
+			if matchingWL == nil || !matchingWL.IsSame(*nextPriority) { //matchingWL is from oldPolicy, nextPriority is from busPol
+				if matchingWL == nil {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement(%v), matchingWL is nil", ag.CurrentAgreementId)))
+				} else if !matchingWL.IsSame(*nextPriority) {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement(%v), matchingWL %v is different from nextPriority %v", ag.CurrentAgreementId, matchingWL, nextPriority)))
+				}
 				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Higher priority version added or modified. Cancelling agreement %v", ag.CurrentAgreementId)))
 				return true, false, false
 			}
@@ -494,13 +509,28 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 
 		// check if cluster namespace is changed in new policy
 		if dev.NodeType == persistence.DEVICE_TYPE_CLUSTER && busPol.ClusterNamespace != oldPolicy.ClusterNamespace {
-			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace is changed from %v to %v in busiess policy for agreement %v, checking cluster namespace compatibility ...", oldPolicy.ClusterNamespace, busPol.ClusterNamespace, ag.CurrentAgreementId)))
+			if glog.V(5) {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace is changed from %v to %v in busiess policy for agreement %v, checking cluster namespace compatibility ...", oldPolicy.ClusterNamespace, busPol.ClusterNamespace, ag.CurrentAgreementId)))
+			}
+
 			t_comp, consumerNamespace, t_reason := compcheck.CheckClusterNamespaceCompatibility(dev.NodeType, dev.ClusterNamespace, dev.IsNamespaceScoped, busPol.ClusterNamespace, wl.ClusterDeployment, ag.Pattern, false, msgPrinter)
 			if !t_comp {
-				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace %v is not longer compatible for agreement %v. Reason is: %v", consumerNamespace, ag.CurrentAgreementId, t_reason)))
+				if glog.V(5) {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace %v is not longer compatible for agreement %v. Reason is: %v", consumerNamespace, ag.CurrentAgreementId, t_reason)))
+				}
 				return true, true, false
-			} else if consumerNamespace != oldPolicy.ClusterNamespace {
-				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace has changed from %v to %v for agreement %v", oldPolicy.ClusterNamespace, consumerNamespace, ag.CurrentAgreementId)))
+			} else if wlUsage != nil {
+				// wlUsage is nil if no prioriy is set in the previous policy
+				wluPolicyInString := wlUsage.Policy
+				if wluPolicy, err := policy.DemarshalPolicy(wluPolicyInString); err != nil {
+					glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to demarshal policy from workload usage %v", wluPolicyInString)))
+					return true, true, false
+				} else if consumerNamespace != wluPolicy.ClusterNamespace {
+					if glog.V(5) {
+						glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace has changed from %v to %v for agreement %v", wluPolicy.ClusterNamespace, consumerNamespace, ag.CurrentAgreementId)))
+					}
+				}
+
 				return true, true, false
 			}
 			// new cluster namespace is still compatible, namespace still same
