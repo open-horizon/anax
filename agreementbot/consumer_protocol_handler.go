@@ -498,10 +498,12 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 			t_comp, consumerNamespace, t_reason := compcheck.CheckClusterNamespaceCompatibility(dev.NodeType, dev.ClusterNamespace, dev.IsNamespaceScoped, busPol.ClusterNamespace, wl.ClusterDeployment, ag.Pattern, false, msgPrinter)
 			if !t_comp {
 				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace %v is not longer compatible for agreement %v. Reason is: %v", consumerNamespace, ag.CurrentAgreementId, t_reason)))
-
+				return true, true, false
+			} else if consumerNamespace != oldPolicy.ClusterNamespace {
+				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace has changed from %v to %v for agreement %v", oldPolicy.ClusterNamespace, consumerNamespace, ag.CurrentAgreementId)))
+				return true, true, false
 			}
-			// new cluster namespace is still compatible
-			return true, true, false
+			// new cluster namespace is still compatible, namespace still same
 		}
 	}
 
