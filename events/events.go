@@ -517,7 +517,7 @@ type PolicyChangedMessage struct {
 }
 
 func (e PolicyChangedMessage) String() string {
-	return fmt.Sprintf("event: %v, file: %v, name: %v, org: %v, policy: %v", e.event, e.fileName, e.name, e.org, e.policy)
+	return fmt.Sprintf("event: %v, file: %v, name: %v, org: %v, policy: %v, oldPolicy: %v", e.event, e.fileName, e.name, e.org, e.policy, e.oldPolicy)
 }
 
 func (e PolicyChangedMessage) ShortString() string {
