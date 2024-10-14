@@ -329,7 +329,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 					clusterNSNotChange := true
 
 					if ag.Pattern == "" {
-						policyMatches, noNewPriority, clusterNSNotChange = b.HandlePolicyChangeForAgreement(ag, cmd.Msg.OldPolicy(), cph)
+						policyMatches, noNewPriority, clusterNSNotChange = b.HandlePolicyChangeForAgreement(ag, pol, cph)
 						agStillValid = policyMatches && noNewPriority
 						if ag.GetDeviceType() == persistence.DEVICE_TYPE_CLUSTER {
 							agStillValid = agStillValid && clusterNSNotChange
@@ -494,14 +494,23 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 
 		// check if cluster namespace is changed in new policy
 		if dev.NodeType == persistence.DEVICE_TYPE_CLUSTER && busPol.ClusterNamespace != oldPolicy.ClusterNamespace {
-			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace is changed from %v to %v in busiess policy for agreement %v, checking cluster namespace compatibility ...", oldPolicy.ClusterNamespace, busPol.ClusterNamespace, ag.CurrentAgreementId)))
+			if glog.V(5) {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace is changed from %v to %v in busiess policy for agreement %v, checking cluster namespace compatibility ...", oldPolicy.ClusterNamespace, busPol.ClusterNamespace, ag.CurrentAgreementId)))
+			}
 			t_comp, consumerNamespace, t_reason := compcheck.CheckClusterNamespaceCompatibility(dev.NodeType, dev.ClusterNamespace, dev.IsNamespaceScoped, busPol.ClusterNamespace, wl.ClusterDeployment, ag.Pattern, false, msgPrinter)
 			if !t_comp {
-				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace %v is not longer compatible for agreement %v. Reason is: %v", consumerNamespace, ag.CurrentAgreementId, t_reason)))
-
+				if glog.V(5) {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace %v is not longer compatible for agreement %v. Reason is: %v", consumerNamespace, ag.CurrentAgreementId, t_reason)))
+				}
+				return true, true, false
+			} else if consumerNamespace != oldPolicy.ClusterNamespace {
+				// this check only applies to cluster-scoped agent
+				if glog.V(5) {
+					glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("cluster namespace has changed from %v to %v for agreement %v", oldPolicy.ClusterNamespace, consumerNamespace, ag.CurrentAgreementId)))
+				}
+				return true, true, false
 			}
 			// new cluster namespace is still compatible
-			return true, true, false
 		}
 	}
 
