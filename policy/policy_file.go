@@ -535,6 +535,41 @@ func (self *Policy) ShortString() string {
 	return res
 }
 
+func (self *Policy) IsSamePolicy(compare *Policy) (bool, string) {
+	misMatchString := ""
+	isSame := false
+	if compare == nil {
+		misMatchString = fmt.Sprintf("Nil policy to comapre with policy %v", self.Header)
+	} else if !self.Header.IsSame(compare.Header) {
+		misMatchString = fmt.Sprintf("Header %v mismatch with %v", self.Header, compare.Header)
+	} else if (len(compare.Workloads) == 0 || (len(compare.Workloads) != 0 && compare.Workloads[0].WorkloadURL == "")) && !self.APISpecs.IsSame(compare.APISpecs, true) {
+		misMatchString = fmt.Sprintf("API Spec %v mismatch with %v", self.APISpecs, compare.APISpecs)
+	} else if !self.AgreementProtocols.IsSame(compare.AgreementProtocols) {
+		misMatchString = fmt.Sprintf("AgreementProtocol %v mismatch with %v", self.AgreementProtocols, compare.AgreementProtocols)
+	} else if !self.IsSameWorkload(compare) {
+		misMatchString = fmt.Sprintf("Workload %v mismatch with %v", self.Workloads, compare.Workloads)
+	} else if !self.DataVerify.IsSame(compare.DataVerify) {
+		misMatchString = fmt.Sprintf("DataVerify %v mismatch with %v", self.DataVerify, compare.DataVerify)
+	} else if !self.Properties.IsSame(compare.Properties) {
+		misMatchString = fmt.Sprintf("Properties %v mismatch with %v", self.Properties, compare.Properties)
+	} else if !self.Constraints.IsSame(compare.Constraints) {
+		misMatchString = fmt.Sprintf("Constraints %v mismatch with %v", self.Constraints, compare.Constraints)
+	} else if self.RequiredWorkload != compare.RequiredWorkload {
+		misMatchString = fmt.Sprintf("RequiredWorkload %v mismatch with %v", self.RequiredWorkload, compare.RequiredWorkload)
+	} else if self.MaxAgreements != compare.MaxAgreements {
+		misMatchString = fmt.Sprintf("MaxAgreement %v mismatch with %v", self.MaxAgreements, compare.MaxAgreements)
+	} else if !UserInputArrayIsSame(self.UserInput, compare.UserInput) {
+		misMatchString = fmt.Sprintf("UserInput %v mismatch with %v", self.UserInput, compare.UserInput)
+	} else if !exchangecommon.SecretBindingIsSame(self.SecretBinding, compare.SecretBinding) {
+		misMatchString = fmt.Sprintf("SecretBinding %v mismatch with %v", self.SecretBinding, compare.SecretBinding)
+	} else {
+		isSame = true
+	}
+
+	return isSame, misMatchString
+
+}
+
 func (self *Policy) IsSameWorkload(compare *Policy) bool {
 	if len(self.Workloads) != len(compare.Workloads) {
 		return false
