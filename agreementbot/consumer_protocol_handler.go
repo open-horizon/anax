@@ -392,18 +392,29 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("attempting to update agreement %v due to change in policy", ag.CurrentAgreementId)))
 	}
 
+	msgPrinter := i18n.GetMessagePrinter()
+
 	svcAllPol := externalpolicy.ExternalPolicy{}
+	svcPolicyHandler := exchange.GetHTTPServicePolicyHandler(b)
+	svcResolveHandler := exchange.GetHTTPServiceDefResolverHandler(b)
 
 	for _, svcId := range ag.ServiceId {
-		if svcPol, err := exchange.GetServicePolicyWithId(b, svcId); err != nil {
-			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get service policy for %v from the exchange: %v", svcId, err)))
+		if svcDef, err := exchange.GetServiceWithId(b, svcId); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get service %v, error: %v", svcId, err)))
 			return false, false, false
-		} else if svcPol != nil {
-			svcAllPol.MergeWith(&svcPol.ExternalPolicy, false)
+		} else if svcDef != nil {
+			if mergedSvcPol, _, _, _, _, err := compcheck.GetServicePolicyWithDefaultProperties(svcPolicyHandler, svcResolveHandler, svcDef.URL, exchange.GetOrg(svcId), svcDef.Version, svcDef.Arch, msgPrinter); err != nil {
+				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("failed to get merged service policy for %v, error: %v", svcId, err)))
+				return false, false, false
+			} else if mergedSvcPol != nil {
+				svcAllPol.MergeWith(mergedSvcPol, false)
+			}
 		}
 	}
 
-	msgPrinter := i18n.GetMessagePrinter()
+	if glog.V(5) {
+		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("For agreement %v merged svc policy is %v", ag.CurrentAgreementId, svcAllPol)))
+	}
 
 	busPolHandler := exchange.GetHTTPBusinessPoliciesHandler(b)
 	_, busPol, err := compcheck.GetBusinessPolicy(busPolHandler, ag.PolicyName, true, msgPrinter)
@@ -510,7 +521,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 				}
 				return true, true, false
 			}
-			// new cluster namespace is still compatible
+			// cluster namespace remains same
 		}
 	}
 
@@ -535,6 +546,13 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		}
 	}
 
+	if same, msg := consumerPol.IsSamePolicy(oldPolicy); same {
+		glog.V(3).Infof("business policy(producerPol) %v content remains same with old policy; no update to agreement %s", ag.PolicyName, ag.CurrentAgreementId)
+		return true, true, true
+	} else {
+		glog.V(3).Infof("business policy %v content is changed in agreement %v: %v", ag.PolicyName, ag.CurrentAgreementId, msg)
+	}
+
 	newTsCs, err := policy.Create_Terms_And_Conditions(producerPol, consumerPol, wl, ag.CurrentAgreementId, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, basicprotocol.PROTOCOL_CURRENT_VERSION)
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error creating new terms and conditions: %v", err)))
@@ -543,6 +561,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 
 	ag.LastPolicyUpdateTime = uint64(time.Now().Unix())
 
+	// this function will send out "basicagreementupdate"
 	b.UpdateAgreement(&ag, basicprotocol.MsgUpdateTypePolicyChange, newTsCs, cph)
 
 	return true, true, true
