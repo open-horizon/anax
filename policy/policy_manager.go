@@ -7,7 +7,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/exchangecommon"
 	"sync"
 )
 
@@ -267,42 +266,13 @@ func (self *PolicyManager) hasPolicy(org string, matchPolicy *Policy) (bool, err
 		return false, errors.New(fmt.Sprintf("organization %v not found", org))
 	}
 
+	var isSame bool
 	for _, pol := range orgArray {
 		if errString != "" {
 			glog.V(5).Infof("Policy Manager: Previous search loop returned: %v", errString)
 		}
-		if !pol.Header.IsSame(matchPolicy.Header) {
-			errString = fmt.Sprintf("Header %v mismatch with %v", pol.Header, matchPolicy.Header)
-			continue
-		} else if (len(matchPolicy.Workloads) == 0 || (len(matchPolicy.Workloads) != 0 && matchPolicy.Workloads[0].WorkloadURL == "")) && !pol.APISpecs.IsSame(matchPolicy.APISpecs, true) {
-			errString = fmt.Sprintf("API Spec %v mismatch with %v", pol.APISpecs, matchPolicy.APISpecs)
-			continue
-		} else if !pol.AgreementProtocols.IsSame(matchPolicy.AgreementProtocols) {
-			errString = fmt.Sprintf("AgreementProtocol %v mismatch with %v", pol.AgreementProtocols, matchPolicy.AgreementProtocols)
-			continue
-		} else if !pol.IsSameWorkload(matchPolicy) {
-			errString = fmt.Sprintf("Workload %v mismatch with %v", pol.Workloads, matchPolicy.Workloads)
-			continue
-		} else if !pol.DataVerify.IsSame(matchPolicy.DataVerify) {
-			errString = fmt.Sprintf("DataVerify %v mismatch with %v", pol.DataVerify, matchPolicy.DataVerify)
-			continue
-		} else if !pol.Properties.IsSame(matchPolicy.Properties) {
-			errString = fmt.Sprintf("Properties %v mismatch with %v", pol.Properties, matchPolicy.Properties)
-			continue
-		} else if !pol.Constraints.IsSame(matchPolicy.Constraints) {
-			errString = fmt.Sprintf("Constraints %v mismatch with %v", pol.Constraints, matchPolicy.Constraints)
-			continue
-		} else if pol.RequiredWorkload != matchPolicy.RequiredWorkload {
-			errString = fmt.Sprintf("RequiredWorkload %v mismatch with %v", pol.RequiredWorkload, matchPolicy.RequiredWorkload)
-			continue
-		} else if pol.MaxAgreements != matchPolicy.MaxAgreements {
-			errString = fmt.Sprintf("MaxAgreement %v mismatch with %v", pol.MaxAgreements, matchPolicy.MaxAgreements)
-			continue
-		} else if !UserInputArrayIsSame(pol.UserInput, matchPolicy.UserInput) {
-			errString = fmt.Sprintf("UserInput %v mismatch with %v", pol.UserInput, matchPolicy.UserInput)
-			continue
-		} else if !exchangecommon.SecretBindingIsSame(pol.SecretBinding, matchPolicy.SecretBinding) {
-			errString = fmt.Sprintf("SecretBinding %v mismatch with %v", pol.SecretBinding, matchPolicy.SecretBinding)
+
+		if isSame, errString = pol.IsSamePolicy(matchPolicy); !isSame {
 			continue
 		} else {
 			errString = ""
