@@ -14,6 +14,7 @@ ARG DOCKER_VER=24.0.9
 ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng tar gzip"
 RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
+  && microdnf upgrade -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager krb5-libs \
   && curl -4fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VER}.tgz \
   && tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \
   && rm docker-${DOCKER_VER}.tgz \
