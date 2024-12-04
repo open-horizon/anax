@@ -380,26 +380,26 @@ function deleteAgentResources() {
     fi
 
     log_info "Deleting agent service..."
-    $KUBECTL delete svc $SERVICE_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete svc $SERVICE_NAME -n $AGENT_NAMESPACE --ignore-not-found
 
     log_info "Deleting configmap..."
-    $KUBECTL delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE
-    $KUBECTL delete configmap ${CONFIGMAP_NAME}-backup -n $AGENT_NAMESPACE
+    $KUBECTL delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE --ignore-not-found
+    $KUBECTL delete configmap ${CONFIGMAP_NAME}-backup -n $AGENT_NAMESPACE --ignore-not-found
 
     log_info "Deleting secret..."
-    $KUBECTL delete secret $SECRET_NAME -n $AGENT_NAMESPACE
-    $KUBECTL delete secret $IMAGE_REGISTRY_SECRET_NAME -n $AGENT_NAMESPACE
-    $KUBECTL delete secret $IMAGE_PULL_SECRET_NAME -n $AGENT_NAMESPACE
-    $KUBECTL delete secret ${SECRET_NAME}-backup -n $AGENT_NAMESPACE
+    $KUBECTL delete secret $SECRET_NAME -n $AGENT_NAMESPACE --ignore-not-found
+    $KUBECTL delete secret $IMAGE_REGISTRY_SECRET_NAME -n $AGENT_NAMESPACE --ignore-not-found
+    $KUBECTL delete secret $IMAGE_PULL_SECRET_NAME -n $AGENT_NAMESPACE --ignore-not-found
+    $KUBECTL delete secret ${SECRET_NAME}-backup -n $AGENT_NAMESPACE --ignore-not-found
 
     log_info "Deleting persistent volume..."
-    $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE --ignore-not-found
 
     log_info "Deleting clusterrolebinding..."
-    $KUBECTL delete clusterrolebinding ${AGENT_NAMESPACE}-${CLUSTER_ROLE_BINDING_NAME}
+    $KUBECTL delete clusterrolebinding ${AGENT_NAMESPACE}-${CLUSTER_ROLE_BINDING_NAME} --ignore-not-found
 
     log_info "Deleting serviceaccount..."
-    $KUBECTL delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE --ignore-not-found
 
     if [[ "$SKIP_DELETE_AGENT_NAMESPACE" != "true" ]]; then
         log_info "Checking deployment and statefulset under namespace $AGENT_NAMESPACE"
@@ -416,7 +416,7 @@ function deleteAgentResources() {
     fi
 
     log_info "Deleting cert file from /etc/default/cert ..."
-    rm /etc/default/cert/agent-install.crt
+    rm -f /etc/default/cert/agent-install.crt
     set -e
 
     log_debug "deleteAgentResources() end"
