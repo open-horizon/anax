@@ -2063,7 +2063,7 @@ function install_macos() {
         fi
 
         if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-            check_existing_exch_node_is_correct_type "device"
+            check_existing_exch_node_info "device"
         fi
 
         if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
@@ -2311,7 +2311,7 @@ function install_debian() {
         check_and_set_anax_port   # sets ANAX_PORT
 
         if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-            check_existing_exch_node_is_correct_type "device"
+            check_existing_exch_node_info "device"
         fi
 
         if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
@@ -2573,7 +2573,7 @@ function install_redhat() {
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         check_and_set_anax_port   # sets ANAX_PORT
         if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-            check_existing_exch_node_is_correct_type "device"
+            check_existing_exch_node_info "device"
         fi
 
         if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
@@ -3399,11 +3399,12 @@ function find_node_ip_address() {
     fi
 }
 
-# If node exist in management hub, verify it is correct type (device or cluster)
-function check_existing_exch_node_is_correct_type() {
-    log_debug "check_existing_exch_node_is_correct_type() begin"
+# Check if the node exist in management hub, verify 1) it is correct type (device or cluster), 2) for cluster node, verify namespace
+function check_existing_exch_node_info() {
+    log_debug "check_existing_exch_node_info() begin"
 
     local expected_type=$1
+    local expected_namespace=$2
 
     log_info "Verifying that node $NODE_ID in the exchange is type $expected_type (if it exists)..."
     local exch_creds cert_flag
@@ -3423,9 +3424,17 @@ function check_existing_exch_node_is_correct_type() {
         elif [[ "$exch_node_type" == "cluster" ]] && [[ "$expected_type" != "cluster" ]]; then
             log_fatal 2 "Node id ${NODE_ID} has already been created as nodeType cluster. Remove the node from the exchange and run this script again."
         fi
+
+        local exch_node_namespace=$(echo $exch_output | jq -re '.nodes | .[].clusterNamespace')
+        local exch_node_public_key=$(echo $exch_output | jq -re '.nodes | .[].publicKey')
+        if [[ "$exch_node_type" == "cluster" ]] && [[ "$exch_node_public_key" != "" ]] && [[ "$expected_namespace" != "$exch_node_namespace" ]]; then
+            log_fatal 2 "Cluster node: $NODE_ID is already exists in namespace $exch_node_namespace. To continue, use a different node id or delete existing node from the exchange"
+        elif [[ "$exch_node_type" == "cluster" ]] && [[ "$exch_node_public_key" == "" ]]; then
+            log_info "The node in the exchange ($exch_node_namespace) has empty public key, continue on cluster install/update"
+        fi
     fi
 
-    log_debug "check_existing_exch_node_is_correct_type() end"
+    log_debug "check_existing_exch_node_info() end"
 }
 
 # make sure the new exchange url and cert are good.
@@ -4516,7 +4525,7 @@ function install_update_cluster() {
 
     confirmCmds jq
 
-    check_existing_exch_node_is_correct_type "cluster"
+    check_existing_exch_node_info "cluster" $AGENT_NAMESPACE
 
     check_cluster_agent_scope   # sets AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE
 
