@@ -4,7 +4,7 @@ LABEL vendor="IBM"
 LABEL summary="The agent in a general purpose container."
 LABEL description="A container which holds the edge node agent, to be used in environments where there is no operating system package that can install the agent natively."
 
-ARG DOCKER_VER=24.0.5
+ARG DOCKER_VER=24.0.9
 
 # The anax binary (secrets manager code) shells out to groupadd, groupdel (from shadow-utils), pkill (from procps-ng)
 # The anax.service calls jq (from jq) and killall (from psmisc)
