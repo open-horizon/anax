@@ -19,10 +19,6 @@ SKIP_DELETE_AGENT_NAMESPACE=false
 USE_DELETE_FORCE=false
 DELETE_TIMEOUT=10 # Default delete timeout
 
-function now() {
-	echo `date '+%Y-%m-%d %H:%M:%S'`
-}
-
 # Exit handling
 function quit(){
   case $1 in
@@ -216,7 +212,7 @@ function get_agent_pod_id() {
     fi
 
     if [ "$AGENT_POD_READY" == "true" ]; then
-    	POD_ID=$($KUBECTL get pod -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
+    	POD_ID=$($KUBECTL get pod -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
     	if [ -n "${POD_ID}" ]; then
         	log_info "get pod: ${POD_ID}"
     	else
@@ -288,8 +284,9 @@ function unregister() {
     log_debug "unregister() end"
 }
 
+# escape: ;, $, &, |, (, )
 function getEscapedExchangeUserAuth() {
-	local escaped_auth=$( echo "${HZN_EXCHANGE_USER_AUTH}" | sed 's/;/\\;/g;s/\$/\\$/g;s/\&/\\&/g;s/|/\\|/g' )
+	local escaped_auth=$( echo "${HZN_EXCHANGE_USER_AUTH}" | sed 's/;/\\;/g;s/\$/\\$/g;s/\&/\\&/g;s/|/\\|/g;s/(/\\(/g;s/)/\\)/g' )
 	echo "${escaped_auth}"
 }
 
