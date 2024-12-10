@@ -354,7 +354,7 @@ jobs:
   mac-build:
     needs: offset-build-number
     
-    runs-on: ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macos-14' }}
+    runs-on: macos-14
 
     strategy:
       matrix:
@@ -450,7 +450,7 @@ jobs:
 
       # Upload created package to artifacts to be used in next job
       - name: Upload MacOS Package to Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-${{ matrix.architecture }}-package
           path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}/pkg/mac/build/*.pkg
@@ -517,7 +517,7 @@ jobs:
 
         # Retrieve artifact from previous job
         - name: Download our MacOS Package Artifact
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v4
           with:
             name: macos-${{ matrix.architecture }}-package
             path: ${{ steps.workdir_setup.outputs.PKG_PATH }}
