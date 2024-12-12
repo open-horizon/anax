@@ -22,9 +22,9 @@ require (
 	github.com/operator-framework/operator-lifecycle-manager v0.27.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.21.0
-	golang.org/x/sys v0.18.0
-	golang.org/x/text v0.14.0
+	golang.org/x/crypto v0.31.0
+	golang.org/x/sys v0.28.0
+	golang.org/x/text v0.21.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.28.5
@@ -119,7 +119,7 @@ require (
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/oauth2 v0.14.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/term v0.18.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.16.1 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
@@ -140,6 +140,5 @@ replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18
 	github.com/docker/docker => github.com/docker/docker v27.1.1+incompatible
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.5
-	golang.org/x/crypto => golang.org/x/crypto v0.18.0
 	golang.org/x/text => golang.org/x/text v0.5.0
 )
