@@ -83,7 +83,7 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistenc
 		newMessagesToProcess: false,
 		nodeSearch:           NewNodeSearch(),
 		secretProvider:       s,
-		secretUpdateManager:  NewSecretUpdateManager(),
+		secretUpdateManager:  NewSecretUpdateManager(cfg.AgreementBot.SecretsUpdateCheckInterval, cfg.AgreementBot.SecretsUpdateCheckInterval, cfg.AgreementBot.SecretsUpdateCheckMaxInterval, cfg.AgreementBot.SecretsUpdateCheckIncrement),
 	}
 
 	patternManager = NewPatternManager()
@@ -1634,7 +1634,7 @@ func (w *AgreementBotWorker) secretsProviderMaintenance() int {
 
 // This function is called by the secrets update sub worker to learn about secrets that have been updated.
 func (w *AgreementBotWorker) secretsUpdate() int {
-
+	nextRunWait := w.secretUpdateManager.PollInterval
 	secretUpdates, err := w.secretUpdateManager.CheckForUpdates(w.secretProvider, w.db)
 	if err != nil {
 		glog.Errorf(AWlogString(err))
@@ -1643,10 +1643,13 @@ func (w *AgreementBotWorker) secretsUpdate() int {
 		// Send out an event with the changed secrets and affected policies in it.
 		if secretUpdates != nil && secretUpdates.Length() != 0 {
 			w.Messages() <- events.NewSecretUpdatesMessage(events.UPDATED_SECRETS, secretUpdates)
+			nextRunWait = w.secretUpdateManager.AdjustSecretsPollingInterval(secretUpdates.Length())
+		} else {
+			nextRunWait = w.secretUpdateManager.AdjustSecretsPollingInterval(0)
 		}
 	}
 
-	return 0
+	return nextRunWait
 }
 
 func (w *AgreementBotWorker) monitorHAGroupNMPUpdates() int {

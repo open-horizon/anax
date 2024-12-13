@@ -1132,7 +1132,7 @@ func GetServiceAndDeps(svcUrl, svcOrg, svcVersion, svcArch string,
 		// not found, get it and dependents from the exchange
 		_, depSvcs, exchTopSvc, topId, err = getServiceResolvedDef(svcUrl, svcOrg, svcVersion, svcArch)
 		if err != nil {
-			return nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s. Compatability of %s cannot be fully evaluated until all services are in the Exchange.", topId, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
+			return nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s (%s/%s/%s/%s), error: %v. Compatability of %s cannot be fully evaluated until all services are in the Exchange.", topId, svcUrl, svcOrg, svcVersion, svcArch, err, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
 		}
 		topSvc = &ServiceDefinition{exchange.GetOrg(topId), *exchTopSvc}
 	}

@@ -18,10 +18,6 @@ SKIP_DELETE_AGENT_NAMESPACE=false
 USE_DELETE_FORCE=false
 DELETE_TIMEOUT=10 # Default delete timeout
 
-function now() {
-	echo `date '+%Y-%m-%d %H:%M:%S'`
-}
-
 # Exit handling
 function quit(){
   case $1 in
@@ -215,7 +211,7 @@ function get_agent_pod_id() {
     fi
 
     if [ "$AGENT_POD_READY" == "true" ]; then
-    	POD_ID=$($KUBECTL get pod -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
+    	POD_ID=$($KUBECTL get pod -n ${AGENT_NAMESPACE} -l app=agent,type!=auto-upgrade-cronjob 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
     	if [ -n "${POD_ID}" ]; then
         	log_info "get pod: ${POD_ID}"
     	else
@@ -230,7 +226,7 @@ function removeNodeFromLocalAndManagementHub() {
     log_debug "removeNodeFromLocalAndManagementHub() begin"
     log_info "Check node status for agent pod: ${POD_ID}"
 
-    NODE_INFO=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "hzn node list")
+    NODE_INFO=$($KUBECTL exec ${POD_ID} -n ${AGENT_NAMESPACE} -c "anax" -- bash -c "hzn node list")
     NODE_STATE=$(echo $NODE_INFO | jq -r .configstate.state | sed 's/[^a-z]*//g')
     NODE_ID=$(echo $NODE_INFO | jq -r .id | sed 's/\r//g')
     log_debug "NODE config state for ${NODE_ID} is ${NODE_STATE}"
@@ -273,11 +269,11 @@ function unregister() {
     fi
 
     set +e
-    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${HZN_UNREGISTER_CMD}"
+    $KUBECTL exec ${POD_ID} -n ${AGENT_NAMESPACE} -c "anax" -- bash -c "${HZN_UNREGISTER_CMD}"
     set -e
 
     # verify the node is unregistered
-    NODE_STATE=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
+    NODE_STATE=$($KUBECTL exec ${POD_ID} -n ${AGENT_NAMESPACE} -c "anax" -- bash -c "hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
     log_debug "NODE config state is ${NODE_STATE}"
 
     if [[ "$NODE_STATE" != "unconfigured" ]] && [[ "$NODE_STATE" != "unconfiguring" ]]; then
@@ -287,8 +283,9 @@ function unregister() {
     log_debug "unregister() end"
 }
 
+# escape: ;, $, &, |, (, )
 function getEscapedExchangeUserAuth() {
-	local escaped_auth=$( echo "${HZN_EXCHANGE_USER_AUTH}" | sed 's/;/\\;/g;s/\$/\\$/g;s/\&/\\&/g;s/|/\\|/g' )
+	local escaped_auth=$( echo "${HZN_EXCHANGE_USER_AUTH}" | sed 's/;/\\;/g;s/\$/\\$/g;s/\&/\\&/g;s/|/\\|/g;s/(/\\(/g;s/)/\\)/g' )
 	echo "${escaped_auth}"
 }
 
@@ -302,7 +299,7 @@ function deleteNodeFromManagementHub() {
     log_info "Deleting node ${node_id} from the management hub..."
 
     set +e
-    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node remove ${node_id} -f"
+    $KUBECTL exec ${POD_ID} -n ${AGENT_NAMESPACE} -c "anax" -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node remove ${node_id} -f"
     set -e
 
     log_debug "deleteNodeFromManagementHub() end"
@@ -318,7 +315,7 @@ function verifyNodeRemovedFromManagementHub() {
     log_info "Verifying node ${node_id} is removed from the management hub..."
 
     set +e
-    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node list ${node_id}" >/dev/null 2>&1
+    $KUBECTL exec ${POD_ID} -n ${AGENT_NAMESPACE} -c "anax" -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node list ${node_id}" >/dev/null 2>&1
     if [ $? -ne 8 ]; then
 	    log_warning "Node was not removed from the management hub"
     fi
@@ -347,6 +344,13 @@ function deleteAgentResources() {
         $KUBECTL delete deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE --force=true --grace-period=0
     fi
 
+    log_info "Deleting auto-upgrade cronjob..."
+    if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+        $KUBECTL delete cronjob $CRONJOB_AUTO_UPGRADE_NAME -n $AGENT_NAMESPACE
+    else
+        log_info "cronjob ${CRONJOB_AUTO_UPGRADE_NAME} does not exist, skip deleting cronjob"
+    fi
+
     # give pods sometime to terminate by themselves
     sleep 10
 
@@ -372,31 +376,23 @@ function deleteAgentResources() {
     fi
 
     log_info "Deleting configmap..."
-    $KUBECTL delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE
-    $KUBECTL delete configmap ${CONFIGMAP_NAME}-backup -n $AGENT_NAMESPACE
+    $KUBECTL delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE --ignore-not-found
+    $KUBECTL delete configmap ${CONFIGMAP_NAME}-backup -n $AGENT_NAMESPACE --ignore-not-found
 
     log_info "Deleting secret..."
-    $KUBECTL delete secret $SECRET_NAME -n $AGENT_NAMESPACE
-    $KUBECTL delete secret $IMAGE_REGISTRY_SECRET_NAME -n $AGENT_NAMESPACE
-    $KUBECTL delete secret $IMAGE_PULL_SECRET_NAME -n $AGENT_NAMESPACE
-    $KUBECTL delete secret ${SECRET_NAME}-backup -n $AGENT_NAMESPACE
-    set -e
-
-    log_info "Deleting auto-upgrade cronjob..."
-    if $KUBECTL get cronjob ${CRONJOB_AUTO_UPGRADE_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
-        $KUBECTL delete cronjob $CRONJOB_AUTO_UPGRADE_NAME -n $AGENT_NAMESPACE
-    else
-        log_info "cronjob ${CRONJOB_AUTO_UPGRADE_NAME} does not exist, skip deleting cronjob"
-    fi
-
-    set +e
-    $KUBECTL delete clusterrolebinding ${AGENT_NAMESPACE}-${CLUSTER_ROLE_BINDING_NAME}
+    $KUBECTL delete secret $SECRET_NAME -n $AGENT_NAMESPACE --ignore-not-found
+    $KUBECTL delete secret $IMAGE_REGISTRY_SECRET_NAME -n $AGENT_NAMESPACE --ignore-not-found
+    $KUBECTL delete secret $IMAGE_PULL_SECRET_NAME -n $AGENT_NAMESPACE --ignore-not-found
+    $KUBECTL delete secret ${SECRET_NAME}-backup -n $AGENT_NAMESPACE --ignore-not-found
 
     log_info "Deleting persistent volume..."
-    $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE --ignore-not-found
+
+    log_info "Deleting clusterrolebinding..."
+    $KUBECTL delete clusterrolebinding ${AGENT_NAMESPACE}-${CLUSTER_ROLE_BINDING_NAME} --ignore-not-found
 
     log_info "Deleting serviceaccount..."
-    $KUBECTL delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE --ignore-not-found
 
     if [[ "$SKIP_DELETE_AGENT_NAMESPACE" != "true" ]]; then
         log_info "Checking deployment and statefulset under namespace $AGENT_NAMESPACE"
@@ -413,7 +409,7 @@ function deleteAgentResources() {
     fi
 
     log_info "Deleting cert file from /etc/default/cert ..."
-    rm /etc/default/cert/agent-install.crt
+    rm -f /etc/default/cert/agent-install.crt
     set -e
 
     log_debug "deleteAgentResources() end"

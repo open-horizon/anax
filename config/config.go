@@ -132,7 +132,9 @@ type AGConfig struct {
 	RetryLookBackWindow           uint64           // The time window (in seconds) used by the agbot to look backward in time for node changes when node agreements are retried.
 	PolicySearchOrder             bool             // When true, search policies from most recently changed to least recently changed.
 	Vault                         VaultConfig      // The hashicorp vault config to connect to and fetch secrets from.
-	SecretsUpdateCheck            int              // The number of seconds between checks for updated secrets.
+	SecretsUpdateCheckInterval    int              // The number of seconds between checks for updated secrets. Default is 60
+	SecretsUpdateCheckMaxInterval int              // As the runtime increases the SecretsUpdateCheckInterval, this value is the maximum that value can attain.
+	SecretsUpdateCheckIncrement   int              // The number of seconds to increment the SecretsUpdateCheckInterval when its time to increase the poll interval.
 	CSSDestinationBatchSize       int              // The max number of destination updates to send to CSS in a single update.
 }
 
@@ -188,7 +190,15 @@ func (c *HorizonConfig) GetSecretsManagerFilePath() string {
 }
 
 func (c *HorizonConfig) GetSecretsUpdateCheck() int {
-	return c.AgreementBot.SecretsUpdateCheck
+	return c.AgreementBot.SecretsUpdateCheckInterval
+}
+
+func (c *HorizonConfig) GetSecretsUpdateCheckMaxInterval() int {
+	return c.AgreementBot.SecretsUpdateCheckMaxInterval
+}
+
+func (c *HorizonConfig) GetSecretsUpdateCheckIncrement() int {
+	return c.AgreementBot.SecretsUpdateCheckIncrement
 }
 
 func (c *HorizonConfig) GetAgbotCSSURL() string {
@@ -397,18 +407,20 @@ func Read(file string) (*HorizonConfig, error) {
 				K8sCRInstallTimeoutS:           K8sCRInstallTimeoutS_DEFAULT,
 			},
 			AgreementBot: AGConfig{
-				MessageKeyCheck:         AgbotMessageKeyCheck_DEFAULT,
-				AgreementBatchSize:      AgbotAgreementBatchSize_DEFAULT,
-				AgreementQueueSize:      AgbotAgreementQueueSize_DEFAULT,
-				MessageQueueScale:       AgbotMessageQueueScale_DEFAULT,
-				QueueHistorySize:        AgbotQueueHistorySize_DEFAULT,
-				ErrRescanS:              AgbotErrRescan_DEFAULT,
-				FullRescanS:             AgbotFullRescan_DEFAULT,
-				MaxExchangeChanges:      AgbotMaxChanges_DEFAULT,
-				RetryLookBackWindow:     AgbotRetryLookBackWindow_DEFAULT,
-				PolicySearchOrder:       AgbotPolicySearchOrder_DEFAULT,
-				SecretsUpdateCheck:      SecretsUpdateCheck_DEFAULT,
-				CSSDestinationBatchSize: AgbotCSSDestinationBatchSize_DEFAULT,
+				MessageKeyCheck:               AgbotMessageKeyCheck_DEFAULT,
+				AgreementBatchSize:            AgbotAgreementBatchSize_DEFAULT,
+				AgreementQueueSize:            AgbotAgreementQueueSize_DEFAULT,
+				MessageQueueScale:             AgbotMessageQueueScale_DEFAULT,
+				QueueHistorySize:              AgbotQueueHistorySize_DEFAULT,
+				ErrRescanS:                    AgbotErrRescan_DEFAULT,
+				FullRescanS:                   AgbotFullRescan_DEFAULT,
+				MaxExchangeChanges:            AgbotMaxChanges_DEFAULT,
+				RetryLookBackWindow:           AgbotRetryLookBackWindow_DEFAULT,
+				PolicySearchOrder:             AgbotPolicySearchOrder_DEFAULT,
+				SecretsUpdateCheckInterval:    SecretsUpdateCheck_DEFAULT,
+				SecretsUpdateCheckMaxInterval: SecretsUpdateCheckMaxInterval_DEFAULT,
+				SecretsUpdateCheckIncrement:   SecretsUpdateCheckIncrement_DEFAULT,
+				CSSDestinationBatchSize:       AgbotCSSDestinationBatchSize_DEFAULT,
 			},
 		}
 
@@ -595,7 +607,10 @@ func (agc *AGConfig) String() string {
 		", MaxExchangeChanges: %v"+
 		", RetryLookBackWindow: %v"+
 		", PolicySearchOrder: %v"+
-		", Vault: {%v}",
+		", Vault: {%v}"+
+		", SecretsUpdateCheckInterval: %v"+
+		", SecretsUpdateCheckMaxInterval: %v"+
+		", SecretsUpdateCheckIncrement: %v",
 		agc.TxLostDelayTolerationSeconds, agc.AgreementWorkers, agc.DBPath, agc.Postgresql.String(),
 		agc.PartitionStale, agc.ProtocolTimeoutS, agc.AgreementTimeoutS, agc.NoDataIntervalS, agc.ActiveAgreementsURL,
 		agc.ActiveAgreementsUser, mask, agc.PolicyPath, agc.NewContractIntervalS, agc.ProcessGovernanceIntervalS,
@@ -604,7 +619,7 @@ func (agc *AGConfig) String() string {
 		agc.SecureAPIListenHost, agc.SecureAPIListenPort, agc.SecureAPIServerCert, agc.SecureAPIServerKey,
 		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.CSSDestinationBatchSize, agc.AgreementBatchSize,
 		agc.AgreementQueueSize, agc.MessageQueueScale, agc.QueueHistorySize, agc.FullRescanS, agc.ErrRescanS, agc.MaxExchangeChanges,
-		agc.RetryLookBackWindow, agc.PolicySearchOrder, agc.Vault)
+		agc.RetryLookBackWindow, agc.PolicySearchOrder, agc.Vault, agc.SecretsUpdateCheckInterval, agc.SecretsUpdateCheckMaxInterval, agc.SecretsUpdateCheckIncrement)
 }
 
 func (c *VaultConfig) String() string {

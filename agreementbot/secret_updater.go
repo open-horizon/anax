@@ -17,12 +17,50 @@ import (
 
 // The main component which holds secret updates for the governance functions.
 type SecretUpdateManager struct {
-	PendingUpdates []*events.SecretUpdates // Secret update events that need to be processed
-	PULock         sync.Mutex              // The lock that protects the list of pending secret updates.
+	PendingUpdates        []*events.SecretUpdates // Secret update events that need to be processed
+	PollInterval          int                     // Number of seconds to pull secret update
+	PollMinInterval       int
+	PollMaxInterval       int
+	PollIntervalIncrement int
+	PULock                sync.Mutex // The lock that protects the list of pending secret updates.
 }
 
-func NewSecretUpdateManager() *SecretUpdateManager {
-	return new(SecretUpdateManager)
+func NewSecretUpdateManager(pollInterval int, pollMinInterval int, pollMaxInterval int, pollIntervalIncrement int) *SecretUpdateManager {
+	sum := &SecretUpdateManager{
+		PendingUpdates:        make([]*events.SecretUpdates, 0),
+		PollInterval:          pollInterval,          // 60s
+		PollMinInterval:       pollMinInterval,       // 60s
+		PollMaxInterval:       pollMaxInterval,       // 300s
+		PollIntervalIncrement: pollIntervalIncrement, // 30s
+	}
+	return sum
+}
+
+func (sm *SecretUpdateManager) GetPollInterval() int {
+	return sm.PollInterval
+}
+
+func (sm *SecretUpdateManager) SetPollInterval(interval int) {
+	sm.PULock.Lock()
+	defer sm.PULock.Unlock()
+	sm.PollInterval = interval
+}
+
+func (sm *SecretUpdateManager) AdjustSecretsPollingInterval(numOfSecretUpdate int) int {
+	if numOfSecretUpdate == 0 {
+		// no update, increase the poll interval
+		sm.PollInterval += sm.PollIntervalIncrement
+		if sm.PollInterval > sm.PollMaxInterval {
+			sm.PollInterval = sm.PollMaxInterval
+		}
+	} else {
+		// if there were changes, set interval to min
+		sm.PollInterval = sm.PollMinInterval
+	}
+
+	glog.V(5).Infof(smlogString(fmt.Sprintf("AdjustSecretsPollingInterval to %v, numOfSecretUpdate is: %v", sm.PollInterval, numOfSecretUpdate)))
+
+	return sm.PollInterval
 }
 
 func (sm *SecretUpdateManager) GetNextUpdateEvent() (su *events.SecretUpdates) {
