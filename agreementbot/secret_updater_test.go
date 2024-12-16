@@ -5,9 +5,10 @@ package agreementbot
 
 import (
 	//"fmt"
+	"testing"
+
 	"github.com/open-horizon/anax/events"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 // Ensure that the secret manager queueing is working.
@@ -29,7 +30,7 @@ func Test_SUM_Queue(t *testing.T) {
 	sus.AddSecretUpdate(su2)
 
 	// Now test the secret update manager.
-	sum := NewSecretUpdateManager()
+	sum := NewSecretUpdateManager(60, 60, 300, 30)
 	sum.SetUpdateEvent(sus)
 
 	assert.True(t, len(sum.PendingUpdates) == 1, "There should be 1 pending update")
