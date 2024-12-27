@@ -3,6 +3,13 @@ package agreementbot
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"regexp"
+	"sort"
+	"sync"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/abstractprotocol"
@@ -14,11 +21,6 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"io/ioutil"
-	"net/http"
-	"sort"
-	"sync"
-	"time"
 )
 
 type API struct {
@@ -318,11 +320,24 @@ func (a *API) listen(apiListen string) {
 		return
 	}
 
+	isValidInput := func(input string) bool {
+		// Check for CR or LF characters in input
+		re := regexp.MustCompile(`[\r\n]`)
+		return !re.MatchString(input)
+	}
+
 	nocache := func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 			w.Header().Add("Pragma", "no-cache, no-store")
-			w.Header().Add("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+
+			input := r.Header.Get("Origin")
+			if !isValidInput(input) {
+				http.Error(w, "Invalid input", http.StatusBadRequest)
+				return
+			}
+
+			w.Header().Add("Access-Control-Allow-Origin", input)
 			w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
 			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
 			h.ServeHTTP(w, r)
