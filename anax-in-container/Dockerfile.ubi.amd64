@@ -4,7 +4,7 @@ LABEL vendor="IBM"
 LABEL summary="The agent in a general purpose container."
 LABEL description="A container which holds the edge node agent, to be used in environments where there is no operating system package that can install the agent natively."
 
-ARG DOCKER_VER=24.0.5
+ARG DOCKER_VER=24.0.9
 
 # The anax binary (secrets manager code) shells out to groupadd, groupdel (from shadow-utils), pkill (from procps-ng)
 # The anax.service calls jq (from jq) and killall (from psmisc)
@@ -14,6 +14,7 @@ ARG DOCKER_VER=24.0.5
 ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng tar gzip"
 RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
+  && microdnf upgrade -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager krb5-libs \
   && curl -4fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VER}.tgz \
   && tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \
   && rm docker-${DOCKER_VER}.tgz \

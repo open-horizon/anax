@@ -23,7 +23,7 @@ SUPPORTED_DEBIAN_VERSION=(noble bullseye jammy focal bionic buster xenial stretc
 SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf s390x $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel redhatenterprise centos fedora $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: version 8 and 9 are added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
-SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 9.0 9.1 9.2 9.3 9.4 8 9 32 35 36 37 38 39 40 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+SUPPORTED_REDHAT_VERSION=(7.6 7.9 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 8.9 8.10 9.0 9.1 9.2 9.3 9.4 9.5 8 9 32 35 36 37 38 39 40 41 42 43 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le s390x  riscv64 $SUPPORTED_REDHAT_ARCH_APPEND)     # compared to uname -m
 
 SUPPORTED_EDGE_CLUSTER_ARCH=(amd64 arm64 s390x)
@@ -2063,7 +2063,7 @@ function install_macos() {
         fi
 
         if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-            check_existing_exch_node_is_correct_type "device"
+            check_existing_exch_node_info "device"
         fi
 
         if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
@@ -2311,7 +2311,7 @@ function install_debian() {
         check_and_set_anax_port   # sets ANAX_PORT
 
         if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-            check_existing_exch_node_is_correct_type "device"
+            check_existing_exch_node_info "device"
         fi
 
         if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
@@ -2573,7 +2573,7 @@ function install_redhat() {
     if [[ $AGENT_ONLY_CLI != 'true' ]]; then
         check_and_set_anax_port   # sets ANAX_PORT
         if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
-            check_existing_exch_node_is_correct_type "device"
+            check_existing_exch_node_info "device"
         fi
 
         if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
@@ -3399,13 +3399,8 @@ function find_node_ip_address() {
     fi
 }
 
-# If node exist in management hub, verify it is correct type (device or cluster)
-function check_existing_exch_node_is_correct_type() {
-    log_debug "check_existing_exch_node_is_correct_type() begin"
-
-    local expected_type=$1
-
-    log_info "Verifying that node $NODE_ID in the exchange is type $expected_type (if it exists)..."
+# check the node with $NODE_ID in the exchange, return the output from the exchange
+function get_existing_exch_node() {
     local exch_creds cert_flag
     if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH"
     else exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH"   # input checking requires either user creds or node creds
@@ -3414,7 +3409,32 @@ function check_existing_exch_node_is_correct_type() {
     if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
         cert_flag="--cacert $AGENT_CERT_FILE"
     fi
-    local exch_output=$(curl -fsS ${CURL_RETRY_PARMS} $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u "$exch_creds" 2>/dev/null) || true
+    exch_output=$(curl -fsS ${CURL_RETRY_PARMS} $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u "$exch_creds" 2>/dev/null) || true
+    echo "$exch_output"
+}
+
+# check if the node with $NODE_ID exists in the exchange, and if public key of node is set
+function check_node_existing_and_active() {
+    log_debug "check_node_existing_and_active() begin"
+    local exch_output=$(get_existing_exch_node)
+    if [[ -n "$exch_output" ]]; then
+        local exch_node_public_key=$(echo $exch_output | jq -re '.nodes | .[].publicKey')
+        if [[ "$exch_node_public_key" != "" ]] ; then
+            log_fatal 2 "node $NODE_ID already exists in the exchange and encryption key is set. To continue, use a different node id or delete existing node from the exchange"
+        fi
+    fi
+    log_debug "check_node_existing_and_active() end"
+}
+
+# Check if the node exist in management hub, verify 1) it is correct type (device or cluster), 2) for cluster node, verify namespace
+function check_existing_exch_node_info() {
+    log_debug "check_existing_exch_node_info() begin"
+
+    local expected_type=$1
+    local expected_namespace=$2
+
+    log_info "Verifying that node $NODE_ID in the exchange is type $expected_type (if it exists)..."
+    local exch_output=$(get_existing_exch_node)
 
     if [[ -n "$exch_output" ]]; then
         local exch_node_type=$(echo $exch_output | jq -re '.nodes | .[].nodeType')
@@ -3423,9 +3443,17 @@ function check_existing_exch_node_is_correct_type() {
         elif [[ "$exch_node_type" == "cluster" ]] && [[ "$expected_type" != "cluster" ]]; then
             log_fatal 2 "Node id ${NODE_ID} has already been created as nodeType cluster. Remove the node from the exchange and run this script again."
         fi
+
+        local exch_node_namespace=$(echo $exch_output | jq -re '.nodes | .[].clusterNamespace')
+        local exch_node_public_key=$(echo $exch_output | jq -re '.nodes | .[].publicKey')
+        if [[ "$exch_node_type" == "cluster" ]] && [[ "$exch_node_public_key" != "" ]] && [[ "$expected_namespace" != "$exch_node_namespace" ]]; then
+            log_fatal 2 "Cluster node: $NODE_ID already exists in namespace $exch_node_namespace. To continue, use a different node id or delete existing node from the exchange"
+        elif [[ "$exch_node_type" == "cluster" ]] && [[ "$exch_node_public_key" == "" ]]; then
+            log_info "The node in the exchange ($exch_node_namespace) has empty encryption key, continue on cluster install/update"
+        fi
     fi
 
-    log_debug "check_existing_exch_node_is_correct_type() end"
+    log_debug "check_existing_exch_node_info() end"
 }
 
 # make sure the new exchange url and cert are good.
@@ -4516,7 +4544,7 @@ function install_update_cluster() {
 
     confirmCmds jq
 
-    check_existing_exch_node_is_correct_type "cluster"
+    check_existing_exch_node_info "cluster" $AGENT_NAMESPACE
 
     check_cluster_agent_scope   # sets AGENT_DEPLOYMENT_EXIST_IN_SAME_NAMESPACE
 
@@ -4561,6 +4589,8 @@ function install_update_cluster() {
 # Cluster only: to install agent in cluster
 function install_cluster() {
     log_debug "install_cluster() begin"
+
+    check_node_existing_and_active
 
     # generate files based on templates
     generate_installation_files
@@ -4724,3 +4754,4 @@ elif is_cluster; then
 else
     log_fatal 1 "AGENT_DEPLOY_TYPE must be 'device' or 'cluster'"
 fi
+
