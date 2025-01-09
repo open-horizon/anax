@@ -89,7 +89,7 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 		listenAddrPath := r.config.GetFileSyncServiceAPIUnixDomainSocketPath()
 		if listenAddrPath != "" {
 			if _, err := os.Stat(listenAddrPath); os.IsNotExist(err) {
-				os.MkdirAll(listenAddrPath, 0755)
+				os.MkdirAll(listenAddrPath, 0o755)
 			}
 		}
 
