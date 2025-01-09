@@ -120,7 +120,7 @@ func init() {
 
 func tConfig(t *testing.T, dir string) *config.HorizonConfig {
 	workloadStorageDir := path.Join(dir, "workload_storage")
-	if err := os.MkdirAll(workloadStorageDir, 0755); err != nil {
+	if err := os.MkdirAll(workloadStorageDir, 0o755); err != nil {
 		panic(err)
 	}
 
@@ -200,7 +200,7 @@ func setup(t *testing.T) (string, *bolt.DB, error) {
 	}
 
 	certpath := path.Join(dir, "userkeys")
-	if err := os.MkdirAll(certpath, 0755); err != nil {
+	if err := os.MkdirAll(certpath, 0o755); err != nil {
 		panic(err)
 	}
 
