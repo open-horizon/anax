@@ -76,7 +76,7 @@ func CreateWorkingDir(dir string) error {
 	// Create the working directory with the dependencies and pattern directories in one shot. If it already exists, just keep going.
 	newDepDir := path.Join(dir, DEFAULT_DEPENDENCY_DIR)
 	if _, err := os.Stat(newDepDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(newDepDir, 0755); err != nil {
+		if err := os.MkdirAll(newDepDir, 0o755); err != nil {
 			return errors.New(msgPrinter.Sprintf("could not create directory %v, error: %v", newDepDir, err))
 		}
 	} else if err != nil {
@@ -399,7 +399,7 @@ func createEnvVarMap(agreementId string,
 func createContainerWorker() (*container.ContainerWorker, error) {
 
 	workloadStorageDir := "/tmp/hzn"
-	if err := os.MkdirAll(workloadStorageDir, 0755); err != nil {
+	if err := os.MkdirAll(workloadStorageDir, 0o755); err != nil {
 		return nil, err
 	}
 
@@ -418,7 +418,7 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 	}
 
 	// Create the folder for SSL certificates (under authentication path)
-	if err := os.MkdirAll(config.GetESSSSLClientCertPath(), 0755); err != nil {
+	if err := os.MkdirAll(config.GetESSSSLClientCertPath(), 0o755); err != nil {
 		return nil, err
 	}
 

@@ -337,7 +337,7 @@ func GetObjectData(ec ExchangeContext, org string, objType string, objId string,
 			return fmt.Errorf("Failed to get object data : %v\n", err)
 		}
 
-		err = os.MkdirAll(filePath, 0755)
+		err = os.MkdirAll(filePath, 0o0755)
 		if err != nil {
 			return fmt.Errorf("Failed to create folder %v for agent upgrade files: %s\n", filePath, err)
 		}
@@ -370,7 +370,7 @@ func GetObjectDataByChunk(ec ExchangeContext, org string, objType string, objId 
 		request.Close = true
 	}
 
-	err = os.MkdirAll(filePath, 0755)
+	err = os.MkdirAll(filePath, 0o755)
 	if err != nil {
 		return false, fmt.Errorf("Failed to create folder %v for agent upgrade files: %s\n", filePath, err)
 	}

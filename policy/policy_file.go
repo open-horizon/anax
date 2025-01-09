@@ -913,7 +913,7 @@ func CreatePolicyFile(filepath string, org string, name string, p *Policy) (stri
 	// Store the policy on the filesystem in an org based hierarchy
 	fullFilePath := fmt.Sprintf("%v%v/", filepath, org)
 	fullFileName := fmt.Sprintf("%v%v.policy", fullFilePath, name)
-	if err := os.MkdirAll(fullFilePath, 0764); err != nil {
+	if err := os.MkdirAll(fullFilePath, 0o764); err != nil {
 		return "", errors.New(fmt.Sprintf("Error writing policy file, cannot create file path %v", fullFilePath))
 	} else if err := WritePolicyFile(p, fullFileName); err != nil {
 		return "", errors.New(fmt.Sprintf("Error writing out policy file %v, to %v, error: %v", *p, fullFileName, err))
