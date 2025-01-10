@@ -253,12 +253,18 @@ start() {
 		fi
 	fi
 
+	dockerSocketPath="/var/run/docker.sock"
+	if [ ! -f dockerSocketPath ]; then
+		# Rancher desktop (with MobyD) uses $HOME/.rd/docker.sock instead of /var/run/docker.sock
+		dockerSocketPath="$HOME/.rd/docker.sock"
+	fi
+
 	# Start socat, if not already running
 	if isMacos; then
 		if ! isSocatRunning; then
 			# have docker api listen on a port, in addition to a unix socket
-			echo "Starting socat to listen on port $SOCAT_LISTEN_PORT and forward it to the docker API socket..."
-			socat TCP-LISTEN:$SOCAT_LISTEN_PORT,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &
+			echo "Starting socat to listen on port $SOCAT_LISTEN_PORT and forward it to the docker API socket $dockerSocketPath..."
+			socat TCP-LISTEN:$SOCAT_LISTEN_PORT,reuseaddr,fork UNIX-CONNECT:$dockerSocketPath &
 		fi
 	fi
 
@@ -334,15 +340,16 @@ start() {
 		DOCKER_ADD_HOSTS="--add-host=$HZN_EXCHANGE_HOSTS"
 	fi
 
-	DOMAIN_SOCKET_MOUNT="/var/run/docker.sock:/var/run/docker.sock"
         if [[ $DOCKER_ENGINE == "podman" ]]; then
 		# In the container, leave the mount as /var/run/docker.sock so the anax.service can stay the same
-	        DOMAIN_SOCKET_MOUNT="/var/run/podman/podman.sock:/var/run/docker.sock"
+		dockerSocketPath="/var/run/podman/podman.sock"
         fi
+
+	DOMAIN_SOCKET_MOUNT="$dockerSocketPath:/var/run/docker.sock"
 
 	if isMacos; then
 		DOCKER_HOST=tcp://host.docker.internal:$SOCAT_LISTEN_PORT
-		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e ANAX_DOCKER_ENDPOINT=${DOCKER_HOST} -e DOCKER_HOST=${DOCKER_HOST} -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
+		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e ANAX_DOCKER_ENDPOINT=${DOCKER_HOST} -e DOCKER_HOST=${DOCKER_HOST} -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=/var/tmp/horizon/${DOCKER_NAME} -v ${DOMAIN_SOCKET_MOUNT} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
 		checkrc $? "docker run"
 	else
 		${DOCKER_ENGINE} run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -e HZN_VAR_RUN_BASE=${fssHostSharePath} -v ${DOMAIN_SOCKET_MOUNT} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:${fssHostSharePath} $dockerImage:$dockerTag
@@ -560,3 +567,4 @@ case "$1" in
 esac
 
 exit
+
