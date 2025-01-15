@@ -1,8 +1,23 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2
+# Building microdnf from ubi9-minimal base
+FROM registry.access.redhat.com/ubi9-minimal:latest AS base
+
+#---------------------------------------------------------------
+FROM registry.access.redhat.com/ubi9-micro:latest AS runtime
 
 LABEL vendor="IBM"
 LABEL summary="The agent auto upgrade cron job for edge clusters."
 LABEL description=""
+
+# Copy microdnf necessary files from the base stage
+COPY --from=base /usr/bin/microdnf /usr/bin/
+COPY --from=base /usr/bin/gpg /usr/bin/
+COPY --from=base /usr/bin/gpg2 /usr/bin/
+COPY --from=base /lib64 /lib64/
+COPY --from=base /usr/lib64 /usr/lib64/
+COPY --from=base /usr/lib/rpm /usr/lib/rpm/
+COPY --from=base /etc/dnf /etc/dnf/
+COPY --from=base /etc/rpm /etc/rpm/
+COPY --from=base /etc/pki /etc/pki/
 
 # add EPEL repo with jq pkg and all deps
 COPY EPEL.repo /etc/yum.repos.d
@@ -16,6 +31,7 @@ ARG REQUIRED_RPMS="shadow-utils jq"
 RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && microdnf clean all --disableplugin=subscription-manager \
+  && microdnf install -y curl \
   && rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \
   && curl -4LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/s390x/kubectl \
   && chmod +x ./kubectl \
