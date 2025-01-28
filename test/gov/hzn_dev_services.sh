@@ -40,7 +40,7 @@ function createProject {
 
     buildOut=$(make ARCH="${ARCH}" 2>&1)
 
-    verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z]* done" "$2 container did not build"
+    verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build"
     if [ $? -ne 0 ]; then exit $?; fi
 
     verify "${buildOut}" "$3" "$2 container did not produce output"
