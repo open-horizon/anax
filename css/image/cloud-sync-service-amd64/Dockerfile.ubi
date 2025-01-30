@@ -1,13 +1,29 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2
+# Building microdnf from ubi9-minimal base
+FROM registry.access.redhat.com/ubi9-minimal:latest AS base
+
+#---------------------------------------------------------------
+FROM registry.access.redhat.com/ubi9-micro:latest AS runtime
 
 LABEL vendor="IBM"
 LABEL summary="Object model storage and APIs in the management hub."
 LABEL description="Provides the management hub side of the Model Management System, which stores object models and provides APIs for admins and edge nodes to access the object models."
 
+# Copy microdnf necessary files from the base stage
+COPY --from=base /usr/bin/microdnf /usr/bin/
+COPY --from=base /usr/bin/gpg /usr/bin/
+COPY --from=base /usr/bin/gpg2 /usr/bin/
+COPY --from=base /lib64 /lib64/
+COPY --from=base /usr/lib64 /usr/lib64/
+COPY --from=base /usr/lib/rpm /usr/lib/rpm/
+COPY --from=base /etc/dnf /etc/dnf/
+COPY --from=base /etc/rpm /etc/rpm/
+COPY --from=base /etc/pki /etc/pki/
+
 # shadow-utils contains groupadd and adduser commands
 # css_start.sh calls envsubst (from gettext)
 ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils gettext"
 RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
+  && microdnf install -y curl \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && microdnf clean all --disableplugin=subscription-manager \
   && groupadd -g 1000 cssuser && adduser -u 1000 -g cssuser cssuser \
