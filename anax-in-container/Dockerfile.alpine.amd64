@@ -11,7 +11,6 @@ ARG DOCKER_VER=19.03.8
 # install docker cli
 # make required directories
 RUN microdnf update -y --nodocs && microdnf clean all && microdnf install --nodocs -y shadow-utils \
-    && microdnf install -y curl \
     && microdnf install --nodocs -y openssl ca-certificates \
     && microdnf install -y wget iptables vim-minimal procps tar \
     && wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \

@@ -1,23 +1,8 @@
-# Building microdnf from ubi9-minimal base
-FROM registry.access.redhat.com/ubi9-minimal:latest AS base
-
-#---------------------------------------------------------------
-FROM registry.access.redhat.com/ubi9-micro:latest AS runtime
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2
 
 LABEL vendor="IBM"
 LABEL summary="The agent in a general purpose container."
 LABEL description="A container which holds the edge node agent, to be used in environments where there is no operating system package that can install the agent natively."
-
-# Copy microdnf necessary files from the base stage
-COPY --from=base /usr/bin/microdnf /usr/bin/
-COPY --from=base /usr/bin/gpg /usr/bin/
-COPY --from=base /usr/bin/gpg2 /usr/bin/
-COPY --from=base /lib64 /lib64/
-COPY --from=base /usr/lib64 /usr/lib64/
-COPY --from=base /usr/lib/rpm /usr/lib/rpm/
-COPY --from=base /etc/dnf /etc/dnf/
-COPY --from=base /etc/rpm /etc/rpm/
-COPY --from=base /etc/pki /etc/pki/
 
 ARG DOCKER_VER=26.1.4
 
@@ -30,7 +15,6 @@ ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal 
 RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && microdnf upgrade -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager krb5-libs \
-  && microdnf install -y curl \
   && curl -4fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VER}.tgz \
   && tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \
   && rm docker-${DOCKER_VER}.tgz \
