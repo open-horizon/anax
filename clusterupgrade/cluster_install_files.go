@@ -149,7 +149,7 @@ func createNMPStatusFile(workDir string, status string) error {
 
 	if _, err := os.Stat(workDir); os.IsNotExist(err) {
 		glog.Infof(cuwlog(fmt.Sprintf("Work dir %v does not exist, create it...", workDir)))
-		if err = os.MkdirAll(workDir, 755); err != nil {
+		if err = os.MkdirAll(workDir, 0o755); err != nil {
 			glog.Infof(cuwlog(fmt.Sprintf("Failed to create dir %v, err: %v", workDir, err)))
 			return err
 		}
@@ -421,7 +421,7 @@ func decompress(tarGZFilePath, targetFolder string) error {
 
 	// create the target folder if it is not exist
 	if _, err := os.Stat(targetFolder); err != nil {
-		if err := os.MkdirAll(targetFolder, 0755); err != nil {
+		if err := os.MkdirAll(targetFolder, 0o755); err != nil {
 			return err
 		}
 	}

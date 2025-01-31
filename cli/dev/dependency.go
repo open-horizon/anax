@@ -238,7 +238,7 @@ func DependenciesExists(directory string, okToCreate bool) (bool, error) {
 		return false, err
 	} else if !exists && okToCreate {
 		newDir := path.Join(directory, DEFAULT_DEPENDENCY_DIR)
-		if err := os.MkdirAll(newDir, 0755); err != nil {
+		if err := os.MkdirAll(newDir, 0o755); err != nil {
 			return false, errors.New(i18n.GetMessagePrinter().Sprintf("could not create dependency directory %v, error: %v", newDir, err))
 		}
 	} else if !exists {
