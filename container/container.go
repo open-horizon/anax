@@ -7,6 +7,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"math/big"
+	"os"
+	"os/user"
+	"path"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/boltdb/bolt"
 	"github.com/coreos/go-iptables/iptables"
 	docker "github.com/fsouza/go-dockerclient"
@@ -23,14 +32,6 @@ import (
 	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/sys/unix"
-	"io"
-	"io/ioutil"
-	"math/big"
-	"os"
-	"os/user"
-	"path"
-	"strconv"
-	"strings"
 )
 
 const LABEL_PREFIX = "openhorizon.anax"
@@ -1285,7 +1286,10 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 		glog.V(5).Infof("Writing raw config to file in %v. Config data: %v", workloadRWStorageDir, string(configureRaw))
 		// write raw to workloadRWStorageDir
-		if err := ioutil.WriteFile(path.Join(workloadRWStorageDir, "Configure"), configureRaw, 0644); err != nil {
+		targetPath := (path.Join(workloadRWStorageDir, "Configure"))
+		// Clean the path to remove any redundant slashes or path components like ".."
+		cleanedPath := filepath.Clean(targetPath)
+		if err := os.WriteFile(cleanedPath, configureRaw, 0644); err != nil {
 			return nil, err
 		}
 	} else {
