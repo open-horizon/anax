@@ -6,17 +6,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/edge-sync-service/core/security"
 	"github.com/open-horizon/edge-utilities/logger"
 	"github.com/open-horizon/edge-utilities/logger/log"
 	"github.com/open-horizon/edge-utilities/logger/trace"
-	"io/ioutil"
-	"net"
-	"net/http"
-	"os"
-	"strings"
-	"time"
 )
 
 // Set this env var to a value that will be used to identify the http header that contains the user identity, when this
@@ -516,12 +518,14 @@ func newHTTPClient(certPath string) (*http.Client, error) {
 
 	if certPath != "" {
 		var err error
-		caBytes, err = ioutil.ReadFile(certPath)
+		// Clean the path to remove any redundant slashes or path components like ".."
+		cleanedPath := filepath.Clean(certPath)
+		caBytes, err = os.ReadFile(cleanedPath)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to read %v, error %v", certPath, err))
+			return nil, errors.New(fmt.Sprintf("unable to read %v, error %v", cleanedPath, err))
 		}
 		if log.IsLogging(logger.INFO) {
-			log.Info(cssALS(fmt.Sprintf("read CA cert from provided file %v", certPath)))
+			log.Info(cssALS(fmt.Sprintf("read CA cert from provided file %v", cleanedPath)))
 		}
 	}
 

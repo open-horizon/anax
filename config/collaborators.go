@@ -5,13 +5,15 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 // This exists to consolidate construction of clients to collaborating
@@ -112,11 +114,13 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 
 	if mhCertPath != "" {
 		var err error
-		mgmtHubBytes, err = ioutil.ReadFile(mhCertPath)
+		// Clean the path to remove any redundant slashes or path components like ".."
+		cleanedPath := filepath.Clean(mhCertPath)
+		mgmtHubBytes, err = os.ReadFile(cleanedPath)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to read Cert File: %v", mhCertPath)
+			return nil, fmt.Errorf("Failed to read Cert File: %v", cleanedPath)
 		}
-		glog.V(4).Infof("Read Management Hub cert from provided file %v", mhCertPath)
+		glog.V(4).Infof("Read Management Hub cert from provided file %v", cleanedPath)
 	}
 
 	if hConfig.AgreementBot.CSSSSLCert != "" {

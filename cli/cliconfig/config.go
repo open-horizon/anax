@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -87,10 +86,11 @@ func GetConfig(configFile string) (*HorizonCliConfig, error) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.Verbose(msgPrinter.Sprintf("Reading configuration file: %v", configFile))
-
-	fileBytes, err := ioutil.ReadFile(configFile)
+	// Clean the path to remove any redundant slashes or path components like ".."
+	cleanedPath := filepath.Clean(configFile)
+	fileBytes, err := os.ReadFile(cleanedPath)
 	if err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to read config file: %v. %v", configFile, err))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to read config file: %v. %v", cleanedPath, err))
 	}
 
 	// Remove /* */ comments
@@ -99,7 +99,7 @@ func GetConfig(configFile string) (*HorizonCliConfig, error) {
 
 	config := HorizonCliConfig{}
 	if err := json.Unmarshal(newBytes, &config); err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to decode content of config file %v. %v", configFile, err))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to decode content of config file %v. %v", cleanedPath, err))
 	} else {
 		return &config, nil
 	}

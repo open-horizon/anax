@@ -1111,9 +1111,11 @@ func TrustIcpCert(httpClient *http.Client) error {
 	}
 
 	if icpCertPath != "" {
-		icpCert, err := ioutil.ReadFile(icpCertPath)
+		// Clean the path to remove any redundant slashes or path components like ".."
+		cleanedPath := filepath.Clean(icpCertPath)
+		icpCert, err := os.ReadFile(cleanedPath)
 		if err != nil {
-			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", icpCertPath, err))
+			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", cleanedPath, err))
 		}
 		caCertPool.AppendCertsFromPEM(icpCert)
 	}
