@@ -1,23 +1,8 @@
-# Building microdnf from ubi9-minimal base
-FROM registry.access.redhat.com/ubi9-minimal:latest AS base
-
-#---------------------------------------------------------------
-FROM registry.access.redhat.com/ubi9-micro:latest AS runtime
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2
 
 LABEL vendor="IBM"
 LABEL summary="The agent for edge clusters."
 LABEL description="The agent in a container that is used solely for the purpose of running the agent in a kubernetes edge cluster."
-
-# Copy microdnf necessary files from the base stage
-COPY --from=base /usr/bin/microdnf /usr/bin/
-COPY --from=base /usr/bin/gpg /usr/bin/
-COPY --from=base /usr/bin/gpg2 /usr/bin/
-COPY --from=base /lib64 /lib64/
-COPY --from=base /usr/lib64 /usr/lib64/
-COPY --from=base /usr/lib/rpm /usr/lib/rpm/
-COPY --from=base /etc/dnf /etc/dnf/
-COPY --from=base /etc/rpm /etc/rpm/
-COPY --from=base /etc/pki /etc/pki/
 
 # add EPEL repo with jq pkg and all deps
 COPY EPEL.repo /etc/yum.repos.d
@@ -28,7 +13,6 @@ COPY EPEL.repo /etc/yum.repos.d
 # Create required directories
 ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng"
 RUN  microdnf update  -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
-  && microdnf install -y curl \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && microdnf clean all --disableplugin=subscription-manager \
   && rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \
