@@ -4,6 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -11,10 +16,6 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"golang.org/x/text/message"
-	"io/ioutil"
-	"os"
-	"strings"
-	"time"
 )
 
 // The purpose this file is to abstract the Policy struct and the files that it lives within as
@@ -731,7 +732,7 @@ func WritePolicyFile(newPolicy *Policy, name string) error {
 
 	if bytes, err := json.MarshalIndent(newPolicy, "", "    "); err != nil {
 		return errors.New(fmt.Sprintf("Unable to marshal policy %v to file, error: %v", newPolicy, err))
-	} else if err := ioutil.WriteFile(name, bytes, 0644); err != nil {
+	} else if err := os.WriteFile(name, bytes, 0644); err != nil {
 		return errors.New(fmt.Sprintf("Unable to write policy file %v, error: %v", name, err))
 	} else {
 		return nil

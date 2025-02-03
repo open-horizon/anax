@@ -111,7 +111,7 @@ func UploadPublicKey(filename string,
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("provided public key or cert is not valid; error: %v", err), "trusted cert file"))
 	} else if err := os.MkdirAll(targetPath, 0644); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("unable to create trusted cert directory %v, error: %v", targetPath, err)))
-	} else if err := ioutil.WriteFile(targetFile, inBytes, 0644); err != nil {
+	} else if err := os.WriteFile(targetFile, inBytes, 0644); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("unable to write uploaded trusted cert file %v, error: %v", targetFile, err)))
 	}
 	return false
