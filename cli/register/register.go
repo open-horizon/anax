@@ -3,6 +3,13 @@ package register
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliconfig"
@@ -19,14 +26,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
-	"io/ioutil"
 	"k8s.io/client-go/rest"
-	"net/http"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // read the user input file that contains the global attributes and service userinput settings.
@@ -936,7 +936,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("failed to marshal the user input template file: %v", err))
 	}
 
-	if err := ioutil.WriteFile(inputFile, jsonBytes, 0644); err != nil {
+	if err := os.WriteFile(inputFile, jsonBytes, 0644); err != nil {
 		cliutils.Fatal(cliutils.FILE_IO_ERROR, msgPrinter.Sprintf("problem writing the user input template file: %v", err))
 	}
 
@@ -959,7 +959,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 		if err != nil {
 			cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("failed to marshal the example node policy file: %v", err))
 		}
-		if err := ioutil.WriteFile(nodePolicySampleFile, jsonBytes, 0644); err != nil {
+		if err := os.WriteFile(nodePolicySampleFile, jsonBytes, 0644); err != nil {
 			cliutils.Fatal(cliutils.FILE_IO_ERROR, msgPrinter.Sprintf("problem writing the example node policy file: %v", err))
 		} else {
 			msgPrinter.Printf("One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: %s", nodePolicySampleFile)

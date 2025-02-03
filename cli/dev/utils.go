@@ -129,7 +129,7 @@ func CreateFile(directory string, fileName string, obj interface{}) error {
 	filePath := path.Join(directory, fileName)
 	if jsonBytes, err := json.MarshalIndent(obj, "", "    "); err != nil {
 		return errors.New(msgPrinter.Sprintf("failed to create json object for %v, error: %v", fileName, err))
-	} else if err := ioutil.WriteFile(filePath, jsonBytes, 0664); err != nil {
+	} else if err := os.WriteFile(filePath, jsonBytes, 0664); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to write json object for %v to file %v, error: %v", fileName, filePath, err))
 	} else {
 		return nil
@@ -142,7 +142,7 @@ func CreateUserInputFile(directory string, ui *common.UserInputFile) error {
 	filePath := path.Join(directory, USERINPUT_FILE)
 	if bytes, err := ui.GetOutputJsonBytes(false); err != nil {
 		return err
-	} else if err := ioutil.WriteFile(filePath, bytes, 0664); err != nil {
+	} else if err := os.WriteFile(filePath, bytes, 0664); err != nil {
 		return errors.New(i18n.GetMessagePrinter().Sprintf("unable to write json object for userinput to file %v, error: %v", filePath, err))
 	}
 	return nil
