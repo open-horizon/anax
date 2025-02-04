@@ -2,7 +2,7 @@
 name: E2E-test
 
 # Workflow triggers -- When a pull request is made for the listed branches
-on:
+on: [ignore]
   pull_request:
     branches:
       - master

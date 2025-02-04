@@ -10,7 +10,7 @@ on:
       - v2.31
       - v2.30
       - v2.29
-        
+      - test_ppc64el
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
   GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
@@ -87,7 +87,7 @@ jobs:
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
       matrix:
-        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x']
+        architecture: ['ppc64el']
         platform: ['linux']
 
     # Variables that are available to all steps in the job
@@ -351,9 +351,9 @@ jobs:
           done
 
   # Build our mac packages on a macOS runner
-  mac-build:
+  mac-build: 
     needs: offset-build-number
-    
+    if: ${{ github.ref != 'refs/heads/test_ppc64el' }}
     runs-on: ${{ (matrix.architecture == 'amd64') && 'macos-13' || 'macos-14' }}
 
     strategy:
