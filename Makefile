@@ -604,7 +604,7 @@ $(TMPGOPATH)/bin/gotext:
 	if [ ! -e "$(TMPGOPATH)/bin/gotext" ]; then \
 		echo "Fetching gotext"; \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
-			go install golang.org/x/text/cmd/gotext@master; \
+			go install golang.org/x/text/cmd/gotext@v0.21.0; \
 	fi
 
 gopathlinks:
