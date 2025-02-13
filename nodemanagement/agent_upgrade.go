@@ -328,7 +328,7 @@ func (n *NodeManagementWorker) HandleAgentFilesVersionChange(cmd *AgentFileVersi
 				}
 			}
 
-			// set the status to waiting for this nmp
+			// set the status to waiting, clear out the SetActualStartTime and CompletionTime for this nmp
 			if setStatusToWaiting {
 				glog.V(3).Infof(nmwlog(fmt.Sprintf("Change status to \"waiting\" for the nmp %v", statusName)))
 
@@ -344,6 +344,8 @@ func (n *NodeManagementWorker) HandleAgentFilesVersionChange(cmd *AgentFileVersi
 				}
 
 				status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
+				status.SetActualStartTime("")
+				status.SetCompletionTime("")
 				err = n.UpdateStatus(statusName, status, exchange.GetPutNodeManagementPolicyStatusHandler(n), persistence.NewMessageMeta(EL_NMP_STATUS_CHANGED, statusName, exchangecommon.STATUS_NEW), persistence.EC_NMP_STATUS_UPDATE_NEW)
 				if err != nil {
 					glog.Errorf(nmwlog(fmt.Sprintf("Error changing nmp status for %v to \"waiting\". Error was %v.", statusName, err)))
@@ -385,6 +387,8 @@ func (w *NodeManagementWorker) HandleNmpStatusReset() {
 					glog.V(3).Infof(nmwlog(fmt.Sprintf("Change status from \"reset\" to \"waiting\" for the nmp %v", nmp_name)))
 
 					local_status.AgentUpgrade.Status = exchangecommon.STATUS_NEW
+					local_status.SetActualStartTime("")
+					local_status.SetCompletionTime("")
 					if local_status.AgentUpgradeInternal != nil {
 						local_status.AgentUpgradeInternal.DownloadAttempts = 0
 					}
