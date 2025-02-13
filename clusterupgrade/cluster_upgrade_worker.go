@@ -116,7 +116,7 @@ func (w *ClusterUpgradeWorker) syncOnInit(db *bolt.DB, kubeClient *KubeClient, b
 				glog.Infof(cuwlog(fmt.Sprintf("Handling status %v during initialization", name)))
 				workDir := path.Join(baseWorkingDir, name)
 				if statusInStatusFile, err := checkDeploymentStatus(kubeClient, baseWorkingDir, name); err != nil {
-					errMessage := fmt.Sprintf("Failed to check deployment status duriing syncOnInit for nmp: %v, error: %v", name, err)
+					errMessage := fmt.Sprintf("Failed to check deployment status during syncOnInit for nmp: %v, error: %v", name, err)
 					if err = setErrorMessageInStatusFile(workDir, exchangecommon.STATUS_FAILED_JOB, errMessage); err != nil {
 						glog.Errorf(fmt.Sprintf("Failed to set error message (%v) for nmp: %v in the status file, error: %v", errMessage, name, err))
 					}
