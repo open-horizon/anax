@@ -79,6 +79,7 @@ func NewBAgreementVerifyReply(bp *abstractprotocol.BaseProtocolMessage, exists b
 // receipt of a rejection.
 const MsgUpdateTypeSecret = "basicagreementupdatesecret"
 const MsgUpdateTypePolicyChange = "basicagreementtupdatepolicychange"
+const MsgUpdateTypeServiceUpgrade = "basicagreementupdateServiceUpgrade"
 
 type BAgreementUpdate struct {
 	*abstractprotocol.BaseProtocolMessage
@@ -107,6 +108,10 @@ func (b *BAgreementUpdate) IsSecretUpdate() bool {
 
 func (b *BAgreementUpdate) IsPolicyChangeUpdate() bool {
 	return b.Updatetype == MsgUpdateTypePolicyChange
+}
+
+func (b *BAgreementUpdate) IsServiceUpgrade() bool {
+	return b.Updatetype == MsgUpdateTypeServiceUpgrade
 }
 
 func (b *BAgreementUpdate) UpdateType() string {
@@ -146,6 +151,10 @@ func (b *BAgreementUpdateReply) IsSecretUpdate() bool {
 
 func (b *BAgreementUpdateReply) IsPolicyChangeUpdate() bool {
 	return b.Updatetype == MsgUpdateTypePolicyChange
+}
+
+func (b *BAgreementUpdateReply) IsServiceUpgrade() bool {
+	return b.Updatetype == MsgUpdateTypeServiceUpgrade
 }
 
 func (b *BAgreementUpdateReply) IsAccepted() bool {

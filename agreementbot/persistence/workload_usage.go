@@ -21,6 +21,7 @@ type WorkloadUsage struct {
 	DisableRetry       bool   `json:"disable_retry"`        // when true, retry and retry durations are disbled which effectively disables workload rollback
 	VerifiedDurationS  int    `json:"verified_durations"`   // the number of seconds for successful data verification before disabling workload rollback retries
 	ReqsNotMet         bool   `json:"requirements_not_met"` // this workload usage record is not at the highest priority because the device did not meet the API spec requirements at one of the higher priorities
+	UpgradeStategy     string `json:"upgrade_strategy"`     // The upgrade strategy to upgrade to this version
 }
 
 func (w WorkloadUsage) String() string {
@@ -37,9 +38,10 @@ func (w WorkloadUsage) String() string {
 		"DisableRetry: %v, "+
 		"VerifiedDurationS: %v, "+
 		"ReqsNotMet: %v, "+
-		"Policy: %v",
+		"Policy: %v, "+
+		"UpgradeStategy: %v",
 		w.Id, w.DeviceId, w.PendingUpgradeTime, w.PolicyName, w.Priority, w.RetryCount,
-		w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.DisableRetry, w.VerifiedDurationS, w.ReqsNotMet, w.Policy)
+		w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.DisableRetry, w.VerifiedDurationS, w.ReqsNotMet, w.Policy, w.UpgradeStategy)
 }
 
 func (w WorkloadUsage) ShortString() string {
@@ -55,9 +57,10 @@ func (w WorkloadUsage) ShortString() string {
 		"LatestRetryTime: %v, "+
 		"DisableRetry: %v, "+
 		"VerifiedDurationS: %v, "+
-		"ReqsNotMet: %v",
+		"ReqsNotMet: %v, "+
+		"UpgradeStategy: %v",
 		w.Id, w.DeviceId, w.PendingUpgradeTime, w.PolicyName, w.Priority, w.RetryCount,
-		w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.DisableRetry, w.VerifiedDurationS, w.ReqsNotMet)
+		w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.DisableRetry, w.VerifiedDurationS, w.ReqsNotMet, w.UpgradeStategy)
 }
 
 // private factory method for workloadusage w/out persistence safety:

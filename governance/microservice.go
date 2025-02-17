@@ -847,8 +847,21 @@ func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string) {
 			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_SDEFS_FROM_DB, msdef_id, err.Error()),
 			persistence.EC_DATABASE_ERROR)
 		glog.Errorf(logString(fmt.Sprintf("error getting service definitions %v from db. %v", msdef_id, err)))
-	} else if microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
-		// find the new ms def to upgrade to
+	} else {
+		
+	}
+	
+	
+	else if microservice.MicroserviceReadyForUpgrade(msdef, w.db) { // this is only for dependent service upgrade
+		// case 1: dependent service: call microservice.MicroserviceReadyForUpgrade(msdef, w.db): find the new ms def to upgrade to
+
+		// case 2: top level service: get the version need to be upgrade to from bp?
+		// 1. get 1) upgrade policy 2) version to upgrade from bp or from microserviceDef
+		// 2. call UpgradeMicroservice()
+		//    1) stop old, start new -> like today
+		//    2) start new, record start time. subworker keep checking runningDuration = currentTime - startTime for all microserviceDefs which upgradeStarting is true. Once runningDuration > new_service_up_durations, stop old service
+		//    3) Once finish upgrade, set upgradeStarting to false
+
 		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(exchange.GetHTTPServiceResolverHandler(w.limitedRetryEC), msdef, w.db); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Error finding the new service definition to upgrade to for %v/%v version %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, err)))
 		} else if new_msdef == nil {

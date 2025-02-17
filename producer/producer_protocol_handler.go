@@ -72,7 +72,7 @@ type ProducerProtocolHandler interface {
 	SetBlockchainWritable(cmd *BCWritableCommand)
 	IsBlockchainWritable(agreement *persistence.EstablishedAgreement) bool
 	IsAgreementVerifiable(agreement *persistence.EstablishedAgreement) bool
-	HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, []persistence.PersistedServiceSecret, error)
+	HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, []persistence.PersistedServiceSecret, *policy.Workload, error)
 	UpdateConsumer(ag *persistence.EstablishedAgreement)
 	UpdateConsumers()
 	GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string, string)

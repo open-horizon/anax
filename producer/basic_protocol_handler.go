@@ -107,13 +107,13 @@ func (c *BasicProtocolHandler) VerifyAgreement(ag *persistence.EstablishedAgreem
 }
 
 // Returns 2 booleans, first is whether or not the message was handled, the second is whether or not to cancel the agreement in the protocol msg.
-func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, []persistence.PersistedServiceSecret, error) {
+func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, []persistence.PersistedServiceSecret, *policy.Workload, error) {
 
 	updatedSecs := []persistence.PersistedServiceSecret{}
 	// The agreement verification reply indicates whether or not the consumer thinks the agreement is still valid.
 	if verify, err := c.agreementPH.ValidateAgreementVerifyReply(msg.ProtocolMessage()); err == nil {
 		glog.V(5).Infof(BPHlogString(fmt.Sprintf("extension handler handled agreement verification reply for %v", verify.AgreementId())))
-		return true, !verify.Exists, verify.AgreementId(), updatedSecs, nil
+		return true, !verify.Exists, verify.AgreementId(), updatedSecs, nil, nil
 
 	} else if verify, err := c.agreementPH.ValidateAgreementVerify(msg.ProtocolMessage()); err == nil {
 		// This is a request to verify that an agreement exists.
@@ -139,13 +139,14 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 			}
 		}
 
-		return true, false, verify.AgreementId(), updatedSecs, nil
+		return true, false, verify.AgreementId(), updatedSecs, nil, nil
 
 	} else if update, err := c.agreementPH.ValidateUpdate(msg.ProtocolMessage()); err == nil {
 
 		// If there are no errors and the update type is accepted, send a positive reply.
 		acceptedUpdate := true
 		sendReply := true
+		var updated_workload *policy.Workload
 
 		if update.IsSecretUpdate() {
 
@@ -175,14 +176,15 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 
 			}
 
-		} else if update.IsPolicyChangeUpdate() {
+		} else if update.IsPolicyChangeUpdate() || update.IsServiceUpgrade() {
 			// a policy that was used to form an agreement with this node has changed
 			// the agbot has sent an updated merged policy
 			// this will update the agreement's ts&cs with the new merged policy
-			glog.V(5).Infof(BPHlogString(fmt.Sprintf("handling update for %v: %v", update.AgreementId(), update.Metadata)))
+			glog.V(5).Infof(BPHlogString(fmt.Sprintf("handling %v update for %v: %v", update.UpdateType(), update.AgreementId(), update.Metadata)))
 
 			// convert the meta data into a new policy
 			var newPolicy policy.Policy
+
 			if bytes, err := json.Marshal(update.Metadata); err != nil {
 				glog.Errorf(BPHlogString(fmt.Sprintf("unable to marshal update for agreement %v: %v", update.AgreementId(), err)))
 				acceptedUpdate = false
@@ -212,6 +214,36 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 				acceptedUpdate = false
 			} else {
 				glog.V(5).Infof(BPHlogString(fmt.Sprintf("updated agreement %v to %v", update.AgreementId(), updatedAg)))
+				if update.IsServiceUpgrade() {
+					// handle service upgrade
+
+					updated_workload = newPolicy.NextHighestPriorityWorkload(0, 0, 0)
+
+					/*
+						// for device case:
+						// get service image auths from the exchange
+						img_auths := make([]events.ImageDockerAuth, 0)
+						if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+							if w.Config.Edge.TrustDockerAuthFromOrg {
+								if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+									return errors.New(logString(fmt.Sprintf("received error querying exchange for service image auths: %v, error %v", workload, err)))
+								} else {
+									if ias != nil {
+										for _, iau_temp := range ias {
+											username := iau_temp.UserName
+											if username == "" {
+												username = "token"
+											}
+											img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: username, Password: iau_temp.Token})
+										}
+									}
+								}
+							}
+						}
+
+						cc := events.NewContainerConfig(workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo,
+							workload.ClusterDeployment, workload.ClusterDeploymentSignature, newPolicy.ClusterNamespace, workload.DeploymentOverrides, img_auths) */
+				}
 			}
 		} else {
 			// The update type is unexpected so simply reject it.
@@ -229,11 +261,11 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 			}
 		}
 
-		return true, false, update.AgreementId(), updatedSecs, nil
+		return true, false, update.AgreementId(), updatedSecs, updated_workload, nil
 
 	} else if reply, err := c.agreementPH.ValidateUpdateReply(msg.ProtocolMessage()); err == nil {
 		glog.Infof(BPHlogString(fmt.Sprintf("nothing to do for update reply %v", reply)))
-		return true, false, update.AgreementId(), updatedSecs, nil
+		return true, false, update.AgreementId(), updatedSecs, nil, nil
 
 	} else {
 
@@ -241,10 +273,10 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 		// so make sure it's not one of those, then we know if it's an unknown msg or not.
 		if _, err := c.agreementPH.ValidateProposal(msg.ProtocolMessage()); err == nil {
 			glog.V(5).Infof(BPHlogString(fmt.Sprintf("extension message handler ignoring message: %s because it is a proposal.", msg.ShortProtocolMessage())))
-			return false, false, "", updatedSecs, nil
+			return false, false, "", updatedSecs, nil, nil
 		} else {
 			glog.V(3).Infof(BPHlogString(fmt.Sprintf("extension message handler ignoring message: %s because it is not a known protocol msg.", msg.ShortProtocolMessage())))
-			return true, false, "", updatedSecs, nil
+			return true, false, "", updatedSecs, nil, nil
 		}
 	}
 

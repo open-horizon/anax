@@ -97,6 +97,7 @@ const (
 
 	// Service related
 	SERVICE_CONFIG_STATE_CHANGED EventId = "SERVICE_CONFIG_STATE_CHANGED"
+	SERVICE_VERSION_UPGRADE      EventId = "SERVICE_VERSION_UPGRADE"
 
 	// Object Policy related
 	OBJECT_POLICY_NEW       EventId = "OBJECT_POLICY_NEW"
@@ -2213,6 +2214,45 @@ func NewWorkloadUpdateMessage(id EventId, agreementId string, protocol string, c
 		ClusterNamespaceInAgreement: clusterNamespaceInAgreement,
 		Deployment:                  deployment,
 		SecretsUpdate:               secretsUpdate,
+	}
+}
+
+type WorkloadUpgradeMessage struct {
+	event         Event
+	launchContext *AgreementLaunchContext
+	// AgreementProtocol string
+	// AgreementId       string
+	// Deployment        persistence.DeploymentConfig
+	// WorkloadUpdate    policy.Workload
+}
+
+func (w *WorkloadUpgradeMessage) Event() Event {
+	return w.event
+}
+
+func (w *WorkloadUpgradeMessage) String() string {
+	//depStr := ""
+	// if w.Deployment != nil {
+	// 	depStr = w.Deployment.ToString()
+	// }
+
+	//return fmt.Sprintf("event: %v, AgreementProtocol: %v, agreementId: %v, deployment: %v, workloadUpdate: %v", w.event, w.AgreementProtocol, w.AgreementId, depStr, w.WorkloadUpdate)
+	return ""
+}
+
+func (w *WorkloadUpgradeMessage) ShortString() string {
+	return w.String()
+}
+
+func NewWorkloadUpgradeMessage(id EventId, agreementId string, protocol string, deployment persistence.DeploymentConfig, workloadUpdate policy.Workload) *WorkloadUpgradeMessage {
+	return &WorkloadUpgradeMessage{
+		event: Event{
+			Id: id,
+		},
+		// AgreementId:       agreementId,
+		// AgreementProtocol: protocol,
+		// Deployment:        deployment,
+		// WorkloadUpdate:    workloadUpdate,
 	}
 }
 

@@ -68,6 +68,11 @@ func (w *ImageFetchWorker) NewEvent(incoming events.Message) {
 		fCmd := w.NewFetchCommand(msg.LaunchContext())
 		w.Commands <- fCmd
 
+	case *events.WorkloadUpgradeMessage:
+		msg, _ := incoming.(*events.WorkloadUpgradeMessage)
+
+		fCmd := w.NewFetchCommand(msg.LaunchContext())
+
 	case *events.LoadContainerMessage:
 		msg, _ := incoming.(*events.LoadContainerMessage)
 

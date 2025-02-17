@@ -61,7 +61,8 @@ type Workload struct {
 	WorkloadPassword             string           `json:"workload_password,omitempty"` // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
 	ClusterDeployment            string           `json:"cluster_deployment,omitempty"`
 	ClusterDeploymentSignature   string           `json:"cluster_deployment_signature,omitempty"`
-	Priority                     WorkloadPriority `json:"priority,omitempty"`                       // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Priority                     WorkloadPriority `json:"priority,omitempty"` // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	UpgradePolicy                UpgradePolicy    `json:"upgrade_policy,omitempty"`
 	WorkloadURL                  string           `json:"workloadUrl,omitempty"`                    // Added with MS split, refers to a workload definition in the exchange
 	Org                          string           `json:"organization,omitempty"`                   // Added woth org support, refers to the organization where the workload is defined
 	Version                      string           `json:"version,omitempty"`                        // Added with MS split, refers to the version of the workload
@@ -229,8 +230,8 @@ func GetNextWorkloadChoice(wls WorkloadList, currentChoice int) *Workload {
 	var bestChoice Workload
 	for _, wl := range wls {
 		if (currentChoice == -1 || wl.Priority.PriorityValue < currentChoice) && (bestChoicePriority == -1 || wl.Priority.PriorityValue < bestChoicePriority) {
-			bestChoicePriority = wl.Priority.PriorityValue
-			bestChoice = wl
+			bestChoicePriority = wl.Priority.PriorityValue // 1
+			bestChoice = wl                                // 6.0.0
 		}
 	}
 	if bestChoicePriority == -1 {
@@ -246,4 +247,11 @@ func GetWorkloadWithPriority(wls WorkloadList, priority int) *Workload {
 		}
 	}
 	return nil
+}
+
+type UpgradePolicy struct {
+	Lifecycle             string `json:"lifecycle,omitempty"`      // immediate, never, agreement
+	Time                  string `json:"time,omitempty"`           // the time of the upgrade
+	Strategy              string `json:"strategy,omitempty"`       // rolling (start new, stop old), recreate (stop old, start new). Default is rolling.
+	NewServiceUpDurationS int    `json:"new_service_up_durations"` // if strategy is rolling. Use this field to indicate number of seconds for the new version to run before tearing down the old version
 }

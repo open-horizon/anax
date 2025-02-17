@@ -95,12 +95,14 @@ func (w WorkloadPriority) String() string {
 type UpgradePolicy struct {
 	Lifecycle string `json:"lifecycle,omitempty"` // immediate, never, agreement
 	Time      string `json:"time,omitempty"`      // the time of the upgrade
+	Strategy  string `json:"strategy,omitempty"`  // rolling (start new, stop old), recreate (stop old, start new). Default is rolling.
 }
 
 func (w UpgradePolicy) String() string {
-	return fmt.Sprintf("Lifecycle: %v, Time: %v",
+	return fmt.Sprintf("Lifecycle: %v, Time: %v, Strategy: %v",
 		w.Lifecycle,
-		w.Time)
+		w.Time,
+		w.Strategy)
 }
 
 type WorkloadChoice struct {

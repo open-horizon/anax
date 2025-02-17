@@ -456,6 +456,8 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		return true, true, true
 	}
 
+	no_new_priority := true
+
 	// for every priority (in order highest to lowest) in the new policy with priority lower than the current wl
 	// if it's not in the old policy, cancel
 	choice := -1
@@ -474,9 +476,10 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 	}
 
 	if currentWL := policy.GetWorkloadWithPriority(busPol.Workloads, wlUsagePriority); currentWL == nil {
-		// the current workload priority is no longer in the deployment policy
+		// the current workload priority is no longer in the deployment policy, need a service upgrade??
 		glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("current workload priority %v is no longer in policy for agreement %v", wlUsagePriority, ag.CurrentAgreementId)))
-		return true, false, false
+		no_new_priority = false
+		//return true, false, false
 	} else {
 		wl = currentWL
 	}
@@ -487,7 +490,9 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 			matchingWL := policy.GetWorkloadWithPriority(oldPolicy.Workloads, choice)
 			if matchingWL == nil || !matchingWL.IsSame(*nextPriority) {
 				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("Higher priority version added or modified. Cancelling agreement %v", ag.CurrentAgreementId)))
-				return true, false, false
+				no_new_priority = false
+				break
+				//return true, false, false
 			}
 			nextPriority = policy.GetNextWorkloadChoice(busPol.Workloads, choice)
 		}
@@ -535,15 +540,23 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChangeForAgreement(ag persiste
 		}
 	}
 
+	// will return here if business policy content doesn't change
+	updateType := basicprotocol.MsgUpdateTypePolicyChange
+
 	newTsCs, err := policy.Create_Terms_And_Conditions(producerPol, consumerPol, wl, ag.CurrentAgreementId, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, basicprotocol.PROTOCOL_CURRENT_VERSION)
 	if err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error creating new terms and conditions: %v", err)))
 		return false, false, false
 	}
 
+	if !no_new_priority {
+		//newTsCs.Workloads = busPol.Workloads
+		updateType = basicprotocol.MsgUpdateTypeServiceUpgrade
+	}
+
 	ag.LastPolicyUpdateTime = uint64(time.Now().Unix())
 
-	b.UpdateAgreement(&ag, basicprotocol.MsgUpdateTypePolicyChange, newTsCs, cph)
+	b.UpdateAgreement(&ag, updateType, newTsCs, cph)
 
 	return true, true, true
 }

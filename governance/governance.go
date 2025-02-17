@@ -893,7 +893,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			// See if it is a proposal first. If it is, ignore it... If not, check if message still exists and then check for the message types this modules cares about
 			if _, err := protocolHandler.ValidateProposal(protocolMsg); err == nil {
 				// Gets in here if it is a proposal
-				glog.V(5).Infof(logString(fmt.Sprintf("Governance handler ignoring proposal message")))
+				glog.V(5).Infof(logString(fmt.Sprintf("Governance handler ignoring proposal message"))) //???
 			} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
 				w.AddDeferredCommand(cmd)
@@ -1113,7 +1113,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			} else {
 
 				// Allow the message extension handler to see the message
-				handled, cancel, agid, updatedSecs, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
+				handled, cancel, agid, updatedSecs, updatedWorkload, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
 				if err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to handle message %v , error: %v", protocolMsg, err)))
 				} else if cancel {
@@ -1167,10 +1167,101 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						if len(updatedSecs) != 0 {
 							clusterNamespaceInAg, err := w.GetRequestedClusterNamespaceFromAg(&ags[0])
 							if err != nil {
-								glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreeent %v. %v", ags[0].CurrentAgreementId, err)))
+								glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreement %v. %v", ags[0].CurrentAgreementId, err)))
 							}
 							// have updatedSecs, send out an event to let kube worker know about the secret update
 							w.Messages() <- events.NewWorkloadUpdateMessage(events.UPDATE_SECRETS_IN_AGREEMENT, agid, msgProtocol, clusterNamespaceInAg, ags[0].GetDeploymentConfig(), updatedSecs)
+						}
+
+						if updatedWorkload != nil {
+							// need to set up agreementLaunchContext()
+							clusterNamespaceInAg, err := w.GetRequestedClusterNamespaceFromAg(&ags[0])
+							if err != nil {
+								glog.Errorf(logString(fmt.Sprintf("Failed to get cluster namespace from agreement %v. %v", ags[0].CurrentAgreementId, err)))
+							}
+
+							// get service image auths from the exchange
+							img_auths, err := w.GetImageAuths(updatedWorkload)
+							if err != nil {
+								glog.Errorf(logString(fmt.Sprintf("Failed to get image auth for workload %v in agreement. %v", updatedWorkload, ags[0].CurrentAgreementId, err)))
+							}
+
+							cc := events.NewContainerConfig(updatedWorkload.Deployment, updatedWorkload.DeploymentSignature, updatedWorkload.DeploymentUserInfo,
+								updatedWorkload.ClusterDeployment, updatedWorkload.ClusterDeploymentSignature, clusterNamespaceInAg, updatedWorkload.DeploymentOverrides, img_auths)
+
+							lc := new(events.AgreementLaunchContext)
+							lc.Configure = *cc
+							lc.AgreementId = ags[0].CurrentAgreementId
+							lc.AgreementProtocol = ags[0].AgreementProtocol
+
+							// get environmental settings for the workload
+
+							// The service config variables are stored in the device's attributes.
+							if proposal, err := protocolHandler.DemarshalProposal(ags[0].Proposal); err != nil {
+
+							} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
+
+							} else {
+								envAdds, err := w.GetServicePreference(updatedWorkload.WorkloadURL, updatedWorkload.Org, tcPolicy)
+								if err != nil {
+									glog.Errorf(logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", updatedWorkload.WorkloadURL, updatedWorkload.Org, err)))
+								}
+
+								// The workload config we have might be from a lower version of the workload. Go to the exchange and
+								// get the metadata for the version we are running and then add in any unset default user inputs.
+								var serviceDef *exchange.ServiceDefinition
+								serviceId := ""
+								if _, sDef, allIDs, err := exchange.GetHTTPServiceResolverHandler(w)(updatedWorkload.WorkloadURL, updatedWorkload.Org, updatedWorkload.Version, updatedWorkload.Arch); err != nil {
+									//return fmt.Errorf(logString(fmt.Sprintf("Received error querying exchange for service metadata: %v/%v, error %v", workload.Org, workload.WorkloadURL, err)))
+								} else if sDef == nil {
+									//return fmt.Errorf(logString(fmt.Sprintf("Cound not find service metadata for %v/%v.", workload.Org, workload.WorkloadURL)))
+								} else {
+									serviceDef = sDef
+									sDef.PopulateDefaultUserInput(envAdds)
+									if allIDs != nil && len(allIDs) > 0 {
+										serviceId = allIDs[0]
+									}
+								}
+
+								// create microservice def for this agreement
+								var msdef *persistence.MicroserviceDefinition
+								msFilters := []persistence.MSFilter{persistence.UrlOrgVersionMSFilter(serviceDef.URL, exchange.GetOrg(serviceId), serviceDef.Version), persistence.UnarchivedMSFilter()}
+								if msdefs, err := persistence.FindMicroserviceDefs(w.db, msFilters); err != nil {
+									//return fmt.Errorf(logString(fmt.Sprintf("Error finding service definition from the local db for %v. %v", serviceId, err)))
+								} else if msdefs == nil || len(msdefs) == 0 {
+									vExp, err1 := semanticversion.Version_Expression_Factory(serviceDef.Version)
+									if err1 != nil {
+										//return fmt.Errorf("VersionRange %v cannot be converted to a version expression, error %v", serviceDef.Version, err1)
+									}
+
+									if msdef, err = microservice.CreateMicroserviceDefWithServiceDef(w.db, serviceDef, serviceId, vExp.Get_expression()); err != nil {
+										//return fmt.Errorf(logString(fmt.Sprintf("failed to create service definition for %v for agreement %v: %v", serviceId, proposal.AgreementId(), err)))
+									}
+								} else {
+									msdef = &msdefs[0]
+								}
+
+								cutil.SetPlatformEnvvars(envAdds,
+									config.ENVVAR_PREFIX,
+									proposal.AgreementId(),
+									exchange.GetId(w.GetExchangeId()),
+									exchange.GetOrg(w.GetExchangeId()),
+									w.GetExchangeURL(),
+									w.devicePattern,
+									w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),
+									w.BaseWorker.Manager.Config.GetFileSyncServiceAPIListen(),
+									strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
+
+								lc.EnvironmentAdditions = &envAdds
+
+								if err := w.processServiceSecrets(tcPolicy, proposal.AgreementId()); err != nil {
+
+								}
+
+								w.Messages() <- events.NewWorkloadUpgradeMessage(events.SERVICE_VERSION_UPGRADE, agid, msgProtocol, ags[0].GetDeploymentConfig(), *updatedWorkload)
+
+							}
+
 						}
 					}
 				}
@@ -2143,4 +2234,27 @@ func (w *GovernanceWorker) GetRequestedClusterNamespaceFromAg(ag *persistence.Es
 	} else {
 		return tcPolicy.ClusterNamespace, nil
 	}
+}
+
+func (w *GovernanceWorker) GetImageAuths(workload *policy.Workload) ([]events.ImageDockerAuth, error) {
+	img_auths := make([]events.ImageDockerAuth, 0)
+	if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+		if w.Config.Edge.TrustDockerAuthFromOrg {
+			if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+				return img_auths, errors.New(logString(fmt.Sprintf("received error querying exchange for service image auths: %v, error %v", workload, err)))
+			} else {
+				if ias != nil {
+					for _, iau_temp := range ias {
+						username := iau_temp.UserName
+						if username == "" {
+							username = "token"
+						}
+						img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: username, Password: iau_temp.Token})
+					}
+				}
+			}
+		}
+	}
+
+	return img_auths, nil
 }
