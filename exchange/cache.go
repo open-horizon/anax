@@ -354,7 +354,13 @@ func UpdateCacheNodePutWriteThru(nodeOrg string, nodeId string, cachedDevice *De
 	pdr.UserInput = nil
 	pdr.SoftwareVersions = SoftwareVersion{}
 
-	if !reflect.DeepEqual(*pdr, PutDeviceRequest{}) {
+	// Setting this line to prevent unexpected unequal from !reflect.DeepEqual(*pdr, emptyPdr).
+	// type of pdr.SoftwareVersions is SoftwareVersion{}, type of PatchDeviceRequest{} is SoftwareVersion(nil) without setting this line
+	// For debugging, use %#v instead of %v in the log
+	emptyPdr := PutDeviceRequest{
+		SoftwareVersions: SoftwareVersion{},
+	}
+	if !reflect.DeepEqual(*pdr, emptyPdr) {
 		// If you see this error, most likely a new field has been added to the PutDeviceRequest struct and this function needs to be updated to accomadate it
 		glog.Errorf("Warning: Failed to completely update the cached device %s/%s. Changed fields present in the put request were not applied to the cached device. Dropping cache and continuing.", nodeOrg, nodeId)
 		DeleteCacheResource(NODE_DEF_TYPE_CACHE, NodeCacheMapKey(nodeOrg, nodeId))
@@ -381,6 +387,14 @@ func UpdateCacheNodePatchWriteThru(nodeOrg string, nodeId string, cachedDevice *
 			cachedDevice.Arch = *pdr.Arch
 			pdr.Arch = nil
 		}
+		if pdr.ClusterNamespace != nil && *pdr.ClusterNamespace != "" {
+			cachedDevice.ClusterNamespace = *pdr.ClusterNamespace
+			pdr.ClusterNamespace = nil
+		}
+		if pdr.IsNamespaceScoped != nil {
+			cachedDevice.IsNamespaceScoped = *pdr.IsNamespaceScoped
+			pdr.IsNamespaceScoped = nil
+		}
 		if pdr.RegisteredServices != nil {
 			cachedDevice.RegisteredServices = *pdr.RegisteredServices
 			pdr.RegisteredServices = nil
@@ -390,7 +404,14 @@ func UpdateCacheNodePatchWriteThru(nodeOrg string, nodeId string, cachedDevice *
 			pdr.SoftwareVersions = SoftwareVersion{}
 		}
 	}
-	if !reflect.DeepEqual(*pdr, PatchDeviceRequest{}) {
+
+	// Setting this line to prevent unexpected unequal from !reflect.DeepEqual(*pdr, emptyPdr).
+	// type of pdr.SoftwareVersions is SoftwareVersion{}, type of PatchDeviceRequest{} is SoftwareVersion(nil) without setting this line
+	// For debugging, use %#v instead of %v in the log
+	emptyPdr := PatchDeviceRequest{
+		SoftwareVersions: SoftwareVersion{},
+	}
+	if !reflect.DeepEqual(*pdr, emptyPdr) {
 		// If you see this error, most likely a new field has been added to the PatchDeviceRequest struct and this function needs to be updated to accomadate it
 		glog.Errorf("Warning: Failed to completely update the cached device %s/%s. Changed fields present in the patch request were not applied to the cached device. Dropping cache and continuing.", nodeOrg, nodeId)
 		DeleteCacheResource(NODE_DEF_TYPE_CACHE, NodeCacheMapKey(nodeOrg, nodeId))
