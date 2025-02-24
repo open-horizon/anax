@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -51,7 +51,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var newDevice HorizonDevice
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &newDevice); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_REG, string(body), err.Error()),
@@ -104,7 +104,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		var device HorizonDevice
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &device); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE, body, err.Error()),
@@ -214,7 +214,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var configState Configstate
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &configState); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG, string(body), err.Error()),
@@ -280,7 +280,7 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var nodePolicy exchangecommon.NodePolicy
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodePolicy); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY, string(body), err.Error()),
@@ -315,7 +315,7 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		//Read in the HTTP message body and pass the policy update to be updated in the local db and the exchange
 		//Patch object can be either a constraint expression or a property list
 		//This reads in the message body and throws an error if it cannot be unmarshaled or if it is neither a constraint expression nor a property list
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 
 		findAttrType := make(map[string]interface{})
 		if err := json.Unmarshal([]byte(body), &findAttrType); err != nil {
@@ -464,7 +464,7 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var nodeUserInput []policy.UserInput
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodeUserInput); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UI, string(body), err.Error()),
@@ -501,7 +501,7 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 
 		//Read in the HTTP message body and pass the user input update to be updated in the local db and the exchange
 		var nodeUserInput []policy.UserInput
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodeUserInput); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UI, string(body), err.Error()),

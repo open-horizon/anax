@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -50,7 +49,7 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v/%v", r.Method, resource, fileName)))
 
-		nkBytes, err := ioutil.ReadAll(r.Body)
+		nkBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			errorHandler(NewSystemError(fmt.Sprintf("Unable to read uploaded trusted cert file %v, error: %v", fileName, err)))
 			return

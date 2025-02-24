@@ -3,6 +3,9 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/eventlog"
@@ -10,8 +13,6 @@ import (
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
-	"io/ioutil"
-	"net/http"
 )
 
 func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +50,7 @@ func (a *API) managementStatus(w http.ResponseWriter, r *http.Request) {
 
 		// Read in the HTTP body.
 		var nmStatus exchangecommon.NodeManagementPolicyStatus
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nmStatus); err != nil {
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "management status"))
 			return
