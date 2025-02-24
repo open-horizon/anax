@@ -6,17 +6,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/edge-sync-service/core/security"
-	"github.com/open-horizon/edge-utilities/logger"
-	"github.com/open-horizon/edge-utilities/logger/log"
-	"github.com/open-horizon/edge-utilities/logger/trace"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/edge-sync-service/core/security"
+	"github.com/open-horizon/edge-utilities/logger"
+	"github.com/open-horizon/edge-utilities/logger/log"
+	"github.com/open-horizon/edge-utilities/logger/trace"
 )
 
 // Set this env var to a value that will be used to identify the http header that contains the user identity, when this
@@ -295,7 +296,7 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 		}
 	} else {
 		users := new(GetUsersResponse)
-		if bodyBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+		if bodyBytes, err := io.ReadAll(resp.Body); err != nil {
 			return "", "", errors.New(fmt.Sprintf("unable to read HTTP response to %v, error %v", apiMsg, err))
 		} else if err = json.Unmarshal(bodyBytes, users); err != nil {
 			return "", "", errors.New(fmt.Sprintf("failed to unmarshal exchange body response from %s to user: %v", apiMsg, err))
@@ -377,7 +378,7 @@ func (auth *HorizonAuthenticate) verifyAgbotIdentity(id string, orgId string, ap
 		agbots := new(GetAgbotsResponse)
 
 		// Read in the response object and check if this is an agbot or not.
-		if outBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+		if outBytes, err := io.ReadAll(resp.Body); err != nil {
 			return errors.New(fmt.Sprintf("unable to read HTTP response to %v, error %v", apiMsg, err))
 		} else if err := json.Unmarshal(outBytes, agbots); err != nil {
 			return errors.New(fmt.Sprintf("unable to demarshal response %v from %v, error %v", string(outBytes), apiMsg, err))
@@ -433,7 +434,7 @@ func (auth *HorizonAuthenticate) verifyNodeIdentity(id string, orgId string, app
 		nodes := new(GetNodesResponse)
 
 		// Read in the response object and check if this node is in it.
-		if outBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+		if outBytes, err := io.ReadAll(resp.Body); err != nil {
 			return errors.New(fmt.Sprintf("unable to read HTTP response to %v, error %v", apiMsg, err))
 		} else if err := json.Unmarshal(outBytes, nodes); err != nil {
 			return errors.New(fmt.Sprintf("unable to demarshal response %v from %v, error %v", string(outBytes), apiMsg, err))
@@ -516,7 +517,7 @@ func newHTTPClient(certPath string) (*http.Client, error) {
 
 	if certPath != "" {
 		var err error
-		caBytes, err = ioutil.ReadFile(certPath)
+		caBytes, err = os.ReadFile(certPath)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("unable to read %v, error %v", certPath, err))
 		}

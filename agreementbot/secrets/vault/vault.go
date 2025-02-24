@@ -4,14 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 // This function registers an uninitialized agbot secrets implementation with the secrets plugin registry. The plugin's Initialize
@@ -85,7 +86,7 @@ func (vs *AgbotVaultSecrets) listSecret(user, token, org, name, url string) erro
 	}
 
 	// parse the vault response
-	respBytes, err := ioutil.ReadAll(resp.Body)
+	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return &secrets.InvalidResponse{ReadError: err, HttpMethod: http.MethodGet, SecretPath: url}
 	} else {
@@ -243,7 +244,7 @@ func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url, path string, all
 	}
 
 	// parse the vault response
-	respBytes, err := ioutil.ReadAll(resp.Body)
+	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, &secrets.InvalidResponse{ReadError: err, HttpMethod: "LIST", SecretPath: url}
 	} else {
@@ -356,7 +357,7 @@ func (vs *AgbotVaultSecrets) createSecret(user, token, org, vaultSecretName, url
 	}
 
 	// parse the vault response
-	respBytes, err := ioutil.ReadAll(resp.Body)
+	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return &secrets.InvalidResponse{ReadError: err, HttpMethod: http.MethodPost, SecretPath: url}
 	} else {
@@ -446,7 +447,7 @@ func (vs *AgbotVaultSecrets) deleteSecret(user, token, org, name, url string) er
 	}
 
 	// parse the vault response
-	respBytes, err := ioutil.ReadAll(resp.Body)
+	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return &secrets.InvalidResponse{ReadError: err, HttpMethod: http.MethodDelete, SecretPath: url}
 	} else {
@@ -539,7 +540,7 @@ func (vs *AgbotVaultSecrets) GetSecretDetails(user, token, org, secretUser, secr
 	}
 
 	// parse the vault response
-	respBytes, rerr := ioutil.ReadAll(resp.Body)
+	respBytes, rerr := io.ReadAll(resp.Body)
 	if rerr != nil {
 		err = &secrets.InvalidResponse{ReadError: rerr, HttpMethod: http.MethodGet, SecretPath: url}
 		return
@@ -634,7 +635,7 @@ func (vs *AgbotVaultSecrets) GetSecretMetadata(secretOrg, secretUser, secretNode
 	}
 
 	// parse the vault response
-	respBytes, rerr := ioutil.ReadAll(resp.Body)
+	respBytes, rerr := io.ReadAll(resp.Body)
 	if rerr != nil {
 		err = &secrets.InvalidResponse{ReadError: rerr, HttpMethod: http.MethodGet, SecretPath: url}
 		return
@@ -710,7 +711,7 @@ func (vs *AgbotVaultSecrets) loginUser(user, token, org string) (string, string,
 	}
 
 	// Save the login token
-	respBytes, err := ioutil.ReadAll(resp.Body)
+	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", "", errors.New(fmt.Sprintf("unable to read login response: %v", err))
 	}

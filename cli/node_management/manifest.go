@@ -3,6 +3,10 @@ package node_management
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"net/http"
+	"path"
+
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/sync_service"
@@ -10,9 +14,6 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/edge-sync-service/common"
-	"io/ioutil"
-	"net/http"
-	"path"
 )
 
 type ManifestInfo struct {
@@ -134,7 +135,7 @@ func ManifestList(org, credToUse, manifestId, manifestType string, longDetails b
 		}
 
 		// Read in the manifest data bytes
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read body response from %s: %v", apiMsg, err))
 		}

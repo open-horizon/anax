@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
-	"io/ioutil"
-	"net/http"
 )
 
 func (a *API) service(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +86,7 @@ func (a *API) serviceconfig(w http.ResponseWriter, r *http.Request) {
 
 		// Input should be: Service type w/ zero or more Attribute types
 		var service Service
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 
 		decoder := json.NewDecoder(bytes.NewReader(body))
 		decoder.UseNumber()
@@ -157,7 +158,7 @@ func (a *API) service_configstate(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		var service_cs exchange.ServiceConfigState
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 
 		decoder := json.NewDecoder(bytes.NewReader(body))
 		decoder.UseNumber()

@@ -6,7 +6,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -100,19 +100,19 @@ func setupTesting(listenerCert string, listenerKey string, trustSystemCerts bool
 		t.Error(err)
 	}
 
-	dir, err := ioutil.TempDir("", "config-collaborators-")
+	dir, err := os.TempDir("", "config-collaborators-")
 	if err != nil {
 		t.Error(err)
 	}
 
 	keyPath := filepath.Join(dir, "collaborators-test-key.pem")
-	if err := ioutil.WriteFile(keyPath, []byte(collaboratorsTestKey), 0660); err != nil {
+	if err := os.WriteFile(keyPath, []byte(collaboratorsTestKey), 0660); err != nil {
 		t.Error(err)
 	}
 
 	// mostly for building up a CA cert path
 	certPath := filepath.Join(dir, "collaborators-test-cert.pem")
-	if err := ioutil.WriteFile(certPath, []byte(collaboratorsTestCert), 0660); err != nil {
+	if err := os.WriteFile(certPath, []byte(collaboratorsTestCert), 0660); err != nil {
 		t.Error(err)
 	}
 
@@ -130,18 +130,18 @@ func setupTesting(listenerCert string, listenerKey string, trustSystemCerts bool
 	}
 
 	configPath := filepath.Join(dir, "config.json")
-	if err := ioutil.WriteFile(configPath, configBytes, 0660); err != nil {
+	if err := os.WriteFile(configPath, configBytes, 0660); err != nil {
 		t.Error(err)
 	}
 
 	// write listener key and cert
 	listenerKeyPath := filepath.Join(dir, "listener-key.pem")
-	if err := ioutil.WriteFile(listenerKeyPath, []byte(listenerKey), 0660); err != nil {
+	if err := os.WriteFile(listenerKeyPath, []byte(listenerKey), 0660); err != nil {
 		t.Error(err)
 	}
 
 	listenerCertPath := filepath.Join(dir, "listener-cert.pem")
-	if err := ioutil.WriteFile(listenerCertPath, []byte(listenerCert), 0660); err != nil {
+	if err := os.WriteFile(listenerCertPath, []byte(listenerCert), 0660); err != nil {
 		t.Error(err)
 	}
 
@@ -218,7 +218,7 @@ func Test_HTTPClientFactory_Suite(t *testing.T) {
 					t.Errorf("Unexpected error from HTTP request (wanted 200). HTTP response status code: %v", resp.StatusCode)
 				}
 
-				content, err := ioutil.ReadAll(resp.Body)
+				content, err := io.ReadAll(resp.Body)
 				if err != nil {
 					t.Error("Unexpected error reading response from HTTP server", err)
 				}
@@ -296,12 +296,12 @@ func Test_KeyFileNamesFetcher_Suite(t *testing.T) {
 		}
 
 		nonpemfile1 := filepath.Join(dir, "/trusted/non_pem_file1")
-		if err := ioutil.WriteFile(nonpemfile1, []byte("hello from non pem file 1"), 0660); err != nil {
+		if err := os.WriteFile(nonpemfile1, []byte("hello from non pem file 1"), 0660); err != nil {
 			t.Error(err)
 		}
 
 		nonpemfile2 := filepath.Join(userKeyPath, "/non_pem_file2")
-		if err := ioutil.WriteFile(nonpemfile2, []byte("hello from non pem file 2"), 0660); err != nil {
+		if err := os.WriteFile(nonpemfile2, []byte("hello from non pem file 2"), 0660); err != nil {
 			t.Error(err)
 		}
 
@@ -318,19 +318,19 @@ func Test_KeyFileNamesFetcher_Suite(t *testing.T) {
 		userKeyPath := cfg.UserPublicKeyPath()
 
 		pemfile1 := filepath.Join(dir, "/trusted/realfile1.pem")
-		if err := ioutil.WriteFile(pemfile1, []byte("hello from pem file 1"), 0660); err != nil {
+		if err := os.WriteFile(pemfile1, []byte("hello from pem file 1"), 0660); err != nil {
 			t.Error(err)
 		}
 		pemfile2 := filepath.Join(dir, "/trusted/realfile2.pem")
-		if err := ioutil.WriteFile(pemfile2, []byte("hello from pem file 2"), 0660); err != nil {
+		if err := os.WriteFile(pemfile2, []byte("hello from pem file 2"), 0660); err != nil {
 			t.Error(err)
 		}
 		pemfile3 := filepath.Join(userKeyPath, "realfile3.pem")
-		if err := ioutil.WriteFile(pemfile3, []byte("hello from pem file 3"), 0660); err != nil {
+		if err := os.WriteFile(pemfile3, []byte("hello from pem file 3"), 0660); err != nil {
 			t.Error(err)
 		}
 		pemfile4 := filepath.Join(userKeyPath, "realfile4.pem")
-		if err := ioutil.WriteFile(pemfile4, []byte("hello from pem file 4"), 0660); err != nil {
+		if err := os.WriteFile(pemfile4, []byte("hello from pem file 4"), 0660); err != nil {
 			t.Error(err)
 		}
 

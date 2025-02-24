@@ -4,6 +4,11 @@
 package nodemanagement
 
 import (
+	"os"
+	"path"
+	"testing"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
@@ -11,11 +16,6 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/persistence"
-	"io/ioutil"
-	"os"
-	"path"
-	"testing"
-	"time"
 )
 
 func Test_ProcessAllNMPS(t *testing.T) {
@@ -167,7 +167,7 @@ func Test_getEarliest(t *testing.T) {
 }
 
 func setupDB() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "container-")
+	dir, err := os.TempDir("", "container-")
 	if err != nil {
 		return "", nil, err
 	}
