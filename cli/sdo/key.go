@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/i18n"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/i18n"
 )
 
 type Key struct {
@@ -197,7 +197,7 @@ func sendSdoKeysApiRequest(org, userCreds, keyName, method string, body interfac
 	httpCode := resp.StatusCode
 	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+	respBodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
@@ -237,7 +237,7 @@ func import1Key(org, userCreds string, keyFileReader io.Reader, keyFileName stri
 
 	// Parse the voucher so we can tell them what we are doing
 	key := KeyFile{}
-	keyBytes, err := ioutil.ReadAll(keyFileReader)
+	keyBytes, err := io.ReadAll(keyFileReader)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the bytes from %s: %v", keyFileName, err))
 	} else if err = json.Unmarshal(keyBytes, &key); err != nil {
