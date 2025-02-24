@@ -1007,10 +1007,8 @@ func CreateFileWithConent(directory string, filename string, content string, sub
 	}
 
 	// do the substitution
-	if substitutes != nil {
-		for key, val := range substitutes {
-			content = strings.Replace(content, key, val, -1)
-		}
+	for key, val := range substitutes {
+		content = strings.Replace(content, key, val, -1)
 	}
 
 	// save the file
