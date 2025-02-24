@@ -296,12 +296,10 @@ func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds st
 func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribute {
 	byValueAttrs := make([]persistence.Attribute, 0, 10)
 	for _, a := range attrs {
-		switch a.(type) {
+		switch p := a.(type) {
 		case *persistence.HTTPSBasicAuthAttributes:
-			p := a.(*persistence.HTTPSBasicAuthAttributes)
 			byValueAttrs = append(byValueAttrs, *p)
 		case *persistence.DockerRegistryAuthAttributes:
-			p := a.(*persistence.DockerRegistryAuthAttributes)
 			byValueAttrs = append(byValueAttrs, *p)
 		}
 	}
