@@ -4325,7 +4325,13 @@ function create_persistent_volume() {
         chk $? 'creating persistent volume claim'
         log_info "persistent volume claim created"
     else
-        log_info "persistent volume claim ${PVC_NAME} exists, skip creating persistent volume claim"
+        log_info "persistent volume claim ${PVC_NAME} exists, check the storageclass in the agent persistent volume claim"
+        sc_in_use=$($KUBECTL get persistentvolumeclaim ${PVC_NAME} -n ${AGENT_NAMESPACE} -o json | jq -r '.spec.storageClassName')
+        if [[ "$sc_in_use" != "${EDGE_CLUSTER_STORAGE_CLASS}" ]]; then
+            log_fatal 3 "existing persistent volume claim ${PVC_NAME} uses a different storageclass: $sc_in_use. Passed in storageclass is ${EDGE_CLUSTER_STORAGE_CLASS}. Delete the agent pvc or set EDGE_CLUSTER_STORAGE_CLASS to $sc_in_use"
+        else
+            log_info "existing persistent volume claim ${PVC_NAME} uses the same storageclass, skip creating persistent volume claim"
+        fi
     fi
 
     log_debug "create_persistent_volume() end"
