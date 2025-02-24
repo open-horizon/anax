@@ -552,7 +552,8 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 					var err error
 					serviceContainers, err := cw.GetClient().ListContainers(docker.ListContainersOptions{Filters: map[string][]string{"network": []string{nwName}}})
 					if err != nil {
-						return nil, fmt.Errorf(msgPrinter.Sprintf("unable to get list of containers in network %v, error %v", nwName, err))
+						errMsg := msgPrinter.Sprintf("unable to get list of containers in network %v, error %v", nwName, err)
+						return nil, fmt.Errorf("%s", errMsg)
 					} else {
 						containers = append(containers, serviceContainers...)
 					}
