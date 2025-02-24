@@ -9,7 +9,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"flag"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"testing"
@@ -60,7 +60,7 @@ func Test_PKTest1(t *testing.T) {
 
 	if pf, err := os.Open(pubFilepath); err != nil {
 		t.Errorf("Unable to open public key file %v, error: %v", pubFilepath, err)
-	} else if pubBytes, err := ioutil.ReadAll(pf); err != nil {
+	} else if pubBytes, err := io.ReadAll(pf); err != nil {
 		t.Errorf("Unable to read public key file %v, error: %v", pubFilepath, err)
 	} else {
 		keyBytes = pubBytes

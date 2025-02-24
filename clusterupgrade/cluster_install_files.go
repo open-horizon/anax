@@ -8,10 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -65,7 +65,7 @@ func ReadAgentConfigFile(filename string) (map[string]string, error) {
 
 // ----------------cert file----------------
 func ReadAgentCertFile(filename string) ([]byte, error) {
-	certFile, err := ioutil.ReadFile(filename)
+	certFile, err := os.ReadFile(filename)
 	if err != nil {
 		return make([]byte, 0), err
 	}
@@ -76,7 +76,7 @@ func ReadAgentCertFile(filename string) ([]byte, error) {
 // TrustNewCert adds the icp cert file to be trusted in calls made by the given http client
 func TrustNewCert(httpClient *http.Client, certPath string) error {
 	if certPath != "" {
-		icpCert, err := ioutil.ReadFile(certPath)
+		icpCert, err := os.ReadFile(certPath)
 		if err != nil {
 			return err
 		}
@@ -187,7 +187,7 @@ func createNMPStatusFile(workDir string, status string) error {
 func setNMPStatusInStatusFile(workDir string, status string) error {
 	fileName := path.Join(workDir, nodemanagement.STATUS_FILE_NAME)
 
-	jsonByte, err := ioutil.ReadFile(fileName)
+	jsonByte, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}
@@ -209,7 +209,7 @@ func setNMPStatusInStatusFile(workDir string, status string) error {
 
 func setResourceNeedChangeInStatusFile(workDir string, resourceName string, needChange bool) error {
 	fileName := path.Join(workDir, nodemanagement.STATUS_FILE_NAME)
-	jsonByte, err := ioutil.ReadFile(fileName)
+	jsonByte, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}
@@ -245,7 +245,7 @@ func setResourceNeedChangeInStatusFile(workDir string, resourceName string, need
 
 func setResourceUpdatedInStatusFile(workDir string, resourceName string, updated bool) error {
 	fileName := path.Join(workDir, nodemanagement.STATUS_FILE_NAME)
-	jsonByte, err := ioutil.ReadFile(fileName)
+	jsonByte, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}
@@ -300,7 +300,7 @@ func setImageInfoInStatusFile(workDir string, from string, to string) error {
 
 func getStatusFromFile(workDir string) (*exchangecommon.NodeManagementPolicyStatus, error) {
 	fileName := path.Join(workDir, nodemanagement.STATUS_FILE_NAME)
-	jsonByte, err := ioutil.ReadFile(fileName)
+	jsonByte, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -336,7 +336,10 @@ func setErrorMessageInStatusFile(workDir string, statusToSet string, errorMessag
 	if err != nil {
 		return err
 	}
-	fileName := path.Join(workDir, nodemanagement.STATUS_FILE_NAME)
+
+	cleanedWorkDir := filepath.Clean(workDir)
+	fileName := filepath.Join(cleanedWorkDir, nodemanagement.STATUS_FILE_NAME)
+
 	err = os.WriteFile(fileName, updatedJsonByte, 0755)
 	return err
 }
@@ -387,7 +390,7 @@ func getImageTagFromManifestFile(manifestFolder string) (string, string, error) 
 	}
 
 	size := fileInfo.Size()
-	jsonByte, err := ioutil.ReadFile(fileName)
+	jsonByte, err := os.ReadFile(fileName)
 	if err != nil {
 		return "", "", err
 	}

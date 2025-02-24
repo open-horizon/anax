@@ -3,15 +3,16 @@ package secrets_manager
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/open-horizon/anax/agreementbot/secrets"
-	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/i18n"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/open-horizon/anax/agreementbot/secrets"
+	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 )
 
 type SecretResponse struct {
@@ -228,9 +229,9 @@ func SecretAdd(org, credToUse, secretName, secretNodeId, secretFile, secretKey, 
 		var secretBytes []byte
 		var err error
 		if secretFile == "-" {
-			secretBytes, err = ioutil.ReadAll(os.Stdin)
+			secretBytes, err = io.ReadAll(os.Stdin)
 		} else {
-			secretBytes, err = ioutil.ReadFile(secretFile)
+			secretBytes, err = os.ReadFile(secretFile)
 		}
 		if err != nil {
 			cliutils.Fatal(cliutils.FILE_IO_ERROR, msgPrinter.Sprintf("reading %s failed: %v", secretFile, err))

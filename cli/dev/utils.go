@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -127,10 +126,11 @@ func CreateFile(directory string, fileName string, obj interface{}) error {
 
 	// Convert the object to JSON and write it.
 	filePath := path.Join(directory, fileName)
+	cleanedPath := filepath.Clean(filePath)
 	if jsonBytes, err := json.MarshalIndent(obj, "", "    "); err != nil {
 		return errors.New(msgPrinter.Sprintf("failed to create json object for %v, error: %v", fileName, err))
-	} else if err := os.WriteFile(filePath, jsonBytes, 0664); err != nil {
-		return errors.New(msgPrinter.Sprintf("unable to write json object for %v to file %v, error: %v", fileName, filePath, err))
+	} else if err := os.WriteFile(cleanedPath, jsonBytes, 0664); err != nil {
+		return errors.New(msgPrinter.Sprintf("unable to write json object for %v to file %v, error: %v", fileName, cleanedPath, err))
 	} else {
 		return nil
 	}
@@ -296,12 +296,10 @@ func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds st
 func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribute {
 	byValueAttrs := make([]persistence.Attribute, 0, 10)
 	for _, a := range attrs {
-		switch a.(type) {
+		switch p := a.(type) {
 		case *persistence.HTTPSBasicAuthAttributes:
-			p := a.(*persistence.HTTPSBasicAuthAttributes)
 			byValueAttrs = append(byValueAttrs, *p)
 		case *persistence.DockerRegistryAuthAttributes:
-			p := a.(*persistence.DockerRegistryAuthAttributes)
 			byValueAttrs = append(byValueAttrs, *p)
 		}
 	}
@@ -472,7 +470,7 @@ func findContainers(serviceName string, instancePrefix string, cw *container.Con
 	dcService := docker.ListContainersOptions{
 		All: true,
 		Filters: map[string][]string{
-			"label": []string{
+			"label": {
 				fmt.Sprintf("%v.service_name=%v", container.LABEL_PREFIX, serviceName),
 				fmt.Sprintf("%v.dev_service", container.LABEL_PREFIX),
 			},
@@ -502,7 +500,7 @@ func getContainerNetworks(depConfig *common.DeploymentConfig, instancePrefix str
 	msgPrinter := i18n.GetMessagePrinter()
 
 	containerNetworks := make(map[string]string)
-	for serviceName, _ := range depConfig.Services {
+	for serviceName := range depConfig.Services {
 		containers, err := findContainers(serviceName, instancePrefix, cw)
 		if err != nil {
 			return nil, errors.New(msgPrinter.Sprintf("unable to list existing containers: %v", err))
@@ -547,12 +545,15 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 
 			var containers []docker.APIContainers
 			if msn != nil {
-				for nwName, _ := range msn {
+				for nwName := range msn {
 					// Get APIContainers given a network name
 					var err error
-					serviceContainers, err := cw.GetClient().ListContainers(docker.ListContainersOptions{Filters: map[string][]string{"network": []string{nwName}}})
+					serviceContainers, err := cw.GetClient().ListContainers(docker.ListContainersOptions{
+						Filters: map[string][]string{"network": {nwName}},
+					})
 					if err != nil {
-						return nil, fmt.Errorf(msgPrinter.Sprintf("unable to get list of containers in network %v, error %v", nwName, err))
+						errMsg := msgPrinter.Sprintf("unable to get list of containers in network %v, error %v", nwName, err)
+						return nil, fmt.Errorf("%s", errMsg)
 					} else {
 						containers = append(containers, serviceContainers...)
 					}
@@ -564,7 +565,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 					return nil, derr
 				}
 
-				for serviceName, _ := range depConfig.Services {
+				for serviceName := range depConfig.Services {
 					serviceContainers, err := findContainers(serviceName, cutil.MakeMSInstanceKey(depDef.URL, depDef.Org, depDef.Version, ""), cw)
 					if err != nil {
 						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' unable to list existing containers: %v", SERVICE_COMMAND, SERVICE_START_COMMAND, err))
@@ -594,7 +595,7 @@ func startDependent(dir string,
 	globals []common.GlobalSet, // API Attributes
 	configUserInputs []policy.AbstractUserInput, // indicates configured variables
 	cw *container.ContainerWorker,
-	parentServiceInstance string,
+	_ string,
 	secretsFiles map[string]string) (map[string]string, error) {
 
 	// get message printer
@@ -786,7 +787,7 @@ func stopContainers(dc *common.DeploymentConfig, instanceId string, cw *containe
 	}
 
 	// Stop each container in the deployment config.
-	for serviceName, _ := range dc.Services {
+	for serviceName := range dc.Services {
 		containers, err := findContainers(serviceName, instanceId, cw)
 		if err != nil {
 			return errors.New(msgPrinter.Sprintf("unable to list containers, %v", err))
@@ -1006,10 +1007,8 @@ func CreateFileWithConent(directory string, filename string, content string, sub
 	}
 
 	// do the substitution
-	if substitutes != nil {
-		for key, val := range substitutes {
-			content = strings.Replace(content, key, val, -1)
-		}
+	for key, val := range substitutes {
+		content = strings.Replace(content, key, val, -1)
 	}
 
 	// save the file
@@ -1021,7 +1020,7 @@ func CreateFileWithConent(directory string, filename string, content string, sub
 		// regular file
 		perm = 0644
 	}
-	if err := ioutil.WriteFile(filePath, []byte(content), perm); err != nil {
+	if err := os.WriteFile(filePath, []byte(content), perm); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to write content to file %v, error: %v", filePath, err))
 	} else {
 		return nil
