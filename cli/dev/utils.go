@@ -470,7 +470,7 @@ func findContainers(serviceName string, instancePrefix string, cw *container.Con
 	dcService := docker.ListContainersOptions{
 		All: true,
 		Filters: map[string][]string{
-			"label": []string{
+			"label": {
 				fmt.Sprintf("%v.service_name=%v", container.LABEL_PREFIX, serviceName),
 				fmt.Sprintf("%v.dev_service", container.LABEL_PREFIX),
 			},
@@ -548,7 +548,9 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 				for nwName := range msn {
 					// Get APIContainers given a network name
 					var err error
-					serviceContainers, err := cw.GetClient().ListContainers(docker.ListContainersOptions{Filters: map[string][]string{"network": []string{nwName}}})
+					serviceContainers, err := cw.GetClient().ListContainers(docker.ListContainersOptions{
+						Filters: map[string][]string{"network": {nwName}},
+					})
 					if err != nil {
 						errMsg := msgPrinter.Sprintf("unable to get list of containers in network %v, error %v", nwName, err)
 						return nil, fmt.Errorf("%s", errMsg)
