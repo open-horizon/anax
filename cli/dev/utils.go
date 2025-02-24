@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -127,10 +126,11 @@ func CreateFile(directory string, fileName string, obj interface{}) error {
 
 	// Convert the object to JSON and write it.
 	filePath := path.Join(directory, fileName)
+	cleanedPath := filepath.Clean(filePath)
 	if jsonBytes, err := json.MarshalIndent(obj, "", "    "); err != nil {
 		return errors.New(msgPrinter.Sprintf("failed to create json object for %v, error: %v", fileName, err))
-	} else if err := os.WriteFile(filePath, jsonBytes, 0664); err != nil {
-		return errors.New(msgPrinter.Sprintf("unable to write json object for %v to file %v, error: %v", fileName, filePath, err))
+	} else if err := os.WriteFile(cleanedPath, jsonBytes, 0664); err != nil {
+		return errors.New(msgPrinter.Sprintf("unable to write json object for %v to file %v, error: %v", fileName, cleanedPath, err))
 	} else {
 		return nil
 	}
@@ -1021,7 +1021,7 @@ func CreateFileWithConent(directory string, filename string, content string, sub
 		// regular file
 		perm = 0644
 	}
-	if err := ioutil.WriteFile(filePath, []byte(content), perm); err != nil {
+	if err := os.WriteFile(filePath, []byte(content), perm); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to write content to file %v, error: %v", filePath, err))
 	} else {
 		return nil
