@@ -7,10 +7,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"path"
 	"sync"
 	"testing"
@@ -36,7 +37,7 @@ func handleResp(r *http.Response, expectedStatus int) ([]byte, error) {
 
 	defer r.Body.Close()
 
-	return ioutil.ReadAll(r.Body)
+	return io.ReadAll(r.Body)
 }
 
 func deserialArray(b []byte) ([]Attribute, error) {
@@ -70,7 +71,7 @@ func serial(t *testing.T, attrInput []byte) []byte {
 }
 
 func setup() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "api-attribute-")
+	dir, err := os.MkdirTemp("", "api-attribute-")
 	if err != nil {
 		return "", nil, err
 	}

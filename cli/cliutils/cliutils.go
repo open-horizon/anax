@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -427,7 +426,7 @@ func AddOrg(org, id string) string {
 
 // ReadStdin reads from stdin, and returns it as a byte array.
 func ReadStdin() []byte {
-	fileBytes, err := ioutil.ReadAll(os.Stdin)
+	fileBytes, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		Fatal(FILE_IO_ERROR, i18n.GetMessagePrinter().Sprintf("reading stdin failed: %v", err))
 	}
@@ -439,9 +438,9 @@ func ReadFile(filePath string) []byte {
 	var fileBytes []byte
 	var err error
 	if filePath == "-" {
-		fileBytes, err = ioutil.ReadAll(os.Stdin)
+		fileBytes, err = io.ReadAll(os.Stdin)
 	} else {
-		fileBytes, err = ioutil.ReadFile(filePath)
+		fileBytes, err = os.ReadFile(filePath)
 	}
 	if err != nil {
 		Fatal(FILE_IO_ERROR, i18n.GetMessagePrinter().Sprintf("reading %s failed: %v", filePath, err))
@@ -469,9 +468,9 @@ func ReadJsonFile(filePath string) []byte {
 	var fileBytes []byte
 	var err error
 	if filePath == "-" {
-		fileBytes, err = ioutil.ReadAll(os.Stdin)
+		fileBytes, err = io.ReadAll(os.Stdin)
 	} else {
-		fileBytes, err = ioutil.ReadFile(filePath)
+		fileBytes, err = os.ReadFile(filePath)
 	}
 	if err != nil {
 		Fatal(FILE_IO_ERROR, i18n.GetMessagePrinter().Sprintf("reading %s failed: %v", filePath, err))
@@ -724,7 +723,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 		}
 	}
 	if httpCode == goodHttpCodes[0] {
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			if quiet {
 				retError = fmt.Errorf(msgPrinter.Sprintf("Failed to read body response from %s: %v", apiMsg, err))
@@ -942,7 +941,7 @@ func AgbotList(urlSuffix, credentials string, goodHttpCodes []int, structure int
 	}
 
 	respBody := io.Reader(resp.Body)
-	bodyBytes, err := ioutil.ReadAll(respBody)
+	bodyBytes, err := io.ReadAll(respBody)
 	if err != nil {
 		Fatal(HTTP_ERROR, msgPrinter.Sprintf("failed to read body response from %s: %v", apiMsg, err))
 	}
@@ -1064,7 +1063,7 @@ func GetAnaxConfig(configFile string) (*config.HorizonConfig, error) {
 		return nil, nil
 	}
 
-	if byteValue, err := ioutil.ReadFile(configFile); err != nil {
+	if byteValue, err := os.ReadFile(configFile); err != nil {
 		return nil, err
 	} else {
 		var anaxConfig config.HorizonConfig
@@ -1541,7 +1540,7 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 		}}
 	}
 
-	bodyBytes, err := ioutil.ReadAll(respBody)
+	bodyBytes, err := io.ReadAll(respBody)
 	if err != nil {
 		Fatal(HTTP_ERROR, msgPrinter.Sprintf("failed to read body response from %s: %v", apiMsg, err))
 	}
@@ -1614,7 +1613,7 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	}
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if !isGoodCode(httpCode, goodHttpCodes) {
 		if err != nil {
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
@@ -1914,7 +1913,7 @@ func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []
 			Fatal(EXEC_CMD_ERROR, msgPrinter.Sprintf("Could not get Stdin pipe, error: %v", err))
 		}
 		// Read the input file
-		//jInbytes, err = ioutil.ReadFile(stdinFilename)
+		//jInbytes, err = os.ReadFile(stdinFilename)
 		//if err != nil { Fatal(EXEC_CMD_ERROR,"Unable to read " + stdinFilename + " file, error: %v", err) }
 	}
 	// Create the stdout pipe to hold the output from the command
@@ -1950,12 +1949,12 @@ func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []
 	err = error(nil)
 	// Read the output from stdout and stderr into byte arrays
 	// stdoutBytes, err := readPipe(stdout)
-	stdoutBytes, err := ioutil.ReadAll(stdout)
+	stdoutBytes, err := io.ReadAll(stdout)
 	if err != nil {
 		Fatal(EXEC_CMD_ERROR, msgPrinter.Sprintf("could not read stdout, error: %v", err))
 	}
 	// stderrBytes, err := readPipe(stderr)
-	stderrBytes, err := ioutil.ReadAll(stderr)
+	stderrBytes, err := io.ReadAll(stderr)
 	if err != nil {
 		Fatal(EXEC_CMD_ERROR, msgPrinter.Sprintf("could not read stderr, error: %v", err))
 	}
@@ -2165,7 +2164,7 @@ func DownloadToFile(outputFilePath, defaultFileName string, body []byte, extensi
 	}
 	body = []byte(bodyString)
 
-	if err := ioutil.WriteFile(fileName, body, permissions); err != nil {
+	if err := os.WriteFile(fileName, body, permissions); err != nil {
 		Fatal(INTERNAL_ERROR, msgPrinter.Sprintf("Failed to save data for object '%s' to file %s, err: %v", defaultFileName, fileName, err))
 	}
 

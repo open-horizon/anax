@@ -7,15 +7,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/rsapss-tool/sign"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 )
 
 const KUBE_DEPLOYMENT_CONFIG_TYPE = "cluster"
@@ -201,7 +201,7 @@ func ConvertFileToB64String(filePath string) (string, error) {
 	}
 
 	// Read in the file and convert the contents to a base 64 encoded string.
-	if fileBytes, err := ioutil.ReadFile(filePath); err != nil {
+	if fileBytes, err := os.ReadFile(filePath); err != nil {
 		return "", err
 	} else {
 		b64String := base64.StdEncoding.EncodeToString(fileBytes)

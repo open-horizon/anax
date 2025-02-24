@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -130,9 +129,11 @@ func DeletePublicKey(fileName string,
 
 	// Get a list of all valid public key PEM files in the configured location
 	pubKeyDir := config.UserPublicKeyPath()
-	files, err := getPemFiles(pubKeyDir)
+	cleanedPubKeyDir := filepath.Clean(pubKeyDir)
+
+	files, err := getPemFiles(cleanedPubKeyDir)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to read trusted cert directory %v, error: %v", pubKeyDir, err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to read trusted cert directory %v, error: %v", cleanedPubKeyDir, err)))
 	}
 
 	// If the input file name is not in the list of valid pem files, then return an error
@@ -143,39 +144,46 @@ func DeletePublicKey(fileName string,
 		}
 	}
 	if !found {
-		return errorhandler(NewNotFoundError(fmt.Sprintf("unable to find input file %v", path.Join(pubKeyDir, fileName)), "filename"))
+		filePath := filepath.Join(cleanedPubKeyDir, fileName)
+		return errorhandler(NewNotFoundError(fmt.Sprintf("unable to find input file %v", filePath), "filename"))
 	}
 
 	// The input filename is present, remove it
-	err = os.Remove(pubKeyDir + "/" + fileName)
+	filePath := filepath.Join(cleanedPubKeyDir, fileName)
+	err = os.Remove(filePath)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to delete trusted cert file %v, error: %v", path.Join(pubKeyDir, fileName), err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to delete trusted cert file %v, error: %v", filePath, err)))
 	}
 	return false
 
 }
 
 func getPemFiles(homePath string) ([]os.FileInfo, error) {
-
 	res := make([]os.FileInfo, 0, 10)
 
-	if files, err := ioutil.ReadDir(homePath); err != nil && !os.IsNotExist(err) {
-		return res, errors.New(fmt.Sprintf("Unable to get list of PEM files in %v, error: %v", homePath, err))
+	files, err := os.ReadDir(homePath)
+	if err != nil && !os.IsNotExist(err) {
+		return res, fmt.Errorf("unable to get list of PEM files in %v, error: %v", homePath, err)
 	} else if os.IsNotExist(err) {
 		return res, nil
-	} else {
-		for _, fileInfo := range files {
-			if strings.HasSuffix(fileInfo.Name(), ".pem") && !fileInfo.IsDir() {
-				fName := homePath + "/" + fileInfo.Name()
-				if pubKeyData, err := ioutil.ReadFile(fName); err != nil {
-					continue
-				} else if _, err := verify.ValidKeyOrCert(pubKeyData); err != nil {
-					continue
-				} else {
-					res = append(res, fileInfo)
-				}
+	}
+
+	for _, fileInfo := range files {
+		if strings.HasSuffix(fileInfo.Name(), ".pem") && !fileInfo.IsDir() {
+			fileInfoAsFileInfo, err := fileInfo.Info()
+			if err != nil {
+				continue
+			}
+
+			fName := homePath + "/" + fileInfo.Name()
+			if pubKeyData, err := os.ReadFile(fName); err != nil {
+				continue
+			} else if _, err := verify.ValidKeyOrCert(pubKeyData); err != nil {
+				continue
+			} else {
+				res = append(res, fileInfoAsFileInfo)
 			}
 		}
-		return res, nil
 	}
+	return res, nil
 }

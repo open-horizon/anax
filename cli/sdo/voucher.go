@@ -10,6 +10,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/exchange"
@@ -21,11 +26,6 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"strings"
 )
 
 // Sub-commands for inspecting and importing an Intel SDO ownership voucher for an SDO device.
@@ -60,7 +60,7 @@ func VoucherInspect(voucherFile *os.File) {
 	cliutils.Verbose(msgPrinter.Sprintf("Inspecting voucher file name: %s", voucherFile.Name()))
 
 	outStruct := InspectOutput{}
-	voucherBytes, err := ioutil.ReadAll(bufio.NewReader(voucherFile))
+	voucherBytes, err := io.ReadAll(bufio.NewReader(voucherFile))
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the bytes from %s: %v", voucherFile.Name(), err))
 	}
@@ -189,7 +189,7 @@ func getVouchers(org, userCreds, apiMsg string, voucher string) ([]byte, string)
 	httpCode := resp.StatusCode
 	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+	respBodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
@@ -387,7 +387,7 @@ func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, vouch
 
 func importZip(org, userCreds, sdoUrl string, voucherFile *os.File, example, policyFilePath, patternName, userInputFileName, haGroupName string) {
 	msgPrinter := i18n.GetMessagePrinter()
-	voucherBytes, err := ioutil.ReadAll(bufio.NewReader(voucherFile))
+	voucherBytes, err := io.ReadAll(bufio.NewReader(voucherFile))
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the bytes from %s: %v", voucherFile.Name(), err))
 	}
@@ -413,7 +413,7 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 
 	// Parse the voucher so we can tell them what we are doing
 	outStruct := InspectOutput{}
-	voucherBytes, err := ioutil.ReadAll(voucherFileReader)
+	voucherBytes, err := io.ReadAll(voucherFileReader)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the bytes from %s: %v", voucherFileName, err))
 	}
@@ -442,7 +442,7 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 	// Create the node policy in the exchange, if they specified it
 	var policyStr string
 	if policyFilePath != "" {
-		policyBytes, err := ioutil.ReadFile(policyFilePath)
+		policyBytes, err := os.ReadFile(policyFilePath)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the policy file %s: %v", policyFilePath, err))
 		}
@@ -474,7 +474,7 @@ func SdoPostVoucher(url, creds, org string, requestBodyBytes []byte, respBody *I
 	}
 	httpCode := resp.StatusCode
 	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+	respBodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
@@ -502,7 +502,7 @@ func NodeAddDevice(org, nodeId, nodeToken, userPw, arch, patternName, userInputF
 
 	var inputs []policy.UserInput
 	if userInputFileName != "" {
-		userinputBytes, err := ioutil.ReadFile(userInputFileName)
+		userinputBytes, err := os.ReadFile(userInputFileName)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the service cofiguration user input file %s: %v", userInputFileName, err))
 		}

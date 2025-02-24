@@ -5,18 +5,18 @@ package persistence
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
 
 var testDb *bolt.DB
 
 func TestMain(m *testing.M) {
-	testDbFile, err := ioutil.TempFile("", "anax_persistence_int_test.db")
+	testDbFile, err := os.CreateTemp("", "anax_persistence_int_test.db")
 	if err != nil {
 		panic(err)
 	}
