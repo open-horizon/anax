@@ -6,17 +6,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/exchangecommon"
-	"github.com/open-horizon/anax/semanticversion"
-	"github.com/open-horizon/edge-sync-service/common"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/exchangecommon"
+	"github.com/open-horizon/anax/semanticversion"
+	"github.com/open-horizon/edge-sync-service/common"
 )
 
 const PATTERN = "pattern"
@@ -138,7 +139,7 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 			var outBytes []byte
 			var readErr error
 			if httpResp.Body != nil {
-				if outBytes, readErr = ioutil.ReadAll(httpResp.Body); readErr != nil {
+				if outBytes, readErr = io.ReadAll(httpResp.Body); readErr != nil {
 					return errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, urlPath, httpResp.Status, readErr)), nil
 				}
 			}

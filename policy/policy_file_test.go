@@ -7,13 +7,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/open-horizon/anax/externalpolicy"
-	_ "github.com/open-horizon/anax/externalpolicy/text_language"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/open-horizon/anax/externalpolicy"
+	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 )
 
 func Test_reads_and_writes_file(t *testing.T) {
@@ -42,11 +43,11 @@ func Test_reads_and_writes_file(t *testing.T) {
 		t.Error(err)
 	} else if policyFile1, err := os.Open("./test/pftest/test1.policy"); err != nil {
 		t.Errorf("Unable to open test1.policy policy file, error: %v", err)
-	} else if pf1bytes, err := ioutil.ReadAll(policyFile1); err != nil {
+	} else if pf1bytes, err := io.ReadAll(policyFile1); err != nil {
 		t.Errorf("Unable to read test1.policy policy file, error: %v", err)
 	} else if policyFile2, err := os.Open("./test/pftest/echo.policy"); err != nil {
 		t.Errorf("Unable to open echo.policy policy file, error: %v", err)
-	} else if pf2bytes, err := ioutil.ReadAll(policyFile2); err != nil {
+	} else if pf2bytes, err := io.ReadAll(policyFile2); err != nil {
 		t.Errorf("Unable to read echo.policy policy file, error: %v", err)
 	} else if bytes.Compare(pf1bytes, pf2bytes) != 0 {
 		t.Errorf("Echoed policy file %v does not match original file %v", string(pf2bytes), string(pf1bytes))
@@ -313,11 +314,11 @@ func Test_Policy_Merge(t *testing.T) {
 		t.Error(err)
 	} else if mpPolicy, err := os.Open("./test/pfmerge1/merged.policy"); err != nil {
 		t.Errorf("Unable to open merged.policy policy file, error: %v", err)
-	} else if mpbytes, err := ioutil.ReadAll(mpPolicy); err != nil {
+	} else if mpbytes, err := io.ReadAll(mpPolicy); err != nil {
 		t.Errorf("Unable to read merged.policy policy file, error: %v", err)
 	} else if expectingPolicy, err := os.Open("./test/pfmerge1/expecting.policy"); err != nil {
 		t.Errorf("Unable to open expecting.policy policy file, error: %v", err)
-	} else if epbytes, err := ioutil.ReadAll(expectingPolicy); err != nil {
+	} else if epbytes, err := io.ReadAll(expectingPolicy); err != nil {
 		t.Errorf("Unable to read expecting.policy policy file, error: %v", err)
 	} else if bytes.Compare(mpbytes, epbytes) != 0 {
 		t.Errorf("Merged policy file %v does not match expected file %v", string(mpbytes), string(epbytes))
@@ -341,11 +342,11 @@ func Test_Producer_Policy_Compatible_basic(t *testing.T) {
 		t.Error(err)
 	} else if mpPolicy, err := os.Open("./test/pfcompat2/merged.policy"); err != nil {
 		t.Errorf("Unable to open merged.policy policy file, error: %v", err)
-	} else if mpbytes, err := ioutil.ReadAll(mpPolicy); err != nil {
+	} else if mpbytes, err := io.ReadAll(mpPolicy); err != nil {
 		t.Errorf("Unable to read merged.policy policy file, error: %v", err)
 	} else if expectingPolicy, err := os.Open("./test/pfcompat2/expecting.policy"); err != nil {
 		t.Errorf("Unable to open expecting.policy policy file, error: %v", err)
-	} else if epbytes, err := ioutil.ReadAll(expectingPolicy); err != nil {
+	} else if epbytes, err := io.ReadAll(expectingPolicy); err != nil {
 		t.Errorf("Unable to read expecting.policy policy file, error: %v", err)
 	} else if bytes.Compare(mpbytes, epbytes) != 0 {
 		t.Errorf("Merged policy file %v does not match expected file %v", string(mpbytes), string(epbytes))
@@ -383,11 +384,11 @@ func Test_Policy_Creation(t *testing.T) {
 		t.Error(err)
 	} else if mpPolicy, err := os.Open("./test/pfcreate/created.policy"); err != nil {
 		t.Errorf("Unable to open created.policy policy file, error: %v", err)
-	} else if mpbytes, err := ioutil.ReadAll(mpPolicy); err != nil {
+	} else if mpbytes, err := io.ReadAll(mpPolicy); err != nil {
 		t.Errorf("Unable to read created.policy policy file, error: %v", err)
 	} else if expectingPolicy, err := os.Open("./test/pfcreate/expecting.policy"); err != nil {
 		t.Errorf("Unable to open expecting.policy policy file, error: %v", err)
-	} else if epbytes, err := ioutil.ReadAll(expectingPolicy); err != nil {
+	} else if epbytes, err := io.ReadAll(expectingPolicy); err != nil {
 		t.Errorf("Unable to read expecting.policy policy file, error: %v", err)
 	} else if bytes.Compare(mpbytes, epbytes) != 0 {
 		t.Errorf("Generated policy file %v does not match expected file %v", string(mpbytes), string(epbytes))

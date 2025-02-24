@@ -5,6 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path"
+	"strconv"
+	"strings"
+	"time"
+
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/dev"
@@ -13,13 +21,6 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/resource"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const LABEL_PREFIX = "openhorizon.hzn-dev"
@@ -284,11 +285,11 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 
 	if essCert, err := os.Open(certFile); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to open ESS SSL Certificate file %v, error %v", cw.Config.GetESSSSLClientCertPath(), err))
-	} else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
+	} else if essCertBytes, err := io.ReadAll(essCert); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to read ESS SSL Certificate file %v, error %v", cw.Config.GetESSSSLClientCertPath(), err))
 	} else if essCertKey, err := os.Open(certKeyFile); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to open ESS SSL Certificate Key file %v, error %v", cw.Config.GetESSSSLCertKeyPath(), err))
-	} else if essCertKeyBytes, err := ioutil.ReadAll(essCertKey); err != nil {
+	} else if essCertKeyBytes, err := io.ReadAll(essCertKey); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", cw.Config.GetESSSSLCertKeyPath(), err))
 	} else {
 		serverCert = string(essCertBytes)
@@ -435,7 +436,7 @@ func loadCSSFile(org string, fileType string, fileName string) error {
 
 	if fileObject, err := os.Open(fileName); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to open file object %v, error %v", fileName, err))
-	} else if fileBytes, err := ioutil.ReadAll(fileObject); err != nil {
+	} else if fileBytes, err := io.ReadAll(fileObject); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to read file object %v, error %v", fileName, err))
 	} else {
 		defer cutil.CloseFileLogError(fileObject)
