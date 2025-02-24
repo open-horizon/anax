@@ -502,7 +502,7 @@ func getContainerNetworks(depConfig *common.DeploymentConfig, instancePrefix str
 	msgPrinter := i18n.GetMessagePrinter()
 
 	containerNetworks := make(map[string]string)
-	for serviceName, _ := range depConfig.Services {
+	for serviceName := range depConfig.Services {
 		containers, err := findContainers(serviceName, instancePrefix, cw)
 		if err != nil {
 			return nil, errors.New(msgPrinter.Sprintf("unable to list existing containers: %v", err))
@@ -547,7 +547,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 
 			var containers []docker.APIContainers
 			if msn != nil {
-				for nwName, _ := range msn {
+				for nwName := range msn {
 					// Get APIContainers given a network name
 					var err error
 					serviceContainers, err := cw.GetClient().ListContainers(docker.ListContainersOptions{Filters: map[string][]string{"network": []string{nwName}}})
@@ -564,7 +564,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 					return nil, derr
 				}
 
-				for serviceName, _ := range depConfig.Services {
+				for serviceName := range depConfig.Services {
 					serviceContainers, err := findContainers(serviceName, cutil.MakeMSInstanceKey(depDef.URL, depDef.Org, depDef.Version, ""), cw)
 					if err != nil {
 						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' unable to list existing containers: %v", SERVICE_COMMAND, SERVICE_START_COMMAND, err))
@@ -594,7 +594,7 @@ func startDependent(dir string,
 	globals []common.GlobalSet, // API Attributes
 	configUserInputs []policy.AbstractUserInput, // indicates configured variables
 	cw *container.ContainerWorker,
-	parentServiceInstance string,
+	_ string,
 	secretsFiles map[string]string) (map[string]string, error) {
 
 	// get message printer
@@ -786,7 +786,7 @@ func stopContainers(dc *common.DeploymentConfig, instanceId string, cw *containe
 	}
 
 	// Stop each container in the deployment config.
-	for serviceName, _ := range dc.Services {
+	for serviceName := range dc.Services {
 		containers, err := findContainers(serviceName, instanceId, cw)
 		if err != nil {
 			return errors.New(msgPrinter.Sprintf("unable to list containers, %v", err))
