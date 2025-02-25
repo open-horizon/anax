@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/golang/glog"
@@ -127,9 +128,11 @@ func DeletePublicKey(fileName string,
 
 	// Get a list of all valid public key PEM files in the configured location
 	pubKeyDir := config.UserPublicKeyPath()
-	files, err := getPemFiles(pubKeyDir)
+	cleanedPubKeyDir := filepath.Clean(pubKeyDir)
+
+	files, err := getPemFiles(cleanedPubKeyDir)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to read trusted cert directory %v, error: %v", pubKeyDir, err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to read trusted cert directory %v, error: %v", cleanedPubKeyDir, err)))
 	}
 
 	// If the input file name is not in the list of valid pem files, then return an error
@@ -140,13 +143,15 @@ func DeletePublicKey(fileName string,
 		}
 	}
 	if !found {
-		return errorhandler(NewNotFoundError(fmt.Sprintf("unable to find input file %v", path.Join(pubKeyDir, fileName)), "filename"))
+		filePath := filepath.Join(cleanedPubKeyDir, fileName)
+		return errorhandler(NewNotFoundError(fmt.Sprintf("unable to find input file %v", filePath), "filename"))
 	}
 
 	// The input filename is present, remove it
-	err = os.Remove(pubKeyDir + "/" + fileName)
+	filePath := filepath.Join(cleanedPubKeyDir, fileName)
+	err = os.Remove(filePath)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to delete trusted cert file %v, error: %v", path.Join(pubKeyDir, fileName), err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to delete trusted cert file %v, error: %v", filePath, err)))
 	}
 	return false
 

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -334,7 +335,10 @@ func setErrorMessageInStatusFile(workDir string, statusToSet string, errorMessag
 	if err != nil {
 		return err
 	}
-	fileName := path.Join(workDir, nodemanagement.STATUS_FILE_NAME)
+
+	cleanedWorkDir := filepath.Clean(workDir)
+	fileName := filepath.Join(cleanedWorkDir, nodemanagement.STATUS_FILE_NAME)
+
 	err = os.WriteFile(fileName, updatedJsonByte, 0755)
 	return err
 }

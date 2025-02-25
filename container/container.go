@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -1272,8 +1273,9 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	workloadRWStorageDir, useVolume := b.workloadStorageDir(agreementId)
 
 	if !useVolume {
+		cleanedDir := filepath.Clean(workloadRWStorageDir)
 		// create RO workload storage dir if it doesnt already exist
-		if err := os.Mkdir(workloadRWStorageDir, 0700); err != nil {
+		if err := os.Mkdir(cleanedDir, 0700); err != nil {
 			if pErr, ok := err.(*os.PathError); ok {
 				if pErr.Err.Error() != "file exists" {
 					return nil, err
@@ -1283,9 +1285,11 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			}
 		}
 
-		glog.V(5).Infof("Writing raw config to file in %v. Config data: %v", workloadRWStorageDir, string(configureRaw))
+		glog.V(5).Infof("Writing raw config to file in %v. Config data: %v", cleanedDir, string(configureRaw))
+
 		// write raw to workloadRWStorageDir
-		if err := os.WriteFile(path.Join(workloadRWStorageDir, "Configure"), configureRaw, 0644); err != nil {
+		configFilePath := filepath.Join(cleanedDir, "Configure")
+		if err := os.WriteFile(configFilePath, configureRaw, 0644); err != nil {
 			return nil, err
 		}
 	} else {

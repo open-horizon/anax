@@ -11,14 +11,16 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
+	"sync"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"golang.org/x/crypto/sha3"
-	"io/ioutil"
-	"os"
-	"path"
-	"sync"
 )
 
 // This module is used to construct a message that can be sent over an insecure transport
@@ -484,17 +486,20 @@ func DeleteKeys(keyPath string) error {
 	privFilepath := path.Join(snap_common, keyPath, privFileName)
 	pubFilepath := path.Join(snap_common, keyPath, pubFileName)
 
-	glog.V(5).Infof("Removing private key path %v, and public key path %v", privFilepath, pubFilepath)
+	cleanedPrivFilepath := filepath.Clean(privFilepath)
+	cleanedPubFilepath := filepath.Clean(pubFilepath)
+
+	glog.V(5).Infof("Removing private key path %v, and public key path %v", cleanedPrivFilepath, cleanedPubFilepath)
 
 	// Delete both the private and public key files
-	if _, ferr := os.Stat(privFilepath); !os.IsNotExist(ferr) {
-		if err := os.Remove(privFilepath); err != nil {
+	if _, ferr := os.Stat(cleanedPrivFilepath); !os.IsNotExist(ferr) {
+		if err := os.Remove(cleanedPrivFilepath); err != nil {
 			return err
 		}
 	}
 
-	if _, ferr := os.Stat(pubFilepath); !os.IsNotExist(ferr) {
-		if err := os.Remove(pubFilepath); err != nil {
+	if _, ferr := os.Stat(cleanedPubFilepath); !os.IsNotExist(ferr) {
+		if err := os.Remove(cleanedPubFilepath); err != nil {
 			return err
 		}
 	}

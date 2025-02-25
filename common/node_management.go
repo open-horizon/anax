@@ -2,15 +2,17 @@ package common
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
-	"os"
-	"path"
-	"time"
 )
 
 // The input data newStatus is either from the status.json file or from the /nodemanagement/status/nmp
@@ -121,8 +123,13 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 			}
 
 			// Status has been read-in and updated sucessfully. Can now remove the working dirctory for the job.
-			if err := os.RemoveAll(path.Join(dbStatus.AgentUpgrade.BaseWorkingDirectory, nmp_id)); err != nil {
-				return true, fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", nmp_id, err)
+			if dbStatus.AgentUpgrade.BaseWorkingDirectory != "" {
+				dirPath := path.Join(dbStatus.AgentUpgrade.BaseWorkingDirectory, nmp_id)
+				cleanedPath := filepath.Clean(dirPath)
+
+				if err := os.RemoveAll(cleanedPath); err != nil {
+					return true, fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", nmp_id, err)
+				}
 			}
 		}
 		return true, nil
