@@ -11,7 +11,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -453,7 +453,7 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 			return nil, nil, errors.New(fmt.Sprintf("Could not find public key file %v, error %v", privFilepath, ferr))
 		} else if privFile, err := os.Open(privFilepath); err != nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to open private key file %v, error: %v", privFilepath, err))
-		} else if privBytes, err := ioutil.ReadAll(privFile); err != nil {
+		} else if privBytes, err := io.ReadAll(privFile); err != nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to read private key file %v, error: %v", privFilepath, err))
 		} else if privBlock, _ := pem.Decode(privBytes); privBlock == nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to extract pem block from private key file %v, error: %v", privFilepath, err))
@@ -461,7 +461,7 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to parse private key %x, error: %v", privBytes, err))
 		} else if pubFile, err := os.Open(pubFilepath); err != nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to open public key file %v, error: %v", pubFilepath, err))
-		} else if pubBytes, err := ioutil.ReadAll(pubFile); err != nil {
+		} else if pubBytes, err := io.ReadAll(pubFile); err != nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to read public key file %v, error: %v", pubFilepath, err))
 		} else if pubBlock, _ := pem.Decode(pubBytes); pubBlock == nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to extract pem block from public key file %v, error: %v", pubFilepath, err))

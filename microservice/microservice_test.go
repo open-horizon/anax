@@ -5,6 +5,11 @@ package microservice
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"testing"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
@@ -12,11 +17,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"os"
-	"path"
-	"testing"
-	"time"
 )
 
 func TestConvertToPersistent(t *testing.T) {
@@ -326,7 +326,7 @@ func getVariableDeviceHandler(mss []exchange.Microservice, ss []exchange.Microse
 }
 
 func setupDB() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "container-")
+	dir, err := os.TempDir("", "container-")
 	if err != nil {
 		return "", nil, err
 	}

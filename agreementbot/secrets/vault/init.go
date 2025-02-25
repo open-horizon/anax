@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
-	"io/ioutil"
-	"net/http"
 )
 
 // This function is called by the anax main to allow the plugin a chance to initialize itself.
@@ -57,7 +58,7 @@ func (vs *AgbotVaultSecrets) Login() (err error) {
 	}
 
 	// Save the login token
-	respBytes, err := ioutil.ReadAll(resp.Body)
+	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errors.New(fmt.Sprintf("unable to read login response, error: %v", err))
 	}
@@ -111,7 +112,7 @@ func (vs *AgbotVaultSecrets) Renew() (err error) {
 
 	// Save the token locally
 
-	_, err = ioutil.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return errors.New(fmt.Sprintf("unable to read renew response, error: %v", err))
 	}

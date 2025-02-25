@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -88,7 +87,7 @@ func GetConfig(configFile string) (*HorizonCliConfig, error) {
 
 	cliutils.Verbose(msgPrinter.Sprintf("Reading configuration file: %v", configFile))
 
-	fileBytes, err := ioutil.ReadFile(configFile)
+	fileBytes, err := os.ReadFile(configFile)
 	if err != nil {
 		return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to read config file: %v. %v", configFile, err))
 	}

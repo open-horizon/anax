@@ -4,12 +4,12 @@
 package persistence
 
 import (
-	"github.com/boltdb/bolt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
 
 // Parent and child, simple case.
@@ -374,7 +374,7 @@ func Test_UpdateMSInstanceRemoveDependencyPath2(t *testing.T) {
 
 // Utility functions needed by tests
 func utsetup() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "utdb-")
+	dir, err := os.TempDir("", "utdb-")
 	if err != nil {
 		return "", nil, err
 	}

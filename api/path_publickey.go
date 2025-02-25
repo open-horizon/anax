@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -158,26 +157,31 @@ func DeletePublicKey(fileName string,
 }
 
 func getPemFiles(homePath string) ([]os.FileInfo, error) {
-
 	res := make([]os.FileInfo, 0, 10)
 
-	if files, err := ioutil.ReadDir(homePath); err != nil && !os.IsNotExist(err) {
-		return res, errors.New(fmt.Sprintf("Unable to get list of PEM files in %v, error: %v", homePath, err))
+	files, err := os.ReadDir(homePath)
+	if err != nil && !os.IsNotExist(err) {
+		return res, fmt.Errorf("unable to get list of PEM files in %v, error: %v", homePath, err)
 	} else if os.IsNotExist(err) {
 		return res, nil
-	} else {
-		for _, fileInfo := range files {
-			if strings.HasSuffix(fileInfo.Name(), ".pem") && !fileInfo.IsDir() {
-				fName := homePath + "/" + fileInfo.Name()
-				if pubKeyData, err := ioutil.ReadFile(fName); err != nil {
-					continue
-				} else if _, err := verify.ValidKeyOrCert(pubKeyData); err != nil {
-					continue
-				} else {
-					res = append(res, fileInfo)
-				}
+	}
+
+	for _, fileInfo := range files {
+		if strings.HasSuffix(fileInfo.Name(), ".pem") && !fileInfo.IsDir() {
+			fileInfoAsFileInfo, err := fileInfo.Info()
+			if err != nil {
+				continue
+			}
+
+			fName := homePath + "/" + fileInfo.Name()
+			if pubKeyData, err := os.ReadFile(fName); err != nil {
+				continue
+			} else if _, err := verify.ValidKeyOrCert(pubKeyData); err != nil {
+				continue
+			} else {
+				res = append(res, fileInfoAsFileInfo)
 			}
 		}
-		return res, nil
 	}
+	return res, nil
 }

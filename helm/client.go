@@ -3,10 +3,10 @@ package helm
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
-	"io/ioutil"
-	"os"
 )
 
 // Status object returned by our Helm client.
@@ -41,7 +41,7 @@ const TEMP_PACKAGE_PREFIX = "anax-helm-package-"
 func ConvertB64StringToFile(b64Package string) (string, error) {
 	if sDec, err := base64.StdEncoding.DecodeString(b64Package); err != nil {
 		return "", err
-	} else if f, err := ioutil.TempFile("", TEMP_PACKAGE_PREFIX); err != nil {
+	} else if f, err := os.CreateTemp("", TEMP_PACKAGE_PREFIX); err != nil {
 		return "", err
 	} else {
 		defer cutil.CloseFileLogError(f)
@@ -63,7 +63,7 @@ func ConvertFileToB64String(filePath string) (string, error) {
 	}
 
 	// Read in the file and convert the contents to a base 64 encoded string.
-	if fileBytes, err := ioutil.ReadFile(filePath); err != nil {
+	if fileBytes, err := os.ReadFile(filePath); err != nil {
 		return "", err
 	} else {
 		b64String := base64.StdEncoding.EncodeToString(fileBytes)

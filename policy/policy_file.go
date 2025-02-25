@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -712,7 +712,7 @@ func ReadPolicyFile(name string, arch_synonymns config.ArchSynonyms) (*Policy, e
 
 	if policyFile, err := os.Open(name); err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to open policy file %v, error: %v", name, err))
-	} else if bytes, err := ioutil.ReadAll(policyFile); err != nil {
+	} else if bytes, err := io.ReadAll(policyFile); err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to read policy file %v, error: %v", name, err))
 	} else {
 		newPolicy := new(Policy)
@@ -1104,32 +1104,42 @@ func DeleteAllPolicyFiles(homePath string, patternBasedOnly bool) error {
 func getPolicyFiles(homePath string) ([]os.FileInfo, error) {
 	res := make([]os.FileInfo, 0, 10)
 
-	if files, err := ioutil.ReadDir(homePath); err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to get list of policy files in %v, error: %v", homePath, err))
-	} else {
-		for _, fileInfo := range files {
-			if strings.HasSuffix(fileInfo.Name(), ".policy") && !fileInfo.IsDir() {
-				res = append(res, fileInfo)
-			}
-		}
-		return res, nil
+	files, err := os.ReadDir(homePath)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get list of policy files in %v, error: %v", homePath, err)
 	}
+
+	for _, fileInfo := range files {
+		if strings.HasSuffix(fileInfo.Name(), ".policy") && !fileInfo.IsDir() {
+			fileInfoAsFileInfo, err := fileInfo.Info()
+			if err != nil {
+				continue
+			}
+			res = append(res, fileInfoAsFileInfo)
+		}
+	}
+	return res, nil
 }
 
 // This is an internal function used to find all directories in the policy directory. It only returns directories.
 func getPolicyDirectories(homePath string) ([]os.FileInfo, error) {
 	res := make([]os.FileInfo, 0, 10)
 
-	if files, err := ioutil.ReadDir(homePath); err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to get list of policy directories in %v, error: %v", homePath, err))
-	} else {
-		for _, fileInfo := range files {
-			if fileInfo.IsDir() {
-				res = append(res, fileInfo)
-			}
-		}
-		return res, nil
+	files, err := os.ReadDir(homePath)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get list of policy directories in %v, error: %v", homePath, err)
 	}
+
+	for _, fileInfo := range files {
+		if fileInfo.IsDir() {
+			fileInfoAsFileInfo, err := fileInfo.Info()
+			if err != nil {
+				continue
+			}
+			res = append(res, fileInfoAsFileInfo)
+		}
+	}
+	return res, nil
 }
 
 // Error contains a full error string and a short error. The short error can be used for cli output.

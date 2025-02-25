@@ -5,6 +5,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"strings"
+
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/common"
@@ -16,13 +23,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
-	"io/ioutil"
-	"os"
-	"path"
-	"path/filepath"
-	"reflect"
-	"regexp"
-	"strings"
 )
 
 const DEPENDENCY_COMMAND = "dependency"
@@ -196,21 +196,23 @@ func DependencyRemove(homeDirectory string, specRef string, url string, version 
 // Returns an os.FileInfo object for each dependency file. This function assumes the caller has
 // determined the exact location of the files.
 func GetDependencyFiles(directory string, fileSuffix string) ([]os.FileInfo, error) {
-
 	res := make([]os.FileInfo, 0, 10)
 	depPath := path.Join(directory, DEFAULT_DEPENDENCY_DIR)
-	if files, err := ioutil.ReadDir(depPath); err != nil {
+
+	if files, err := os.ReadDir(depPath); err != nil {
 		return res, errors.New(i18n.GetMessagePrinter().Sprintf("unable to get list of dependency files in %v, error: %v", depPath, err))
 	} else {
 		for _, fileInfo := range files {
 			if strings.HasSuffix(fileInfo.Name(), fileSuffix) && !fileInfo.IsDir() {
-				res = append(res, fileInfo)
+				fileInfoAsFileInfo, err := fileInfo.Info()
+				if err != nil {
+					continue
+				}
+				res = append(res, fileInfoAsFileInfo)
 			}
 		}
 	}
-
 	return res, nil
-
 }
 
 func GetServiceDependencies(directory string, deps []exchangecommon.ServiceDependency) ([]*common.ServiceFile, error) {
