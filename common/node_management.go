@@ -59,6 +59,11 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 			if dbStatus.AgentUpgradeInternal != nil {
 				dbStatus.AgentUpgradeInternal.DownloadAttempts = 0
 			}
+
+			if dbStatus.AgentUpgrade != nil {
+				dbStatus.AgentUpgrade.ActualStartTime = ""
+				dbStatus.AgentUpgrade.CompletionTime = ""
+			}
 		}
 
 		// Update the NMP status in the local db
@@ -95,12 +100,19 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 					if newCertVer != cert_version {
 						updateExch = true
 					}
+				} else {
+					// newCertVer somehow is empty, use the cert version in the exchange
+					newCertVer = cert_version
 				}
+
 				if newConfigVer != "" {
 					pDevice.SetConfigVersion(db, pDevice.Id, newConfigVer)
 					if newConfigVer != config_version {
 						updateExch = true
 					}
+				} else {
+					// newConfigVer somehow is empty, use the config version in the exchange
+					newConfigVer = config_version
 				}
 
 				// Update the agent software version

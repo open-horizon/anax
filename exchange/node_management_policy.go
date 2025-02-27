@@ -57,7 +57,7 @@ func GetAllExchangeNodeManagementPolicy(ec ExchangeContext, policyOrg string) (*
 
 // Get lists of the agent file versions currently availible in the css
 func GetNodeUpgradeVersions(ec ExchangeContext) (*exchangecommon.AgentFileVersions, error) {
-	glog.V(3).Infof("Getting the availible versions for agent upgrade packages from the exchange.")
+	glog.V(3).Infof("Getting the available versions for agent upgrade packages from the exchange.")
 
 	var resp interface{}
 	resp = new(exchangecommon.AgentFileVersions)
