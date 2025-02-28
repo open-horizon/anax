@@ -93,8 +93,10 @@ func TrustNewCert(httpClient *http.Client, certPath string) error {
 func ValidateConfigAndCert(exchangeURL string, certPath string) error {
 	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	if err := TrustNewCert(httpClient, certPath); err != nil {
-		return err
+	if strings.HasPrefix(strings.ToLower(exchangeURL), "https") {
+		if err := TrustNewCert(httpClient, certPath); err != nil {
+			return err
+		}
 	}
 
 	// get retry count and retry interval from env
