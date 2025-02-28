@@ -9,7 +9,7 @@ require (
 	github.com/coreos/go-iptables v0.6.0
 	github.com/fsouza/go-dockerclient v1.11.0
 	github.com/go-ini/ini v1.66.4
-	github.com/golang/glog v1.2.1
+	github.com/golang/glog v1.2.4
 	github.com/google/go-containerregistry v0.19.1
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20240418155129-98dd3e91704f
 	github.com/google/uuid v1.6.0
@@ -149,3 +149,5 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.31.0
 	golang.org/x/text => golang.org/x/text v0.21.0
 )
+
+replace github.com/open-horizon/edge-sync-service => github.com/kzosi/edge-sync-service v0.0.0-20250228145824-3aba28557357
