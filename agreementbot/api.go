@@ -3,6 +3,14 @@ package agreementbot
 import (
 	"encoding/json"
 	"fmt"
+	"html"
+	"io/ioutil"
+	"net/http"
+	"regexp"
+	"sort"
+	"sync"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/abstractprotocol"
@@ -14,12 +22,6 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"io/ioutil"
-	"net/http"
-	"regexp"
-	"sort"
-	"sync"
-	"time"
 )
 
 type API struct {
@@ -1164,7 +1166,7 @@ func writeResponse(w http.ResponseWriter, payload interface{}, successStatusCode
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(successStatusCode)
 
-	if _, err := w.Write(serial); err != nil {
+	if _, err := w.Write([]byte(html.EscapeString(string(serial)))); err != nil {
 		glog.Error(APIlogString(err))
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
