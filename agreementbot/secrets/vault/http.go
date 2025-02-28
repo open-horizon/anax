@@ -7,16 +7,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/agreementbot/secrets"
-	"github.com/open-horizon/anax/config"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/agreementbot/secrets"
+	"github.com/open-horizon/anax/config"
 )
 
 // Retry intervals when connecting to the vault
@@ -96,7 +96,7 @@ func (vs *AgbotVaultSecrets) newHTTPClient(cfg *config.HorizonConfig) (*http.Cli
 
 	if _, err = os.Stat(cfg.GetVaultCertPath()); err == nil {
 
-		caBytes, err = ioutil.ReadFile(cfg.GetVaultCertPath())
+		caBytes, err = os.ReadFile(cfg.GetVaultCertPath())
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("unable to read %v, error %v", cfg.GetVaultCertPath(), err))
 		}

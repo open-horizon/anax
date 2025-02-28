@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strconv"
@@ -414,7 +413,7 @@ func (c KubeClient) DeleteConfigMap(agId string, namespace string) error {
 func (c KubeClient) CreateESSAuthSecrets(fssAuthFilePath string, agId string, namespace string) (string, error) {
 	if essAuth, err := os.Open(fssAuthFilePath); err != nil {
 		return "", err
-	} else if essAuthBytes, err := ioutil.ReadAll(essAuth); err != nil {
+	} else if essAuthBytes, err := io.ReadAll(essAuth); err != nil {
 		return "", err
 	} else {
 		secretData := make(map[string][]byte)
@@ -447,7 +446,7 @@ func (c KubeClient) DeleteESSAuthSecrets(agId string, namespace string) error {
 func (c KubeClient) CreateESSCertSecrets(fssCertFilePath string, agId string, namespace string) (string, error) {
 	if essCert, err := os.Open(fssCertFilePath); err != nil {
 		return "", err
-	} else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
+	} else if essCertBytes, err := io.ReadAll(essCert); err != nil {
 		return "", err
 	} else {
 		secretData := make(map[string][]byte)
@@ -715,9 +714,9 @@ func getYamlFromTarGz(deploymentString string) ([]YamlFile, error) {
 		} else if header.Typeflag == tar.TypeDir {
 			continue
 		} else if err == nil {
-			tar, err := ioutil.ReadAll(tarReader)
+			tar, err := io.ReadAll(tarReader)
 			if err != nil {
-				return files, fmt.Errorf("Error reading tar file: %v", err)
+				return files, fmt.Errorf("error reading tar file: %v", err)
 			}
 			newFile := YamlFile{Header: *header, Body: string(tar)}
 			files = append(files, newFile)

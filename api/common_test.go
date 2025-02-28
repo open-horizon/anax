@@ -2,15 +2,15 @@ package api
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
-	"io/ioutil"
-	"os"
-	"path"
-	"time"
 )
 
 // ========================================================================================
@@ -251,7 +251,7 @@ func getDummyDeleteNodePolicyHandler() exchange.DeleteNodePolicyHandler {
 }
 
 func utsetup() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "utdb-")
+	dir, err := os.MkdirTemp("", "utdb-")
 	if err != nil {
 		return "", nil, err
 	}
