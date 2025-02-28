@@ -9,7 +9,7 @@ require (
 	github.com/coreos/go-iptables v0.6.0
 	github.com/fsouza/go-dockerclient v1.11.0
 	github.com/go-ini/ini v1.66.4
-	github.com/golang/glog v1.1.2
+	github.com/golang/glog v1.2.4
 	github.com/google/go-containerregistry v0.19.1
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20240418155129-98dd3e91704f
 	github.com/google/uuid v1.4.0
