@@ -1,6 +1,8 @@
 module github.com/open-horizon/anax
 
-go 1.21
+go 1.23.0
+
+toolchain go1.23.4
 
 require (
 	github.com/adams-sarah/test2doc v0.0.0-20211124171229-79cd42e7411d
@@ -9,7 +11,7 @@ require (
 	github.com/coreos/go-iptables v0.6.0
 	github.com/fsouza/go-dockerclient v1.11.0
 	github.com/go-ini/ini v1.66.4
-	github.com/golang/glog v1.1.2
+	github.com/golang/glog v1.2.4
 	github.com/google/go-containerregistry v0.19.1
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20240418155129-98dd3e91704f
 	github.com/google/uuid v1.4.0
@@ -22,9 +24,9 @@ require (
 	github.com/operator-framework/operator-lifecycle-manager v0.27.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.31.0
-	golang.org/x/sys v0.28.0
-	golang.org/x/text v0.21.0
+	golang.org/x/crypto v0.35.0
+	golang.org/x/sys v0.30.0
+	golang.org/x/text v0.22.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.28.5
@@ -119,7 +121,7 @@ require (
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/oauth2 v0.14.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/term v0.29.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/appengine v1.6.8 // indirect
@@ -140,6 +142,6 @@ replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.7.11
 	github.com/docker/docker => github.com/docker/docker v27.1.1+incompatible
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.5
-	golang.org/x/crypto => golang.org/x/crypto v0.31.0
+	golang.org/x/crypto => golang.org/x/crypto v0.35.0
 	golang.org/x/text => golang.org/x/text v0.21.0
 )
