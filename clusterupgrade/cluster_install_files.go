@@ -7,6 +7,14 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/crane"
@@ -15,13 +23,6 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/nodemanagement"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path"
-	"strings"
-	"time"
 )
 
 const DOCKER_MANIFEST_FILE = "manifest.json"
@@ -92,8 +93,10 @@ func TrustNewCert(httpClient *http.Client, certPath string) error {
 func ValidateConfigAndCert(exchangeURL string, certPath string) error {
 	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	if err := TrustNewCert(httpClient, certPath); err != nil {
-		return err
+	if strings.HasPrefix(strings.ToLower(exchangeURL), "https") {
+		if err := TrustNewCert(httpClient, certPath); err != nil {
+			return err
+		}
 	}
 
 	// get retry count and retry interval from env
@@ -151,7 +154,7 @@ func createNMPStatusFile(workDir string, status string) error {
 
 	if _, err := os.Stat(workDir); os.IsNotExist(err) {
 		glog.Infof(cuwlog(fmt.Sprintf("Work dir %v does not exist, create it...", workDir)))
-		if err = os.MkdirAll(workDir, 755); err != nil {
+		if err = os.MkdirAll(workDir, 0o755); err != nil {
 			glog.Infof(cuwlog(fmt.Sprintf("Failed to create dir %v, err: %v", workDir, err)))
 			return err
 		}
@@ -173,7 +176,7 @@ func createNMPStatusFile(workDir string, status string) error {
 	if statusFileByte, err := json.Marshal(statusFile); err != nil {
 		glog.Infof(cuwlog(fmt.Sprintf("Failed to marshal to status file, err: %v", err)))
 		return err
-	} else if err := ioutil.WriteFile(fileName, statusFileByte, 0755); err != nil {
+	} else if err := os.WriteFile(fileName, statusFileByte, 0755); err != nil {
 		glog.Infof(cuwlog(fmt.Sprintf("Failed marshal to status file, err: %v", err)))
 		return err
 	}
@@ -200,7 +203,7 @@ func setNMPStatusInStatusFile(workDir string, status string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(fileName, updatedJsonByte, 0755)
+	err = os.WriteFile(fileName, updatedJsonByte, 0755)
 	return err
 }
 
@@ -233,7 +236,7 @@ func setResourceNeedChangeInStatusFile(workDir string, resourceName string, need
 		return err
 	}
 
-	if err = ioutil.WriteFile(fileName, updatedJsonByte, 0755); err != nil {
+	if err = os.WriteFile(fileName, updatedJsonByte, 0755); err != nil {
 		return err
 	}
 	glog.V(3).Infof(cuwlog(fmt.Sprintf("%v.needChange is set to %v in status file", resourceName, needChange)))
@@ -269,7 +272,7 @@ func setResourceUpdatedInStatusFile(workDir string, resourceName string, updated
 		return err
 	}
 
-	if err = ioutil.WriteFile(fileName, updatedJsonByte, 0755); err != nil {
+	if err = os.WriteFile(fileName, updatedJsonByte, 0755); err != nil {
 		return err
 	}
 	glog.V(3).Infof(cuwlog(fmt.Sprintf("%v.updated is set to %v in status file", resourceName, updated)))
@@ -291,7 +294,7 @@ func setImageInfoInStatusFile(workDir string, from string, to string) error {
 	}
 
 	fileName := path.Join(workDir, nodemanagement.STATUS_FILE_NAME)
-	err = ioutil.WriteFile(fileName, updatedJsonByte, 0755)
+	err = os.WriteFile(fileName, updatedJsonByte, 0755)
 	return err
 }
 
@@ -334,7 +337,7 @@ func setErrorMessageInStatusFile(workDir string, statusToSet string, errorMessag
 		return err
 	}
 	fileName := path.Join(workDir, nodemanagement.STATUS_FILE_NAME)
-	err = ioutil.WriteFile(fileName, updatedJsonByte, 0755)
+	err = os.WriteFile(fileName, updatedJsonByte, 0755)
 	return err
 }
 
@@ -441,7 +444,7 @@ func extractImageManifest(tarballPath, targetFolder string) error {
 
 	// create the target folder if it is not exist
 	if _, err := os.Stat(targetFolder); err != nil {
-		if err := os.MkdirAll(targetFolder, 0755); err != nil {
+		if err := os.MkdirAll(targetFolder, 0o755); err != nil {
 			return err
 		}
 	}

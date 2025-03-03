@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/golang/glog"
@@ -101,6 +102,8 @@ func UploadPublicKey(filename string,
 
 	targetPath := config.UserPublicKeyPath()
 	targetFile := path.Join(targetPath, filename)
+	// Clean the path to remove any redundant slashes or path components like ".."
+	cleanedPath := filepath.Clean(targetFile)
 
 	// Receive the uploaded file content and verify that it is a valid public key or x509 cert. If it's
 	// valid then save it into the configured PublicKeyPath location from the config. The name of the
@@ -111,8 +114,8 @@ func UploadPublicKey(filename string,
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("provided public key or cert is not valid; error: %v", err), "trusted cert file"))
 	} else if err := os.MkdirAll(targetPath, 0644); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("unable to create trusted cert directory %v, error: %v", targetPath, err)))
-	} else if err := ioutil.WriteFile(targetFile, inBytes, 0644); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to write uploaded trusted cert file %v, error: %v", targetFile, err)))
+	} else if err := os.WriteFile(cleanedPath, inBytes, 0644); err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to write uploaded trusted cert file %v, error: %v", cleanedPath, err)))
 	}
 	return false
 }

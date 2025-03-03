@@ -3,6 +3,12 @@ package download
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"sort"
+	"strings"
+
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
@@ -14,11 +20,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/anax/worker"
-	"io/ioutil"
-	"os"
-	"path"
-	"sort"
-	"strings"
 )
 
 const (
@@ -219,6 +220,9 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 	swType, configType, certType := getUpgradeCSSType(upgradeVersions)
 	glog.V(3).Infof(dwlog(fmt.Sprintf("Upgrade versions: swType: %v, configType: %v, certType: %v", swType, configType, certType)))
 
+	configVersionToSave := upgradeVersions.ConfigVersion
+	certVersionToSave := upgradeVersions.CertVersion
+
 	missingPkgs := []string{}
 	if swType != "" {
 		if objIds != nil {
@@ -241,7 +245,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 				if cutil.SliceContains(manifest.Software.FileList, HZN_AGENTINSTALL_FILE) || cutil.SliceContains(manifest.Software.FileList, ALLFILES) {
 					if err = w.DownloadCSSObject(CSSSHAREDORG, swType, HZN_AGENTINSTALL_FILE, filePath, nmpName); err != nil {
 						return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, swType, HZN_AGENTINSTALL_FILE, err)
-					} else if err := os.Chmod(path.Join(filePath, nmpName, HZN_AGENTINSTALL_FILE), 0755); err != nil {
+					} else if err := os.Chmod(path.Join(filePath, nmpName, HZN_AGENTINSTALL_FILE), 0600); err != nil {
 						return exchangecommon.STATUS_PRECHECK_FAILED, err
 					}
 				}
@@ -263,6 +267,9 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 			glog.Errorf(dwlog(fmt.Sprintf("No config upgrade object found of expected type %v found in manifest list.", HZN_CONFIG_FILE)))
 			missingPkgs = append(missingPkgs, HZN_CONFIG_FILE)
 		}
+	} else {
+		// no need to update config, then will keep current config version
+		configVersionToSave = dev.SoftwareVersions[persistence.CONFIG_VERSION]
 	}
 
 	if certType != "" {
@@ -282,13 +289,16 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 			glog.Errorf(dwlog(fmt.Sprintf("No cert upgrade object found of expected type %v found in manifest list.", HZN_CERT_FILE)))
 			missingPkgs = append(missingPkgs, HZN_CERT_FILE)
 		}
+	} else {
+		// no need to update cert, then will keep current cert version
+		certVersionToSave = dev.SoftwareVersions[persistence.CERT_VERSION]
 	}
 
 	latestVersions := checkForLatestKeywords(manifest)
 
 	// Return the software version regardless of whether or not it was upgraded as this version is set in the software
 	// The config and cert versions should be the actual version downloaded so after the upgrade is executed, these versions can be used to set the device versions
-	versionsToSave := exchangecommon.AgentUpgradeVersions{SoftwareVersion: manifestUpgradeVersions.SoftwareVersion, ConfigVersion: upgradeVersions.ConfigVersion, CertVersion: upgradeVersions.CertVersion}
+	versionsToSave := exchangecommon.AgentUpgradeVersions{SoftwareVersion: manifestUpgradeVersions.SoftwareVersion, ConfigVersion: configVersionToSave, CertVersion: certVersionToSave}
 
 	if swType == "" && configType == "" && certType == "" {
 		w.Messages() <- events.NewNMPDownloadCompleteMessage(events.NMP_DOWNLOAD_COMPLETE, exchangecommon.STATUS_NO_ACTION, "", nmpName, &versionsToSave, latestVersions)
@@ -661,3 +671,4 @@ func insertVersionToCert(filePath string, nmpName string, version string) error 
 func dwlog(input string) string {
 	return fmt.Sprintf("Download worker: %v", input)
 }
+

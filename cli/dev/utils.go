@@ -76,7 +76,7 @@ func CreateWorkingDir(dir string) error {
 	// Create the working directory with the dependencies and pattern directories in one shot. If it already exists, just keep going.
 	newDepDir := path.Join(dir, DEFAULT_DEPENDENCY_DIR)
 	if _, err := os.Stat(newDepDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(newDepDir, 0755); err != nil {
+		if err := os.MkdirAll(newDepDir, 0o755); err != nil {
 			return errors.New(msgPrinter.Sprintf("could not create directory %v, error: %v", newDepDir, err))
 		}
 	} else if err != nil {
@@ -129,7 +129,7 @@ func CreateFile(directory string, fileName string, obj interface{}) error {
 	filePath := path.Join(directory, fileName)
 	if jsonBytes, err := json.MarshalIndent(obj, "", "    "); err != nil {
 		return errors.New(msgPrinter.Sprintf("failed to create json object for %v, error: %v", fileName, err))
-	} else if err := ioutil.WriteFile(filePath, jsonBytes, 0664); err != nil {
+	} else if err := os.WriteFile(filePath, jsonBytes, 0664); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to write json object for %v to file %v, error: %v", fileName, filePath, err))
 	} else {
 		return nil
@@ -142,7 +142,7 @@ func CreateUserInputFile(directory string, ui *common.UserInputFile) error {
 	filePath := path.Join(directory, USERINPUT_FILE)
 	if bytes, err := ui.GetOutputJsonBytes(false); err != nil {
 		return err
-	} else if err := ioutil.WriteFile(filePath, bytes, 0664); err != nil {
+	} else if err := os.WriteFile(filePath, bytes, 0664); err != nil {
 		return errors.New(i18n.GetMessagePrinter().Sprintf("unable to write json object for userinput to file %v, error: %v", filePath, err))
 	}
 	return nil
@@ -399,7 +399,7 @@ func createEnvVarMap(agreementId string,
 func createContainerWorker() (*container.ContainerWorker, error) {
 
 	workloadStorageDir := "/tmp/hzn"
-	if err := os.MkdirAll(workloadStorageDir, 0755); err != nil {
+	if err := os.MkdirAll(workloadStorageDir, 0o755); err != nil {
 		return nil, err
 	}
 
@@ -418,7 +418,7 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 	}
 
 	// Create the folder for SSL certificates (under authentication path)
-	if err := os.MkdirAll(config.GetESSSSLClientCertPath(), 0755); err != nil {
+	if err := os.MkdirAll(config.GetESSSSLClientCertPath(), 0o755); err != nil {
 		return nil, err
 	}
 
