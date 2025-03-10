@@ -4,17 +4,17 @@
 package governance
 
 import (
-	"github.com/boltdb/bolt"
-	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/exchangecommon"
-	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/policy"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/boltdb/bolt"
+	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
+	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 )
 
 func Test_ConvertAttributeToUserInput(t *testing.T) {
@@ -319,7 +319,7 @@ func Test_ValidateUserInput_with_Attributes(t *testing.T) {
 }
 
 func utsetup() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "utdb-")
+	dir, err := os.TempDir("", "utdb-")
 	if err != nil {
 		return "", nil, err
 	}

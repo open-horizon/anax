@@ -19,6 +19,12 @@ package agreementbot
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/agreementbot/persistence"
@@ -34,11 +40,6 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/text/message"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"strings"
-	"time"
 )
 
 const UserTypeCred = "users"
@@ -272,7 +273,7 @@ func (a *SecureAPI) policyCompatibleNodeList(w http.ResponseWriter, r *http.Requ
 		matchingNodes := []string{}
 
 		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/compatibility/constraints/node", UserTypeCred, w, r); ok {
-			body, _ := ioutil.ReadAll(r.Body)
+			body, _ := io.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
 				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
@@ -350,7 +351,7 @@ func (a *SecureAPI) patternCompatibleNodeList(w http.ResponseWriter, r *http.Req
 		matchingNodes := []string{}
 
 		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/compatibility/patterns/node", UserTypeCred, w, r); ok {
-			body, _ := ioutil.ReadAll(r.Body)
+			body, _ := io.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
 				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
@@ -491,7 +492,7 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 
 		// check user cred
 		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/deploycheck/policycompatible", UserTypeCred, w, r); ok {
-			body, _ := ioutil.ReadAll(r.Body)
+			body, _ := io.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
 				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
@@ -624,7 +625,7 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/userinputcompatible called.")))
 
 		if user_ec, _, msgPrinter, ok := a.processExchangeCred("/deploycheck/userinputcompatible", UserTypeCred, w, r); ok {
-			body, _ := ioutil.ReadAll(r.Body)
+			body, _ := io.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
 				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
@@ -747,7 +748,7 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/secretbindingcompatible called.")))
 
 		if user_ec, exUser, msgPrinter, ok := a.processExchangeCred("/deploycheck/secretbindingcompatible", UserTypeCred, w, r); ok {
-			body, _ := ioutil.ReadAll(r.Body)
+			body, _ := io.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
 				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
@@ -909,7 +910,7 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/deploycompatible called.")))
 
 		if user_ec, exUser, msgPrinter, ok := a.processExchangeCred("/deploycheck/deploycompatible", UserTypeCred, w, r); ok {
-			body, _ := ioutil.ReadAll(r.Body)
+			body, _ := io.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
 				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
@@ -1305,7 +1306,7 @@ func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *Secret
 
 func parseSecretDetails(w http.ResponseWriter, r *http.Request, msgPrinter *message.Printer) *secrets.SecretDetails {
 	var input secrets.SecretDetails
-	if body, err := ioutil.ReadAll(r.Body); err != nil {
+	if body, err := io.ReadAll(r.Body); err != nil {
 		glog.Errorf(APIlogString(fmt.Sprintf("Unable to read request body, error: %v.", err)))
 		writeResponse(w, msgPrinter.Sprintf("Unable to read request body, error: %v.", err), http.StatusInternalServerError)
 		return nil

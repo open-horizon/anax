@@ -5,18 +5,18 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
+	"os/user"
+	"path"
+	"strconv"
+
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"os/user"
-	"path"
-	"strconv"
 )
 
 type SecretsManager struct {
@@ -273,7 +273,7 @@ func CreateAndWriteToFile(contents []byte, key string, fileName string, filePath
 
 	if err := os.MkdirAll(filePath, fileMode); err != nil {
 		return errors.New(fmt.Sprintf("unable to create directory path %v for service secret, error: %v", filePath, err))
-	} else if err := ioutil.WriteFile(fileName, contents, fileMode); err != nil {
+	} else if err := os.WriteFile(fileName, contents, fileMode); err != nil {
 		return errors.New(fmt.Sprintf("unable to write service secret file %v, error: %v", fileName, err))
 	}
 
@@ -296,7 +296,7 @@ func WriteToFile(contents []byte, fileName string, filePath string) error {
 	var fileMode os.FileMode
 	fileMode = 0750
 
-	if err := ioutil.WriteFile(fileName, contents, fileMode); err != nil {
+	if err := os.WriteFile(fileName, contents, fileMode); err != nil {
 		return errors.New(fmt.Sprintf("unable to write service secret file %v, error: %v", fileName, err))
 	}
 

@@ -8,6 +8,11 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
@@ -17,11 +22,6 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"strings"
 )
 
 // Sub-commands for inspecting and importing an Intel FDO ownership voucher for an FDO device.
@@ -163,7 +163,7 @@ func getVouchers(org, userCreds, voucher string) ([]byte, string) {
 	httpCode := resp.StatusCode
 	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+	respBodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
@@ -207,7 +207,7 @@ func importTar(org string, userCreds string, voucherFileReader io.Reader, vouche
 
 func importZip(org string, userCreds string, voucherFile *os.File, example, policyFilePath, patternName, userInputFileName, haGroupName string) {
 	msgPrinter := i18n.GetMessagePrinter()
-	voucherBytes, err := ioutil.ReadAll(bufio.NewReader(voucherFile))
+	voucherBytes, err := io.ReadAll(bufio.NewReader(voucherFile))
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the bytes from %s: %v", voucherFile.Name(), err))
 	}
@@ -232,7 +232,7 @@ func import1Voucher(org string, userCreds string, voucherFileReader io.Reader, v
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Parse the voucher so we can tell them what we are doing
-	voucherBytes, err := ioutil.ReadAll(voucherFileReader)
+	voucherBytes, err := io.ReadAll(voucherFileReader)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the bytes from %s: %v", voucherFileName, err))
 	}
@@ -253,7 +253,7 @@ func import1Voucher(org string, userCreds string, voucherFileReader io.Reader, v
 	// Create the node policy in the exchange, if they specified it
 	var policyStr string
 	if policyFilePath != "" {
-		policyBytes, err := ioutil.ReadFile(policyFilePath)
+		policyBytes, err := os.ReadFile(policyFilePath)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the policy file %s: %v", policyFilePath, err))
 		}
@@ -309,7 +309,7 @@ func FdoPostVoucher(creds, org string, requestBodyBytes []byte, response *Import
 	}
 	httpCode := resp.StatusCode
 	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+	respBodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
@@ -338,7 +338,7 @@ func NodeAddDevice(org, nodeId, nodeToken, userPw, arch, patternName, userInputF
 
 	var inputs []policy.UserInput
 	if userInputFileName != "" {
-		userinputBytes, err := ioutil.ReadFile(userInputFileName)
+		userinputBytes, err := os.ReadFile(userInputFileName)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the service cofiguration user input file %s: %v", userInputFileName, err))
 		}

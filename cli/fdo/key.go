@@ -2,12 +2,13 @@ package fdo
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/i18n"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 // List keys that are stored in FDO owner services
@@ -60,7 +61,7 @@ func sendFdoKeysApiRequest(org, userCreds, keyName, method string, body interfac
 	httpCode := resp.StatusCode
 	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+	respBodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
