@@ -404,8 +404,9 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 		snap_common = config.HZN_VAR_BASE_DEFAULT
 	}
 
-	privFilepath := path.Join(snap_common, keyPath, privFileName)
-	pubFilepath := path.Join(snap_common, keyPath, pubFileName)
+	privFilepath := filepath.Clean(filepath.Join(snapCommon, keyPath, privFileName))
+	pubFilepath := filepath.Clean(filepath.Join(snapCommon, keyPath, pubFileName))
+
 	if _, ferr := os.Stat(privFilepath); os.IsNotExist(ferr) {
 
 		if privateKey, err := rsa.GenerateKey(rand.Reader, 2048); err != nil {

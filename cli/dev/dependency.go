@@ -206,7 +206,7 @@ func GetDependencyFiles(directory string, fileSuffix string) ([]os.FileInfo, err
 			if strings.HasSuffix(fileInfo.Name(), fileSuffix) && !fileInfo.IsDir() {
 				fileInfoAsFileInfo, err := fileInfo.Info()
 				if err != nil {
-					continue
+					return nil, fmt.Errorf("unable to get file info for %v, error: %v", fileInfo.Name(), err)
 				}
 				res = append(res, fileInfoAsFileInfo)
 			}

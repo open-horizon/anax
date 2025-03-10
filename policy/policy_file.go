@@ -1134,7 +1134,7 @@ func getPolicyDirectories(homePath string) ([]os.FileInfo, error) {
 		if fileInfo.IsDir() {
 			fileInfoAsFileInfo, err := fileInfo.Info()
 			if err != nil {
-				continue
+				fmt.Errorf("Unable to get file info for %v, error: %v", fileInfo.Name(), err)
 			}
 			res = append(res, fileInfoAsFileInfo)
 		}
