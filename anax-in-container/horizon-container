@@ -254,10 +254,11 @@ start() {
 	fi
 
 	dockerSocketPath="/var/run/docker.sock"
-	if [ ! -f dockerSocketPath ]; then
+	if [ ! -S $dockerSocketPath ]; then
 		# Rancher desktop (with MobyD) uses $HOME/.rd/docker.sock instead of /var/run/docker.sock
 		dockerSocketPath="$HOME/.rd/docker.sock"
 	fi
+	echo "dockerSocketPath: $dockerSocketPath"
 
 	# Start socat, if not already running
 	if isMacos; then
