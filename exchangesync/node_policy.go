@@ -3,6 +3,9 @@ package exchangesync
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"sync"
+
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
@@ -10,9 +13,6 @@ import (
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
-	"io/ioutil"
-	"os"
-	"sync"
 )
 
 var nodePolicyUpdateLock sync.Mutex //The lock that protects the nodePolicyLastUpdated value
@@ -235,7 +235,7 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 			}
 		} else {
 			// read the file
-			fileBytes, err := ioutil.ReadFile(policyFile)
+			fileBytes, err := os.ReadFile(policyFile)
 			if err != nil {
 				return nil, fmt.Errorf("Failed to read the default policy file: %v. %v", policyFile, err)
 			}
