@@ -17,6 +17,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/nodemanagement"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -32,9 +33,9 @@ import (
 const (
 	AGENT_CONFIG_FILE  = "agent-install.cfg"
 	AGENT_CERT_FILE    = "agent-install.crt"
-	AGENT_IMAGE_TAR_GZ = "amd64_anax_k8s.tar.gz"
-	AGENT_IMAGE_TAR    = "amd64_anax_k8s.tar"
-	AGENT_IMAGE_NAME   = "amd64_anax_k8s"
+	AGENT_IMAGE_TAR_GZ = "%v_anax_k8s.tar.gz"
+	AGENT_IMAGE_TAR    = "%v_anax_k8s.tar"
+	AGENT_IMAGE_NAME   = "%v_anax_k8s"
 )
 
 const (
@@ -463,7 +464,13 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 		glog.Infof(cuwlog(fmt.Sprintf("exchangeURL and/or cert are validated for nmp %v", nmpName)))
 	}
 
-	imageVersionIsSame, newImageVersion, currentImageVersion, err := checkAgentImage(w.kubeClient, workDir, agentUpgradeVersions.SoftwareVersion)
+	// get cluster arch
+	agentArch, err := w.GetClusterArch()
+	if err != nil {
+		glog.Errorf(cuwlog(fmt.Sprintf("Failed to get cluster agent arch for nmp: %v, error: %v", nmpName, err)))
+		return
+	}
+	imageVersionIsSame, newImageVersion, currentImageVersion, err := checkAgentImage(w.kubeClient, workDir, agentUpgradeVersions.SoftwareVersion, agentArch)
 	if err != nil {
 		errMessage = fmt.Sprintf("Failed to compare agent image version for nmp: %v, error: %v", nmpName, err)
 		glog.Errorf(cuwlog(errMessage))
@@ -677,11 +684,15 @@ func compareCertContent(certInAgentFile []byte, certInK8S []byte) bool {
 }
 
 // checkAgentImage returns compare result of current image version and image version to update, image version to update, current image version, error
-func checkAgentImage(kubeClient *KubeClient, workDir string, agentSoftwareVersionToUpgrade string) (bool, string, string, error) {
-	// image file is: /var/horizon/nmp/<org>/nmpID/amd64_anax_k8s.tar.gz
+func checkAgentImage(kubeClient *KubeClient, workDir string, agentSoftwareVersionToUpgrade string, agentArch interface{}) (bool, string, string, error) {
+	// image file is: /var/horizon/nmp/<org>/nmpID/{arch}_anax_k8s.tar.gz
 	currentAgentVersion := version.HORIZON_VERSION
 	if currentAgentVersion != agentSoftwareVersionToUpgrade {
-		imageTarGzFilePath := path.Join(workDir, AGENT_IMAGE_TAR_GZ)
+		agent_image_targz := fmt.Sprintf(AGENT_IMAGE_TAR_GZ, agentArch)
+		agent_image_tar := fmt.Sprintf(AGENT_IMAGE_TAR, agentArch)
+		agent_image_name := fmt.Sprintf(AGENT_IMAGE_NAME, agentArch)
+
+		imageTarGzFilePath := path.Join(workDir, agent_image_targz)
 		glog.Infof(cuwlog(fmt.Sprintf("Getting image tar file: %v", imageTarGzFilePath)))
 
 		if _, err := os.Stat(imageTarGzFilePath); os.IsNotExist(err) {
@@ -689,7 +700,7 @@ func checkAgentImage(kubeClient *KubeClient, workDir string, agentSoftwareVersio
 			return true, currentAgentVersion, currentAgentVersion, nil
 		}
 
-		imageTarballPath := path.Join(workDir, AGENT_IMAGE_TAR)
+		imageTarballPath := path.Join(workDir, agent_image_tar)
 
 		// get amd64_anax_k8s.tar from amd64_anax_k8s.tar.gz
 		if err := getAgentTarballFromGzip(imageTarGzFilePath, imageTarballPath); err != nil {
@@ -697,7 +708,7 @@ func checkAgentImage(kubeClient *KubeClient, workDir string, agentSoftwareVersio
 			return false, "", "", err
 		}
 
-		decompressTargetFolder := fmt.Sprintf("./%s", AGENT_IMAGE_NAME)
+		decompressTargetFolder := fmt.Sprintf("./%s", agent_image_name)
 
 		// extract the docker manifest file from image tarball
 		if err := extractImageManifest(imageTarballPath, decompressTargetFolder); err != nil {
@@ -713,7 +724,7 @@ func checkAgentImage(kubeClient *KubeClient, workDir string, agentSoftwareVersio
 		glog.Infof(cuwlog(fmt.Sprintf("Get image from tar file, extracted image tag: %v", imageTagInPackage)))
 
 		if imageTagInPackage != agentSoftwareVersionToUpgrade {
-			glog.Errorf(cuwlog(fmt.Sprintf("mage version from docker manifest file (%v) does not match the image version specified in the NMP manifest (%v). Please check the %v of %v in the CSS.", imageTagInPackage, agentSoftwareVersionToUpgrade, AGENT_IMAGE_TAR_GZ, agentSoftwareVersionToUpgrade)))
+			glog.Errorf(cuwlog(fmt.Sprintf("image version from docker manifest file (%v) does not match the image version specified in the NMP manifest (%v). Please check the %v of %v in the CSS.", imageTagInPackage, agentSoftwareVersionToUpgrade, agent_image_targz, agentSoftwareVersionToUpgrade)))
 			return false, "", "", fmt.Errorf("image version from docker manifest file (%v) does not match the image version specified in the NMP manifest (%v)", imageTagInPackage, agentSoftwareVersionToUpgrade)
 		}
 
@@ -744,9 +755,9 @@ func checkAgentImage(kubeClient *KubeClient, workDir string, agentSoftwareVersio
 		//  - ocp: default-route-openshift-image-registry.apps.prowler.cp.fyre.ibm.com/openhorizon-agent/amd64_anax_k8s:2.30.0-689
 		//  - k3s: 10.43.100.65:5000/openhorizon-agent/amd64_anax_k8s:2.30.0-689
 		//  - cluster use remote ICR: <remote-host>/<agent-namespace>/amd64_anax_k8s:2.30.0-689
-		newImageRepoWithTag := fmt.Sprintf("%s/%s/%s:%s", imageRegistry, AGENT_NAMESPACE, AGENT_IMAGE_NAME, agentSoftwareVersionToUpgrade)
+		newImageRepoWithTag := fmt.Sprintf("%s/%s/%s:%s", imageRegistry, AGENT_NAMESPACE, agent_image_name, agentSoftwareVersionToUpgrade)
 		if usingRemoteICR {
-			newImageRepoWithTag = fmt.Sprintf("%s/%s:%s", imageRegistry, AGENT_IMAGE_NAME, agentSoftwareVersionToUpgrade)
+			newImageRepoWithTag = fmt.Sprintf("%s/%s:%s", imageRegistry, agent_image_name, agentSoftwareVersionToUpgrade)
 		}
 		glog.Infof(cuwlog(fmt.Sprintf("New image repo with tag: %v", newImageRepoWithTag)))
 
@@ -819,4 +830,19 @@ func agentUseRemoteRegistry() bool {
 		useRemoteRegistry = true
 	}
 	return useRemoteRegistry
+}
+
+func (w *ClusterUpgradeWorker) GetClusterArch() (interface{}, error) {
+	pol, err := persistence.FindNodePolicy(w.db)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve node policy from local db: %v", err)
+	} else if pol == nil {
+		return "", fmt.Errorf("no node policy found in the local db")
+	}
+
+	archProp, err := pol.Properties.GetProperty(externalpolicy.PROP_NODE_ARCH)
+	if err != nil {
+		return "", err
+	}
+	return archProp.Value, nil
 }
