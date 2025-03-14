@@ -149,3 +149,5 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.31.0
 	golang.org/x/text => golang.org/x/text v0.21.0
 )
+
+replace github.com/open-horizon/edge-sync-service => github.com/kzosi/edge-sync-service v0.0.0-20250314080543-e6250d9e3c19
