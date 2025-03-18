@@ -26,7 +26,9 @@ if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then
 else
     # append the branch name to testing tags for when we're building older versions of anax for testing
     docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing ${IMAGE_REPO}/${arch}_anax_debian:testing_${GH_BRANCH}
+    docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_debian:testing_${GH_BRANCH}
     docker push ${IMAGE_REPO}/${arch}_anax_debian:testing_${GH_BRANCH}
+    docker push ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_debian:testing_${GH_BRANCH}
 fi
 
 # Deal with RPM Package
@@ -60,6 +62,8 @@ if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 's390x' ]]; then
     else
         # append the branch name to testing tags for when we're building older versions of anax for testing
         docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${IMAGE_REPO}/${arch}_anax_rpm:testing_${GH_BRANCH}
+        docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_rpm:testing_${GH_BRANCH}
         docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing_${GH_BRANCH}
+        docker push ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_rpm:testing_${GH_BRANCH}
     fi
 fi
