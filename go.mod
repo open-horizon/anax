@@ -152,4 +152,4 @@ replace (
 	golang.org/x/text => golang.org/x/text v0.21.0
 )
 
-replace github.com/open-horizon/edge-sync-service => github.com/kzosi/edge-sync-service v0.0.0-20250318133242-c10a423cdd2f
+replace github.com/open-horizon/edge-sync-service => github.com/kzosi/edge-sync-service v0.0.0-20250319075058-fbd308c29c4e
