@@ -440,7 +440,7 @@ anax-k8s-image: anax-k8s-clean
 auto-upgrade-cronjob-k8s-image: auto-upgrade-cronjob-k8s-clean
 	@echo "Producing Agent Auto Upgrade CronJob K8S docker image $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG)"
 	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" || $(arch) == "s390x" ]]; then \
-		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LABELS) -t $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) -f Dockerfile.ubi.auto-upgrade-cron.$(arch) .; \
+		cd $(ANAX_K8S_CONTAINER_DIR) && docker $(DOCKER_BUILD_CMD) $(DOCKER_MAYBE_CACHE) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_LABELS) -t $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) -f Dockerfile.ubi.auto-upgrade-cron.$(arch) .; \
 	fi
 	docker tag $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_STG) $(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_BASE):$(CRONJOB_AUTO_UPGRADE_K8S_IMAGE_VERSION)
 
@@ -468,7 +468,7 @@ css-docker-image: css-clean
 	@echo "Producing CSS docker image $(CSS_IMAGE)"
 	if [[ $(arch) == "amd64" ]]; then \
 		cp -f $(LICENSE_FILE) $(CSS_CONTAINER_DIR); \
-		cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
+		cd $(CSS_CONTAINER_DIR) && docker $(DOCKER_BUILD_CMD) $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
 		docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
 	else echo "Building the CSS docker image is not supported on $(arch)"; fi
 
@@ -483,7 +483,7 @@ promote-css:
 ess-docker-image: ess-clean
 	@echo "Producing ESS docker image $(ESS_IMAGE)"
 	cp -f $(LICENSE_FILE) $(ESS_CONTAINER_DIR)
-	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ESS_IMAGE_LABELS) -t $(ESS_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
+	cd $(ESS_CONTAINER_DIR) && docker $(DOCKER_BUILD_CMD) $(DOCKER_MAYBE_CACHE) $(ESS_IMAGE_LABELS) -t $(ESS_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
 	docker tag $(ESS_IMAGE) $(ESS_IMAGE_STG); \
 
 ess-promote:
