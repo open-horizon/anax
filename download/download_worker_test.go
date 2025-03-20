@@ -5,6 +5,11 @@ package download
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"testing"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -12,11 +17,6 @@ import (
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
-	"io/ioutil"
-	"os"
-	"path"
-	"testing"
-	"time"
 )
 
 func Test_ResolveUpgradeVersions(t *testing.T) {
@@ -316,7 +316,7 @@ func Test_formAgentUpgradePackageNames(t *testing.T) {
 }
 
 func setupDB() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "container-")
+	dir, err := os.MkdirTemp("", "container-")
 	if err != nil {
 		return "", nil, err
 	}

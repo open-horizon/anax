@@ -9,9 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
-	"io/ioutil"
+	"io"
 	mrand "math/rand"
 	"net"
 	"os"
@@ -22,6 +20,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 )
 
 const (
@@ -820,7 +821,7 @@ func GetCertificateVersion(certFilePath string) string {
 	var version string
 	if cert, err := os.Open(certFilePath); err != nil {
 		glog.Errorf(fmt.Sprintf("unable to open Certificate file %v, error %v", certFilePath, err))
-	} else if certBytes, err := ioutil.ReadAll(cert); err != nil {
+	} else if certBytes, err := io.ReadAll(cert); err != nil {
 		glog.Errorf(fmt.Sprintf("unable to read Certificate file %v, error %v", certFilePath, err))
 	} else {
 		lines := strings.Split(string(certBytes), "\n")

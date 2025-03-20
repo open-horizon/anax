@@ -9,17 +9,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/open-horizon/anax/cli/cliconfig"
-	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/i18n"
-	"github.com/open-horizon/edge-sync-service/common"
-	"github.com/open-horizon/rsapss-tool/sign"
 	"hash"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -28,6 +19,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/open-horizon/anax/cli/cliconfig"
+	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/edge-sync-service/common"
+	"github.com/open-horizon/rsapss-tool/sign"
 )
 
 const BatchSize = 50
@@ -670,7 +670,7 @@ func uploadDataByChunk(mmsUrl string, creds string, chunkSize int, file *os.File
 
 		// In order for HTTP client connection to be re-used, the response body must be fully read. Do it here
 		if resp != nil && resp.Body != nil {
-			io.Copy(ioutil.Discard, resp.Body)
+			io.Copy(io.Discard, resp.Body)
 			resp.Body.Close()
 		}
 

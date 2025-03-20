@@ -3,7 +3,6 @@ package download
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"sort"
@@ -630,7 +629,7 @@ func insertVersionToConfig(filePath string, nmpName string, version string) erro
 		fileContent += line
 		fileContent += "\n"
 	}
-	return ioutil.WriteFile(cfgFileName, []byte(fileContent), finfo.Mode())
+	return os.WriteFile(cfgFileName, []byte(fileContent), finfo.Mode())
 }
 
 func insertVersionToCert(filePath string, nmpName string, version string) error {
@@ -665,7 +664,7 @@ func insertVersionToCert(filePath string, nmpName string, version string) error 
 		fileContent += line
 		fileContent += "\n"
 	}
-	return ioutil.WriteFile(certFileName, []byte(fileContent), finfo.Mode())
+	return os.WriteFile(certFileName, []byte(fileContent), finfo.Mode())
 }
 
 func dwlog(input string) string {

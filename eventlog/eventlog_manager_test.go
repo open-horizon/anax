@@ -5,14 +5,14 @@ package eventlog
 
 import (
 	"flag"
-	"github.com/boltdb/bolt"
-	"github.com/open-horizon/anax/persistence"
-	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 	"time"
+
+	"github.com/boltdb/bolt"
+	"github.com/open-horizon/anax/persistence"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -506,7 +506,7 @@ func Test_LogExchangeEvent(t *testing.T) {
 }
 
 func utsetup() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "utdb-")
+	dir, err := os.MkdirTemp("", "utdb-")
 	if err != nil {
 		return "", nil, err
 	}

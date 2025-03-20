@@ -5,6 +5,12 @@ package exchangesync
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
@@ -12,12 +18,6 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/persistence"
-	"io/ioutil"
-	"os"
-	"path"
-	"strings"
-	"testing"
-	"time"
 )
 
 var ExchangeNodePolicy *exchange.ExchangeNodePolicy
@@ -327,7 +327,7 @@ func getDummyDeleteNodePolicyHandler() exchange.DeleteNodePolicyHandler {
 }
 
 func utsetup() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "utdb-")
+	dir, err := os.MkdirTemp("", "utdb-")
 	if err != nil {
 		return "", nil, err
 	}
