@@ -1,10 +1,10 @@
 ---
 copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-05"
+years: 2022 - 2025
+lastupdated: "2025-03-22"
 layout: page
 title: "Agent (anax)"
-description: "Open Horizon Anax Documentation"
+description: "Open Horizon Anax Agent Documentation"
 
 nav_order: 5
 has_children: true
@@ -29,6 +29,10 @@ Automatic agent upgrade is a policy-based node management feature that allows an
 ## [Instructions for starting an agent in a container on Linux](agent_container_manual_deploy.md)
 
 Use these instructions to start the agent in a container and have more control over the details than that allowed by the `horzion-container` script.
+
+## [{{site.data.keyword.horizon}} Agent Installation overview](overview.md)
+
+This section contains an overview of the installation script, including OS and CPU architecture requirements, a description, detailed usage information including commandline flags, installing anax-in-container, and an installation package tree.
 
 ## [{{site.data.keyword.horizon}} Agreement Bot APIs](agreement_bot_api.md)
 
