@@ -29,7 +29,7 @@ jobs:
         clean: false
         personal_token: ${{ secrets.PERSONAL_TOKEN }}
         src_path: 'agent-install/README.md'
-        dst_path: '/docs/anax/docs/overview.md'
+        dst_path: 'docs/anax/docs/overview.md'
         dst_owner: open-horizon
         dst_repo_name: open-horizon.github.io
         dst_branch: master
