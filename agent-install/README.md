@@ -1,40 +1,59 @@
-# Edge node agent-install
+---
+copyright:
+years: 2019 - 2025
+lastupdated: "2025-03-26"
+title: "Agent Installation script"
+description: Instructions and flags used by the agent-install script
+
+parent: Agent (anax)
+nav_order: 1
+---
+
+{:new_window: target="blank"}
+{:shortdesc: .shortdesc}
+{:screen: .screen}
+{:codeblock: .codeblock}
+{:pre: .pre}
+{:child: .link .ulchildlink}
+{:childlinks: .ullinks}
+
+# Edge node agent-install script
 
 ## Overview
 
 This script:
 
-* Verifies prerequisites and configuration information
-* Installs the agent packages appropriate for the edge node
-* Optionally registers the edge node with a given pattern or node policy
-* Optionally waits for a specified service to begin executing on the edge node
+- Verifies prerequisites and configuration information
+- Installs the agent packages appropriate for the edge node
+- Optionally registers the edge node with a given pattern or node policy
+- Optionally waits for a specified service to begin executing on the edge node
 
 ## Requirements
 
-Currently supported OS and architectures:
+Currently supported operating systems and architectures:
 
-* Device
-  * Ubuntu bionic, xenial, focal
-    * arm64, amd64
-  * Raspbian buster, stretch
-    * armhf
-  * Debian buster, stretch
-    * amd64
-  * RHEL 7.6, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6
-    * amd64, ppc64le, aarch64, riscv64
-  * CentOS 7.6, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5
-    * amd64, ppc64le, aarch64, riscv64
-  * Fedora 32, 36
-    * amd64, ppc64le, aarch64, riscv64
-  * macOS
-    * amd64
-* Cluster
-  * OCP 4.5, 4.6, 4.7, 4.8
-    * amd64, ppc64le
-  * Microk8s
-    * amd64, ppc64le
-  * k3s
-    * amd64, ppc64le
+- Device
+  - Ubuntu bionic, xenial, focal, jammy, noble
+    - amd64, arm64
+  - Raspbian stretch, buster, bullseye, bookworm
+    - armhf, arm64
+  - Debian stretch, buster, bullseye, bookworm
+    - amd64, armhf, arm64, s390x
+  - RHEL 8.1 - 8.8, 9.0 - 9.5
+    - amd64, ppc64le, aarch64, riscv64, s390x
+  - CentOS 8.1 - 8.5 (via Docker)
+    - amd64, ppc64le, aarch64, riscv64
+  - Fedora 36 - 41
+    - amd64, ppc64le, aarch64, riscv64
+  - macOS
+    - amd64, M1, M2
+- Cluster
+  - OCP 4.5, 4.6, 4.7, 4.8
+    - amd64, ppc64le
+  - Microk8s
+    - amd64, ppc64le
+  - k3s
+    - amd64, ppc64le
 
 ## Description
 
@@ -46,7 +65,7 @@ The script will first extract files from a given tar file specified with `-z`. T
 
 The script then detects the active operation system, version, and architecture, and begins the agent installation process. If there is a node id mapping file, the script will check for its node id using its hostname then ip address if its hostname is not found. If a node id mapping file is found this is assumed to be a batch install and there will be no user prompts.
 
-For container installs on Linux, the script checks for Docker or Podman and jq. On Ubuntu, Debian and Raspian installs, the script will install these if missing. On RHEL, CentOS and Fedora installs, the user must install these before running this script. On MacOS installs, which are always installed in a Docker container, the script checks for Docker, jq and socat, exiting if any are not installed.
+For container installs on Linux, the script checks for Docker or Podman and jq. On Ubuntu, Debian and Raspbian installs, the script will install these if missing. On RHEL, CentOS and Fedora installs, the user must install these before running this script. On MacOS installs, which are always installed in a Docker container, the script checks for Docker, jq and socat, exiting if any are not installed.
 
 Before starting the installation, `agent-install.sh` checks if the node is already registered. In that case, it queries if a user wants to overwrite the current node configuration. If the response is `yes`, the node is unregistered, and the packages and configuration are updated. If it is a batch install, or the user responds `no` to the prompt, the script will install without overwriting the existing node configuration.
 
@@ -66,7 +85,11 @@ After installation and configuration is complete, a node is created in the Excha
 
 ## Usage
 
-Example: `sudo -s ./agent-install.sh -i . -u $HZN_EXCHANGE_USER_AUTH -p IBM/pattern-ibm.helloworld -w ibm.helloworld -o $HZN_ORG_ID -z $AGENT_TAR_FILE`
+Example:
+
+```bash
+sudo -s ./agent-install.sh -i . -u $HZN_EXCHANGE_USER_AUTH -p IBM/pattern-ibm.helloworld -w ibm.helloworld -o $HZN_ORG_ID -z $AGENT_TAR_FILE
+```
 
 ### Configuration File
 
@@ -81,6 +104,7 @@ HZN_SDO_SVC_URL=https://<management-hub-url>:9008/edge-sdo-ocs/api
 
 The config file can also set the following variables:
 `HZN_DEVICE_ID`, `HZN_NODE_ID`, `HZN_MGMT_HUB_CERT_PATH`, and `HZN_AGENT_PORT`
+
 For cluster installs, the config file can also set:
 `AGENT_NAMESPACE`
 
@@ -146,9 +170,9 @@ Command line flags override the corresponding environment variables or config fi
 
 ### anax-in-container
 
-To install more than 1 agent in a container, the horizon-container command is used (which is included with the horizon-cli package). Instructions can be found below:
+To install more than one agent in a container, the horizon-container command is used (which is included with the horizon-cli package). Instructions can be found below:
 
-[anax-in-container install directions](https://github.com/open-horizon/anax/blob/master/anax-in-container/README.md)
+[anax-in-container install directions](https://open-horizon.github.io/docs/anax/docs/agent_container_manual_deploy/)
 
 ## Package Tree
 
