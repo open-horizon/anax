@@ -22,3 +22,15 @@ jobs:
         dst_repo_name: open-horizon.github.io
         dst_branch: master
         src_branch: master
+    - name: Copycat Action
+      uses: andstor/copycat-action@v3
+      with:
+        commit_message: "Syncing overview from anax"
+        clean: false
+        personal_token: ${{ secrets.PERSONAL_TOKEN }}
+        src_path: 'agent-install/README.md'
+        dst_path: 'docs/anax/docs/overview.md'
+        dst_owner: open-horizon
+        dst_repo_name: open-horizon.github.io
+        dst_branch: master
+        src_branch: master

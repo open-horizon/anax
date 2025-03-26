@@ -6,7 +6,7 @@ package helm
 import (
 	"encoding/base64"
 	"flag"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -25,7 +25,7 @@ func Test_DecodeAndCreate(t *testing.T) {
 
 	if fileName, err := ConvertB64StringToFile(sEnc); err != nil {
 		t.Errorf("Source: %v, encoded: %v, error: %v", str, sEnc, err)
-	} else if dat, err := ioutil.ReadFile(fileName); err != nil {
+	} else if dat, err := os.ReadFile(fileName); err != nil {
 		t.Errorf("Source: %v, encoded: %v, error: %v", str, sEnc, err)
 	} else if str != string(dat) {
 		t.Errorf("Encoded: %v, read: %v", str, string(dat))

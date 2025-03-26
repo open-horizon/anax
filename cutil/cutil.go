@@ -9,19 +9,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
-	"io/ioutil"
+	"io"
 	mrand "math/rand"
 	"net"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 )
 
 const (
@@ -818,10 +820,11 @@ func GetDockerEndpoint() string {
 // extrace the version in certificate file. The version should be in the first line in this format -----OpenHorizon Version x.x.x-----
 func GetCertificateVersion(certFilePath string) string {
 	var version string
-	if cert, err := os.Open(certFilePath); err != nil {
-		glog.Errorf(fmt.Sprintf("unable to open Certificate file %v, error %v", certFilePath, err))
-	} else if certBytes, err := ioutil.ReadAll(cert); err != nil {
-		glog.Errorf(fmt.Sprintf("unable to read Certificate file %v, error %v", certFilePath, err))
+	cleanedPath := filepath.Clean(certFilePath)
+	if cert, err := os.Open(cleanedPath); err != nil {
+		glog.Errorf(fmt.Sprintf("unable to open Certificate file %v, error %v", cleanedPath, err))
+	} else if certBytes, err := io.ReadAll(cert); err != nil {
+		glog.Errorf(fmt.Sprintf("unable to read Certificate file %v, error %v", cleanedPath, err))
 	} else {
 		lines := strings.Split(string(certBytes), "\n")
 		for _, line := range lines {

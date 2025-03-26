@@ -3,6 +3,11 @@ package resource
 import (
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
@@ -14,10 +19,6 @@ import (
 	"github.com/open-horizon/edge-utilities/logger"
 	"github.com/open-horizon/edge-utilities/logger/log"
 	"github.com/open-horizon/edge-utilities/logger/trace"
-	"io/ioutil"
-	"os"
-	"path"
-	"time"
 )
 
 type ResourceManager struct {
@@ -83,11 +84,11 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 
 	if essCert, err := os.Open(certFile); err != nil {
 		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
-	} else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
+	} else if essCertBytes, err := io.ReadAll(essCert); err != nil {
 		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
 	} else if essCertKey, err := os.Open(certKeyFile); err != nil {
 		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
-	} else if essCertKeyBytes, err := ioutil.ReadAll(essCertKey); err != nil {
+	} else if essCertKeyBytes, err := io.ReadAll(essCertKey); err != nil {
 		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
 	} else {
 		// For device agent, create path for ListeningAddress if it does not exist

@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -95,7 +94,7 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 
 	if hConfig.Edge.CACertsPath != "" {
 		var err error
-		caBytes, err = ioutil.ReadFile(hConfig.Edge.CACertsPath)
+		caBytes, err = os.ReadFile(hConfig.Edge.CACertsPath)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to read CACertsFile: %v", hConfig.Edge.CACertsPath)
 		}
@@ -125,7 +124,7 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 
 	if hConfig.AgreementBot.CSSSSLCert != "" {
 		var err error
-		cssCaBytes, err = ioutil.ReadFile(hConfig.AgreementBot.CSSSSLCert)
+		cssCaBytes, err = os.ReadFile(hConfig.AgreementBot.CSSSSLCert)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to read Agbot CSS SSL Cert File: %v", hConfig.AgreementBot.CSSSSLCert)
 		}
@@ -232,7 +231,7 @@ func newKeyFileNamesFetcher(hConfig HorizonConfig) (*KeyFileNamesFetcher, error)
 	getPemFiles := func(homePath string) ([]string, error) {
 		pemFileNames := make([]string, 0, 10)
 
-		if files, err := ioutil.ReadDir(homePath); err != nil && !os.IsNotExist(err) {
+		if files, err := os.ReadDir(homePath); err != nil && !os.IsNotExist(err) {
 			return nil, errors.New(fmt.Sprintf("Unable to get list of PEM files in %v, error: %v", homePath, err))
 		} else if os.IsNotExist(err) {
 			return pemFileNames, nil

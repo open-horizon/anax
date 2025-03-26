@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"reflect"
 
 	"github.com/boltdb/bolt"
@@ -491,9 +490,9 @@ func validateConcreteAttributes(errorhandler ErrorHandler, persistedDevice *pers
 
 func payloadToAttributes(errorhandler ErrorHandler, body io.Reader, permitPartial bool, existingDevice *persistence.ExchangeDevice) ([]persistence.Attribute, bool, error) {
 
-	by, err := ioutil.ReadAll(body)
+	by, err := io.ReadAll(body)
 	if err != nil {
-		return nil, false, fmt.Errorf("Failed to read request bytes: %v", err)
+		return nil, false, fmt.Errorf("failed to read request bytes: %v", err)
 	}
 	decoder := json.NewDecoder(bytes.NewReader(by))
 	decoder.UseNumber()

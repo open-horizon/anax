@@ -11,14 +11,16 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path"
+	"path/filepath"
+	"sync"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"golang.org/x/crypto/sha3"
-	"io/ioutil"
-	"os"
-	"path"
-	"sync"
 )
 
 // This module is used to construct a message that can be sent over an insecure transport
@@ -402,8 +404,9 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 		snap_common = config.HZN_VAR_BASE_DEFAULT
 	}
 
-	privFilepath := path.Join(snap_common, keyPath, privFileName)
-	pubFilepath := path.Join(snap_common, keyPath, pubFileName)
+	privFilepath := filepath.Clean(filepath.Join(snap_common, keyPath, privFileName))
+	pubFilepath := filepath.Clean(filepath.Join(snap_common, keyPath, pubFileName))
+
 	if _, ferr := os.Stat(privFilepath); os.IsNotExist(ferr) {
 
 		if privateKey, err := rsa.GenerateKey(rand.Reader, 2048); err != nil {
@@ -451,7 +454,7 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 			return nil, nil, errors.New(fmt.Sprintf("Could not find public key file %v, error %v", privFilepath, ferr))
 		} else if privFile, err := os.Open(privFilepath); err != nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to open private key file %v, error: %v", privFilepath, err))
-		} else if privBytes, err := ioutil.ReadAll(privFile); err != nil {
+		} else if privBytes, err := io.ReadAll(privFile); err != nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to read private key file %v, error: %v", privFilepath, err))
 		} else if privBlock, _ := pem.Decode(privBytes); privBlock == nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to extract pem block from private key file %v, error: %v", privFilepath, err))
@@ -459,7 +462,7 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to parse private key %x, error: %v", privBytes, err))
 		} else if pubFile, err := os.Open(pubFilepath); err != nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to open public key file %v, error: %v", pubFilepath, err))
-		} else if pubBytes, err := ioutil.ReadAll(pubFile); err != nil {
+		} else if pubBytes, err := io.ReadAll(pubFile); err != nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to read public key file %v, error: %v", pubFilepath, err))
 		} else if pubBlock, _ := pem.Decode(pubBytes); pubBlock == nil {
 			return nil, nil, errors.New(fmt.Sprintf("Unable to extract pem block from public key file %v, error: %v", pubFilepath, err))
@@ -484,17 +487,20 @@ func DeleteKeys(keyPath string) error {
 	privFilepath := path.Join(snap_common, keyPath, privFileName)
 	pubFilepath := path.Join(snap_common, keyPath, pubFileName)
 
-	glog.V(5).Infof("Removing private key path %v, and public key path %v", privFilepath, pubFilepath)
+	cleanedPrivFilepath := filepath.Clean(privFilepath)
+	cleanedPubFilepath := filepath.Clean(pubFilepath)
+
+	glog.V(5).Infof("Removing private key path %v, and public key path %v", cleanedPrivFilepath, cleanedPubFilepath)
 
 	// Delete both the private and public key files
-	if _, ferr := os.Stat(privFilepath); !os.IsNotExist(ferr) {
-		if err := os.Remove(privFilepath); err != nil {
+	if _, ferr := os.Stat(cleanedPrivFilepath); !os.IsNotExist(ferr) {
+		if err := os.Remove(cleanedPrivFilepath); err != nil {
 			return err
 		}
 	}
 
-	if _, ferr := os.Stat(pubFilepath); !os.IsNotExist(ferr) {
-		if err := os.Remove(pubFilepath); err != nil {
+	if _, ferr := os.Stat(cleanedPubFilepath); !os.IsNotExist(ferr) {
+		if err := os.Remove(cleanedPubFilepath); err != nil {
 			return err
 		}
 	}

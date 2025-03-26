@@ -11,12 +11,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/boltdb/bolt"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/events"
-	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/rsapss-tool/sign"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,6 +19,12 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/boltdb/bolt"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/rsapss-tool/sign"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -156,7 +157,7 @@ func tConfig(t *testing.T, dir string) *config.HorizonConfig {
 }
 
 func setup(t *testing.T) (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "container-")
+	dir, err := os.TempDir("", "container-")
 	if err != nil {
 		return "", nil, err
 	}
@@ -194,7 +195,7 @@ func setup(t *testing.T) (string, *bolt.DB, error) {
 		panic(err)
 	}
 
-	err = ioutil.WriteFile(path.Join(dir, "validpkgcert.pem"), []byte(validPkgSigningCert), 0644)
+	err = os.WriteFile(path.Join(dir, "validpkgcert.pem"), []byte(validPkgSigningCert), 0644)
 	if err != nil {
 		return dir, nil, err
 	}
@@ -209,12 +210,12 @@ func setup(t *testing.T) (string, *bolt.DB, error) {
 		panic(err)
 	}
 
-	err = ioutil.WriteFile(path.Join(certpath, "validdepcert.pem"), []byte(validTestDeploymentCert), 0644)
+	err = os.WriteFile(path.Join(certpath, "validdepcert.pem"), []byte(validTestDeploymentCert), 0644)
 	if err != nil {
 		return dir, nil, err
 	}
 
-	err = ioutil.WriteFile(path.Join(keypath, "validprivatekey.pem"), []byte(validTestPrivKey), 0644)
+	err = os.WriteFile(path.Join(keypath, "validprivatekey.pem"), []byte(validTestPrivKey), 0644)
 	if err != nil {
 		return dir, nil, err
 	}
@@ -274,7 +275,7 @@ func Test_ImageFetch_Event_Suite(suite *testing.T) {
 	assert.EqualValues(suite, http.StatusOK, resp.StatusCode)
 	defer resp.Body.Close()
 
-	sigBytes, err := ioutil.ReadAll(resp.Body)
+	sigBytes, err := io.ReadAll(resp.Body)
 	assert.Nil(suite, err)
 
 	images := []string{

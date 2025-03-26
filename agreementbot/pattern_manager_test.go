@@ -8,11 +8,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/open-horizon/anax/exchange"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/open-horizon/anax/exchange"
 )
 
 func init() {
@@ -781,12 +781,17 @@ func getPatternEntryFiles(files []string) error {
 func getPolicyFiles(homePath string) ([]os.FileInfo, error) {
 	res := make([]os.FileInfo, 0, 10)
 
-	if files, err := ioutil.ReadDir(homePath); err != nil {
+	if files, err := os.ReadDir(homePath); err != nil {
 		return nil, err
 	} else {
 		for _, fileInfo := range files {
 			if strings.HasSuffix(fileInfo.Name(), ".policy") && !fileInfo.IsDir() {
-				res = append(res, fileInfo)
+				// Get the FileInfo from the DirEntry
+				fileInfoAsFileInfo, err := fileInfo.Info()
+				if err != nil {
+					return nil, err
+				}
+				res = append(res, fileInfoAsFileInfo)
 			}
 		}
 		return res, nil
