@@ -1156,37 +1156,17 @@ func serializeResponse(w http.ResponseWriter, payload interface{}) ([]byte, bool
 	return serial, false
 }
 
-func sanitizePayload(payload interface{}) interface{} {
-	switch data := payload.(type) {
-	case map[string]string:
-		for k, v := range data {
-			data[k] = html.EscapeString(v)
-		}
-		return data
-	case map[string]interface{}:
-		for k, v := range data {
-			if str, ok := v.(string); ok {
-				data[k] = html.EscapeString(str)
-			}
-		}
-		return data
-	default:
-		return payload
-	}
-}
-
 func writeResponse(w http.ResponseWriter, payload interface{}, successStatusCode int) {
-    safePayload := sanitizePayload(payload)
-    serial, errWritten := serializeResponse(w, safePayload)
-    if errWritten {
-        return
-    }
+	serial, errWritten := serializeResponse(w, payload)
+	if errWritten {
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(successStatusCode)
 
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(successStatusCode)
-    if _, err := w.Write(serial); err != nil {
-        glog.Error(APIlogString(err))
-        http.Error(w, "Internal server error", http.StatusInternalServerError)
-        return
-    }
+	if _, err := w.Write([]byte(html.EscapeString(string(serial)))); err != nil {
+		glog.Error(APIlogString(err))
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }
