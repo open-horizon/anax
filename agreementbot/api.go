@@ -3,6 +3,7 @@ package agreementbot
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"regexp"
@@ -1156,16 +1157,14 @@ func serializeResponse(w http.ResponseWriter, payload interface{}) ([]byte, bool
 }
 
 func writeResponse(w http.ResponseWriter, payload interface{}, successStatusCode int) {
-
 	serial, errWritten := serializeResponse(w, payload)
 	if errWritten {
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(successStatusCode)
 
-	if _, err := w.Write(serial); err != nil {
+	if _, err := w.Write([]byte(html.EscapeString(string(serial)))); err != nil {
 		glog.Error(APIlogString(err))
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
