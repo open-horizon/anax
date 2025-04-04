@@ -297,11 +297,15 @@ function deleteNodeFromManagementHub() {
     local node_id=$1
 
     log_info "Deleting node ${node_id} from the management hub..."
-
     set +e
-    $KUBECTL exec ${POD_ID} -n ${AGENT_NAMESPACE} -c "anax" -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node remove ${node_id} -f"
+    $KUBECTL exec ${POD_ID} -n ${AGENT_NAMESPACE} -c "anax" -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node remove ${node_id} -f" >/dev/null 2>&1  
+    local delete_exit_code=$?
     set -e
 
+    if [ $delete_exit_code -ne 0 ] && [ $delete_exit_code -ne 8 ]; then
+        log_warning "Node ${node_id} removal failed with exit code $delete_exit_code"
+    fi
+    
     log_debug "deleteNodeFromManagementHub() end"
 }
 
@@ -316,10 +320,15 @@ function verifyNodeRemovedFromManagementHub() {
 
     set +e
     $KUBECTL exec ${POD_ID} -n ${AGENT_NAMESPACE} -c "anax" -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node list ${node_id}" >/dev/null 2>&1
-    if [ $? -ne 8 ]; then
-	    log_warning "Node was not removed from the management hub"
-    fi
+    local verify_exit_code=$? 
     set -e
+
+    if [ $verify_exit_code -eq 8 ]; then
+        log_info "Node ${node_id} has been successfully removed"
+    else
+        log_warning "Node ${node_id} still exists in the management hub"
+    fi
+
     log_debug "verifyNodeRemovedFromManagementHub() end"
 }
 
