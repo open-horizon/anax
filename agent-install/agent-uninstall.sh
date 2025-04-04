@@ -317,10 +317,15 @@ function verifyNodeRemovedFromManagementHub() {
 
     set +e
     $KUBECTL exec ${POD_ID} -n ${AGENT_NAMESPACE} -c "anax" -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node list ${node_id}" >/dev/null 2>&1
-    if [ $? -ne 8 ]; then
-	    log_warning "Node was not removed from the management hub"
-    fi
+    local exit_code=$?
     set -e
+
+    if [ $exit_code -eq 8 ]; then
+        log_info "Node ${node_id} has been successfully removed"
+    else
+        log_warning "Node was not removed from the management hub"
+    fi
+
     log_debug "verifyNodeRemovedFromManagementHub() end"
 }
 
