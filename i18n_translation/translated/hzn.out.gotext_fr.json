@@ -28,16 +28,36 @@
     "translation": "Aucune entrée trouvée."
   },
   {
+    "id": "Failed to get nodes from the exchange.",
+    "translation": "Échec de l'obtention des nœuds à partir d'Exchange."
+  },
+  {
+    "id": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+    "translation": "Type de politique de nœuds non valide {PolicyType}. Les types autorisés sont \"dp\" ou \"nmp\"."
+  },
+  {
+    "id": "Failed to get node policy from the exchange.",
+    "translation": "Échec de l'obtention de la politique de nœuds à partir d'Exchange."
+  },
+  {
+    "id": "Input body couldn't be deserialized to JSON object. {Err}",
+    "translation": "Impossible de désérialiser le corps de l'entrée en objet JSON. {Err}"
+  },
+  {
+    "id": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+    "translation": "Le corps de l'entrée n'a pas pu être désérialisé en objet policyNodeCompatibleInputBody. {Err}"
+  },
+  {
+    "id": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+    "translation": "Le corps de l'entrée n'a pas pu être désérialisé en objet patternNodeCompatibleInputBody. {Err}"
+  },
+  {
     "id": "Unauthorized. No exchange {AuthType} id is supplied.",
     "translation": "Non autorisé. Aucun ID {AuthType} Exchange n'est fourni."
   },
   {
     "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
     "translation": "Echec de l'authentification de {AuthType} avec Exchange. {Err}"
-  },
-  {
-    "id": "Input body couldn't be deserialized to JSON object. {Err}",
-    "translation": "Impossible de désérialiser le corps de l'entrée en objet JSON. {Err}"
   },
   {
     "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
@@ -182,6 +202,10 @@
   {
     "id": "Error getting {Resource} for output, error {Err}",
     "translation": "Erreur lors de l'obtention de {Resource} pour la sortie. Erreur {Err}"
+  },
+  {
+    "id": "Error deleting {Resource}, error {Err}",
+    "translation": "Erreur de suppression de {Resource}, erreur {Err}"
   },
   {
     "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
@@ -908,6 +932,22 @@
     "translation": "Chaîne de sélection. Cet indicateur peut être répété, ce qui correspond à 'ET'. Chaque indicateur doit avoir le format attribute=value, attribute~value, \"attribute>value\" ou \"attribute<value\", '~' signifiant \"contient\". Les noms d'attribut communs sont timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Utilisez l'indicateur '-l' pour voir tous les noms d'attribut."
   },
   {
+    "id": "Delete the all event logs or those matching the provided selectors.",
+    "translation": "Supprimer tous les journaux d'événements ou ceux qui correspondent aux sélecteurs fournis."
+  },
+  {
+    "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or\"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+    "translation": "Chaîne de sélection. Cet indicateur peut être répété, ce qui signifie 'AND'. Chaque indicateur doit se présenter sous la forme attribute=value, attribute~value, \"attribute>value\" ou \"attribute<value\", où '~' signifie contient. Les attributs les plus courants sont timestamp, severity, message, event_code, source_type, agreement_id, service_url, etc. Utilisez l'option '-l' pour voir tous les noms d'attributs."
+  },
+  {
+    "id": "Skip the 'are you sure?' prompt.",
+    "translation": "Ignorer l'invite \"Voulez-vous vraiment ?\"."
+  },
+  {
+    "id": "Delete the all event logs from previous registrations.",
+    "translation": "Supprimer tous les journaux d'événements des enregistrements précédents."
+  },
+  {
     "id": "List all the active errors that will be shared with the Exchange if the node is online.",
     "translation": "Afficher la liste de toutes les erreurs actives qui se répercuteront dans Exchange si le noeud est en ligne."
   },
@@ -1094,10 +1134,6 @@
   {
     "id": "Remove the deployment policy in the Horizon Exchange.",
     "translation": "Retirer la règle de déploiement dans Horizon Exchange."
-  },
-  {
-    "id": "Skip the 'are you sure?' prompt.",
-    "translation": "Ignorer l'invite \"Voulez-vous vraiment ?\"."
   },
   {
     "id": "The name of the deployment policy to be removed.",
@@ -2144,8 +2180,8 @@
     "translation": "La commande de publication n'effectue pas de vérification d'intégrité des données pour les données d'objet transférées. Elle est mutuellement exclusive avec --hashAlgo et --hash"
   },
   {
-    "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-    "translation": "Algorithme de hachage utilisé pour le hachage des données d'objet avant de les signer, ce qui garantit l'intégrité des données lors du téléchargement et du transfert. Les algorithmes de hachage pris en charge sont SHA1 ou SHA256 ; la valeur par défaut est SHA1. Il est mutuellement exclusif avec l'indicateur --noIntegrity"
+    "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+    "translation": "Algorithme de hachage utilisé pour le hachage des données d'objet avant de les signer, ce qui garantit l'intégrité des données lors du téléchargement et du transfert. Les algorithmes de hachage pris en charge sont SHA1 ou SHA256. La valeur par défaut est SHA256. Elle est mutuellement exclusive avec l'indicateur --noIntegrity"
   },
   {
     "id": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
@@ -2200,8 +2236,8 @@
     "translation": "Chemin d'un fichier JSON contenant les données du manifeste. Spécifier -f- pour lire à partir de l'entrée standard (stdin)."
   },
   {
-    "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-    "translation": "Algorithme de hachage utilisé pour hacher les données du manifeste avant de les signer, garantissant ainsi l'intégrité des données lors du téléchargement et du téléchargement. Les algorithmes de hachage pris en charge sont SHA1 ou SHA256. La valeur par défaut est SHA1. Elle est mutuellement exclusive avec l'indicateur --noIntegrity"
+    "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+    "translation": "Algorithme de hachage utilisé pour hacher les données du manifeste avant de les signer, garantissant ainsi l'intégrité des données lors du téléchargement et du téléchargement. Les algorithmes de hachage pris en charge sont SHA1 ou SHA256. La valeur par défaut est SHA256. Elle est mutuellement exclusive avec l'indicateur --noIntegrity"
   },
   {
     "id": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
@@ -2596,6 +2632,10 @@
     "translation": "Afficher les noms des secrets dans le gestionnaire de secrets."
   },
   {
+    "id": "List all secrets in the given org in the secrets manager.",
+    "translation": "Répertorier tous les secrets de l'organisation donnée dans Secrets Manager."
+  },
+  {
     "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
     "translation": "ID du secret de nœud à répertorier. Inclure uniquement si ce secret est spécifique à un seul nœud."
   },
@@ -2972,12 +3012,12 @@
     "translation": "Lecture du fichier de configuration : {ConfigFile}"
   },
   {
-    "id": "Unable to read config file: {ConfigFile}. {Err}",
-    "translation": "Impossible de lire le fichier de configuration : {ConfigFile}. {Err}"
+    "id": "Unable to read config file: {CleanedPath}. {Err}",
+    "translation": "Impossible de lire le fichier de configuration : {CleanedPath}. {Err}"
   },
   {
-    "id": "Unable to decode content of config file {ConfigFile}. {Err}",
-    "translation": "Impossible de décoder le contenu du fichier de configuration {ConfigFile}. {Err}"
+    "id": "Unable to decode content of config file {CleanedPath}. {Err}",
+    "translation": "Impossible de décoder le contenu du fichier de configuration {CleanedPath}. {Err}"
   },
   {
     "id": "Config file does not exist: {ConfigFile}.",
@@ -3244,8 +3284,8 @@
     "translation": "Erreur d'obtention de {OldMgmtHubCertPath} depuis {ANAXOVERWRITEFILE} : {Err}"
   },
   {
-    "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-    "translation": "Erreur rencontrée lors de la lecture du fichier de certificat ICP {IcpCertPath} : {Err}"
+    "id": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
+    "translation": "Erreur de lecture du fichier de certification ICP {CleanedPath}: {Err}"
   },
   {
     "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
@@ -4370,6 +4410,30 @@
   {
     "id": "The selection string {V} is not valid.",
     "translation": "La chaîne de sélection {V} n'est pas valide."
+  },
+  {
+    "id": "Are you sure you want to remove all event logs matching the given selectors?",
+    "translation": "Voulez-vous vraiment supprimer tous les journaux d'événements correspondant aux sélecteurs donnés ?"
+  },
+  {
+    "id": "Are you sure you want to remove all event logs?",
+    "translation": "Voulez-vous vraiment supprimer tous les journaux d'événements ?"
+  },
+  {
+    "id": "Successfully deleted the selected eventlogs.",
+    "translation": "Suppression réussie des journaux d'événements sélectionnés."
+  },
+  {
+    "id": "Successfully deleted the eventlogs.",
+    "translation": "Suppression réussie des journaux d'événements."
+  },
+  {
+    "id": "Are you sure you want to remove all event logs from previous registrations?",
+    "translation": "Voulez-vous vraiment supprimer tous les journaux d'événements des enregistrements précédents ?"
+  },
+  {
+    "id": "Successfully pruned the eventlogs.",
+    "translation": "Nettoyage réussi des journaux d'événements."
   },
   {
     "id": "failed to marshal 'hzn eventlog list' output: {Err}",
@@ -7328,10 +7392,6 @@
     "translation": "Hachage de données généré. Démarrer la signature numérique avec le hachage de données..."
   },
   {
-    "id": "Hash algorithm {HashAlgo} is not supported",
-    "translation": "L'algorithme de hachage {HashAlgo} n'est pas pris en charge"
-  },
-  {
     "id": "unable to get file info of object file {Name}: {Err}",
     "translation": "Impossible d'obtenir les informations du fichier d'objet {Name}: {Err}"
   },
@@ -7940,8 +8000,8 @@
     "translation": "Erreur lors de la récupération des services dépendants depuis Exchange pour {SDep}. {Err}"
   },
   {
-    "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-    "translation": "Echec de la recherche de définition pour des services dépendants de {TopId}. La compatibilité de {PROPNODEPRIVILEGED} ne peut pas être complètement évaluée tant que tous les services ne sont pas dans Exchange."
+    "id": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+    "translation": "Échec de la recherche de la définition des services dépendants de {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), erreur : {Err}. La compatibilité de {PROPNODEPRIVILEGED} ne peut être pleinement évaluée tant que tous les services ne sont pas présents sur Exchange."
   },
   {
     "id": "The PolicyCheck input cannot be null",
@@ -8434,6 +8494,10 @@
   {
     "id": "Failed to verify digital signature because the signature string is empty",
     "translation": "Impossible de vérifier la signature numérique car la chaîne de signature est vide"
+  },
+  {
+    "id": "Hash algorithm {HashAlgo} is not supported",
+    "translation": "L'algorithme de hachage {HashAlgo} n'est pas pris en charge"
   },
   {
     "id": "The start time must be in RFC3339 format or set to \"now\".",

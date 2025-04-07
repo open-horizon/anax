@@ -492,6 +492,88 @@
             "fuzzy": true
         },
         {
+            "id": "Failed to get nodes from the exchange.",
+            "message": "Failed to get nodes from the exchange.",
+            "translation": "Failed to get nodes from the exchange.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+            "message": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+            "translation": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PolicyType",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "policyType"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to get node policy from the exchange.",
+            "message": "Failed to get node policy from the exchange.",
+            "translation": "Failed to get node policy from the exchange.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Input body couldn't be deserialized to JSON object. {Err}",
+            "message": "Input body couldn't be deserialized to JSON object. {Err}",
+            "translation": "Input body couldn't be deserialized to JSON object. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+            "message": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+            "translation": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+            "message": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+            "translation": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Unauthorized. No exchange {AuthType} id is supplied.",
             "message": "Unauthorized. No exchange {AuthType} id is supplied.",
             "translation": "Unauthorized. No exchange {AuthType} id is supplied.",
@@ -528,23 +610,6 @@
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
                     "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Input body couldn't be deserialized to JSON object. {Err}",
-            "message": "Input body couldn't be deserialized to JSON object. {Err}",
-            "translation": "Input body couldn't be deserialized to JSON object. {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Err",
-                    "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
                     "expr": "err"
                 }
             ],
@@ -1111,6 +1176,31 @@
             "id": "Error getting {Resource} for output, error {Err}",
             "message": "Error getting {Resource} for output, error {Err}",
             "translation": "Error getting {Resource} for output, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Resource",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "resource"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error deleting {Resource}, error {Err}",
+            "message": "Error deleting {Resource}, error {Err}",
+            "translation": "Error deleting {Resource}, error {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3566,18 +3656,18 @@
             "fuzzy": true
         },
         {
-            "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-            "message": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-            "translation": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+            "id": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
+            "message": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
+            "translation": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "IcpCertPath",
+                    "id": "CleanedPath",
                     "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "icpCertPath"
+                    "expr": "cleanedPath"
                 },
                 {
                     "id": "Err",
@@ -5746,9 +5836,9 @@
             "fuzzy": true
         },
         {
-            "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-            "message": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-            "translation": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+            "id": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+            "message": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+            "translation": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5760,11 +5850,51 @@
                     "expr": "topId"
                 },
                 {
-                    "id": "PROPNODEPRIVILEGED",
+                    "id": "SvcUrl",
                     "string": "%[2]s",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 2,
+                    "expr": "svcUrl"
+                },
+                {
+                    "id": "SvcOrg",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "svcOrg"
+                },
+                {
+                    "id": "SvcVersion",
+                    "string": "%[4]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 4,
+                    "expr": "svcVersion"
+                },
+                {
+                    "id": "SvcArch",
+                    "string": "%[5]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 5,
+                    "expr": "svcArch"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[6]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 6,
+                    "expr": "err"
+                },
+                {
+                    "id": "PROPNODEPRIVILEGED",
+                    "string": "%[7]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 7,
                     "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
                 }
             ],

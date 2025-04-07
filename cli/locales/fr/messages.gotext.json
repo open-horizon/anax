@@ -124,6 +124,82 @@
       "fuzzy": true
     },
     {
+      "id": "Failed to get nodes from the exchange.",
+      "message": "Failed to get nodes from the exchange.",
+      "translation": "Échec de l'obtention des nœuds à partir d'Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+      "message": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+      "translation": "Type de politique de nœuds non valide {PolicyType}. Les types autorisés sont \"dp\" ou \"nmp\".",
+      "placeholders": [
+        {
+          "id": "PolicyType",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "policyType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get node policy from the exchange.",
+      "message": "Failed to get node policy from the exchange.",
+      "translation": "Échec de l'obtention de la politique de nœuds à partir d'Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "message": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "Impossible de désérialiser le corps de l'entrée en objet JSON. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+      "message": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+      "translation": "Le corps de l'entrée n'a pas pu être désérialisé en objet policyNodeCompatibleInputBody. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+      "message": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+      "translation": "Le corps de l'entrée n'a pas pu être désérialisé en objet patternNodeCompatibleInputBody. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Unauthorized. No exchange {AuthType} id is supplied.",
       "message": "Unauthorized. No exchange {AuthType} id is supplied.",
       "translation": "Non autorisé. Aucun ID {AuthType} Exchange n'est fourni.",
@@ -158,22 +234,6 @@
           "type": "error",
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "message": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "Impossible de désérialiser le corps de l'entrée en objet JSON. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
           "expr": "err"
         }
       ],
@@ -705,6 +765,30 @@
       "id": "Error getting {Resource} for output, error {Err}",
       "message": "Error getting {Resource} for output, error {Err}",
       "translation": "Erreur lors de l'obtention de {Resource} pour la sortie. Erreur {Err}",
+      "placeholders": [
+        {
+          "id": "Resource",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "resource"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error deleting {Resource}, error {Err}",
+      "message": "Error deleting {Resource}, error {Err}",
+      "translation": "Erreur de suppression de {Resource}, erreur {Err}",
       "placeholders": [
         {
           "id": "Resource",
@@ -2688,6 +2772,30 @@
       "fuzzy": true
     },
     {
+      "id": "Delete the all event logs or those matching the provided selectors.",
+      "message": "Delete the all event logs or those matching the provided selectors.",
+      "translation": "Supprimer tous les journaux d'événements ou ceux qui correspondent aux sélecteurs fournis.",
+      "fuzzy": true
+    },
+    {
+      "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or\"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+      "message": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or\"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+      "translation": "Chaîne de sélection. Cet indicateur peut être répété, ce qui signifie 'AND'. Chaque indicateur doit se présenter sous la forme attribute=value, attribute~value, \"attribute>value\" ou \"attribute<value\", où '~' signifie contient. Les attributs les plus courants sont timestamp, severity, message, event_code, source_type, agreement_id, service_url, etc. Utilisez l'option '-l' pour voir tous les noms d'attributs.",
+      "fuzzy": true
+    },
+    {
+      "id": "Skip the 'are you sure?' prompt.",
+      "message": "Skip the 'are you sure?' prompt.",
+      "translation": "Ignorer l'invite \"Voulez-vous vraiment ?\".",
+      "fuzzy": true
+    },
+    {
+      "id": "Delete the all event logs from previous registrations.",
+      "message": "Delete the all event logs from previous registrations.",
+      "translation": "Supprimer tous les journaux d'événements des enregistrements précédents.",
+      "fuzzy": true
+    },
+    {
       "id": "List all the active errors that will be shared with the Exchange if the node is online.",
       "message": "List all the active errors that will be shared with the Exchange if the node is online.",
       "translation": "Afficher la liste de toutes les erreurs actives qui se répercuteront dans Exchange si le noeud est en ligne.",
@@ -2967,12 +3075,6 @@
       "id": "Remove the deployment policy in the Horizon Exchange.",
       "message": "Remove the deployment policy in the Horizon Exchange.",
       "translation": "Retirer la règle de déploiement dans Horizon Exchange.",
-      "fuzzy": true
-    },
-    {
-      "id": "Skip the 'are you sure?' prompt.",
-      "message": "Skip the 'are you sure?' prompt.",
-      "translation": "Ignorer l'invite \"Voulez-vous vraiment ?\".",
       "fuzzy": true
     },
     {
@@ -4570,9 +4672,9 @@
       "fuzzy": true
     },
     {
-      "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-      "message": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-      "translation": "Algorithme de hachage utilisé pour le hachage des données d'objet avant de les signer, ce qui garantit l'intégrité des données lors du téléchargement et du transfert. Les algorithmes de hachage pris en charge sont SHA1 ou SHA256 ; la valeur par défaut est SHA1. Il est mutuellement exclusif avec l'indicateur --noIntegrity",
+      "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+      "message": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+      "translation": "Algorithme de hachage utilisé pour le hachage des données d'objet avant de les signer, ce qui garantit l'intégrité des données lors du téléchargement et du transfert. Les algorithmes de hachage pris en charge sont SHA1 ou SHA256. La valeur par défaut est SHA256. Elle est mutuellement exclusive avec l'indicateur --noIntegrity",
       "fuzzy": true
     },
     {
@@ -4654,9 +4756,9 @@
       "fuzzy": true
     },
     {
-      "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-      "message": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-      "translation": "Algorithme de hachage utilisé pour hacher les données du manifeste avant de les signer, garantissant ainsi l'intégrité des données lors du téléchargement et du téléchargement. Les algorithmes de hachage pris en charge sont SHA1 ou SHA256. La valeur par défaut est SHA1. Elle est mutuellement exclusive avec l'indicateur --noIntegrity",
+      "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+      "message": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+      "translation": "Algorithme de hachage utilisé pour hacher les données du manifeste avant de les signer, garantissant ainsi l'intégrité des données lors du téléchargement et du téléchargement. Les algorithmes de hachage pris en charge sont SHA1 ou SHA256. La valeur par défaut est SHA256. Elle est mutuellement exclusive avec l'indicateur --noIntegrity",
       "fuzzy": true
     },
     {
@@ -5273,6 +5375,12 @@
       "id": "Display the names of the secrets in the secrets manager.",
       "message": "Display the names of the secrets in the secrets manager.",
       "translation": "Afficher les noms des secrets dans le gestionnaire de secrets.",
+      "fuzzy": true
+    },
+    {
+      "id": "List all secrets in the given org in the secrets manager.",
+      "message": "List all secrets in the given org in the secrets manager.",
+      "translation": "Répertorier tous les secrets de l'organisation donnée dans Secrets Manager.",
       "fuzzy": true
     },
     {
@@ -6052,17 +6160,17 @@
       "fuzzy": true
     },
     {
-      "id": "Unable to read config file: {ConfigFile}. {Err}",
-      "message": "Unable to read config file: {ConfigFile}. {Err}",
-      "translation": "Impossible de lire le fichier de configuration : {ConfigFile}. {Err}",
+      "id": "Unable to read config file: {CleanedPath}. {Err}",
+      "message": "Unable to read config file: {CleanedPath}. {Err}",
+      "translation": "Impossible de lire le fichier de configuration : {CleanedPath}. {Err}",
       "placeholders": [
         {
-          "id": "ConfigFile",
+          "id": "CleanedPath",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "configFile"
+          "expr": "cleanedPath"
         },
         {
           "id": "Err",
@@ -6076,17 +6184,17 @@
       "fuzzy": true
     },
     {
-      "id": "Unable to decode content of config file {ConfigFile}. {Err}",
-      "message": "Unable to decode content of config file {ConfigFile}. {Err}",
-      "translation": "Impossible de décoder le contenu du fichier de configuration {ConfigFile}. {Err}",
+      "id": "Unable to decode content of config file {CleanedPath}. {Err}",
+      "message": "Unable to decode content of config file {CleanedPath}. {Err}",
+      "translation": "Impossible de décoder le contenu du fichier de configuration {CleanedPath}. {Err}",
       "placeholders": [
         {
-          "id": "ConfigFile",
+          "id": "CleanedPath",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "configFile"
+          "expr": "cleanedPath"
         },
         {
           "id": "Err",
@@ -7416,17 +7524,17 @@
       "fuzzy": true
     },
     {
-      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-      "message": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-      "translation": "Erreur rencontrée lors de la lecture du fichier de certificat ICP {IcpCertPath} : {Err}",
+      "id": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
+      "message": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
+      "translation": "Erreur de lecture du fichier de certification ICP {CleanedPath}: {Err}",
       "placeholders": [
         {
-          "id": "IcpCertPath",
+          "id": "CleanedPath",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "icpCertPath"
+          "expr": "cleanedPath"
         },
         {
           "id": "Err",
@@ -12827,6 +12935,42 @@
           "expr": "v"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove all event logs matching the given selectors?",
+      "message": "Are you sure you want to remove all event logs matching the given selectors?",
+      "translation": "Voulez-vous vraiment supprimer tous les journaux d'événements correspondant aux sélecteurs donnés ?",
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove all event logs?",
+      "message": "Are you sure you want to remove all event logs?",
+      "translation": "Voulez-vous vraiment supprimer tous les journaux d'événements ?",
+      "fuzzy": true
+    },
+    {
+      "id": "Successfully deleted the selected eventlogs.",
+      "message": "Successfully deleted the selected eventlogs.",
+      "translation": "Suppression réussie des journaux d'événements sélectionnés.",
+      "fuzzy": true
+    },
+    {
+      "id": "Successfully deleted the eventlogs.",
+      "message": "Successfully deleted the eventlogs.",
+      "translation": "Suppression réussie des journaux d'événements.",
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure you want to remove all event logs from previous registrations?",
+      "message": "Are you sure you want to remove all event logs from previous registrations?",
+      "translation": "Voulez-vous vraiment supprimer tous les journaux d'événements des enregistrements précédents ?",
+      "fuzzy": true
+    },
+    {
+      "id": "Successfully pruned the eventlogs.",
+      "message": "Successfully pruned the eventlogs.",
+      "translation": "Nettoyage réussi des journaux d'événements.",
       "fuzzy": true
     },
     {
@@ -24466,22 +24610,6 @@
       "fuzzy": true
     },
     {
-      "id": "Hash algorithm {HashAlgo} is not supported",
-      "message": "Hash algorithm {HashAlgo} is not supported",
-      "translation": "L'algorithme de hachage {HashAlgo} n'est pas pris en charge",
-      "placeholders": [
-        {
-          "id": "HashAlgo",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "hashAlgo"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "unable to get file info of object file {Name}: {Err}",
       "message": "unable to get file info of object file {Name}: {Err}",
       "translation": "Impossible d'obtenir les informations du fichier d'objet {Name}: {Err}",
@@ -27027,9 +27155,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "message": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "Echec de la recherche de définition pour des services dépendants de {TopId}. La compatibilité de {PROPNODEPRIVILEGED} ne peut pas être complètement évaluée tant que tous les services ne sont pas dans Exchange.",
+      "id": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "message": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "Échec de la recherche de la définition des services dépendants de {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), erreur : {Err}. La compatibilité de {PROPNODEPRIVILEGED} ne peut être pleinement évaluée tant que tous les services ne sont pas présents sur Exchange.",
       "placeholders": [
         {
           "id": "TopId",
@@ -27040,11 +27168,51 @@
           "expr": "topId"
         },
         {
-          "id": "PROPNODEPRIVILEGED",
+          "id": "SvcUrl",
           "string": "%[2]s",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
+          "expr": "svcUrl"
+        },
+        {
+          "id": "SvcOrg",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "svcOrg"
+        },
+        {
+          "id": "SvcVersion",
+          "string": "%[4]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "svcVersion"
+        },
+        {
+          "id": "SvcArch",
+          "string": "%[5]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "svcArch"
+        },
+        {
+          "id": "Err",
+          "string": "%[6]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 6,
+          "expr": "err"
+        },
+        {
+          "id": "PROPNODEPRIVILEGED",
+          "string": "%[7]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 7,
           "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
         }
       ],
@@ -29286,6 +29454,22 @@
       "id": "Failed to verify digital signature because the signature string is empty",
       "message": "Failed to verify digital signature because the signature string is empty",
       "translation": "Impossible de vérifier la signature numérique car la chaîne de signature est vide",
+      "fuzzy": true
+    },
+    {
+      "id": "Hash algorithm {HashAlgo} is not supported",
+      "message": "Hash algorithm {HashAlgo} is not supported",
+      "translation": "L'algorithme de hachage {HashAlgo} n'est pas pris en charge",
+      "placeholders": [
+        {
+          "id": "HashAlgo",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "hashAlgo"
+        }
+      ],
       "fuzzy": true
     },
     {
