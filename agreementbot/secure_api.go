@@ -1551,7 +1551,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
 			writeResponse(w, secretDetails, http.StatusOK)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 	case "LIST":
 		// check existence of an org-level secret
@@ -1613,7 +1613,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "create", info); serr == nil {
 			writeResponse(w, "Secret created/updated.", http.StatusCreated)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 		// swagger:operation DELETE /org/{org}/secrets/{secret} orgSecret
 		//
@@ -1649,7 +1649,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
 			writeResponse(w, "Secret is deleted.", http.StatusNoContent)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 	case "OPTIONS":
 		w.Header().Set("Allow", "LIST, OPTIONS")
@@ -1779,7 +1779,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
 			writeResponse(w, secretDetails, http.StatusOK)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 	case "LIST":
 		// check existence of a user-level secret
@@ -1841,7 +1841,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "create", info); serr == nil {
 			writeResponse(w, "Secret created/updated.", http.StatusCreated)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} userSecret
 		//
@@ -1876,7 +1876,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
 			writeResponse(w, "Secret created/updated.", http.StatusNoContent)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 	case "OPTIONS":
 		w.Header().Set("Allow", "LIST, OPTIONS")
@@ -1931,7 +1931,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
 			writeResponse(w, secretDetails, http.StatusOK)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 	case "LIST":
 		// check existence of a node org-level secret
@@ -1993,7 +1993,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "create", info); serr == nil {
 			writeResponse(w, "Secret created/updated.", http.StatusCreated)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 		// swagger:operation DELETE /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
 		//
@@ -2028,7 +2028,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
 			writeResponse(w, "Secret created/updated.", http.StatusNoContent)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 	case "OPTIONS":
 		w.Header().Set("Allow", "LIST, OPTIONS")
@@ -2083,7 +2083,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "read", info); serr == nil {
 			writeResponse(w, secretDetails, http.StatusOK)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 	case "LIST":
 		// check existence of a user-level secret
@@ -2145,7 +2145,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "create", info); serr == nil {
 			writeResponse(w, "Secret created/updated.", http.StatusCreated)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} nodeUserSecret
 		//
@@ -2180,7 +2180,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		if serr, errMsg := a.errCheck(err, "remove", info); serr == nil {
 			writeResponse(w, "Secret created/updated.", http.StatusNoContent)
 		} else {
-			writeResponse(w, errMsg, serr.ResponseCode)
+			writeResponse(w, map[string]string{"error": errMsg}, serr.ResponseCode)
 		}
 	case "OPTIONS":
 		w.Header().Set("Allow", "LIST, OPTIONS")
