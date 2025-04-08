@@ -131,6 +131,88 @@
             "fuzzy": true
         },
         {
+            "id": "Failed to get nodes from the exchange.",
+            "message": "Failed to get nodes from the exchange.",
+            "translation": "Failed to get nodes from the exchange.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+            "message": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+            "translation": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PolicyType",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "policyType"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to get node policy from the exchange.",
+            "message": "Failed to get node policy from the exchange.",
+            "translation": "Failed to get node policy from the exchange.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Input body couldn't be deserialized to JSON object. {Err}",
+            "message": "Input body couldn't be deserialized to JSON object. {Err}",
+            "translation": "Input body couldn't be deserialized to JSON object. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+            "message": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+            "translation": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+            "message": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+            "translation": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Unauthorized. No exchange {AuthType} id is supplied.",
             "message": "Unauthorized. No exchange {AuthType} id is supplied.",
             "translation": "Unauthorized. No exchange {AuthType} id is supplied.",
@@ -167,23 +249,6 @@
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
                     "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Input body couldn't be deserialized to JSON object. {Err}",
-            "message": "Input body couldn't be deserialized to JSON object. {Err}",
-            "translation": "Input body couldn't be deserialized to JSON object. {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Err",
-                    "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
                     "expr": "err"
                 }
             ],
@@ -750,6 +815,31 @@
             "id": "Error getting {Resource} for output, error {Err}",
             "message": "Error getting {Resource} for output, error {Err}",
             "translation": "Error getting {Resource} for output, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Resource",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "resource"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error deleting {Resource}, error {Err}",
+            "message": "Error deleting {Resource}, error {Err}",
+            "translation": "Error deleting {Resource}, error {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2908,9 +2998,37 @@
             "fuzzy": true
         },
         {
-            "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute\u003evalue\" or \"attribute\u003cvalue\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-            "message": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute\u003evalue\" or \"attribute\u003cvalue\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-            "translation": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute\u003evalue\" or \"attribute\u003cvalue\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+            "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute\u003evalue\" or \"attribute\u003cvalue\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+            "message": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute\u003evalue\" or \"attribute\u003cvalue\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+            "translation": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute\u003evalue\" or \"attribute\u003cvalue\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Delete all the event logs or those matching the provided selectors.",
+            "message": "Delete all the event logs or those matching the provided selectors.",
+            "translation": "Delete all the event logs or those matching the provided selectors.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute\u003evalue\" or\"attribute\u003cvalue\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+            "message": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute\u003evalue\" or\"attribute\u003cvalue\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+            "translation": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute\u003evalue\" or\"attribute\u003cvalue\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Skip the 'are you sure?' prompt.",
+            "message": "Skip the 'are you sure?' prompt.",
+            "translation": "Skip the 'are you sure?' prompt.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Delete the all event logs from previous registrations.",
+            "message": "Delete the all event logs from previous registrations.",
+            "translation": "Delete the all event logs from previous registrations.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3240,13 +3358,6 @@
             "id": "Remove the deployment policy in the Horizon Exchange.",
             "message": "Remove the deployment policy in the Horizon Exchange.",
             "translation": "Remove the deployment policy in the Horizon Exchange.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Skip the 'are you sure?' prompt.",
-            "message": "Skip the 'are you sure?' prompt.",
-            "translation": "Skip the 'are you sure?' prompt.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -5106,9 +5217,9 @@
             "fuzzy": true
         },
         {
-            "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-            "message": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-            "translation": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+            "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+            "message": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+            "translation": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -5204,9 +5315,9 @@
             "fuzzy": true
         },
         {
-            "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-            "message": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-            "translation": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
+            "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+            "message": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+            "translation": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -5921,6 +6032,13 @@
             "id": "Display the names of the secrets in the secrets manager.",
             "message": "Display the names of the secrets in the secrets manager.",
             "translation": "Display the names of the secrets in the secrets manager.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List all secrets in the given org in the secrets manager.",
+            "message": "List all secrets in the given org in the secrets manager.",
+            "translation": "List all secrets in the given org in the secrets manager.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -6795,18 +6913,18 @@
             "fuzzy": true
         },
         {
-            "id": "Unable to read config file: {ConfigFile}. {Err}",
-            "message": "Unable to read config file: {ConfigFile}. {Err}",
-            "translation": "Unable to read config file: {ConfigFile}. {Err}",
+            "id": "Unable to read config file: {CleanedPath}. {Err}",
+            "message": "Unable to read config file: {CleanedPath}. {Err}",
+            "translation": "Unable to read config file: {CleanedPath}. {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "ConfigFile",
+                    "id": "CleanedPath",
                     "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "configFile"
+                    "expr": "cleanedPath"
                 },
                 {
                     "id": "Err",
@@ -6820,18 +6938,18 @@
             "fuzzy": true
         },
         {
-            "id": "Unable to decode content of config file {ConfigFile}. {Err}",
-            "message": "Unable to decode content of config file {ConfigFile}. {Err}",
-            "translation": "Unable to decode content of config file {ConfigFile}. {Err}",
+            "id": "Unable to decode content of config file {CleanedPath}. {Err}",
+            "message": "Unable to decode content of config file {CleanedPath}. {Err}",
+            "translation": "Unable to decode content of config file {CleanedPath}. {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "ConfigFile",
+                    "id": "CleanedPath",
                     "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "configFile"
+                    "expr": "cleanedPath"
                 },
                 {
                     "id": "Err",
@@ -8227,18 +8345,18 @@
             "fuzzy": true
         },
         {
-            "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-            "message": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-            "translation": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+            "id": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
+            "message": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
+            "translation": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "IcpCertPath",
+                    "id": "CleanedPath",
                     "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "icpCertPath"
+                    "expr": "cleanedPath"
                 },
                 {
                     "id": "Err",
@@ -12856,9 +12974,9 @@
             "fuzzy": true
         },
         {
-            "id": "unable to write json object for {FileName} to file {FilePath}, error: {Err}",
-            "message": "unable to write json object for {FileName} to file {FilePath}, error: {Err}",
-            "translation": "unable to write json object for {FileName} to file {FilePath}, error: {Err}",
+            "id": "unable to write json object for {FileName} to file {CleanedPath}, error: {Err}",
+            "message": "unable to write json object for {FileName} to file {CleanedPath}, error: {Err}",
+            "translation": "unable to write json object for {FileName} to file {CleanedPath}, error: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -12870,12 +12988,12 @@
                     "expr": "fileName"
                 },
                 {
-                    "id": "FilePath",
+                    "id": "CleanedPath",
                     "string": "%[2]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 2,
-                    "expr": "filePath"
+                    "expr": "cleanedPath"
                 },
                 {
                     "id": "Err",
@@ -13920,6 +14038,75 @@
                     "expr": "v"
                 }
             ],
+            "fuzzy": true
+        },
+        {
+            "id": "Are you sure you want to remove all event logs matching the given selectors?",
+            "message": "Are you sure you want to remove all event logs matching the given selectors?",
+            "translation": "Are you sure you want to remove all event logs matching the given selectors?",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Are you sure you want to remove all event logs?",
+            "message": "Are you sure you want to remove all event logs?",
+            "translation": "Are you sure you want to remove all event logs?",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Successfully deleted {Sprintfv_count} matching event log entries.",
+            "message": "Successfully deleted {Sprintfv_count} matching event log entries.",
+            "translation": "Successfully deleted {Sprintfv_count} matching event log entries.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Sprintfv_count",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "cliutils.RemoveQuotes(fmt.Sprintf(\"%v\", count))"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "No event log entries matching the given selectors were found.",
+            "message": "No event log entries matching the given selectors were found.",
+            "translation": "No event log entries matching the given selectors were found.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Are you sure you want to remove all event logs from previous registrations?",
+            "message": "Are you sure you want to remove all event logs from previous registrations?",
+            "translation": "Are you sure you want to remove all event logs from previous registrations?",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Successfully pruned {Sprintfv_count} matching event log entries.",
+            "message": "Successfully pruned {Sprintfv_count} matching event log entries.",
+            "translation": "Successfully pruned {Sprintfv_count} matching event log entries.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Sprintfv_count",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "cliutils.RemoveQuotes(fmt.Sprintf(\"%v\", count))"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "No event log entries from previous registrations were found.",
+            "message": "No event log entries from previous registrations were found.",
+            "translation": "No event log entries from previous registrations were found.",
+            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
@@ -20546,6 +20733,30 @@
             "fuzzy": true
         },
         {
+            "id": "Warning: mmsPVC is not enabled for this cluster service",
+            "message": "Warning: mmsPVC is not enabled for this cluster service",
+            "translation": "Warning: mmsPVC is not enabled for this cluster service",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "pvcSizeGB: {PvcSize}",
+            "message": "pvcSizeGB: {PvcSize}",
+            "translation": "pvcSizeGB: {PvcSize}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PvcSize",
+                    "string": "%[1]v",
+                    "type": "int64",
+                    "underlyingType": "int64",
+                    "argNum": 1,
+                    "expr": "pvcSize"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
             "message": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
             "translation": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
@@ -26298,23 +26509,6 @@
             "fuzzy": true
         },
         {
-            "id": "Hash algorithm {HashAlgo} is not supported",
-            "message": "Hash algorithm {HashAlgo} is not supported",
-            "translation": "Hash algorithm {HashAlgo} is not supported",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "HashAlgo",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "hashAlgo"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "unable to get file info of object file {Name}: {Err}",
             "message": "unable to get file info of object file {Name}: {Err}",
             "translation": "unable to get file info of object file {Name}: {Err}",
@@ -29012,9 +29206,9 @@
             "fuzzy": true
         },
         {
-            "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-            "message": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-            "translation": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+            "id": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+            "message": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+            "translation": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -29026,11 +29220,51 @@
                     "expr": "topId"
                 },
                 {
-                    "id": "PROPNODEPRIVILEGED",
+                    "id": "SvcUrl",
                     "string": "%[2]s",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 2,
+                    "expr": "svcUrl"
+                },
+                {
+                    "id": "SvcOrg",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "svcOrg"
+                },
+                {
+                    "id": "SvcVersion",
+                    "string": "%[4]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 4,
+                    "expr": "svcVersion"
+                },
+                {
+                    "id": "SvcArch",
+                    "string": "%[5]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 5,
+                    "expr": "svcArch"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[6]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 6,
+                    "expr": "err"
+                },
+                {
+                    "id": "PROPNODEPRIVILEGED",
+                    "string": "%[7]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 7,
                     "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
                 }
             ],
@@ -31395,6 +31629,23 @@
             "message": "Failed to verify digital signature because the signature string is empty",
             "translation": "Failed to verify digital signature because the signature string is empty",
             "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Hash algorithm {HashAlgo} is not supported",
+            "message": "Hash algorithm {HashAlgo} is not supported",
+            "translation": "Hash algorithm {HashAlgo} is not supported",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "HashAlgo",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "hashAlgo"
+                }
+            ],
             "fuzzy": true
         },
         {

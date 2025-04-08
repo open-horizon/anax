@@ -28,16 +28,36 @@
     "translation": "No input found."
   },
   {
+    "id": "Failed to get nodes from the exchange.",
+    "translation": "Failed to get nodes from the exchange."
+  },
+  {
+    "id": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\".",
+    "translation": "Invalid node policy type {PolicyType}. Allowed types are \"dp\" or \"nmp\"."
+  },
+  {
+    "id": "Failed to get node policy from the exchange.",
+    "translation": "Failed to get node policy from the exchange."
+  },
+  {
+    "id": "Input body couldn't be deserialized to JSON object. {Err}",
+    "translation": "Input body couldn't be deserialized to JSON object. {Err}"
+  },
+  {
+    "id": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}",
+    "translation": "Input body couldn't be deserialized to policyNodeCompatibleInputBody object. {Err}"
+  },
+  {
+    "id": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}",
+    "translation": "Input body couldn't be deserialized to patternNodeCompatibleInputBody object. {Err}"
+  },
+  {
     "id": "Unauthorized. No exchange {AuthType} id is supplied.",
     "translation": "Unauthorized. No exchange {AuthType} id is supplied."
   },
   {
     "id": "Failed to authenticate the {AuthType} with the Exchange. {Err}",
     "translation": "Failed to authenticate the {AuthType} with the Exchange. {Err}"
-  },
-  {
-    "id": "Input body couldn't be deserialized to JSON object. {Err}",
-    "translation": "Input body couldn't be deserialized to JSON object. {Err}"
   },
   {
     "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
@@ -182,6 +202,10 @@
   {
     "id": "Error getting {Resource} for output, error {Err}",
     "translation": "Error getting {Resource} for output, error {Err}"
+  },
+  {
+    "id": "Error deleting {Resource}, error {Err}",
+    "translation": "Error deleting {Resource}, error {Err}"
   },
   {
     "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
@@ -904,8 +928,24 @@
     "translation": "List event logs with details."
   },
   {
-    "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-    "translation": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names."
+    "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+    "translation": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names."
+  },
+  {
+    "id": "Delete all the event logs or those matching the provided selectors.",
+    "translation": "Delete all the event logs or those matching the provided selectors."
+  },
+  {
+    "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or\"attribute<value\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+    "translation": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or\"attribute<value\", where '~' means contains. The common attribute names are timestamp, time_since (unit is hours), severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names."
+  },
+  {
+    "id": "Skip the 'are you sure?' prompt.",
+    "translation": "Skip the 'are you sure?' prompt."
+  },
+  {
+    "id": "Delete the all event logs from previous registrations.",
+    "translation": "Delete the all event logs from previous registrations."
   },
   {
     "id": "List all the active errors that will be shared with the Exchange if the node is online.",
@@ -1094,10 +1134,6 @@
   {
     "id": "Remove the deployment policy in the Horizon Exchange.",
     "translation": "Remove the deployment policy in the Horizon Exchange."
-  },
-  {
-    "id": "Skip the 'are you sure?' prompt.",
-    "translation": "Skip the 'are you sure?' prompt."
   },
   {
     "id": "The name of the deployment policy to be removed.",
@@ -2144,8 +2180,8 @@
     "translation": "The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash"
   },
   {
-    "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-    "translation": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag"
+    "id": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+    "translation": "The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag"
   },
   {
     "id": "The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
@@ -2200,8 +2236,8 @@
     "translation": "The path of a JSON file containing the manifest data. Specify -f- to read from stdin."
   },
   {
-    "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag",
-    "translation": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag"
+    "id": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag",
+    "translation": "The hash algorithm used to hash the manifest data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA256. It is mutually exclusive with the --noIntegrity flag"
   },
   {
     "id": "The hash of the manifest data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.",
@@ -2596,6 +2632,10 @@
     "translation": "Display the names of the secrets in the secrets manager."
   },
   {
+    "id": "List all secrets in the given org in the secrets manager.",
+    "translation": "List all secrets in the given org in the secrets manager."
+  },
+  {
     "id": "The node id of the node secret to list. Include only if this secret is specific to a single node.",
     "translation": "The node id of the node secret to list. Include only if this secret is specific to a single node."
   },
@@ -2972,12 +3012,12 @@
     "translation": "Reading configuration file: {ConfigFile}"
   },
   {
-    "id": "Unable to read config file: {ConfigFile}. {Err}",
-    "translation": "Unable to read config file: {ConfigFile}. {Err}"
+    "id": "Unable to read config file: {CleanedPath}. {Err}",
+    "translation": "Unable to read config file: {CleanedPath}. {Err}"
   },
   {
-    "id": "Unable to decode content of config file {ConfigFile}. {Err}",
-    "translation": "Unable to decode content of config file {ConfigFile}. {Err}"
+    "id": "Unable to decode content of config file {CleanedPath}. {Err}",
+    "translation": "Unable to decode content of config file {CleanedPath}. {Err}"
   },
   {
     "id": "Config file does not exist: {ConfigFile}.",
@@ -3244,8 +3284,8 @@
     "translation": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}"
   },
   {
-    "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-    "translation": "Encountered error reading ICP cert file {IcpCertPath}: {Err}"
+    "id": "Encountered error reading ICP cert file {CleanedPath}: {Err}",
+    "translation": "Encountered error reading ICP cert file {CleanedPath}: {Err}"
   },
   {
     "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
@@ -4176,8 +4216,8 @@
     "translation": "failed to create json object for {FileName}, error: {Err}"
   },
   {
-    "id": "unable to write json object for {FileName} to file {FilePath}, error: {Err}",
-    "translation": "unable to write json object for {FileName} to file {FilePath}, error: {Err}"
+    "id": "unable to write json object for {FileName} to file {CleanedPath}, error: {Err}",
+    "translation": "unable to write json object for {FileName} to file {CleanedPath}, error: {Err}"
   },
   {
     "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
@@ -4370,6 +4410,34 @@
   {
     "id": "The selection string {V} is not valid.",
     "translation": "The selection string {V} is not valid."
+  },
+  {
+    "id": "Are you sure you want to remove all event logs matching the given selectors?",
+    "translation": "Are you sure you want to remove all event logs matching the given selectors?"
+  },
+  {
+    "id": "Are you sure you want to remove all event logs?",
+    "translation": "Are you sure you want to remove all event logs?"
+  },
+  {
+    "id": "Successfully deleted {Sprintfv_count} matching event log entries.",
+    "translation": "Successfully deleted {Sprintfv_count} matching event log entries."
+  },
+  {
+    "id": "No event log entries matching the given selectors were found.",
+    "translation": "No event log entries matching the given selectors were found."
+  },
+  {
+    "id": "Are you sure you want to remove all event logs from previous registrations?",
+    "translation": "Are you sure you want to remove all event logs from previous registrations?"
+  },
+  {
+    "id": "Successfully pruned {Sprintfv_count} matching event log entries.",
+    "translation": "Successfully pruned {Sprintfv_count} matching event log entries."
+  },
+  {
+    "id": "No event log entries from previous registrations were found.",
+    "translation": "No event log entries from previous registrations were found."
   },
   {
     "id": "failed to marshal 'hzn eventlog list' output: {Err}",
@@ -5830,6 +5898,14 @@
   {
     "id": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern",
     "translation": "Warning: Namespace is detected in operator file. Service namespace should be set in deployment policy or pattern"
+  },
+  {
+    "id": "Warning: mmsPVC is not enabled for this cluster service",
+    "translation": "Warning: mmsPVC is not enabled for this cluster service"
+  },
+  {
+    "id": "pvcSizeGB: {PvcSize}",
+    "translation": "pvcSizeGB: {PvcSize}"
   },
   {
     "id": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
@@ -7328,10 +7404,6 @@
     "translation": "Data hash is generated. Start digital signing with the data hash..."
   },
   {
-    "id": "Hash algorithm {HashAlgo} is not supported",
-    "translation": "Hash algorithm {HashAlgo} is not supported"
-  },
-  {
     "id": "unable to get file info of object file {Name}: {Err}",
     "translation": "unable to get file info of object file {Name}: {Err}"
   },
@@ -7940,8 +8012,8 @@
     "translation": "Error retrieving dependent services from the Exchange for {SDep}. {Err}"
   },
   {
-    "id": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-    "translation": "Failed to find definition for dependent services of {TopId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange."
+    "id": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+    "translation": "Failed to find definition for dependent services of {TopId} ({SvcUrl}/{SvcOrg}/{SvcVersion}/{SvcArch}), error: {Err}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange."
   },
   {
     "id": "The PolicyCheck input cannot be null",
@@ -8434,6 +8506,10 @@
   {
     "id": "Failed to verify digital signature because the signature string is empty",
     "translation": "Failed to verify digital signature because the signature string is empty"
+  },
+  {
+    "id": "Hash algorithm {HashAlgo} is not supported",
+    "translation": "Hash algorithm {HashAlgo} is not supported"
   },
   {
     "id": "The start time must be in RFC3339 format or set to \"now\".",
