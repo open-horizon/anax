@@ -23,7 +23,7 @@ jobs:
 
   # Migrating workflow causes run number to be reset to 1, offset so our versions don't go back in time.
   offset-build-number:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs: 
       BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
     steps:
@@ -81,7 +81,7 @@ jobs:
     needs: offset-build-number
 
     # The type of runner that the job will run on 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
@@ -461,7 +461,7 @@ jobs:
       # Specify that we wait for mac-build to run and create the packages
       needs: mac-build
 
-      runs-on: ubuntu-20.04
+      runs-on: ubuntu-latest
 
       strategy:
         matrix:
