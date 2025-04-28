@@ -14,7 +14,7 @@ RUN  microdnf update  -y libxml2 --nodocs --setopt=install_weak_deps=0 --disable
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && microdnf clean all --disableplugin=subscription-manager \
   && rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \
-  && curl -4LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl \
+  && curl -4LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"  \
   && chmod +x ./kubectl \
   && mv ./kubectl /usr/local/bin \
   && mkdir -p /tmp/agentbackup \
