@@ -124,7 +124,7 @@ ifeq ($(arch),ppc64le)
 	DOCKER_CSSDB_TAG ?= 2.6.10
 else
 	DOCKER_CSSDB_INAME ?= mongo
-	DOCKER_CSSDB_TAG ?= 4.0.6
+	DOCKER_CSSDB_TAG ?= 7.0
 endif
 
 #vault
