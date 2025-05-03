@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2023
-lastupdated: "2023-02-11"
+copyright: Contributors to the Open Horizon project
+years: 2025
+title: High Availability node groups
 description: High Availability node groups
-title: "High Availability node groups"
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 9
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

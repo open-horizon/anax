@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-11-20"
-title: "Secrets"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Secrets
 description: Secrets Management
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 9
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

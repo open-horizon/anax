@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-09"
-title: "Horizon Attributes"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Horizon Attributes
 description: Horizon Edge Services details
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 6
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}
