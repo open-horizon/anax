@@ -3,7 +3,7 @@ package cutil
 import (
 	"bufio"
 	"crypto/md5"
-	"crypto/rand"
+	crypto_rand "crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -64,7 +64,7 @@ func SecureRandomString() (string, error) {
 
 	// pad out the password to make it <=15 chars
 	bytes := make([]byte, 63)
-	if _, err := rand.Read(bytes); err != nil {
+	if _, err := crypto_rand.Read(bytes); err != nil {
 		return "", err
 	}
 	randStr += base64.URLEncoding.EncodeToString(bytes)
@@ -82,7 +82,7 @@ func GenerateAgreementId() (string, error) {
 
 	bytes := make([]byte, 32, 32)
 	agreementIdString := ""
-	_, err := rand.Read(bytes)
+	_, err := crypto_rand.Read(bytes)
 	if err == nil {
 		agreementIdString = hex.EncodeToString(bytes)
 	}
@@ -93,7 +93,7 @@ func GenerateRandomNodeId() (string, error) {
 
 	bytes := make([]byte, 20, 20)
 	nodeIdString := ""
-	_, err := rand.Read(bytes)
+	_, err := crypto_rand.Read(bytes)
 	if err == nil {
 		nodeIdString = hex.EncodeToString(bytes)
 	}
