@@ -24,8 +24,16 @@ type ExchangeUser struct {
 	HubAdmin    bool   `json:"hubAdmin"`
 	LastUpdated string `json:"lastUpdated"`
 	UpdatedBy   string `json:"updatedBy"`
+	Apikeys     []ApiKeyBase `json:"apikeys,omitempty"` 
 }
-
+type ApiKeyBase struct {
+	Id          string `json:"id"`
+	Description string `json:"description"`
+	CreatedAt   string `json:"created_at"`
+	CreatedBy   string `json:"created_by"`
+	ModifiedAt  string `json:"modified_at"`
+	ModifiedBy  string `json:"modified_by"`
+}
 func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
