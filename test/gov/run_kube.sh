@@ -307,6 +307,8 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	docker ps
 	hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange user list -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u root/root:${EXCH_ROOTPW}
 	if [ $? -eq 0 ]; then
 		echo -e "${PREFIX} cluster agent should return error when register a patter that has non-empty cluster namespace"
@@ -379,6 +381,8 @@ else
 	docker ps
 	hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange user list -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json --policy /home/agentuser/node.policy.k8s.embedded.svc.json -u root/root:${EXCH_ROOTPW}
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to register with deployment policy userdev/bp_k8s_embedded_ns"
