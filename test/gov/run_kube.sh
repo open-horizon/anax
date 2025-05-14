@@ -304,6 +304,7 @@ kubecmd="$cprefix microk8s.kubectl"
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
 	# pattern name: e2edev@somecomp.com/sk8s-with-cluster-ns
+	docker ps
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u root/root:${EXCH_ROOTPW}
 	if [ $? -eq 0 ]; then
 		echo -e "${PREFIX} cluster agent should return error when register a patter that has non-empty cluster namespace"
@@ -373,6 +374,7 @@ else
 	# policy case
 	# policy: userdev/bp_k8s_embedded_ns
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s_embedded_ns"
+	docker ps
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json --policy /home/agentuser/node.policy.k8s.embedded.svc.json -u root/root:${EXCH_ROOTPW}
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to register with deployment policy userdev/bp_k8s_embedded_ns"
