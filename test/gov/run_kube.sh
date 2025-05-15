@@ -138,8 +138,6 @@ $cprefix microk8s start
 $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/cni-network/cni.yaml
 $cprefix microk8s kubectl apply -f /var/snap/microk8s/current/args/cni-network/cni.yaml
 
-$cprefix microk8s kubectl get po -A -o wide
-
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
 RC=$?
@@ -343,6 +341,8 @@ $cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${A
 
 echo "call curl http://$EX_IP:8080/v1/admin/version oustside of agent pod"
 HZN_EXCHANGE_URL=http://$EX_IP:8080/v1 hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
+
+$cprefix microk8s kubectl get po -A -o wide
 
 $cprefix microk8s.kubectl get all -n kube-system
 
