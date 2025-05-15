@@ -272,6 +272,13 @@ then
 	exit 1
 fi
 
+CALICONODE_POD=$($cprefix microk8s.kubectl get pod -l k8s-app=calico-node -n kube-system -o jsonpath="{.items[0].metadata.name}")
+if [ $POD == "" ]
+then
+	echo "Unable to find calico node POD"
+	exit 1
+fi
+
 $cprefix microk8s.kubectl cp $PWD/gov/deployment_policies/userdev/bp_k8s_update.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/.
 $cprefix microk8s.kubectl cp $PWD/gov/deployment_policies/userdev/bp_k8s_embedded_ns_update.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/.
 
@@ -314,6 +321,9 @@ echo "call curl http://$EX_IP:8080/v1/admin/version oustside of agent pod"
 HZN_EXCHANGE_URL=http://$EX_IP:8080/v1 hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
 
 $cprefix microk8s.kubectl get all -n kube-system
+
+echo "get logs of $CALICONODE_POD"
+$cprefix microk8s.kubectl logs $CALICONODE_POD -n kube-system
 
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
