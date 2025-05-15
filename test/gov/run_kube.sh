@@ -143,6 +143,15 @@ then
         exit 1
 fi
 
+echo "Enable host access"
+$cprefix microk8s.enable host-access
+RC=$?
+if [ $RC -ne 0 ]
+then
+        echo "Failure enabling kube host-access: $RC"
+        exit 1
+fi
+
 #
 # Copy the agent container into the local kube container registry so that kube knows where to find it.
 #
