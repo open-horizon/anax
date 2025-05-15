@@ -144,7 +144,7 @@ then
 fi
 
 echo "Enable host access"
-$cprefix microk8s.enable host-access
+$cprefix microk8s.enable host-access:ip=${EX_IP}
 RC=$?
 if [ $RC -ne 0 ]
 then
