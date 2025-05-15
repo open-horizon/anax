@@ -125,6 +125,21 @@ fi
 ARCH=${ARCH} envsubst < ${depl_file} > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"
 if [ $? -ne 0 ]; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
 
+echo "Update microk8s CNI"
+default_val=10.1.0.0/16
+new_val=10.2.0.0/16
+
+$cprefix microk8s kubectl delete -f /var/snap/microk8s/current/args/cni-network/cni.yaml
+$cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/kube-proxy
+
+$cprefix microk8s stop
+$cprefix microk8s start
+
+$cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/cni-network/cni.yaml
+$cprefix microk8s kubectl apply -f /var/snap/microk8s/current/args/cni-network/cni.yaml
+
+$cprefix microk8s kubectl get po -A -o wide
+
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
 RC=$?
@@ -143,14 +158,14 @@ then
         exit 1
 fi
 
-echo "Enable host access"
-$cprefix microk8s.enable host-access:ip=${EX_IP}
-RC=$?
-if [ $RC -ne 0 ]
-then
-        echo "Failure enabling kube host-access: $RC"
-        exit 1
-fi
+# echo "Enable host access"
+# $cprefix microk8s.enable host-access:ip=${EX_IP}
+# RC=$?
+# if [ $RC -ne 0 ]
+# then
+#         echo "Failure enabling kube host-access: $RC"
+#         exit 1
+# fi
 
 #
 # Copy the agent container into the local kube container registry so that kube knows where to find it.
