@@ -20,7 +20,7 @@ OPERATOR_DEPLOYMENT_NAME="topserviceoperators"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
 PVC_NAME="openhorizon-agent-pvc"
-WAIT_POD_MAX_TRY=30
+WAIT_POD_MAX_TRY=300
 
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
