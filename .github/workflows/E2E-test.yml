@@ -24,6 +24,7 @@ jobs:
     # Variables that are available to all steps in the job
     env:
       GOPATH: /home/runner/work/anax/anax/go
+      DOCKER_CONFIG: /home/runner/.docker-config
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

@@ -307,7 +307,10 @@ echo "DOCKER_TEST_NETWORK is ${DOCKER_TEST_NETWORK}"
 
 docker network inspect hzn_horizonnet
 
+echo "call curl http://$EX_IP:8080/v1/admin/version outside of agent pod"
 $cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} curl http://$EX_IP:8080/v1/admin/version
+
+microk8s.kubectl get all -n kube-system
 
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
