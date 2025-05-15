@@ -307,6 +307,8 @@ echo "DOCKER_TEST_NETWORK is ${DOCKER_TEST_NETWORK}"
 
 docker network inspect hzn_horizonnet
 
+$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} curl http://www.google.com
+
 
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
