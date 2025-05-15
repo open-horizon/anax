@@ -3944,7 +3944,7 @@ function prepare_k8s_deployment_file() {
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
 
     # InitContainer needs to be removed for ocp because it breaks mounted directory permisson. In ocp, the permission of volume is configured by scc.
-    if is_ocp_cluster && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-file* ]] && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-vpc-file* ]]; then
+    if is_ocp_cluster && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-file* ]] && [[ $EDGE_CLUSTER_STORAGE_CLASS != ibmc-vpc-file* ]] && [[ $EDGE_CLUSTER_STORAGE_CLASS != ocs-storagecluster-ceph* ]]; then
         log_info "remove initContainer"
         sed -i -e '/START_NOT_FOR_OCP/,/END_NOT_FOR_OCP/d' deployment-template.yml
     fi
@@ -4074,7 +4074,7 @@ function prepare_k8s_pvc_file() {
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
     local pvc_mode="ReadWriteOnce"
     number_of_nodes=$($KUBECTL get node | grep "Ready" -c)
-    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == rook-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]]); then
+    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == rook-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ocs-storagecluster-ceph* ]] ); then
         pvc_mode="ReadWriteMany"
     fi
 
