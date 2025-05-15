@@ -305,7 +305,7 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
 	# pattern name: e2edev@somecomp.com/sk8s-with-cluster-ns
 	docker ps
-	hzn exchange version -v
+	hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange user list -v
@@ -379,7 +379,7 @@ else
 	# policy: userdev/bp_k8s_embedded_ns
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s_embedded_ns"
 	docker ps
-	hzn exchange version -v
+	hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange user list -v
