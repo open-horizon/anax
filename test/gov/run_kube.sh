@@ -301,11 +301,17 @@ AGBOT_URL="$AGBOT_IP:8080"
 source gov/verify_edge_cluster.sh
 kubecmd="$cprefix microk8s.kubectl"
 
+docker ps
+
+echo "DOCKER_TEST_NETWORK is ${DOCKER_TEST_NETWORK}"
+
+docker network inspect hzn_horizonnet
+
+
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
 	# pattern name: e2edev@somecomp.com/sk8s-with-cluster-ns
-	docker ps
-	hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
+	HZN_EXCHANGE_URL=http://$EX_IP:8080/v1 hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange user list -v
@@ -378,8 +384,7 @@ else
 	# policy case
 	# policy: userdev/bp_k8s_embedded_ns
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s_embedded_ns"
-	docker ps
-	hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
+	HZN_EXCHANGE_URL=http://$EX_IP:8080/v1 hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange user list -v
