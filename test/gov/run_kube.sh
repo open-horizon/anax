@@ -307,15 +307,17 @@ echo "DOCKER_TEST_NETWORK is ${DOCKER_TEST_NETWORK}"
 
 docker network inspect hzn_horizonnet
 
-echo "call curl http://$EX_IP:8080/v1/admin/version outside of agent pod"
+echo "call curl http://$EX_IP:8080/v1/admin/version inside of agent pod"
 $cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} curl http://$EX_IP:8080/v1/admin/version
 
-microk8s.kubectl get all -n kube-system
+echo "call curl http://$EX_IP:8080/v1/admin/version oustside of agent pod"
+HZN_EXCHANGE_URL=http://$EX_IP:8080/v1 hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
+
+$cprefix microk8s.kubectl get all -n kube-system
 
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
 	# pattern name: e2edev@somecomp.com/sk8s-with-cluster-ns
-	HZN_EXCHANGE_URL=http://$EX_IP:8080/v1 hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn mms object list -v
@@ -388,7 +390,6 @@ else
 	# policy case
 	# policy: userdev/bp_k8s_embedded_ns
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s_embedded_ns"
-	HZN_EXCHANGE_URL=http://$EX_IP:8080/v1 hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn mms object list -v
