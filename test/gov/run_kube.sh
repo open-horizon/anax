@@ -12,6 +12,7 @@ E2EDEVTEST_TEMPFS=$1
 ANAX_SOURCE=$2
 EXCH_ROOTPW=$3
 DOCKER_TEST_NETWORK=$4
+HZN_LISTEN_IP=$5
 
 AGENT_NAME_SPACE="agent-namespace"
 NAMESPACE_IN_POLICY="ns-in-policy"
@@ -23,6 +24,9 @@ PVC_NAME="agent-pvc-horizon"
 WAIT_POD_MAX_TRY=60
 
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
+
+HZN_AGENT_PORT=8510
+ANAX_API="http://localhost:${HZN_AGENT_PORT}"
 
 isRoot=$(id -u)
 cprefix="sudo -E"
@@ -94,12 +98,10 @@ fi
 # Generate config files that are specific to the runtime environment.
 #
 echo "Generate the /etc/default/horizon file based on local network configuration"
-EX_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "exchange-api") | .value.IPv4Address')
-CSS_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "css-api") | .value.IPv4Address')
-AGBOT_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "agbot") | .value.IPv4Address')
-EX_IP="$(cut -d'/' -f1 <<<${EX_IP_MASK})"
-CSS_IP="$(cut -d'/' -f1 <<<${CSS_IP_MASK})"
-AGBOT_IP="$(cut -d'/' -f1 <<<${AGBOT_IP_MASK})"
+echo "HZN_LISTEN_IP is ${HZN_LISTEN_IP}"
+EX_IP=${HZN_LISTEN_IP}
+CSS_IP=${HZN_LISTEN_IP}
+AGBOT_IP=${HZN_LISTEN_IP}
 
 if [ "${EX_IP}" == "" ] || [ "${CSS_IP}" == "" ] || [ "${AGBOT_IP}" == "" ]
 then
@@ -292,7 +294,6 @@ $cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/topservice-operator
 #   4. business policy has "clusterNamespace": "ns-in-policy", policy constraints match the node. service deploy to "ns-in-policy" (update bp_k8s)
 # After test, the cluster agent will register with userdev/bp_k8s, service pod will be deployed in "ns-in-policy"
 
-AGBOT_URL="$AGBOT_IP:8080"
 source gov/verify_edge_cluster.sh
 kubecmd="$cprefix microk8s.kubectl"
 
@@ -327,7 +328,7 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 
 	# wait 30s for agreement to comeup
 	sleep 30
-	checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s-with-embedded-ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
+	checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s-with-embedded-ns" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for e2edev@somecomp.com/sk8s-with-embedded-ns"
   		exit 2
@@ -352,7 +353,7 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	fi
 
 	sleep 30
-	checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
+	checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for e2edev@somecomp.com/sk8s"
   		exit 2
@@ -378,7 +379,7 @@ else
 
 	sleep 30
 	echo -e "kubecmd is: $kubecmd" #sudo -E microk8s.kubectl
-	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
+	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s_embedded_ns"
   		exit 2
@@ -401,14 +402,14 @@ else
 	echo -e "${PREFIX} sleep 30s to allow cluster agent agreement to be cancelled and re-negotiated"
 	sleep 30
 	echo -e "${PREFIX} verify agreement is archived for deployment policy userdev/bp_k8s_embedded_ns"
-	checkArchivedAgreementForPolicy "userdev/bp_k8s_embedded_ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
+	checkArchivedAgreementForPolicy "userdev/bp_k8s_embedded_ns" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check archived agreement for userdev/bp_k8s_embedded_ns"
   		exit 2
 	fi
 
 	echo -e "${PREFIX} verify new agreement is active for deployment policy userdev/bp_k8s_embedded_ns"
-	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
+	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s_embedded_ns"
   		exit 2
@@ -435,7 +436,7 @@ else
 	fi
 
 	sleep 30
-	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
+	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s"
   		exit 2
@@ -458,14 +459,14 @@ else
 	echo -e "${PREFIX} sleep 30s to allow cluster agent agreement to be cancelled and re-negotiated"
 	sleep 30
 	echo -e "${PREFIX} verify agreement is archived for deployment policy userdev/bp_k8s"
-	checkArchivedAgreementForPolicy "userdev/bp_k8s" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
+	checkArchivedAgreementForPolicy "userdev/bp_k8s" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check archived agreement for userdev/bp_k8s"
   		exit 2
 	fi
 
 	echo -e "${PREFIX} verify new agreement is active for deployment policy userdev/bp_k8s"
-	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
+	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s"
   		exit 2
