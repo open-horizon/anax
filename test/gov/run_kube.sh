@@ -125,13 +125,21 @@ fi
 ARCH=${ARCH} envsubst < ${depl_file} > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"
 if [ $? -ne 0 ]; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
 
+echo "Check iptable rules"
+$cprefix iptables -S
+
+echo "List input rules:"
+$cprefix iptables -S INPUT
+
+echo "List output rules:"
+$cprefix iptables -S OUTPUT
+
 echo "Update microk8s CNI"
 default_val=10.1.0.0/16
 new_val=10.2.0.0/16
 
 $cprefix microk8s kubectl delete -f /var/snap/microk8s/current/args/cni-network/cni.yaml
 $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/kube-proxy
-
 $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/cni-network/cni.yaml
 $cprefix microk8s kubectl apply -f /var/snap/microk8s/current/args/cni-network/cni.yaml
 
