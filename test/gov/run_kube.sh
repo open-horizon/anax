@@ -394,8 +394,10 @@ $cprefix microk8s kubectl get po -A -o wide
 
 $cprefix microk8s.kubectl get all -n kube-system
 
-echo "get logs of $CALICO_KUBE_CONTROLLER_POD"
-$cprefix microk8s.kubectl logs $CALICO_KUBE_CONTROLLER_POD -n kube-system
+$cprefix ifconfig
+
+echo "get logs of $CALICONODE_POD"
+$cprefix microk8s.kubectl logs $CALICONODE_POD -n kube-system
 
 echo "get logs of $CORE_DNS_POD"
 $cprefix microk8s.kubectl logs $CORE_DNS_POD -n kube-system
