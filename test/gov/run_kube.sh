@@ -67,6 +67,9 @@ fi
 # Artificial delay that seems to allow time for microk8s to start.
 sleep 5
 
+# set iptables rules so that agent could reach docker service network inside agent pod
+$cprefix iptables -P FORWARD ACCEPT
+
 #
 # Make sure the necessary services are available in kube.
 #
