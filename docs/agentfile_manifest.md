@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-08-29"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Automatic Agent Upgrade manifests
 description: Automatic Agent Upgrade manifests
-title: "Automatic Agent Upgrade manifests"
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 3
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

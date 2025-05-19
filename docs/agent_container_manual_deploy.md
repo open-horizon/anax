@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-22"
-title: "Agent in a Container"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Agent in a Container
 description: Instructions for starting an agent in a container
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 2
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

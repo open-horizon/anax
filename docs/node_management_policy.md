@@ -1,11 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-05"
-title: "Node management policy"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Node management policy
 description: Automatic agent upgrade using policy based node management
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 13
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

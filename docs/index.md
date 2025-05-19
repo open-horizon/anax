@@ -1,14 +1,13 @@
 ---
-copyright:
+copyright: Contributors to the Open Horizon project
 years: 2022 - 2025
-lastupdated: "2025-03-22"
-layout: page
-title: "Agent (anax)"
-description: "Open Horizon Anax Agent Documentation"
-
+title: Agent (anax)
+description: Open Horizon Anax Agent Documentation
+lastupdated: 2025-05-03
 nav_order: 5
-has_children: true
-has_toc: false
+has_children: True
+has_toc: False
+layout: page
 ---
 
 {:new_window: target="blank"}

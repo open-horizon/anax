@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-05"
-title: "Service Definition"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Service Definition
 description: Description of Service definition JSON fields
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 18
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-10-19"
-title: "Policy Properties"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Policy Properties
 description: Built in Policy Properties
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 7
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}
