@@ -129,39 +129,39 @@ echo "Check iptable rules"
 $cprefix iptables -P FORWARD ACCEPT
 $cprefix iptables -S
 
-echo "List input rules:"
-$cprefix iptables -S INPUT
+# echo "List input rules:"
+# $cprefix iptables -S INPUT
 
-echo "List output rules:"
-$cprefix iptables -S OUTPUT
+# echo "List output rules:"
+# $cprefix iptables -S OUTPUT
 
-echo "Update microk8s CNI"
-default_val=10.1.0.0/16
-new_val=10.2.0.0/16
+# echo "Update microk8s CNI"
+# default_val=10.1.0.0/16
+# new_val=10.2.0.0/16
 
-$cprefix microk8s kubectl delete -f /var/snap/microk8s/current/args/cni-network/cni.yaml
-$cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/kube-proxy
-$cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/cni-network/cni.yaml
-$cprefix microk8s kubectl apply -f /var/snap/microk8s/current/args/cni-network/cni.yaml
+# $cprefix microk8s kubectl delete -f /var/snap/microk8s/current/args/cni-network/cni.yaml
+# $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/kube-proxy
+# $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/cni-network/cni.yaml
+# $cprefix microk8s kubectl apply -f /var/snap/microk8s/current/args/cni-network/cni.yaml
 
-$cprefix snap restart microk8s
-echo "sleep 20s"
-sleep 20
-echo "Waiting for Kube test environment to restart"
-$cprefix microk8s.status --wait-ready
-RC=$?
-if [ $RC -ne 0 ]
-then
-	echo "Error waiting for microk8s to initialize: $RC"
-	$cprefix microk8s.status
-	$cprefix microk8s.inspect
-	exit 1
-fi
+# $cprefix snap restart microk8s
+# echo "sleep 20s"
+# sleep 20
+# echo "Waiting for Kube test environment to restart"
+# $cprefix microk8s.status --wait-ready
+# RC=$?
+# if [ $RC -ne 0 ]
+# then
+# 	echo "Error waiting for microk8s to initialize: $RC"
+# 	$cprefix microk8s.status
+# 	$cprefix microk8s.inspect
+# 	exit 1
+# fi
 
 
 
-$cprefix microk8s kubectl delete ippools default-ipv4-pool
-$cprefix microk8s kubectl rollout restart daemonset/calico-node
+# $cprefix microk8s kubectl delete ippools default-ipv4-pool
+# $cprefix microk8s kubectl rollout restart daemonset/calico-node
 
 echo "allow cali interfaces to be a trasted firewall zone"
 sudo apt update
@@ -379,36 +379,15 @@ AGBOT_URL="$AGBOT_IP:8080"
 source gov/verify_edge_cluster.sh
 kubecmd="$cprefix microk8s.kubectl"
 
-docker ps
-
-echo "DOCKER_TEST_NETWORK is ${DOCKER_TEST_NETWORK}"
-
-docker network inspect hzn_horizonnet
-
 echo "call curl http://$EX_IP:8080/v1/admin/version inside of agent pod"
 $cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} curl http://$EX_IP:8080/v1/admin/version
 
-echo "call curl http://$EX_IP:8080/v1/admin/version oustside of agent pod"
-HZN_EXCHANGE_URL=http://$EX_IP:8080/v1 hzn exchange version -v -o userdev -u "userdev/userdevadmin:userdevadminpw"
-
-$cprefix microk8s kubectl get po -A -o wide
-
-$cprefix microk8s.kubectl get all -n kube-system
-
-$cprefix ifconfig
-
-echo "get logs of $CALICONODE_POD"
-$cprefix microk8s.kubectl logs $CALICONODE_POD -n kube-system
-
-echo "get logs of $CORE_DNS_POD"
-$cprefix microk8s.kubectl logs $CORE_DNS_POD -n kube-system
 
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
 	# pattern name: e2edev@somecomp.com/sk8s-with-cluster-ns
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn mms object list -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u root/root:${EXCH_ROOTPW}
 	if [ $? -eq 0 ]; then
 		echo -e "${PREFIX} cluster agent should return error when register a patter that has non-empty cluster namespace"
@@ -480,7 +459,6 @@ else
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s_embedded_ns"
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn mms object list -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json --policy /home/agentuser/node.policy.k8s.embedded.svc.json -u root/root:${EXCH_ROOTPW}
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to register with deployment policy userdev/bp_k8s_embedded_ns"
