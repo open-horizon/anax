@@ -132,11 +132,18 @@ new_val=10.2.0.0/16
 $cprefix microk8s kubectl delete -f /var/snap/microk8s/current/args/cni-network/cni.yaml
 $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/kube-proxy
 
+$cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/cni-network/cni.yaml
+$cprefix microk8s kubectl apply -f /var/snap/microk8s/current/args/cni-network/cni.yaml
+
 $cprefix microk8s stop
 $cprefix microk8s start
 
-$cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/cni-network/cni.yaml
-$cprefix microk8s kubectl apply -f /var/snap/microk8s/current/args/cni-network/cni.yaml
+echo "sleep 20s"
+
+sleep 20
+
+microk8s kubectl delete ippools default-ipv4-pool
+microk8s kubectl rollout restart daemonset/calico-node
 
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
