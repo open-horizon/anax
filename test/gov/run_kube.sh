@@ -143,17 +143,31 @@ $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/ar
 $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/cni-network/cni.yaml
 $cprefix microk8s kubectl apply -f /var/snap/microk8s/current/args/cni-network/cni.yaml
 
-$cprefix microk8s stop
-$cprefix microk8s start
-
+$cprefix snap restart microk8s
 echo "sleep 20s"
-
 sleep 20
+echo "Waiting for Kube test environment to restart"
+$cprefix microk8s.status --wait-ready
+RC=$?
+if [ $RC -ne 0 ]
+then
+	echo "Error waiting for microk8s to initialize: $RC"
+	$cprefix microk8s.status
+	$cprefix microk8s.inspect
+	exit 1
+fi
+
+
 
 $cprefix microk8s kubectl delete ippools default-ipv4-pool
 $cprefix microk8s kubectl rollout restart daemonset/calico-node
 
 echo "allow cali interfaces to be a trasted firewall zone"
+sudo apt update
+sudo apt install firewalld
+sudo systemctl enable firewalld
+sudo systemctl start firewalld
+
 $cprefix firewall-cmd --zone=trusted --change-interface=cali+
 $cprefix firewall-cmd --zone=trusted --change-interface=cali+ --permanent
 $cprefix firewall-cmd --reload
