@@ -126,7 +126,7 @@ ARCH=${ARCH} envsubst < ${depl_file} > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/d
 if [ $? -ne 0 ]; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
 
 echo "Check iptable rules"
-$sudo iptables -P FORWARD ACCEPT
+$cprefix iptables -P FORWARD ACCEPT
 $cprefix iptables -S
 
 echo "List input rules:"
