@@ -1,7 +1,7 @@
 ---
 copyright: Contributors to the Open Horizon project
 years: 2019 - 2025
-lastupdated: "2025-04-28"
+lastupdated: "2025-05-19"
 title: "Agent Installation script"
 description: Instructions and flags used by the agent-install script
 
@@ -47,8 +47,8 @@ Operating systems and architectures explicitly supported by the installation scr
     - **amd64, ppc64le**, aarch64, riscv64
   - macOS
     - **amd64, M1, M2, M4**
-- Cluster
-  - OCP: 4.5, 4.6, 4.7, 4.8
+- Cluster - currently supported versions
+  - OpenShift Container Platform (OCP)
     - **amd64, ppc64le, s390x**
   - Microk8s
     - **amd64, ppc64le**
