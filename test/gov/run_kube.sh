@@ -150,8 +150,13 @@ echo "sleep 20s"
 
 sleep 20
 
-microk8s kubectl delete ippools default-ipv4-pool
-microk8s kubectl rollout restart daemonset/calico-node
+$cprefix microk8s kubectl delete ippools default-ipv4-pool
+$cprefix microk8s kubectl rollout restart daemonset/calico-node
+
+echo "allow cali interfaces to be a trasted firewall zone"
+$cprefix firewall-cmd --zone=trusted --change-interface=cali+
+$cprefix firewall-cmd --zone=trusted --change-interface=cali+ --permanent
+$cprefix firewall-cmd --reload
 
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
