@@ -1,11 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-05"
-title: "Node Policy"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Node Policy
 description: Every registered node has a node policy.
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 15
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

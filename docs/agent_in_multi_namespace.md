@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-10-19"
-
-title: "Multi-namespace for cluster agent"
-
-parent: Agent (anax)
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Multi-namespace for cluster agent
+description: Documentation for Overview
+lastupdated: 2025-05-03
 nav_order: 21
+parent: Agent (anax)
 ---
 # Overview
 

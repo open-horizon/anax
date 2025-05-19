@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-05"
-title: "Model Object"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Model Object
 description: Model Policies deploy application metadata objects to edge nodes
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 11
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-05"
-title: "Policy based deployment"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Policy based deployment
 description: Policy based deployment enables containerized workloads (services) to be deployed to edge nodes
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 16
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

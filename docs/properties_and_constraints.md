@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-05"
-title: "Policy Properties and Constraints"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Policy Properties and Constraints
 description: Policy Properties and constraints
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 17
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

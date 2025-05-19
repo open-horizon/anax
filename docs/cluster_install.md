@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2024
-lastupdated: "2024-04-10"
-
-title: "All-in-One cluster agent"
-
-parent: Agent (anax)
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: All-in-One cluster agent
+description: Documentation for How to install an edge cluster agent and register with the All-in-1 Management Hub
+lastupdated: 2025-05-03
 nav_order: 20
+parent: Agent (anax)
 ---
 # How to install an edge cluster agent and register with the All-in-1 Management Hub
 

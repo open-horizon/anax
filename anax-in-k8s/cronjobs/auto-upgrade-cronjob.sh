@@ -423,20 +423,13 @@ log_info "cronjob under namespace: $AGENT_NAMESPACE"
 get_status_path
 
 dep_status=$($KUBECTL rollout status --timeout=${AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS}s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out")
-log_debug "deployment rollout status: $dep_status"
+log_info "deployment rollout status: $dep_status"
 
 POD_ID=$($KUBECTL get pod -l app=agent,type!=auto-upgrade-cronjob -n ${AGENT_NAMESPACE} 2>/dev/null | grep "agent-" | cut -d " " -f1 2>/dev/null)
 pod_status=$($KUBECTL get pods ${POD_ID} -n ${AGENT_NAMESPACE} --no-headers -o custom-columns=":status.phase" | sed -z  's/\n/ /g;s/ //g' )
-log_debug "Pod status: $pod_status"
+log_info "Pod status: $pod_status"
 
 # Check deployment/pod status
-# Instantaneous state where both could be running.... 
-if [[ "${pod_status}" ==  "RunningRunning"  ]] || [[ "${pod_status}" == "RunningSucceeded" ]]; then
-    log_info "Agent pod status is $pod_status; Exiting"
-    write_logs
-    exit 0
-fi
-
 log_info "Checking if there is any pending agent pod..."
 if [[ "$pod_status" == *Pending* ]]; then
     log_info "Agent pod is still in pending. Keeping status as \"$CURRENT_STATUS\" and exiting."
@@ -444,16 +437,27 @@ if [[ "$pod_status" == *Pending* ]]; then
     exit 0
 fi
 
-if [[ ! -f $STATUS_PATH ]]; then
-    log_debug "status file $STATUS_PATH not exist;  Exiting."
-    write_logs
-    exit 0
-fi
+log_info "Checking if status file $STATUS_PATH exists...."
+for i in $(seq 1 10);
+do
+    if [[ ! -f $STATUS_PATH ]]; then
+        log_info "status file $STATUS_PATH not exist;  Exiting."
+        write_logs
+        exit 0
+    else
+        log_debug "status file $STATUS_PATH still exists"
+    fi
+    sleep 1
+done
 
 json_status=$(cat $STATUS_PATH | jq '.agentUpgradePolicyStatus.status' | sed 's/\"//g') # directory will be deleted by NMP worker if the upgrade is successful
-log_debug "Cron Job status: $json_status"
+log_info "Cron Job status: $json_status"
 CURRENT_STATUS=$json_status
 panic_rollback=false
+
+# check pod status again before the if condition
+pod_status=$($KUBECTL get pods ${POD_ID} -n ${AGENT_NAMESPACE} --no-headers -o custom-columns=":status.phase" | sed -z  's/\n/ /g;s/ //g' )
+log_info "Pod status: $pod_status"
 
 log_info "Checking if agent is running and deployment is successful..."
 if [[ "$pod_status" != "Running" || -z "$dep_status" ]]; then # pod is not running, deployment rollout failed 

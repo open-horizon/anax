@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-05"
-title: "Deployment Strings"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Deployment Strings
 description: Description of deployment strings
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 9
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

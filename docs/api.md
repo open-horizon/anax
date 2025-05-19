@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-02-09"
-title: "Horizon APIs"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Horizon APIs
 description: Horizon APIs
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 5
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}

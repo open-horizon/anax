@@ -1,12 +1,11 @@
 ---
-copyright:
-years: 2022 - 2023
-lastupdated: "2023-10-19"
-title: "Deployment Policy"
+copyright: Contributors to the Open Horizon project
+years: 2022 - 2025
+title: Deployment Policy
 description: Description of Deployment policy json fields
-
-parent: Agent (anax)
+lastupdated: 2025-05-03
 nav_order: 8
+parent: Agent (anax)
 ---
 
 {:new_window: target="blank"}
