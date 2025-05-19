@@ -329,9 +329,23 @@ then
 fi
 
 CALICONODE_POD=$($cprefix microk8s.kubectl get pod -l k8s-app=calico-node -n kube-system -o jsonpath="{.items[0].metadata.name}")
-if [ $POD == "" ]
+if [ $CALICONODE_POD == "" ]
 then
 	echo "Unable to find calico node POD"
+	exit 1
+fi
+
+CALICO_KUBE_CONTROLLER_POD=$($cprefix microk8s.kubectl get pod -l k8s-app=calico-kube-controllers -n kube-system -o jsonpath="{.items[0].metadata.name}")
+if [ $CALICO_KUBE_CONTROLLER_POD == "" ]
+then
+	echo "Unable to find calico kube controller POD"
+	exit 1
+fi
+
+CORE_DNS_POD=$($cprefix microk8s.kubectl get pod -l k8s-app=kube-dns -n kube-system -o jsonpath="{.items[0].metadata.name}")
+if [ $CORE_DNS_POD == "" ]
+then
+	echo "Unable to find calico kube controller POD"
 	exit 1
 fi
 
@@ -380,8 +394,11 @@ $cprefix microk8s kubectl get po -A -o wide
 
 $cprefix microk8s.kubectl get all -n kube-system
 
-echo "get logs of $CALICONODE_POD"
-$cprefix microk8s.kubectl logs $CALICONODE_POD -n kube-system
+echo "get logs of $CALICO_KUBE_CONTROLLER_POD"
+$cprefix microk8s.kubectl logs $CALICO_KUBE_CONTROLLER_POD -n kube-system
+
+echo "get logs of $CORE_DNS_POD"
+$cprefix microk8s.kubectl logs $CORE_DNS_POD -n kube-system
 
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
