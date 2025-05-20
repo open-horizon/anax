@@ -29,10 +29,7 @@ type ExchangeUser struct {
 type ApiKeyBase struct {
 	Id          string `json:"id"`
 	Description string `json:"description"`
-	CreatedAt   string `json:"created_at"`
-	CreatedBy   string `json:"created_by"`
-	ModifiedAt  string `json:"modified_at"`
-	ModifiedBy  string `json:"modified_by"`
+	LastUpdated string `json:"lastUpdated"`
 }
 func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
 	// get message printer

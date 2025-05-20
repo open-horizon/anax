@@ -19,22 +19,16 @@ type ApiKeyListResponse struct {
 type ApiKey struct {
 	Id          string `json:"id"`
 	Description string `json:"description"`
-	User        string `json:"user"`
-	CreatedAt   string `json:"created_at"`
-	CreatedBy   string `json:"created_by"`
-	ModifiedAt  string `json:"modified_at"`
-	ModifiedBy  string `json:"modified_by"`
+	Owner       string `json:"owner"`
+	LastUpdated string `json:"lastUpdated"`
 }
 
 type ApiKeyCreateResponse struct {
 	Id          string `json:"id"`
 	Description string `json:"description"`
-	User        string `json:"user"`
+	Owner       string `json:"owner"`
 	Value       string `json:"value"`
-	CreatedAt   string `json:"created_at"`
-	CreatedBy   string `json:"created_by"`
-	ModifiedAt  string `json:"modified_at"`
-	ModifiedBy  string `json:"modified_by"`
+	LastUpdated string `json:"lastUpdated"`
 }
 func ApiKeyGetById(org, userPwCreds, username, keyId string) {
 	msgPrinter := i18n.GetMessagePrinter()
