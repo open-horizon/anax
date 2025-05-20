@@ -48,7 +48,7 @@ else
 fi
 
 # Test organization is put in MMS
-echo "Checking Orgs in CSS..."
+echo "Checking Orgs in CSS...: curl -X GET $CERT_VAR -u root/root:$EXCH_ROOTPW --header 'Content-Type: application/json' \"${CSS_URL}/api/v1/organizations\""
 GET_ORGS_RESP=$(curl -X GET -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW --header 'Content-Type: application/json' "${CSS_URL}/api/v1/organizations")
 RESP_LEN=${#GET_ORGS_RESP}
 GET_ORGS_CODE=${GET_ORGS_RESP: -3}
