@@ -472,6 +472,8 @@ else
 	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s_embedded_ns"
+		$cprefix microk8s.kubectl get ns
+		$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
   		exit 2
 	fi
 
