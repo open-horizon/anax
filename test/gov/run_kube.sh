@@ -379,6 +379,12 @@ AGBOT_URL="$AGBOT_IP:8080"
 source gov/verify_edge_cluster.sh
 kubecmd="$cprefix microk8s.kubectl"
 
+echo "call hzn http://$EX_IP:8080/v1/admin/version outside of agent pod"
+hzn exchange version -v
+
+echo "call hzn mms outside of agent pod"
+hzn exchange mms object list -v
+
 echo "call curl http://$EX_IP:8080/v1/admin/version inside of agent pod"
 $cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} curl http://$EX_IP:8080/v1/admin/version
 
