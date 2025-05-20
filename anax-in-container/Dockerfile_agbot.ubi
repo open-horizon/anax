@@ -35,5 +35,7 @@ USER agbotuser
 WORKDIR /home/agbotuser
 RUN mkdir -p /home/agbotuser/policy.d
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3  CMD curl -sf http://localhost:8046/status > /dev/null || exit 1
+
 # Run the application
 ENTRYPOINT /usr/horizon/bin/agbot_start.sh
