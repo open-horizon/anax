@@ -380,14 +380,14 @@ source gov/verify_edge_cluster.sh
 kubecmd="$cprefix microk8s.kubectl"
 
 echo "call curl http://$EX_IP:8080/v1/admin/version inside of agent pod"
-$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} curl http://$EX_IP:8080/v1/admin/version
+$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} curl http://$EX_IP:8080/v1/admin/version
 
 
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
 	# pattern name: e2edev@somecomp.com/sk8s-with-cluster-ns
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u root/root:${EXCH_ROOTPW}
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u root/root:${EXCH_ROOTPW}
 	if [ $? -eq 0 ]; then
 		echo -e "${PREFIX} cluster agent should return error when register a patter that has non-empty cluster namespace"
   		exit 2
@@ -396,7 +396,7 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	fi
 
 
-	result=$($cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list | jq -r '.configstate.state')
+	result=$($cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list | jq -r '.configstate.state')
 	if [ "$result" != "unconfigured" ]; then
 		echo -e "${PREFIX} anax-in-kube configstate.state is $result, should be in 'unconfigured' state"
   		exit 2
@@ -405,7 +405,7 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	fi
 
 	# pattern name: e2edev@somecomp.com/sk8s-with-embedded-ns
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json -p e2edev@somecomp.com/sk8s-with-embedded-ns -u root/root:${EXCH_ROOTPW}
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json -p e2edev@somecomp.com/sk8s-with-embedded-ns -u root/root:${EXCH_ROOTPW}
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to register pattern e2edev@somecomp.com/sk8s-with-embedded-ns"
   		exit 2
@@ -428,10 +428,10 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	fi
 
 	echo -e "${PREFIX} cluster agent successfully registered with pattern e2edev@somecomp.com/sk8s-with-embedded-ns, unregistering... "
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn unregister -f
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn unregister -f
 
 	# pattern name: e2edev@somecomp.com/sk8s
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to register pattern e2edev@somecomp.com/sk8s"
   		exit 2
@@ -456,8 +456,8 @@ else
 	# policy case
 	# policy: userdev/bp_k8s_embedded_ns
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s_embedded_ns"
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json --policy /home/agentuser/node.policy.k8s.embedded.svc.json -u root/root:${EXCH_ROOTPW}
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json --policy /home/agentuser/node.policy.k8s.embedded.svc.json -u root/root:${EXCH_ROOTPW}
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to register with deployment policy userdev/bp_k8s_embedded_ns"
   		exit 2
@@ -471,7 +471,7 @@ else
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s_embedded_ns"
 		$cprefix microk8s.kubectl get ns
-		$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
+		$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
   		exit 2
 	fi
 
@@ -483,7 +483,7 @@ else
 
 	# update policy userdev/bp_k8s_embedded_ns
 	echo -e "Updating deployment policy userdev/bp_k8s_embedded_ns to set \"clusterNamespace\": \"$NAMESPACE_IN_POLICY\""
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- /usr/bin/hzn exchange business updatepolicy -f bp_k8s_embedded_ns_update.json bp_k8s_embedded_ns -u $USERDEV_ADMIN_AUTH
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- /usr/bin/hzn exchange business updatepolicy -f bp_k8s_embedded_ns_update.json bp_k8s_embedded_ns -u $USERDEV_ADMIN_AUTH
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to update deployment policy userdev/bp_k8s_embedded_ns"
   		exit 2
@@ -511,16 +511,16 @@ else
 		echo -e "${PREFIX} cluster agent failed to check deployment for userdev/bp_k8s_embedded_ns"
 		$cprefix microk8s.kubectl get ns
 		$cprefix microk8s.kubectl get all -n $NAMESPACE_IN_POLICY
-		$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
+		$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
   		exit 2
 	fi
 
 	echo -e "${PREFIX} cluster agent successfully registered with deployment policy userdev/bp_k8s_embedded_ns, unregistering... "
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn unregister -f
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn unregister -f
 	
 	# policy name: userdev/bp_k8s
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s"
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json --policy /home/agentuser/node.policy.k8s.svc1.json -u root/root:${EXCH_ROOTPW}
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json --policy /home/agentuser/node.policy.k8s.svc1.json -u root/root:${EXCH_ROOTPW}
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to register with deployment policy userdev/bp_k8s"
   		exit 2
@@ -543,7 +543,7 @@ else
 
 	# update policy userdev/bp_k8s
 	echo -e "Updating deployment policy userdev/bp_k8s to set \"clusterNamespace\": \"$NAMESPACE_IN_POLICY\""
-	$cprefix microk8s.kubectl exec ${POD} -i -n ${AGENT_NAME_SPACE} -- /usr/bin/hzn exchange business updatepolicy -f bp_k8s_update.json bp_k8s -u $USERDEV_ADMIN_AUTH
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- /usr/bin/hzn exchange business updatepolicy -f bp_k8s_update.json bp_k8s -u $USERDEV_ADMIN_AUTH
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to update deployment policy userdev/bp_k8s"
   		exit 2
