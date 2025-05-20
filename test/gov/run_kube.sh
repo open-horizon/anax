@@ -382,10 +382,10 @@ kubecmd="$cprefix microk8s.kubectl"
 docker ps
 
 echo "call hzn http://$EX_IP:8080/v1/admin/version outside of agent pod"
-hzn exchange version -v
+hzn exchange version -o userdev -u $USERDEV_ADMIN_AUTH -v
 
 echo "call hzn mms outside of agent pod"
-hzn exchange mms object list -o userdev -u $USERDEV_ADMIN_AUTH -v
+hzn mms object list -o userdev -u $USERDEV_ADMIN_AUTH -v
 
 echo "call curl http://$EX_IP:8080/v1/admin/version inside of agent pod"
 $cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} curl http://$EX_IP:8080/v1/admin/version
@@ -422,10 +422,13 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	fi
 
 	# wait 30s for agreement to comeup
-	sleep 30
+	sleep 60
 	checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s-with-embedded-ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for e2edev@somecomp.com/sk8s-with-embedded-ns"
+		$cprefix microk8s.kubectl get ns
+		$cprefix microk8s.kubectl get all -n $NAMESPACE_IN_POLICY
+		$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
   		exit 2
 	fi
 
@@ -473,7 +476,7 @@ else
 		echo -e "${PREFIX} cluster agent registered with deployment policy userdev/bp_k8s_embedded_ns, verifying agreement..."
 	fi
 
-	sleep 30
+	sleep 60
 	echo -e "kubecmd is: $kubecmd" #sudo -E microk8s.kubectl
 	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
@@ -510,6 +513,9 @@ else
 	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s_embedded_ns"
+		$cprefix microk8s.kubectl get ns
+		$cprefix microk8s.kubectl get all -n $NAMESPACE_IN_POLICY
+		$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
   		exit 2
 	fi
 
