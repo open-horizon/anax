@@ -32,4 +32,6 @@ USER agentuser
 WORKDIR /home/agentuser
 RUN mkdir -p /home/agentuser/policy.d
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3  CMD curl -sf http://localhost:8510/status > /dev/null || exit 1
+
 ENTRYPOINT ["/home/agentuser/anax.service", "start"]

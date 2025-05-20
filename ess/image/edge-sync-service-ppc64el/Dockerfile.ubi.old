@@ -6,3 +6,5 @@ ADD edge-sync-service /edge-sync-service/
 
 CMD ["/edge-sync-service/edge-sync-service"]
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD pgrep -f edge-sync-service > /dev/null || exit 1
+

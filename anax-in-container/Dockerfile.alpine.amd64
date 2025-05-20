@@ -36,5 +36,7 @@ ADD hzn /usr/bin/
 WORKDIR /root
 COPY script/anax.service /root/
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3  CMD curl -sf http://localhost:8510/status > /dev/null || exit 1
+
 # You can add a 2nd arg to this on the docker run cmd or the CMD statement in another dockerfile, to configure a specific environment
 ENTRYPOINT ["/root/anax.service", "start"]
