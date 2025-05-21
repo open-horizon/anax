@@ -51,7 +51,20 @@ docker ps
 
 docker network ls
 
-DOCKER_TEST_NETWORK = hzn_horizonnet
+# some other firewall settings for docker network
+echo "allow cali interfaces to be a trasted firewall zone"
+apt update
+apt install firewalld
+systemctl enable firewalld
+systemctl start firewalld
+firewall-cmd --zone=public --add-masquerade --permanent
+firewall-cmd --reload
+systemctl restart docker
+
+# sleep to wait docker to be ready
+sleep 20
+
+DOCKER_TEST_NETWORK="hzn_horizonnet"
 CSS_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "css-api") | .value.IPv4Address')
 CSS_IP="$(cut -d'/' -f1 <<<${CSS_IP_MASK})"
 
