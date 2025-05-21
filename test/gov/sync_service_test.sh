@@ -47,6 +47,19 @@ else
   CERT_VAR=""
 fi
 
+docker ps
+
+docker network ls
+
+DOCKER_TEST_NETWORK = hzn_horizonnet
+CSS_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "css-api") | .value.IPv4Address')
+CSS_IP="$(cut -d'/' -f1 <<<${CSS_IP_MASK})"
+
+echo "Checking Orgs in CSS with IP...: curl -X GET $CERT_VAR -u root/root:$EXCH_ROOTPW --header 'Content-Type: application/json' \"http://${CSS_IP}:9443/api/v1/organizations\""
+curl http://$CSS_IP:9443/api/v1/organizations -u root/root:$EXCH_ROOTPW --header 'Content-Type: application/json' $CERT_VAR
+GET_ORGS_RESP=$(curl -X GET -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW --header 'Content-Type: application/json' "http://$CSS_IP:9443/api/v1/organizations")
+echo "testing GET_ORGS_CODE: $GET_ORGS_CODE"
+
 # Test organization is put in MMS
 echo "Checking Orgs in CSS...: curl -X GET $CERT_VAR -u root/root:$EXCH_ROOTPW --header 'Content-Type: application/json' \"${CSS_URL}/api/v1/organizations\""
 GET_ORGS_RESP=$(curl -X GET -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW --header 'Content-Type: application/json' "${CSS_URL}/api/v1/organizations")
