@@ -1,8 +1,9 @@
 package exchangecommon
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"time"
 )
 
@@ -56,7 +57,7 @@ func (n NodeManagementPolicyStatus) SetActualStartTime(timeStr string) {
 	}
 }
 
-func (n NodeManagementPolicyStatus) SetScheduledStartTime(nmpStartTime, nmpLastUpdated string, upgradeWindow int) {
+func (n NodeManagementPolicyStatus) SetScheduledStartTime(nmpStartTime, nmpLastUpdated string, upgradeWindow int) error {
 	startTime, _ := time.Parse(time.RFC3339, nmpStartTime)
 	if nmpStartTime == TIME_NOW_KEYWORD {
 		// This format string is the time format the exchange uses
@@ -68,11 +69,17 @@ func (n NodeManagementPolicyStatus) SetScheduledStartTime(nmpStartTime, nmpLastU
 	}
 	realStartTime := startTime.Unix()
 	if upgradeWindow > 0 {
-		rand.Seed(time.Now().UnixNano())
-		realStartTime = realStartTime + int64(rand.Intn(upgradeWindow))
+		max := big.NewInt(int64(upgradeWindow))
+		nRand, err := rand.Int(rand.Reader, max)
+		if err != nil {
+			return fmt.Errorf("failed to generate secure random number: " + err.Error())
+		}
+		realStartTime += nRand.Int64()
 	}
 	n.AgentUpgrade.ScheduledTime = time.Unix(realStartTime, 0).UTC().Format(time.RFC3339)
 	n.AgentUpgradeInternal.ScheduledUnixTime = time.Unix(realStartTime, 0)
+
+	return nil
 }
 
 func (n NodeManagementPolicyStatus) IsAgentUpgradePolicy() bool {
