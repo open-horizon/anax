@@ -34,7 +34,7 @@ jobs:
     
       # Prepares the environment by setting up golang
       - name: Set up golang 1.23
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
           go-version: '1.23'
           check-latest: true

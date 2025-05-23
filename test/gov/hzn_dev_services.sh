@@ -307,7 +307,6 @@ else
 fi
 
 echo -e "Logging into the e2edev@somecomp.com docker registry."
-echo "LOGIN:" ${DOCKER_REG_USER}
 echo ${DOCKER_REG_PW} | docker login -u=${DOCKER_REG_USER} --password-stdin localhost:443
 
 if [ $? -ne 0 ]

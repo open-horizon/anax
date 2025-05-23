@@ -125,9 +125,7 @@ fi
 ARCH=${ARCH} envsubst < ${depl_file} > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"
 if [ $? -ne 0 ]; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
 
-$cprefix iptables -P FORWARD ACCEPT
-
-echo "allow cali interfaces to be a trasted firewall zone"
+echo "===============>allow cali interfaces to be a trasted firewall zone"
 sudo apt update
 sudo apt install firewalld
 sudo systemctl enable firewalld
@@ -135,7 +133,10 @@ sudo systemctl start firewalld
 
 $cprefix firewall-cmd --zone=trusted --change-interface=cali+
 $cprefix firewall-cmd --zone=trusted --change-interface=cali+ --permanent
+
 $cprefix firewall-cmd --reload
+
+
 
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
