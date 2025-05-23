@@ -5,7 +5,7 @@ ARG ARCH
 RUN apt-get update \
     && apt-get -y install vim iptables build-essential wget git iputils-ping net-tools curl jq kafkacat apt-transport-https socat software-properties-common lsb-release gettext-base
 
-ARG DOCKER_VER=19.03.8
+ARG DOCKER_VER=26.1.3
 ARG GO_VER=1.21.3
 ARG VAULT_VER=1.14.8-1
 

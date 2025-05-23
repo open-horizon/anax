@@ -44,7 +44,7 @@ sleep 2
 if [ $RC -ne 0 ]
 then
 	echo "Try to install microk8s"
-	sudo snap install microk8s --classic --channel=1.29/stable
+	sudo snap install microk8s --classic --channel=1.33/stable
 	IRC=$?
 	if [ $IRC -ne 0 ]; then echo "Unable to install microk8s: $IRC"; exit 1; fi
 
@@ -124,6 +124,9 @@ fi
 # create deployment.yaml file
 ARCH=${ARCH} envsubst < ${depl_file} > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"
 if [ $? -ne 0 ]; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
+
+$cprefix iptables -P FORWARD ACCEPT
+$cprefix iptables -F
 
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
