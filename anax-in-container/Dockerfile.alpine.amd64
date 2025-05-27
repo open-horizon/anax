@@ -4,7 +4,7 @@ LABEL vendor="IBM"
 LABEL summary="The agent in a general purpose container."
 LABEL description="A container which holds the edge node agent, to be used in environments where there is no operating system package that can install the agent natively."
 
-ARG DOCKER_VER=19.03.8
+ARG DOCKER_VER=27.5.1
 
 # yum is not installed, use microdnf instead
 # shadow-utils contains groupadd and adduser commands

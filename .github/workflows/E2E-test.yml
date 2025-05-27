@@ -14,7 +14,7 @@ on:
 jobs:
   test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
@@ -28,16 +28,25 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           path: go/src/github.com/${{github.repository}}
     
       # Prepares the environment by setting up golang
       - name: Set up golang 1.23
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
           go-version: '1.23'
           check-latest: true
+      - name: Install moby-engine and moby-cli
+        run: |
+          sudo apt-cache madison moby-engine
+          sudo apt-cache madison moby-cli
+          sudo apt-get update
+          sudo apt-get install -y moby-engine=27.5.1-ubuntu22.04u1 moby-cli=27.5.1-ubuntu22.04u1
+
+      - name: Verify Docker version
+        run: docker --version
 
       # Build anax binaries
       - name: Build anax binaries
