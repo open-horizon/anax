@@ -173,6 +173,7 @@ $cprefix firewall-cmd --zone=trusted --change-interface=cali+
 $cprefix firewall-cmd --zone=trusted --change-interface=cali+ --permanent
 $cprefix firewall-cmd --reload
 
+$cprefix iptables -S
 
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
