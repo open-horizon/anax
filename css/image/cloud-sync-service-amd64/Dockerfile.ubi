@@ -24,6 +24,7 @@ COPY script/css_start.sh /usr/edge-sync-service/bin
 
 USER cssuser
 
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD grep -q css_start.sh /proc/1/cmdline || exit 1
+
 CMD ["/usr/edge-sync-service/bin/css_start.sh"]
 
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD grep -q css_start.sh /proc/1/cmdline || exit 1

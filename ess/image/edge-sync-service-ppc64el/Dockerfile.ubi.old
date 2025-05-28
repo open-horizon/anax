@@ -4,7 +4,8 @@ RUN apk --no-cache add libcrypto1.0 libssl1.0 ca-certificates
 
 ADD edge-sync-service /edge-sync-service/
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD pgrep -f edge-sync-service > /dev/null || exit 1
+
 CMD ["/edge-sync-service/edge-sync-service"]
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD pgrep -f edge-sync-service > /dev/null || exit 1
 
