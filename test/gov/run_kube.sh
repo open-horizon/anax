@@ -20,7 +20,7 @@ OPERATOR_DEPLOYMENT_NAME="topserviceoperators"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
 PVC_NAME="openhorizon-agent-pvc"
-WAIT_POD_MAX_TRY=30
+WAIT_POD_MAX_TRY=300
 
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
@@ -125,6 +125,56 @@ fi
 ARCH=${ARCH} envsubst < ${depl_file} > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"
 if [ $? -ne 0 ]; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
 
+echo "Check iptable rules"
+$cprefix iptables -P FORWARD ACCEPT
+$cprefix iptables -S
+
+# echo "List input rules:"
+# $cprefix iptables -S INPUT
+
+# echo "List output rules:"
+# $cprefix iptables -S OUTPUT
+
+# echo "Update microk8s CNI"
+# default_val=10.1.0.0/16
+# new_val=10.2.0.0/16
+
+# $cprefix microk8s kubectl delete -f /var/snap/microk8s/current/args/cni-network/cni.yaml
+# $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/kube-proxy
+# $cprefix sed -i -e "s#${default_val}#${new_val}#g" /var/snap/microk8s/current/args/cni-network/cni.yaml
+# $cprefix microk8s kubectl apply -f /var/snap/microk8s/current/args/cni-network/cni.yaml
+
+# $cprefix snap restart microk8s
+# echo "sleep 20s"
+# sleep 20
+# echo "Waiting for Kube test environment to restart"
+# $cprefix microk8s.status --wait-ready
+# RC=$?
+# if [ $RC -ne 0 ]
+# then
+# 	echo "Error waiting for microk8s to initialize: $RC"
+# 	$cprefix microk8s.status
+# 	$cprefix microk8s.inspect
+# 	exit 1
+# fi
+
+
+
+# $cprefix microk8s kubectl delete ippools default-ipv4-pool
+# $cprefix microk8s kubectl rollout restart daemonset/calico-node
+
+echo "allow cali interfaces to be a trasted firewall zone"
+sudo apt update
+sudo apt install firewalld
+sudo systemctl enable firewalld
+sudo systemctl start firewalld
+
+$cprefix firewall-cmd --zone=trusted --change-interface=cali+
+$cprefix firewall-cmd --zone=trusted --change-interface=cali+ --permanent
+$cprefix firewall-cmd --reload
+
+$cprefix iptables -S
+
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
 RC=$?
@@ -142,6 +192,15 @@ then
         echo "Failure enabling kube storage: $RC"
         exit 1
 fi
+
+# echo "Enable host access"
+# $cprefix microk8s.enable host-access:ip=${EX_IP}
+# RC=$?
+# if [ $RC -ne 0 ]
+# then
+#         echo "Failure enabling kube host-access: $RC"
+#         exit 1
+# fi
 
 #
 # Copy the agent container into the local kube container registry so that kube knows where to find it.
@@ -272,6 +331,27 @@ then
 	exit 1
 fi
 
+CALICONODE_POD=$($cprefix microk8s.kubectl get pod -l k8s-app=calico-node -n kube-system -o jsonpath="{.items[0].metadata.name}")
+if [ $CALICONODE_POD == "" ]
+then
+	echo "Unable to find calico node POD"
+	exit 1
+fi
+
+CALICO_KUBE_CONTROLLER_POD=$($cprefix microk8s.kubectl get pod -l k8s-app=calico-kube-controllers -n kube-system -o jsonpath="{.items[0].metadata.name}")
+if [ $CALICO_KUBE_CONTROLLER_POD == "" ]
+then
+	echo "Unable to find calico kube controller POD"
+	exit 1
+fi
+
+CORE_DNS_POD=$($cprefix microk8s.kubectl get pod -l k8s-app=kube-dns -n kube-system -o jsonpath="{.items[0].metadata.name}")
+if [ $CORE_DNS_POD == "" ]
+then
+	echo "Unable to find calico kube controller POD"
+	exit 1
+fi
+
 $cprefix microk8s.kubectl cp $PWD/gov/deployment_policies/userdev/bp_k8s_update.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/.
 $cprefix microk8s.kubectl cp $PWD/gov/deployment_policies/userdev/bp_k8s_embedded_ns_update.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/.
 
@@ -301,9 +381,22 @@ AGBOT_URL="$AGBOT_IP:8080"
 source gov/verify_edge_cluster.sh
 kubecmd="$cprefix microk8s.kubectl"
 
+docker ps
+
+echo "call hzn http://$EX_IP:8080/v1/admin/version outside of agent pod"
+hzn exchange version -o userdev -u $USERDEV_ADMIN_AUTH -v
+
+echo "call hzn mms outside of agent pod"
+hzn mms object list -o userdev -u $USERDEV_ADMIN_AUTH -v
+
+echo "call curl http://$EX_IP:8080/v1/admin/version inside of agent pod"
+$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} curl http://$EX_IP:8080/v1/admin/version
+
+
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
 	# pattern name: e2edev@somecomp.com/sk8s-with-cluster-ns
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u root/root:${EXCH_ROOTPW}
 	if [ $? -eq 0 ]; then
 		echo -e "${PREFIX} cluster agent should return error when register a patter that has non-empty cluster namespace"
@@ -331,10 +424,13 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	fi
 
 	# wait 30s for agreement to comeup
-	sleep 30
+	sleep 60
 	checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s-with-embedded-ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for e2edev@somecomp.com/sk8s-with-embedded-ns"
+		$cprefix microk8s.kubectl get ns
+		$cprefix microk8s.kubectl get all -n $NAMESPACE_IN_POLICY
+		$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
   		exit 2
 	fi
 
@@ -373,6 +469,7 @@ else
 	# policy case
 	# policy: userdev/bp_k8s_embedded_ns
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s_embedded_ns"
+	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn exchange version -v
 	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json --policy /home/agentuser/node.policy.k8s.embedded.svc.json -u root/root:${EXCH_ROOTPW}
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to register with deployment policy userdev/bp_k8s_embedded_ns"
@@ -381,11 +478,13 @@ else
 		echo -e "${PREFIX} cluster agent registered with deployment policy userdev/bp_k8s_embedded_ns, verifying agreement..."
 	fi
 
-	sleep 30
+	sleep 60
 	echo -e "kubecmd is: $kubecmd" #sudo -E microk8s.kubectl
 	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s_embedded_ns"
+		$cprefix microk8s.kubectl get ns
+		$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
   		exit 2
 	fi
 
@@ -416,6 +515,9 @@ else
 	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $AGBOT_URL "$kubecmd" $POD $AGENT_NAME_SPACE
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s_embedded_ns"
+		$cprefix microk8s.kubectl get ns
+		$cprefix microk8s.kubectl get all -n $NAMESPACE_IN_POLICY
+		$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
   		exit 2
 	fi
 
@@ -423,6 +525,9 @@ else
 	checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $NAMESPACE_IN_POLICY
 	if [ $? -ne 0 ]; then
 		echo -e "${PREFIX} cluster agent failed to check deployment for userdev/bp_k8s_embedded_ns"
+		$cprefix microk8s.kubectl get ns
+		$cprefix microk8s.kubectl get all -n $NAMESPACE_IN_POLICY
+		$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn eventlog list
   		exit 2
 	fi
 

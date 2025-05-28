@@ -43,7 +43,7 @@ function checkAndWaitForActiveAgreementForPolicy {
   echo -e "kubecmd inside checkAndWaitForActiveAgreementForPolicy is $kubecmd"
   # Since there are no archived agreements, we need to wait for an active agreement to appear.
   LOOPCOUNT=0
-  while [ ${LOOPCOUNT} -le 10 ]
+  while [ ${LOOPCOUNT} -le 20 ]
   do
     AGSA=$($kubecmd exec -it $pod_id -n $namespace -- curl -sSL ${agbot_api}/agreement | jq -r '.agreements.active')
     NUM_AGS=$(echo ${AGSA} | jq -r '. | length')
@@ -132,7 +132,7 @@ function checkAndWaitForActiveAgreementForPattern {
 
   # Since there are no archived agreements, we need to wait for an active agreement to appear.
   LOOPCOUNT=0
-  while [ ${LOOPCOUNT} -le 10 ]
+  while [ ${LOOPCOUNT} -le 20 ]
   do
     AGSA=$($kubecmd exec -it $pod_id -n $namespace -- curl -sSL ${agbot_api}/agreement | jq -r '.agreements.active')
     NUM_AGS=$(echo ${AGSA} | jq -r '. | length')
