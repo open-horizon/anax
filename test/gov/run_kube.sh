@@ -68,7 +68,13 @@ fi
 sleep 5
 
 # set iptables rules so that agent could reach docker service network inside agent pod
-$cprefix iptables -P FORWARD ACCEPT
+#$cprefix iptables -P FORWARD ACCEPT
+
+$cprefix echo "{\"iptables\": false}" >> /etc/docker/daemon.json 
+
+$cprefix systemctl restart docker
+
+sleep 5
 
 #
 # Make sure the necessary services are available in kube.
