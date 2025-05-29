@@ -44,7 +44,7 @@ jobs:
           sudo apt-cache madison moby-engine
           sudo apt-cache madison moby-cli
           sudo apt-get update
-          sudo apt-get install -y moby-engine=27.5.1-ubuntu24.04u1 moby-cli=27.5.1-ubuntu24.04u1
+          sudo apt-get install -y moby-engine=28.1.1-ubuntu24.04u1 moby-cli=28.1.1-ubuntu24.04u1
 
       - name: Verify Docker version
         run: docker --version
