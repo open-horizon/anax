@@ -2,6 +2,8 @@ package agreementbot
 
 import (
 	"fmt"
+	"runtime"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/agreementbot/secrets"
@@ -10,9 +12,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"github.com/satori/go.uuid"
-	"math/rand"
-	"runtime"
+	uuid "github.com/satori/go.uuid"
 )
 
 type BasicAgreementWorker struct {
@@ -222,7 +222,7 @@ func (b BAgreementUpdateReply) ShortString() string {
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
 // to actually work through the agreement protocol.
 
-func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Rand) {
+func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue) {
 
 	worker.GetWorkerStatusManager().SetSubworkerStatus("BasicProtocolHandler", a.workerID, worker.STATUS_STARTED)
 	for {
@@ -237,7 +237,7 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 
 		if workItem.Type() == INITIATE {
 			wi := workItem.(InitiateAgreement)
-			a.InitiateNewAgreement(a.protocolHandler, &wi, random, a.workerID)
+			a.InitiateNewAgreement(a.protocolHandler, &wi, a.workerID)
 
 		} else if workItem.Type() == REPLY {
 			wi := workItem.(HandleReply)

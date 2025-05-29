@@ -3,6 +3,7 @@ package agreementbot
 import (
 	"errors"
 	"fmt"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
@@ -14,8 +15,6 @@ import (
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"math/rand"
-	"time"
 )
 
 type BasicProtocolHandler struct {
@@ -59,10 +58,7 @@ func (c *BasicProtocolHandler) String() string {
 }
 
 func (c *BasicProtocolHandler) Initialize() {
-
 	glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("initializing: %v ", c)))
-	// Set up random number gen. This is used to generate agreement id strings.
-	random := rand.New(rand.NewSource(int64(time.Now().Nanosecond())))
 
 	// Setup a lock to protect concurrent agreement processing
 	agreementLockMgr := NewAgreementLockManager()
@@ -70,7 +66,7 @@ func (c *BasicProtocolHandler) Initialize() {
 	// Set up agreement worker pool based on the current technical config.
 	for ix := 0; ix < c.config.AgreementBot.AgreementWorkers; ix++ {
 		agw := NewBasicAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr, c.mmsObjMgr, c.secretsMgr, c.nodeSearch)
-		go agw.start(c.Work, random)
+		go agw.start(c.Work)
 	}
 
 	worker.GetWorkerStatusManager().SetWorkerStatus("BasicProtocolHandler", worker.STATUS_INITIALIZED)
