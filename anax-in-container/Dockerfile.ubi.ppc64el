@@ -4,7 +4,7 @@ LABEL vendor="IBM"
 LABEL summary="The agent in a general purpose container."
 LABEL description="A container which holds the edge node agent, to be used in environments where there is no operating system package that can install the agent natively."
 
-ARG DOCKER_VER=18.06.3-ce
+ARG DOCKER_VER=27.5.1
 
 # add EPEL repo with jq pkg and all deps
 COPY EPEL.repo /etc/yum.repos.d
