@@ -105,12 +105,17 @@ fi
 # Generate config files that are specific to the runtime environment.
 #
 echo "Generate the /etc/default/horizon file based on local network configuration"
-EX_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "exchange-api") | .value.IPv4Address')
-CSS_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "css-api") | .value.IPv4Address')
-AGBOT_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "agbot") | .value.IPv4Address')
-EX_IP="$(cut -d'/' -f1 <<<${EX_IP_MASK})"
-CSS_IP="$(cut -d'/' -f1 <<<${CSS_IP_MASK})"
-AGBOT_IP="$(cut -d'/' -f1 <<<${AGBOT_IP_MASK})"
+# EX_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "exchange-api") | .value.IPv4Address')
+# CSS_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "css-api") | .value.IPv4Address')
+# AGBOT_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "agbot") | .value.IPv4Address')
+# EX_IP="$(cut -d'/' -f1 <<<${EX_IP_MASK})"
+# CSS_IP="$(cut -d'/' -f1 <<<${CSS_IP_MASK})"
+# AGBOT_IP="$(cut -d'/' -f1 <<<${AGBOT_IP_MASK})"
+
+echo "HZN_LISTEN_IP is ${HZN_LISTEN_IP}"
+EX_IP=${HZN_LISTEN_IP}
+CSS_IP=${HZN_LISTEN_IP}
+AGBOT_IP=${HZN_LISTEN_IP}
 
 if [ "${EX_IP}" == "" ] || [ "${CSS_IP}" == "" ] || [ "${AGBOT_IP}" == "" ]
 then
