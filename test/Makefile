@@ -412,6 +412,17 @@ get-vault-image:
 
 run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	@echo "Starting all-in-one management hub"
+	echo "\ncat docker daemon file"; \
+	sudo cat /etc/docker/daemon.json; \
+	echo "\nedit docker daemon file"; \
+	sudo bash -c 'echo "{\"iptables\": false}" > /etc/docker/daemon.json'; \
+	echo "\ncat docker daemon file again"; \
+	sudo cat /etc/docker/daemon.json; \
+	sudo systemctl restart docker; \
+	echo "\ntry ip addr show"; \
+	ip addr show; \
+	echo "\ntry ifconfig;" \
+	ifconfig; \
 	export EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) EXCHANGE_DATABASE=$(EXCHDB_NAME); \
 	export EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
 	export AGBOT_ID=$(AGBOT_NAME) AGBOT_TOKEN=$(AGBOT_TOKEN) AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG); \
