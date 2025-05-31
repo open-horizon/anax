@@ -28,3 +28,5 @@ RUN chown -R cronjobuser:cronjobuser /usr/local/bin/auto-upgrade-cronjob.sh /tmp
 
 USER cronjobuser
 RUN chmod 755 /usr/local/bin/auto-upgrade-cronjob.sh
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD true
