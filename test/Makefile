@@ -423,7 +423,7 @@ run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	export VAULT_IMAGE_TAG=$(DOCKER_VAULT_TAG) VAULT_PORT=$(VAULT_PORT) VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) VAULT_ROOT_TOKEN=$(VAULT_DEV_ROOT_TOKEN_ID); \
 	export ANAX_SOURCE=$(ANAX_SOURCE) ANAX_LOG_LEVEL=5; \
 	export HZN_TRANSPORT=$(HZN_TRANSPORT); \
-	export HZN_LISTEN_IP=$(E2EDEV_HOST_IP)
+	export HZN_LISTEN_IP=$(E2EDEV_HOST_IP); \
 	$(TEST_VARS) $(ANAX_SOURCE)/test/gov/start_mgmt_hub.sh
 	if [ -f "/etc/horizon/keys/horizonMgmtHub.crt" ]; then \
 		cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/css.crt; \
