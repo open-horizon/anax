@@ -20,7 +20,7 @@ PREFIX="All-in-one management hub deployment:"
 
 # exchange confiuration
 # INFO or DEBUG
-export EXCHANGE_LOG_LEVEL=INFO  
+export EXCHANGE_LOG_LEVEL=${EXCHANGE_LOG_LEVEL:-INFO}
 
 # agbot configuration
 export AGBOT_AGREEMENT_TIMEOUT_S=300
