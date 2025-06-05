@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
@@ -22,10 +26,6 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/text/message"
-	"math/rand"
-	"net/http"
-	"strings"
-	"time"
 )
 
 // These structs are the event bodies that flow from the processor to the agreement workers
@@ -360,7 +360,7 @@ func (b *BaseAgreementWorker) checkPolicyCompatibility(workerId string, wi *Init
 	}
 }
 
-func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, wi *InitiateAgreement, random *rand.Rand, workerId string) {
+func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, wi *InitiateAgreement, workerId string) {
 
 	msgPrinter := i18n.GetMessagePrinter()
 
