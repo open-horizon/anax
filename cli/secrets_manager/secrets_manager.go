@@ -130,7 +130,8 @@ func SecretList(org, credToUse, secretName, secretNodeId string, listAll bool) {
 
 	// parse and print the response
 	if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 503 || retCode == 504 {
-		respString, _ := strconv.Unquote(string(resp))
+		rps := strings.TrimSuffix(string(resp), "\n")
+		respString, _ := strconv.Unquote(rps)
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, respString)
 	} else if isSecretDirectory {
 		// list org/user secrets
@@ -204,7 +205,8 @@ func SecretAdd(org, credToUse, secretName, secretNodeId, secretFile, secretKey, 
 
 	// check the response
 	if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 503 {
-		respString, _ := strconv.Unquote(string(resp))
+		rps := strings.TrimSuffix(string(resp), "\n")
+		respString, _ := strconv.Unquote(rps)
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, strings.Replace(respString, " list ", " add ", 1))
 	} else if retCode == 200 {
 		var secret SecretResponse
@@ -257,7 +259,8 @@ func SecretAdd(org, credToUse, secretName, secretNodeId, secretFile, secretKey, 
 		msgPrinter.Printf("Secret \"%s\" successfully added to the secrets manager.", secretName)
 		msgPrinter.Println()
 	} else if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 503 {
-		respString, _ := strconv.Unquote(string(resp2))
+		rps2 := strings.TrimSuffix(string(resp2), "\n")
+		respString, _ := strconv.Unquote(rps2)
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, respString)
 	}
 
@@ -336,7 +339,8 @@ func SecretRead(org, credToUse, secretName, secretNodeId string) {
 
 	// parse and print the response
 	if retCode == 400 || retCode == 401 || retCode == 403 || retCode == 404 || retCode == 503 {
-		respString, _ := strconv.Unquote(string(resp))
+		rps := strings.TrimSuffix(string(resp), "\n")
+		respString, _ := strconv.Unquote(rps)
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, respString)
 	} else {
 		// retCode == 200
