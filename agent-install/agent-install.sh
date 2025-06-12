@@ -4074,7 +4074,7 @@ function prepare_k8s_pvc_file() {
     # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
     local pvc_mode="ReadWriteOnce"
     number_of_nodes=$($KUBECTL get node | grep "Ready" -c)
-    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == rook-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ocs-storagecluster-ceph* ]] ); then
+    if [[ $number_of_nodes -gt 1 ]] && ([[ $EDGE_CLUSTER_STORAGE_CLASS == csi-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == rook-cephfs* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-file* ]] || [[ $EDGE_CLUSTER_STORAGE_CLASS == ibmc-vpc-file* ]] ); then
         pvc_mode="ReadWriteMany"
     fi
 
