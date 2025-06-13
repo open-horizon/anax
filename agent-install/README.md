@@ -13,28 +13,30 @@ This script:
 
 Currently supported OS and architectures:
 
-* Device
-  * Ubuntu bionic, xenial, focal
-    * arm64, amd64
-  * Raspbian buster, stretch
-    * armhf
-  * Debian buster, stretch
-    * amd64
-  * RHEL 7.6, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6
-    * amd64, ppc64le, aarch64, riscv64
-  * CentOS 7.6, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5
-    * amd64, ppc64le, aarch64, riscv64
-  * Fedora 32, 36
-    * amd64, ppc64le, aarch64, riscv64
-  * macOS
-    * amd64
-* Cluster
-  * OCP 4.5, 4.6, 4.7, 4.8
-    * amd64, ppc64le
-  * Microk8s
-    * amd64, ppc64le
-  * k3s
-    * amd64, ppc64le
+- Device
+  - Ubuntu: xenial (16.x), bionic (18.x), focal (20.x), jammy (22.x), noble (24.x)
+    - **amd64, arm64, s390x**
+  - Raspbian/RaspberryPi OS: stretch (9), buster (10), bullseye (11), bookworm (12)
+    - **armhf, arm64**
+  - Debian: stretch (9), buster (10), bullseye (11), bookworm (12)
+    - **amd64, armhf, arm64, s390x**
+  - RHEL: 7.6, 7.9, 8.1 - 8.5 (via Docker), 8.6 - 8.10 and 9.0 - 9.6 (via Podman 4.x or 5.x), 10.0 (via Podman 4.x or 5.x)
+    - **amd64, ppc64le**, aarch64, riscv64, **s390x**
+  - CentOS: 8.1 - 8.5 (via Docker)
+    - **amd64, ppc64le**, aarch64, riscv64
+  - Fedora: 32, 35 - 43
+    - **amd64, ppc64le**, aarch64, riscv64
+  - macOS
+    - **amd64, M1, M2, M4**
+- Cluster - currently supported versions
+  - OpenShift Container Platform (OCP)
+    - **amd64, ppc64le, s390x**
+  - Microk8s
+    - **amd64, ppc64le**
+  - k3s
+    - **amd64, arm64, ppc64le**
+
+For more details, see [the `agent-install.sh` source code comments](https://raw.githubusercontent.com/open-horizon/anax/refs/heads/master/agent-install/agent-install.sh).
 
 ## Description
 
