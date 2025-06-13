@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 )
@@ -42,7 +41,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, fmt.Sprintf("Error received HTTP code %v", httpCode))
 		return
 	}
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		io.WriteString(w, fmt.Sprintf("Error reading HTTP response: %v", err))
 		return

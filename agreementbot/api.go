@@ -3,6 +3,13 @@ package agreementbot
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"regexp"
+	"sort"
+	"sync"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/abstractprotocol"
@@ -14,12 +21,6 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"io/ioutil"
-	"net/http"
-	"regexp"
-	"sort"
-	"sync"
-	"time"
 )
 
 type API struct {
@@ -544,7 +545,7 @@ func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 
 		// Demarshal the input body and verify it.
 		var upgrade UpgradeDevice
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &upgrade); err != nil {
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "body", Error: fmt.Sprintf("user submitted data couldn't be deserialized to struct: %v. Error: %v", string(body), err)})
 			return

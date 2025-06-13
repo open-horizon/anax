@@ -4,6 +4,10 @@
 package dev
 
 import (
+	"os"
+	"path"
+	"testing"
+
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/container"
@@ -11,10 +15,6 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
-	"io/ioutil"
-	"os"
-	"path"
-	"testing"
 )
 
 // Test the recursive service start code to ensure that the right networks are associated to the services.
@@ -77,7 +77,7 @@ func setupUT(t *testing.T, debug bool) (string, *container.ContainerWorker) {
 	}
 
 	// Setup a fake project.
-	projectDir, terr := ioutil.TempDir("", "hzndev-util-test-")
+	projectDir, terr := os.MkdirTemp("", "hzndev-util-test-")
 	if terr != nil {
 		t.Errorf("unable to create temp directory for project, %v", terr)
 	}

@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/cutil"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"os/user"
 	"path"
 	"strconv"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 )
 
 type AuthenticationManager struct {
@@ -98,7 +99,7 @@ func (a *AuthenticationManager) CreateCredential(key string, id string, ver stri
 		return nil, errors.New(fmt.Sprintf("unable to marshal new authentication credential, error: %v", err))
 	} else if err := os.MkdirAll(a.GetCredentialPath(key), fileMode); err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create directory path %v for authentication credential, error: %v", a.GetCredentialPath(key), err))
-	} else if err := ioutil.WriteFile(fileName, credBytes, fileMode); err != nil {
+	} else if err := os.WriteFile(fileName, credBytes, fileMode); err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to write authentication credential file %v, error: %v", fileName, err))
 	}
 
@@ -123,7 +124,7 @@ func (a *AuthenticationManager) Authenticate(authId string, appSecret string) (b
 
 	// Iterate through the list of all directories in the auth manager. Each directory represents a running service
 	// that has been assigned FSS (ESS) API credentials.
-	if dirs, err := ioutil.ReadDir(a.AuthPath); err != nil {
+	if dirs, err := os.ReadDir(a.AuthPath); err != nil {
 		return false, "", errors.New(fmt.Sprintf("unable to read authentication credential file directories in %v, error: %v", a.AuthPath, err))
 	} else {
 		for _, d := range dirs {
@@ -184,7 +185,7 @@ func (a *AuthenticationManager) RemoveCredential(key string, secureCreds bool) (
 
 // Remove all container authentication credentials from the Agent's host file system.
 func (a *AuthenticationManager) RemoveAll(secureCreds bool) error {
-	if dirs, err := ioutil.ReadDir(a.AuthPath); err != nil {
+	if dirs, err := os.ReadDir(a.AuthPath); err != nil {
 		return errors.New(fmt.Sprintf("unable to remove all authentication credential files %v, error: %v", a.AuthPath, err))
 	} else {
 		for _, d := range dirs {
@@ -201,7 +202,7 @@ func (a *AuthenticationManager) ReadCredFromAuthFile(key string) (*Authenticatio
 	authFileName := path.Join(a.GetCredentialPath(key), config.HZN_FSS_AUTH_FILE)
 	if authFile, err := os.Open(authFileName); err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to open auth file %v, error: %v", authFileName, err))
-	} else if bytes, err := ioutil.ReadAll(authFile); err != nil {
+	} else if bytes, err := io.ReadAll(authFile); err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to read auth file %v, error: %v", authFileName, err))
 	} else {
 		authObj := new(AuthenticationCredential)

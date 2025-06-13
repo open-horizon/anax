@@ -9,15 +9,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/boltdb/bolt"
-	"github.com/fsouza/go-dockerclient"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/container"
-	"github.com/open-horizon/anax/containermessage"
-	"github.com/open-horizon/anax/events"
-	"github.com/open-horizon/anax/persistence"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -26,6 +18,14 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/boltdb/bolt"
+	docker "github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/container"
+	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/persistence"
 )
 
 func contentFromTar(fname string, in *bytes.Buffer) (*bytes.Buffer, error) {
@@ -569,7 +569,7 @@ func Test_resourcesCreate_shared(t *testing.T) {
 }
 
 func setup() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "container-")
+	dir, err := os.TempDir("", "container-")
 	if err != nil {
 		return "", nil, err
 	}

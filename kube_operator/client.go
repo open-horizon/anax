@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"reflect"
 	"strings"
 
@@ -525,9 +524,9 @@ func getYamlFromTarGz(deploymentString string) ([]YamlFile, error) {
 		} else if header.Typeflag == tar.TypeDir {
 			continue
 		} else if err == nil {
-			tar, err := ioutil.ReadAll(tarReader)
+			tar, err := io.ReadAll(tarReader)
 			if err != nil {
-				return files, fmt.Errorf("Error reading tar file: %v", err)
+				return files, fmt.Errorf("error reading tar file: %v", err)
 			}
 			newFile := YamlFile{Header: *header, Body: string(tar)}
 			files = append(files, newFile)
