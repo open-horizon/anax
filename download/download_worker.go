@@ -244,7 +244,7 @@ func (w *DownloadWorker) DownloadAgentUpgradePackages(org string, filePath strin
 				if cutil.SliceContains(manifest.Software.FileList, HZN_AGENTINSTALL_FILE) || cutil.SliceContains(manifest.Software.FileList, ALLFILES) {
 					if err = w.DownloadCSSObject(CSSSHAREDORG, swType, HZN_AGENTINSTALL_FILE, filePath, nmpName); err != nil {
 						return exchangecommon.STATUS_DOWNLOAD_FAILED, fmt.Errorf("Error downloading css object %v/%v/%v: %v", CSSSHAREDORG, swType, HZN_AGENTINSTALL_FILE, err)
-					} else if err := os.Chmod(path.Join(filePath, nmpName, HZN_AGENTINSTALL_FILE), 0600); err != nil {
+					} else if err := os.Chmod(path.Join(filePath, nmpName, HZN_AGENTINSTALL_FILE), 0755); err != nil {
 						return exchangecommon.STATUS_PRECHECK_FAILED, err
 					}
 				}
