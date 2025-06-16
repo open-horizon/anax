@@ -605,6 +605,18 @@ Environment Variables:
 	exUserSetAdminUser := exUserSetAdminCmd.Arg("user", msgPrinter.Sprintf("The user to be modified.")).Required().String()
 	exUserSetAdminBool := exUserSetAdminCmd.Arg("isadmin", msgPrinter.Sprintf("True if they should be an admin user, otherwise false.")).Required().Bool()
 
+	// === apikey subcommands under user ===
+	exUserCreateKeyCmd := exUserCmd.Command("createkey", msgPrinter.Sprintf("Create an API key for a user"))
+	exUserCreateKeyUser := exUserCreateKeyCmd.Arg("user", msgPrinter.Sprintf("Username to create key for")).Required().String()
+	exUserCreateKeyDesc := exUserCreateKeyCmd.Arg("description", msgPrinter.Sprintf("Description of the API key")).Required().String()
+	exUserGetKeyCmd := exUserCmd.Command("getkey", msgPrinter.Sprintf("Get an API key by ID"))
+	exUserGetKeyUser := exUserGetKeyCmd.Arg("user", msgPrinter.Sprintf("Username of the key owner")).Required().String()
+	exUserGetKeyId := exUserGetKeyCmd.Arg("keyid", msgPrinter.Sprintf("API key ID to get")).Required().String()
+	exUserRemoveKeyCmd := exUserCmd.Command("removekey", msgPrinter.Sprintf("Remove an API key")).Alias("rmkey")
+	exUserRemoveKeyUser := exUserRemoveKeyCmd.Arg("user", msgPrinter.Sprintf("Username of key owner")).Required().String()
+	exUserRemoveKeyId := exUserRemoveKeyCmd.Arg("keyid", msgPrinter.Sprintf("ID of the key to remove")).Required().String()
+	exUserRemoveKeyForce := exUserRemoveKeyCmd.Flag("force", msgPrinter.Sprintf("Force removal without confirmation")).Short('f').Bool()
+	
 	exVersionCmd := exchangeCmd.Command("version", msgPrinter.Sprintf("Display the version of the Horizon Exchange."))
 
 	keyCmd := app.Command("key", msgPrinter.Sprintf("List and manage keys for signing and verifying services."))
@@ -1205,6 +1217,13 @@ Environment Variables:
 		exchange.UserSetAdmin(*exOrg, *exUserPw, *exUserSetAdminUser, *exUserSetAdminBool)
 	case exUserDelCmd.FullCommand():
 		exchange.UserRemove(*exOrg, *exUserPw, *exDelUser, *exUserDelForce)
+
+	case exUserCreateKeyCmd.FullCommand():
+		exchange.ApiKeyCreate(*exOrg, *exUserPw, *exUserCreateKeyUser, *exUserCreateKeyDesc)
+	case exUserGetKeyCmd.FullCommand():
+		exchange.ApiKeyGetById(*exOrg, *exUserPw, *exUserGetKeyUser, *exUserGetKeyId)
+	case exUserRemoveKeyCmd.FullCommand():
+		exchange.ApiKeyRemove(*exOrg, *exUserPw, *exUserRemoveKeyUser, *exUserRemoveKeyId, *exUserRemoveKeyForce)
 
 	case exNMPListCmd.FullCommand():
 		exchange.NMPList(*exOrg, credToUse, *exNMPListName, !*exNMPListLong, *exNMPListNodes)
