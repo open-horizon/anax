@@ -11,7 +11,7 @@ COPY EPEL.repo /etc/yum.repos.d
 # The anax.service calls jq (from jq) and killall (from psmisc)
 # anax does not use iptables directly but the github.com/coreos/go-iptables/iptables dependency needs the directory structure
 # Create required directories
-ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng"
+ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq nftables vim-minimal psmisc procps-ng"
 RUN microdnf clean all \
   && rm -rf /var/cache/dnf /var/cache/PackageKit \
   && microdnf update -y libxml2 --nodocs --nobest --setopt=install_weak_deps=0 --disableplugin=subscription-manager \ 

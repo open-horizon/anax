@@ -11,7 +11,7 @@ ARG DOCKER_VER=27.5.1
 # anax does not use iptables directly but the github.com/coreos/go-iptables/iptables dependency needs the directory structure
 # Install docker cli, which requires tar / gunzip to unpack, then remove tar / gzip packages
 # Create required directories
-ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng tar gzip"
+ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq nftables vim-minimal psmisc procps-ng tar gzip"
 RUN  microdnf update  -y libxml2 --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && curl -4fsSLO https://download.docker.com/linux/static/stable/aarch64/docker-${DOCKER_VER}.tgz \
