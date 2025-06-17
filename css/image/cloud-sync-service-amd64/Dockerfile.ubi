@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9-minimal:latest
+FROM registry.access.redhat.com/ubi10-minimal:latest
 
 LABEL vendor="IBM"
 LABEL summary="Object model storage and APIs in the management hub."
