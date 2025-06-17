@@ -161,14 +161,22 @@ fi
 function checkPrereqsAndInput () {
     echo "Checking system requirements..."
 
-    # Need oc executable if one of these variables is not set
-    if [[ -z $HZN_EXCHANGE_USER_AUTH ]] || [[ -z ${AGENT_INSTALL_CERT} && ${HZN_EXCHANGE_URL} == "https://"* ]]; then
-        if ! command -v oc >/dev/null 2>&1; then
-            fatal 2 "oc is not installed."
+    # Need oc or kubectl executable if one of these variables is not set
+    if [[ -z "$HZN_EXCHANGE_USER_AUTH" ]] || [[ -z "${AGENT_INSTALL_CERT}" && "$HZN_EXCHANGE_URL" == https://* ]]; then
+        if ! command -v oc >/dev/null 2>&1 && ! command -v kubectl >/dev/null 2>&1; then
+            fatal 2 "Neither 'oc' nor 'kubectl' is installed. One of them is required."
         fi
-        echo " - oc installed"
+
+        # Choose CLI tool: prefer kubectl if both are present
+        if command -v kubectl >/dev/null 2>&1; then
+            K8S_CLI_TOOL="kubectl"
+            echo " - kubectl is installed and selected"
+        elif command -v oc >/dev/null 2>&1; then
+            K8S_CLI_TOOL="oc"
+            echo " - oc is installed and selected"
+        fi
     else
-        echo " - oc not needed"
+        echo " - oc or kubectl not needed"
     fi
 
     if ! command -v hzn >/dev/null 2>&1; then
@@ -359,9 +367,9 @@ function putOneFileInCss() {
 
     # First get exchange root creds, if necessary
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
-        resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
+        resourcename=$($K8S_CLI_TOOL get eamhub --no-headers |awk '{printf $1}')
         echo "Getting exchange root credentials to use to publish to CSS..."
-        export HZN_EXCHANGE_USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        export HZN_EXCHANGE_USER_AUTH="root/root:$($K8S_CLI_TOOL get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
     fi
 
@@ -423,8 +431,8 @@ function getAgentFileTotal() {
     # get exchange root creds, if necessary
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
         echo "Getting exchange root credentials to use to publish to CSS..."
-        local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
-        export HZN_EXCHANGE_USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        local resourcename=$($K8S_CLI_TOOL get eamhub --no-headers |awk '{printf $1}')
+        export HZN_EXCHANGE_USER_AUTH="root/root:$($K8S_CLI_TOOL get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
     fi
 
@@ -472,8 +480,8 @@ function test_IsFileInCss() {
 
         # First get exchange root creds, if necessary
         if [[ -z ${USER_AUTH} ]]; then 
-	        resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
-		USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)" 
+	        resourcename=$($K8S_CLI_TOOL get eamhub --no-headers |awk '{printf $1}')
+		USER_AUTH="root/root:$($K8S_CLI_TOOL get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)" 
 		chk $? 'getting exchange root creds'
         fi
 	
@@ -662,7 +670,8 @@ function getClusterCert () {
     if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
             if [[ -z ${AGENT_INSTALL_CERT} ]]; then
                     echo "Getting the management hub self-signed certificate agent-install.crt..."
-                    oc get secret management-ingress-ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
+                    resourcename=$($K8S_CLI_TOOL get eamhub --no-headers |awk '{printf $1}')
+                    $K8S_CLI_TOOL get secret $resourcename-ca-certificate-secret -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
                     chk $? 'getting the management hub self-signed certificate'
             else
                     if [[ -f ${AGENT_INSTALL_CERT} ]]; then
