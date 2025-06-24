@@ -41,7 +41,7 @@ horizon-deb: require-version
 	envsubst < horizon-control.tmpl > horizon/DEBIAN/control
 	mkdir -p debs
 	rm -f debs/horizon_*$(DISTRO)_$(arch).deb
-	dpkg-deb --build horizon debs/horizon_$(VERSION)$(BUILD_NUMBER)_$(arch).deb
+	dpkg-deb -Zxz --build horizon debs/horizon_$(VERSION)$(BUILD_NUMBER)_$(arch).deb
 
 # Remember to up VERSION above. If building the deb on mac, first: brew install dpkg
 horizon-cli-deb: require-version
@@ -71,6 +71,6 @@ horizon-cli-deb: require-version
 	envsubst < horizon-cli-control.tmpl > horizon-cli/DEBIAN/control
 	mkdir -p debs
 	rm -f debs/horizon-cli_*$(DISTRO)_$(arch).deb
-	dpkg-deb --build horizon-cli debs/horizon-cli_$(VERSION)$(BUILD_NUMBER)_$(arch).deb
+	dpkg-deb -Zxz --build horizon-cli debs/horizon-cli_$(VERSION)$(BUILD_NUMBER)_$(arch).deb
 
 .PHONY: all horizon-deb horizon-cli-deb
