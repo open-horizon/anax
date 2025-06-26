@@ -2,7 +2,7 @@ module github.com/open-horizon/anax
 
 go 1.23.0
 
-toolchain go1.23.4
+toolchain go1.24.4
 
 require (
 	github.com/adams-sarah/test2doc v0.0.0-20211124171229-79cd42e7411d
