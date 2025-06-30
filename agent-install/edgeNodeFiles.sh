@@ -155,25 +155,26 @@ if [[ -z $EDGE_NODE_TYPE ]]; then
     scriptUsage 1
 fi
 
+detect_k8s_cli_tool() {
+    if [ -n "${K8S_CLI_TOOL}" ]; then
+        if ! command -v ${KUBECTL%% *} >/dev/null 2>&1; then
+            fatal "$     is not available. Please install it and ensure it is in your \$PATH"
+        fi
+    else
+        for cmd in "k3s kubectl" "microk8s.kubectl" "oc" "kubectl"; do
+            if command -v ${cmd%% *} >/dev/null 2>&1; then
+                K8S_CLI_TOOL="$cmd"
+                return
+            fi
+        done
+        fatal "kubectl is not available. Please install it and ensure it is in your \$PATH"
+    fi
+}
+
 function checkPrereqsAndInput () {
     echo "Checking system requirements..."
 
-    # Need oc or kubectl executable if one of these variables is not set
-    if [[ -z "$HZN_EXCHANGE_USER_AUTH" ]] || [[ -z "${AGENT_INSTALL_CERT}" && "$HZN_EXCHANGE_URL" == https://* ]]; then
-        if command -v k3s > /dev/null 2>&1; then
-            K8S_CLI_TOOL="k3s kubectl"
-        elif command -v microk8s.kubectl >/dev/null 2>&1; then
-            K8S_CLI_TOOL=microk8s.kubectl
-        elif command -v oc >/dev/null 2>&1; then
-            K8S_CLI_TOOL=oc
-        elif command -v kubectl >/dev/null 2>&1; then
-            K8S_CLI_TOOL=kubectl
-        else
-            fatal 2 "kubectl is not available. Please install kubectl and ensure that it is found on your \$PATH"
-        fi
-    else
-        echo " - oc or kubectl not needed"
-    fi
+    detect_k8s_cli_tool
 
     if ! command -v hzn >/dev/null 2>&1; then
         fatal 2 "hzn is not installed."
@@ -206,10 +207,9 @@ function checkPrereqsAndInput () {
     echo ""
 
     echo "Checking environment variables..."
-
     NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
-    resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
-    export CLUSTER_URL=$(kubectl -n $NAMESPACE get ing $resourcename-external-ingress -ojsonpath={.spec.rules[0].host})
+    CUSTOM_RESOURCE=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
+    CLUSTER_URL="https://"$($K8S_CLI_TOOL get cm ${CUSTOM_RESOURCE}-hostname-cm -n $NAMESPACE -o jsonpath='{.data.hostname}' | grep '.*')
     echo " - CLUSTER_URL: ${CLUSTER_URL}"
 
     setMgmtHubURLs
@@ -226,7 +226,7 @@ function setMgmtHubURLs() {
     export HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL:-"$CLUSTER_URL/edge-exchange/v1"}
     export HZN_FSS_CSSURL=${HZN_FSS_CSSURL:-"$CLUSTER_URL/edge-css/"}
     export HZN_AGBOT_URL=${HZN_AGBOT_URL:-"$CLUSTER_URL/edge-agbot/"}
-    export HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL:-"$CLUSTER_URL/edge-fdo-ocs/api"}
+    export HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL:-"$CLUSTER_URL/edge-fdo/api"}
 }
 
 # Method to store the software package version if it is not set yet
