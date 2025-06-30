@@ -209,8 +209,14 @@ function checkPrereqsAndInput () {
     echo "Checking environment variables..."
     NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
     CUSTOM_RESOURCE=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
-    CLUSTER_URL="https://"$($K8S_CLI_TOOL get cm ${CUSTOM_RESOURCE}-hostname-cm -n $NAMESPACE -o jsonpath='{.data.hostname}' | grep '.*')
-    echo " - CLUSTER_URL: ${CLUSTER_URL}"
+
+    if [ -z "$CLUSTER_URL" ]; then
+        echo "CLUSTER_URL is not set. Setting it now..."
+        CLUSTER_URL="https://"$($K8S_CLI_TOOL get cm ${CUSTOM_RESOURCE}-hostname-cm -n $NAMESPACE -o jsonpath='{.data.hostname}' | grep '.*')
+        echo " - CLUSTER_URL: ${CLUSTER_URL}"
+    else
+        echo "CLUSTER_URL is already set to: $CLUSTER_URL"
+    fi
 
     setMgmtHubURLs
 
@@ -219,6 +225,16 @@ function checkPrereqsAndInput () {
     echo " - HZN_AGBOT_URL: ${HZN_AGBOT_URL}"
     echo " - HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL}"
     echo ""
+
+    if [ -z "$HZN_MGMT_HUB_CERT_PATH" ]; then
+        echo "Getting the agent-install.crt..."
+        ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ${CUSTOM_RESOURCE}-external-cert -ojson \
+            | jq -r '.data["ca.crt"]' \
+            | base64 -d > /tmp/ieam.crt
+        export HZN_MGMT_HUB_CERT_PATH="/tmp/ieam.crt"
+    else
+        echo "HZN_MGMT_HUB_CERT_PATH is already set to: $HZN_MGMT_HUB_CERT_PATH"
+    fi
 }
 
 function setMgmtHubURLs() {
