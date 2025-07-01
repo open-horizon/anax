@@ -157,8 +157,8 @@ fi
 
 detect_k8s_cli_tool() {
     if [ -n "${K8S_CLI_TOOL}" ]; then
-        if ! command -v ${KUBECTL%% *} >/dev/null 2>&1; then
-            fatal "$     is not available. Please install it and ensure it is in your \$PATH"
+        if ! command -v ${K8S_CLI_TOOL} >/dev/null 2>&1; then
+            fatal 2 "${K8S_CLI_TOOL} is not available. Please install it and ensure it is in your \$PATH"
         fi
     else
         for cmd in "k3s kubectl" "microk8s.kubectl" "oc" "kubectl"; do
@@ -167,14 +167,20 @@ detect_k8s_cli_tool() {
                 return
             fi
         done
-        fatal "kubectl is not available. Please install it and ensure it is in your \$PATH"
+        fatal 2 "kubectl is not available. Please install it and ensure it is in your \$PATH"
     fi
 }
 
 function checkPrereqsAndInput () {
     echo "Checking system requirements..."
 
-    detect_k8s_cli_tool
+    if [[ -z "$CLUSTER_URL" && ( -z "$HZN_EXCHANGE_URL" || -z "$HZN_FSS_CSSURL" || -z "$HZN_AGBOT_URL" || -z "$HZN_FDO_SVC_URL" ) ]]; then
+        detect_k8s_cli_tool
+    elif [[ "$HZN_EXCHANGE_URL" == https:* && -z "$HZN_MGMT_HUB_CERT_PATH" ]]; then
+        detect_k8s_cli_tool
+    elif [[ -z "$HZN_EXCHANGE_USER_AUTH" ]]; then
+        detect_k8s_cli_tool
+    fi
 
     if ! command -v hzn >/dev/null 2>&1; then
         fatal 2 "hzn is not installed."
@@ -207,15 +213,30 @@ function checkPrereqsAndInput () {
     echo ""
 
     echo "Checking environment variables..."
-    NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
-    CUSTOM_RESOURCE=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
-
-    if [ -z "$CLUSTER_URL" ]; then
-        echo "CLUSTER_URL is not set. Setting it now..."
-        CLUSTER_URL="https://"$($K8S_CLI_TOOL get cm ${CUSTOM_RESOURCE}-hostname-cm -n $NAMESPACE -o jsonpath='{.data.hostname}' | grep '.*')
-        echo " - CLUSTER_URL: ${CLUSTER_URL}"
+    if [[ -n "$HZN_EXCHANGE_URL" && -n "$HZN_FSS_CSSURL" && -n "$HZN_AGBOT_URL" && -n "$HZN_FDO_SVC_URL" ]]; then
+    : # All required URLs are set
     else
-        echo "CLUSTER_URL is already set to: $CLUSTER_URL"
+        if [[ -z "$CLUSTER_URL" ]]; then
+            echo "CLUSTER_URL is not set. Attempting to set it from Kubernetes resources..."
+
+            NAMESPACE="$($K8S_CLI_TOOL get eamhub -A --no-headers | awk 'NR==1 {print $1}')"
+            CUSTOM_RESOURCE="$($K8S_CLI_TOOL get eamhub -n "$NAMESPACE" --no-headers | awk '{print $1}')"
+
+            if [[ -z "$NAMESPACE" || -z "$CUSTOM_RESOURCE" ]]; then
+                fatal 1 "Error: Unable to determine namespace or custom resource."
+            fi
+
+            CLUSTER_HOSTNAME="$($K8S_CLI_TOOL get cm "${CUSTOM_RESOURCE}-hostname-cm" -n "$NAMESPACE" -o jsonpath='{.data.hostname}' | grep '.*')"
+
+            if [[ -z "$CLUSTER_HOSTNAME" ]]; then
+                fatal 1 "Error: Could not fetch hostname from configmap."
+            fi
+
+            CLUSTER_URL="https://${CLUSTER_HOSTNAME}"
+            echo " - CLUSTER_URL: ${CLUSTER_URL}"
+        else
+            echo "CLUSTER_URL is already set to: $CLUSTER_URL"
+        fi
     fi
 
     setMgmtHubURLs
@@ -226,14 +247,18 @@ function checkPrereqsAndInput () {
     echo " - HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL}"
     echo ""
 
-    if [ -z "$HZN_MGMT_HUB_CERT_PATH" ]; then
-        echo "Getting the agent-install.crt..."
-        ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ${CUSTOM_RESOURCE}-external-cert -ojson \
-            | jq -r '.data["ca.crt"]' \
-            | base64 -d > /tmp/ieam.crt
-        export HZN_MGMT_HUB_CERT_PATH="/tmp/ieam.crt"
+    if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
+        if  [[ -z "$HZN_MGMT_HUB_CERT_PATH" ]]; then
+            echo "Getting the agent-install.crt..."
+            ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ${CUSTOM_RESOURCE}-external-cert -ojson \
+                | jq -r '.data["ca.crt"]' \
+                | base64 -d > /tmp/ieam.crt
+            export HZN_MGMT_HUB_CERT_PATH="/tmp/ieam.crt"
+        else
+            echo "HZN_MGMT_HUB_CERT_PATH is already set to: $HZN_MGMT_HUB_CERT_PATH"
+        fi
     else
-        echo "HZN_MGMT_HUB_CERT_PATH is already set to: $HZN_MGMT_HUB_CERT_PATH"
+        echo  "Skipping cert since ${HZN_EXCHANGE_URL} is using http"
     fi
 }
 
