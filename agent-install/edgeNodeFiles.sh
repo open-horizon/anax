@@ -60,9 +60,6 @@ Parameters:
     -b          Get the agent images from the horizon content tar file.
     -x <days>   Sets the expiration field of the versioned files pushed to CSS. Should not be used unless artifacts are being produced and pushed by a CI/CD pipeline. Default is expiration not set.
 
-Required Environment Variables:
-    CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number>, or HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_AGBOT_URL, HZN_FDO_SVC_URL
-
 Optional Environment Variables:
     PACKAGE_NAME: The base name of the horizon content tar file (can include a path). Default: $PACKAGE_NAME
     HZN_EXCHANGE_USER_AUTH: The exchange credentials to use to publish artifacts in CSS. Must have access to publish to the IBM org. If not set, will use exchange root credentials.
@@ -158,17 +155,31 @@ if [[ -z $EDGE_NODE_TYPE ]]; then
     scriptUsage 1
 fi
 
+detect_k8s_cli_tool() {
+    if [ -n "${K8S_CLI_TOOL}" ]; then
+        if ! command -v ${K8S_CLI_TOOL} >/dev/null 2>&1; then
+            fatal 2 "${K8S_CLI_TOOL} is not available. Please install it and ensure it is in your \$PATH"
+        fi
+    else
+        for cmd in "k3s kubectl" "microk8s.kubectl" "oc" "kubectl"; do
+            if command -v ${cmd%% *} >/dev/null 2>&1; then
+                K8S_CLI_TOOL="$cmd"
+                return
+            fi
+        done
+        fatal 2 "kubectl is not available. Please install it and ensure it is in your \$PATH"
+    fi
+}
+
 function checkPrereqsAndInput () {
     echo "Checking system requirements..."
 
-    # Need oc executable if one of these variables is not set
-    if [[ -z $HZN_EXCHANGE_USER_AUTH ]] || [[ -z ${AGENT_INSTALL_CERT} && ${HZN_EXCHANGE_URL} == "https://"* ]]; then
-        if ! command -v oc >/dev/null 2>&1; then
-            fatal 2 "oc is not installed."
-        fi
-        echo " - oc installed"
-    else
-        echo " - oc not needed"
+    if [[ -z "$CLUSTER_URL" && ( -z "$HZN_EXCHANGE_URL" || -z "$HZN_FSS_CSSURL" || -z "$HZN_AGBOT_URL" || -z "$HZN_FDO_SVC_URL" ) ]]; then
+        detect_k8s_cli_tool
+    elif [[ "$HZN_EXCHANGE_URL" == https:* && -z "$HZN_MGMT_HUB_CERT_PATH" ]]; then
+        detect_k8s_cli_tool
+    elif [[ -z "$HZN_EXCHANGE_USER_AUTH" ]]; then
+        detect_k8s_cli_tool
     fi
 
     if ! command -v hzn >/dev/null 2>&1; then
@@ -202,23 +213,53 @@ function checkPrereqsAndInput () {
     echo ""
 
     echo "Checking environment variables..."
-    if [[ -z $CLUSTER_URL ]]; then
-	    if [[  -z $HZN_EXCHANGE_URL ]] || [[ -z $HZN_FSS_CSSURL ]] || [[ -z $HZN_AGBOT_URL ]] || [[ -z $HZN_FDO_SVC_URL ]]; then
-                    fatal 1 "CLUSTER_URL or all of HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_AGBOT_URL, and HZN_FDO_SVC_URL environment variables not set. One or the other is required"
-            fi
-    fi
-    if [[ -z $CLUSTER_URL ]]; then
-            echo " - HZN_EXCHANGE_URL: ${HZN_EXCHANGE_URL}"
-            echo " - HZN_FSS_CSSURL: ${HZN_FSS_CSSURL}"
-            echo " - HZN_AGBOT_URL: ${HZN_AGBOT_URL}"
-            echo " - HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL}"
+    if [[ -n "$HZN_EXCHANGE_URL" && -n "$HZN_FSS_CSSURL" && -n "$HZN_AGBOT_URL" && -n "$HZN_FDO_SVC_URL" ]]; then
+    : # All required URLs are set
     else
+        if [[ -z "$CLUSTER_URL" ]]; then
+            echo "CLUSTER_URL is not set. Attempting to set it from Kubernetes resources..."
+
+            NAMESPACE="$($K8S_CLI_TOOL get eamhub -A --no-headers | awk 'NR==1 {print $1}')"
+            CUSTOM_RESOURCE="$($K8S_CLI_TOOL get eamhub -n "$NAMESPACE" --no-headers | awk '{print $1}')"
+
+            if [[ -z "$NAMESPACE" || -z "$CUSTOM_RESOURCE" ]]; then
+                fatal 1 "Error: Unable to determine namespace or custom resource."
+            fi
+
+            CLUSTER_HOSTNAME="$($K8S_CLI_TOOL get cm "${CUSTOM_RESOURCE}-hostname-cm" -n "$NAMESPACE" -o jsonpath='{.data.hostname}' | grep '.*')"
+
+            if [[ -z "$CLUSTER_HOSTNAME" ]]; then
+                fatal 1 "Error: Could not fetch hostname from configmap."
+            fi
+
+            CLUSTER_URL="https://${CLUSTER_HOSTNAME}"
             echo " - CLUSTER_URL: ${CLUSTER_URL}"
+        else
+            echo "CLUSTER_URL is already set to: $CLUSTER_URL"
+        fi
     fi
 
     setMgmtHubURLs
 
+    echo " - HZN_EXCHANGE_URL: ${HZN_EXCHANGE_URL}"
+    echo " - HZN_FSS_CSSURL: ${HZN_FSS_CSSURL}"
+    echo " - HZN_AGBOT_URL: ${HZN_AGBOT_URL}"
+    echo " - HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL}"
     echo ""
+
+    if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
+        if  [[ -z "$HZN_MGMT_HUB_CERT_PATH" ]]; then
+            echo "Getting the agent-install.crt..."
+            ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ${CUSTOM_RESOURCE}-external-cert -ojson \
+                | jq -r '.data["ca.crt"]' \
+                | base64 -d > /tmp/ieam.crt
+            export HZN_MGMT_HUB_CERT_PATH="/tmp/ieam.crt"
+        else
+            echo "HZN_MGMT_HUB_CERT_PATH is already set to: $HZN_MGMT_HUB_CERT_PATH"
+        fi
+    else
+        echo  "Skipping cert since ${HZN_EXCHANGE_URL} is using http"
+    fi
 }
 
 function setMgmtHubURLs() {
@@ -226,7 +267,7 @@ function setMgmtHubURLs() {
     export HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL:-"$CLUSTER_URL/edge-exchange/v1"}
     export HZN_FSS_CSSURL=${HZN_FSS_CSSURL:-"$CLUSTER_URL/edge-css/"}
     export HZN_AGBOT_URL=${HZN_AGBOT_URL:-"$CLUSTER_URL/edge-agbot/"}
-    export HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL:-"$CLUSTER_URL/edge-fdo-ocs/api"}
+    export HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL:-"$CLUSTER_URL/edge-fdo/api"}
 }
 
 # Method to store the software package version if it is not set yet
@@ -359,9 +400,10 @@ function putOneFileInCss() {
 
     # First get exchange root creds, if necessary
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
-        resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
         echo "Getting exchange root credentials to use to publish to CSS..."
-        export HZN_EXCHANGE_USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
+        resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE |awk '{printf $1}')
+        export HZN_EXCHANGE_USER_AUTH="root/root:$($K8S_CLI_TOOL get secret $resourcename-auth -n $NAMESPACE  -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
     fi
 
@@ -423,8 +465,9 @@ function getAgentFileTotal() {
     # get exchange root creds, if necessary
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
         echo "Getting exchange root credentials to use to publish to CSS..."
-        local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
-        export HZN_EXCHANGE_USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
+        local resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
+        export HZN_EXCHANGE_USER_AUTH="root/root:$($K8S_CLI_TOOL get secret $resourcename-auth -n $NAMESPACE -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
     fi
 
@@ -471,10 +514,11 @@ function test_IsFileInCss() {
 	local USER_AUTH=${HZN_EXCHANGE_USER_AUTH}
 
         # First get exchange root creds, if necessary
-        if [[ -z ${USER_AUTH} ]]; then 
-	        resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
-		USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)" 
-		chk $? 'getting exchange root creds'
+        if [[ -z ${USER_AUTH} ]]; then
+            NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
+            resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
+            USER_AUTH="root/root:$($K8S_CLI_TOOL get secret $resourcename-auth -n $NAMESPACE -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+            chk $? 'getting exchange root creds'
         fi
 	
 	objects=$( hzn mms object list -u ${USER_AUTH} -o ${org} -t ${objectType}  -i ${objectID} | grep -v "Listing"  | jq '. | length' ) 
@@ -662,7 +706,9 @@ function getClusterCert () {
     if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
             if [[ -z ${AGENT_INSTALL_CERT} ]]; then
                     echo "Getting the management hub self-signed certificate agent-install.crt..."
-                    oc get secret management-ingress-ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
+                    NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
+                    resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
+                    $K8S_CLI_TOOL get secret $resourcename-ca-certificate-secret -n $NAMESPACE -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
                     chk $? 'getting the management hub self-signed certificate'
             else
                     if [[ -f ${AGENT_INSTALL_CERT} ]]; then
@@ -1187,6 +1233,3 @@ main() {
 }
 
 main
-
-
-
