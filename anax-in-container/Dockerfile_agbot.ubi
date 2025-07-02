@@ -11,7 +11,7 @@ LABEL description="The Agbot scans all the edge nodes in the system initiating d
 # agbot_start.sh calls envsubst (from gettext)
 # Create required directories
 ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng gettext"
-RUN  microdnf update  -y libxml2 --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
+RUN microdnf update -y libxml2 vim-enhanced --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && microdnf upgrade -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager krb5-libs \
   && microdnf clean all --disableplugin=subscription-manager \
