@@ -220,13 +220,10 @@ function checkPrereqsAndInput () {
             echo "CLUSTER_URL is not set. Attempting to set it from Kubernetes resources..."
 
             NAMESPACE="$($K8S_CLI_TOOL get eamhub -A --no-headers | awk 'NR==1 {print $1}')"
-            CUSTOM_RESOURCE="$($K8S_CLI_TOOL get eamhub -n "$NAMESPACE" --no-headers | awk '{print $1}')"
-
-            if [[ -z "$NAMESPACE" || -z "$CUSTOM_RESOURCE" ]]; then
-                fatal 1 "Error: Unable to determine namespace or custom resource."
+            if [[ -z "$NAMESPACE" ]]; then
+                fatal 1 "Error: Unable to determine namespace."
             fi
-
-            CLUSTER_HOSTNAME="$($K8S_CLI_TOOL get cm "${CUSTOM_RESOURCE}-hostname-cm" -n "$NAMESPACE" -o jsonpath='{.data.hostname}' | grep '.*')"
+            CLUSTER_HOSTNAME="$($K8S_CLI_TOOL get cm ibm-edge-hostname-cm -n "$NAMESPACE" -o jsonpath='{.data.hostname}' | grep '.*')"
 
             if [[ -z "$CLUSTER_HOSTNAME" ]]; then
                 fatal 1 "Error: Could not fetch hostname from configmap."
@@ -250,8 +247,9 @@ function checkPrereqsAndInput () {
     if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
         if  [[ -z "$HZN_MGMT_HUB_CERT_PATH" ]]; then
             echo "Getting the agent-install.crt..."
-            ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ${CUSTOM_RESOURCE}-external-cert -ojson \
-                | jq -r '.data["ca.crt"]' \
+            HUB_CERT_NAME=$($K8S_CLI_TOOL get configmap ${CUSTOM_RESOURCE}-ca-cert-name -n $NAMESPACE -o jsonpath="{.data['ca_secret_name']}")
+            ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ${HUB_CERT_NAME} -ojson \
+                | jq -r '.data["tls.crt"]' \
                 | base64 -d > /tmp/ieam.crt
             export HZN_MGMT_HUB_CERT_PATH="/tmp/ieam.crt"
         else
@@ -708,7 +706,8 @@ function getClusterCert () {
                     echo "Getting the management hub self-signed certificate agent-install.crt..."
                     NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
                     resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
-                    $K8S_CLI_TOOL get secret $resourcename-ca-certificate-secret -n $NAMESPACE -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
+                    HUB_CERT_NAME=$($K8S_CLI_TOOL get configmap $resourcename-ca-cert-name -n $NAMESPACE -o jsonpath="{.data['ca_secret_name']}")
+                    $K8S_CLI_TOOL get secret $HUB_CERT_NAME -n $NAMESPACE -o jsonpath="{.data['tls\.crt']}" | base64 --decode > agent-install.crt
                     chk $? 'getting the management hub self-signed certificate'
             else
                     if [[ -f ${AGENT_INSTALL_CERT} ]]; then
