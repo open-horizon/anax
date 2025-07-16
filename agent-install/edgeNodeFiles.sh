@@ -220,13 +220,10 @@ function checkPrereqsAndInput () {
             echo "CLUSTER_URL is not set. Attempting to set it from Kubernetes resources..."
 
             NAMESPACE="$($K8S_CLI_TOOL get eamhub -A --no-headers | awk 'NR==1 {print $1}')"
-            CUSTOM_RESOURCE="$($K8S_CLI_TOOL get eamhub -n "$NAMESPACE" --no-headers | awk '{print $1}')"
-
-            if [[ -z "$NAMESPACE" || -z "$CUSTOM_RESOURCE" ]]; then
-                fatal 1 "Error: Unable to determine namespace or custom resource."
+            if [[ -z "$NAMESPACE" ]]; then
+                fatal 1 "Error: Unable to determine namespace."
             fi
-
-            CLUSTER_HOSTNAME="$($K8S_CLI_TOOL get cm "${CUSTOM_RESOURCE}-hostname-cm" -n "$NAMESPACE" -o jsonpath='{.data.hostname}' | grep '.*')"
+            CLUSTER_HOSTNAME="$($K8S_CLI_TOOL get cm ibm-edge-hostname-cm -n "$NAMESPACE" -o jsonpath='{.data.hostname}' | grep '.*')"
 
             if [[ -z "$CLUSTER_HOSTNAME" ]]; then
                 fatal 1 "Error: Could not fetch hostname from configmap."
@@ -250,7 +247,7 @@ function checkPrereqsAndInput () {
     if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
         if  [[ -z "$HZN_MGMT_HUB_CERT_PATH" ]]; then
             echo "Getting the agent-install.crt..."
-            ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ${CUSTOM_RESOURCE}-external-cert -ojson \
+            ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ibm-edge-external-cert -ojson \
                 | jq -r '.data["ca.crt"]' \
                 | base64 -d > /tmp/ieam.crt
             export HZN_MGMT_HUB_CERT_PATH="/tmp/ieam.crt"
