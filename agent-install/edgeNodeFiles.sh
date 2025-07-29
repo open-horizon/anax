@@ -247,8 +247,9 @@ function checkPrereqsAndInput () {
     if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
         if  [[ -z "$HZN_MGMT_HUB_CERT_PATH" ]]; then
             echo "Getting the agent-install.crt..."
-            ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ibm-edge-external-cert -ojson \
-                | jq -r '.data["ca.crt"]' \
+            HUB_CERT_NAME=$($K8S_CLI_TOOL get configmap ibm-edge-ca-cert-name -n $NAMESPACE -o jsonpath="{.data['ca_secret_name']}")
+            ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ${HUB_CERT_NAME} -ojson \
+                | jq -r '.data["tls.crt"]' \
                 | base64 -d > /tmp/ieam.crt
             export HZN_MGMT_HUB_CERT_PATH="/tmp/ieam.crt"
         else
@@ -399,8 +400,7 @@ function putOneFileInCss() {
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
         echo "Getting exchange root credentials to use to publish to CSS..."
         NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
-        resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE |awk '{printf $1}')
-        export HZN_EXCHANGE_USER_AUTH="root/root:$($K8S_CLI_TOOL get secret $resourcename-auth -n $NAMESPACE  -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        export HZN_EXCHANGE_USER_AUTH="root/root:$($K8S_CLI_TOOL get secret ibm-edge-auth -n $NAMESPACE  -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
     fi
 
@@ -463,8 +463,7 @@ function getAgentFileTotal() {
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
         echo "Getting exchange root credentials to use to publish to CSS..."
         NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
-        local resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
-        export HZN_EXCHANGE_USER_AUTH="root/root:$($K8S_CLI_TOOL get secret $resourcename-auth -n $NAMESPACE -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        export HZN_EXCHANGE_USER_AUTH="root/root:$($K8S_CLI_TOOL get secret ibm-edge-auth -n $NAMESPACE -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
     fi
 
@@ -513,8 +512,7 @@ function test_IsFileInCss() {
         # First get exchange root creds, if necessary
         if [[ -z ${USER_AUTH} ]]; then
             NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
-            resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
-            USER_AUTH="root/root:$($K8S_CLI_TOOL get secret $resourcename-auth -n $NAMESPACE -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+            USER_AUTH="root/root:$($K8S_CLI_TOOL get secret ibm-edge-auth -n $NAMESPACE -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
             chk $? 'getting exchange root creds'
         fi
 	
@@ -704,8 +702,8 @@ function getClusterCert () {
             if [[ -z ${AGENT_INSTALL_CERT} ]]; then
                     echo "Getting the management hub self-signed certificate agent-install.crt..."
                     NAMESPACE=$($K8S_CLI_TOOL get eamhub -A | awk 'NR==2 {print $1}')
-                    resourcename=$($K8S_CLI_TOOL get eamhub --no-headers -n $NAMESPACE | awk '{printf $1}')
-                    $K8S_CLI_TOOL get secret $resourcename-ca-certificate-secret -n $NAMESPACE -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
+                    HUB_CERT_NAME=$($K8S_CLI_TOOL get configmap ibm-edge-ca-cert-name -n $NAMESPACE -o jsonpath="{.data['ca_secret_name']}")
+                    $K8S_CLI_TOOL get secret $HUB_CERT_NAME -n $NAMESPACE -o jsonpath="{.data['tls\.crt']}" | base64 --decode > agent-install.crt
                     chk $? 'getting the management hub self-signed certificate'
             else
                     if [[ -f ${AGENT_INSTALL_CERT} ]]; then
