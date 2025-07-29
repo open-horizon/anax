@@ -2134,7 +2134,12 @@ function debian_device_install_prereqs() {
     log_debug "debian_device_install_prereqs() begin"
 
     log_info "Updating apt package index..."
-    runCmdQuietly apt-get update -q
+    set +e
+    apt-get update -q > /dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+        log_warning "Failed to execute apt-get update -q, skip updating apt package index.."
+    fi
+    set -e
 
     log_info "Installing prerequisites, this could take a minute..."
 
@@ -2150,7 +2155,12 @@ function debian_device_install_prereqs() {
             else
                 curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
                 add-apt-repository -y "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
-                runCmdQuietly apt-get update -q
+                set +e
+                apt-get update -q > /dev/null 2>&1
+                if [[ $? -ne 0 ]]; then
+                    log_warning "Failed to execute apt-get update -q, skip updating apt package index.."
+                fi
+                set -e
                 runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
             fi
         fi
