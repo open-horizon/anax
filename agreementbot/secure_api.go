@@ -2327,7 +2327,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		}
 		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} nodeUserSecret
 		//
-		// Delete a given secret belonging to the user for a node.
+		// Delete a given secret belonging to the user.
 		//
 		// ---
 		// consumes:
