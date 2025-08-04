@@ -1876,7 +1876,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//   - name: user
 		//     in: path
 		//     type: string
-		//     required: false
+		//     required: true
 		//     description: "The user owning the secret."
 		//   - name: secret
 		//     in: path
@@ -1936,7 +1936,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//   - name: user
 		//     in: path
 		//     type: string
-		//     required: false
+		//     required: true
 		//     description: "The user owning the secret."
 		//   - name: secret
 		//     in: path
@@ -2215,7 +2215,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 	//   - name: secret
 	//     in: path
 	//     type: string
-	//     required: false
+	//     required: true
 	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
@@ -2280,7 +2280,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		//   - name: user
 		//     in: path
 		//     type: string
-		//     required: false
+		//     required: true
 		//     description: "The user owning the secret."
 		//   - name: node
 		//     in: path
@@ -2345,7 +2345,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		//   - name: user
 		//     in: path
 		//     type: string
-		//     required: false
+		//     required: true
 		//     description: "The user owning the secret."
 		//   - name: secret
 		//     in: path

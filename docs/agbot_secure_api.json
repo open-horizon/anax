@@ -737,7 +737,8 @@
             "type": "string",
             "description": "The secret key (name).",
             "name": "secret",
-            "in": "path"
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -791,7 +792,8 @@
             "type": "string",
             "description": "The user owning the secret.",
             "name": "user",
-            "in": "path"
+            "in": "path",
+            "required": true
           },
           {
             "type": "string",
@@ -914,7 +916,8 @@
             "type": "string",
             "description": "The user owning the secret.",
             "name": "user",
-            "in": "path"
+            "in": "path",
+            "required": true
           },
           {
             "type": "string",
@@ -966,7 +969,8 @@
             "type": "string",
             "description": "The user owning the secret.",
             "name": "user",
-            "in": "path"
+            "in": "path",
+            "required": true
           },
           {
             "type": "string",
