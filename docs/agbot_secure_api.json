@@ -237,7 +237,6 @@
           "200": {
             "description": "Success",
             "schema": {
-              "type": "compcheck.CompCheckOutput",
               "$ref": "#/definitions/CompCheckOutput"
             }
           },
@@ -593,7 +592,7 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Delete a given secret belonging to the org for a node.",
+        "summary": "Add a given secret belonging to the org for a node.",
         "operationId": "nodeOrgSecret",
         "parameters": [
           {
@@ -770,7 +769,7 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Delete a given secret belonging to the user for a node.",
+        "summary": "Add a given secret belonging to the user for a node.",
         "operationId": "userSecret",
         "parameters": [
           {
@@ -894,16 +893,18 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Delete a given secret belonging to the user.",
+        "summary": "Add a given secret belonging to the user.",
         "operationId": "userSecret",
         "parameters": [
           {
-            "$ref": "#/definitions/SecretDetails",
             "type": "secrets.SecretDetails",
             "description": "The secret key and value.",
             "name": "secretDetails",
             "in": "body",
-            "required": true
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SecretDetails"
+            }
           },
           {
             "type": "string",
@@ -1057,7 +1058,7 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Delete a given secret belonging to the org.",
+        "summary": "Add a given secret belonging to the org.",
         "operationId": "orgSecret",
         "parameters": [
           {
@@ -1156,18 +1157,12 @@
     "SecretDetails": {
       "description": "SecretDetails The key value pair of one secret",
       "type": "object",
-      "required": [
-        "key",
-        "value"
-      ],
       "properties": {
         "key": {
-          "description": "Key is the name of the secret",
           "type": "string",
           "x-go-name": "Key"
         },
         "value": {
-          "description": "Value is the value of the secret",
           "type": "string",
           "x-go-name": "Value"
         }

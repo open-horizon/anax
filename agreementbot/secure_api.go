@@ -473,7 +473,6 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	//  '200':
 	//    description: "Success"
 	//    schema:
-	//     type: compcheck.CompCheckOutput
 	//     "$ref": "#/definitions/CompCheckOutput"
 	//  '400':
 	//    description: "Failure - No input found"
@@ -1588,7 +1587,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		fallthrough
 		// swagger:operation POST /org/{org}/secrets/{secret} orgSecret
 		//
-		// Delete a given secret belonging to the org.
+		// Add a given secret belonging to the org.
 		//
 		// ---
 		// consumes:
@@ -1816,7 +1815,6 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	// responses:
 	//  '200':
 	//    description: "Success."
-	//    type: secrets.SecretDetails
 	//    "$ref": "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
@@ -1853,7 +1851,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		fallthrough
 		// swagger:operation POST /org/{org}/secrets/user/{user}/{secret} userSecret
 		//
-		// Delete a given secret belonging to the user.
+		// Add a given secret belonging to the user.
 		//
 		// ---
 		// consumes:
@@ -1867,7 +1865,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
-		//     "$ref": "#/definitions/SecretDetails"
+		//     		$ref: "#/definitions/SecretDetails"
 		//   - name: org
 		//     in: path
 		//     type: string
@@ -2052,7 +2050,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		fallthrough
 		// swagger:operation POST /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
 		//
-		// Delete a given secret belonging to the org for a node.
+		// Add a given secret belonging to the org for a node.
 		//
 		// ---
 		// consumes:
@@ -2257,7 +2255,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		fallthrough
 		// swagger:operation POST /org/{org}/secrets/user/{user}/node/{node}/{secret} userSecret
 		//
-		// Delete a given secret belonging to the user for a node.
+		// Add a given secret belonging to the user for a node.
 		//
 		// ---
 		// consumes:
