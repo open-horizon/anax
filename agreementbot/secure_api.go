@@ -418,12 +418,12 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	// parameters:
 	//  - name: checkAll
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
@@ -541,12 +541,12 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	// parameters:
 	//  - name: checkAll
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
@@ -675,12 +675,12 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 	// parameters:
 	//  - name: checkAll
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
@@ -814,12 +814,12 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	// parameters:
 	//  - name: checkAll
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
@@ -1208,22 +1208,22 @@ type SecretRequestInfo struct {
 //
 // parameters:
 //   - name: org
-//     in: query
+//     in: path
 //     type: string
 //     required: true
 //     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
 //   - name: user
-//     in: query
+//     in: path
 //     type: string
 //     required: false
 //     description: "The user owning the secret."
 //   - name: node
-//     in: query
+//     in: path
 //     type: string
 //     required: false
 //     description: "The node the secret is for."
 //   - name: secret
-//     in: query
+//     in: path
 //     type: string
 //     required: false
 //     description: "The secret key (name)."
@@ -1416,6 +1416,12 @@ func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to."
 	// responses:
 	//  '200':
 	//    description: "Success or no secrets found."
@@ -1467,6 +1473,12 @@ func (a *SecureAPI) allSecrets(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to."
 	// responses:
 	//  '200':
 	//    description: "Success or no secrets found."
@@ -1525,6 +1537,17 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to."
+	//   - name: secret
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
 	//    description: "Success."
@@ -1574,12 +1597,22 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// parameters:
 		//   - name: secretDetails
-		//     in: query
+		//     in: body
 		//     type: secrets.SecretDetails
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
 		//     "$ref": "#/definitions/SecretDetails"
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -1624,6 +1657,17 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// produces:
 		//   - application/json
+		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -1753,6 +1797,22 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to."
+	//   - name: user
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The user owning the secret."
+	//   - name: secret
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
 	//    description: "Success."
@@ -1802,12 +1862,27 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// parameters:
 		//   - name: secretDetails
-		//     in: query
+		//     in: body
 		//     type: secrets.SecretDetails
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
 		//     "$ref": "#/definitions/SecretDetails"
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to."
+		//   - name: user
+		//     in: path
+		//     type: string
+		//     required: false
+		//     description: "The user owning the secret."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -1852,6 +1927,22 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// produces:
 		//   - application/json
+		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to."
+		//   - name: user
+		//     in: path
+		//     type: string
+		//     required: false
+		//     description: "The user owning the secret."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -1905,6 +1996,22 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+	//   - name: node
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The node the secret is for."
+	//   - name: secret
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
 	//    description: "Success."
@@ -1953,8 +2060,23 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		// produces:
 		//   - application/json
 		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+		//   - name: node
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The node the secret is for."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		//   - name: secretDetails
-		//     in: query
+		//     in: body
 		//     type: secrets.SecretDetails
 		//     required: true
 		//     description: "The secret key and value."
@@ -2004,6 +2126,22 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// produces:
 		//   - application/json
+		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+		//   - name: node
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The node the secret is for."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -2057,6 +2195,28 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	//
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+	//   - name: user
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The user owning the secret."
+	//   - name: node
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The node the secret is for."
+	//   - name: secret
+	//     in: path
+	//     type: string
+	//     required: false
+	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
 	//    description: "Success."
@@ -2106,12 +2266,32 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// parameters:
 		//   - name: secretDetails
-		//     in: query
+		//     in: body
 		//     type: secrets.SecretDetails
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
 		//     "$ref": "#/definitions/SecretDetails"
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+		//   - name: user
+		//     in: path
+		//     type: string
+		//     required: false
+		//     description: "The user owning the secret."
+		//   - name: node
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The node the secret is for."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -2156,6 +2336,22 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// produces:
 		//   - application/json
+		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+		//   - name: user
+		//     in: path
+		//     type: string
+		//     required: false
+		//     description: "The user owning the secret."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
