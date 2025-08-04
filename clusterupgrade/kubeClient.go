@@ -2,6 +2,8 @@ package clusterupgrade
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -16,6 +18,7 @@ import (
 )
 
 const AGENT_SERVICE_ACCOUNT_TOKEN = "agent-service-account-token"
+const AGENT_IMAGE_PULL_SECRET_NAME = "registry-creds"
 
 // Client to interact with all standard k8s objects
 type KubeClient struct {
@@ -157,12 +160,12 @@ func (c KubeClient) CreateBackupConfigmap(namespace string, cmName string) error
 func (c KubeClient) UpdateAgentConfigmap(namespace string, cmName string, newHorizonValue string) error {
 	glog.V(3).Infof(cuwlog(fmt.Sprintf("Update configmap %v under agent namespace %v to use new horizon value %v", cmName, namespace, newHorizonValue)))
 	currentConfigMap, err := c.GetConfigMap(namespace, cmName)
-	if err != nil {
+	if err != nil && !errors.IsNotFound(err) {
 		return err
-	} else {
+	} else if errors.IsNotFound(err) || currentConfigMap == nil {
 		newValueInConfigmap := make(map[string]string)
 		newValueInConfigmap["horizon"] = newHorizonValue
-		updateConfigMap := v1.ConfigMap{
+		configMap := v1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ConfigMap",
 				APIVersion: "v1",
@@ -173,19 +176,17 @@ func (c KubeClient) UpdateAgentConfigmap(namespace string, cmName string, newHor
 			},
 			Data: newValueInConfigmap,
 		}
-
-		if errors.IsNotFound(err) || currentConfigMap == nil {
-			_, err = c.Client.CoreV1().ConfigMaps(namespace).Create(context.Background(), &updateConfigMap, metav1.CreateOptions{})
-		} else {
-			_, err = c.Client.CoreV1().ConfigMaps(namespace).Update(context.Background(), &updateConfigMap, metav1.UpdateOptions{})
-		}
-
-		if err != nil {
-			return err
-		}
-		glog.V(3).Infof(cuwlog(fmt.Sprintf("Configmap %v under agent namespace %v is updated successfully", cmName, namespace)))
-		return nil
+		_, err = c.Client.CoreV1().ConfigMaps(namespace).Create(context.Background(), &configMap, metav1.CreateOptions{})
+	} else {
+		currentConfigMap.Data["horizon"] = newHorizonValue
+		_, err = c.Client.CoreV1().ConfigMaps(namespace).Update(context.Background(), currentConfigMap, metav1.UpdateOptions{})
 	}
+
+	if err != nil {
+		return err
+	}
+	glog.V(3).Infof(cuwlog(fmt.Sprintf("Configmap %v under agent namespace %v is updated successfully", cmName, namespace)))
+	return nil
 }
 
 //----------------Secret----------------
@@ -314,6 +315,73 @@ func (c KubeClient) UpdateAgentSecret(namespace string, secretName string, newSe
 	}
 }
 
+/*
+	{
+		"auths":{
+			"quay.io/myusername":{
+				"username":"myusername",
+				"password":"s72ZQ5mmw8nPScQpYbJIige8irU1n9Utex3lhtyXIXqCDKbrjeIbbsSDE+bhVQ8MwEhKf4lkxbxvh6UQ5/sGpw==",
+				"auth":"emhhbmdsZTpzNzJaUTVtbXc4blBTY1FwWWJKSWlnZThpclUxbjlVdGV4M2xodHlYSVhxQ0RLYnJqZUliYnNTREUrYmhWUThNd0VoS2Y0bGt4Ynh2aDZVUTUvc0dwdz09"
+			}
+		}
+	}
+*/
+// ----------------Image Pull Secret--------------
+func (c KubeClient) UpdateImagePullSec(imageRegistryHost, irUsername, irToken, namespace string) error {
+	glog.V(3).Infof(cuwlog(fmt.Sprintf("Update image pull secret %v under agent namespace %v to use new docker pull secret", AGENT_IMAGE_PULL_SECRET_NAME, namespace)))
+	currentImagePullSecret, err := c.GetSecret(namespace, AGENT_IMAGE_PULL_SECRET_NAME)
+	if err != nil && !errors.IsNotFound(err) {
+		return err
+	} else {
+		valueMap := map[string]interface{}{
+			"username": irUsername,
+			"password": irToken,
+			"auth":     base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", irUsername, irToken))),
+		}
+
+		irMap := map[string]interface{}{
+			imageRegistryHost: valueMap,
+		}
+
+		dockerConfigMap := map[string]interface{}{
+			"auths": irMap,
+		}
+
+		updatedDockerConfigJSONBytes, err := json.Marshal(dockerConfigMap)
+		if err != nil {
+			return err
+		}
+
+		secretData := map[string][]byte{
+			v1.DockerConfigJsonKey: updatedDockerConfigJSONBytes,
+		}
+		updateSecret := &v1.Secret{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Secret",
+				APIVersion: "v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      AGENT_IMAGE_PULL_SECRET_NAME,
+				Namespace: namespace,
+			},
+			Data: secretData,
+			Type: v1.SecretTypeDockerConfigJson,
+		}
+
+		if errors.IsNotFound(err) || currentImagePullSecret == nil {
+			_, err = c.Client.CoreV1().Secrets(namespace).Create(context.Background(), updateSecret, metav1.CreateOptions{})
+		} else {
+			_, err = c.Client.CoreV1().Secrets(namespace).Update(context.Background(), updateSecret, metav1.UpdateOptions{})
+		}
+
+		if err != nil {
+			return err
+		}
+		glog.V(3).Infof(cuwlog(fmt.Sprintf("Secret %v under agent namespace %v is updated successfully", AGENT_IMAGE_PULL_SECRET_NAME, namespace)))
+		return nil
+	}
+}
+
 // ----------------Service Account----------------
 func (c KubeClient) GetServiceAccount(namespace string, serviceAccountName string) (*v1.ServiceAccount, error) {
 	glog.V(3).Infof(cuwlog(fmt.Sprintf("Get service account %v under namespace %v", serviceAccountName, namespace)))
@@ -422,8 +490,8 @@ func (c KubeClient) GetDeployment(namespace string, deploymentName string) (*app
 	return deployment, err
 }
 
-func (c KubeClient) UpdateAgentDeploymentImageVersion(namespace string, deploymentName string, newImageVersion string) error {
-	glog.V(3).Infof(cuwlog(fmt.Sprintf("Update image version to %v in %v deployment under agent namespace %v", newImageVersion, deploymentName, namespace)))
+func (c KubeClient) UpdateAgentDeploymentImageVersionAndIRHost(namespace string, deploymentName string, newImageVersion string, newImageRegistryHost string, agentArch interface{}) error {
+	glog.V(3).Infof(cuwlog(fmt.Sprintf("Update image version to %v, and update AGENT_CLUSTER_IMAGE_REGISTRY_HOST env to %v in %v deployment under agent namespace %v", newImageVersion, newImageRegistryHost, deploymentName, namespace)))
 	currentDeployment, err := c.GetDeployment(namespace, deploymentName)
 	if err != nil {
 		return err
@@ -441,9 +509,34 @@ func (c KubeClient) UpdateAgentDeploymentImageVersion(namespace string, deployme
 		}
 		parts[len(parts)-1] = newImageVersion
 		newAgentImage := strings.Join(parts, ":")
-		glog.V(3).Infof(cuwlog(fmt.Sprintf("NewAgentImage is %v, will update agent deployment with this value", newAgentImage)))
-		currentDeployment.Spec.Template.Spec.Containers[0].Image = newAgentImage
 
+		if newImageRegistryHost != "" {
+			glog.V(3).Infof(cuwlog(fmt.Sprintf("newImageRegistryHost is %v, will update agent deployment with this value", newImageRegistryHost)))
+			// the deployment is using remote image registry
+			// update env
+			envs := currentDeployment.Spec.Template.Spec.Containers[0].Env
+			newEnvs := make([]v1.EnvVar, 0)
+			found := false
+			for i := range envs {
+				envar := envs[i]
+				if envar.Name == AGENT_CLUSTER_IMAGE_REGISTRY_HOST {
+					envar.Value = newImageRegistryHost
+					found = true
+				}
+				newEnvs = append(newEnvs, envar)
+			}
+			if !found {
+				newEnv := v1.EnvVar{Name: AGENT_CLUSTER_IMAGE_REGISTRY_HOST, Value: newImageRegistryHost}
+				newEnvs = append(newEnvs, newEnv)
+			}
+			currentDeployment.Spec.Template.Spec.Containers[0].Env = newEnvs
+
+			// update agent image
+			ai := fmt.Sprintf(AGENT_IMAGE_NAME, agentArch)
+			newAgentImage = fmt.Sprintf("%v/%v:%v", newImageRegistryHost, ai, newImageVersion)
+		}
+
+		currentDeployment.Spec.Template.Spec.Containers[0].Image = newAgentImage
 		glog.V(3).Infof(cuwlog(fmt.Sprintf("Updating agent deployment with new image: %v", newAgentImage)))
 		if _, err = c.Client.AppsV1().Deployments(namespace).Update(context.Background(), currentDeployment, metav1.UpdateOptions{}); err == nil {
 			glog.V(3).Infof(cuwlog("Agent deployment is updated successfully"))

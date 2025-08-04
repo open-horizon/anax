@@ -3,6 +3,7 @@ package clusterupgrade
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -27,6 +28,7 @@ import (
 	"path"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -58,8 +60,12 @@ const (
 )
 
 const (
-	AGENT_NAMESPACE_ENV_NAME      = "AGENT_NAMESPACE"
-	HZN_NAMESPACE_SCOPED_ENV_NAME = "HZN_NAMESPACE_SCOPED"
+	AGENT_NAMESPACE_ENV_NAME          = "AGENT_NAMESPACE"
+	HZN_NAMESPACE_SCOPED_ENV_NAME     = "HZN_NAMESPACE_SCOPED"
+	EDGE_CLUSTER_REGISTRY_USERNAME    = "EDGE_CLUSTER_REGISTRY_USERNAME"
+	EDGE_CLUSTER_REGISTRY_TOKEN       = "EDGE_CLUSTER_REGISTRY_TOKEN"
+	IMAGE_ON_EDGE_CLUSTER_REGISTRY    = "IMAGE_ON_EDGE_CLUSTER_REGISTRY"
+	AGENT_CLUSTER_IMAGE_REGISTRY_HOST = "AGENT_CLUSTER_IMAGE_REGISTRY_HOST"
 )
 
 var AGENT_NAMESPACE string
@@ -107,7 +113,7 @@ func (w *ClusterUpgradeWorker) Initialize() bool {
 }
 
 func (w *ClusterUpgradeWorker) syncOnInit(db *bolt.DB, kubeClient *KubeClient, baseWorkingDir string) error {
-	glog.Infof(cuwlog(fmt.Sprintf("In syncOnInit, now FindInitiatedNMPStatuses")))
+	glog.Infof(cuwlog("In syncOnInit, now FindInitiatedNMPStatuses"))
 	if statuses, err := persistence.FindInitiatedNMPStatuses(db); err != nil {
 		return fmt.Errorf("failed to find nmp statuses in the local db: %v", err)
 	} else {
@@ -161,11 +167,11 @@ func checkDeploymentStatus(kubeClient *KubeClient, baseWorkingDir string, nmpNam
 	}
 	glog.Infof(cuwlog(fmt.Sprintf("Deployment Status checked for nmp %v in status file under dirctory: %v, configMapNeedChange: %v, secretNeedChange: %v, imageVerNeedChange: %v", nmpName, workDir, configMapNeedChange, secretNeedChange, imageVerNeedChange)))
 	if configMapNeedChange {
-		if configIsSame, _, _, err := checkAgentConfig(kubeClient, workDir); err != nil {
+		if configIsSame, configInAgentFile, configInK8S, _, err := checkAgentConfig(kubeClient, workDir); err != nil {
 			glog.Errorf(cuwlog(fmt.Sprintf("Failed to check config for nmp %v during initializtion, error:  %v", nmpName, err)))
 			return "", err
 		} else if !configIsSame {
-			return "", fmt.Errorf(fmt.Sprintf("agent configmap content doesn't match agent config for nmp %v", nmpName))
+			return "", fmt.Errorf("agent configmap content does not match agent config for nmp %v, config %v, configmap %v", nmpName, configInAgentFile, configInK8S)
 		}
 		glog.Infof(cuwlog(fmt.Sprintf("Agent configmap matches agent config for nmp %v", nmpName)))
 	}
@@ -175,7 +181,7 @@ func checkDeploymentStatus(kubeClient *KubeClient, baseWorkingDir string, nmpNam
 			glog.Errorf(cuwlog(fmt.Sprintf("Failed to check cert for nmp %v during initializtion, error:  %v", nmpName, err)))
 			return "", err
 		} else if !secretIsSame {
-			return "", fmt.Errorf(fmt.Sprintf("agent secret content doesn't match agent cert for nmp %v", nmpName))
+			return "", fmt.Errorf("agent secret content doesn't match agent cert for nmp %v", nmpName)
 		}
 		glog.Infof(cuwlog(fmt.Sprintf("Agent secret matches agent cert for nmp %v", nmpName)))
 	}
@@ -185,13 +191,13 @@ func checkDeploymentStatus(kubeClient *KubeClient, baseWorkingDir string, nmpNam
 			glog.Errorf(cuwlog(fmt.Sprintf("Failed to check agent version during initializtion, error:  %v", err)))
 			return "", err
 		} else if !imageVersionIsSame {
-			return "", fmt.Errorf(fmt.Sprintf("agent version doesn't match agent version in status file for nmp %v", nmpName))
+			return "", fmt.Errorf("agent version doesn't match agent version in status file for nmp %v", nmpName)
 		} else {
 			glog.Infof(cuwlog(fmt.Sprintf("Agent version matches agent version in status file for nmp %v", nmpName)))
 			glog.Infof(cuwlog(fmt.Sprintf("Mark agentVersion is updated in status file for nmp %v", nmpName)))
 			// update status.json, set k8s.imageVersion.updated = true
 			if err = setResourceUpdatedInStatusFile(workDir, RESOURCE_IMAGE_VERSION, true); err != nil {
-				return "", fmt.Errorf(fmt.Sprintf("failed to set updated to true for imageVersion for nmp: %v, error: %v", nmpName, err))
+				return "", fmt.Errorf("failed to set updated to true for imageVersion for nmp: %v, error: %v", nmpName, err)
 			}
 			glog.Infof(cuwlog(fmt.Sprintf("Set updated to true for imageVersion for nmp %v", nmpName)))
 
@@ -408,7 +414,7 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 	// 3) image file: amd64_anax_k8s.tar.gz. After extract, it will be: hyc-edge-team-nightly-docker-virtual.artifactory.swg-devops.com/amd64_anax_k8s:2.29.0-595
 
 	var errMessage string
-	configIsSame, newConfigInAgentFile, _, err := checkAgentConfig(w.kubeClient, workDir)
+	configIsSame, newConfigInAgentFile, _, imagePullValMap, err := checkAgentConfig(w.kubeClient, workDir)
 	if err != nil {
 		errMessage = fmt.Sprintf("Failed to compare config values for nmp: %v, error: %v", nmpName, err)
 		glog.Errorf(cuwlog(errMessage))
@@ -420,6 +426,18 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 			errMessage = fmt.Sprintf("Failed to update set needChange to true for configmap for nmp: %v, error: %v", nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_PRECHECK_FAILED, errMessage)
+			return
+		}
+	}
+
+	glog.Infof(cuwlog(fmt.Sprintf("imagePullValMap length is %v for nmp: %v", len(imagePullValMap), nmpName)))
+
+	// if EDGE_CLUSTER_REGISTRY_USERNAME and EDGE_CLUSTER_REGISTRY_TOKEN is passed in from the agent config file, the agent will need to update docker image pull secret
+	if len(imagePullValMap) > 0 {
+		if err = checkAndUpdateImagePullSecret(w.kubeClient, nmpName, imagePullValMap); err != nil {
+			errMessage = fmt.Sprintf("Failed to update image pull secret %v for nmp: %v, error: %v", AGENT_IMAGE_PULL_SECRET_NAME, nmpName, err)
+			glog.Errorf(cuwlog(errMessage))
+			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
 			return
 		}
 	}
@@ -564,7 +582,11 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 	if !imageVersionIsSame {
 		glog.Infof(cuwlog(fmt.Sprintf("agent image version is different for nmp %v, setting agent image version to %v in agent deployment...", nmpName, newImageVersion)))
 		// update the deployment will restart agent
-		if err = w.kubeClient.UpdateAgentDeploymentImageVersion(AGENT_NAMESPACE, AGENT_DEPLOYMENT, newImageVersion); err != nil {
+		newImageRegistryHost := ""
+		if irHost, ok := imagePullValMap[AGENT_CLUSTER_IMAGE_REGISTRY_HOST]; ok {
+			newImageRegistryHost = irHost
+		}
+		if err = w.kubeClient.UpdateAgentDeploymentImageVersionAndIRHost(AGENT_NAMESPACE, AGENT_DEPLOYMENT, newImageVersion, newImageRegistryHost, agentArch); err != nil {
 			errMessage = fmt.Sprintf("Failed to update image version in agent deployment for nmp: %v, error: %v", nmpName, err)
 			glog.Errorf(cuwlog(errMessage))
 			w.setStatusInDBAndFile(baseWorkingDir, nmpName, exchangecommon.STATUS_FAILED_JOB, errMessage)
@@ -603,8 +625,8 @@ func (w *ClusterUpgradeWorker) HandleClusterUpgrade(org string, baseWorkingDir s
 	}
 }
 
-// checkAgentConfig returns bool, configInAgentFile, configInK8sConfigMap, error
-func checkAgentConfig(kubeClient *KubeClient, workDir string) (bool, map[string]string, map[string]string, error) {
+// checkAgentConfig returns bool, configInAgentFile, configInK8sConfigMap, map to store image pull secret values, error
+func checkAgentConfig(kubeClient *KubeClient, workDir string) (bool, map[string]string, map[string]string, map[string]string, error) {
 	// workDir is /var/horizon/nmp/<org>/nmpID
 	configFilePath := path.Join(workDir, AGENT_CONFIG_FILE)
 	glog.Infof(cuwlog(fmt.Sprintf("reading in agent config file: %v", configFilePath)))
@@ -612,19 +634,20 @@ func checkAgentConfig(kubeClient *KubeClient, workDir string) (bool, map[string]
 	var configInAgentFile map[string]string
 	var configInK8S map[string]string
 	var err error
+	imagePullSecMap := make(map[string]string, 0)
 
-	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+	if _, err = os.Stat(configFilePath); os.IsNotExist(err) {
 		// cfg is not exist, means download worker doesn't download it (same version of config)
-		return true, configInAgentFile, configInK8S, nil
+		return true, configInAgentFile, configInK8S, imagePullSecMap, nil
 	}
 
 	// Read the file
 	if configInAgentFile, err = ReadAgentConfigFile(configFilePath); err != nil {
-		return false, configInAgentFile, configInK8S, err
+		return false, configInAgentFile, configInK8S, imagePullSecMap, err
 	}
 
 	if configInK8S, err = kubeClient.ReadConfigMap(AGENT_NAMESPACE, AGENT_CONFIGMAP); err != nil {
-		return false, configInAgentFile, configInK8S, err
+		return false, configInAgentFile, configInK8S, imagePullSecMap, err
 	}
 
 	// value of AGENT_NAMESPACE and HZN_NAMESPACE_SCOPED can't be changed during auto-upgrade
@@ -638,10 +661,31 @@ func checkAgentConfig(kubeClient *KubeClient, workDir string) (bool, map[string]
 		configInAgentFile[HZN_NAMESPACE_SCOPED_ENV_NAME] = strconv.FormatBool(agentIsNamespaceScope)
 	}
 
+	currentImageRegistryHost := os.Getenv(AGENT_CLUSTER_IMAGE_REGISTRY_HOST)
+	if imageOnEdgeClusterRegistry, ok := configInAgentFile[IMAGE_ON_EDGE_CLUSTER_REGISTRY]; ok {
+		irRegistryHost := getImageRegistryHostFromConfig(imageOnEdgeClusterRegistry)
+		if irRegistryHost != currentImageRegistryHost {
+			imagePullSecMap[AGENT_CLUSTER_IMAGE_REGISTRY_HOST] = irRegistryHost
+			os.Setenv(AGENT_CLUSTER_IMAGE_REGISTRY_HOST, irRegistryHost)
+		}
+	}
+
+	irUsername, ok1 := configInAgentFile[EDGE_CLUSTER_REGISTRY_USERNAME]
+	irToken, ok2 := configInAgentFile[EDGE_CLUSTER_REGISTRY_TOKEN]
+	delete(configInAgentFile, EDGE_CLUSTER_REGISTRY_USERNAME)
+	delete(configInAgentFile, EDGE_CLUSTER_REGISTRY_TOKEN)
+	var err2 error
+	if ok1 && ok2 {
+		imagePullSecMap[EDGE_CLUSTER_REGISTRY_USERNAME] = irUsername
+		imagePullSecMap[EDGE_CLUSTER_REGISTRY_TOKEN] = irToken
+	} else if ok1 != ok2 {
+		err2 = errors.New("agent config file should contain both EDGE_CLUSTER_REGISTRY_USERNAME and EDGE_CLUSTER_REGISTRY_TOKEN")
+	}
+
 	// compare to agent configmap
 	configIsSame := reflect.DeepEqual(configInAgentFile, configInK8S)
 	glog.Infof(cuwlog(fmt.Sprintf("agent install config is same: %v", configIsSame)))
-	return configIsSame, configInAgentFile, configInK8S, nil
+	return configIsSame, configInAgentFile, configInK8S, imagePullSecMap, err2
 
 }
 
@@ -729,7 +773,7 @@ func checkAgentImage(kubeClient *KubeClient, workDir string, agentSoftwareVersio
 		}
 
 		// push image to image registry
-		imageRegistry := os.Getenv("AGENT_CLUSTER_IMAGE_REGISTRY_HOST")
+		imageRegistry := os.Getenv(AGENT_CLUSTER_IMAGE_REGISTRY_HOST)
 		if imageRegistry == "" {
 			return false, "", "", fmt.Errorf("failed to get edge cluster image registry host from environment veriable: %v", imageRegistry)
 		}
@@ -823,9 +867,26 @@ func checkAgentImageAgainstStatusFile(workDir string) (bool, error) {
 	}
 }
 
+func checkAndUpdateImagePullSecret(kubeClient *KubeClient, nmpName string, imagePullValMap map[string]string) error {
+	// update image pull secret
+	glog.Infof(cuwlog(fmt.Sprintf("Updating image pull secret for nmp %v", nmpName)))
+
+	irHost := os.Getenv(AGENT_CLUSTER_IMAGE_REGISTRY_HOST)
+
+	glog.Infof(cuwlog(fmt.Sprintf("Image Registry Host:%v", irHost)))
+	if irHost != "" && irHost != DEFAULT_IMAGE_REGISTRY_IN_DEPLOYMENT {
+		irUsername := imagePullValMap[EDGE_CLUSTER_REGISTRY_USERNAME]
+		irToken := imagePullValMap[EDGE_CLUSTER_REGISTRY_TOKEN]
+		if err := kubeClient.UpdateImagePullSec(irHost, irUsername, irToken, AGENT_NAMESPACE); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func agentUseRemoteRegistry() bool {
 	useRemoteRegistry := false
-	imageRegistry := os.Getenv("AGENT_CLUSTER_IMAGE_REGISTRY_HOST")
+	imageRegistry := os.Getenv(AGENT_CLUSTER_IMAGE_REGISTRY_HOST)
 	if imageRegistry == DEFAULT_IMAGE_REGISTRY_IN_DEPLOYMENT {
 		useRemoteRegistry = true
 	}
@@ -845,4 +906,17 @@ func (w *ClusterUpgradeWorker) GetClusterArch() (interface{}, error) {
 		return "", err
 	}
 	return archProp.Value, nil
+}
+
+func getImageRegistryHostFromConfig(imageOnEdgeClusterRegistry string) string {
+	irHost := imageOnEdgeClusterRegistry
+	agent_image_name_part := "_anax_k8s"
+
+	if strings.Contains(imageOnEdgeClusterRegistry, agent_image_name_part) {
+		lastSlashIndex := strings.LastIndex(imageOnEdgeClusterRegistry, "/")
+		if lastSlashIndex != -1 {
+			irHost = imageOnEdgeClusterRegistry[:lastSlashIndex]
+		}
+	}
+	return irHost
 }
