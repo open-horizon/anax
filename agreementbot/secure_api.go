@@ -1406,7 +1406,7 @@ func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 
 	// handle API options
 	switch r.Method {
-	// swagger:operation LIST /org/{org}/secrets orgSecrets
+	// swagger:operation LIST /org/{org}/secrets orgSecretsList
 	//
 	// List all secrets belonging to the org.
 	//
@@ -1527,7 +1527,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 
 	// handle API options
 	switch r.Method {
-	// swagger:operation GET /org/{org}/secrets/{secret} orgSecret
+	// swagger:operation GET /org/{org}/secrets/{secret} orgSecretGet
 	//
 	// List given secret belonging to the org.
 	//
@@ -1585,7 +1585,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
-		// swagger:operation POST /org/{org}/secrets/{secret} orgSecret
+		// swagger:operation POST /org/{org}/secrets/{secret} orgSecretPut
 		//
 		// Add a given secret belonging to the org.
 		//
@@ -1597,7 +1597,6 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		// parameters:
 		//   - name: secretDetails
 		//     in: body
-		//     type: secrets.SecretDetails
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
@@ -1647,7 +1646,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
-		// swagger:operation DELETE /org/{org}/secrets/{secret} orgSecret
+		// swagger:operation DELETE /org/{org}/secrets/{secret} orgSecretDelete
 		//
 		// Delete a given secret belonging to the org.
 		//
@@ -1861,7 +1860,6 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		// parameters:
 		//   - name: secretDetails
 		//     in: body
-		//     type: secrets.SecretDetails
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
@@ -1985,7 +1983,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	nodePath := "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
-	// swagger:operation GET /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+	// swagger:operation GET /org/{org}/secrets/node/{node}/{secret} nodeOrgSecretGet
 	//
 	// List given secret belonging to the org for a node.
 	//
@@ -2048,7 +2046,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
-		// swagger:operation POST /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+		// swagger:operation POST /org/{org}/secrets/node/{node}/{secret} nodeOrgSecretPost
 		//
 		// Add a given secret belonging to the org for a node.
 		//
@@ -2075,7 +2073,6 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		//     description: "The secret key (name)."
 		//   - name: secretDetails
 		//     in: body
-		//     type: secrets.SecretDetails
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
@@ -2115,7 +2112,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
-		// swagger:operation DELETE /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+		// swagger:operation DELETE /org/{org}/secrets/node/{node}/{secret} nodeOrgSecretDelete
 		//
 		// Delete a given secret belonging to the org for a node.
 		//
@@ -2184,7 +2181,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	nodeUserPath := "user/" + info.user + "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
-	// swagger:operation GET /org/{org}/secrets/user/{user}/node/{node}/{secret} nodeUserSecret
+	// swagger:operation GET /org/{org}/secrets/user/{user}/node/{node}/{secret} nodeUserSecretGet
 	//
 	// List given secret belonging to the user for a node.
 	//
@@ -2265,7 +2262,6 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		// parameters:
 		//   - name: secretDetails
 		//     in: body
-		//     type: secrets.SecretDetails
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
@@ -2325,7 +2321,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
-		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} nodeUserSecret
+		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} nodeUserSecretDelete
 		//
 		// Delete a given secret belonging to the user.
 		//

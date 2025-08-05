@@ -539,7 +539,7 @@
           "application/json"
         ],
         "summary": "List given secret belonging to the org for a node.",
-        "operationId": "nodeOrgSecret",
+        "operationId": "nodeOrgSecretGet",
         "parameters": [
           {
             "type": "string",
@@ -593,7 +593,7 @@
           "application/json"
         ],
         "summary": "Add a given secret belonging to the org for a node.",
-        "operationId": "nodeOrgSecret",
+        "operationId": "nodeOrgSecretPost",
         "parameters": [
           {
             "type": "string",
@@ -617,7 +617,6 @@
             "required": true
           },
           {
-            "type": "secrets.SecretDetails",
             "description": "The secret key and value.",
             "name": "secretDetails",
             "in": "body",
@@ -656,7 +655,7 @@
           "application/json"
         ],
         "summary": "Delete a given secret belonging to the org for a node.",
-        "operationId": "nodeOrgSecret",
+        "operationId": "nodeOrgSecretDelete",
         "parameters": [
           {
             "type": "string",
@@ -711,7 +710,7 @@
           "application/json"
         ],
         "summary": "List given secret belonging to the user for a node.",
-        "operationId": "nodeUserSecret",
+        "operationId": "nodeUserSecretGet",
         "parameters": [
           {
             "type": "string",
@@ -775,7 +774,6 @@
         "operationId": "userSecret",
         "parameters": [
           {
-            "type": "secrets.SecretDetails",
             "description": "The secret key and value.",
             "name": "secretDetails",
             "in": "body",
@@ -901,7 +899,6 @@
         "operationId": "userSecret",
         "parameters": [
           {
-            "type": "secrets.SecretDetails",
             "description": "The secret key and value.",
             "name": "secretDetails",
             "in": "body",
@@ -961,7 +958,7 @@
           "application/json"
         ],
         "summary": "Delete a given secret belonging to the user.",
-        "operationId": "nodeUserSecret",
+        "operationId": "nodeUserSecretDelete",
         "parameters": [
           {
             "type": "string",
@@ -1016,7 +1013,7 @@
           "application/json"
         ],
         "summary": "List given secret belonging to the org.",
-        "operationId": "orgSecret",
+        "operationId": "orgSecretGet",
         "parameters": [
           {
             "type": "string",
@@ -1063,10 +1060,9 @@
           "application/json"
         ],
         "summary": "Add a given secret belonging to the org.",
-        "operationId": "orgSecret",
+        "operationId": "orgSecretPut",
         "parameters": [
           {
-            "type": "secrets.SecretDetails",
             "description": "The secret key and value.",
             "name": "secretDetails",
             "in": "body",
@@ -1119,7 +1115,7 @@
           "application/json"
         ],
         "summary": "Delete a given secret belonging to the org.",
-        "operationId": "orgSecret",
+        "operationId": "orgSecretDelete",
         "parameters": [
           {
             "type": "string",
