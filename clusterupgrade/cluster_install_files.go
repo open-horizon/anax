@@ -49,9 +49,9 @@ func ReadAgentConfigFile(filename string) (map[string]string, error) {
 			continue
 		}
 		if keyValue := strings.Split(line, "="); len(keyValue) != 2 {
-			return configInMap, fmt.Errorf(fmt.Sprintf("failed to parse content in agent config file %v", filename))
+			return configInMap, fmt.Errorf("failed to parse content in agent config file %v", filename)
 		} else {
-			glog.V(5).Infof(cuwlog(fmt.Sprintf("get %v=%v", keyValue[0], keyValue[1])))
+			printAgentConfigInLog(keyValue[0], keyValue[1])
 			configInMap[keyValue[0]] = keyValue[1]
 		}
 	}
@@ -501,4 +501,14 @@ func imageExistInRemoteRegistry(fullTag string, versiontTag string, kc authn.Key
 		}
 	}
 	return false
+}
+
+func printAgentConfigInLog(key string, value string) {
+	keywords := []string{"TOKEN", "PASSWORD"}
+	for _, k := range keywords {
+		if strings.Contains(key, k) {
+			value = "********"
+		}
+	}
+	glog.V(5).Infof(cuwlog(fmt.Sprintf("get %v=%v", key, value)))
 }
