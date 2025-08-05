@@ -1601,7 +1601,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
-		//     "$ref": "#/definitions/SecretDetails"
+		//      '$ref': "#/definitions/SecretDetails"
 		//   - name: org
 		//     in: path
 		//     type: string
@@ -2079,7 +2079,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
-		//     "$ref": "#/definitions/SecretDetails"
+		//      '$ref': "#/definitions/SecretDetails"
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -2269,7 +2269,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
-		//     "$ref": "#/definitions/SecretDetails"
+		//      '$ref': "#/definitions/SecretDetails"
 		//   - name: org
 		//     in: path
 		//     type: string
