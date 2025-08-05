@@ -527,7 +527,21 @@
             "name": "secret",
             "in": "path"
           }
-        ]
+        ],
+        "responses": {
+          "400": {
+            "description": "Secret org or name does not meet constraints.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "503": {
+            "description": "Secret provider not ready or not configured.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "/org/{org}/secrets/node/{node}/{secret}": {
@@ -565,7 +579,6 @@
         ],
         "responses": {
           "200": {
-            "description": "Success.",
             "$ref": "#/definitions/SecretDetails"
           },
           "401": {
@@ -743,7 +756,6 @@
         ],
         "responses": {
           "200": {
-            "description": "Success.",
             "$ref": "#/definitions/SecretDetails"
           },
           "401": {
@@ -842,7 +854,7 @@
           "application/json"
         ],
         "summary": "List given secret belonging to the user.",
-        "operationId": "userSecret",
+        "operationId": "userSecretGet",
         "parameters": [
           {
             "type": "string",
@@ -868,7 +880,6 @@
         ],
         "responses": {
           "200": {
-            "description": "Success.",
             "$ref": "#/definitions/SecretDetails"
           },
           "401": {
@@ -896,7 +907,7 @@
           "application/json"
         ],
         "summary": "Add a given secret belonging to the user.",
-        "operationId": "userSecret",
+        "operationId": "userSecretPost",
         "parameters": [
           {
             "description": "The secret key and value.",
@@ -1032,7 +1043,6 @@
         ],
         "responses": {
           "200": {
-            "description": "Success.",
             "$ref": "#/definitions/SecretDetails"
           },
           "401": {

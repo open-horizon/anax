@@ -1227,11 +1227,11 @@ type SecretRequestInfo struct {
 //     required: false
 //     description: "The secret key (name)."
 // responses:
-//	'400':
+//  '400':
 //	  description: "Secret org or name does not meet constraints."
 //	  schema:
 //	    type: string
-//	'503':
+//  '503':
 //	  description: "Secret provider not ready or not configured."
 //	  schema:
 //	    type: string
@@ -1549,9 +1549,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    description: "Success."
-	//    type: secrets.SecretDetails
-	//    "$ref": "#/definitions/SecretDetails"
+	//    '$ref': "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
 	//    type: string
@@ -1786,7 +1784,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	userPath := "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
-	// swagger:operation GET /org/{org}/secrets/user/{user}/{secret} userSecret
+	// swagger:operation GET /org/{org}/secrets/user/{user}/{secret} userSecretGet
 	//
 	// List given secret belonging to the user.
 	//
@@ -1813,8 +1811,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    description: "Success."
-	//    "$ref": "#/definitions/SecretDetails"
+	//    '$ref': "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
 	//    type: string
@@ -1848,7 +1845,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
-		// swagger:operation POST /org/{org}/secrets/user/{user}/{secret} userSecret
+		// swagger:operation POST /org/{org}/secrets/user/{user}/{secret} userSecretPost
 		//
 		// Add a given secret belonging to the user.
 		//
@@ -1914,7 +1911,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
-		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} userSecret
+		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} userSecretDelete
 		//
 		// Delete a given secret belonging to the user.
 		//
@@ -2010,8 +2007,6 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    description: "Success."
-	//    type: secrets.SecretDetails
 	//    "$ref": "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
@@ -2214,8 +2209,6 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    description: "Success."
-	//    type: secrets.SecretDetails
 	//    "$ref": "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
