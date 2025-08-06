@@ -139,10 +139,6 @@ endif
 VAULT_DEV_ROOT_TOKEN_ID ?= vault_dev_root_token_id
 VAULT_DEV_LISTEN_ADDRESS ?= 0.0.0.0:$(VAULT_PORT)
 
-#sdo
-DOCKER_SDO_CNAME := sdo-owner-services
-HZN_SDO_SVC_URL ?= $(HZN_TRANSPORT)://sdo-owner-services:9008/api
-
 ifndef verbose
 .SILENT:
 endif
@@ -204,7 +200,6 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "ARCH=$(arch)" \
 		-e "VAULT_TOKEN"="$(VAULT_DEV_ROOT_TOKEN_ID)" \
 		-e "VAULT_ADDR"="$(VAULT_ADDR)" \
-		-e "HZN_SDO_SVC_URL"="$(HZN_SDO_SVC_URL)" \
 		-e "HZN_AGBOT_URL"="$(AGBOT_SAPI_URL)" \
 		-e "TEST_PATTERNS"="$(TEST_PATTERNS)" \
 		-t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)
