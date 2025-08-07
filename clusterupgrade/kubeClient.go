@@ -46,7 +46,6 @@ func NewKubeClient() (*KubeClient, error) {
 	HZN_EXCHANGE_URL=https://host-url/edge-exchange/v1
 	HZN_FSS_CSSURL=https://host-url/edge-css
 	HZN_AGBOT_URL=https://host-url/edge-agbot/
-	HZN_SDO_SVC_URL=https://host-url/edge-sdo-ocs/api
 	HZN_FDO_SVC_URL=https://host-url/edge-fdo-ocs/api
 	HZN_DEVICE_ID=my-node-id
 	HZN_NODE_ID=my-node-id
@@ -84,7 +83,6 @@ func parseAgentConfigMap(configMap *v1.ConfigMap) (map[string]string, error) {
 		"HZN_EXCHANGE_URL=https://host-url/edge-exchange/v1
 		HZN_FSS_CSSURL=https://host-url/edge-css
 		HZN_AGBOT_URL=https://host-url/edge-agbot/
-		HZN_SDO_SVC_URL=https://host-url/edge-sdo-ocs/api
 		HZN_FDO_SVC_URL=https://host-url/edge-fdo-ocs/api
 		HZN_DEVICE_ID=my-node-id
 		HZN_NODE_ID=my-node-id

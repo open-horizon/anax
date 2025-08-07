@@ -101,7 +101,6 @@ By default it will look for a configuration file called `agent-install.cfg` in t
 HZN_EXCHANGE_URL=https://<management-hub-url>:3090/edge-exchange/v1/
 HZN_FSS_CSSURL=https://<management-hub-url>:9443/edge-css/
 HZN_AGBOT_URL=https://<management-hub-url>:3111/edge-agbot/
-HZN_SDO_SVC_URL=https://<management-hub-url>:9008/edge-sdo-ocs/api
 ```
 
 The config file can also set the following variables:

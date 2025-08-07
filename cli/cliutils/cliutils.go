@@ -1256,26 +1256,6 @@ func GetMMSUrl() string {
 	return mmsUrl
 }
 
-// GetSdoSvcUrl returns the url of the Horizon mgmt hub SDO owner service from env var or anax overwrite file
-func GetSdoSvcUrl() string {
-	msgPrinter := i18n.GetMessagePrinter()
-
-	sdoUrl := os.Getenv("HZN_SDO_SVC_URL")
-	if sdoUrl == "" {
-		Verbose(msgPrinter.Sprintf("HZN_SDO_SVC_URL is not set, get it from %s.", ANAX_OVERWRITE_FILE))
-		var err error
-		if sdoUrl, err = GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_SDO_SVC_URL"); err != nil {
-			Verbose(i18n.GetMessagePrinter().Sprintf("Error getting HZN_SDO_SVC_URL from %v: %v", ANAX_OVERWRITE_FILE, err))
-		} else if sdoUrl == "" {
-			Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("Could not get the HZN_SDO_SVC_URL value from the environment, %s, or one of the hzn.json files", ANAX_OVERWRITE_FILE))
-		}
-	}
-	sdoUrl = strings.TrimSuffix(sdoUrl, "/")
-
-	Verbose(msgPrinter.Sprintf("The SDO service url: %v", sdoUrl))
-	return sdoUrl
-}
-
 // GetFdoSvcUrl returns the url of the Horizon mgmt hub FDO owner service from env var or anax overwrite file
 func GetFdoSvcUrl() string {
 	msgPrinter := i18n.GetMessagePrinter()
@@ -1301,9 +1281,6 @@ func printHorizonServiceRestError(horizonService string, apiMethod string, err e
 	article := "an"
 	if horizonService == "Model Management Service" {
 		serviceEnvVarName = "HZN_FSS_CSSURL"
-		article = "a"
-	} else if horizonService == "SDO Owner Service" {
-		serviceEnvVarName = "HZN_SDO_SVC_URL"
 		article = "a"
 	} else if horizonService == "FDO Owner Service" {
 		serviceEnvVarName = "HZN_FDO_SVC_URL"
