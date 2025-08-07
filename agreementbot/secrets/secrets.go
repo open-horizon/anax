@@ -54,9 +54,15 @@ type AgbotSecrets interface {
 }
 
 // SecretDetails The key value pair of one secret
-// swagger:model
+// swagger:model SecretDetails
 type SecretDetails struct {
-	Key   string `json:"key"`
+	// Key is the name of the secret
+	//
+	// required: true
+	Key string `json:"key"`
+	// Value is the value of the secret
+	//
+	// required: true
 	Value string `json:"value"`
 }
 
