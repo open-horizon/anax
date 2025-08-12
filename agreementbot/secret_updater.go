@@ -24,7 +24,7 @@ type SecretUpdateManager struct {
 	PollIntervalIncrement int
 	PULock                sync.Mutex // The lock that protects the list of pending secret updates.
 }
-/
+//
 func NewSecretUpdateManager(pollInterval int, pollMinInterval int, pollMaxInterval int, pollIntervalIncrement int) *SecretUpdateManager {
 	sum := &SecretUpdateManager{
 		PendingUpdates:        make([]*events.SecretUpdates, 0),
