@@ -119,7 +119,7 @@ func CheckConnectivity(host string) error {
 
 // Exchange time format. Golang requires the format string to be in reference to the specific time as shown.
 // This is so that the formatter and parser can figure out what goes where in the string.
-const ExchangeTimeFormat = "2006-01-02T15:04:05.999Z[MST]"
+const ExchangeTimeFormat = "2006-01-02T15:04:05.999999999Z"
 
 func TimeInSeconds(timestamp string, format string) int64 {
 	if t, err := time.Parse(format, timestamp); err != nil {
