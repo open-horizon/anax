@@ -418,12 +418,12 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	// parameters:
 	//  - name: checkAll
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
@@ -473,7 +473,6 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	//  '200':
 	//    description: "Success"
 	//    schema:
-	//     type: compcheck.CompCheckOutput
 	//     "$ref": "#/definitions/CompCheckOutput"
 	//  '400':
 	//    description: "Failure - No input found"
@@ -541,12 +540,12 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	// parameters:
 	//  - name: checkAll
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
@@ -675,12 +674,12 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 	// parameters:
 	//  - name: checkAll
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
@@ -814,12 +813,12 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	// parameters:
 	//  - name: checkAll
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern."
 	//  - name: long
 	//    in: query
-	//    type: bool
+	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
 	//  - name: node_id
@@ -1208,31 +1207,31 @@ type SecretRequestInfo struct {
 //
 // parameters:
 //   - name: org
-//     in: query
+//     in: path
 //     type: string
 //     required: true
 //     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
 //   - name: user
-//     in: query
+//     in: path
 //     type: string
 //     required: false
 //     description: "The user owning the secret."
 //   - name: node
-//     in: query
+//     in: path
 //     type: string
 //     required: false
 //     description: "The node the secret is for."
 //   - name: secret
-//     in: query
+//     in: path
 //     type: string
 //     required: false
 //     description: "The secret key (name)."
 // responses:
-//	'400':
+//  '400':
 //	  description: "Secret org or name does not meet constraints."
 //	  schema:
 //	    type: string
-//	'503':
+//  '503':
 //	  description: "Secret provider not ready or not configured."
 //	  schema:
 //	    type: string
@@ -1407,7 +1406,7 @@ func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 
 	// handle API options
 	switch r.Method {
-	// swagger:operation LIST /org/{org}/secrets orgSecrets
+	// swagger:operation LIST /org/{org}/secrets orgSecretsList
 	//
 	// List all secrets belonging to the org.
 	//
@@ -1416,6 +1415,12 @@ func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to."
 	// responses:
 	//  '200':
 	//    description: "Success or no secrets found."
@@ -1467,6 +1472,12 @@ func (a *SecureAPI) allSecrets(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to."
 	// responses:
 	//  '200':
 	//    description: "Success or no secrets found."
@@ -1516,7 +1527,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 
 	// handle API options
 	switch r.Method {
-	// swagger:operation GET /org/{org}/secrets/{secret} orgSecret
+	// swagger:operation GET /org/{org}/secrets/{secret} orgSecretGet
 	//
 	// List given secret belonging to the org.
 	//
@@ -1525,11 +1536,20 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to."
+	//   - name: secret
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    description: "Success."
-	//    type: secrets.SecretDetails
-	//    "$ref": "#/definitions/SecretDetails"
+	//    '$ref': "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
 	//    type: string
@@ -1563,9 +1583,9 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
-		// swagger:operation POST /org/{org}/secrets/{secret} orgSecret
+		// swagger:operation POST /org/{org}/secrets/{secret} orgSecretPut
 		//
-		// Delete a given secret belonging to the org.
+		// Add a given secret belonging to the org.
 		//
 		// ---
 		// consumes:
@@ -1574,12 +1594,21 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// parameters:
 		//   - name: secretDetails
-		//     in: query
-		//     type: secrets.SecretDetails
+		//     in: body
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
-		//     "$ref": "#/definitions/SecretDetails"
+		//      '$ref': "#/definitions/SecretDetails"
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -1615,7 +1644,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
-		// swagger:operation DELETE /org/{org}/secrets/{secret} orgSecret
+		// swagger:operation DELETE /org/{org}/secrets/{secret} orgSecretDelete
 		//
 		// Delete a given secret belonging to the org.
 		//
@@ -1624,6 +1653,17 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// produces:
 		//   - application/json
+		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -1744,7 +1784,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	userPath := "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
-	// swagger:operation GET /org/{org}/secrets/user/{user}/{secret} userSecret
+	// swagger:operation GET /org/{org}/secrets/user/{user}/{secret} userSecretGet
 	//
 	// List given secret belonging to the user.
 	//
@@ -1753,11 +1793,25 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to."
+	//   - name: user
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The user owning the secret."
+	//   - name: secret
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    description: "Success."
-	//    type: secrets.SecretDetails
-	//    "$ref": "#/definitions/SecretDetails"
+	//    '$ref': "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
 	//    type: string
@@ -1791,9 +1845,9 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
-		// swagger:operation POST /org/{org}/secrets/user/{user}/{secret} userSecret
+		// swagger:operation POST /org/{org}/secrets/user/{user}/{secret} userSecretPost
 		//
-		// Delete a given secret belonging to the user.
+		// Add a given secret belonging to the user.
 		//
 		// ---
 		// consumes:
@@ -1802,12 +1856,26 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// parameters:
 		//   - name: secretDetails
-		//     in: query
-		//     type: secrets.SecretDetails
+		//     in: body
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
-		//     "$ref": "#/definitions/SecretDetails"
+		//     		$ref: "#/definitions/SecretDetails"
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to."
+		//   - name: user
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The user owning the secret."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -1843,7 +1911,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
-		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} userSecret
+		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} userSecretDelete
 		//
 		// Delete a given secret belonging to the user.
 		//
@@ -1852,6 +1920,22 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// produces:
 		//   - application/json
+		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to."
+		//   - name: user
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The user owning the secret."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -1896,7 +1980,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	nodePath := "node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
-	// swagger:operation GET /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+	// swagger:operation GET /org/{org}/secrets/node/{node}/{secret} nodeOrgSecretGet
 	//
 	// List given secret belonging to the org for a node.
 	//
@@ -1905,10 +1989,24 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+	//   - name: node
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The node the secret is for."
+	//   - name: secret
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    description: "Success."
-	//    type: secrets.SecretDetails
 	//    "$ref": "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
@@ -1943,9 +2041,9 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		}
 	case "PUT":
 		fallthrough
-		// swagger:operation POST /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+		// swagger:operation POST /org/{org}/secrets/node/{node}/{secret} nodeOrgSecretPost
 		//
-		// Delete a given secret belonging to the org for a node.
+		// Add a given secret belonging to the org for a node.
 		//
 		// ---
 		// consumes:
@@ -1953,13 +2051,27 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		// produces:
 		//   - application/json
 		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+		//   - name: node
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The node the secret is for."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		//   - name: secretDetails
-		//     in: query
-		//     type: secrets.SecretDetails
+		//     in: body
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
-		//     "$ref": "#/definitions/SecretDetails"
+		//      '$ref': "#/definitions/SecretDetails"
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -1995,7 +2107,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
-		// swagger:operation DELETE /org/{org}/secrets/node/{node}/{secret} nodeOrgSecret
+		// swagger:operation DELETE /org/{org}/secrets/node/{node}/{secret} nodeOrgSecretDelete
 		//
 		// Delete a given secret belonging to the org for a node.
 		//
@@ -2004,6 +2116,22 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// produces:
 		//   - application/json
+		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+		//   - name: node
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The node the secret is for."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -2048,7 +2176,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 	// handle API options
 	nodeUserPath := "user/" + info.user + "/node/" + info.node + cliutils.AddSlash(info.vaultSecretName)
 	switch r.Method {
-	// swagger:operation GET /org/{org}/secrets/user/{user}/node/{node}/{secret} nodeUserSecret
+	// swagger:operation GET /org/{org}/secrets/user/{user}/node/{node}/{secret} nodeUserSecretGet
 	//
 	// List given secret belonging to the user for a node.
 	//
@@ -2057,10 +2185,30 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 	//   - application/json
 	// produces:
 	//   - application/json
+	//
+	// parameters:
+	//   - name: org
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+	//   - name: user
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The user owning the secret."
+	//   - name: node
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The node the secret is for."
+	//   - name: secret
+	//     in: path
+	//     type: string
+	//     required: true
+	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    description: "Success."
-	//    type: secrets.SecretDetails
 	//    "$ref": "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
@@ -2097,7 +2245,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		fallthrough
 		// swagger:operation POST /org/{org}/secrets/user/{user}/node/{node}/{secret} userSecret
 		//
-		// Delete a given secret belonging to the user for a node.
+		// Add a given secret belonging to the user for a node.
 		//
 		// ---
 		// consumes:
@@ -2106,12 +2254,31 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		//   - application/json
 		// parameters:
 		//   - name: secretDetails
-		//     in: query
-		//     type: secrets.SecretDetails
+		//     in: body
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
-		//     "$ref": "#/definitions/SecretDetails"
+		//      '$ref': "#/definitions/SecretDetails"
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+		//   - name: user
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The user owning the secret."
+		//   - name: node
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The node the secret is for."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."
@@ -2147,15 +2314,31 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		} else {
 			writeResponse(w, errMsg, serr.ResponseCode)
 		}
-		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} nodeUserSecret
+		// swagger:operation DELETE /org/{org}/secrets/user/{user}/{secret} nodeUserSecretDelete
 		//
-		// Delete a given secret belonging to the user for a node.
+		// Delete a given secret belonging to the user.
 		//
 		// ---
 		// consumes:
 		//   - application/json
 		// produces:
 		//   - application/json
+		// parameters:
+		//   - name: org
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+		//   - name: user
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The user owning the secret."
+		//   - name: secret
+		//     in: path
+		//     type: string
+		//     required: true
+		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
 		//    description: "Success."

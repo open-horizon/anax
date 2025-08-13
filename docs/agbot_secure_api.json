@@ -29,13 +29,13 @@
         "operationId": "deploy_compatible",
         "parameters": [
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
             "name": "checkAll",
             "in": "query"
           },
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Show the input which was used to come up with the result.",
             "name": "long",
             "in": "query"
@@ -167,13 +167,13 @@
         "operationId": "deployCheckPolicyCompatible",
         "parameters": [
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
             "name": "checkAll",
             "in": "query"
           },
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Show the input which was used to come up with the result.",
             "name": "long",
             "in": "query"
@@ -237,7 +237,6 @@
           "200": {
             "description": "Success",
             "schema": {
-              "type": "compcheck.CompCheckOutput",
               "$ref": "#/definitions/CompCheckOutput"
             }
           },
@@ -275,13 +274,13 @@
         "operationId": "secretbinding_compatible",
         "parameters": [
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
             "name": "checkAll",
             "in": "query"
           },
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Show the input which was used to come up with the result.",
             "name": "long",
             "in": "query"
@@ -383,13 +382,13 @@
         "operationId": "userinputCompatible",
         "parameters": [
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Return the compatibility check result for all the service versions referenced in the deployment policy or pattern.",
             "name": "checkAll",
             "in": "query"
           },
           {
-            "type": "bool",
+            "type": "boolean",
             "description": "Show the input which was used to come up with the result.",
             "name": "long",
             "in": "query"
@@ -492,6 +491,7 @@
         }
       }
     },
+    "/org/{org}/allsecrets": {},
     "/org/{org}/secrets": {},
     "/org/{org}/secrets/*": {
       "get": {
@@ -506,28 +506,42 @@
             "type": "string",
             "description": "The organisation name the secret belongs to. Must be the same as the org the user node belongs to.",
             "name": "org",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
             "type": "string",
             "description": "The user owning the secret.",
             "name": "user",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "description": "The node the secret is for.",
             "name": "node",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "description": "The secret key (name).",
             "name": "secret",
-            "in": "query"
+            "in": "path"
           }
-        ]
+        ],
+        "responses": {
+          "400": {
+            "description": "Secret org or name does not meet constraints.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "503": {
+            "description": "Secret provider not ready or not configured.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "/org/{org}/secrets/node/{node}/{secret}": {
@@ -539,10 +553,32 @@
           "application/json"
         ],
         "summary": "List given secret belonging to the org for a node.",
-        "operationId": "nodeOrgSecret",
+        "operationId": "nodeOrgSecretGet",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to. Must be the same as the org the user node belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The node the secret is for.",
+            "name": "node",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success.",
             "$ref": "#/definitions/SecretDetails"
           },
           "401": {
@@ -569,16 +605,38 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Delete a given secret belonging to the org for a node.",
-        "operationId": "nodeOrgSecret",
+        "summary": "Add a given secret belonging to the org for a node.",
+        "operationId": "nodeOrgSecretPost",
         "parameters": [
           {
-            "$ref": "#/definitions/SecretDetails",
-            "type": "secrets.SecretDetails",
+            "type": "string",
+            "description": "The organisation name the secret belongs to. Must be the same as the org the user node belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The node the secret is for.",
+            "name": "node",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          },
+          {
             "description": "The secret key and value.",
             "name": "secretDetails",
-            "in": "query",
-            "required": true
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SecretDetails"
+            }
           }
         ],
         "responses": {
@@ -610,7 +668,30 @@
           "application/json"
         ],
         "summary": "Delete a given secret belonging to the org for a node.",
-        "operationId": "nodeOrgSecret",
+        "operationId": "nodeOrgSecretDelete",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to. Must be the same as the org the user node belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The node the secret is for.",
+            "name": "node",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success."
@@ -642,10 +723,39 @@
           "application/json"
         ],
         "summary": "List given secret belonging to the user for a node.",
-        "operationId": "nodeUserSecret",
+        "operationId": "nodeUserSecretGet",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to. Must be the same as the org the user node belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The user owning the secret.",
+            "name": "user",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The node the secret is for.",
+            "name": "node",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success.",
             "$ref": "#/definitions/SecretDetails"
           },
           "401": {
@@ -672,15 +782,44 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Delete a given secret belonging to the user for a node.",
+        "summary": "Add a given secret belonging to the user for a node.",
         "operationId": "userSecret",
         "parameters": [
           {
-            "$ref": "#/definitions/SecretDetails",
-            "type": "secrets.SecretDetails",
             "description": "The secret key and value.",
             "name": "secretDetails",
-            "in": "query",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SecretDetails"
+            }
+          },
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to. Must be the same as the org the user node belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The user owning the secret.",
+            "name": "user",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The node the secret is for.",
+            "name": "node",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
             "required": true
           }
         ],
@@ -715,10 +854,32 @@
           "application/json"
         ],
         "summary": "List given secret belonging to the user.",
-        "operationId": "userSecret",
+        "operationId": "userSecretGet",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The user owning the secret.",
+            "name": "user",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success.",
             "$ref": "#/definitions/SecretDetails"
           },
           "401": {
@@ -745,15 +906,37 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Delete a given secret belonging to the user.",
-        "operationId": "userSecret",
+        "summary": "Add a given secret belonging to the user.",
+        "operationId": "userSecretPost",
         "parameters": [
           {
-            "$ref": "#/definitions/SecretDetails",
-            "type": "secrets.SecretDetails",
             "description": "The secret key and value.",
             "name": "secretDetails",
-            "in": "query",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SecretDetails"
+            }
+          },
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The user owning the secret.",
+            "name": "user",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
             "required": true
           }
         ],
@@ -785,8 +968,31 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Delete a given secret belonging to the user for a node.",
-        "operationId": "nodeUserSecret",
+        "summary": "Delete a given secret belonging to the user.",
+        "operationId": "nodeUserSecretDelete",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to. Must be the same as the org the user node belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The user owning the secret.",
+            "name": "user",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success."
@@ -818,10 +1024,25 @@
           "application/json"
         ],
         "summary": "List given secret belonging to the org.",
-        "operationId": "orgSecret",
+        "operationId": "orgSecretGet",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success.",
             "$ref": "#/definitions/SecretDetails"
           },
           "401": {
@@ -848,15 +1069,30 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Delete a given secret belonging to the org.",
-        "operationId": "orgSecret",
+        "summary": "Add a given secret belonging to the org.",
+        "operationId": "orgSecretPut",
         "parameters": [
           {
-            "$ref": "#/definitions/SecretDetails",
-            "type": "secrets.SecretDetails",
             "description": "The secret key and value.",
             "name": "secretDetails",
-            "in": "query",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SecretDetails"
+            }
+          },
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
             "required": true
           }
         ],
@@ -889,7 +1125,23 @@
           "application/json"
         ],
         "summary": "Delete a given secret belonging to the org.",
-        "operationId": "orgSecret",
+        "operationId": "orgSecretDelete",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The organisation name the secret belongs to.",
+            "name": "org",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "The secret key (name).",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success."
@@ -914,651 +1166,6 @@
     }
   },
   "definitions": {
-    "AbstractPatternFile": {
-      "type": "object",
-      "properties": {
-        "GetClusterNamespace": {
-          "type": "string"
-        },
-        "GetOrg": {
-          "type": "string"
-        },
-        "GetSecretBinding": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SecretBinding"
-          }
-        },
-        "GetServices": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ServiceReference"
-          }
-        },
-        "GetUserInputs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UserInput"
-          }
-        },
-        "IsPublic": {
-          "type": "boolean"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/common"
-    },
-    "AbstractServiceFile": {
-      "type": "object",
-      "properties": {
-        "GetArch": {
-          "type": "string"
-        },
-        "GetClusterDeployment": {},
-        "GetDeployment": {},
-        "GetOrg": {
-          "type": "string"
-        },
-        "GetRequiredServices": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ServiceDependency"
-          }
-        },
-        "GetServiceType": {
-          "type": "string"
-        },
-        "GetURL": {
-          "type": "string"
-        },
-        "GetUserInputs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UserInput"
-          }
-        },
-        "GetVersion": {
-          "type": "string"
-        },
-        "NeedsUserInput": {
-          "type": "boolean"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/common"
-    },
-    "AgreementProtocol": {
-      "type": "object",
-      "properties": {
-        "blockchains": {
-          "$ref": "#/definitions/BlockchainList"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "protocolVersion": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "ProtocolVersion"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "AuthenticateOKBody": {
-      "description": "AuthenticateOKBody authenticate o k body",
-      "type": "object",
-      "required": [
-        "IdentityToken",
-        "Status"
-      ],
-      "properties": {
-        "IdentityToken": {
-          "description": "An opaque token used to authenticate a user after a successful login",
-          "type": "string"
-        },
-        "Status": {
-          "description": "The status of the authentication",
-          "type": "string"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/registry"
-    },
-    "Blockchain": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "organization": {
-          "type": "string",
-          "x-go-name": "Org"
-        },
-        "type": {
-          "type": "string",
-          "x-go-name": "Type"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "BlockchainList": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/Blockchain"
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "BoundSecret": {
-      "type": "object",
-      "title": "a binding that maps a secret name to a secret manager secret name.",
-      "additionalProperties": {
-        "type": "string"
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
-    },
-    "BusinessPolicy": {
-      "description": "BusinessPolicy the business policy",
-      "type": "object",
-      "properties": {
-        "constraints": {
-          "$ref": "#/definitions/ConstraintExpression"
-        },
-        "description": {
-          "type": "string",
-          "x-go-name": "Description"
-        },
-        "label": {
-          "type": "string",
-          "x-go-name": "Label"
-        },
-        "owner": {
-          "type": "string",
-          "x-go-name": "Owner"
-        },
-        "properties": {
-          "$ref": "#/definitions/PropertyList"
-        },
-        "secretBinding": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SecretBinding"
-          },
-          "x-go-name": "SecretBinding"
-        },
-        "service": {
-          "$ref": "#/definitions/ServiceRef"
-        },
-        "userInput": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UserInput"
-          },
-          "x-go-name": "UserInput"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
-    },
-    "ChangeType": {
-      "description": "Can be one of:\n\n`0`: Modified (\"C\")\n`1`: Added (\"A\")\n`2`: Deleted (\"D\")",
-      "type": "integer",
-      "format": "uint8",
-      "title": "ChangeType Kind of change",
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "CompCheckOutput": {
-      "description": "CompCheckOutput The output format for the compatibility check",
-      "type": "object",
-      "properties": {
-        "compatible": {
-          "type": "boolean",
-          "x-go-name": "Compatible"
-        },
-        "input": {
-          "$ref": "#/definitions/CompCheckResource"
-        },
-        "reason": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "x-go-name": "Reason"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/compcheck"
-    },
-    "CompCheckResource": {
-      "description": "To store the resource (pattern, bp, services etc) used for compatibility check",
-      "type": "object",
-      "properties": {
-        "business_policy": {
-          "$ref": "#/definitions/BusinessPolicy"
-        },
-        "business_policy_id": {
-          "type": "string",
-          "x-go-name": "BusinessPolId"
-        },
-        "dependent_services": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/ServiceDefinition"
-          },
-          "x-go-name": "DepServices"
-        },
-        "extraneous_secret_binding": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SecretBinding"
-          },
-          "x-go-name": "ExtraneousSB"
-        },
-        "needed_secret_binding": {
-          "description": "It is either empty or provides ALL the dependent services needed. It is expected the top level service definitions are provided\nin the 'Service' attribute when this attribute is not empty.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SecretBinding"
-          },
-          "x-go-name": "NeededSB"
-        },
-        "node_arch": {
-          "type": "string",
-          "x-go-name": "NodeArch"
-        },
-        "node_cluster_namespace": {
-          "type": "string",
-          "x-go-name": "NodeClusterNS"
-        },
-        "node_id": {
-          "type": "string",
-          "x-go-name": "NodeId"
-        },
-        "node_namespace_scoped": {
-          "type": "boolean",
-          "x-go-name": "NodeNamespaceScoped"
-        },
-        "node_org": {
-          "type": "string",
-          "x-go-name": "NodeOrg"
-        },
-        "node_policy": {
-          "$ref": "#/definitions/NodePolicy"
-        },
-        "node_type": {
-          "type": "string",
-          "x-go-name": "NodeType"
-        },
-        "node_user_input": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UserInput"
-          },
-          "x-go-name": "NodeUserInput"
-        },
-        "pattern": {
-          "$ref": "#/definitions/AbstractPatternFile"
-        },
-        "pattern_id": {
-          "type": "string",
-          "x-go-name": "PatternId"
-        },
-        "service": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/AbstractServiceFile"
-          },
-          "x-go-name": "Service"
-        },
-        "service_policy": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/ExternalPolicy"
-          },
-          "x-go-name": "ServicePolicy"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/compcheck"
-    },
-    "ConstraintExpression": {
-      "type": "array",
-      "title": "This type implements all the ConstraintLanguage Plugin methods and delegates to plugin system.",
-      "items": {
-        "type": "string"
-      },
-      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
-    },
-    "ContainerTopOKBody": {
-      "description": "ContainerTopOKBody OK response to ContainerTop operation",
-      "type": "object",
-      "required": [
-        "Processes",
-        "Titles"
-      ],
-      "properties": {
-        "Processes": {
-          "description": "Each process running in the container, where each is process\nis an array of values corresponding to the titles.",
-          "type": "array",
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "Titles": {
-          "description": "The ps column titles",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "ContainerUpdateOKBody": {
-      "description": "ContainerUpdateOKBody OK response to ContainerUpdate operation",
-      "type": "object",
-      "required": [
-        "Warnings"
-      ],
-      "properties": {
-        "Warnings": {
-          "description": "warnings",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "CreateResponse": {
-      "description": "OK response to ContainerCreate operation",
-      "type": "object",
-      "title": "CreateResponse ContainerCreateResponse",
-      "required": [
-        "Id",
-        "Warnings"
-      ],
-      "properties": {
-        "Id": {
-          "description": "The ID of the created container",
-          "type": "string",
-          "x-go-name": "ID"
-        },
-        "Warnings": {
-          "description": "Warnings encountered when creating the container",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "DataVerification": {
-      "type": "object",
-      "properties": {
-        "URL": {
-          "type": "string"
-        },
-        "check_rate": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "CheckRate"
-        },
-        "enabled": {
-          "type": "boolean",
-          "x-go-name": "Enabled"
-        },
-        "interval": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Interval"
-        },
-        "metering": {
-          "$ref": "#/definitions/Meter"
-        },
-        "password": {
-          "type": "string",
-          "x-go-name": "URLPassword"
-        },
-        "user": {
-          "type": "string",
-          "x-go-name": "URLUser"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "ExternalPolicy": {
-      "description": "BusinessPolicy the external policy",
-      "type": "object",
-      "properties": {
-        "constraints": {
-          "$ref": "#/definitions/ConstraintExpression"
-        },
-        "properties": {
-          "$ref": "#/definitions/PropertyList"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
-    },
-    "FilesystemChange": {
-      "type": "object",
-      "title": "FilesystemChange Change in the container's filesystem.",
-      "required": [
-        "Kind",
-        "Path"
-      ],
-      "properties": {
-        "Kind": {
-          "$ref": "#/definitions/ChangeType"
-        },
-        "Path": {
-          "description": "Path to file or directory that has changed.",
-          "type": "string"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "HardwareRequirement": {
-      "type": "object",
-      "title": "This type is used to abstract the various edge node hardware requirements. The schema is left wide open.",
-      "additionalProperties": {},
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "Input": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "value": {
-          "x-go-name": "Value"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/policy"
-    },
-    "Meter": {
-      "type": "object",
-      "properties": {
-        "notification_interval": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "NotificationIntervalS"
-        },
-        "per_time_unit": {
-          "type": "string",
-          "x-go-name": "PerTimeUnit"
-        },
-        "tokens": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "Tokens"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "NodeHealth": {
-      "type": "object",
-      "properties": {
-        "check_agreement_status": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "CheckAgreementStatus"
-        },
-        "missing_heartbeat_interval": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "MissingHBInterval"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "NodePolicy": {
-      "description": "NodePolicy the node policy\nThe properties and constraints defined in the top-level are common\nproperties and constraints that are used by both Deployment and Management.\nIf the same property name is defined in the second level (Deployment or Management),\nthe perperty value of the second level takes the precedence.\nIf there are constraints defined in the second level, all the constraints defined in\nthe top level will be ignored.",
-      "type": "object",
-      "properties": {
-        "constraints": {
-          "$ref": "#/definitions/ConstraintExpression"
-        },
-        "deployment": {
-          "$ref": "#/definitions/ExternalPolicy"
-        },
-        "description": {
-          "type": "string",
-          "x-go-name": "Description"
-        },
-        "label": {
-          "type": "string",
-          "x-go-name": "Label"
-        },
-        "management": {
-          "$ref": "#/definitions/ExternalPolicy"
-        },
-        "properties": {
-          "$ref": "#/definitions/PropertyList"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
-    },
-    "PatternFile": {
-      "description": "It is used when reading json file the user gives us as an input to create the pattern",
-      "type": "object",
-      "title": "PatternFile An implementation of AbstractPatternFile.",
-      "properties": {
-        "agreementProtocols": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/AgreementProtocol"
-          },
-          "x-go-name": "AgreementProtocols"
-        },
-        "clusterNamespace": {
-          "type": "string",
-          "x-go-name": "ClusterNamespace"
-        },
-        "description": {
-          "type": "string",
-          "x-go-name": "Description"
-        },
-        "label": {
-          "type": "string",
-          "x-go-name": "Label"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "org": {
-          "type": "string",
-          "x-go-name": "Org"
-        },
-        "public": {
-          "type": "boolean",
-          "x-go-name": "Public"
-        },
-        "secretBinding": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SecretBinding"
-          },
-          "x-go-name": "SecretBinding"
-        },
-        "services": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ServiceReferenceFile"
-          },
-          "x-go-name": "Services"
-        },
-        "userInput": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UserInput"
-          },
-          "x-go-name": "UserInput"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/common"
-    },
-    "Property": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "type": {
-          "type": "string",
-          "x-go-name": "Type"
-        },
-        "value": {
-          "x-go-name": "Value"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
-    },
-    "PropertyList": {
-      "description": "This struct represents property values advertised by the policy",
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/Property"
-      },
-      "x-go-package": "github.com/open-horizon/anax/externalpolicy"
-    },
-    "SecretBinding": {
-      "description": "The secret binding that maps service secret names to secret manager secret names",
-      "type": "object",
-      "properties": {
-        "enableNodeLevelSecrets": {
-          "type": "boolean",
-          "x-go-name": "EnableNodeLevelSecrets"
-        },
-        "secrets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/BoundSecret"
-          },
-          "x-go-name": "Secrets"
-        },
-        "serviceArch": {
-          "type": "string",
-          "x-go-name": "ServiceArch"
-        },
-        "serviceOrgid": {
-          "type": "string",
-          "x-go-name": "ServiceOrgid"
-        },
-        "serviceUrl": {
-          "type": "string",
-          "x-go-name": "ServiceUrl"
-        },
-        "serviceVersionRange": {
-          "type": "string",
-          "x-go-name": "ServiceVersionRange"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
-    },
     "SecretDetails": {
       "description": "SecretDetails The key value pair of one secret",
       "type": "object",
@@ -1573,439 +1180,6 @@
         }
       },
       "x-go-package": "github.com/open-horizon/anax/agreementbot/secrets"
-    },
-    "ServiceChoiceFile": {
-      "type": "object",
-      "properties": {
-        "deployment_overrides": {
-          "x-go-name": "DeploymentOverrides"
-        },
-        "deployment_overrides_signature": {
-          "type": "string",
-          "x-go-name": "DeploymentOverridesSignature"
-        },
-        "priority": {
-          "$ref": "#/definitions/WorkloadPriority"
-        },
-        "upgradePolicy": {
-          "$ref": "#/definitions/UpgradePolicy"
-        },
-        "version": {
-          "type": "string",
-          "x-go-name": "Version"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/common"
-    },
-    "ServiceDefinition": {
-      "type": "object",
-      "title": "This is the structure of the object returned on a GET /service.",
-      "properties": {
-        "arch": {
-          "type": "string",
-          "x-go-name": "Arch"
-        },
-        "clusterDeployment": {
-          "type": "string",
-          "x-go-name": "ClusterDeployment"
-        },
-        "clusterDeploymentSignature": {
-          "type": "string",
-          "x-go-name": "ClusterDeploymentSignature"
-        },
-        "deployment": {
-          "type": "string",
-          "x-go-name": "Deployment"
-        },
-        "deploymentSignature": {
-          "type": "string",
-          "x-go-name": "DeploymentSignature"
-        },
-        "description": {
-          "type": "string",
-          "x-go-name": "Description"
-        },
-        "documentation": {
-          "type": "string",
-          "x-go-name": "Documentation"
-        },
-        "label": {
-          "type": "string",
-          "x-go-name": "Label"
-        },
-        "lastUpdated": {
-          "type": "string",
-          "x-go-name": "LastUpdated"
-        },
-        "matchHardware": {
-          "$ref": "#/definitions/HardwareRequirement"
-        },
-        "owner": {
-          "type": "string",
-          "x-go-name": "Owner"
-        },
-        "public": {
-          "type": "boolean",
-          "x-go-name": "Public"
-        },
-        "requiredServices": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ServiceDependency"
-          },
-          "x-go-name": "RequiredServices"
-        },
-        "sharable": {
-          "type": "string",
-          "x-go-name": "Sharable"
-        },
-        "url": {
-          "type": "string",
-          "x-go-name": "URL"
-        },
-        "userInput": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UserInput"
-          },
-          "x-go-name": "UserInputs"
-        },
-        "version": {
-          "type": "string",
-          "x-go-name": "Version"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "ServiceDependency": {
-      "type": "object",
-      "title": "This type is a tuple used to refer to a specific service that is a dependency for the referencing service.",
-      "properties": {
-        "arch": {
-          "type": "string",
-          "x-go-name": "Arch"
-        },
-        "org": {
-          "type": "string",
-          "x-go-name": "Org"
-        },
-        "url": {
-          "type": "string",
-          "x-go-name": "URL"
-        },
-        "version": {
-          "type": "string",
-          "x-go-name": "Version"
-        },
-        "versionRange": {
-          "type": "string",
-          "x-go-name": "VersionRange"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchangecommon"
-    },
-    "ServiceFile": {
-      "description": "It is used when reading json file the user gives us as input to create the service",
-      "type": "object",
-      "title": "ServiceFile An implementation of AbstractServiceFile",
-      "properties": {
-        "arch": {
-          "type": "string",
-          "x-go-name": "Arch"
-        },
-        "clusterDeployment": {
-          "x-go-name": "ClusterDeployment"
-        },
-        "clusterDeploymentSignature": {
-          "type": "string",
-          "x-go-name": "ClusterDeploymentSignature"
-        },
-        "deployment": {
-          "x-go-name": "Deployment"
-        },
-        "deploymentSignature": {
-          "type": "string",
-          "x-go-name": "DeploymentSignature"
-        },
-        "description": {
-          "type": "string",
-          "x-go-name": "Description"
-        },
-        "documentation": {
-          "type": "string",
-          "x-go-name": "Documentation"
-        },
-        "label": {
-          "type": "string",
-          "x-go-name": "Label"
-        },
-        "matchHardware": {
-          "type": "object",
-          "additionalProperties": {},
-          "x-go-name": "MatchHardware"
-        },
-        "org": {
-          "type": "string",
-          "x-go-name": "Org"
-        },
-        "public": {
-          "type": "boolean",
-          "x-go-name": "Public"
-        },
-        "requiredServices": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ServiceDependency"
-          },
-          "x-go-name": "RequiredServices"
-        },
-        "sharable": {
-          "type": "string",
-          "x-go-name": "Sharable"
-        },
-        "url": {
-          "type": "string",
-          "x-go-name": "URL"
-        },
-        "userInput": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UserInput"
-          },
-          "x-go-name": "UserInputs"
-        },
-        "version": {
-          "type": "string",
-          "x-go-name": "Version"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/common"
-    },
-    "ServiceRef": {
-      "type": "object",
-      "properties": {
-        "arch": {
-          "type": "string",
-          "x-go-name": "Arch"
-        },
-        "clusterNamespace": {
-          "type": "string",
-          "x-go-name": "ClusterNamespace"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "nodeHealth": {
-          "$ref": "#/definitions/NodeHealth"
-        },
-        "org": {
-          "type": "string",
-          "x-go-name": "Org"
-        },
-        "serviceVersions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/WorkloadChoice"
-          },
-          "x-go-name": "ServiceVersions"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
-    },
-    "ServiceReference": {
-      "type": "object",
-      "properties": {
-        "agreementLess": {
-          "type": "boolean",
-          "x-go-name": "AgreementLess"
-        },
-        "dataVerification": {
-          "$ref": "#/definitions/DataVerification"
-        },
-        "nodeHealth": {
-          "$ref": "#/definitions/NodeHealth"
-        },
-        "serviceArch": {
-          "type": "string",
-          "x-go-name": "ServiceArch"
-        },
-        "serviceOrgid": {
-          "type": "string",
-          "x-go-name": "ServiceOrg"
-        },
-        "serviceUrl": {
-          "type": "string",
-          "x-go-name": "ServiceURL"
-        },
-        "serviceVersions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/WorkloadChoice"
-          },
-          "x-go-name": "ServiceVersions"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "ServiceReferenceFile": {
-      "type": "object",
-      "properties": {
-        "agreementLess": {
-          "type": "boolean",
-          "x-go-name": "AgreementLess"
-        },
-        "dataVerification": {
-          "$ref": "#/definitions/DataVerification"
-        },
-        "nodeHealth": {
-          "$ref": "#/definitions/NodeHealth"
-        },
-        "serviceArch": {
-          "type": "string",
-          "x-go-name": "ServiceArch"
-        },
-        "serviceOrgid": {
-          "type": "string",
-          "x-go-name": "ServiceOrg"
-        },
-        "serviceUrl": {
-          "type": "string",
-          "x-go-name": "ServiceURL"
-        },
-        "serviceVersions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ServiceChoiceFile"
-          },
-          "x-go-name": "ServiceVersions"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/common"
-    },
-    "UpgradePolicy": {
-      "type": "object",
-      "properties": {
-        "lifecycle": {
-          "type": "string",
-          "x-go-name": "Lifecycle"
-        },
-        "time": {
-          "type": "string",
-          "x-go-name": "Time"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "UserInput": {
-      "type": "object",
-      "title": "UserInput This type is used to describe a configuration variable that the node owner/user has to set before the service is able to execute on the edge node.",
-      "properties": {
-        "inputs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Input"
-          },
-          "x-go-name": "Inputs"
-        },
-        "serviceArch": {
-          "type": "string",
-          "x-go-name": "ServiceArch"
-        },
-        "serviceOrgid": {
-          "type": "string",
-          "x-go-name": "ServiceOrgid"
-        },
-        "serviceUrl": {
-          "type": "string",
-          "x-go-name": "ServiceUrl"
-        },
-        "serviceVersionRange": {
-          "type": "string",
-          "x-go-name": "ServiceVersionRange"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/policy"
-    },
-    "WaitExitError": {
-      "description": "WaitExitError container waiting error, if any",
-      "type": "object",
-      "properties": {
-        "Message": {
-          "description": "Details of an error",
-          "type": "string"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "WaitResponse": {
-      "description": "OK response to ContainerWait operation",
-      "type": "object",
-      "title": "WaitResponse ContainerWaitResponse",
-      "required": [
-        "StatusCode"
-      ],
-      "properties": {
-        "Error": {
-          "$ref": "#/definitions/WaitExitError"
-        },
-        "StatusCode": {
-          "description": "Exit code of the container",
-          "type": "integer",
-          "format": "int64"
-        }
-      },
-      "x-go-package": "github.com/docker/docker/api/types/container"
-    },
-    "WorkloadChoice": {
-      "type": "object",
-      "properties": {
-        "deployment_overrides": {
-          "type": "string",
-          "x-go-name": "DeploymentOverrides"
-        },
-        "deployment_overrides_signature": {
-          "type": "string",
-          "x-go-name": "DeploymentOverridesSignature"
-        },
-        "priority": {
-          "$ref": "#/definitions/WorkloadPriority"
-        },
-        "upgradePolicy": {
-          "$ref": "#/definitions/UpgradePolicy"
-        },
-        "version": {
-          "type": "string",
-          "x-go-name": "Version"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/exchange"
-    },
-    "WorkloadPriority": {
-      "type": "object",
-      "properties": {
-        "priority_value": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "PriorityValue"
-        },
-        "retries": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Retries"
-        },
-        "retry_durations": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "RetryDurationS"
-        },
-        "verified_durations": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "VerifiedDurationS"
-        }
-      },
-      "x-go-package": "github.com/open-horizon/anax/businesspolicy"
     }
   }
 }
