@@ -314,7 +314,7 @@ test-image:
 		docker build $(DOCKER_DEV_OPTS) -t $(DOCKER_TEST_INAME) -f docker/Dockerfile ./docker && docker tag $(DOCKER_TEST_INAME) $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG); \
 	fi
 
-test: clean $(ANAX_SOURCE)/anax run-dockerreg run-mgmthub run-test
+test-no-clean: $(ANAX_SOURCE)/anax run-dockerreg run-mgmthub run-test
 	@echo -e  "\nBootstrapping the exchange"
 	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); /root/init_exchange.sh"
 	@echo -e  "\nSetting up secrets in the vault"
@@ -323,6 +323,8 @@ test: clean $(ANAX_SOURCE)/anax run-dockerreg run-mgmthub run-test
 	$(TEST_VARS) ARCH=$(arch) CERT_LOC=$(CERT_LOC) gov/run_kube.sh $(E2EDEVTEST_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW) $(DOCKER_TEST_NETWORK) $(E2EDEV_HOST_IP)
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/gov-combined.sh"
+
+test: clean test-no-clean
 
 test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg run-test copy-cert
 	@echo -e  "\nBootstrapping the exchange"
@@ -424,5 +426,5 @@ run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 		cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/agbotapi.crt; \
 	fi
 
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-test run-dockerreg test-network test e2edevtest-docker-prereqs test-image copy-cert
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-test run-dockerreg test-network test test-no-clean e2edevtest-docker-prereqs test-image copy-cert
 #.SILENT: clean
