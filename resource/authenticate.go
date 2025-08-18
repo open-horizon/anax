@@ -83,7 +83,7 @@ func (auth *FSSAuthenticate) KeyandSecretForURL(url string) (string, string) {
 
 	if strings.HasPrefix(url, common.HTTPCSSURL) {
 		id := common.Configuration.OrgID + "/" + common.Configuration.DestinationType + "/" + common.Configuration.DestinationID
-		glog.V(6).Infof(essALS(fmt.Sprintf("returning credentials %v %v", id, auth.nodeToken)))
+		glog.V(6).Infof(essALS(fmt.Sprintf("returning credentials %v, ******", id)))
 		return id, auth.nodeToken
 	}
 
