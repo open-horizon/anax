@@ -7,10 +7,11 @@ metadata:
     openhorizon.org/component: agent
     type: auto-upgrade-cronjob
 spec:
-  schedule: '*/1 * * * *'
+  schedule: '*/__cronjobInterval__ * * * *' # '*/1 * * * *'
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 0
   successfulJobsHistoryLimit: 0
+  startingDeadlineSeconds: 120
   jobTemplate:
     spec:
       backoffLimit: 0

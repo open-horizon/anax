@@ -164,6 +164,7 @@ Additional Edge Cluster Variables (in environment or config file):
     AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS: Maximum seconds to wait for the agent deployment rollout status to be successful. Default: 300
     AGENT_K8S_IMAGE_TAR_FILE: the file name of the edge cluster agent docker image in tar.gz format. Default: \${ARCH}$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE
     CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE: the file name of the edge cluster auto-upgrade-cronjob cronjob docker image in tar.gz format. Default: \${ARCH}$DEFAULT_CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE
+    CRONJOB_INTERVAL: The number of minutes between each cronjob
     AGENT_NAMESPACE: The cluster namespace that the agent will be installed in
     NAMESPACE_SCOPED: specify this value if the edge cluster agent is namespace-scoped agent
 EndOfMessage
@@ -1278,6 +1279,7 @@ function get_all_variables() {
         get_variable USE_EDGE_CLUSTER_REGISTRY 'true'
         get_variable AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS '300'
         get_variable ENABLE_AUTO_UPGRADE_CRONJOB 'true'
+        get_variable CRONJOB_INTERVAL '1'
 
         local image_arch=$(get_cluster_image_arch)
         check_support "${SUPPORTED_EDGE_CLUSTER_ARCH[*]}" "${image_arch}" 'kubernetes edge cluster architectures'
@@ -4016,7 +4018,7 @@ function prepare_k8s_auto_upgrade_cronjob_file() {
         kubernetes_api="batch/v1"
     fi
 
-    sed -e "s#__KubernetesApi__#${kubernetes_api}#g" -e "s#__ServiceAccount__#\"${SERVICE_ACCOUNT_NAME}\"#g" -e "s#__AgentNameSpace__#\"${AGENT_NAMESPACE}\"#g" auto-upgrade-cronjob-template.yml > auto-upgrade-cronjob.yml
+    sed -e "s#__KubernetesApi__#${kubernetes_api}#g" -e "s#__ServiceAccount__#\"${SERVICE_ACCOUNT_NAME}\"#g" -e "s#__AgentNameSpace__#\"${AGENT_NAMESPACE}\"#g" -e "s#__cronjobInterval__#${CRONJOB_INTERVAL}#g" auto-upgrade-cronjob-template.yml > auto-upgrade-cronjob.yml
     chk $? 'creating auto-upgrade-cronjob.yml'
 
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
