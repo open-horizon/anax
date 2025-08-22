@@ -21,13 +21,17 @@ layout: page
 # {{site.data.keyword.edge_notm}} Agent Documentation
 {: #anaxdocs}
 
+## [Agent authentication](authentication_overview.md)
+
+There are different authentication methods for the anax agent to communicate with the {{site.data.keyword.edge_notm}} Management Hub.
+
 ## [Automatic agent upgrade using policy based node management](node_management_overview.md)
 
 Automatic agent upgrade is a policy-based node management feature that allows an org admin to create node management policies that deploy upgrade jobs to nodes and manages them autonomously. This allows the administrator to ensure that all the nodes in the system are using the intended versions.
 
 ## [Instructions for starting an agent in a container on Linux](agent_container_manual_deploy.md)
 
-Use these instructions to start the agent in a container and have more control over the details than that allowed by the `horzion-container` script.
+Use these instructions to start the agent in a container and have more control over the details than that allowed by the `horizon-container` script.
 
 ## [{{site.data.keyword.horizon}} Agent Installation overview](overview.md)
 
