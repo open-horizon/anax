@@ -23,6 +23,7 @@ jobs:
     # Variables that are available to all steps in the job
     env:
       GOPATH: /home/runner/work/anax/anax/go
+      DOCKER_CONFIG: /home/runner/.docker-config
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -37,6 +38,9 @@ jobs:
         with:
           go-version: '1.24'
           check-latest: true
+
+      - name: Verify Docker version
+        run: docker --version
 
       # Build anax binaries
       - name: Build anax binaries
