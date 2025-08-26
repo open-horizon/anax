@@ -79,7 +79,7 @@ AGBOT_TOKEN ?= Abcdefghijklmno1
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
-DOCKER_EXCH_TAG := testing
+DOCKER_EXCH_TAG := testing_v2.110
 DOCKER_EXCH ?= $(HZN_TRANSPORT)://exchange-api:8080/v1
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
@@ -325,7 +325,7 @@ test: clean $(ANAX_SOURCE)/anax run-dockerreg run-mgmthub run-test
 	@echo -e  "\nSetting up secrets in the vault"
 	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) DOCKER_VAULT_CNAME=$(DOCKER_VAULT_CNAME); /root/setup_secrets.sh"
 	@echo -e  "\nSetting up agent in kube"
-	$(TEST_VARS) ARCH=$(arch) CERT_LOC=$(CERT_LOC) gov/run_kube.sh $(E2EDEVTEST_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW) $(DOCKER_TEST_NETWORK)
+	$(TEST_VARS) ARCH=$(arch) CERT_LOC=$(CERT_LOC) gov/run_kube.sh $(E2EDEVTEST_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW) $(DOCKER_TEST_NETWORK) $(E2EDEV_HOST_IP)
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/gov-combined.sh"
 
@@ -412,6 +412,7 @@ get-vault-image:
 
 run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	@echo "Starting all-in-one management hub"
+	echo "\nHZN_LISTEN_IP is $(E2EDEV_HOST_IP)"; \
 	export EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) EXCHANGE_DATABASE=$(EXCHDB_NAME); \
 	export EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
 	export AGBOT_ID=$(AGBOT_NAME) AGBOT_TOKEN=$(AGBOT_TOKEN) AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG); \
@@ -421,6 +422,7 @@ run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	export VAULT_IMAGE_TAG=$(DOCKER_VAULT_TAG) VAULT_PORT=$(VAULT_PORT) VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) VAULT_ROOT_TOKEN=$(VAULT_DEV_ROOT_TOKEN_ID); \
 	export ANAX_SOURCE=$(ANAX_SOURCE) ANAX_LOG_LEVEL=5; \
 	export HZN_TRANSPORT=$(HZN_TRANSPORT); \
+	export HZN_LISTEN_IP=$(E2EDEV_HOST_IP); \
 	$(TEST_VARS) $(ANAX_SOURCE)/test/gov/start_mgmt_hub.sh
 	if [ -f "/etc/horizon/keys/horizonMgmtHub.crt" ]; then \
 		cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/css.crt; \
