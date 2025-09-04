@@ -176,7 +176,7 @@ function checkPrereqsAndInput () {
 
     if [[ -z "$CLUSTER_URL" && ( -z "$HZN_EXCHANGE_URL" || -z "$HZN_FSS_CSSURL" || -z "$HZN_AGBOT_URL" || -z "$HZN_FDO_SVC_URL" ) ]]; then
         detect_k8s_cli_tool
-    elif [[ "$HZN_EXCHANGE_URL" == https:* && -z "$HZN_MGMT_HUB_CERT_PATH" ]]; then
+    elif [[ "$HZN_EXCHANGE_URL" == https:* && -z "$AGENT_INSTALL_CERT" ]]; then
         detect_k8s_cli_tool
     elif [[ -z "$HZN_EXCHANGE_USER_AUTH" ]]; then
         detect_k8s_cli_tool
@@ -245,16 +245,17 @@ function checkPrereqsAndInput () {
     echo ""
 
     if [[ ${HZN_EXCHANGE_URL} == "https:"* ]]; then
-        if  [[ -z "$HZN_MGMT_HUB_CERT_PATH" ]]; then
+        if  [[ -z "$AGENT_INSTALL_CERT" ]]; then
             echo "Getting the agent-install.crt..."
             HUB_CERT_NAME=$($K8S_CLI_TOOL get configmap ibm-edge-ca-cert-name -n $NAMESPACE -o jsonpath="{.data['ca_secret_name']}")
             ${K8S_CLI_TOOL} -n ${NAMESPACE} get secret ${HUB_CERT_NAME} -ojson \
                 | jq -r '.data["tls.crt"]' \
                 | base64 -d > /tmp/ieam.crt
-            export HZN_MGMT_HUB_CERT_PATH="/tmp/ieam.crt"
+            export AGENT_INSTALL_CERT="/tmp/ieam.crt"
         else
-            echo "HZN_MGMT_HUB_CERT_PATH is already set to: $HZN_MGMT_HUB_CERT_PATH"
+            echo "AGENT_INSTALL_CERT is already set to: $AGENT_INSTALL_CERT"
         fi
+        export HZN_MGMT_HUB_CERT_PATH="${AGENT_INSTALL_CERT}"
     else
         echo  "Skipping cert since ${HZN_EXCHANGE_URL} is using http"
     fi
