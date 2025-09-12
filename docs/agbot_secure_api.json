@@ -41,95 +41,19 @@
             "in": "query"
           },
           {
-            "type": "string",
-            "description": "The exchange id of the node. Mutually exclusive with node_policy and node_user_input.",
-            "name": "node_id",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The architecture of the node.",
-            "name": "node_arch",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified.",
-            "name": "node_type",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified or the node_type is device.",
-            "name": "node_cluster_namespace",
-            "in": "body"
-          },
-          {
-            "description": "The node policy that will be put in the exchange. Mutually exclusive with node_id.",
-            "name": "node_policy",
+            "description": "The compCheck object as payload.",
+            "name": "payload",
             "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/ExternalPolicy"
-            }
-          },
-          {
-            "description": "The user input that will be put in the exchange for the services. Mutually exclusive with node_id.",
-            "name": "node_user_input",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/UserInput"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy_id",
-            "in": "body"
-          },
-          {
-            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/BusinessPolicy"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern_id",
-            "in": "body"
-          },
-          {
-            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/PatternFile"
-            }
-          },
-          {
-            "description": "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy.",
-            "name": "service_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ExternalPolicy"
-            }
-          },
-          {
-            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange.",
-            "name": "service",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ServiceFile"
+              "$ref": "#/definitions/CompCheck"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Ok",
             "schema": {
-              "type": "compcheck.CompCheckOutput",
               "$ref": "#/definitions/CompCheckOutput"
             }
           },
@@ -179,63 +103,18 @@
             "in": "query"
           },
           {
-            "type": "string",
-            "description": "The exchange id of the node. Mutually exclusive with node_policy.",
-            "name": "node_id",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The architecture of the node.",
-            "name": "node_arch",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified.",
-            "name": "node_type",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified or the node_type is device.",
-            "name": "node_cluster_namespace",
-            "in": "body"
-          },
-          {
-            "description": "The node policy that will be put in the exchange. Mutually exclusive with node_id.",
-            "name": "node_policy",
+            "description": "The policy payload to check.",
+            "name": "payload",
             "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/ExternalPolicy"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy.",
-            "name": "business_policy_id",
-            "in": "body"
-          },
-          {
-            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id.",
-            "name": "business_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/BusinessPolicy"
-            }
-          },
-          {
-            "description": "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy.",
-            "name": "service_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ExternalPolicy"
+              "$ref": "#/definitions/PolicyCheck"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Ok",
             "schema": {
               "$ref": "#/definitions/CompCheckOutput"
             }
@@ -286,65 +165,19 @@
             "in": "query"
           },
           {
-            "type": "string",
-            "description": "The exchange id of the node. Mutually exclusive with node_user_input.",
-            "name": "node_id",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The architecture of the node.",
-            "name": "node_arch",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The organization of the node.",
-            "name": "node_org",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy_id",
-            "in": "body"
-          },
-          {
-            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy",
+            "description": "The payload of the secret binding.",
+            "name": "payload",
             "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/BusinessPolicy"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern_id",
-            "in": "body"
-          },
-          {
-            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/PatternFile"
-            }
-          },
-          {
-            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange.",
-            "name": "service",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ServiceFile"
+              "$ref": "#/definitions/SecretBindingCheck"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Ok",
             "schema": {
-              "type": "compcheck.CompCheckOutput",
               "$ref": "#/definitions/CompCheckOutput"
             }
           },
@@ -394,79 +227,19 @@
             "in": "query"
           },
           {
-            "type": "string",
-            "description": "The exchange id of the node. Mutually exclusive with node_user_input.",
-            "name": "node_id",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The architecture of the node.",
-            "name": "node_arch",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified.",
-            "name": "node_type",
-            "in": "body"
-          },
-          {
-            "type": "string",
-            "description": "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified.",
-            "name": "node_cluster_namespace",
-            "in": "body"
-          },
-          {
-            "description": "The user input that will be put in the exchange for the services. Mutually exclusive with node_id.",
-            "name": "node_user_input",
+            "description": "The user input payload whose compatibility you want to check.",
+            "name": "payload",
             "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/UserInput"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy_id",
-            "in": "body"
-          },
-          {
-            "description": "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
-            "name": "business_policy",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/BusinessPolicy"
-            }
-          },
-          {
-            "type": "string",
-            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern_id",
-            "in": "body"
-          },
-          {
-            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
-            "name": "pattern",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/PatternFile"
-            }
-          },
-          {
-            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange.",
-            "name": "service",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ServiceFile"
+              "$ref": "#/definitions/UserInputCheck"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Ok",
             "schema": {
-              "type": "compcheck.CompCheckOutput",
               "$ref": "#/definitions/CompCheckOutput"
             }
           },
@@ -484,59 +257,6 @@
           },
           "500": {
             "description": "Failure - Error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/org/{org}/allsecrets": {},
-    "/org/{org}/secrets": {},
-    "/org/{org}/secrets/*": {
-      "get": {
-        "description": "Authenticates the node user with the exchange. Checks if the vault plugin being used is ready.\nPerforms sanity checks on the secret user and secret name provided.",
-        "consumes": [
-          "application/json"
-        ],
-        "summary": "Common setup required before using the vault to manage secrets.",
-        "operationId": "secrets_setup",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "The organisation name the secret belongs to. Must be the same as the org the user node belongs to.",
-            "name": "org",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "The user owning the secret.",
-            "name": "user",
-            "in": "path"
-          },
-          {
-            "type": "string",
-            "description": "The node the secret is for.",
-            "name": "node",
-            "in": "path"
-          },
-          {
-            "type": "string",
-            "description": "The secret key (name).",
-            "name": "secret",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "400": {
-            "description": "Secret org or name does not meet constraints.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "503": {
-            "description": "Secret provider not ready or not configured.",
             "schema": {
               "type": "string"
             }
@@ -579,7 +299,10 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/definitions/SecretDetails"
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/SecretDetails"
+            }
           },
           "401": {
             "description": "Unauthenticated user."
@@ -641,7 +364,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success."
+            "description": "Ok"
           },
           "401": {
             "description": "Unauthenticated user."
@@ -694,7 +417,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success."
+            "description": "Ok"
           },
           "401": {
             "description": "Unauthenticated user."
@@ -756,7 +479,10 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/definitions/SecretDetails"
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/SecretDetails"
+            }
           },
           "401": {
             "description": "Unauthenticated user."
@@ -825,7 +551,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success."
+            "description": "Ok"
           },
           "401": {
             "description": "Unauthenticated user."
@@ -880,7 +606,10 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/definitions/SecretDetails"
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/SecretDetails"
+            }
           },
           "401": {
             "description": "Unauthenticated user."
@@ -942,7 +671,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success."
+            "description": "Ok"
           },
           "401": {
             "description": "Unauthenticated user."
@@ -995,7 +724,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success."
+            "description": "Ok"
           },
           "401": {
             "description": "Unauthenticated user."
@@ -1043,7 +772,10 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/definitions/SecretDetails"
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/SecretDetails"
+            }
           },
           "401": {
             "description": "Unauthenticated user."
@@ -1098,7 +830,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success."
+            "description": "Ok"
           },
           "401": {
             "description": "Unauthenticated user."
@@ -1144,7 +876,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success."
+            "description": "Ok"
           },
           "401": {
             "description": "Unauthenticated user."
@@ -1166,20 +898,29 @@
     }
   },
   "definitions": {
+    "CompCheck": {
+      "title": "The input format for the compatibility check.",
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
+    "CompCheckOutput": {
+      "title": "The output format for the compatibility check.",
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
+    "PolicyCheck": {
+      "title": "The input format for the policy check.",
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
+    "SecretBindingCheck": {
+      "title": "The input format for the secret binding check.",
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
+    },
     "SecretDetails": {
-      "description": "SecretDetails The key value pair of one secret",
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string",
-          "x-go-name": "Key"
-        },
-        "value": {
-          "type": "string",
-          "x-go-name": "Value"
-        }
-      },
+      "title": "SecretDetails The key value pair of one secret.",
       "x-go-package": "github.com/open-horizon/anax/agreementbot/secrets"
+    },
+    "UserInputCheck": {
+      "title": "The input format for the userinput check.",
+      "x-go-package": "github.com/open-horizon/anax/compcheck"
     }
   }
 }

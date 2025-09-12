@@ -27,7 +27,6 @@ type AbstractServiceFile interface {
 // ServiceFile An implementation of AbstractServiceFile
 //
 // It is used when reading json file the user gives us as input to create the service
-// swagger:model
 type ServiceFile struct {
 	Org                        string                             `json:"org"` // optional
 	Label                      string                             `json:"label"`

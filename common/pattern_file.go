@@ -18,7 +18,6 @@ type AbstractPatternFile interface {
 // PatternFile An implementation of AbstractPatternFile.
 //
 // It is used when reading json file the user gives us as an input to create the pattern
-// swagger:model
 type PatternFile struct {
 	Name               string                         `json:"name,omitempty"`
 	Org                string                         `json:"org,omitempty"` // optional

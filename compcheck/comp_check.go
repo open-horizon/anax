@@ -60,7 +60,8 @@ func NewCompCheckError(err error, errCode int) *CompCheckError {
 	}
 }
 
-// The input format for the comptible check
+// The input format for the compatibility check.
+// swagger:model
 type CompCheck struct {
 	NodeId              string                         `json:"node_id,omitempty"`
 	NodeArch            string                         `json:"node_arch,omitempty"`
@@ -141,7 +142,7 @@ func (p *CompCheck) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// CompCheckOutput The output format for the compatibility check
+// The output format for the compatibility check.
 // swagger:model
 type CompCheckOutput struct {
 	Compatible bool               `json:"compatible"`

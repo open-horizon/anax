@@ -53,7 +53,7 @@ type AgbotSecrets interface {
 	GetSecretMetadata(secretOrg, secretUser, secretNode, secretName string) (SecretMetadata, error)
 }
 
-// SecretDetails The key value pair of one secret
+// SecretDetails The key value pair of one secret.
 // swagger:model SecretDetails
 type SecretDetails struct {
 	// Key is the name of the secret
