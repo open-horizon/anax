@@ -20,7 +20,7 @@ const (
 	UNDECLARED_TYPE = ""
 )
 
-// This struct represents property values advertised by the policy
+// The property values that are advertised by the policy.
 type PropertyList []Property
 
 type Property struct {

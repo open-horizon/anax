@@ -16,7 +16,7 @@ import (
 
 // Types and functions used to work with the exchange's service objects.
 
-// This type is used to abstract the various edge node hardware requirements. The schema is left wide open.
+// You can use this type to abstract the various edge node hardware requirements. No enforce validation rules for the data it accepts or returns for this type.
 type HardwareRequirement map[string]interface{}
 
 func (h HardwareRequirement) String() string {
@@ -32,7 +32,7 @@ func (h HardwareRequirement) String() string {
 	return res
 }
 
-// This is the structure of the object returned on a GET /service.
+// This is the structure of the object that is returned by a GET /service request.
 type ServiceDefinition struct {
 	Owner                      string                             `json:"owner,omitempty"`
 	Label                      string                             `json:"label"`

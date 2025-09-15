@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// This type implements all the ConstraintLanguage Plugin methods and delegates to plugin system.
+// This type implements all the ConstraintLanguage Plug-in methods and delegates to the plug-in system."
 type ConstraintExpression []string
 
 func (c *ConstraintExpression) Validate() ([]string, error) {

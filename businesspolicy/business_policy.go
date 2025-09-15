@@ -12,7 +12,7 @@ import (
 
 const DEFAULT_MAX_AGREEMENT = 0
 
-// BusinessPolicy the business policy
+// BusinessPolicy is the policy for deploying a service to targeted nodes
 type BusinessPolicy struct {
 	Owner         string                              `json:"owner,omitempty"`
 	Label         string                              `json:"label"`
