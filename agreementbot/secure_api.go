@@ -426,52 +426,15 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
-	//  - name: node_id
+	//  - name: payload
 	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the node. Mutually exclusive with node_policy."
-	//  - name: node_arch
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The architecture of the node."
-	//  - name: node_type
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified."
-	//  - name: node_cluster_namespace
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified or the node_type is device."
-	//  - name: node_policy
-	//    in: body
-	//    required: false
-	//    description: "The node policy that will be put in the exchange. Mutually exclusive with node_id."
 	//    schema:
-	//     "$ref": "#/definitions/ExternalPolicy"
-	//  - name: business_policy_id
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy."
-	//  - name: business_policy
-	//    in: body
-	//    required: false
-	//    description: "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id."
-	//    schema:
-	//     "$ref": "#/definitions/BusinessPolicy"
-	//  - name: service_policy
-	//    in: body
-	//    required: false
-	//    description: "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy."
-	//    schema:
-	//     "$ref": "#/definitions/ExternalPolicy"
+	//      "$ref": "#/definitions/PolicyCheck"
+	//    required: true
+	//    description: "The policy payload to check."
 	// responses:
 	//  '200':
-	//    description: "Success"
+	//    description: "Ok"
 	//    schema:
 	//     "$ref": "#/definitions/CompCheckOutput"
 	//  '400':
@@ -548,65 +511,16 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
-	//  - name: node_id
+	//  - name: payload
 	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the node. Mutually exclusive with node_user_input."
-	//  - name: node_arch
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The architecture of the node."
-	//  - name: node_type
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified."
-	//  - name: node_cluster_namespace
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified."
-	//  - name: node_user_input
-	//    in: body
-	//    required: false
-	//    description: "The user input that will be put in the exchange for the services. Mutually exclusive with node_id."
 	//    schema:
-	//     "$ref": "#/definitions/UserInput"
-	//  - name: business_policy_id
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
-	//  - name: business_policy
-	//    in: body
-	//    required: false
-	//    description: "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
-	//    schema:
-	//     "$ref": "#/definitions/BusinessPolicy"
-	//  - name: pattern_id
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
-	//  - name: pattern
-	//    in: body
-	//    required: false
-	//    description: "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
-	//    schema:
-	//     "$ref": "#/definitions/PatternFile"
-	//  - name: service
-	//    in: body
-	//    required: false
-	//    description: "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange."
-	//    schema:
-	//     "$ref": "#/definitions/ServiceFile"
+	//      "$ref": "#/definitions/UserInputCheck"
+	//    required: true
+	//    description: "The user input payload whose compatibility you want to check."
 	// responses:
 	//  '200':
-	//    description: "Success"
+	//    description: "Ok"
 	//    schema:
-	//     type: compcheck.CompCheckOutput
 	//     "$ref": "#/definitions/CompCheckOutput"
 	//  '400':
 	//    description: "Failure - No input found"
@@ -682,54 +596,16 @@ func (a *SecureAPI) secretbinding_compatible(w http.ResponseWriter, r *http.Requ
 	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
-	//  - name: node_id
+	//  - name: payload
 	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the node. Mutually exclusive with node_user_input."
-	//  - name: node_arch
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The architecture of the node."
-	//  - name: node_org
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The organization of the node."
-	//  - name: business_policy_id
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
-	//  - name: business_policy
-	//    in: body
-	//    required: false
-	//    description: "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
 	//    schema:
-	//     "$ref": "#/definitions/BusinessPolicy"
-	//  - name: pattern_id
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
-	//  - name: pattern
-	//    in: body
-	//    required: false
-	//    description: "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
-	//    schema:
-	//     "$ref": "#/definitions/PatternFile"
-	//  - name: service
-	//    in: body
-	//    required: false
-	//    description: "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange."
-	//    schema:
-	//     "$ref": "#/definitions/ServiceFile"
+	//      "$ref": "#/definitions/SecretBindingCheck"
+	//    required: true
+	//    description: "The payload of the secret binding."
 	// responses:
 	//  '200':
-	//    description: "Success"
+	//    description: "Ok"
 	//    schema:
-	//     type: compcheck.CompCheckOutput
 	//     "$ref": "#/definitions/CompCheckOutput"
 	//  '400':
 	//    description: "Failure - No input found"
@@ -821,77 +697,16 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	//    type: boolean
 	//    required: false
 	//    description: "Show the input which was used to come up with the result."
-	//  - name: node_id
+	//  - name: payload
 	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the node. Mutually exclusive with node_policy and node_user_input."
-	//  - name: node_arch
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The architecture of the node."
-	//  - name: node_type
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The type of the node. It can be device or cluster. The default is device. It can be omitted if node_id is specified."
-	//  - name: node_cluster_namespace
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The kubernetes namespace for the node with cluster type. The default namespace is openhorizon-agent. It can be omitted if node_id is specified or the node_type is device."
-	//  - name: node_policy
-	//    in: body
-	//    required: false
-	//    description: "The node policy that will be put in the exchange. Mutually exclusive with node_id."
 	//    schema:
-	//     "$ref": "#/definitions/ExternalPolicy"
-	//  - name: node_user_input
-	//    in: body
-	//    required: false
-	//    description: "The user input that will be put in the exchange for the services. Mutually exclusive with node_id."
-	//    schema:
-	//     "$ref": "#/definitions/UserInput"
-	//  - name: business_policy_id
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the deployment policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
-	//  - name: business_policy
-	//    in: body
-	//    required: false
-	//    description: "The defintion of the deployment policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
-	//    schema:
-	//     "$ref": "#/definitions/BusinessPolicy"
-	//  - name: pattern_id
-	//    in: body
-	//    type: string
-	//    required: false
-	//    description: "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
-	//  - name: pattern
-	//    in: body
-	//    required: false
-	//    description: "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
-	//    schema:
-	//     "$ref": "#/definitions/PatternFile"
-	//  - name: service_policy
-	//    in: body
-	//    required: false
-	//    description: "The service policy that will be put in the exchange. They are for the top level service referenced in the deployment policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy."
-	//    schema:
-	//     "$ref": "#/definitions/ExternalPolicy"
-	//  - name: service
-	//    in: body
-	//    required: false
-	//    description: "An array of the top level services that will be put in the exchange. They are refrenced in the deployment policy or pattern. If omitted, the services will be retrieved from the exchange."
-	//    schema:
-	//     "$ref": "#/definitions/ServiceFile"
+	//     "$ref": "#/definitions/CompCheck"
+	//    required: true
+	//    description: "The compCheck object as payload."
 	// responses:
 	//  '200':
-	//    description: "Success"
+	//    description: "Ok"
 	//    schema:
-	//     type: compcheck.CompCheckOutput
 	//     "$ref": "#/definitions/CompCheckOutput"
 	//  '400':
 	//    description: "Failure - No input found"
@@ -1194,23 +1009,16 @@ type SecretRequestInfo struct {
 	msgPrinter *message.Printer
 }
 
-// swagger:operation GET /org/{org}/secrets/* secrets_setup
-//
 // Common setup required before using the vault to manage secrets.
-//
 // Authenticates the node user with the exchange. Checks if the vault plugin being used is ready.
 // Performs sanity checks on the secret user and secret name provided.
-//
-// ---
-// consumes:
-//   - application/json
-//
+
 // parameters:
 //   - name: org
 //     in: path
 //     type: string
 //     required: true
-//     description: "The organisation name the secret belongs to. Must be the same as the org the user node belongs to."
+//     description: "The name of the organization that the secret belongs to. This value must be the same as the organization that the user node belongs to."
 //   - name: user
 //     in: path
 //     type: string
@@ -1226,16 +1034,17 @@ type SecretRequestInfo struct {
 //     type: string
 //     required: false
 //     description: "The secret key (name)."
+//
 // responses:
-//  '400':
-//	  description: "Secret org or name does not meet constraints."
-//	  schema:
-//	    type: string
-//  '503':
-//	  description: "Secret provider not ready or not configured."
-//	  schema:
-//	    type: string
-
+//
+//	 '400':
+//		  description: "Bad Request"
+//		  schema:
+//		    type: string
+//	 '503':
+//		  description: "Service Unavailable"
+//		  schema:
+//		    type: string
 func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *SecretRequestInfo {
 
 	// Process in the inputs and verify that they are consistent with the logged in user.
@@ -1423,7 +1232,7 @@ func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
 	//     description: "The organisation name the secret belongs to."
 	// responses:
 	//  '200':
-	//    description: "Success or no secrets found."
+	//    description: "Ok or no secrets found."
 	//    type: array
 	//    items: string
 	//  '401':
@@ -1480,7 +1289,7 @@ func (a *SecureAPI) allSecrets(w http.ResponseWriter, r *http.Request) {
 	//     description: "The organisation name the secret belongs to."
 	// responses:
 	//  '200':
-	//    description: "Success or no secrets found."
+	//    description: "Ok or no secrets found."
 	//    type: array
 	//    items: string
 	//  '401':
@@ -1549,7 +1358,9 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    '$ref': "#/definitions/SecretDetails"
+	//    description: "Ok"
+	//    schema:
+	//      '$ref': "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
 	//    type: string
@@ -1611,7 +1422,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
-		//    description: "Success."
+		//    description: "Ok"
 		//    type: string
 		//  '401':
 		//    description: "Unauthenticated user."
@@ -1666,7 +1477,7 @@ func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
 		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
-		//    description: "Success."
+		//    description: "Ok"
 		//    type: string
 		//  '401':
 		//    description: "Unauthenticated user."
@@ -1811,7 +1622,9 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    '$ref': "#/definitions/SecretDetails"
+	//    description: "Ok"
+	//    schema:
+	//      '$ref': "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
 	//    type: string
@@ -1860,7 +1673,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//     required: true
 		//     description: "The secret key and value."
 		//     schema:
-		//     		$ref: "#/definitions/SecretDetails"
+		//       '$ref': "#/definitions/SecretDetails"
 		//   - name: org
 		//     in: path
 		//     type: string
@@ -1878,7 +1691,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
-		//    description: "Success."
+		//    description: "Ok"
 		//    type: string
 		//  '401':
 		//    description: "Unauthenticated user."
@@ -1938,7 +1751,7 @@ func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
 		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
-		//    description: "Success."
+		//    description: "Ok"
 		//    type: string
 		//  '401':
 		//    description: "Unauthenticated user."
@@ -2007,7 +1820,9 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    "$ref": "#/definitions/SecretDetails"
+	//    description: "Ok"
+	//    schema:
+	//      "$ref": "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
 	//    type: string
@@ -2074,7 +1889,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		//      '$ref': "#/definitions/SecretDetails"
 		// responses:
 		//  '200':
-		//    description: "Success."
+		//    description: "Ok"
 		//    type: string
 		//  '401':
 		//    description: "Unauthenticated user."
@@ -2134,7 +1949,7 @@ func (a *SecureAPI) nodeSecret(w http.ResponseWriter, r *http.Request) {
 		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
-		//    description: "Success."
+		//    description: "Ok"
 		//    type: string
 		//  '401':
 		//    description: "Unauthenticated user."
@@ -2209,7 +2024,9 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 	//     description: "The secret key (name)."
 	// responses:
 	//  '200':
-	//    "$ref": "#/definitions/SecretDetails"
+	//    description: "Ok"
+	//    schema:
+	//      "$ref": "#/definitions/SecretDetails"
 	//  '401':
 	//    description: "Unauthenticated user."
 	//    type: string
@@ -2281,7 +2098,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
-		//    description: "Success."
+		//    description: "Ok"
 		//    type: string
 		//  '401':
 		//    description: "Unauthenticated user."
@@ -2341,7 +2158,7 @@ func (a *SecureAPI) nodeUserSecret(w http.ResponseWriter, r *http.Request) {
 		//     description: "The secret key (name)."
 		// responses:
 		//  '200':
-		//    description: "Success."
+		//    description: "Ok"
 		//    type: string
 		//  '401':
 		//    description: "Unauthenticated user."

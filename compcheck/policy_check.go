@@ -16,7 +16,8 @@ import (
 	"golang.org/x/text/message"
 )
 
-// The input format for the policy check
+// The input format for the policy check.
+// swagger:model
 type PolicyCheck struct {
 	NodeId              string                                `json:"node_id,omitempty"`
 	NodeArch            string                                `json:"node_arch,omitempty"`

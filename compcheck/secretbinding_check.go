@@ -15,7 +15,8 @@ import (
 	"strings"
 )
 
-// The input format for the userinput check
+// The input format for the secret binding check.
+// swagger:model
 type SecretBindingCheck struct {
 	NodeId         string                                `json:"node_id,omitempty"`
 	NodeArch       string                                `json:"node_arch,omitempty"`
