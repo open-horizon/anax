@@ -15,7 +15,7 @@ const (
 	EP_ALLOWPRIVILEGED_CHANGED    = 0x0008 // built-in node property openhorizon.allowPrivileged changed
 )
 
-// BusinessPolicy the external policy
+// A policy struct which only has Properties and Constrains
 type ExternalPolicy struct {
 	// The properties this node wishes to expose about itself. These properties can be referred to by constraint expressions in other policies,
 	// (e.g. service policy, model policy, business policy).

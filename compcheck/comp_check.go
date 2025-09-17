@@ -164,7 +164,7 @@ func NewCompCheckOutput(compatible bool, reason map[string]string, input *CompCh
 	}
 }
 
-// To store the resource (pattern, bp, services etc) used for compatibility check
+// The resource that is used for the compatibility check. The resource is a pattern, business policy, service, or other type of resource
 type CompCheckResource struct {
 	NodeId              string                                   `json:"node_id,omitempty"`
 	NodeArch            string                                   `json:"node_arch,omitempty"`
@@ -180,11 +180,9 @@ type CompCheckResource struct {
 	Pattern             common.AbstractPatternFile               `json:"pattern,omitempty"`
 	ServicePolicy       map[string]externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
 	Service             []common.AbstractServiceFile             `json:"service,omitempty"`
-	DepServices         map[string]exchange.ServiceDefinition    `json:"dependent_services,omitempty"` // for internal use for performance. A map of service definition keyed by id.
-	// It is either empty or provides ALL the dependent services needed. It is expected the top level service definitions are provided
-	// in the 'Service' attribute when this attribute is not empty.
-	NeededSB     []exchangecommon.SecretBinding `json:"needed_secret_binding,omitempty"`
-	ExtraneousSB []exchangecommon.SecretBinding `json:"extraneous_secret_binding,omitempty"`
+	DepServices         map[string]exchange.ServiceDefinition    `json:"dependent_services,omitempty"` // for internal use for performance. A map of service definition keyed by id. It is either empty or provides ALL the dependent services needed. It is expected the top level service definitions are provided in the 'Service' attribute when this attribute is not empty.
+	NeededSB            []exchangecommon.SecretBinding           `json:"needed_secret_binding,omitempty"`
+	ExtraneousSB        []exchangecommon.SecretBinding           `json:"extraneous_secret_binding,omitempty"`
 }
 
 func (p CompCheckResource) String() string {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// a binding that maps a secret name to a secret manager secret name.
+// A binding that maps a secret name to a secret name in the secret manager.
 type BoundSecret map[string]string
 
 // return both service secret name and secret manager secret name
@@ -41,7 +41,7 @@ func (w BoundSecret) IsSame(other BoundSecret) bool {
 	return true
 }
 
-// The secret binding that maps service secret names to secret manager secret names
+// The binding that maps a secret name for a service to a secret name in the secret manager.
 type SecretBinding struct {
 	ServiceOrgid           string        `json:"serviceOrgid"`
 	ServiceUrl             string        `json:"serviceUrl"`

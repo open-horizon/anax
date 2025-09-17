@@ -18,7 +18,7 @@ const SERVICE_SHARING_MODE_MULTIPLE = "multiple"
 
 // Types and functions used to work with the exchange's service objects.
 
-// This type is a tuple used to refer to a specific service that is a dependency for the referencing service.
+// This object is used to refer to a specific service that is a dependency for the referencing service.
 type ServiceDependency struct {
 	URL          string `json:"url"`
 	Org          string `json:"org"`
@@ -51,7 +51,7 @@ func NewServiceDependency(url string, org string, version string, arch string) *
 	}
 }
 
-// UserInput This type is used to describe a configuration variable that the node owner/user has to set before the service is able to execute on the edge node.
+// This object describes a configuration variable that the node owner or user must set before the service can execute on the edge node.
 type UserInput struct {
 	Name         string `json:"name"`
 	Label        string `json:"label"`
