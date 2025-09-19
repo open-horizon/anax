@@ -15,7 +15,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/persistence"
 	olmv1scheme "github.com/operator-framework/api/pkg/operators/v1"
 	olmv1alpha1scheme "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	olmv1client "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1"
@@ -323,15 +322,7 @@ func (c KubeClient) Status(tar string, metadata map[string]interface{}, agId str
 }
 
 // Currently we only support service/vault secret update, this k8s secret is create with service secret value in agreement. It is not the secret.yml from operator file
-func (c KubeClient) Update(tar string, metadata map[string]interface{}, agId string, reqNamespace string, updatedEnv map[string]string, updatedSecrets []persistence.PersistedServiceSecret) error {
-	// Convert updatedSecrets to map[string]string
-	updatedSecretsMap := make(map[string]string, 0)
-	for _, pss := range updatedSecrets {
-		secName := pss.SvcSecretName
-		secValue := pss.SvcSecretValue
-		updatedSecretsMap[secName] = secValue
-	}
-
+func (c KubeClient) Update(tar string, metadata map[string]interface{}, agId string, reqNamespace string, updatedEnv map[string]string, updatedSecretsMap map[string]string) error {
 	// Current implementaion only updatedSecrets will be passed into this function
 	apiObjMap, opNamespace, err := ProcessDeployment(tar, metadata, nil, updatedEnv, "", "", updatedSecretsMap, agId, 0)
 	if err != nil {

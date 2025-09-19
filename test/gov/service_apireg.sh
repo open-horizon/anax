@@ -747,7 +747,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_secret.json
   "clusterDeployment": {
     "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s-secret-operator/k8s-secret-operator.tar.gz",
     "secrets": {
-          "secret1": {"description": "Secret 1 for cluster hello-secret."}
+          "secret1": {"description": "Secret 1 for cluster hello-secret."},
+          "secret2": {
+            "description": "Secret 2 for cluster hello-secret.",
+            "format": "value_only"
+          }
         }
    },
   "clusterDeploymentSignature": ""
@@ -1640,7 +1644,18 @@ read -d '' bpk8ssvc1def <<EOF
       "serviceArch": "amd64",
       "serviceVersionRange": "[0.0.0,INFINITY)",
       "secrets": [
-        {"secret1": "k8s-hello-secret"}
+        {"secret1": "k8s-hello-secret1"},
+        {"secret2": "k8s-hello-secret2"}
+      ]
+    },
+        {
+      "serviceUrl": "k8s-hello-secret",
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceArch": "amd64",
+      "serviceVersionRange": "[0.0.0,INFINITY)",
+      "secrets": [
+        {"secret1": "k8s-hello-secret1"},
+        {"secret2": "k8s-hello-secret2"}
       ]
     }
   ]

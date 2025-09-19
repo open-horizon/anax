@@ -52,6 +52,7 @@ function get_container_id {
 # second parameter is secret key
 # third parameter is secret detail
 # fourth parameter is the number of 10 second intervals to wait for the secret to update. 0 for no wait.
+# fifth parameter (true) indicate it is value only format
 function check_container_secret {
     # get the contents of the secret file
     secret_file_content=$(docker exec $CONTAINER_ID sh -c "cat /open-horizon-secrets/$1")
@@ -60,36 +61,45 @@ function check_container_secret {
         exit -1
     fi
 
-    secret_key=$(echo $secret_file_content | jq -r '.key')
-    if [ $? -ne 0 ]; then 
-        echo -e "${PREFIX} failed to find secret key in secret file $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL."
-        exit -1
-    fi
+    is_value_only=$5
 
-    timeout=$4
-    while [[ $secret_key != $2  ]] && [ $timeout -gt 0 ]; do
-        echo -e "${PREFIX} waiting for secret $1 to be updated."
-        let timeout=$timeout-1
-        sleep 10s
-
-        secret_file_content=$(docker exec $CONTAINER_ID sh -c "cat /open-horizon-secrets/$1")
-        if [ $? -ne 0 ]; then 
-            echo -e "${PREFIX} failed to find secret file in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL for service secret $1."
-            exit -1
-        fi
-        export secret_key=$(echo $secret_file_content | jq -r '.key')
+    if ! $is_value_only; then
+        echo -e "${PREFIX} secret $1 is NOT value only format."
+        secret_key=$(echo $secret_file_content | jq -r '.key')
         if [ $? -ne 0 ]; then 
             echo -e "${PREFIX} failed to find secret key in secret file $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL."
             exit -1
         fi
-    done
 
-    if [[ $secret_key != $2 ]]; then 
-        echo -e "${PREFIX} expected secret $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL to have key \"$2\". Found key \"$secret_key\"."
-        exit -1
+        timeout=$4
+        while [[ $secret_key != $2  ]] && [ $timeout -gt 0 ]; do
+            echo -e "${PREFIX} waiting for secret $1 to be updated."
+            let timeout=$timeout-1
+            sleep 10s
+
+            secret_file_content=$(docker exec $CONTAINER_ID sh -c "cat /open-horizon-secrets/$1")
+            if [ $? -ne 0 ]; then 
+                echo -e "${PREFIX} failed to find secret file in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL for service secret $1."
+                exit -1
+            fi
+            export secret_key=$(echo $secret_file_content | jq -r '.key')
+            if [ $? -ne 0 ]; then 
+                echo -e "${PREFIX} failed to find secret key in secret file $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL."
+                exit -1
+            fi
+        done
+
+        if [[ $secret_key != $2 ]]; then 
+            echo -e "${PREFIX} expected secret $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL to have key \"$2\". Found key \"$secret_key\"."
+            exit -1
+        fi
+
+        secret_value=$(echo $secret_file_content | jq -r '.value')
+    else
+        echo -e "${PREFIX} secret $1 is value only format."
+        secret_value=$(echo $secret_file_content)
     fi
 
-    secret_value=$(echo $secret_file_content | jq -r '.value')
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} failed to find secret value in secret file $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL."
         exit -1
@@ -207,27 +217,27 @@ get_auth_for_tests
 # Check that the secrets are initially mounted for the top-level netspeed service 
 SVC_URL="https://bluehorizon.network/services/netspeed"
 SVC_ORG="e2edev@somecomp.com"
-get_container_id 8
+get_container_id 150
 
-check_container_secret "sec1" $INITIAL_SECRET_KEY1 $INITIAL_SECRET_DETAIL1 0
+check_container_secret "sec1" $INITIAL_SECRET_KEY1 $INITIAL_SECRET_DETAIL1 0 true
 
-check_container_secret "sec2" $INITIAL_SECRET_KEY2 $INITIAL_SECRET_DETAIL2 0
+check_container_secret "sec2" $INITIAL_SECRET_KEY2 $INITIAL_SECRET_DETAIL2 0 false
 
 # Check that the secrets are initially mounted for the dependent singleton IBM/service-cpu service 
 SVC_URL="https://bluehorizon.network/service-cpu"
 SVC_ORG="IBM"
 get_container_id 0
 
-check_container_secret "secret-dep1" $INITIAL_SECRET_KEY1 $INITIAL_SECRET_DETAIL1 0
+check_container_secret "secret-dep1" $INITIAL_SECRET_KEY1 $INITIAL_SECRET_DETAIL1 0 false
 
 # Update netspeed-secret1 and check it updates in both containers
 update_secret "netspeed-secret1" "test1" "updatedSecret1" $USE_AUTH $USE_ORG
-check_container_secret "secret-dep1" "test1" "updatedSecret1" 24
+check_container_secret "secret-dep1" "test1" "updatedSecret1" 24 false
 
 SVC_URL="https://bluehorizon.network/services/netspeed"
 SVC_ORG="e2edev@somecomp.com"
 get_container_id 0
-check_container_secret "sec1" "test1" "updatedSecret1" 0
+check_container_secret "sec1" "test1" "updatedSecret1" 0 true
 
 # Suspend the location service (location has service-cpu as a dependent)
 suspend_service "https://bluehorizon.network/services/location" "e2edev@somecomp.com" 
@@ -250,7 +260,7 @@ fi
 SVC_URL="https://bluehorizon.network/service-cpu"
 SVC_ORG="IBM"
 get_container_id 0
-check_container_secret "secret-dep1" "test1" "updatedSecret1" 0
+check_container_secret "secret-dep1" "test1" "updatedSecret1" 0 false
 
 # Resume the location service and reset the changed secret
 resume_service "https://bluehorizon.network/services/location" "e2edev@somecomp.com" 

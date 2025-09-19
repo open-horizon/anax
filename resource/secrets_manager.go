@@ -3,26 +3,34 @@ package resource
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/boltdb/bolt"
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/semanticversion"
 	"os"
 	"os/exec"
 	"os/user"
 	"path"
 	"strconv"
-
-	"github.com/boltdb/bolt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/semanticversion"
 )
+
+const VALUE_ONLY_FORMAT = "value_only"
 
 type SecretsManager struct {
 	config   *config.HorizonConfig
 	db       *bolt.DB
 	NodeType string
+}
+
+type SecretObj struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 func NewSecretsManager(cfg *config.HorizonConfig, database *bolt.DB) *SecretsManager {
@@ -55,16 +63,81 @@ func (s SecretsManager) ProcessServiceSecretsWithInstanceId(agId string, msInstK
 	return nil
 }
 
-func (s SecretsManager) ProcessServiceSecretsWithInstanceIdForCluster(agId string, msInstKey string) (map[string]string, error) {
+func (s SecretsManager) ProcessServiceSecretsWithInstanceIdForCluster(agId string, msInstKey string, kd *persistence.KubeDeploymentConfig) (map[string]string, error) {
 	secretsMap := make(map[string]string)
+
+	if s.db == nil {
+		return secretsMap, nil
+	}
+
+	var serviceSecretsMap map[string]*persistence.PersistedServiceSecret
 	if err := s.ProcessServiceSecretsWithInstanceId(agId, msInstKey); err != nil {
 		return secretsMap, err
 	} else if secretsForService, err := persistence.FindAllSecretsForMS(s.db, msInstKey); err != nil {
 		return secretsMap, err
 	} else if secretsForService != nil {
-		for singleSecName, singlePersistedSecret := range secretsForService.SecretsMap {
-			secValue := singlePersistedSecret.SvcSecretValue
-			secretsMap[singleSecName] = secValue
+		serviceSecretsMap = secretsForService.SecretsMap
+	}
+
+	var secretObj SecretObj
+
+	if cdConfig, err := common.ConvertToClusterDeploymentConfig(kd, nil); err != nil {
+		return secretsMap, err
+	} else {
+		secretsFromClusterDeployment := cdConfig.Secrets
+		for singleSecName, singleSecValue := range serviceSecretsMap {
+			// secValue should be base64 encoded string
+			var secValue string
+			if secFromClusterDeployment, ok := secretsFromClusterDeployment[singleSecName]; ok {
+				// secInterfaceFromClusterDeployment is: {"description":"Secret 1 for cluster hello-secret.","format":"value_only"}
+				if secFromClusterDeployment.Format == VALUE_ONLY_FORMAT {
+					if contentBytes, err := base64.StdEncoding.DecodeString(singleSecValue.SvcSecretValue); err != nil {
+						return secretsMap, fmt.Errorf("error decoding base64 encoded secret string: %v", err)
+					} else if err := json.Unmarshal(contentBytes, &secretObj); err != nil {
+						return secretsMap, fmt.Errorf("error unmarshal secret value to secret object as Key/Value pair")
+					} else {
+						secValue = base64.StdEncoding.EncodeToString([]byte(secretObj.Value))
+					}
+				} else {
+					// SvcSecretValue is in base64
+					secValue = singleSecValue.SvcSecretValue
+				}
+				secretsMap[singleSecName] = secValue
+			}
+		}
+	}
+
+	return secretsMap, nil
+}
+
+func (s SecretsManager) ProcessServiceSecretUpdatesForCluster(agId string, kd *persistence.KubeDeploymentConfig, updatedSecList []persistence.PersistedServiceSecret) (map[string]string, error) {
+	secretsMap := make(map[string]string)
+
+	if s.db == nil {
+		return secretsMap, nil
+	}
+
+	var secretObj SecretObj
+
+	if cdConfig, err := common.ConvertToClusterDeploymentConfig(kd, nil); err != nil {
+		return secretsMap, err
+	} else {
+		secretsFromClusterDeployment := cdConfig.Secrets
+		for _, pss := range updatedSecList {
+			secName := pss.SvcSecretName
+			secValue := pss.SvcSecretValue
+			if secFromClusterDeployment, ok := secretsFromClusterDeployment[secName]; ok {
+				if secFromClusterDeployment.Format == VALUE_ONLY_FORMAT {
+					if contentBytes, err := base64.StdEncoding.DecodeString(secValue); err != nil {
+						return secretsMap, fmt.Errorf("error decoding base64 encoded secret string: %v", err)
+					} else if err := json.Unmarshal(contentBytes, &secretObj); err != nil {
+						return secretsMap, fmt.Errorf("error unmarshal secret value to secret object as Key/Value pair")
+					} else {
+						secValue = base64.StdEncoding.EncodeToString([]byte(secretObj.Value))
+					}
+				}
+				secretsMap[secName] = secValue
+			}
 		}
 	}
 
@@ -160,12 +233,9 @@ func (s SecretsManager) SaveMicroserviceInstanceSecretsFromAgreementSecrets(agId
 
 // This is for updating service secrets. This assumes that the updated secrets are already updated in the agent db.
 func (s SecretsManager) WriteExistingServiceSecretsToFile(msInstKey string, updatedSec persistence.PersistedServiceSecret) error {
-	if contentBytes, err := base64.StdEncoding.DecodeString(updatedSec.SvcSecretValue); err != nil {
-		return err
-	} else {
-		err = WriteToFile(contentBytes, path.Join(s.GetSecretDirPath(), msInstKey, updatedSec.SvcSecretName), path.Join(s.GetSecretDirPath(), msInstKey))
-	}
-	return nil
+	secMap := make(map[string]*persistence.PersistedServiceSecret, 1)
+	secMap[updatedSec.SvcSecretName] = &updatedSec
+	return s.WriteSecretContent(msInstKey, secMap, true)
 }
 
 // Remove this agId from all the secrets it is in. If it is the only agId for that secret, remove the secret
@@ -213,17 +283,12 @@ func (s SecretsManager) RemoveSecretFile(msInstKey string, secretName string) er
 }
 
 // This is for writing new service secrets to a file for the service container. This assumes that the secrets are already in the agent db.
+// This function is only used for device agent case
 func (s SecretsManager) WriteNewServiceSecretsToFile(msInstKey string) error {
 	if secretsForService, err := persistence.FindAllSecretsForMS(s.db, msInstKey); err != nil {
 		return err
 	} else if secretsForService != nil {
-		for singleSecName, singleSecValue := range secretsForService.SecretsMap {
-			if contentBytes, err := base64.StdEncoding.DecodeString(singleSecValue.SvcSecretValue); err != nil {
-				return fmt.Errorf("Error decoding base64 encoded secret string: %v", err)
-			} else if err = CreateAndWriteToFile(contentBytes, msInstKey, path.Join(s.GetSecretDirPath(), msInstKey, singleSecName), path.Join(s.GetSecretDirPath(), msInstKey)); err != nil {
-				return err
-			}
-		}
+		return s.WriteSecretContent(msInstKey, secretsForService.SecretsMap, false)
 	}
 	return nil
 }
@@ -334,6 +399,54 @@ func (s *SecretsManager) RemoveFile(key string) error {
 
 func (s SecretsManager) GetSecretsPath(msInstKey string) string {
 	return path.Join(s.GetSecretDirPath(), msInstKey)
+}
+
+// Get the correct secret value format for given service
+func (s *SecretsManager) WriteSecretContent(msInstKey string, SecretsMap map[string]*persistence.PersistedServiceSecret, IsUpdate bool) error {
+
+	if msIntf, err := persistence.GetMicroserviceInstIWithKey(s.db, msInstKey); err != nil {
+		return err
+	} else if msIntf == nil {
+		return fmt.Errorf("get nil microservice Inst Interface for %v", msInstKey)
+	} else if msDef, err := persistence.FindMicroserviceDefWithKey(s.db, msIntf.GetServiceDefId()); err != nil {
+		return err
+	} else {
+		// parse deploymentString to check the secret format
+		if dConfig, err := common.ConvertToDeploymentConfig(msDef.Deployment, nil); err != nil {
+			return err
+		} else {
+			var secretObj SecretObj
+			var contentBytes []byte //decoded content
+			for _, service := range dConfig.Services {
+				secrets := service.Secrets
+
+				for singleSecName, singleSecValue := range SecretsMap {
+					if contentBytes, err = base64.StdEncoding.DecodeString(singleSecValue.SvcSecretValue); err != nil {
+						return fmt.Errorf("error decoding base64 encoded secret string: %v", err)
+					}
+
+					if secrets[singleSecName].Format == VALUE_ONLY_FORMAT {
+						glog.Info(secLogString(fmt.Sprintf("secret %v is in value_only format", singleSecName)))
+						if err := json.Unmarshal(contentBytes, &secretObj); err != nil {
+							return fmt.Errorf("error unmarshal secret value to secret object as Key/Value pair")
+						} else {
+							contentBytes = []byte(secretObj.Value)
+						}
+					}
+
+					if IsUpdate {
+						if err = WriteToFile(contentBytes, path.Join(s.GetSecretDirPath(), msInstKey, singleSecName), path.Join(s.GetSecretDirPath(), msInstKey)); err != nil {
+							return err
+						}
+					}
+					if err = CreateAndWriteToFile(contentBytes, msInstKey, path.Join(s.GetSecretDirPath(), msInstKey, singleSecName), path.Join(s.GetSecretDirPath(), msInstKey)); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
 }
 
 var secLogString = func(v interface{}) string {
