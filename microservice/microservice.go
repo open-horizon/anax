@@ -573,7 +573,7 @@ func CreateMicroserviceDef(db *bolt.DB, service_name string, service_org string,
 // upgradeVerExpr is a full semantic version expression, representing upgrade or downgrade version range.
 // Please make sure there is no MicroserviceDefinition for this service before calling this function.
 func CreateMicroserviceDefWithServiceDef(db *bolt.DB, sdef *exchange.ServiceDefinition, sId string, upgradeVerExpr string) (*persistence.MicroserviceDefinition, error) {
-	glog.V(3).Infof("Create service definition in local db for for %v", sId)
+	glog.V(3).Infof("Create service definition in local db for %v", sId) // sId: e2edev@somecomp.com/k8s-service-embedded-ns_1.0.0_amd64
 
 	// Convert the service definition to a persistent format so that it can be saved to the db.
 	msdef, err := ConvertServiceToPersistent(sdef, exchange.GetOrg(sId))

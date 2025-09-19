@@ -185,7 +185,7 @@ func (w *KubeWorker) processKubeOperator(lc *events.AgreementLaunchContext, kd *
 	glog.V(3).Infof(kwlog(fmt.Sprintf("begin install of Kube Deployment %s", lc.AgreementId)))
 
 	glog.V(3).Infof(kwlog(fmt.Sprintf("save service secrets into microservice in the agent database from agreement %s", lc.AgreementId)))
-	secretsMap, err := w.GetSecretManager().ProcessServiceSecretsWithInstanceIdForCluster(lc.AgreementId, lc.AgreementId)
+	secretsMap, err := w.GetSecretManager().ProcessServiceSecretsWithInstanceIdForCluster(lc.AgreementId, lc.AgreementId, kd)
 	if err != nil {
 		return err
 	}

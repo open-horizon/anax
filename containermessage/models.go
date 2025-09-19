@@ -148,6 +148,7 @@ type Secret struct {
 	SvcOrg          string `json:"svcOrg"`
 	SvcUrl          string `json:"svcUrl"`
 	SvcVersionRange string `json:"svcVersionRange"`
+	Format          string `json:"format"`
 }
 
 // Service Only those marked "omitempty" may be omitted
