@@ -1,14 +1,30 @@
 package common
 
 import (
+	"archive/tar"
+	"compress/gzip"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/i18n"
-	"github.com/open-horizon/anax/kube_operator"
+	olmv1scheme "github.com/operator-framework/api/pkg/operators/v1"
+	olmv1alpha1scheme "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	"golang.org/x/text/message"
+	"io"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+	v1scheme "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	v1beta1scheme "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/client-go/kubernetes/scheme"
+	"strings"
 )
+
+const K8S_NAMESPACE_TYPE = "Namespace"
 
 type DeploymentConfig struct {
 	Services map[string]*containermessage.Service `json:"services"`
@@ -222,6 +238,99 @@ func GetClusterDeploymentMetadata(clusterDeployment interface{}, inspectOperator
 }
 
 func GetKubeOperatorNamespace(tar string) (string, error) {
-	_, namespace, err := kube_operator.ProcessDeployment(tar, nil, nil, map[string]string{}, "", "", map[string]string{}, "", 0)
-	return namespace, err
+	yamls, err := GetYamlFromTarGz(tar)
+	if err != nil {
+		return "", err
+	}
+
+	return getK8sNamespaceObjectFromYaml(yamls), nil
+}
+
+// Intermediate state used for after the objects have been read from the deployment but not converted to k8s objects yet
+type YamlFile struct {
+	Header tar.Header
+	Body   string
+}
+
+// Read the compressed tar file from the operator deployments section
+func GetYamlFromTarGz(deploymentString string) ([]YamlFile, error) {
+	files := []YamlFile{}
+
+	archiveData, err := base64.StdEncoding.DecodeString(deploymentString)
+	if err != nil {
+		return files, err
+	}
+	r := strings.NewReader(string(archiveData))
+
+	zipReader, err := gzip.NewReader(r)
+	if err != nil {
+		return files, err
+	}
+	tarReader := tar.NewReader(zipReader)
+
+	for {
+		header, err := tarReader.Next()
+
+		if err == io.EOF || header == nil {
+			break
+		} else if header.Typeflag == tar.TypeDir {
+			continue
+		} else if err == nil {
+			tar, err := io.ReadAll(tarReader)
+			if err != nil {
+				return files, fmt.Errorf("error reading tar file: %v", err)
+			}
+			newFile := YamlFile{Header: *header, Body: string(tar)}
+			files = append(files, newFile)
+		} else {
+			return files, err
+		}
+	}
+	return files, nil
+}
+
+func IsNamespaceType(k8sType string) bool {
+	return k8sType == K8S_NAMESPACE_TYPE
+}
+
+// Convert the given yaml files into k8s api objects
+func getK8sNamespaceObjectFromYaml(yamlFiles []YamlFile) string {
+	namespace := ""
+
+	sch := runtime.NewScheme()
+
+	// This is required to allow the schema to recognize custom resource definition types
+	_ = v1beta1scheme.AddToScheme(sch)
+	_ = v1scheme.AddToScheme(sch)
+	_ = scheme.AddToScheme(sch)
+	_ = olmv1alpha1scheme.AddToScheme(sch)
+	_ = olmv1scheme.AddToScheme(sch)
+
+	// multiple yaml files can be in one file separated by '---'
+	// these are split here and rejoined with the single files
+	indivYamls := []YamlFile{}
+	for _, file := range yamlFiles {
+		if multFiles := strings.Split(file.Body, "---"); len(multFiles) > 1 {
+			for _, indivYaml := range multFiles {
+				if strings.TrimSpace(indivYaml) != "" {
+					indivYamls = append(indivYamls, YamlFile{Body: indivYaml})
+				}
+			}
+		} else {
+			indivYamls = append(indivYamls, file)
+		}
+	}
+
+	for _, fileStr := range indivYamls {
+		decode := serializer.NewCodecFactory(sch).UniversalDecoder(v1beta1scheme.SchemeGroupVersion, v1scheme.SchemeGroupVersion, rbacv1.SchemeGroupVersion, appsv1.SchemeGroupVersion, corev1.SchemeGroupVersion, olmv1alpha1scheme.SchemeGroupVersion, olmv1scheme.SchemeGroupVersion).Decode
+		obj, gvk, _ := decode([]byte(fileStr.Body), nil, nil)
+
+		if gvk != nil && IsNamespaceType(gvk.Kind) {
+			if typedNS, ok := obj.(*corev1.Namespace); ok {
+				namespace = typedNS.ObjectMeta.Name
+			}
+		}
+	}
+
+	return namespace
 }

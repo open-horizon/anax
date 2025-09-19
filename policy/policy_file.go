@@ -71,7 +71,7 @@ type Policy struct {
 	NodeH              NodeHealth                          `json:"nodeHealth,omitempty"`       // Version 2.0
 	UserInput          []UserInput                         `json:"userInput,omitempty"`
 	SecretBinding      []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"`    // This structure has the servive secret name to secret provider name mappings
-	SecretDetails      []exchangecommon.SecretBinding      `json:"secretDetails,omitempty"`    // This structure has the service secret name to secret details mappings
+	SecretDetails      []exchangecommon.SecretBinding     `json:"secretDetails,omitempty"`    // This structure has the service secret name to secret details mappings
 	ClusterNamespace   string                              `json:"clusterNamespace,omitempty"` // the namespace for the service to be deployed
 }
 
