@@ -167,37 +167,37 @@ func verifyNewServiceInputs(homeDirectory string, org string, specRef string, ve
 	}
 
 	if org == "" && os.Getenv(DEVTOOL_HZN_ORG) == "" {
-		return "", fmt.Errorf(msgPrinter.Sprintf("must specify either --org or set the %v environment variable.", DEVTOOL_HZN_ORG))
+		return "", fmt.Errorf("%s", msgPrinter.Sprintf("must specify either --org or set the %v environment variable.", DEVTOOL_HZN_ORG))
 	}
 
 	// check if the input version is a valid version string
 	if version != "" {
 		if !semanticversion.IsVersionString(version) {
-			return "", fmt.Errorf(msgPrinter.Sprintf("invalid version string: %v", version))
+			return "", fmt.Errorf("%s", msgPrinter.Sprintf("invalid version string: %v", version))
 		}
 	}
 
 	if len(images) != 0 {
 		if len(images) > 1 && !noImageGen {
-			return "", fmt.Errorf(msgPrinter.Sprintf("only support one image for a service unless --noImageGen flag is specified."))
+			return "", fmt.Errorf("%s", msgPrinter.Sprintf("only support one image for a service unless --noImageGen flag is specified."))
 		}
 
 		// validate the image
 		for _, image := range images {
 			if _, path, _, _ := cutil.ParseDockerImagePath(image); path == "" {
-				return "", fmt.Errorf(msgPrinter.Sprintf("image %v has invalid format.", image))
+				return "", fmt.Errorf("%s", msgPrinter.Sprintf("image %v has invalid format.", image))
 			}
 		}
 	} else {
 		if specRef != "" && cutil.SliceContains(dconfig, "native") {
-			return "", fmt.Errorf(msgPrinter.Sprintf("please specify the image name with -i flag."))
+			return "", fmt.Errorf("%s", msgPrinter.Sprintf("please specify the image name with -i flag."))
 		}
 	}
 
 	// Make sure that the input deployment config type is supported.
 	for _, dc := range dconfig {
 		if !plugin_registry.DeploymentConfigPlugins.HasPlugin(dc) {
-			return "", fmt.Errorf(msgPrinter.Sprintf("unsupported deployment config type: %v", dconfig))
+			return "", fmt.Errorf("%s", msgPrinter.Sprintf("unsupported deployment config type: %v", dconfig))
 		}
 	}
 

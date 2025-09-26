@@ -40,7 +40,7 @@ func getSelectionString(selections []string) (string, error) {
 			}
 
 			if len(op) > 1 {
-				return "", fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The selection string %v is not valid.", v))
+				return "", fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("The selection string %v is not valid.", v))
 			}
 
 			real_op := ""
@@ -58,7 +58,7 @@ func getSelectionString(selections []string) (string, error) {
 			}
 			sels = append(sels, fmt.Sprintf("%v%v%v", attrib, real_op, val))
 		} else {
-			return "", fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The selection string %v is not valid.", v))
+			return "", fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("The selection string %v is not valid.", v))
 		}
 	}
 	return strings.Join(sels, "&"), nil

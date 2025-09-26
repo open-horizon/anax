@@ -42,7 +42,7 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored(checkAll bool) error {
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
 			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_UNARCHIVED_AG_FROM_DB, err.Error()),
 			persistence.EC_DATABASE_ERROR)
-		return fmt.Errorf(logString(fmt.Sprintf("Unable to retrieve unarchived agreements from database. %v", err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Unable to retrieve unarchived agreements from database. %v", err)))
 	} else {
 		veryfication_failed := false
 		for _, ag := range ags {

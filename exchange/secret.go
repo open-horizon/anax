@@ -33,10 +33,10 @@ func VaultSecretExists(ec ExchangeContext, agbotURL string, org string, userName
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "LIST", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return false, err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue

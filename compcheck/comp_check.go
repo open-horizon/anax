@@ -328,11 +328,11 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 	if ccInput.BusinessPolId != "" || ccInput.BusinessPolicy != nil {
 		useBPol = true
 		if ccInput.PatternId != "" || ccInput.Pattern != nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Deployment policy and pattern are mutually exclusive.")), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Deployment policy and pattern are mutually exclusive.")), COMPCHECK_INPUT_ERROR)
 		}
 	} else {
 		if ccInput.PatternId == "" && ccInput.Pattern == nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither deployment policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Neither deployment policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
 		}
 	}
 
@@ -597,18 +597,18 @@ func GetExchangeNode(getDeviceHandler exchange.DeviceHandler, nodeId string, msg
 
 	// check input
 	if nodeId == "" {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The given node id is empty.")), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The given node id is empty.")), COMPCHECK_INPUT_ERROR)
 	} else {
 		nodeOrg := exchange.GetOrg(nodeId)
 		if nodeOrg == "" {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Organization is not specified in the given node id: %v.", nodeId)), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Organization is not specified in the given node id: %v.", nodeId)), COMPCHECK_INPUT_ERROR)
 		}
 	}
 
 	if node, err := getDeviceHandler(nodeId, ""); err != nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error getting node %v from the Exchange. %v", nodeId, err)), COMPCHECK_EXCHANGE_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error getting node %v from the Exchange. %v", nodeId, err)), COMPCHECK_EXCHANGE_ERROR)
 	} else if node == nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No node found for this node id %v.", nodeId)), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("No node found for this node id %v.", nodeId)), COMPCHECK_INPUT_ERROR)
 	} else {
 		return node, nil
 	}
@@ -760,7 +760,7 @@ func DeploymentRequiresPrivilege(deploymentString string, msgPrinter *message.Pr
 	deploymentStruct := &containermessage.DeploymentDescription{}
 	err := json.Unmarshal([]byte(deploymentString), deploymentStruct)
 	if err != nil {
-		return false, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error unmarshaling deployment string to internal deployment structure: %v", err)), COMPCHECK_CONVERSION_ERROR)
+		return false, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error unmarshaling deployment string to internal deployment structure: %v", err)), COMPCHECK_CONVERSION_ERROR)
 	}
 	for _, topSvc := range deploymentStruct.Services {
 		if topSvc != nil {
@@ -780,9 +780,9 @@ func VerifyNodeType(nodeType string, exchNodeType string, nodeId string, msgPrin
 
 	if nodeType != "" {
 		if nodeType != persistence.DEVICE_TYPE_DEVICE && nodeType != persistence.DEVICE_TYPE_CLUSTER {
-			return "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Invalid node type: %v. It must be 'device' or 'cluster'.", nodeType)), COMPCHECK_INPUT_ERROR)
+			return "", NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Invalid node type: %v. It must be 'device' or 'cluster'.", nodeType)), COMPCHECK_INPUT_ERROR)
 		} else if exchNodeType != "" && nodeType != exchNodeType {
-			return "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node type '%v' does not match the node type '%v' from the node %v.", nodeType, exchNodeType, nodeId)), COMPCHECK_INPUT_ERROR)
+			return "", NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input node type '%v' does not match the node type '%v' from the node %v.", nodeType, exchNodeType, nodeId)), COMPCHECK_INPUT_ERROR)
 		}
 		return nodeType, nil
 	} else {
@@ -818,7 +818,7 @@ func VerifyNodeClusterNamespace(nodeNamespace string, exchNodeNamespace string, 
 
 	if nodeNamespace != "" {
 		if exchNodeNamespace != "" && nodeNamespace != exchNodeNamespace {
-			return "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node's cluster namespace '%v' does not match the node's cluster namespace '%v' from the exchange %v.", nodeNamespace, exchNodeNamespace, nodeId)), COMPCHECK_INPUT_ERROR)
+			return "", NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input node's cluster namespace '%v' does not match the node's cluster namespace '%v' from the exchange %v.", nodeNamespace, exchNodeNamespace, nodeId)), COMPCHECK_INPUT_ERROR)
 		}
 		return nodeNamespace, nil
 	} else {
@@ -832,7 +832,7 @@ func VerifyNodeScope(nodeIsNamespaceScope bool, exchNodeIsNamespaceScope bool, n
 	}
 
 	if nodeIsNamespaceScope != exchNodeIsNamespaceScope {
-		return false, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node's scope '%v' does not match the node's scope '%v' from the exchange %v.", nodeIsNamespaceScope, exchNodeIsNamespaceScope, nodeId)), COMPCHECK_INPUT_ERROR)
+		return false, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input node's scope '%v' does not match the node's scope '%v' from the exchange %v.", nodeIsNamespaceScope, exchNodeIsNamespaceScope, nodeId)), COMPCHECK_INPUT_ERROR)
 	}
 	// nodeIsNamespaceScope == exchNodeIsNamespaceScope
 	return nodeIsNamespaceScope, nil
@@ -924,12 +924,12 @@ func ValidatePatternClusterNamespace(isNamespaceScoped bool, nodeNamespace strin
 	}
 	if isNamespaceScoped {
 		if patternNamespace == "" || patternNamespace != "" && patternNamespace != nodeNamespace {
-			return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The namespace '%v' specified in the pattern '%v' is empty or does not match the namespace of the namespace scoped agent: '%v'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.", patternNamespace, patternId, nodeNamespace)), COMPCHECK_VALIDATION_ERROR)
+			return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The namespace '%v' specified in the pattern '%v' is empty or does not match the namespace of the namespace scoped agent: '%v'. Namespace scoped agent is only compatible with pattern that has the same namespace with agent.", patternNamespace, patternId, nodeNamespace)), COMPCHECK_VALIDATION_ERROR)
 		}
 	} else {
 		// is cluster scope
 		if patternNamespace != "" {
-			return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The Cluster namespace specified in the pattern '%v' is %v, only pattern with empty cluster namespace can be registered for cluster scoped agent", patternId, patternNamespace)), COMPCHECK_VALIDATION_ERROR)
+			return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The Cluster namespace specified in the pattern '%v' is %v, only pattern with empty cluster namespace can be registered for cluster scoped agent", patternId, patternNamespace)), COMPCHECK_VALIDATION_ERROR)
 		}
 	}
 	return nil
@@ -1025,9 +1025,9 @@ func GetServiceDependentDefs(sDef common.AbstractServiceFile,
 			if s_map, err = FindServiceDefs(svcSpec, dependentServices, msgPrinter); err != nil {
 				return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
 			} else if vExp, err := semanticversion.Version_Expression_Factory(sDep.VersionRange); err != nil {
-				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.VersionRange, err)), COMPCHECK_GENERAL_ERROR)
+				return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.VersionRange, err)), COMPCHECK_GENERAL_ERROR)
 			} else if _, s_map, s_def, s_id, err = serviceDefResolverHandler(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch); err != nil {
-				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving dependent services from the Exchange for %v. %v", sDep, err)), COMPCHECK_EXCHANGE_ERROR)
+				return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error retrieving dependent services from the Exchange for %v. %v", sDep, err)), COMPCHECK_EXCHANGE_ERROR)
 			} else {
 				service_map[s_id] = *s_def
 			}
@@ -1057,7 +1057,7 @@ func FindServiceDefs(svcSpec *ServiceSpec, sDefsIn map[string]exchange.ServiceDe
 	for sID, sDef := range sDefsIn {
 		if sDef.URL == svcSpec.ServiceUrl && exchange.GetOrg(sID) == svcSpec.ServiceOrgid && sDef.Arch == svcSpec.ServiceArch {
 			if vExp, err := semanticversion.Version_Expression_Factory(svcSpec.ServiceVersionRange); err != nil {
-				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", svcSpec.ServiceVersionRange, err)), COMPCHECK_GENERAL_ERROR)
+				return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Unable to create version expression from %v. %v", svcSpec.ServiceVersionRange, err)), COMPCHECK_GENERAL_ERROR)
 			} else if ok, err := vExp.Is_within_range(sDef.Version); err != nil {
 				return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
 			} else if ok {
@@ -1131,7 +1131,7 @@ func GetServiceAndDeps(svcUrl, svcOrg, svcVersion, svcArch string,
 		// not found, get it and dependents from the exchange
 		_, depSvcs, exchTopSvc, topId, err = getServiceResolvedDef(svcUrl, svcOrg, svcVersion, svcArch)
 		if err != nil {
-			return nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s (%s/%s/%s/%s), error: %v. Compatability of %s cannot be fully evaluated until all services are in the Exchange.", topId, svcUrl, svcOrg, svcVersion, svcArch, err, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
+			return nil, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Failed to find definition for dependent services of %s (%s/%s/%s/%s), error: %v. Compatability of %s cannot be fully evaluated until all services are in the Exchange.", topId, svcUrl, svcOrg, svcVersion, svcArch, err, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
 		}
 		topSvc = &ServiceDefinition{exchange.GetOrg(topId), *exchTopSvc}
 	}

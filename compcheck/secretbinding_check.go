@@ -116,7 +116,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 
 	if sbcInput == nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The SecretBindingCheck input cannot be null")), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The SecretBindingCheck input cannot be null")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// make a copy of the input because the process will change it. The pointer to policies will stay the same.
@@ -139,7 +139,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 			return nil, err
 		} else if input.NodeArch != "" {
 			if node.Arch != "" && node.Arch != input.NodeArch {
-				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node architecture %v does not match the Exchange node architecture %v for node %v.", input.NodeArch, node.Arch, nodeId)), COMPCHECK_INPUT_ERROR)
+				return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input node architecture %v does not match the Exchange node architecture %v for node %v.", input.NodeArch, node.Arch, nodeId)), COMPCHECK_INPUT_ERROR)
 			}
 		} else {
 			resources.NodeArch = node.Arch
@@ -161,11 +161,11 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 	if input.BusinessPolId != "" || input.BusinessPolicy != nil {
 		useBPol = true
 		if input.PatternId != "" || input.Pattern != nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Deployment policy and pattern are mutually exclusive.")), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Deployment policy and pattern are mutually exclusive.")), COMPCHECK_INPUT_ERROR)
 		}
 	} else {
 		if input.PatternId == "" && input.Pattern == nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither deployment policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Neither deployment policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
 		}
 	}
 
@@ -193,9 +193,9 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 	if serviceRefs == nil || len(serviceRefs) == 0 {
 		if resources.NodeArch != "" {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No service versions with architecture %v specified in the deployment policy or pattern.", resources.NodeArch)), COMPCHECK_VALIDATION_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("No service versions with architecture %v specified in the deployment policy or pattern.", resources.NodeArch)), COMPCHECK_VALIDATION_ERROR)
 		} else {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No service versions specified in the deployment policy or pattern.")), COMPCHECK_VALIDATION_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("No service versions specified in the deployment policy or pattern.")), COMPCHECK_VALIDATION_ERROR)
 		}
 	}
 
@@ -273,7 +273,7 @@ func secretBindingCompatible(getDeviceHandler exchange.DeviceHandler,
 				} else {
 					// since workload arch is empty, need to go through all the arches
 					if svcMeta, err := getSelectedServices(serviceRef.ServiceURL, serviceRef.ServiceOrg, workload.Version, ""); err != nil {
-						return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error getting services for all archetctures for %v/%v version %v. %v", serviceRef.ServiceOrg, serviceRef.ServiceURL, workload.Version, err)), COMPCHECK_EXCHANGE_ERROR)
+						return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error getting services for all archetctures for %v/%v version %v. %v", serviceRef.ServiceOrg, serviceRef.ServiceURL, workload.Version, err)), COMPCHECK_EXCHANGE_ERROR)
 					} else {
 						for sId, s := range svcMeta {
 							org := exchange.GetOrg(sId)
@@ -455,7 +455,7 @@ func VerifySecretBindingForServiceCache(sTopDef common.AbstractServiceFile,
 
 	// nothing to check
 	if sTopDef == nil {
-		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
+		return false, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// map: keyed by index of the secretBinding array, the value is a map of
@@ -485,7 +485,7 @@ func VerifySecretBindingForServiceCache(sTopDef common.AbstractServiceFile,
 	if agbotUrl != "" && vaultSecretExists != nil {
 		neededSB, _ := GroupSecretBindings(secretBinding, index_map)
 		if verified, reason, err := VerifyVaultSecrets_strict(neededSB, nodeOrg, nodeId, agbotUrl, vaultSecretExists, msgPrinter); err != nil {
-			return false, "", index_map, fmt.Errorf(msgPrinter.Sprintf("Error verifying secret in the secret manager. %v", err))
+			return false, "", index_map, fmt.Errorf("%s", msgPrinter.Sprintf("Error verifying secret in the secret manager. %v", err))
 		} else {
 			return verified, reason, index_map, nil
 		}
@@ -517,12 +517,12 @@ func VerifySecretBindingForService(svcSpec *ServiceSpec,
 
 	// nothing to check
 	if svcSpec == nil {
-		return false, "", nil, nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service spec object cannot be null.")), COMPCHECK_INPUT_ERROR)
+		return false, "", nil, nil, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input service spec object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	_, svc_map, sDef, sId, err := serviceDefResolverHandler(svcSpec.ServiceUrl, svcSpec.ServiceOrgid, svcSpec.ServiceVersionRange, svcSpec.ServiceArch)
 	if err != nil {
-		return false, "", nil, nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", svcSpec, err)), COMPCHECK_EXCHANGE_ERROR)
+		return false, "", nil, nil, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", svcSpec, err)), COMPCHECK_EXCHANGE_ERROR)
 	}
 
 	compSDef := ServiceDefinition{svcSpec.ServiceOrgid, *sDef}
@@ -555,13 +555,13 @@ func VerifySecretBindingForServiceDef(sDef common.AbstractServiceFile,
 
 	// nothing to check
 	if sDef == nil {
-		return false, "", nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
+		return false, "", nil, nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// get all the service defs for the dependent services for device type node
 	service_map, err := GetServiceDependentDefs(sDef, dependentServices, serviceDefResolverHandler, msgPrinter)
 	if err != nil {
-		return false, "", nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find the dependent services for %v/%v %v %v. %v", sDef.GetOrg(), sDef.GetURL(), sDef.GetArch(), sDef.GetVersion(), err)), COMPCHECK_GENERAL_ERROR)
+		return false, "", nil, nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Failed to find the dependent services for %v/%v %v %v. %v", sDef.GetOrg(), sDef.GetURL(), sDef.GetArch(), sDef.GetVersion(), err)), COMPCHECK_GENERAL_ERROR)
 	}
 
 	compatible, reason, inxex_map, err := VerifySecretBindingForServiceCache(sDef, service_map, secretBinding, vaultSecretExists, agbotUrl, nodeOrg, nodeId, msgPrinter)
@@ -631,7 +631,7 @@ func ValidateSecretBindingForSingleService(secretBinding []exchangecommon.Secret
 		for sn, _ := range noBinding {
 			nbArray = append(nbArray, sn)
 		}
-		return index, nil, fmt.Errorf(msgPrinter.Sprintf("No secret binding found for the following service secrets: %v.", nbArray))
+		return index, nil, fmt.Errorf("%s", msgPrinter.Sprintf("No secret binding found for the following service secrets: %v.", nbArray))
 	}
 
 	// return an array of service secret names in the biniding that are needed.
@@ -698,9 +698,9 @@ func GetSecretBindingForService(secretBinding []exchangecommon.SecretBinding, sv
 		}
 		if sb.ServiceVersionRange != "" && sb.ServiceVersionRange != svcVersion {
 			if vExp, err := semanticversion.Version_Expression_Factory(sb.ServiceVersionRange); err != nil {
-				return -1, fmt.Errorf(msgPrinter.Sprintf("Wrong version string %v specified in secret binding for service %v/%v %v %v, error %v", sb.ServiceVersionRange, svcOrg, svcName, svcVersion, svcArch, err))
+				return -1, fmt.Errorf("%s", msgPrinter.Sprintf("Wrong version string %v specified in secret binding for service %v/%v %v %v, error %v", sb.ServiceVersionRange, svcOrg, svcName, svcVersion, svcArch, err))
 			} else if inRange, err := vExp.Is_within_range(svcVersion); err != nil {
-				return -1, fmt.Errorf(msgPrinter.Sprintf("Error checking version %v in range %v. %v", svcVersion, vExp, err))
+				return -1, fmt.Errorf("%s", msgPrinter.Sprintf("Error checking version %v in range %v. %v", svcVersion, vExp, err))
 			} else if !inRange {
 				continue
 			}
@@ -729,11 +729,11 @@ func VerifyVaultSecrets(secretBinding []exchangecommon.SecretBinding, nodeOrg st
 	}
 
 	if agbotURL == "" {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set."))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set."))
 	}
 
 	if nodeOrg == "" {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("The node organization must be provided."))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("The node organization must be provided."))
 	}
 
 	// go through each secret binding making sure the vault secret exist in vault
@@ -781,11 +781,11 @@ func VerifyVaultSecrets_strict(secretBinding []exchangecommon.SecretBinding, nod
 	}
 
 	if agbotURL == "" {
-		return false, "", fmt.Errorf(msgPrinter.Sprintf("agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set."))
+		return false, "", fmt.Errorf("%s", msgPrinter.Sprintf("agbot URL cannot be an empty string when checking secret binding. Please make sure HZN_AGBOT_URL is set."))
 	}
 
 	if nodeOrg == "" {
-		return false, "", fmt.Errorf(msgPrinter.Sprintf("The node organization must be provided."))
+		return false, "", fmt.Errorf("%s", msgPrinter.Sprintf("The node organization must be provided."))
 	}
 
 	reasons := []string{}
@@ -814,7 +814,7 @@ func VerifyVaultSecrets_strict(secretBinding []exchangecommon.SecretBinding, nod
 		}
 	}
 
-	reason := fmt.Sprintf(strings.Join(reasons, "; "))
+	reason := fmt.Sprintf("%s", strings.Join(reasons, "; "))
 	return true, reason, nil
 }
 
@@ -830,7 +830,7 @@ func VerifySingleVaultSecret(vaultSecretName string, nodeOrg string, nodeId stri
 	// parse the name
 	userName, nName, sName, err_parse := ParseVaultSecretName(vaultSecretName, msgPrinter)
 	if err_parse != nil {
-		return false, fmt.Errorf(msgPrinter.Sprintf("Error parsing secret name in the secret binding. %v", err_parse))
+		return false, fmt.Errorf("%s", msgPrinter.Sprintf("Error parsing secret name in the secret binding. %v", err_parse))
 	}
 
 	// nName == "" from ParseVaultSecretName() function if this is deploycheck CLI
@@ -843,15 +843,15 @@ func VerifySingleVaultSecret(vaultSecretName string, nodeOrg string, nodeId stri
 
 	// check the existance
 	if exists, err := vaultSecretExists(agbotURL, nodeOrg, userName, nName, sName); err != nil {
-		return false, fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v for node %v in the secret manager. %v", vaultSecretName, nName, err))
+		return false, fmt.Errorf("%s", msgPrinter.Sprintf("Error checking secret %v for node %v in the secret manager. %v", vaultSecretName, nName, err))
 	} else if enableNodeSecret && !exists && nName != "" {
 		// then set nName == "" to check non-node level
 		if exists, err = vaultSecretExists(agbotURL, nodeOrg, userName, "", sName); err != nil {
-			return false, fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager. %v", vaultSecretName, err))
+			return false, fmt.Errorf("%s", msgPrinter.Sprintf("Error checking secret %v in the secret manager. %v", vaultSecretName, err))
 		}
 
 		// return exists and
-		return exists, fmt.Errorf(msgPrinter.Sprintf("Node level secret %v doesn't exist for node %v", vaultSecretName, nName))
+		return exists, fmt.Errorf("%s", msgPrinter.Sprintf("Node level secret %v doesn't exist for node %v", vaultSecretName, nName))
 	} else {
 		return exists, nil
 	}
@@ -879,7 +879,7 @@ func ParseVaultSecretName(secretName string, msgPrinter *message.Printer) (strin
 
 	// cannot be empty string
 	if secretName == "" {
-		return "", "", "", fmt.Errorf(msgPrinter.Sprintf("The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret."))
+		return "", "", "", fmt.Errorf("%s", msgPrinter.Sprintf("The binding secret name cannot be an empty string. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret."))
 	}
 
 	secretName = strings.TrimPrefix(secretName, "/")
@@ -901,7 +901,7 @@ func ParseVaultSecretName(secretName string, msgPrinter *message.Printer) (strin
 		}
 	}
 
-	return "", "", "", fmt.Errorf(msgPrinter.Sprintf("Invalid format for the binding secret name: %v. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.", secretName))
+	return "", "", "", fmt.Errorf("%s", msgPrinter.Sprintf("Invalid format for the binding secret name: %v. The valid formats are: '<secretname>' for the organization level secret and 'user/<username>/<secretname>' for the user level secret.", secretName))
 }
 
 // update the index map.

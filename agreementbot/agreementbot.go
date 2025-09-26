@@ -872,7 +872,7 @@ func (w *AgreementBotWorker) reportWorkQueues() {
 	rep := ""
 	for _, cph := range w.consumerPH.GetAll() {
 		rep += fmt.Sprintf("%v High: %6d, Low: %6d\n", cph, w.consumerPH.Get(cph).WorkQueue().HighPriorityBufferLen(), w.consumerPH.Get(cph).WorkQueue().LowPriorityBufferLen())
-		rep += fmt.Sprintf(w.consumerPH.Get(cph).WorkQueue().queueHistory.report())
+		rep += fmt.Sprintf("%s", w.consumerPH.Get(cph).WorkQueue().queueHistory.report())
 	}
 	glog.V(3).Infof(AWlogString(fmt.Sprintf("Prioritized Work Queues: %v", rep)))
 }
@@ -978,7 +978,7 @@ func DeleteConsumerAgreement(httpClient *http.Client, url string, agbotId string
 	targetURL := url + "orgs/" + exchange.GetOrg(agbotId) + "/agbots/" + exchange.GetId(agbotId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "not found") {
-			glog.Errorf(AWlogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(AWlogString(fmt.Sprintf("%s", err.Error())))
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())

@@ -88,14 +88,14 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 		isRetry = true
 		msinst_given, err1 = persistence.FindMicroserviceInstanceWithKey(w.db, msinst_key)
 		if err1 != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding service instance %v from db. %v", msinst_key, err1)))
+			return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error finding service instance %v from db. %v", msinst_key, err1)))
 		}
 	}
 
 	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, ms_key); err != nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding service definition from db with key %v. %v", ms_key, err)))
+		return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error finding service definition from db with key %v. %v", ms_key, err)))
 	} else if msdef == nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("No service definition available for key %v.", ms_key)))
+		return nil, fmt.Errorf("%s", logString(fmt.Sprintf("No service definition available for key %v.", ms_key)))
 	} else {
 		if !msdef.HasDeployment() {
 			glog.Infof(logString(fmt.Sprintf("No workload needed for service %v/%v.", msdef.Org, msdef.SpecRef)))
@@ -106,13 +106,13 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			} else {
 				mi, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath, false)
 				if err1 != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
+					return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
 				}
 			}
 
 			// if the new microservice does not have containers, just mark it done.
 			if mi_new, err := persistence.UpdateMSInstanceExecutionState(w.db, mi.GetKey(), true, 0, ""); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to update the ExecutionStartTime for service instance %v. %v", mi.GetKey(), err)))
+				return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Failed to update the ExecutionStartTime for service instance %v. %v", mi.GetKey(), err)))
 			} else {
 				return mi_new, nil
 			}
@@ -136,7 +136,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			if w.Config.Edge.TrustCertUpdatesFromOrg {
 				key_map, err := exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.SERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch)
 				if err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting signing keys from the exchange: %v/%v %v %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Arch, err)))
+					return nil, fmt.Errorf("%s", logString(fmt.Sprintf("received error getting signing keys from the exchange: %v/%v %v %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Arch, err)))
 				}
 
 				if key_map != nil {
@@ -175,10 +175,10 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			// Verify the deployment signature
 			if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
 				w.cleanupSigningKeys(signingKeys)
-				return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
+				return nil, fmt.Errorf("%s", logString(fmt.Sprintf("received error getting pem key files: %v", err)))
 			} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
 				w.cleanupSigningKeys(signingKeys)
-				return nil, fmt.Errorf(logString(fmt.Sprintf("service container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
+				return nil, fmt.Errorf("%s", logString(fmt.Sprintf("service container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
 			}
 
 			w.cleanupSigningKeys(signingKeys)
@@ -191,7 +191,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			for _, rs := range msdef.RequiredServices {
 				msdef_dep, err := microservice.FindOrCreateMicroserviceDef(w.db, rs.URL, rs.Org, rs.Version, rs.Arch, false, w.devicePattern != "", exchange.GetHTTPServiceHandler(w))
 				if err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for for %v/%v: %v", rs.Org, rs.URL, err)))
+					return nil, fmt.Errorf("%s", logString(fmt.Sprintf("failed to get or create service definition for for %v/%v: %v", rs.Org, rs.URL, err)))
 				} else {
 					// Assume the first msdef is the one we want.
 					msspec := events.MicroserviceSpec{SpecRef: rs.URL, Org: rs.Org, Version: msdef_dep.Version, MsdefId: msdef_dep.Id}
@@ -206,7 +206,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			} else {
 				ms_instance, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath, false)
 				if err1 != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
+					return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
 				}
 			}
 
@@ -265,15 +265,15 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 		// this the first time this dependent service is brought up
 		ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)})
 		if err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("failed to retrieve agreement %v from database, error %v", agreementId, err)))
+			return nil, fmt.Errorf("%s", logString(fmt.Sprintf("failed to retrieve agreement %v from database, error %v", agreementId, err)))
 		} else if len(ags) == 0 {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("unable to find agreement %v from database.", agreementId)))
+			return nil, fmt.Errorf("%s", logString(fmt.Sprintf("unable to find agreement %v from database.", agreementId)))
 		}
 
 		if proposal, err := w.producerPH[ags[0].AgreementProtocol].AgreementProtocolHandler("", "", "").DemarshalProposal(ags[0].Proposal); err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error demarshalling proposal from agreement %v, %v", agreementId, err)))
+			return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error demarshalling proposal from agreement %v, %v", agreementId, err)))
 		} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error demarshalling policy from proposal for agreement %v, %v", agreementId, err)))
+			return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error demarshalling policy from proposal for agreement %v, %v", agreementId, err)))
 		} else {
 			tcPolicy = pol
 		}
@@ -284,7 +284,7 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 
 	envAdds, err := w.GetServicePreference(msdef.SpecRef, msdef.Org, tcPolicy)
 	if err != nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", msdef.SpecRef, msdef.Org, err)))
+		return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", msdef.SpecRef, msdef.Org, err)))
 	}
 
 	// for the retry case, get the variables from the old tcPolicy back
@@ -318,7 +318,7 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 
 	// save the envvars for retry case
 	if _, err := persistence.UpdateMSInstanceEnvVars(w.db, msInst.GetKey(), envAdds); err != nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Error saving environmental variable settings to ms instance %v: %v", msInst.GetKey(), err)))
+		return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error saving environmental variable settings to ms instance %v: %v", msInst.GetKey(), err)))
 	}
 
 	return envAdds, nil
@@ -331,14 +331,14 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 	// archive this microservice instance in the db
 	if ms_inst, err := persistence.MicroserviceInstanceCleanupStarted(w.db, inst_key); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error setting cleanup start time for service instance %v. %v", inst_key, err)))
-		return fmt.Errorf(logString(fmt.Sprintf("Error setting cleanup start time for service instance %v. %v", inst_key, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Error setting cleanup start time for service instance %v. %v", inst_key, err)))
 	} else if ms_inst == nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to find service instance %v.", inst_key)))
-		return fmt.Errorf(logString(fmt.Sprintf("Unable to find service instance %v.", inst_key)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Unable to find service instance %v.", inst_key)))
 		// remove all the containers for agreements associated with it so that new agreements can be created over the new microservice
 	} else if agreements, err := w.FindEstablishedAgreementsWithIds(ms_inst.AssociatedAgreements); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error finding agreements %v from the db. %v", ms_inst.AssociatedAgreements, err)))
-		return fmt.Errorf(logString(fmt.Sprintf("Error finding agreements %v from the db. %v", ms_inst.AssociatedAgreements, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Error finding agreements %v from the db. %v", ms_inst.AssociatedAgreements, err)))
 	} else if agreements != nil {
 		// If this function is called by the only clean up the workload containers for the agreement
 		glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for associated agreements %v", ms_inst.AssociatedAgreements)))
@@ -377,7 +377,7 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 
 		// remove all the containers if any for this specific service instance
 		if has_wl, err := ms_inst.HasWorkload(w.db); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Error checking if the service %v has workload. %v", ms_inst.GetKey(), err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Error checking if the service %v has workload. %v", ms_inst.GetKey(), err)))
 		} else if has_wl {
 			glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for %v", inst_key)))
 			w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE, inst_key)
@@ -387,7 +387,7 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 	// archive this microservice instance
 	if err := persistence.ArchiveMicroserviceInstAndDef(w.db, inst_key, w.devicePattern == ""); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", inst_key, err)))
-		return fmt.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", inst_key, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Error archiving service instance %v. %v", inst_key, err)))
 	}
 
 	return nil
@@ -400,13 +400,13 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 
 	// archive the old ms def and save the new one to db
 	if _, err := persistence.MsDefArchived(w.db, msdef.Id); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("Failed to archived service definition %v. %v", msdef, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to archived service definition %v. %v", msdef, err)))
 	} else if err := persistence.SaveOrUpdateMicroserviceDef(w.db, new_msdef); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("Failed to save service definition to db. %v. %v", new_msdef, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to save service definition to db. %v. %v", new_msdef, err)))
 	} else if _, err := persistence.MSDefUpgradeNewMsId(w.db, msdef.Id, new_msdef.Id); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("Failed to update the UpgradeNewMsId to %v for service def %v/%v version %v id %v. %v", new_msdef.Id, new_msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to update the UpgradeNewMsId to %v for service def %v/%v version %v id %v. %v", new_msdef.Id, new_msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err)))
 	} else if _, err := persistence.MSDefUpgradeStarted(w.db, new_msdef.Id); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("Failed to update the UpgradeStartTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to update the UpgradeStartTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 	}
 
 	// clean up old microservice
@@ -431,11 +431,11 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	// update msdef UpgradeAgreementsClearedTime
 	if eClearError != nil {
 		if _, err := persistence.MSDefUpgradeFailed(w.db, new_msdef.Id, microservice.MS_CLEAR_OLD_AGS_FAILED, microservice.DecodeReasonCode(microservice.MS_CLEAR_OLD_AGS_FAILED)); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to update the UpgradeAgreementsClearedTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to update the UpgradeAgreementsClearedTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 		}
 	} else {
 		if _, err := persistence.MsDefUpgradeAgreementsCleared(w.db, new_msdef.Id); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to update the UpgradeAgreementsClearedTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to update the UpgradeAgreementsClearedTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 		}
 	}
 
@@ -453,11 +453,11 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	// update msdef UpgradeMsUnregisteredTime
 	if unregError != nil {
 		if _, err := persistence.MSDefUpgradeFailed(w.db, new_msdef.Id, microservice.MS_UNREG_EXCH_FAILED, microservice.DecodeReasonCode(microservice.MS_UNREG_EXCH_FAILED)); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to update service upgrading failure reason for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to update service upgrading failure reason for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 		}
 	} else {
 		if _, err := persistence.MSDefUpgradeMsUnregistered(w.db, new_msdef.Id); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to update the UpgradeMsUnregisteredTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to update the UpgradeMsUnregisteredTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 		}
 	}
 
@@ -468,14 +468,14 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 		genPolErr = microservice.GenMicroservicePolicy(new_msdef, w.Config.Edge.PolicyPath, w.db, w.Messages(), exchange.GetOrg(w.GetExchangeId()), w.devicePattern)
 		if genPolErr != nil {
 			if _, err := persistence.MSDefUpgradeFailed(w.db, new_msdef.Id, microservice.MS_REREG_EXCH_FAILED, microservice.DecodeReasonCode(microservice.MS_REREG_EXCH_FAILED)); err != nil {
-				return fmt.Errorf(logString(fmt.Sprintf("Failed to update service upgrading failure reason for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+				return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to update service upgrading failure reason for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 			}
 		}
 	}
 
 	if genPolErr == nil {
 		if _, err := persistence.MSDefUpgradeMsReregistered(w.db, new_msdef.Id); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to update the UpgradeMsReregisteredTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to update the UpgradeMsReregisteredTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 		}
 	}
 
@@ -494,10 +494,10 @@ func (w *GovernanceWorker) RetryMicroservice(msi *persistence.MicroserviceInstan
 
 	// increment the retry count
 	if _, err := persistence.UpdateMSInstanceCurrentRetryCount(w.db, inst_key, msi.CurrentRetryCount+1); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("error setting the current retry count to %v for service instance %v in db. %v", msi.CurrentRetryCount+1, inst_key, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("error setting the current retry count to %v for service instance %v in db. %v", msi.CurrentRetryCount+1, inst_key, err)))
 		// clear the execution state
 	} else if _, err := persistence.ResetMsInstanceExecutionStatus(w.db, inst_key); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("error resetting the execution status for service instance %v in db. %v", inst_key, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("error resetting the execution status for service instance %v in db. %v", inst_key, err)))
 		// start retry
 	} else if _, err := w.StartMicroservice(msi.MicroserviceDefId, "", []persistence.ServiceInstancePathElement{}, inst_key); err != nil {
 		return err
@@ -514,14 +514,14 @@ func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceD
 			eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_GOV_ERR_FIND_SDEF_FOR_DOWNGRADE, msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err.Error()),
 				persistence.EC_DATABASE_ERROR)
-			return fmt.Errorf(logString(fmt.Sprintf("Error finding the new service definition to downgrade to for %v/%v version %v key %v. error: %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Error finding the new service definition to downgrade to for %v/%v version %v key %v. error: %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err)))
 		} else if new_msdef == nil { //no more to try, exit out
 			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
 				persistence.NewMessageMeta(EL_GOV_ERR_NO_VERSION_TO_DOWNGRADE, msdef.Org, msdef.SpecRef, msdef.Version),
 				persistence.EC_NO_VERSION_TO_DOWNGRADE,
 				"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
 			glog.Warningf(logString(fmt.Sprintf("Unable to find the service definition to downgrade to for %v/%v version %v key %v.", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id)))
-			return fmt.Errorf(logString(fmt.Sprintf("Unable to find the service definition to downgrade to for %v/%v version %v key %v.", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Unable to find the service definition to downgrade to for %v/%v version %v key %v.", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id)))
 		} else {
 			if err := w.UpgradeMicroservice(msdef, new_msdef, false); err != nil {
 				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
@@ -560,7 +560,7 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
 			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_SINSTS_VER_FROM_DB, msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err.Error()),
 			persistence.EC_DATABASE_ERROR)
-		return fmt.Errorf(logString(fmt.Sprintf("Error retrieving all the service instances from db for %v/%v version %v key %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Error retrieving all the service instances from db for %v/%v version %v key %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err)))
 	} else if ms_insts == nil || len(ms_insts) == 0 {
 		needs_new_ms = true
 	} else {
@@ -602,20 +602,20 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 				glog.Errorf(logString(fmt.Sprintf("Error downgrading service %v/%v version %v key %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err)))
 			}
 
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to start service instance for %v/%v version %v key %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, inst_err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to start service instance for %v/%v version %v key %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, inst_err)))
 		}
 	} else if _, err := persistence.UpdateMSInstanceAddDependencyPath(w.db, msi.GetKey(), &dependencyPath); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("error adding dependency path %v to the service %v: %v", dependencyPath, msi.GetKey(), err)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("error adding dependency path %v to the service %v: %v", dependencyPath, msi.GetKey(), err)))
 	}
 
 	// Add the agreement id into the instance so that the workload containers know which instance to associate with.
 	if agreementId != "" {
 		if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), true, agreementId); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("error adding agreement id %v to the service %v: %v", agreementId, msi.GetKey(), err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("error adding agreement id %v to the service %v: %v", agreementId, msi.GetKey(), err)))
 		}
 	} else {
 		if _, err := persistence.UpdateMSInstanceAgreementLess(w.db, msi.GetKey()); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("error setting agreement-less on the service %v: %v", msi.GetKey(), err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("error setting agreement-less on the service %v: %v", msi.GetKey(), err)))
 		}
 	}
 
@@ -711,7 +711,7 @@ func (w *GovernanceWorker) getMicroserviceRetryCount(msi *persistence.Microservi
 	retry_duration := uint(w.Config.Edge.DefaultServiceRetryDuration)
 
 	if ags, err := w.FindEstablishedAgreementsWithIds(msi.AssociatedAgreements); err != nil {
-		return 0, 0, fmt.Errorf(logString(fmt.Sprintf("unable to retrieve agreements %v from database, error %v", msi.AssociatedAgreements, err)))
+		return 0, 0, fmt.Errorf("%s", logString(fmt.Sprintf("unable to retrieve agreements %v from database, error %v", msi.AssociatedAgreements, err)))
 	} else if len(ags) != 0 {
 		total_retries := 0
 		total_retry_duration := 0
@@ -721,9 +721,9 @@ func (w *GovernanceWorker) getMicroserviceRetryCount(msi *persistence.Microservi
 		for _, ag := range ags {
 			protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "", "")
 			if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
-				return 0, 0, fmt.Errorf(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
+				return 0, 0, fmt.Errorf("%s", logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
 			} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-				return 0, 0, fmt.Errorf(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
+				return 0, 0, fmt.Errorf("%s", logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
 			} else {
 				total_retries += tcPolicy.Workloads[0].Priority.Retries
 				total_retry_duration += tcPolicy.Workloads[0].Priority.RetryDurationS

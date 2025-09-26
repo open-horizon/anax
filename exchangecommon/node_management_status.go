@@ -72,7 +72,7 @@ func (n NodeManagementPolicyStatus) SetScheduledStartTime(nmpStartTime, nmpLastU
 		max := big.NewInt(int64(upgradeWindow))
 		nRand, err := rand.Int(rand.Reader, max)
 		if err != nil {
-			return fmt.Errorf("failed to generate secure random number: " + err.Error())
+			return fmt.Errorf("%s", "failed to generate secure random number: "+err.Error())
 		}
 		realStartTime += nRand.Int64()
 	}

@@ -60,15 +60,15 @@ func (w ServiceRef) Validate() error {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	if w.Name == "" || w.Org == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("Name, or Org is empty string."))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Name, or Org is empty string."))
 	} else if w.ServiceVersions == nil || len(w.ServiceVersions) == 0 {
-		return fmt.Errorf(msgPrinter.Sprintf("The serviceVersions array is empty."))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("The serviceVersions array is empty."))
 	} else if len(w.ServiceVersions) != 0 {
 		for _, wc := range w.ServiceVersions {
 			if wc.Priority.PriorityValue != 0 && (wc.Priority.RetryDurationS == 0 || wc.Priority.Retries == 0) {
-				return fmt.Errorf(msgPrinter.Sprintf("retry_durations and retries cannot be zero if priority_value is set to non-zero value"))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("retry_durations and retries cannot be zero if priority_value is set to non-zero value"))
 			} else if wc.Priority.PriorityValue == 0 && (wc.Priority.RetryDurationS != 0 || wc.Priority.Retries != 0 || wc.Priority.VerifiedDurationS != 0) {
-				return fmt.Errorf(msgPrinter.Sprintf("retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set"))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("retry_durations, retries and verified_durations cannot be non-zero value if priority_value is zero or not set"))
 			}
 		}
 	}
@@ -141,7 +141,7 @@ func (b *BusinessPolicy) Validate() error {
 	// Validate the PropertyList.
 	if b != nil && len(b.Properties) != 0 {
 		if err := b.Properties.Validate(); err != nil {
-			return fmt.Errorf(msgPrinter.Sprintf("properties contains an invalid property: %v", err))
+			return fmt.Errorf("%s", msgPrinter.Sprintf("properties contains an invalid property: %v", err))
 		}
 	}
 
@@ -155,7 +155,7 @@ func (b *BusinessPolicy) Validate() error {
 				privProp.Value = false
 				b.Properties.Add_Property(&privProp, true)
 			} else {
-				return fmt.Errorf(msgPrinter.Sprintf("The property %s must have a boolean value (true or false).", externalpolicy.PROP_SVC_PRIVILEGED))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("The property %s must have a boolean value (true or false).", externalpolicy.PROP_SVC_PRIVILEGED))
 			}
 		}
 	}
@@ -300,12 +300,12 @@ func ValidateClusterNSWithConstraint(policy *BusinessPolicy) (bool, error) {
 
 		// all the "openhorizon.kubernetesNamespace" related constrain (along with other if in the same line) are added
 		if parsedConstrain, err := externalpolicy.GetParseConstraintWithName(newconstr, externalpolicy.PROP_NODE_K8S_NAMESPACE); err != nil {
-			return false, fmt.Errorf(msgPrinter.Sprintf("Failed to get constraint with name %v, error: %v", externalpolicy.PROP_NODE_K8S_NAMESPACE, err))
+			return false, fmt.Errorf("%s", msgPrinter.Sprintf("Failed to get constraint with name %v, error: %v", externalpolicy.PROP_NODE_K8S_NAMESPACE, err))
 		} else {
 			requiredProperties := externalpolicy.ConvertParsedConstraintToRequiredProperty(parsedConstrain)
 
 			if err = requiredProperties.IsSatisfiedBy(*propList); err != nil {
-				return true, fmt.Errorf(msgPrinter.Sprintf("kubernetesNamespace defined in the constraint %v is different from the clusterNamespace '%v' specified in the deployment policy, the policy might result in no service deployments", newconstr, clusterNSInPolicy))
+				return true, fmt.Errorf("%s", msgPrinter.Sprintf("kubernetesNamespace defined in the constraint %v is different from the clusterNamespace '%v' specified in the deployment policy, the policy might result in no service deployments", newconstr, clusterNSInPolicy))
 			}
 		}
 	}

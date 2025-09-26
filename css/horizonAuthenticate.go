@@ -64,11 +64,11 @@ func (auth *HorizonAuthenticate) Start() {
 			panic(fmt.Sprintf("Unable to create HTTP client, error %v", err))
 		}
 		if log.IsLogging(logger.INFO) {
-			log.Info(cssALS("starting with exchange authenticated identity"))
+			log.Info("%s", cssALS("starting with exchange authenticated identity"))
 		}
 	} else {
 		if log.IsLogging(logger.INFO) {
-			log.Info(cssALS(fmt.Sprintf("starting with pre-authenticated identities in header: %v", id)))
+			log.Info("%s", cssALS(fmt.Sprintf("starting with pre-authenticated identities in header: %v", id)))
 		}
 	}
 	return
@@ -108,7 +108,7 @@ func (auth *HorizonAuthenticate) Authenticate(request *http.Request) (int, strin
 
 	if request == nil {
 		if log.IsLogging(logger.ERROR) {
-			log.Error(cssALS(fmt.Sprintf("called with a nil HTTP request")))
+			log.Error("%s", cssALS(fmt.Sprintf("called with a nil HTTP request")))
 		}
 		return security.AuthFailed, "", ""
 	}
@@ -116,7 +116,7 @@ func (auth *HorizonAuthenticate) Authenticate(request *http.Request) (int, strin
 	appKey, appSecret, ok := request.BasicAuth()
 	if !ok {
 		if log.IsLogging(logger.ERROR) {
-			log.Error(cssALS(fmt.Sprintf("unable to extract basic auth information")))
+			log.Error("%s", cssALS(fmt.Sprintf("unable to extract basic auth information")))
 		}
 		return security.AuthFailed, "", ""
 	}
@@ -142,7 +142,7 @@ func (auth *HorizonAuthenticate) KeyandSecretForURL(url string) (string, string)
 // Authenticate function.
 func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKey string, appSecret string, exURL string) (int, string, string) {
 	if log.IsLogging(logger.DEBUG) {
-		log.Debug(cssALS(fmt.Sprintf("received exchange authentication request for URL Path %v user %v", otherOrg, appKey)))
+		log.Debug("%s", cssALS(fmt.Sprintf("received exchange authentication request for URL Path %v user %v", otherOrg, appKey)))
 	}
 
 	// Assume the request will be rejected.
@@ -155,12 +155,12 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 
 		// A 3 part '/' delimited identity has to be a node identity.
 		if trace.IsLogging(logger.TRACE) {
-			trace.Debug(cssALS(fmt.Sprintf("authentication request for user %v appears to be a node identity", appKey)))
+			trace.Debug("%s", cssALS(fmt.Sprintf("authentication request for user %v appears to be a node identity", appKey)))
 		}
 
 		if err := auth.verifyNodeIdentity(parts[2], parts[0], appSecret, ExchangeURL()); err != nil {
 			if log.IsLogging(logger.ERROR) {
-				log.Error(cssALS(fmt.Sprintf("unable to verify identity %v, error %v", appKey, err)))
+				log.Error("%s", cssALS(fmt.Sprintf("unable to verify identity %v, error %v", appKey, err)))
 			}
 		} else {
 			authCode = security.AuthEdgeNode
@@ -174,7 +174,7 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 
 		// A 2 part '/' delimited identity could be an agbot identity.
 		if trace.IsLogging(logger.TRACE) {
-			trace.Debug(cssALS(fmt.Sprintf("attempting authentication request as an agbot %v", appKey)))
+			trace.Debug("%s", cssALS(fmt.Sprintf("attempting authentication request as an agbot %v", appKey)))
 		}
 
 		// Agbots are admins by default. If an error is returned, check if the identity is a user.
@@ -187,26 +187,26 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 		} else {
 			// Check if the identity is a user, since we know its not an agbot. If an error is returned, check if the identity is a node user.
 			if trace.IsLogging(logger.WARNING) {
-				log.Warning(cssALS(fmt.Sprintf("unable to verify identity %v as agbot, error %v", appKey, err)))
+				log.Warning("%s", cssALS(fmt.Sprintf("unable to verify identity %v as agbot, error %v", appKey, err)))
 			}
 			if trace.IsLogging(logger.TRACE) {
-				trace.Debug(cssALS(fmt.Sprintf("attempting authentication request as a user %v", appKey)))
+				trace.Debug("%s", cssALS(fmt.Sprintf("attempting authentication request as a user %v", appKey)))
 			}
 			// appkey: {org}/{username} or {org}/iamapikey.
 			// parts[1] is {username} or iamapikey, parts[0] is {orgId}
 			if exchangeRole, username, err := auth.verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
 				if log.IsLogging(logger.WARNING) {
-					log.Warning(cssALS(fmt.Sprintf("unable to verify identity %v as user, error %v", appKey, err)))
+					log.Warning("%s", cssALS(fmt.Sprintf("unable to verify identity %v as user, error %v", appKey, err)))
 				}
 				if trace.IsLogging(logger.TRACE) {
-					trace.Debug(cssALS(fmt.Sprintf("attempting authentication request as an exchange node %v", appKey)))
+					trace.Debug("%s", cssALS(fmt.Sprintf("attempting authentication request as an exchange node %v", appKey)))
 				}
 				// Check if the identity is an exchange node
 				// appkey: {org}/{nodeId}. appSecret is {nodeToken}.
 				// parts[0] is {orgId}, parts[1] is {nodeId}
 				if err := auth.verifyNodeIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
 					if log.IsLogging(logger.ERROR) {
-						log.Error(cssALS(fmt.Sprintf("unable to verify identity %v as exchange node, error %v", appKey, err)))
+						log.Error("%s", cssALS(fmt.Sprintf("unable to verify identity %v as exchange node, error %v", appKey, err)))
 					}
 				} else {
 					// exchange node is AuthNodeUser. Without configuring ACLs, AuthNodeUser only has read access to public objects of any org, and have read access to manifest under its own org
@@ -235,13 +235,13 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 
 	} else {
 		if log.IsLogging(logger.ERROR) {
-			log.Error(cssALS(fmt.Sprintf("request identity %v is not in a supported format, must be either <org>/<destination type>/<destination id> for a node, <org>/<agbot id> for an agbot, <org>/<user id> for a user, or <org>/<node id> for a node user.", appKey)))
+			log.Error("%s", cssALS(fmt.Sprintf("request identity %v is not in a supported format, must be either <org>/<destination type>/<destination id> for a node, <org>/<agbot id> for an agbot, <org>/<user id> for a user, or <org>/<node id> for a node user.", appKey)))
 		}
 	}
 
 	// Log the results of the authentication.
 	if log.IsLogging(logger.DEBUG) {
-		log.Debug(cssALS(fmt.Sprintf("returned exchange authentication result code %v org %v id %v", authCode, authOrg, authId)))
+		log.Debug("%s", cssALS(fmt.Sprintf("returned exchange authentication result code %v org %v id %v", authCode, authOrg, authId)))
 	}
 	return authCode, authOrg, authId
 }
@@ -268,7 +268,7 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 	url := fmt.Sprintf("%v/orgs/%v/users/%v", exURL, orgId, id)
 	apiMsg := fmt.Sprintf("%v %v", http.MethodGet, url)
 	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("checking exchange %v", apiMsg)))
+		trace.Debug("%s", cssALS(fmt.Sprintf("checking exchange %v", apiMsg)))
 	}
 
 	// Invoke the exchange API to verify the user.
@@ -285,7 +285,7 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 
 	// Log the HTTP response code.
 	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
+		trace.Debug("%s", cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
 	}
 
 	// If the response code was not expected, then return the error.
@@ -348,7 +348,7 @@ func (auth *HorizonAuthenticate) verifyAgbotIdentity(id string, orgId string, ap
 	url := fmt.Sprintf("%v/orgs/%v/agbots/%v", exURL, orgId, id)
 	apiMsg := fmt.Sprintf("%v %v", http.MethodGet, url)
 	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("checking exchange %v", apiMsg)))
+		trace.Debug("%s", cssALS(fmt.Sprintf("checking exchange %v", apiMsg)))
 	}
 
 	// Invoke the exchange API to verify the user.
@@ -365,7 +365,7 @@ func (auth *HorizonAuthenticate) verifyAgbotIdentity(id string, orgId string, ap
 
 	// Log the HTTP response code.
 	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
+		trace.Debug("%s", cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
 	}
 
 	// If the response code was not expected, then return the error.
@@ -404,7 +404,7 @@ func (auth *HorizonAuthenticate) verifyNodeIdentity(id string, orgId string, app
 	url := fmt.Sprintf("%v/orgs/%v/nodes/%v", exURL, orgId, id)
 	apiMsg := fmt.Sprintf("%v %v", http.MethodGet, url)
 	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("checking exchange %v", apiMsg)))
+		trace.Debug("%s", cssALS(fmt.Sprintf("checking exchange %v", apiMsg)))
 	}
 
 	// Invoke the exchange API to verify the node.
@@ -421,7 +421,7 @@ func (auth *HorizonAuthenticate) verifyNodeIdentity(id string, orgId string, app
 
 	// Log the HTTP response code.
 	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
+		trace.Debug("%s", cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
 	}
 
 	// If the response code was not expected, then return the error.
@@ -486,16 +486,16 @@ func (auth *HorizonAuthenticate) invokeExchangeWithRetry(url string, user string
 		// Log the HTTP response code.
 		if trace.IsLogging(logger.TRACE) {
 			if resp == nil {
-				trace.Debug(cssALS(fmt.Sprintf("received nil response")))
+				trace.Debug("%s", cssALS(fmt.Sprintf("received nil response")))
 			} else {
-				trace.Debug(cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
+				trace.Debug("%s", cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
 			}
 		}
 
 		if exchange.IsTransportError(resp, err) {
 			// Log the transport error and retry
 			if trace.IsLogging(logger.TRACE) {
-				trace.Debug(cssALS(fmt.Sprintf("received transport error, retry...")))
+				trace.Debug("%s", cssALS(fmt.Sprintf("received transport error, retry...")))
 			}
 
 			currRetry--
@@ -525,7 +525,7 @@ func newHTTPClient(certPath string) (*http.Client, error) {
 			return nil, errors.New(fmt.Sprintf("unable to read %v, error %v", cleanedPath, err))
 		}
 		if log.IsLogging(logger.INFO) {
-			log.Info(cssALS(fmt.Sprintf("read CA cert from provided file %v", cleanedPath)))
+			log.Info("%s", cssALS(fmt.Sprintf("read CA cert from provided file %v", cleanedPath)))
 		}
 	}
 
@@ -546,7 +546,7 @@ func newHTTPClient(certPath string) (*http.Client, error) {
 	tlsConf.RootCAs = certPool
 
 	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("added CA Cert %v to trust", certPath)))
+		trace.Debug("%s", cssALS(fmt.Sprintf("added CA Cert %v to trust", certPath)))
 	}
 
 	tlsConf.BuildNameToCertificate()
@@ -582,13 +582,13 @@ func newHTTPClient(certPath string) (*http.Client, error) {
 func (auth *HorizonAuthenticate) authenticationAlreadyDone(request *http.Request, idHeaderName string) (int, string, string) {
 
 	if log.IsLogging(logger.DEBUG) {
-		log.Debug(cssALS(fmt.Sprintf("request header type %v", request.Header.Get("type"))))
-		log.Debug(cssALS(fmt.Sprintf("request header orgId %v", request.Header.Get("orgId"))))
-		log.Debug(cssALS(fmt.Sprintf("request header %v %v", idHeaderName, request.Header.Get(idHeaderName))))
+		log.Debug("%s", cssALS(fmt.Sprintf("request header type %v", request.Header.Get("type"))))
+		log.Debug("%s", cssALS(fmt.Sprintf("request header orgId %v", request.Header.Get("orgId"))))
+		log.Debug("%s", cssALS(fmt.Sprintf("request header %v %v", idHeaderName, request.Header.Get(idHeaderName))))
 
 		user, pw, _ := request.BasicAuth()
-		log.Debug(cssALS(fmt.Sprintf("request basic auth header id %v", user)))
-		log.Debug(cssALS(fmt.Sprintf("request basic auth header pw %v", pw)))
+		log.Debug("%s", cssALS(fmt.Sprintf("request basic auth header id %v", user)))
+		log.Debug("%s", cssALS(fmt.Sprintf("request basic auth header pw %v", pw)))
 	}
 
 	if request.Header.Get("type") == "person" {

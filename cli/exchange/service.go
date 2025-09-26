@@ -556,7 +556,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	var svcorg string
 	svcorg, service = cliutils.TrimOrg(org, service)
-	fullServiceName := fmt.Sprintf(svcorg + "/" + service)
+	fullServiceName := fmt.Sprintf("%s", svcorg+"/"+service)
 
 	// Read in the policy metadata
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)

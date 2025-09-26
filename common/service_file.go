@@ -197,7 +197,7 @@ func ValidateService(serviceDefResolverHandler exchange.ServiceDefResolverHandle
 	requiredServices := svcFile.GetRequiredServices()
 	if topSvcType == exchangecommon.SERVICE_TYPE_CLUSTER {
 		if requiredServices != nil && len(requiredServices) != 0 {
-			return fmt.Errorf(msgPrinter.Sprintf("'requiredServices' is not supported for cluster type service."))
+			return fmt.Errorf("%s", msgPrinter.Sprintf("'requiredServices' is not supported for cluster type service."))
 		}
 	} else {
 		// if it the service type is 'device' or 'both', make sure all the dependent services are 'device' or 'both' types
@@ -208,24 +208,24 @@ func ValidateService(serviceDefResolverHandler exchange.ServiceDefResolverHandle
 				ver := reqSvc.GetVersionRange()
 				vExp, err := semanticversion.Version_Expression_Factory(ver)
 				if err != nil {
-					return fmt.Errorf(msgPrinter.Sprintf("Failed to convert version %v for service %v to version range expression.", ver, reqSvc))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Failed to convert version %v for service %v to version range expression.", ver, reqSvc))
 				}
 				_, svc_map, sDef, sId, err := serviceDefResolverHandler(reqSvc.URL, reqSvc.Org, vExp.Get_expression(), reqSvc.Arch)
 				if err != nil {
-					return fmt.Errorf(msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", reqSvc, err))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", reqSvc, err))
 				}
 
 				// check the node type for the required service
 				sType := sDef.GetServiceType()
 				if sType == exchangecommon.SERVICE_TYPE_CLUSTER {
-					return fmt.Errorf(msgPrinter.Sprintf("The required service %v has the wrong service type: %v.", sId, sType))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("The required service %v has the wrong service type: %v.", sId, sType))
 				}
 
 				// check the node type of the dependent services of the required service
 				for id, s := range svc_map {
 					sType1 := s.GetServiceType()
 					if sType == exchangecommon.SERVICE_TYPE_CLUSTER {
-						return fmt.Errorf(msgPrinter.Sprintf("The dependent service %v for the required service %v has the wrong service type: %v.", id, sId, sType1))
+						return fmt.Errorf("%s", msgPrinter.Sprintf("The dependent service %v for the required service %v has the wrong service type: %v.", id, sId, sType1))
 					}
 				}
 			}

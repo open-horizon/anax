@@ -167,7 +167,7 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 			if timeout != 0 {
 				totalWait = totalWait - channelWait
 				if totalWait <= 0 {
-					return fmt.Errorf(msgPrinter.Sprintf("Timeout unregistering the node."))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Timeout unregistering the node."))
 				}
 				updateStatus := msgPrinter.Sprintf("Timeout in %v seconds ...", totalWait)
 				msgPrinter.Printf("Waiting for Horizon node unregister to complete: %v", updateStatus)
@@ -221,26 +221,26 @@ func DeepClean(agentInContainer bool) error {
 			containerIdx, err := cliutils.GetHorizonContainerIndex()
 			containerName := fmt.Sprintf("horizon%d", containerIdx)
 			if err != nil {
-				return fmt.Errorf(msgPrinter.Sprintf("Error resolving horizon container name: %v", err))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Error resolving horizon container name: %v", err))
 			}
 
 			cliutils.Verbose(msgPrinter.Sprintf("Looking for horizon container by name: %s", containerName))
 			outBytes, errBytes := cliutils.RunCmd(nil, "/bin/sh", "-c",
 				fmt.Sprintf("docker ps | grep %s", containerName))
 			if errBytes != nil && len(errBytes) > 0 {
-				return fmt.Errorf(msgPrinter.Sprintf("Error during checking if anax container is running: %s", errBytes))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Error during checking if anax container is running: %s", errBytes))
 			}
 			if outBytes != nil && len(outBytes) > 0 {
 				cliutils.Verbose(msgPrinter.Sprintf("Restarting horizon container..."))
 				outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
 					fmt.Sprintf("docker exec %s rm -f /var/horizon/*.db", containerName))
 				if errBytes != nil && len(errBytes) > 0 {
-					return fmt.Errorf(msgPrinter.Sprintf("Error during removing horizon db files from horizon container: %s", errBytes))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Error during removing horizon db files from horizon container: %s", errBytes))
 				}
 				outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
 					fmt.Sprintf("docker exec %s rm -Rf /etc/horizon/policy.d/*", containerName))
 				if errBytes != nil && len(errBytes) > 0 {
-					return fmt.Errorf(msgPrinter.Sprintf("Error during removing policy files from horizon container: %s", errBytes))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Error during removing policy files from horizon container: %s", errBytes))
 				}
 				if runtime.GOOS == "darwin" {
 					outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
@@ -250,11 +250,11 @@ func DeepClean(agentInContainer bool) error {
 						fmt.Sprintf("/usr/bin/horizon-container update %d", containerIdx))
 				}
 				if errBytes != nil && len(errBytes) > 0 {
-					return fmt.Errorf(msgPrinter.Sprintf("Error during restarting the anax container: %s", errBytes))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Error during restarting the anax container: %s", errBytes))
 				}
 				fmt.Println(string(outBytes))
 			} else {
-				return fmt.Errorf(msgPrinter.Sprintf("Could not find anax container by %s name", containerName))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Could not find anax container by %s name", containerName))
 			}
 		} else {
 			cliutils.Verbose(msgPrinter.Sprintf("Stopping horizon..."))
@@ -268,7 +268,7 @@ func DeepClean(agentInContainer bool) error {
 			msgPrinter.Printf("Deleting service containers...")
 			msgPrinter.Println()
 			if err := RemoveServiceContainers(); err != nil {
-				fmt.Printf(err.Error())
+				fmt.Printf("%s", err.Error())
 			}
 
 			msgPrinter.Printf("Starting horizon...")
@@ -299,7 +299,7 @@ func CheckNodeConfigState(timeout uint64) error {
 		}
 		time.Sleep(time.Duration(3) * time.Second)
 	}
-	return fmt.Errorf(msgPrinter.Sprintf("Timeout waiting for node change to 'unconfigured' state."))
+	return fmt.Errorf("%s", msgPrinter.Sprintf("Timeout waiting for node change to 'unconfigured' state."))
 }
 
 // Remove all the horizon service containers and networks.
@@ -320,7 +320,7 @@ func RemoveServiceContainers() error {
 	listOptions := docker.ListContainersOptions{All: true, Filters: map[string][]string{}}
 	containers, err := client.ListContainers(listOptions)
 	if err != nil {
-		return fmt.Errorf(msgPrinter.Sprintf("unable to list containers, %v", err))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("unable to list containers, %v", err))
 	}
 
 	if containers == nil || len(containers) == 0 {
@@ -353,7 +353,7 @@ func RemoveServiceContainers() error {
 	if err_string == "" {
 		return nil
 	} else {
-		return fmt.Errorf(err_string)
+		return fmt.Errorf("%s", err_string)
 	}
 }
 

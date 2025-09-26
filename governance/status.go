@@ -184,7 +184,7 @@ func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) (
 	status := make([]exchange.WorkloadStatus, 0)
 
 	if msdefs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service definitions from database, error: %v", err)))
+		return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error retrieving all service definitions from database, error: %v", err)))
 	} else if msdefs != nil {
 		for _, msdef := range msdefs {
 			var msdef_status exchange.WorkloadStatus
@@ -203,13 +203,13 @@ func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) (
 				if deployment != "" {
 					// get agreement
 					if ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.ServiceDefEAFilter(msdef.Id)}); err != nil {
-						return nil, fmt.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agId, err)))
+						return nil, fmt.Errorf("%s", logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agId, err)))
 					} else if len(ags) < 1 {
-						return nil, fmt.Errorf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database.", agId)))
+						return nil, fmt.Errorf("%s", logString(fmt.Sprintf("unable to retrieve single agreement %v from database.", agId)))
 					} else {
 						reqNamespace, err = w.GetRequestedClusterNamespaceFromAg(&ags[0])
 						if err != nil {
-							return nil, fmt.Errorf(logString(fmt.Sprintf("unable to get the requested cluster namespace from the agreement proposal.")))
+							return nil, fmt.Errorf("%s", logString(fmt.Sprintf("unable to get the requested cluster namespace from the agreement proposal.")))
 						}
 						agId = ags[0].CurrentAgreementId
 					}
@@ -224,13 +224,13 @@ func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) (
 				}
 			}
 			if msinsts, err := persistence.GetAllMicroserviceInstancesWithDefId(w.db, msdef.Id, false, false); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service instances for %v from database, error: %v", msdef.SpecRef, err)))
+				return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error retrieving all service instances for %v from database, error: %v", msdef.SpecRef, err)))
 			} else if msinsts != nil {
 				for _, msi := range msinsts {
 					glog.V(3).Infof("Gathering status for msdef: %v/%v, working on instance %v", msdef.Org, msdef.SpecRef, msi.GetKey())
 					if deployment != "" {
 						if cstatus, err := GetContainerStatus(deployment, msi.GetKey(), !msi.IsTopLevelService(), containers, reqNamespace); err != nil {
-							return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting service container status for %v. %v", msdef.SpecRef, err)))
+							return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error getting service container status for %v. %v", msdef.SpecRef, err)))
 						} else {
 							msdef_status.Containers = append(msdef_status.Containers, cstatus...)
 						}
@@ -321,7 +321,7 @@ func GetContainerStatus(deployment string, key string, infrastructure bool, cont
 			}
 		}
 	} else {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Error Unmarshalling deployment string %v. %v", deployment, err)))
+		return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error Unmarshalling deployment string %v. %v", deployment, err)))
 	}
 	return status, nil
 }
@@ -332,11 +332,11 @@ func GetOperatorStatus(deployment string, agId string, reqNamespace string) (int
 	if kd, err := persistence.GetKubeDeployment(deployment); err == nil {
 		client, err := kube_operator.NewKubeClient()
 		if err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving operator status from cluster, error: %v", err)))
+			return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error retrieving operator status from cluster, error: %v", err)))
 		}
 		opStatus, err := client.OperatorStatus(kd.OperatorYamlArchive, kd.Metadata, agId, reqNamespace)
 		if err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving operator status from cluster, error: %v", err)))
+			return nil, fmt.Errorf("%s", logString(fmt.Sprintf("Error retrieving operator status from cluster, error: %v", err)))
 		}
 		return opStatus, nil
 	}
@@ -356,7 +356,7 @@ func (w *GovernanceWorker) writeStatusToExchange(device_status *exchange.DeviceS
 
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), device_status, &resp); err != nil {
-			glog.Errorf(logString(fmt.Sprintf(err.Error())))
+			glog.Errorf(logString(fmt.Sprintf("%s", err.Error())))
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
@@ -364,7 +364,7 @@ func (w *GovernanceWorker) writeStatusToExchange(device_status *exchange.DeviceS
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return fmt.Errorf(logString(fmt.Sprintf("exceeded %v retries trying to write node status for %v", httpClientFactory.RetryCount, tpErr)))
+				return fmt.Errorf("%s", logString(fmt.Sprintf("exceeded %v retries trying to write node status for %v", httpClientFactory.RetryCount, tpErr)))
 			} else {
 				retryCount--
 				time.Sleep(time.Duration(retryInterval) * time.Second)

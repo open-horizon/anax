@@ -171,7 +171,7 @@ func Test_pattern_manager_setpatterns2(t *testing.T) {
 
 	// setup test
 	if err := cleanTestDir(policyPath); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	// run test
@@ -200,7 +200,7 @@ func Test_pattern_manager_setpatterns2(t *testing.T) {
 	} else if err := getPatternEntryFiles(np.OrgPatterns[myorg2][pattern2].PolicyFileNames); err != nil {
 		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg2, pattern2, err)
 	} else if files, err := getPolicyFiles(policyPath + myorg1); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if len(files) != 0 {
 		t.Errorf("Error: found policy files for %v, %v", myorg1, files)
 	} else {
@@ -338,7 +338,7 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 
 	// setup test
 	if err := cleanTestDir(policyPath); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	// run test
@@ -375,7 +375,7 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 	} else if err := getPatternEntryFiles(np.OrgPatterns[myorg2][pattern2].PolicyFileNames); err != nil {
 		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg2, pattern2, err)
 	} else if files, err := getPolicyFiles(policyPath + myorg1); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if len(files) != 0 {
 		t.Errorf("Error: found policy files for %v, %v", myorg1, files)
 	} else {
@@ -518,7 +518,7 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 
 	// setup the test
 	if err := cleanTestDir(policyPath); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	// run the test
@@ -703,7 +703,7 @@ func Test_pattern_manager_setpatterns5(t *testing.T) {
 
 	// setup the test
 	if err := cleanTestDir(policyPath); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	// run the test
@@ -830,7 +830,7 @@ func Test_pattern_manager_ServedPatterns(t *testing.T) {
 
 	// setup the test
 	if err := cleanTestDir(policyPath); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	np := NewPatternManager()
@@ -919,7 +919,7 @@ func Test_pattern_manager_setpatterns6(t *testing.T) {
 
 	// setup the test
 	if err := cleanTestDir(policyPath); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	servedPatterns := map[string]exchange.ServedPattern{

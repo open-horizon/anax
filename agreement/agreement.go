@@ -710,14 +710,14 @@ func (w *AgreementWorker) syncOnInit() error {
 							glog.Errorf(logString(fmt.Sprintf("cannot record agreement %v state %v, error: %v", ag.CurrentAgreementId, state, err)))
 						}
 					}
-                                } else {
-                                        //Setting this as potentially failed enables governAgreements func in governance/governance.go to use the same mechanism as used in heartbeat restored
+				} else {
+					//Setting this as potentially failed enables governAgreements func in governance/governance.go to use the same mechanism as used in heartbeat restored
 					//to verify the agreement is still valid or else cancels it to keep agent and hub in sync
-                                        _, err := persistence.SetFailedVerAttempts(w.db, ag.CurrentAgreementId, ag.AgreementProtocol, ag.FailedVerAttempts+1)
-                                        if err != nil {
-                                                glog.Errorf(logString(fmt.Sprintf("encountered error updating agreement %v, error %v", ag.CurrentAgreementId, err)))
-                                        }
-                                }
+					_, err := persistence.SetFailedVerAttempts(w.db, ag.CurrentAgreementId, ag.AgreementProtocol, ag.FailedVerAttempts+1)
+					if err != nil {
+						glog.Errorf(logString(fmt.Sprintf("encountered error updating agreement %v, error %v", ag.CurrentAgreementId, err)))
+					}
+				}
 				glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 			}
 		}
@@ -1042,7 +1042,7 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
-			glog.Errorf(logString(fmt.Sprintf(err.Error())))
+			glog.Errorf(logString(fmt.Sprintf("%s", err.Error())))
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())

@@ -100,10 +100,10 @@ func GetObjectsByService(ec ExchangeContext, org string, serviceId string) (*Obj
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
@@ -143,10 +143,10 @@ func GetUpdatedObjects(ec ExchangeContext, org string, since int64) (*ObjectDest
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
@@ -180,10 +180,10 @@ func AddOrRemoveDestinations(ec ExchangeContext, org string, objType string, obj
 
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "POST", url, ec.GetExchangeId(), ec.GetExchangeToken(), postDestsRequest, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
@@ -221,10 +221,10 @@ func GetObject(ec ExchangeContext, org string, objID string, objType string) (*c
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
@@ -270,10 +270,10 @@ func GetCSSObjectsByType(ec ExchangeContext, org string, objType string) (*MetaD
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
@@ -479,10 +479,10 @@ func GetObjectDestinations(ec ExchangeContext, org string, objID string, objType
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
@@ -527,10 +527,10 @@ func SetPolicyReceived(ec ExchangeContext, objPol *ObjectDestinationPolicy) erro
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "PUT", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue

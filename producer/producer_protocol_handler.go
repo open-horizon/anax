@@ -391,7 +391,7 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy, agreem
 	// save signing keys for pattern
 	if pol.PatternId != "" {
 		if key_map, err := objSigningHandler(exchange.PATTERN, exchange.GetId(pol.PatternId), exchange.GetOrg(pol.PatternId), "", ""); err != nil {
-			return fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for pattern from the exchange: %v. %v", pol.PatternId, err)))
+			return fmt.Errorf("%s", BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for pattern from the exchange: %v. %v", pol.PatternId, err)))
 		} else if key_map != nil {
 			for key, content := range key_map {
 				//add .pem the end of the keyname if it does not have none.
@@ -416,7 +416,7 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy, agreem
 	if pol.Workloads != nil {
 		for _, wl := range pol.Workloads {
 			if key_map, err := objSigningHandler(exchange.SERVICE, wl.WorkloadURL, wl.Org, wl.Version, wl.Arch); err != nil {
-				return fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for workload from the exchange: %v %v %v %v. %v", wl.WorkloadURL, wl.Org, wl.Version, wl.Arch, err)))
+				return fmt.Errorf("%s", BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for workload from the exchange: %v %v %v %v. %v", wl.WorkloadURL, wl.Org, wl.Version, wl.Arch, err)))
 			} else if key_map != nil {
 				for key, content := range key_map {
 					//add .pem the end of the keyname if it does not have none.
@@ -444,7 +444,7 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy, agreem
 // check if the proposal the correct deployment configuration provided for this node
 func (w *BaseProducerProtocolHandler) MatchNodeType(tcPolicy *policy.Policy, dev *persistence.ExchangeDevice) (bool, error) {
 	if dev == nil {
-		return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("device is not configured to accept agreement yet.")))
+		return false, fmt.Errorf("%s", BPPHlogString(w.Name(), fmt.Sprintf("device is not configured to accept agreement yet.")))
 	} else if tcPolicy.Workloads == nil || len(tcPolicy.Workloads) == 0 {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("no workload is supplied in the proposal.")))
 		return false, nil
@@ -507,7 +507,7 @@ func (w *BaseProducerProtocolHandler) MatchClusterNamespace(tcPolicy *policy.Pol
 // check if the proposal has the same pattern
 func (w *BaseProducerProtocolHandler) MatchPattern(tcPolicy *policy.Policy, dev *persistence.ExchangeDevice) (bool, error) {
 	if dev == nil {
-		return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("device is not configured to accept agreement yet.")))
+		return false, fmt.Errorf("%s", BPPHlogString(w.Name(), fmt.Sprintf("device is not configured to accept agreement yet.")))
 	} else {
 		// the patter id from the proposal is in the format of org/pattern,
 		// we need to compose the same thing from device in order to compare
@@ -536,13 +536,13 @@ func (w *BaseProducerProtocolHandler) FindAgreementWithSameWorkload(ph abstractp
 	}
 
 	if ags, err := persistence.FindEstablishedAgreements(w.db, w.Name(), []persistence.EAFilter{notTerminated(), persistence.UnarchivedEAFilter()}); err != nil {
-		return nil, false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error retrieving unarchived agreements from db: %v", err)))
+		return nil, false, fmt.Errorf("%s", BPPHlogString(w.Name(), fmt.Sprintf("error retrieving unarchived agreements from db: %v", err)))
 	} else {
 		for _, ag := range ags {
 			if proposal, err := ph.DemarshalProposal(ag.Proposal); err != nil {
-				return nil, false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v proposal: %v", ag, err)))
+				return nil, false, fmt.Errorf("%s", BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v proposal: %v", ag, err)))
 			} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-				return nil, false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v Producer Policy: %v", ag.CurrentAgreementId, err)))
+				return nil, false, fmt.Errorf("%s", BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v Producer Policy: %v", ag.CurrentAgreementId, err)))
 			} else if tcPolicy.Header.Name == tcpol_name {
 				return &ag, true, nil
 			}
@@ -627,7 +627,7 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, token, nil, &resp); err != nil {
-			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf(err.Error())))
+			glog.Errorf(BPPHlogString(w.Name(), err.Error()))
 			return nil, err
 		} else if tpErr != nil {
 			glog.Warningf(BPPHlogString(w.Name(), tpErr.Error()))
@@ -635,7 +635,7 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, errors.New(fmt.Sprintf("exceeded %v retries trying to retrieve agbot for %v", httpClientFactory.RetryCount, tpErr))
+				return nil, fmt.Errorf("%s", fmt.Sprintf("exceeded %v retries trying to retrieve agbot for %v", httpClientFactory.RetryCount, tpErr))
 			} else {
 				retryCount--
 				time.Sleep(time.Duration(retryInterval) * time.Second)

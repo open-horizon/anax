@@ -226,10 +226,10 @@ func GetPatterns(httpClientFactory *config.HTTPClientFactory, org string, patter
 	retryInterval := httpClientFactory.GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if httpClientFactory.RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue

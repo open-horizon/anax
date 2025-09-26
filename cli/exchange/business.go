@@ -374,7 +374,7 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 		if checkAllArches {
 			// include all the arches
 			if svcMeta, err := getSelectedServices(serviceName, serviceOrg, serviceVersion, ""); err != nil {
-				return ret, fmt.Errorf(msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all architectures. %v", serviceOrg, serviceName, serviceVersion, err))
+				return ret, fmt.Errorf("%s", msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all architectures. %v", serviceOrg, serviceName, serviceVersion, err))
 			} else {
 				for _, svc := range svcMeta {
 					arches = append(arches, svc.Arch)
@@ -391,11 +391,11 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 	for _, arch := range arches {
 		_, svc_map, sDef, sId, err := getServiceResolvedDef(serviceName, serviceOrg, serviceVersion, arch)
 		if err != nil {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Error retrieving service %v/%v version %v from the Exchange. %v", serviceOrg, serviceName, serviceVersion, err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Error retrieving service %v/%v version %v from the Exchange. %v", serviceOrg, serviceName, serviceVersion, err))
 		} else {
 			// check top level service
 			if index, neededSb, err := compcheck.ValidateSecretBindingForSingleService(secretBinding, &compcheck.ServiceDefinition{Org: serviceOrg, ServiceDefinition: *sDef}, msgPrinter); err != nil {
-				return ret, fmt.Errorf(msgPrinter.Sprintf("Error validating secret bindings for service %v. %v", sId, err))
+				return ret, fmt.Errorf("%s", msgPrinter.Sprintf("Error validating secret bindings for service %v. %v", sId, err))
 			} else {
 				compcheck.UpdateIndexMap(ret, index, neededSb)
 			}
@@ -404,7 +404,7 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 			for id, s := range svc_map {
 				sOrg := exchange.GetOrg(id)
 				if index, neededSb, err := compcheck.ValidateSecretBindingForSingleService(secretBinding, &compcheck.ServiceDefinition{Org: sOrg, ServiceDefinition: s}, msgPrinter); err != nil {
-					return ret, fmt.Errorf(msgPrinter.Sprintf("Error validating secret bindings for dependent service %v. %v", id, err))
+					return ret, fmt.Errorf("%s", msgPrinter.Sprintf("Error validating secret bindings for dependent service %v. %v", id, err))
 				} else {
 					compcheck.UpdateIndexMap(ret, index, neededSb)
 				}
@@ -464,7 +464,7 @@ func hasClusterTypeService(getSelectedServices exchange.SelectedServicesHandler,
 	}
 
 	if svcDefs, err := getSelectedServices(svcName, svcOrg, svcVersion, svcArch); err != nil {
-		return false, fmt.Errorf(msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all architectures. %v", svcOrg, svcName, svcVersion, err))
+		return false, fmt.Errorf("%s", msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all architectures. %v", svcOrg, svcName, svcVersion, err))
 	} else {
 		for _, svcDef := range svcDefs {
 			if svcDef.GetServiceType() != exchangecommon.SERVICE_TYPE_DEVICE {

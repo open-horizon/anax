@@ -39,14 +39,14 @@ func (e *ExchangeNodeManagementPolicy) Validate() error {
 	// Validate the timestamp
 	if e.PolicyUpgradeTime != "now" {
 		if _, err := time.Parse(time.RFC3339, e.PolicyUpgradeTime); err != nil {
-			return fmt.Errorf(msgPrinter.Sprintf("The start time must be in RFC3339 format or set to \"now\"."))
+			return fmt.Errorf("%s", msgPrinter.Sprintf("The start time must be in RFC3339 format or set to \"now\"."))
 		}
 	}
 
 	// Validate the PropertyList.
 	if e != nil && len(e.Properties) != 0 {
 		if err := e.Properties.Validate(); err != nil {
-			return fmt.Errorf(msgPrinter.Sprintf("properties contains an invalid property: %v", err))
+			return fmt.Errorf("%s", msgPrinter.Sprintf("properties contains an invalid property: %v", err))
 		}
 	}
 
@@ -60,7 +60,7 @@ func (e *ExchangeNodeManagementPolicy) Validate() error {
 				privProp.Value = false
 				e.Properties.Add_Property(&privProp, true)
 			} else {
-				return fmt.Errorf(msgPrinter.Sprintf("The property %s must have a boolean value (true or false).", externalpolicy.PROP_SVC_PRIVILEGED))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("The property %s must have a boolean value (true or false).", externalpolicy.PROP_SVC_PRIVILEGED))
 			}
 		}
 	}

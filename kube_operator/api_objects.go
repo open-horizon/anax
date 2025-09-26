@@ -58,14 +58,14 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes namespace object %s.", newNs.Name())))
 					objMap[K8S_NAMESPACE_TYPE] = append(objMap[K8S_NAMESPACE_TYPE], newNs)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: namespace object must have a name in its metadata section.")))
+					return objMap, namespace, fmt.Errorf("%s", kwlog("Error: namespace object must have a name in its metadata section."))
 				}
 				if namespace != "" && namespace != typedNS.ObjectMeta.Name {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator : %s and %s", namespace, typedNS.ObjectMeta.Name)))
+					return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator : %s and %s", namespace, typedNS.ObjectMeta.Name)))
 				}
 				namespace = typedNS.ObjectMeta.Name
 			} else {
-				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: namespace object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: namespace object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_ROLE_TYPE:
 			if typedRole, ok := obj.Object.(*rbacv1.Role); ok {
@@ -74,10 +74,10 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes role object %s.", newRole.Name())))
 					objMap[K8S_ROLE_TYPE] = append(objMap[K8S_ROLE_TYPE], newRole)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: role object must have a name in its metadata section.")))
+					return objMap, namespace, fmt.Errorf("%s", kwlog("Error: role object must have a name in its metadata section."))
 				}
 			} else {
-				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: role object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: role object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_ROLEBINDING_TYPE:
 			if typedRoleBinding, ok := obj.Object.(*rbacv1.RoleBinding); ok {
@@ -86,10 +86,10 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes rolebinding object %s.", newRolebinding.Name())))
 					objMap[K8S_ROLEBINDING_TYPE] = append(objMap[K8S_ROLEBINDING_TYPE], newRolebinding)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object must have a name in its metadata section.")))
+					return objMap, namespace, fmt.Errorf("%s", kwlog("Error: rolebinding object must have a name in its metadata section."))
 				}
 			} else {
-				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_CLUSTER_ROLE_TYPE:
 			if typedRole, ok := obj.Object.(*rbacv1.ClusterRole); ok {
@@ -98,10 +98,10 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes cluster role object %s.", newRole.Name())))
 					objMap[K8S_CLUSTER_ROLE_TYPE] = append(objMap[K8S_CLUSTER_ROLE_TYPE], newRole)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: cluster role object must have a name in its metadata section.")))
+					return objMap, namespace, fmt.Errorf("%s", kwlog("Error: cluster role object must have a name in its metadata section."))
 				}
 			} else {
-				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: cluster role object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: cluster role object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_CLUSTER_ROLEBINDING_TYPE:
 			if typedRoleBinding, ok := obj.Object.(*rbacv1.ClusterRoleBinding); ok {
@@ -110,10 +110,10 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes cluser rolebinding object %s.", newRolebinding.Name())))
 					objMap[K8S_CLUSTER_ROLEBINDING_TYPE] = append(objMap[K8S_CLUSTER_ROLEBINDING_TYPE], newRolebinding)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object must have a name in its metadata section.")))
+					return objMap, namespace, fmt.Errorf("%s", kwlog("Error: rolebinding object must have a name in its metadata section."))
 				}
 			} else {
-				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: rolebinding object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_SECRET_TYPE:
 			if typedSecret, ok := obj.Object.(*corev1.Secret); ok {
@@ -121,7 +121,7 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					if namespace == "" {
 						namespace = typedSecret.ObjectMeta.Namespace
 					} else if namespace != typedSecret.ObjectMeta.Namespace {
-						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedSecret.ObjectMeta.Namespace)))
+						return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedSecret.ObjectMeta.Namespace)))
 					}
 				}
 				newSecret := SecretCoreV1{SecretObject: typedSecret}
@@ -129,10 +129,10 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes secret object %s.", newSecret.Name())))
 					objMap[K8S_SECRET_TYPE] = append(objMap[K8S_SECRET_TYPE], newSecret)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: secret object must have a name in its metadata section.")))
+					return objMap, namespace, fmt.Errorf("%s", kwlog("Error: secret object must have a name in its metadata section."))
 				}
 			} else {
-				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: secret object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: secret object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_DEPLOYMENT_TYPE:
 			if typedDeployment, ok := obj.Object.(*appsv1.Deployment); ok {
@@ -140,7 +140,7 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					if namespace == "" {
 						namespace = typedDeployment.ObjectMeta.Namespace
 					} else if namespace != "" && namespace != typedDeployment.ObjectMeta.Namespace {
-						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedDeployment.ObjectMeta.Namespace)))
+						return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedDeployment.ObjectMeta.Namespace)))
 					}
 				}
 				newDeployment := DeploymentAppsV1{DeploymentObject: typedDeployment, EnvVarMap: envVarMap, FssAuthFilePath: fssAuthFilePath, FssCertFilePath: fssCertFilePath, MMSPVCConfig: mmsPVCConfig, ServiceSecrets: secretsMap, AgreementId: agreementId}
@@ -148,10 +148,10 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes deployment object %s.", newDeployment.Name())))
 					objMap[K8S_DEPLOYMENT_TYPE] = append(objMap[K8S_DEPLOYMENT_TYPE], newDeployment)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: deployment object must have a name in its metadata section.")))
+					return objMap, namespace, fmt.Errorf("%s", kwlog("Error: deployment object must have a name in its metadata section."))
 				}
 			} else {
-				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: deployment object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: deployment object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_SERVICEACCOUNT_TYPE:
 			if typedServiceAccount, ok := obj.Object.(*corev1.ServiceAccount); ok {
@@ -160,40 +160,40 @@ func sortAPIObjects(allObjects []APIObjects, customResources map[string][]*unstr
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes service account object %s.", newServiceAccount.Name())))
 					objMap[K8S_SERVICEACCOUNT_TYPE] = append(objMap[K8S_SERVICEACCOUNT_TYPE], newServiceAccount)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: service account object must have a name in its metadata section.")))
+					return objMap, namespace, fmt.Errorf("%s", kwlog("Error: service account object must have a name in its metadata section."))
 				}
 			} else {
-				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: service account object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: service account object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		case K8S_CRD_TYPE:
 			if typedCRD, ok := obj.Object.(*crdv1beta1.CustomResourceDefinition); ok {
 				kind := typedCRD.Spec.Names.Kind
 				if kind == "" {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field: %v", obj.Object)))
+					return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field: %v", obj.Object)))
 				}
 				customResourceList, ok := customResources[kind]
 				if !ok {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: no custom resource object with kind %v found in %v.", kind, customResources)))
+					return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: no custom resource object with kind %v found in %v.", kind, customResources)))
 				}
 				newCustomResource := CustomResourceV1Beta1{CustomResourceDefinitionObject: typedCRD, CustomResourceObjectList: customResourceList, InstallTimeout: crInstallTimeout}
 				if newCustomResource.Name() != "" {
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes custom resource definition object %s.", newCustomResource.Name())))
 					objMap[K8S_CRD_TYPE] = append(objMap[K8S_CRD_TYPE], newCustomResource)
 				} else {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object must have a name in its metadata section.")))
+					return objMap, namespace, fmt.Errorf("%s", kwlog("Error: custom resource definition object must have a name in its metadata section."))
 				}
 			} else if typedCRD, ok := obj.Object.(*crdv1.CustomResourceDefinition); ok {
 				kind := typedCRD.Spec.Names.Kind
 				if kind == "" {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field: %v", obj.Object)))
+					return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: custom resource definition object missing kind field: %v", obj.Object)))
 				}
 				customResourceList, ok := customResources[kind]
 				if !ok {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: no custom resource object with kind %v found in %v.", kind, customResources)))
+					return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: no custom resource object with kind %v found in %v.", kind, customResources)))
 				}
 				objMap[K8S_CRD_TYPE] = append(objMap[K8S_CRD_TYPE], CustomResourceV1{CustomResourceDefinitionObject: typedCRD, CustomResourceObjectList: customResourceList, InstallTimeout: crInstallTimeout})
 			} else {
-				return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource definition object has unrecognized type %T: %v", obj.Object, obj.Object)))
+				return objMap, namespace, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: custom resource definition object has unrecognized type %T: %v", obj.Object, obj.Object)))
 			}
 		default:
 			// for all other types, convert it to an unstructured object
@@ -313,7 +313,7 @@ func (n NamespaceCoreV1) Uninstall(c KubeClient, namespace string) {
 func (n NamespaceCoreV1) Status(c KubeClient, namespace string) (interface{}, error) {
 	nsStatus, err := c.Client.CoreV1().Namespaces().Get(context.Background(), namespace, metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error getting namespace status: %v", err)))
+		return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error getting namespace status: %v", err)))
 	}
 	return nsStatus, nil
 }
@@ -341,9 +341,9 @@ func (cr ClusterRoleRbacV1) Install(c KubeClient, namespace string) error {
 
 	_, err := c.Client.RbacV1().ClusterRoles().Create(context.Background(), cr.ClusterRoleObject, metav1.CreateOptions{})
 	if err != nil && errors.IsAlreadyExists(err) {
-		glog.Warningf(kwlog(fmt.Sprintf("Skip install cluster role because it is already exists.")))
+		glog.Warningf(kwlog("Skip install cluster role because it is already exists."))
 	} else if err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster role: %v", err)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error creating the cluster role: %v", err)))
 	}
 	return nil
 }
@@ -430,10 +430,10 @@ func (crb ClusterRolebindingRbacV1) Install(c KubeClient, namespace string) erro
 		updatedCRB, err := c.Client.RbacV1().ClusterRoleBindings().Update(context.Background(), existingCRB, metav1.UpdateOptions{})
 		glog.V(3).Infof(kwlog(fmt.Sprintf("updated clusterrolebinding: %v", updatedCRB)))
 		if err != nil {
-			return fmt.Errorf(kwlog(fmt.Sprintf("Error updating the existing cluster rolebinding: %v", err)))
+			return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error updating the existing cluster rolebinding: %v", err)))
 		}
 	} else if _, err := c.Client.RbacV1().ClusterRoleBindings().Create(context.Background(), crb.ClusterRolebindingObject, metav1.CreateOptions{}); err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster rolebinding: %v", err)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error creating the cluster rolebinding: %v", err)))
 	}
 
 	return nil
@@ -509,7 +509,7 @@ func (r RoleRbacV1) Install(c KubeClient, namespace string) error {
 		_, err = c.Client.RbacV1().Roles(namespace).Create(context.Background(), r.RoleObject, metav1.CreateOptions{})
 	}
 	if err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the role: %v", err)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error creating the role: %v", err)))
 	}
 	return nil
 }
@@ -567,7 +567,7 @@ func (rb RolebindingRbacV1) Install(c KubeClient, namespace string) error {
 		_, err = c.Client.RbacV1().RoleBindings(namespace).Create(context.Background(), rb.RolebindingObject, metav1.CreateOptions{})
 	}
 	if err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster rolebinding: %v", err)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error creating the cluster rolebinding: %v", err)))
 	}
 	return nil
 }
@@ -614,7 +614,7 @@ func (sa ServiceAccountCoreV1) Install(c KubeClient, namespace string) error {
 		_, err = c.Client.CoreV1().ServiceAccounts(namespace).Create(context.Background(), sa.ServiceAccountObject, metav1.CreateOptions{})
 	}
 	if err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster service account: %v", err)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error creating the cluster service account: %v", err)))
 	}
 	return nil
 }
@@ -662,7 +662,7 @@ func (s SecretCoreV1) Install(c KubeClient, namespace string) error {
 		_, err = c.Client.CoreV1().Secrets(namespace).Create(context.Background(), s.SecretObject, metav1.CreateOptions{})
 	}
 	if err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the secret: %v", err)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error creating the secret: %v", err)))
 	}
 	return nil
 }
@@ -678,23 +678,23 @@ func (s SecretCoreV1) Uninstall(c KubeClient, secretName string) {
 func (s SecretCoreV1) Status(c KubeClient, namespace string) (interface{}, error) {
 	secretFromKube, err := c.Client.CoreV1().Secrets(namespace).Get(context.Background(), s.Name(), metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error getting secret status: %v", err)))
+		return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error getting secret status: %v", err)))
 	}
 	return secretFromKube, nil
 }
 
 func (s SecretCoreV1) Update(c KubeClient, namespace string) error {
 	if secretFromKube, err := c.Client.CoreV1().Secrets(namespace).Get(context.Background(), s.SecretObject.Name, metav1.GetOptions{}); err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error getting secret from kube: %v", err)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error getting secret from kube: %v", err)))
 	} else if secretFromKube == nil {
 		// invalid, return err
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error updating secret %v in namespace %v: secret doesn't exist", s.SecretObject.Name, namespace)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error updating secret %v in namespace %v: secret doesn't exist", s.SecretObject.Name, namespace)))
 	} else {
 		//Update the secret retrieved from kube with the new data
 		secretFromKube.Data = s.SecretObject.Data
 		updatedSecret, err := c.Client.CoreV1().Secrets(namespace).Update(context.Background(), secretFromKube, metav1.UpdateOptions{})
 		if err != nil {
-			return fmt.Errorf(kwlog(fmt.Sprintf("Error updating secret %v in namespace %v: %v", s.SecretObject.Name, namespace, err)))
+			return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error updating secret %v in namespace %v: %v", s.SecretObject.Name, namespace, err)))
 		}
 		glog.V(3).Infof(kwlog(fmt.Sprintf("Secret %v in namespace %v updated successfully", updatedSecret.Name, namespace)))
 	}
@@ -808,7 +808,7 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 		_, err = c.Client.AppsV1().Deployments(namespace).Create(context.Background(), &dWithEnv, metav1.CreateOptions{})
 	}
 	if err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the operator deployment: %v", err)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error creating the operator deployment: %v", err)))
 	}
 	return nil
 }
@@ -822,7 +822,7 @@ func (d DeploymentAppsV1) Update(c KubeClient, namespace string) error {
 			return err
 		} else if k8sSecretObject == nil {
 			// invalid, return err
-			return fmt.Errorf(kwlog(fmt.Sprintf("Error updating existing service secret %v in namespace: %v, secret doesn't exist", secretsName, namespace)))
+			return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error updating existing service secret %v in namespace: %v, secret doesn't exist", secretsName, namespace)))
 		} else {
 			// in the dataMap, key is secretName, value is secret value in base64 encoded string
 			dataMap := k8sSecretObject.Data
@@ -935,17 +935,17 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 		// If the crd already exists this is not a problem
 		glog.V(3).Infof(kwlog(fmt.Sprintf("Failed to create custom resource definition %s because it already exists. Continuing with installation. %v", cr.CustomResourceDefinitionObject.Name, err)))
 	} else if err != nil {
-		return fmt.Errorf("Error installing custom resource definition: %v", err)
+		return fmt.Errorf("error installing custom resource definition: %v", err)
 	}
 
 	// Client for creating the CR in the cluster
 	dynClient, err := NewDynamicKubeClient()
 	if err != nil {
-		return fmt.Errorf("Error creating the dynamic kube client: %v", err)
+		return fmt.Errorf("error creating the dynamic kube client: %v", err)
 	}
 	gvr, err := cr.gvr()
 	if err != nil {
-		return fmt.Errorf("Error getting the custom resource definition GroupVersionResource: %v", err)
+		return fmt.Errorf("error getting the custom resource definition GroupVersionResource: %v", err)
 	}
 	crClient := dynClient.Resource(*gvr)
 
@@ -971,7 +971,7 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 				glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
 				time.Sleep(time.Second * 5)
 			} else if err != nil {
-				return fmt.Errorf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
+				return fmt.Errorf("%s", kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
 			} else {
 				glog.V(3).Infof(kwlog(fmt.Sprintf("Sucessfully created custom resource %s.", resourceName)))
 				break
@@ -1065,7 +1065,7 @@ func (cr CustomResourceV1Beta1) waitForCRUninstall(c KubeClient, namespace strin
 		status, err = cr.Status(c, namespace)
 		timeoutS = timeoutS - 10
 	}
-	return fmt.Errorf(kwlog(fmt.Sprintf("Error: timeout occured waiting for custom resource %s to be removed. Continuing with uninstall", crName)))
+	return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: timeout occured waiting for custom resource %s to be removed. Continuing with uninstall", crName)))
 }
 
 // Status returns the status of the operator's service pod. This is a user-defined object
@@ -1094,7 +1094,7 @@ func (cr CustomResourceV1Beta1) Status(c KubeClient, namespace string) (interfac
 					if status, ok := res.Object["status"]; ok {
 						statusArray = append(statusArray, status)
 					} else {
-						return nil, fmt.Errorf("Error status not found")
+						return nil, fmt.Errorf("error status not found")
 					}
 				}
 			}
@@ -1127,8 +1127,7 @@ func (cr CustomResourceV1Beta1) group() string {
 }
 
 func (cr CustomResourceV1Beta1) versions() []string {
-	var versions []crdv1beta1.CustomResourceDefinitionVersion
-	versions = cr.CustomResourceDefinitionObject.Spec.Versions
+	versions := cr.CustomResourceDefinitionObject.Spec.Versions
 
 	var versionNames []string
 	for _, version := range versions {
@@ -1143,16 +1142,16 @@ func (cr CustomResourceV1Beta1) gvr() (*schema.GroupVersionResource, error) {
 		if typedApiVers, ok := apiVers.(string); ok {
 			gv, err := schema.ParseGroupVersion(typedApiVers)
 			if err != nil {
-				return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to parse group version %s: %v", typedApiVers, err)))
+				return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: failed to parse group version %s: %v", typedApiVers, err)))
 			}
 			gvr := schema.GroupVersionResource{Resource: cr.CustomResourceDefinitionObject.Spec.Names.Plural, Group: gv.Group, Version: gv.Version}
 			return &gvr, nil
 		} else {
-			return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: apiversion field is not of type string %v", cr.CustomResourceObjectList[0].Object)))
+			return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: apiversion field is not of type string %v", cr.CustomResourceObjectList[0].Object)))
 		}
 
 	} else {
-		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObjectList[0].Object)))
+		return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObjectList[0].Object)))
 	}
 }
 
@@ -1188,7 +1187,7 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 	if err != nil && errors.IsAlreadyExists(err) {
 		glog.V(3).Infof(kwlog(fmt.Sprintf("Failed to create custom resource definition %s because it already exists. Continuing with installation. %v", cr.CustomResourceDefinitionObject.Name, err)))
 	} else if err != nil {
-		return fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to create custom resource definition %s: %v", cr.Name(), err)))
+		return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: failed to create custom resource definition %s: %v", cr.Name(), err)))
 	}
 
 	// client for interacting with unknown types including custom resource types
@@ -1224,7 +1223,7 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 				glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
 				time.Sleep(time.Second * 5)
 			} else if err != nil {
-				return fmt.Errorf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
+				return fmt.Errorf("%s", kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
 			} else {
 				glog.V(3).Infof(kwlog(fmt.Sprintf("Sucessfully created custom resource %s.", resourceName)))
 				break
@@ -1318,14 +1317,14 @@ func (cr CustomResourceV1) waitForCRUninstall(c KubeClient, namespace string, ti
 		status, err = cr.Status(c, namespace)
 		timeoutS = timeoutS - 10
 	}
-	return fmt.Errorf(kwlog(fmt.Sprintf("Error: timeout occured waiting for custom resource %s to be removed. Continuing with uninstall", crName)))
+	return fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: timeout occured waiting for custom resource %s to be removed. Continuing with uninstall", crName)))
 }
 
 // Status returns the status of the operator's service pod. This is a user-defined object
 func (cr CustomResourceV1) Status(c KubeClient, namespace string) (interface{}, error) {
 	dynClient, err := NewDynamicKubeClient()
 	if err != nil {
-		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to get a kubernetes dynamic client: %v", err)))
+		return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: failed to get a kubernetes dynamic client: %v", err)))
 	}
 
 	gvr, err := cr.gvr()
@@ -1347,7 +1346,7 @@ func (cr CustomResourceV1) Status(c KubeClient, namespace string) (interface{}, 
 					if status, ok := res.Object["status"]; ok {
 						statusArray = append(statusArray, status)
 					} else {
-						return nil, fmt.Errorf("Error status not found")
+						return nil, fmt.Errorf("error status not found")
 					}
 				}
 			}
@@ -1396,16 +1395,16 @@ func (cr CustomResourceV1) gvr() (*schema.GroupVersionResource, error) {
 		if typedApiVers, ok := apiVers.(string); ok {
 			gv, err := schema.ParseGroupVersion(typedApiVers)
 			if err != nil {
-				return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to parse group version %s: %v", typedApiVers, err)))
+				return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: failed to parse group version %s: %v", typedApiVers, err)))
 			}
 			gvr := schema.GroupVersionResource{Resource: cr.CustomResourceDefinitionObject.Spec.Names.Plural, Group: gv.Group, Version: gv.Version}
 			return &gvr, nil
 		} else {
-			return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: apiversion field is not of type string %v", cr.CustomResourceObjectList[0].Object)))
+			return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: apiversion field is not of type string %v", cr.CustomResourceObjectList[0].Object)))
 		}
 
 	} else {
-		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObjectList[0].Object)))
+		return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error: custom resource object does not have apiversion field: %v", cr.CustomResourceObjectList[0].Object)))
 	}
 }
 

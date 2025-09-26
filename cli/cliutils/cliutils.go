@@ -114,7 +114,7 @@ func Verbose(msg string, args ...interface{}) {
 				if !strings.HasSuffix(m, "\n") {
 					m += "\n"
 				}
-				fmt.Fprintf(os.Stderr, i18n.GetMessagePrinter().Sprintf("[verbose] %s", m))
+				fmt.Fprintf(os.Stderr, "%s", i18n.GetMessagePrinter().Sprintf("[verbose] %s", m))
 			}
 		}
 		// flush the cache
@@ -579,18 +579,18 @@ func GetHorizonContainerIndex() (int, error) {
 
 	horizonUrl, err := url.Parse(GetHorizonUrlBase())
 	if err != nil {
-		return -1, fmt.Errorf(msgPrinter.Sprintf("Error parsing HORIZON_URL: %v", err))
+		return -1, fmt.Errorf("%s", msgPrinter.Sprintf("Error parsing HORIZON_URL: %v", err))
 	}
 	_, port, err := net.SplitHostPort(horizonUrl.Host)
 	if err != nil {
-		return -1, fmt.Errorf(msgPrinter.Sprintf("Error parsing host of the HORIZON_URL: %v", err))
+		return -1, fmt.Errorf("%s", msgPrinter.Sprintf("Error parsing host of the HORIZON_URL: %v", err))
 	}
 	portInt, err := strconv.Atoi(port)
 	if err != nil {
-		return -1, fmt.Errorf(msgPrinter.Sprintf("Error parsing port of the HORIZON_URL: %v", err))
+		return -1, fmt.Errorf("%s", msgPrinter.Sprintf("Error parsing port of the HORIZON_URL: %v", err))
 	}
 	if portInt < 8080 {
-		return -1, fmt.Errorf(msgPrinter.Sprintf("Unexpected port of the HORIZON_URL: %v", portInt))
+		return -1, fmt.Errorf("%s", msgPrinter.Sprintf("Unexpected port of the HORIZON_URL: %v", portInt))
 	}
 	return portInt - 8080, nil
 }
@@ -703,9 +703,9 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 					statusCommand = "docker ps | grep horizon"
 					statusURL = "curl " + HZN_API_MAC + "/status"
 				}
-				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, statusCommand, statusURL, err))
+				retError = fmt.Errorf("%s", msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, statusCommand, statusURL, err))
 			} else {
-				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMsg, err))
+				retError = fmt.Errorf("%s", msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMsg, err))
 			}
 			return
 		} else {
@@ -716,7 +716,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 	if !isGoodCode(httpCode, goodHttpCodes) {
 		if quiet {
-			retError = fmt.Errorf(msgPrinter.Sprintf("Bad HTTP code from %s: %d", apiMsg, httpCode))
+			retError = fmt.Errorf("%s", msgPrinter.Sprintf("Bad HTTP code from %s: %d", apiMsg, httpCode))
 			return
 		} else {
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code from %s: %d", apiMsg, httpCode))
@@ -726,7 +726,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			if quiet {
-				retError = fmt.Errorf(msgPrinter.Sprintf("Failed to read body response from %s: %v", apiMsg, err))
+				retError = fmt.Errorf("%s", msgPrinter.Sprintf("Failed to read body response from %s: %v", apiMsg, err))
 				return
 			} else {
 				Fatal(HTTP_ERROR, msgPrinter.Sprintf("failed to read body response from %s: %v", apiMsg, err))
@@ -741,7 +741,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 			err = json.Unmarshal(bodyBytes, structure)
 			if err != nil {
 				if quiet {
-					retError = fmt.Errorf(msgPrinter.Sprintf("Failed to unmarshal body response from %s: %v", apiMsg, err))
+					retError = fmt.Errorf("%s", msgPrinter.Sprintf("Failed to unmarshal body response from %s: %v", apiMsg, err))
 					return
 				} else {
 					Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal body response from %s: %v", apiMsg, err))
@@ -769,7 +769,7 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		if quiet {
-			retError = fmt.Errorf(msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
+			retError = fmt.Errorf("%s", msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
 			return
 		} else {
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
@@ -790,9 +790,9 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes
 					statusCommand = "docker ps | grep horizon"
 					statusURL = "curl " + HZN_API_MAC + "/status"
 				}
-				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, statusCommand, statusURL, err))
+				retError = fmt.Errorf("%s", msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, statusCommand, statusURL, err))
 			} else {
-				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMsg, err))
+				retError = fmt.Errorf("%s", msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMsg, err))
 			}
 			return
 		} else {
@@ -805,12 +805,12 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes
 		return
 	} else if isGoodCode(httpCode, expectedHttpErrorCodes) {
 		err_msg := GetRespBodyAsString(resp.Body)
-		retError = fmt.Errorf(err_msg)
+		retError = fmt.Errorf("%s", err_msg)
 		return
 	} else {
 		err_msg := msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
 		if quiet {
-			retError = fmt.Errorf(err_msg)
+			retError = fmt.Errorf("%s", err_msg)
 			return
 		} else {
 			Fatal(HTTP_ERROR, err_msg)
@@ -889,7 +889,7 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 		if exitOnErr {
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, resp_body))
 		} else {
-			return 0, "", fmt.Errorf(msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, resp_body))
+			return 0, "", fmt.Errorf("%s", msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, resp_body))
 		}
 	}
 	return
@@ -1068,7 +1068,7 @@ func GetAnaxConfig(configFile string) (*config.HorizonConfig, error) {
 	} else {
 		var anaxConfig config.HorizonConfig
 		if err := json.Unmarshal(byteValue, &anaxConfig); err != nil {
-			return nil, fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Failed to unmarshal bytes. %v", err))
+			return nil, fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("Failed to unmarshal bytes. %v", err))
 		} else {
 			return &anaxConfig, nil
 		}
@@ -1114,7 +1114,7 @@ func TrustIcpCert(httpClient *http.Client) error {
 		cleanedPath := filepath.Clean(icpCertPath)
 		icpCert, err := os.ReadFile(cleanedPath)
 		if err != nil {
-			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", cleanedPath, err))
+			return fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", cleanedPath, err))
 		}
 		caCertPool.AppendCertsFromPEM(icpCert)
 	}
@@ -2079,14 +2079,14 @@ func GetHttpRetryParameters(default_count int, default_interval int) (int, int, 
 	if maxRetries_s != "" {
 		var err1 error
 		if maxRetries, err1 = strconv.Atoi(maxRetries_s); err1 != nil {
-			return 0, 0, fmt.Errorf(msgPrinter.Sprintf("Error converting environmental variable HZN_HTTP_RETRIES %v to integer. %v", maxRetries_s, err1))
+			return 0, 0, fmt.Errorf("%s", msgPrinter.Sprintf("Error converting environmental variable HZN_HTTP_RETRIES %v to integer. %v", maxRetries_s, err1))
 		}
 	}
 	retryInterval_s := os.Getenv("HZN_HTTP_RETRY_INTERVAL")
 	if retryInterval_s != "" {
 		var err1 error
 		if retryInterval, err1 = strconv.Atoi(retryInterval_s); err1 != nil {
-			return 0, 0, fmt.Errorf(msgPrinter.Sprintf("Error converting environmental variable HZN_HTTP_RETRY_INTERVAL %v to integer. %v", retryInterval_s, err1))
+			return 0, 0, fmt.Errorf("%s", msgPrinter.Sprintf("Error converting environmental variable HZN_HTTP_RETRY_INTERVAL %v to integer. %v", retryInterval_s, err1))
 		}
 	}
 
@@ -2214,7 +2214,7 @@ func ChekServiceLogPossibility(logDriver string) (nonDefaultDriverUsed bool, err
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	return true, fmt.Errorf(msgPrinter.Sprintf("Provided log-driver (%s) does not support logs viewing. "+
+	return true, fmt.Errorf("%s", msgPrinter.Sprintf("Provided log-driver (%s) does not support logs viewing. "+
 		"Logs are only available on the following drivers: %v", logDriver, dockerDriversWithLoggingSupport))
 }
 

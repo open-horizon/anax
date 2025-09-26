@@ -1606,9 +1606,9 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		var serviceDef *exchange.ServiceDefinition
 		serviceId := ""
 		if _, sDef, allIDs, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Received error querying exchange for service metadata: %v/%v, error %v", workload.Org, workload.WorkloadURL, err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Received error querying exchange for service metadata: %v/%v, error %v", workload.Org, workload.WorkloadURL, err)))
 		} else if sDef == nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Cound not find service metadata for %v/%v.", workload.Org, workload.WorkloadURL)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Cound not find service metadata for %v/%v.", workload.Org, workload.WorkloadURL)))
 		} else {
 			serviceDef = sDef
 			sDef.PopulateDefaultUserInput(envAdds)
@@ -1621,7 +1621,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		var msdef *persistence.MicroserviceDefinition
 		msFilters := []persistence.MSFilter{persistence.UrlOrgVersionMSFilter(serviceDef.URL, exchange.GetOrg(serviceId), serviceDef.Version), persistence.UnarchivedMSFilter()}
 		if msdefs, err := persistence.FindMicroserviceDefs(w.db, msFilters); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Error finding service definition from the local db for %v. %v", serviceId, err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("Error finding service definition from the local db for %v. %v", serviceId, err)))
 		} else if msdefs == nil || len(msdefs) == 0 {
 			vExp, err1 := semanticversion.Version_Expression_Factory(serviceDef.Version)
 			if err1 != nil {
@@ -1629,7 +1629,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			}
 
 			if msdef, err = microservice.CreateMicroserviceDefWithServiceDef(w.db, serviceDef, serviceId, vExp.Get_expression()); err != nil {
-				return fmt.Errorf(logString(fmt.Sprintf("failed to create service definition for %v for agreement %v: %v", serviceId, proposal.AgreementId(), err)))
+				return fmt.Errorf("%s", logString(fmt.Sprintf("failed to create service definition for %v for agreement %v: %v", serviceId, proposal.AgreementId(), err)))
 			}
 		} else {
 			msdef = &msdefs[0]
@@ -1688,7 +1688,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 		// add microservice def id to agreement, the agreement object is doubled as a microservice instance.
 		if _, err := persistence.SetAgreementServiceDefId(w.db, proposal.AgreementId(), protocol, msdef.Id); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("failed to set the service definition id for agreement %v. %v", proposal.AgreementId(), err)))
+			return fmt.Errorf("%s", logString(fmt.Sprintf("failed to set the service definition id for agreement %v. %v", proposal.AgreementId(), err)))
 		}
 
 		w.BaseWorker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
@@ -1709,7 +1709,7 @@ func (w *GovernanceWorker) processServiceSecrets(tcPolicy *policy.Policy, agId s
 	allSecrets := persistence.PersistedSecretFromPolicySecret(tcPolicy.SecretDetails, agId)
 
 	if err := persistence.SaveAgreementSecrets(w.db, agId, &allSecrets); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("Failed to save agreement secrets for agreement: %v", agId)))
+		return fmt.Errorf("%s", logString(fmt.Sprintf("Failed to save agreement secrets for agreement: %v", agId)))
 	}
 	return nil
 }
@@ -1725,7 +1725,7 @@ func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.Serv
 
 		msdef, err := microservice.FindOrCreateMicroserviceDef(w.db, sDep.URL, sDep.Org, sDep.Version, sDep.Arch, false, w.devicePattern != "", exchange.GetHTTPServiceHandler(w))
 		if err != nil {
-			return ms_specs, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for dependent service for agreement %v. %v", agreementId, err)))
+			return ms_specs, fmt.Errorf("%s", logString(fmt.Sprintf("failed to get or create service definition for dependent service for agreement %v. %v", agreementId, err)))
 		}
 
 		msspec := events.MicroserviceSpec{SpecRef: msdef.SpecRef, Org: msdef.Org, Version: msdef.Version, MsdefId: msdef.Id}
@@ -1936,7 +1936,7 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId + "?" + exchange.NOHEARTBEAT_PARAM
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
-			glog.Errorf(logString(fmt.Sprintf(err.Error())))
+			glog.Errorf(logString(fmt.Sprintf("%s", err.Error())))
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(logString(tpErr.Error()))
@@ -1963,7 +1963,7 @@ func (w *GovernanceWorker) deleteProducerAgreement(url string, deviceId string, 
 	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "DELETE", targetURL, deviceId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
-			glog.Errorf(logString(fmt.Sprintf(err.Error())))
+			glog.Errorf(logString(fmt.Sprintf("%s", err.Error())))
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(logString(tpErr.Error()))
@@ -2070,7 +2070,7 @@ func (w *GovernanceWorker) agreementRequiresService(ag persistence.EstablishedAg
 
 	asl, _, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.URL, workload.Org, workload.Version, workload.Arch)
 	if err != nil {
-		return false, fmt.Errorf(logString(fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
+		return false, fmt.Errorf("%s", logString(fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
 	}
 
 	for _, sp := range svcSpecs {
@@ -2137,9 +2137,9 @@ func (w *GovernanceWorker) cancelAllAgreements() {
 func (w *GovernanceWorker) GetRequestedClusterNamespaceFromAg(ag *persistence.EstablishedAgreement) (string, error) {
 	protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "", "")
 	if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
-		return "", fmt.Errorf(logString(fmt.Sprintf("encountered error demarshalling proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
+		return "", fmt.Errorf("%s", logString(fmt.Sprintf("encountered error demarshalling proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-		return "", fmt.Errorf(logString(fmt.Sprintf("unable to  demarshal TsAndCs of agreement %v, error %v", ag.CurrentAgreementId, err)))
+		return "", fmt.Errorf("%s", logString(fmt.Sprintf("unable to  demarshal TsAndCs of agreement %v, error %v", ag.CurrentAgreementId, err)))
 	} else {
 		return tcPolicy.ClusterNamespace, nil
 	}

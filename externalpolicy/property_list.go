@@ -210,47 +210,47 @@ func (self *PropertyList) Validate() error {
 
 	for _, property := range *self {
 		if property.Name == "" || property.Value == nil {
-			return fmt.Errorf(msgPrinter.Sprintf("Property must include a name and a value: %v", property))
+			return fmt.Errorf("%s", msgPrinter.Sprintf("Property must include a name and a value: %v", property))
 		}
 		declaredType := property.Type
 
 		if !isValidPropertyType(declaredType) {
-			return fmt.Errorf(msgPrinter.Sprintf("Property %s has invalid property type %s. Allowed property types are: version, string, int, boolean, float, and list of strings.", property.Name, declaredType))
+			return fmt.Errorf("%s", msgPrinter.Sprintf("Property %s has invalid property type %s. Allowed property types are: version, string, int, boolean, float, and list of strings.", property.Name, declaredType))
 		}
 
 		switch actualType := property.Value.(type) {
 		case bool:
 			if declaredType != BOOLEAN_TYPE && declaredType != UNDECLARED_TYPE {
-				return fmt.Errorf(msgPrinter.Sprintf("Property value is of type %T, expected type %s", actualType, declaredType))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Property value is of type %T, expected type %s", actualType, declaredType))
 			}
 		case float64, json.Number:
 			if declaredType == INTEGER_TYPE && fmt.Sprintf("%T", actualType) == "float64" {
 				if float64(int(property.Value.(float64))) != property.Value.(float64) {
-					return fmt.Errorf(msgPrinter.Sprintf("Value %v of property %s is not an integer type", property.Value, property.Name))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Value %v of property %s is not an integer type", property.Value, property.Name))
 				}
 			} else if declaredType == INTEGER_TYPE && fmt.Sprintf("%T", actualType) == "json.Number" {
 				_, err := property.Value.(json.Number).Int64()
 				if err != nil {
-					return fmt.Errorf(msgPrinter.Sprintf("Value %v of property %s is not an integer type", property.Value, property.Name))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Value %v of property %s is not an integer type", property.Value, property.Name))
 				}
 			}
 			if declaredType != INTEGER_TYPE && declaredType != FLOAT_TYPE && declaredType != UNDECLARED_TYPE {
-				return fmt.Errorf(msgPrinter.Sprintf("Property value is of type %T, expected type %s", actualType, declaredType))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Property value is of type %T, expected type %s", actualType, declaredType))
 			}
 		case string:
 			stringVal, canBeString := property.Value.(string)
 			if !canBeString {
-				return fmt.Errorf(msgPrinter.Sprintf("Value %v of property %s is not a valid string. Please define type or change value to a string.", property.Value, property.Name))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Value %v of property %s is not a valid string. Please define type or change value to a string.", property.Value, property.Name))
 			}
 			if declaredType == VERSION_TYPE {
 				if !IsVersionString(stringVal) {
-					return fmt.Errorf(msgPrinter.Sprintf("Property %s with value %v is not a valid verion string", property.Name, property.Value))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Property %s with value %v is not a valid verion string", property.Name, property.Value))
 				}
 			} else if declaredType != STRING_TYPE && declaredType != UNDECLARED_TYPE && declaredType != LIST_TYPE {
-				return fmt.Errorf(msgPrinter.Sprintf("Property value is of type %T, expected type %s", actualType, declaredType))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Property value is of type %T, expected type %s", actualType, declaredType))
 			}
 		default:
-			return fmt.Errorf(msgPrinter.Sprintf("Property %s has invalid value type %T", property.Name, actualType))
+			return fmt.Errorf("%s", msgPrinter.Sprintf("Property %s has invalid value type %T", property.Name, actualType))
 		}
 	}
 	return nil

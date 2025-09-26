@@ -90,7 +90,7 @@ func GetConfig(configFile string) (*HorizonCliConfig, error) {
 	cleanedPath := filepath.Clean(configFile)
 	fileBytes, err := os.ReadFile(cleanedPath)
 	if err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to read config file: %v. %v", cleanedPath, err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Unable to read config file: %v. %v", cleanedPath, err))
 	}
 
 	// Remove /* */ comments
@@ -99,7 +99,7 @@ func GetConfig(configFile string) (*HorizonCliConfig, error) {
 
 	config := HorizonCliConfig{}
 	if err := json.Unmarshal(newBytes, &config); err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to decode content of config file %v. %v", cleanedPath, err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Unable to decode content of config file %v. %v", cleanedPath, err))
 	} else {
 		return &config, nil
 	}
@@ -163,10 +163,10 @@ func SetEnvVarsFromConfigFile(configFile string, orig_env_vars map[string]string
 	}
 
 	if err := SetEnvVars(metadata_vars, orig_env_vars, override_env); err != nil {
-		return hzn_vars, metadata_vars, fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Failed to set the environment variable defined in the MetadataVars attribute in file %v. %v", configFile, err))
+		return hzn_vars, metadata_vars, fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("Failed to set the environment variable defined in the MetadataVars attribute in file %v. %v", configFile, err))
 	}
 	if err := SetEnvVars(hzn_vars, orig_env_vars, override_env); err != nil {
-		return hzn_vars, metadata_vars, fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Failed to set the environment variable in top level in file %v. %v", configFile, err))
+		return hzn_vars, metadata_vars, fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("Failed to set the environment variable in top level in file %v. %v", configFile, err))
 	}
 	return hzn_vars, metadata_vars, nil
 }
@@ -197,7 +197,7 @@ func SetEnvVarsFromNonJsonFile(configFile string, orig_env_vars map[string]strin
 
 	// set the env variables
 	if err := SetEnvVars(hzn_vars, orig_env_vars, override_env); err != nil {
-		return hzn_vars, fmt.Errorf(msgPrinter.Sprintf("Failed to set the environment variable defined in file %v. %v", configFile, err))
+		return hzn_vars, fmt.Errorf("%s", msgPrinter.Sprintf("Failed to set the environment variable defined in file %v. %v", configFile, err))
 	}
 
 	return hzn_vars, nil
