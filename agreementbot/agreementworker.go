@@ -629,7 +629,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		if wi.ConsumerPolicy.PatternId != "" {
 			mergedProducer, err := b.GetMergedProducerPolicyForPattern(wi.Device.Id, exchangeDev, *asl)
 			if err != nil {
-				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf(err.Error())))
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%s", err.Error())))
 				return
 			} else if mergedProducer != nil {
 				wi.ProducerPolicy = *mergedProducer
@@ -917,7 +917,7 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 	if !compatible {
 		err_msg := fmt.Sprintf("secret bindings for policy %v, service %v/%v %v not compatible, reason: %v", consumerPolicy.Header.Name, topSvcDef.GetOrg(), topSvcDef.GetURL(), topSvcDef.GetVersion(), reason)
 		glog.Errorf(BAWlogstring(workerId, err_msg))
-		return fmt.Errorf(err_msg)
+		return fmt.Errorf("%s", err_msg)
 	}
 
 	if len(resMap) == 0 {

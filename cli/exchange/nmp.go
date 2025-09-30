@@ -179,7 +179,7 @@ func NMPAdd(org, credToUse, nmpName, jsonFilePath string, appliesTo, noConstrain
 		if nodes != nil && len(nodes) > 0 {
 			output = cliutils.MarshalIndent(nodes, "exchange nmp add")
 		}
-		fmt.Printf(output)
+		fmt.Printf("%s", output)
 		msgPrinter.Println()
 	}
 }
@@ -241,7 +241,7 @@ func NMPListNodes(org, credToUse, nmpName string) {
 		}
 		output = cliutils.MarshalIndent(compatibleNodeMap, "exchange nmp list --nodes")
 	}
-	fmt.Printf(output)
+	fmt.Printf("%s", output)
 	msgPrinter.Println()
 }
 

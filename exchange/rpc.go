@@ -324,10 +324,10 @@ func InvokeExchangeRetryOnTransportError(httpClientFactory *config.HTTPClientFac
 	retryInterval := httpClientFactory.GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), method, urlPath, user, pw, params, resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if httpClientFactory.RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
@@ -409,7 +409,7 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 			glog.Errorf(err.Error())
 			return "", err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if httpClientFactory.RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
@@ -491,10 +491,10 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp_KeyNames); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
 				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
@@ -529,10 +529,10 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 		retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 		for {
 			if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", fmt.Sprintf("%v/%v", targetURL, key), ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp_KeyContent); err != nil {
-				glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+				glog.Errorf(rpclogString(fmt.Sprintf("%s", err.Error())))
 				return nil, err
 			} else if tpErr != nil {
-				glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+				glog.Warningf(rpclogString(fmt.Sprintf("%s", tpErr.Error())))
 				if ec.GetHTTPFactory().RetryCount == 0 {
 					time.Sleep(time.Duration(retryInterval) * time.Second)
 					continue

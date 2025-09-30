@@ -243,10 +243,10 @@ func (self *Version_Expression) IntersectsWith(other *Version_Expression) error 
 			return err
 		} else if c == 0 {
 			if !self.start_inclusive && !self.end_inclusive {
-				return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("No intersection found."))
+				return fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("No intersection found."))
 			}
 		} else if c == 1 {
-			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("No intersection found."))
+			return fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("No intersection found."))
 		}
 	}
 
@@ -259,7 +259,7 @@ func (self *Version_Expression) IntersectsWith(other *Version_Expression) error 
 func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive bool) error {
 
 	if len(ceiling_version) == 0 {
-		return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The input string is not a version string, it is an empty string."))
+		return fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("The input string is not a version string, it is an empty string."))
 	}
 
 	if ceiling_version == INF {
@@ -267,16 +267,16 @@ func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive 
 		// always set the false, ignore the inclusive input
 		self.end_inclusive = false
 	} else if !IsVersionString(ceiling_version) {
-		return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The input string %v is not a version string.", ceiling_version))
+		return fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("The input string %v is not a version string.", ceiling_version))
 	} else {
 
 		if c, err := CompareVersions(ceiling_version, self.start); err != nil {
 			return err
 		} else if c < 0 {
-			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The input ceiling version %v is lower than the start version %v.", ceiling_version, self.start))
+			return fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("The input ceiling version %v is lower than the start version %v.", ceiling_version, self.start))
 		} else if c == 0 {
 			if !(inclusive && self.start_inclusive) {
-				return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The input ceiling version %v is the same as the start version, but either the start or the end is not inclusive.", ceiling_version))
+				return fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("The input ceiling version %v is the same as the start version, but either the start or the end is not inclusive.", ceiling_version))
 			}
 		}
 
@@ -418,7 +418,7 @@ func normalize(expr string) string {
 func CompareVersions(v1 string, v2 string) (int, error) {
 	// make sure it is a single version string
 	if !IsVersionString(v1) || !IsVersionString(v2) {
-		return 0, fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Input version string %v or %v is not a valid single version string.", v1, v2))
+		return 0, fmt.Errorf("%s", i18n.GetMessagePrinter().Sprintf("Input version string %v or %v is not a valid single version string.", v1, v2))
 	}
 
 	// same version

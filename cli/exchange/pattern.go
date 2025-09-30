@@ -582,7 +582,7 @@ func ValidateSecretBinding(secretBinding []exchangecommon.SecretBinding,
 		if secretBinding == nil || len(secretBinding) == 0 {
 			return nil, nil, nil
 		} else {
-			return nil, nil, fmt.Errorf(msgPrinter.Sprintf("No secret is defined for any of the services. The secret binding is not needed: %v.", secretBinding))
+			return nil, nil, fmt.Errorf("%s", msgPrinter.Sprintf("No secret is defined for any of the services. The secret binding is not needed: %v.", secretBinding))
 		}
 	}
 
@@ -626,7 +626,7 @@ func HasClusterTypeService(svcRefs []exchange.ServiceReference,
 		for _, sv := range sref.ServiceVersions {
 			if sref.ServiceArch == "" || sref.ServiceArch == "*" {
 				if sMeta, err := getSelectedServices(sref.ServiceURL, sref.ServiceOrg, sv.Version, ""); err != nil {
-					return false, fmt.Errorf(msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all architectures. %v", sref.ServiceOrg, sref.ServiceURL, sv.Version, err))
+					return false, fmt.Errorf("%s", msgPrinter.Sprintf("Failed to get services %v/%v version %v from the exchange for all architectures. %v", sref.ServiceOrg, sref.ServiceURL, sv.Version, err))
 				} else {
 					for _, sdef := range sMeta {
 						svcDefs = append(svcDefs, sdef)
@@ -636,7 +636,7 @@ func HasClusterTypeService(svcRefs []exchange.ServiceReference,
 			} else {
 				sdef, _, err := getService(sref.ServiceURL, sref.ServiceOrg, sv.Version, sref.ServiceArch)
 				if err != nil {
-					return false, fmt.Errorf(msgPrinter.Sprintf("Error retrieving service %v/%v version %v from the Exchange. %v", sref.ServiceOrg, sref.ServiceURL, sv.Version, err))
+					return false, fmt.Errorf("%s", msgPrinter.Sprintf("Error retrieving service %v/%v version %v from the Exchange. %v", sref.ServiceOrg, sref.ServiceURL, sv.Version, err))
 				} else if sdef != nil {
 					svcDefs = append(svcDefs, *sdef)
 				}

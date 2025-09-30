@@ -331,12 +331,12 @@ func (a *SecureAPI) decodePolicyCompatibleNodeInputBody(body []byte, msgPrinter 
 	var js map[string]interface{}
 	if err := json.Unmarshal(body, &js); err != nil {
 		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
 	} else {
 		var input policyNodeCompatibleInputBody
 		if err := json.Unmarshal(body, &input); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to policyNodeCompatibleInputBody object. %v", err)))
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to policyNodeCompatibleInputBody object. %v", err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to policyNodeCompatibleInputBody object. %v", err))
 		} else {
 			return &input, nil
 		}
@@ -388,12 +388,12 @@ func (a *SecureAPI) decodePatternCompatibleNodeInputBody(body []byte, msgPrinter
 	var js map[string]interface{}
 	if err := json.Unmarshal(body, &js); err != nil {
 		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
 	} else {
 		var input patternNodeCompatibleInputBody
 		if err := json.Unmarshal(body, &input); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to patternNodeCompatibleInputBody object. %v", err)))
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to patternNodeCompatibleInputBody object. %v", err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to patternNodeCompatibleInputBody object. %v", err))
 		} else {
 			return &input, nil
 		}
@@ -815,12 +815,12 @@ func (a *SecureAPI) decodePolicyCheckBody(body []byte, msgPrinter *message.Print
 	var js map[string]interface{}
 	if err := json.Unmarshal(body, &js); err != nil {
 		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
 	} else {
 		var input compcheck.PolicyCheck
 		if err := json.Unmarshal(body, &input); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to PolicyCheck object. %v", err)))
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to PolicyCheck object. %v", err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to PolicyCheck object. %v", err))
 		} else {
 			// verification of the input is done in the compcheck component, no need to validate the policies here.
 			return &input, nil
@@ -835,12 +835,12 @@ func (a *SecureAPI) decodeUserInputCheckBody(body []byte, msgPrinter *message.Pr
 	var js map[string]interface{}
 	if err := json.Unmarshal(body, &js); err != nil {
 		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
 	} else {
 		var input compcheck.UserInputCheck
 		if err := json.Unmarshal(body, &input); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to UserInputCheck object. %v", err)))
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to UserInputCheck object. %v", err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to UserInputCheck object. %v", err))
 		} else {
 			// verification of the input is done in the compcheck component, no need to validate the policies here.
 			return &input, nil
@@ -855,12 +855,12 @@ func (a *SecureAPI) decodeSecretBindingCheckBody(body []byte, msgPrinter *messag
 	var js map[string]interface{}
 	if err := json.Unmarshal(body, &js); err != nil {
 		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
 	} else {
 		var input compcheck.SecretBindingCheck
 		if err := json.Unmarshal(body, &input); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to SecretBindingCheck object. %v", err)))
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to SecretBindingCheck object. %v", err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to SecretBindingCheck object. %v", err))
 		} else {
 			// verification of the input is done in the compcheck component, no need to validate the policies here.
 			return &input, nil
@@ -875,12 +875,12 @@ func (a *SecureAPI) decodeCompCheckBody(body []byte, msgPrinter *message.Printer
 	var js map[string]interface{}
 	if err := json.Unmarshal(body, &js); err != nil {
 		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
 	} else {
 		var input compcheck.CompCheck
 		if err := json.Unmarshal(body, &input); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to CompCheck object. %v", err)))
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to CompCheck object. %v", err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Input body couldn't be deserialized to CompCheck object. %v", err))
 		} else {
 			// verification of the input is done in the compcheck component, no need to validate the policies here.
 			return &input, nil
@@ -895,11 +895,11 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, aut
 
 	orgId, userId := cutil.SplitOrgSpecUrl(user)
 	if userId == "" {
-		return nil, "", fmt.Errorf(msgPrinter.Sprintf("No exchange user id is supplied."))
+		return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("No exchange user id is supplied."))
 	} else if orgId == "" {
-		return nil, "", fmt.Errorf(msgPrinter.Sprintf("No exchange user organization id is supplied."))
+		return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("No exchange user organization id is supplied."))
 	} else if userPasswd == "" {
-		return nil, "", fmt.Errorf(msgPrinter.Sprintf("No exchange user password or api key is supplied."))
+		return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("No exchange user password or api key is supplied."))
 	}
 
 	// create the exchange context with the provided user and password
@@ -943,7 +943,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, aut
 				// key should be in the format {org}/{user}
 				orgAndUsername := strings.Split(key, "/")
 				if len(orgAndUsername) != 2 {
-					return nil, "", fmt.Errorf(msgPrinter.Sprintf("Exchange user %s is not in the correct format, should be org/username.", key))
+					return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("Exchange user %s is not in the correct format, should be org/username.", key))
 				}
 				return user_ec, orgAndUsername[1], nil
 			}
@@ -958,7 +958,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, aut
 					// key should be in the format {org}/{user}
 					orgAndUsername := strings.Split(key, "/")
 					if len(orgAndUsername) != 2 {
-						return nil, "", fmt.Errorf(msgPrinter.Sprintf("Exchange device %s is not in the correct format, should be org/nodename.", key))
+						return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("Exchange device %s is not in the correct format, should be org/nodename.", key))
 					}
 					return user_ec, orgAndUsername[1], nil
 				}
@@ -1103,7 +1103,7 @@ func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *Secret
 
 	if r.Method == "GET" || r.Method == "PUT" || r.Method == "POST" || r.Method == "DELETE" {
 		if vaultSecretName == "" {
-			glog.Errorf(APIlogString(fmt.Sprintf("Secret name must be provided")))
+			glog.Errorf(APIlogString("Secret name must be provided"))
 			writeResponse(w, msgPrinter.Sprintf("Secret name must be provided"), http.StatusBadRequest)
 			return nil
 		}
@@ -1119,7 +1119,7 @@ func parseSecretDetails(w http.ResponseWriter, r *http.Request, msgPrinter *mess
 		writeResponse(w, msgPrinter.Sprintf("Unable to read request body, error: %v.", err), http.StatusInternalServerError)
 		return nil
 	} else if len(body) == 0 {
-		glog.Errorf(APIlogString(fmt.Sprintf("Request body is empty.")))
+		glog.Errorf(APIlogString("Request body is empty."))
 		writeResponse(w, msgPrinter.Sprintf("Request body is empty."), http.StatusBadRequest)
 		return nil
 	} else if uerr := json.Unmarshal(body, &input); uerr != nil {
@@ -2198,21 +2198,21 @@ func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
 
 	// Check if vault is configured in the management hub, and the provider is ready to handle requests.
 	if a.secretProvider == nil {
-		return fmt.Errorf(msgPrinter.Sprintf("There is no secrets provider configured, secrets are unavailable.")), http.StatusServiceUnavailable
+		return fmt.Errorf("%s", msgPrinter.Sprintf("There is no secrets provider configured, secrets are unavailable.")), http.StatusServiceUnavailable
 	}
 
 	if !a.secretProvider.IsReady() {
 		unavailMsg := "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
-		return fmt.Errorf(msgPrinter.Sprintf(unavailMsg)), http.StatusServiceUnavailable
+		return fmt.Errorf("%s", msgPrinter.Sprintf(unavailMsg)), http.StatusServiceUnavailable
 	}
 
 	if org == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("Organization must be specified in the API path")), http.StatusBadRequest
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Organization must be specified in the API path")), http.StatusBadRequest
 	} else if (strings.Contains(apiUrl, "/user/") && user == "") ||
 		(vaultSecretName == "user" && user == "") {
-		return fmt.Errorf(msgPrinter.Sprintf("User must be specified in the API path")), http.StatusBadRequest
+		return fmt.Errorf("%s", msgPrinter.Sprintf("User must be specified in the API path")), http.StatusBadRequest
 	} else if (strings.Contains(apiUrl, "/node") && node == "") || (vaultSecretName == "node" && node == "") {
-		return fmt.Errorf(msgPrinter.Sprintf("Node must be specified in the API path")), http.StatusBadRequest
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Node must be specified in the API path")), http.StatusBadRequest
 	}
 
 	return nil, 0
@@ -2257,7 +2257,7 @@ func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error
 				return secretNames, nil, http.StatusOK
 			} else {
 				// error
-				return nil, fmt.Errorf(errMsg), serr.ResponseCode
+				return nil, fmt.Errorf("%s", errMsg), serr.ResponseCode
 			}
 		}
 	} else {
@@ -2288,7 +2288,7 @@ func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error
 				return map[string]bool{"exists": (serr.ResponseCode != http.StatusNotFound)}, nil, http.StatusOK
 			} else {
 				// error
-				return nil, fmt.Errorf(errMsg), serr.ResponseCode
+				return nil, fmt.Errorf("%s", errMsg), serr.ResponseCode
 			}
 		}
 	}
@@ -2339,11 +2339,11 @@ func (a *SecureAPI) verifySecretNames(ec exchange.ExchangeContext, exUser string
 			// check if the bound secret exists or not{}
 			payload, err, _ := a.listVaultSecret(&SecretRequestInfo{nodeOrg, ec, exUser, secretUser, secretNode, shortSecretName, false, msgPrinter})
 			if err != nil {
-				return false, "", fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager.", fullSecretName))
+				return false, "", fmt.Errorf("%s", msgPrinter.Sprintf("Error checking secret %v in the secret manager.", fullSecretName))
 			} else if payload != nil {
 				if p, ok := payload.(map[string]bool); !ok {
 					// this should never happen, but check it just in case
-					return false, "", fmt.Errorf(msgPrinter.Sprintf("Wrong type returned checking the secret name in the secret manager: %v", payload))
+					return false, "", fmt.Errorf("%s", msgPrinter.Sprintf("Wrong type returned checking the secret name in the secret manager: %v", payload))
 				} else if p["exists"] == false {
 					return false, msgPrinter.Sprintf("Secret %v does not exist in the secret manager.", fullSecretName), nil
 				}

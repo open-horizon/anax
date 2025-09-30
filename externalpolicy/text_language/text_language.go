@@ -71,7 +71,7 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 			}
 		}
 		if err == nil && parenCount != 0 {
-			return false, nil, fmt.Errorf(msgPrinter.Sprintf("The constraint expression contains unmatched parentheses."))
+			return false, nil, fmt.Errorf("%s", msgPrinter.Sprintf("The constraint expression contains unmatched parentheses."))
 		}
 		validConstraints = append(validConstraints, constraint)
 

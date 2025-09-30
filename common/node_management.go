@@ -70,14 +70,14 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 
 		// Update the NMP status in the local db
 		if err := persistence.SaveOrUpdateNMPStatus(db, nmp_id, *dbStatus); err != nil {
-			return true, fmt.Errorf("Unable to update node management status object in local database, error %v", err)
+			return true, fmt.Errorf("unable to update node management status object in local database, error %v", err)
 		}
 
 		// Update the status of the NMP in the exchange
 		if pDevice != nil {
 			_, nmpName := cutil.SplitOrgSpecUrl(nmp_id)
 			if _, err := putStatusHandler(pDevice.Org, pDevice.Id, nmpName, dbStatus); err != nil {
-				return true, fmt.Errorf("Unable to update node management status object in the exchange, error %v", err)
+				return true, fmt.Errorf("unable to update node management status object in the exchange, error %v", err)
 			}
 		}
 
@@ -88,9 +88,9 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 				agent_version := ""
 				sw_version := pDevice.SoftwareVersions
 				if sw_version != nil {
-					cert_version, _ = sw_version[persistence.CERT_VERSION]
-					config_version, _ = sw_version[persistence.CONFIG_VERSION]
-					agent_version, _ = sw_version[persistence.AGENT_VERSION]
+					cert_version = sw_version[persistence.CERT_VERSION]
+					config_version = sw_version[persistence.CONFIG_VERSION]
+					agent_version = sw_version[persistence.AGENT_VERSION]
 				}
 
 				// Use the versions in the status to set the device versions
@@ -128,7 +128,7 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 					if err := UpdateExchNodeSoftwareVersions(newCertVer, newConfigVer,
 						fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token,
 						getDeviceHandler, patchDeviceHandler); err != nil {
-						return true, fmt.Errorf("Failed to update the node SoftwareVersion attribute in the Exchange. %v", err)
+						return true, fmt.Errorf("failed to update the node SoftwareVersion attribute in the Exchange. %v", err)
 					}
 				}
 
@@ -140,7 +140,7 @@ func SetNodeManagementPolicyStatus(db *bolt.DB, pDevice *persistence.ExchangeDev
 				cleanedPath := filepath.Clean(dirPath)
 
 				if err := os.RemoveAll(cleanedPath); err != nil {
-					return true, fmt.Errorf("Failed to remove the working directory for management job %v. Error was: %v", nmp_id, err)
+					return true, fmt.Errorf("failed to remove the working directory for management job %v. Error was: %v", nmp_id, err)
 				}
 			}
 		}
@@ -157,7 +157,7 @@ func UpdateExchNodeSoftwareVersions(newCertVer string, newConfigVer string,
 
 	exchNode, err := getDeviceHandler(id_with_org, token)
 	if err != nil {
-		return fmt.Errorf("Failed to get the node %v from the exchange. %v", id_with_org, err)
+		return fmt.Errorf("failed to get the node %v from the exchange. %v", id_with_org, err)
 	}
 
 	if exchNode != nil {
@@ -171,7 +171,7 @@ func UpdateExchNodeSoftwareVersions(newCertVer string, newConfigVer string,
 		versions[exchangecommon.CONFIG_VERSION] = newConfigVer
 
 		if err = patchDeviceHandler(id_with_org, token, &exchange.PatchDeviceRequest{SoftwareVersions: versions}); err != nil {
-			return fmt.Errorf("Failed to patch the exchange node %v with correct software versions. %v", id_with_org, err)
+			return fmt.Errorf("failed to patch the exchange node %v with correct software versions. %v", id_with_org, err)
 		}
 	}
 

@@ -130,7 +130,7 @@ func getAllServicesFromAgreements(db *bolt.DB, serviceResolverHandler exchange.S
 
 			asl, _, _, err := serviceResolverHandler(workload.URL, workload.Org, workload.Version, workload.Arch)
 			if err != nil {
-				return nil, fmt.Errorf((fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
+				return nil, fmt.Errorf("%s", (fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
 			}
 
 			if asl != nil {

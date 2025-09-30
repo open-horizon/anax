@@ -18,7 +18,7 @@ func FindEventLogsForOutput(db *bolt.DB, all_logs bool, selections map[string][]
 	//convert to selectors
 	s, err := persistence.ConvertToSelectors(selections)
 	if err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Error converting the selections into Selectors: %v", err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Error converting the selections into Selectors: %v", err))
 	} else {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Converted selections into a map of persistence.Selector arrays: %v.", s)))
 	}
@@ -51,7 +51,7 @@ func DeleteEventLogs(db *bolt.DB, prune bool, selections map[string][]string, ms
 		var err error
 		s, err = persistence.ConvertToSelectors(selections)
 		if err != nil {
-			return 0, fmt.Errorf(msgPrinter.Sprintf("Error converting the selections into Selectors: %v", err))
+			return 0, fmt.Errorf("%s", msgPrinter.Sprintf("Error converting the selections into Selectors: %v", err))
 		} else {
 			glog.V(5).Infof(apiLogString(fmt.Sprintf("Converted selections into a map of persistence.Selector arrays: %v.", s)))
 		}

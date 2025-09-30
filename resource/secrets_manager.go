@@ -43,12 +43,12 @@ func (s SecretsManager) ProcessServiceSecretsWithInstanceId(agId string, msInstK
 	}
 
 	if msIntf, err := persistence.GetMicroserviceInstIWithKey(s.db, msInstKey); err != nil {
-		return fmt.Errorf(secLogString(fmt.Sprintf("Failed to get microservice instance interface for: %v. Error was: %v", msInstKey, err)))
+		return fmt.Errorf("%s", secLogString(fmt.Sprintf("Failed to get microservice instance interface for: %v. Error was: %v", msInstKey, err)))
 	} else if err = s.SaveMicroserviceInstanceSecretsFromAgreementSecrets(agId, msIntf); err != nil {
-		return fmt.Errorf(secLogString(fmt.Sprintf("Failed to convert secrets for agreement %v to persistent microservice form: %v", agId, err)))
+		return fmt.Errorf("%s", secLogString(fmt.Sprintf("Failed to convert secrets for agreement %v to persistent microservice form: %v", agId, err)))
 	} else if s.NodeType == persistence.DEVICE_TYPE_DEVICE {
 		if err = s.WriteNewServiceSecretsToFile(msInstKey); err != nil {
-			return fmt.Errorf(secLogString(fmt.Sprintf("Failed to write all secrets for agreement %v to file: %v", agId, err)))
+			return fmt.Errorf("%s", secLogString(fmt.Sprintf("Failed to write all secrets for agreement %v to file: %v", agId, err)))
 		}
 	}
 

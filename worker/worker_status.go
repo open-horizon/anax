@@ -76,7 +76,7 @@ func (w *WorkerStatusManager) SetWorkerStatus(name string, status string) {
 		w.Workers[name].SetWorkerStatus(status)
 	}
 
-	time_s := fmt.Sprintf(time.Now().Format("2006-01-02 15:04:05"))
+	time_s := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
 	w.StatusLog = append(w.StatusLog, fmt.Sprintf("%v Worker %v: %v.", time_s, name, status))
 }
 
@@ -93,7 +93,7 @@ func (w *WorkerStatusManager) SetSubworkerStatus(name string, subname string, st
 	}
 	w.Workers[name].SetSubworkerStatus(subname, status)
 
-	time_s := fmt.Sprintf(time.Now().Format("2006-01-02 15:04:05"))
+	time_s := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
 	w.StatusLog = append(w.StatusLog, fmt.Sprintf("%v Worker %v: subworker %v %v.", time_s, name, subname, status))
 }
 

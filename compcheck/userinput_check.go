@@ -108,7 +108,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 
 	if uiInput == nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The UserInputCheck input cannot be null")), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The UserInputCheck input cannot be null")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// make a copy of the input because the process will change it. The pointer to policies will stay the same.
@@ -123,7 +123,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	if input.NodeUserInput != nil {
 		nodeUserInput = input.NodeUserInput
 	} else if nodeId == "" {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither node user input nor node id is specified.")), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Neither node user input nor node id is specified.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	if nodeId != "" {
@@ -137,7 +137,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 			return nil, err
 		} else if input.NodeArch != "" {
 			if node.Arch != "" && node.Arch != input.NodeArch {
-				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node architecture %v does not match the Exchange node architecture %v for node %v.", input.NodeArch, node.Arch, nodeId)), COMPCHECK_INPUT_ERROR)
+				return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input node architecture %v does not match the Exchange node architecture %v for node %v.", input.NodeArch, node.Arch, nodeId)), COMPCHECK_INPUT_ERROR)
 			}
 		} else {
 			resources.NodeArch = node.Arch
@@ -180,11 +180,11 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	if input.BusinessPolId != "" || input.BusinessPolicy != nil {
 		useBPol = true
 		if input.PatternId != "" || input.Pattern != nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Deployment policy and pattern are mutually exclusive.")), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Deployment policy and pattern are mutually exclusive.")), COMPCHECK_INPUT_ERROR)
 		}
 	} else {
 		if input.PatternId == "" && input.Pattern == nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither deployment policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Neither deployment policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
 		}
 	}
 
@@ -215,9 +215,9 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 	if serviceRefs == nil || len(serviceRefs) == 0 {
 		if resources.NodeArch != "" {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No service versions with architecture %v specified in the deployment policy or pattern.", resources.NodeArch)), COMPCHECK_VALIDATION_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("No service versions with architecture %v specified in the deployment policy or pattern.", resources.NodeArch)), COMPCHECK_VALIDATION_ERROR)
 		} else {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No service versions specified in the deployment policy or pattern.")), COMPCHECK_VALIDATION_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("No service versions specified in the deployment policy or pattern.")), COMPCHECK_VALIDATION_ERROR)
 		}
 	}
 
@@ -293,7 +293,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 				} else {
 					// since workload arch is empty, need to go through all the arches
 					if svcMeta, err := getSelectedServices(serviceRef.ServiceURL, serviceRef.ServiceOrg, workload.Version, ""); err != nil {
-						return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error getting services for all archetctures for %v/%v version %v. %v", serviceRef.ServiceOrg, serviceRef.ServiceURL, workload.Version, err)), COMPCHECK_EXCHANGE_ERROR)
+						return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error getting services for all archetctures for %v/%v version %v. %v", serviceRef.ServiceOrg, serviceRef.ServiceURL, workload.Version, err)), COMPCHECK_EXCHANGE_ERROR)
 					} else {
 						for sId, s := range svcMeta {
 							org := exchange.GetOrg(sId)
@@ -471,12 +471,12 @@ func VerifyUserInputForService(svcSpec *ServiceSpec,
 
 	// nothing to check
 	if svcSpec == nil {
-		return false, "", nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service spec object cannot be null.")), COMPCHECK_INPUT_ERROR)
+		return false, "", nil, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input service spec object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	_, svc_map, sDef, sId, err := serviceDefResolverHandler(svcSpec.ServiceUrl, svcSpec.ServiceOrgid, svcSpec.ServiceVersionRange, svcSpec.ServiceArch)
 	if err != nil {
-		return false, "", nil, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", svcSpec, err)), COMPCHECK_EXCHANGE_ERROR)
+		return false, "", nil, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", svcSpec, err)), COMPCHECK_EXCHANGE_ERROR)
 	}
 
 	compSDef := ServiceDefinition{svcSpec.ServiceOrgid, *sDef}
@@ -506,13 +506,13 @@ func VerifyUserInputForServiceDef(sDef common.AbstractServiceFile,
 
 	// nothing to check
 	if sDef == nil {
-		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
+		return false, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// get all the service defs for the dependent services for device type node
 	service_map, err := GetServiceDependentDefs(sDef, dependentServices, serviceDefResolverHandler, msgPrinter)
 	if err != nil {
-		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find the dependent services for %v/%v %v %v. %v", sDef.GetOrg(), sDef.GetURL(), sDef.GetArch(), sDef.GetVersion(), err)), COMPCHECK_GENERAL_ERROR)
+		return false, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Failed to find the dependent services for %v/%v %v %v. %v", sDef.GetOrg(), sDef.GetURL(), sDef.GetArch(), sDef.GetVersion(), err)), COMPCHECK_GENERAL_ERROR)
 	}
 
 	// check the secret binding compatibility
@@ -547,14 +547,14 @@ func VerifyUserInputForServiceCache(sDef common.AbstractServiceFile,
 
 	// nothing to check
 	if sDef == nil {
-		return false, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
+		return false, "", NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// verify top level services
 	sId := cutil.FormExchangeIdForService(sDef.GetURL(), sDef.GetVersion(), sDef.GetArch())
 	sId = fmt.Sprintf("%v/%v", sDef.GetOrg(), sId)
 	if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(sDef, bpUserInput, deviceUserInput, msgPrinter); err != nil {
-		return false, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for service %v. %v", sId, err)), COMPCHECK_GENERAL_ERROR)
+		return false, "", NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error verifing user input for service %v. %v", sId, err)), COMPCHECK_GENERAL_ERROR)
 	} else if !compatible {
 		return false, msgPrinter.Sprintf("Failed to verify user input for service %v. %v", sId, reason), nil
 	}
@@ -562,7 +562,7 @@ func VerifyUserInputForServiceCache(sDef common.AbstractServiceFile,
 	// verify dependent services
 	for id, s := range depServices {
 		if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(&ServiceDefinition{exchange.GetOrg(id), s}, bpUserInput, deviceUserInput, msgPrinter); err != nil {
-			return false, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for dependent service %v. %v", id, err)), COMPCHECK_GENERAL_ERROR)
+			return false, "", NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error verifing user input for dependent service %v. %v", id, err)), COMPCHECK_GENERAL_ERROR)
 		} else if !compatible {
 			return false, msgPrinter.Sprintf("Failed to verify user input for dependent service %v. %v", id, reason), nil
 		}
@@ -587,9 +587,9 @@ func VerifyUserInputForSingleService(svcSpec *ServiceSpec,
 	vExp, _ := semanticversion.Version_Expression_Factory(svcSpec.ServiceVersionRange)
 	sdef, sId, err := getService(svcSpec.ServiceUrl, svcSpec.ServiceOrgid, vExp.Get_expression(), svcSpec.ServiceArch)
 	if err != nil {
-		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to get the service from the Exchange. %v", err)), COMPCHECK_EXCHANGE_ERROR)
+		return false, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Failed to get the service from the Exchange. %v", err)), COMPCHECK_EXCHANGE_ERROR)
 	} else if sdef == nil {
-		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Service does not exist on the Exchange.")), COMPCHECK_EXCHANGE_ERROR)
+		return false, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Service does not exist on the Exchange.")), COMPCHECK_EXCHANGE_ERROR)
 	}
 
 	svc := ServiceDefinition{exchange.GetOrg(sId), *sdef}
@@ -607,7 +607,7 @@ func VerifyUserInputForSingleServiceDef(sdef common.AbstractServiceFile,
 
 	// nothing to check
 	if sdef == nil {
-		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
+		return false, "", nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// service does not need user input
@@ -673,17 +673,17 @@ func validateServiceWithBPolicy(service common.AbstractServiceFile, bPolicy *bus
 
 	// make sure url is same
 	if service.GetURL() != bPolicy.Service.Name {
-		return fmt.Errorf(msgPrinter.Sprintf("Service URL %v does not match the service URL %v specified in the deployment policy.", service.GetURL(), bPolicy.Service.Name))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Service URL %v does not match the service URL %v specified in the deployment policy.", service.GetURL(), bPolicy.Service.Name))
 	}
 
 	if service.GetOrg() != bPolicy.Service.Org {
-		return fmt.Errorf(msgPrinter.Sprintf("Service Org %v does not match the service org %v specified in the deployment policy.", service.GetOrg(), bPolicy.Service.Org))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Service Org %v does not match the service org %v specified in the deployment policy.", service.GetOrg(), bPolicy.Service.Org))
 	}
 
 	// make sure arch is same
 	if bPolicy.Service.Arch != "" && bPolicy.Service.Arch != "*" {
 		if service.GetArch() != bPolicy.Service.Arch {
-			return fmt.Errorf(msgPrinter.Sprintf("Service architecure %v does not match the service architectrure %v specified in the deployment policy.", service.GetArch(), bPolicy.Service.Arch))
+			return fmt.Errorf("%s", msgPrinter.Sprintf("Service architecure %v does not match the service architectrure %v specified in the deployment policy.", service.GetArch(), bPolicy.Service.Arch))
 		}
 	}
 
@@ -698,7 +698,7 @@ func validateServiceWithBPolicy(service common.AbstractServiceFile, bPolicy *bus
 		}
 
 		if !found {
-			return fmt.Errorf(msgPrinter.Sprintf("Service version %v does not match any service versions specified in the deployment policy.", service.GetVersion()))
+			return fmt.Errorf("%s", msgPrinter.Sprintf("Service version %v does not match any service versions specified in the deployment policy.", service.GetVersion()))
 		}
 	}
 	return nil
@@ -733,7 +733,7 @@ func validateServiceWithPattern(service common.AbstractServiceFile, pattern comm
 	if found {
 		return nil
 	} else {
-		return fmt.Errorf(msgPrinter.Sprintf("The service does not match any services in the pattern."))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("The service does not match any services in the pattern."))
 	}
 }
 
@@ -776,13 +776,13 @@ func processPattern(getPatterns exchange.PatternHandler, patId string, inputPat 
 		if pattern, err := GetPattern(getPatterns, patId, msgPrinter); err != nil {
 			return nil, err
 		} else if pattern == nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Pattern %v cannot be found on the Exchange.", patId)), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Pattern %v cannot be found on the Exchange.", patId)), COMPCHECK_INPUT_ERROR)
 		} else {
 			p := Pattern{exchange.GetOrg(patId), *pattern}
 			return &p, nil
 		}
 	} else {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither pattern nor pattern id is specified.")), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Neither pattern nor pattern id is specified.")), COMPCHECK_INPUT_ERROR)
 	}
 }
 
@@ -795,21 +795,21 @@ func GetPattern(getPatterns exchange.PatternHandler, patId string, msgPrinter *m
 
 	// check input
 	if patId == "" {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Pattern id is empty.")), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Pattern id is empty.")), COMPCHECK_INPUT_ERROR)
 	} else {
 		patOrg := exchange.GetOrg(patId)
 		if patOrg == "" {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Organization is not specified in the pattern id: %v.", patId)), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Organization is not specified in the pattern id: %v.", patId)), COMPCHECK_INPUT_ERROR)
 		}
 	}
 
 	// get pattern from the exchange
 	exchPats, err := getPatterns(exchange.GetOrg(patId), exchange.GetId(patId))
 	if err != nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error getting pattern %v from the Exchange, %v", patId, err)), COMPCHECK_EXCHANGE_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Error getting pattern %v from the Exchange, %v", patId, err)), COMPCHECK_EXCHANGE_ERROR)
 	}
 	if exchPats == nil || len(exchPats) == 0 {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No pattern found for this id %v.", patId)), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("No pattern found for this id %v.", patId)), COMPCHECK_INPUT_ERROR)
 	}
 
 	for _, pat := range exchPats {
@@ -830,18 +830,18 @@ func validateServices(inServices []common.AbstractServiceFile, bPolicy *business
 	if inServices != nil && len(inServices) != 0 {
 		for _, svc := range inServices {
 			if svc.GetURL() == "" {
-				return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("URL must be specified in the service definition.")), COMPCHECK_VALIDATION_ERROR)
+				return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("URL must be specified in the service definition.")), COMPCHECK_VALIDATION_ERROR)
 			}
 			if svc.GetVersion() == "" {
-				return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Version must be specified in the service definition for service %v.", svc.GetURL())), COMPCHECK_VALIDATION_ERROR)
+				return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Version must be specified in the service definition for service %v.", svc.GetURL())), COMPCHECK_VALIDATION_ERROR)
 			} else if !semanticversion.IsVersionString(svc.GetVersion()) {
-				return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Invalid version format %v for service %v.", svc.GetVersion(), svc.GetURL())), COMPCHECK_VALIDATION_ERROR)
+				return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Invalid version format %v for service %v.", svc.GetVersion(), svc.GetURL())), COMPCHECK_VALIDATION_ERROR)
 			}
 			if svc.GetArch() == "" {
-				return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Arch must be specified in the service definition for service %v.", svc.GetURL())), COMPCHECK_VALIDATION_ERROR)
+				return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Arch must be specified in the service definition for service %v.", svc.GetURL())), COMPCHECK_VALIDATION_ERROR)
 			}
 			if svc.GetOrg() == "" {
-				return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Org must be specified in the service definition for service %v.", svc.GetURL())), COMPCHECK_VALIDATION_ERROR)
+				return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Org must be specified in the service definition for service %v.", svc.GetURL())), COMPCHECK_VALIDATION_ERROR)
 			}
 
 			sId := cutil.FormExchangeIdForService(svc.GetURL(), svc.GetVersion(), svc.GetArch())
@@ -857,7 +857,7 @@ func validateServices(inServices []common.AbstractServiceFile, bPolicy *business
 				err = validateServiceWithPattern(svc, pattern, msgPrinter)
 			}
 			if err != nil {
-				return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Validation failure for input service %v. %v", sId, err)), COMPCHECK_VALIDATION_ERROR)
+				return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Validation failure for input service %v. %v", sId, err)), COMPCHECK_VALIDATION_ERROR)
 			}
 		}
 	}
@@ -930,7 +930,7 @@ func CheckRedundantUserinput(topServices []common.AbstractServiceFile, depServic
 	}
 
 	if topServices == nil || len(topServices) == 0 {
-		return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The service %v/%v version %v arch %v specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.", userInput[0].ServiceOrgid, userInput[0].ServiceUrl, userInput[0].ServiceVersionRange, userInput[0].ServiceArch)), COMPCHECK_VALIDATION_ERROR)
+		return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The service %v/%v version %v arch %v specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.", userInput[0].ServiceOrgid, userInput[0].ServiceUrl, userInput[0].ServiceVersionRange, userInput[0].ServiceArch)), COMPCHECK_VALIDATION_ERROR)
 	}
 
 	all_services := topServices
@@ -963,13 +963,13 @@ func CheckRedundantUserinput(topServices []common.AbstractServiceFile, depServic
 	// now check the redundants
 	for i := 0; i < len(userInput); i++ {
 		if checked_ui, ok := used_ui[i]; !ok {
-			return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The service %v/%v version %v arch %v specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.", userInput[i].ServiceOrgid, userInput[i].ServiceUrl, userInput[i].ServiceVersionRange, userInput[i].ServiceArch)), COMPCHECK_VALIDATION_ERROR)
+			return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("The service %v/%v version %v arch %v specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.", userInput[i].ServiceOrgid, userInput[i].ServiceUrl, userInput[i].ServiceVersionRange, userInput[i].ServiceArch)), COMPCHECK_VALIDATION_ERROR)
 		} else if len(userInput[i].Inputs) == len(checked_ui) {
 			continue
 		} else {
 			for _, uui := range userInput[i].Inputs {
 				if _, found := checked_ui[uui.Name]; !found {
-					return NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Variable %v for service %v/%v version %v arch %v specified in the user input is not used. Please make sure it is a correct name.", uui.Name, userInput[i].ServiceOrgid, userInput[i].ServiceUrl, userInput[i].ServiceVersionRange, userInput[i].ServiceArch)), COMPCHECK_VALIDATION_ERROR)
+					return NewCompCheckError(fmt.Errorf("%s", msgPrinter.Sprintf("Variable %v for service %v/%v version %v arch %v specified in the user input is not used. Please make sure it is a correct name.", uui.Name, userInput[i].ServiceOrgid, userInput[i].ServiceUrl, userInput[i].ServiceVersionRange, userInput[i].ServiceArch)), COMPCHECK_VALIDATION_ERROR)
 				}
 			}
 		}

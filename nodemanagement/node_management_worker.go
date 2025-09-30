@@ -199,7 +199,7 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 	case *NodeConfiguredCommand:
 		err := n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n), exchange.GetAllNodeManagementPolicyStatusHandler(n))
 		if err != nil {
-			glog.Errorf(nmwlog(fmt.Sprintf(err.Error())))
+			glog.Errorf(nmwlog(fmt.Sprintf("%s", err.Error())))
 		}
 	case *NMPDownloadCompleteCommand:
 		cmd := command.(*NMPDownloadCompleteCommand)
@@ -210,12 +210,12 @@ func (n *NodeManagementWorker) CommandHandler(command worker.Command) bool {
 	case *NMPChangeCommand:
 		err := n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n), exchange.GetAllNodeManagementPolicyStatusHandler(n))
 		if err != nil {
-			glog.Errorf(nmwlog(fmt.Sprintf(err.Error())))
+			glog.Errorf(nmwlog(fmt.Sprintf("%s", err.Error())))
 		}
 	case *NodePolChangeCommand:
 		err := n.ProcessAllNMPS(n.Config.Edge.GetNodeMgmtDirectory(), exchange.GetAllExchangeNodeManagementPoliciesHandler(n), exchange.GetDeleteNodeManagementPolicyStatusHandler(n), exchange.GetPutNodeManagementPolicyStatusHandler(n), exchange.GetAllNodeManagementPolicyStatusHandler(n))
 		if err != nil {
-			glog.Errorf(nmwlog(fmt.Sprintf(err.Error())))
+			glog.Errorf(nmwlog(fmt.Sprintf("%s", err.Error())))
 		}
 	case *AgentFileVersionChangeCommand:
 		cmd := command.(*AgentFileVersionChangeCommand)

@@ -308,7 +308,7 @@ func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wV
 	// if not found in attributes, then check the node userinput
 	nodeUserInput, err := persistence.FindNodeUserInput(db)
 	if err != nil {
-		return false, fmt.Errorf(apiLogString(fmt.Sprintf("Failed get user input from local db. %v", err)))
+		return false, fmt.Errorf("%s", apiLogString(fmt.Sprintf("Failed get user input from local db. %v", err)))
 	}
 	if ui, _, err := policy.FindUserInput(wUrl, wOrg, wVersion, sd.Arch, nodeUserInput); err != nil {
 		return false, fmt.Errorf("Failed to find preferences for service %v/%v  from the local user input, error: %v", wOrg, wUrl, err)

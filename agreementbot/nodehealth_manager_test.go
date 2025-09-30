@@ -44,7 +44,7 @@ func Test_NodeHealthStatus_firstpass(t *testing.T) {
 	mypattern := "mypattern"
 	mynode := "org/node1"
 	agid := "ag1"
-	lastHB := "2006-01-02T15:04:05.999Z[UTC]"
+	lastHB := "2006-01-02T15:04:05.999999999Z"
 
 	nhHandler := getVariableStatusHandler(mynode, agid, []string{}, lastHB)
 	err := nhm.SetUpdatedStatus(mypattern, "theorg", nhHandler)
@@ -98,7 +98,7 @@ func Test_NodeHealthStatus_recentnode(t *testing.T) {
 		t.Errorf("unexpected error %v", err)
 	} else if len(nhm.Patterns) != 1 {
 		t.Errorf("patterns map should have something in it, is %v", nhm)
-	} else if op := nhm.NodeOutOfPolicy(mypattern, "theorg", mynode, 300); op {
+	} else if op := nhm.NodeOutOfPolicy(mypattern, "theorg", mynode, 30000); op {
 		t.Errorf("node %v was detected as out of policy %v", mynode, nhm)
 	} else if op := nhm.AgreementOutOfPolicy(mypattern, "theorg", mynode, agid, uint64(time.Now().Unix()), 10); op {
 		t.Errorf("agreement %v was detected as out of policy, %v", agid, nhm)
@@ -128,7 +128,7 @@ func Test_NodeHealthStatus_recentnode_org(t *testing.T) {
 		t.Errorf("unexpected error %v", err)
 	} else if len(nhm.Patterns) != 1 {
 		t.Errorf("patterns map should have something in it, is %v", nhm)
-	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 300); op {
+	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 30000); op {
 		t.Errorf("node %v was detected as out of policy %v", mynode, nhm)
 	} else if op := nhm.AgreementOutOfPolicy(mypattern, myorg, mynode, agid, uint64(time.Now().Unix()), 10); op {
 		t.Errorf("agreement %v was detected as out of policy, %v", agid, nhm)
@@ -147,7 +147,7 @@ func Test_NodeHealthStatus_recentnode_org(t *testing.T) {
 		t.Errorf("unexpected error %v", err)
 	} else if len(nhm.Patterns) != 2 {
 		t.Errorf("patterns map should have something in it, is %v", nhm)
-	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 300); op {
+	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 30000); op {
 		t.Errorf("node %v was detected as out of policy %v", mynode, nhm)
 	} else if op := nhm.AgreementOutOfPolicy(mypattern, myorg, mynode, agid, uint64(time.Now().Unix()), 10); op {
 		t.Errorf("agreement %v was detected as out of policy, %v", agid, nhm)
@@ -181,7 +181,7 @@ func Test_NodeHealthStatus_multiupdate(t *testing.T) {
 		t.Errorf("unexpected error %v", err)
 	} else if len(nhm.Patterns) != 1 {
 		t.Errorf("patterns map should have something in it, is %v", nhm)
-	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 300); op {
+	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 30000); op {
 		t.Errorf("node %v was detected as out of policy %v", mynode, nhm)
 	} else if op := nhm.AgreementOutOfPolicy(mypattern, myorg, mynode, agid, uint64(time.Now().Unix()), 10); op {
 		t.Errorf("agreement %v was detected as out of policy, %v", agid, nhm)
@@ -201,7 +201,7 @@ func Test_NodeHealthStatus_multiupdate(t *testing.T) {
 		t.Errorf("unexpected error %v", err)
 	} else if len(nhm.Patterns) != 1 {
 		t.Errorf("patterns map should have something in it, is %v", nhm)
-	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode2, 300); op {
+	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode2, 30000); op {
 		t.Errorf("node %v was detected as out of policy %v", mynode2, nhm)
 	} else if op := nhm.AgreementOutOfPolicy(mypattern, myorg, mynode2, agid2, uint64(time.Now().Unix()), 10); op {
 		t.Errorf("agreement %v was detected as out of policy, %v", agid2, nhm)
@@ -217,7 +217,7 @@ func Test_NodeHealthStatus_multiupdate(t *testing.T) {
 		t.Errorf("unexpected error %v", err)
 	} else if len(nhm.Patterns) != 1 {
 		t.Errorf("patterns map should have something in it, is %v", nhm)
-	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 300); op {
+	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 30000); op {
 		t.Errorf("node %v was detected as out of policy %v", mynode, nhm)
 	} else if op := nhm.AgreementOutOfPolicy(mypattern, myorg, mynode, agid, uint64(time.Now().Unix()), 10); op {
 		t.Errorf("agreement %v was detected as out of policy, %v", agid, nhm)
@@ -233,7 +233,7 @@ func Test_NodeHealthStatus_multiupdate(t *testing.T) {
 		t.Errorf("unexpected error %v", err)
 	} else if len(nhm.Patterns) != 1 {
 		t.Errorf("patterns map should have something in it, is %v", nhm)
-	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 300); op {
+	} else if op := nhm.NodeOutOfPolicy(mypattern, myorg, mynode, 30000); op {
 		t.Errorf("node %v was detected as out of policy %v", mynode, nhm)
 	} else if op := nhm.AgreementOutOfPolicy(mypattern, myorg, mynode, agid, uint64(time.Now().Unix()), 10); op {
 		t.Errorf("agreement %v was detected as out of policy, %v", agid, nhm)

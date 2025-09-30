@@ -741,9 +741,9 @@ func Test_Merge_EmptyProducer_and_Create_TsAndCs1(t *testing.T) {
 	} else if p2 := create_Policy(pb, t); p2 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
 	} else if err := Are_Compatible(p1, p2, nil); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if mergedPF, err := Create_Terms_And_Conditions(p1, p2, &p2.Workloads[0], "agreementId", "defaultPW", 300, 1); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else {
 		t.Log(mergedPF)
 	}
@@ -779,7 +779,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 
 	// setup test
 	if err := cleanTestDir(policyPath); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	pa := `{"header":{"name":"producer","version": "2.0"}}`
@@ -852,7 +852,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 
 	// setup test
 	if err := cleanTestDir(policyPath); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	pa := `{"header":{"name":"producer","version": "2.0"}}`
@@ -931,7 +931,7 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 
 	// setup test
 	if err := cleanTestDir(policyPath); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	pa := `{"header":{"name":"producer","version": "2.0"}}`

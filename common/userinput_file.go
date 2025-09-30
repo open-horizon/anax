@@ -120,7 +120,7 @@ func NewUserInputFileFromJsonBytes(jsonBytes []byte) (*UserInputFile, error) {
 	inputFile_Old := UserInputFile_Old{}
 	err := json.Unmarshal(jsonBytes, &inputFile_Old)
 	if err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("failed to unmarshal json input %v: %v", jsonBytes, err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("failed to unmarshal json input %v: %v", jsonBytes, err))
 	}
 
 	return NewUserInputFileFromOldFormat(inputFile_Old), nil
@@ -178,14 +178,14 @@ func (self UserInputFile) GetOutputJsonBytes(alwaysOldFormat bool) ([]byte, erro
 		jsonBytes, err1 = json.MarshalIndent(data_old_format, "", "    ")
 	} else {
 		if data_new_format, err := self.GetNewFormat(false); err != nil {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Error getting new user input format. %v", err1))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Error getting new user input format. %v", err1))
 		} else {
 			jsonBytes, err1 = json.MarshalIndent(data_new_format, "", "    ")
 		}
 	}
 
 	if err1 != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Failed to create json object for user input. %v", err1))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Failed to create json object for user input. %v", err1))
 	}
 
 	return jsonBytes, nil
@@ -218,7 +218,7 @@ func (self UserInputFile) GetOldFormat() *UserInputFile_Old {
 // If force is true, no error will be returned.
 func (self UserInputFile) GetNewFormat(force bool) ([]policy.UserInput, error) {
 	if !self.IsGlobalsEmpty() && !force {
-		return nil, fmt.Errorf("Failed to convert the user input to new format because it contains global settings: %v", self.Global)
+		return nil, fmt.Errorf("failed to convert the user input to new format because it contains global settings: %v", self.Global)
 	}
 
 	new_format := []policy.UserInput{}
@@ -308,7 +308,7 @@ func (s MicroWork) GetInputValue(name string) (interface{}, error) {
 			}
 		}
 	}
-	return nil, fmt.Errorf("Variable %v is not in the user input.", name)
+	return nil, fmt.Errorf("variable %v is not in the user input", name)
 }
 
 func (s MicroWork) GetInputMap() map[string]interface{} {

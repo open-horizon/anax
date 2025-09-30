@@ -990,7 +990,7 @@ func (b *BaseConsumerProtocolHandler) getDevice(deviceId string, workerId string
 	targetURL := b.config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, b.agbotId, b.token, nil, &resp); err != nil {
-			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf(err.Error())))
+			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("%s", err.Error())))
 			return nil, err
 		} else if tpErr != nil {
 			glog.Warningf(BCPHlogstring2(workerId, tpErr.Error()))

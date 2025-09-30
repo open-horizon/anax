@@ -260,7 +260,7 @@ func (w *KubeWorker) operatorStatus(kd *persistence.KubeDeploymentConfig, intend
 		}
 	}
 	if retErrorStr != "" {
-		return fmt.Errorf(retErrorStr)
+		return fmt.Errorf("%s", retErrorStr)
 	}
 	return nil
 }

@@ -717,7 +717,7 @@ func NodeManagementList(org, credToUse, nodeName string, all bool) {
 		output = cliutils.MarshalIndent(compatibleNMPs, "node management list")
 	}
 
-	fmt.Printf(output)
+	fmt.Printf("%s", output)
 	msgPrinter.Println()
 }
 

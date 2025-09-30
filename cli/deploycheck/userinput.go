@@ -125,15 +125,15 @@ func validateService(service common.AbstractServiceFile) error {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	if service.GetURL() == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("URL must be specified in the service definition."))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("URL must be specified in the service definition."))
 	}
 	if service.GetVersion() == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("Version must be specified in the service definition."))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Version must be specified in the service definition."))
 	} else if !semanticversion.IsVersionString(service.GetVersion()) {
-		return fmt.Errorf(msgPrinter.Sprintf("Invalid version format: %v.", service.GetVersion()))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Invalid version format: %v.", service.GetVersion()))
 	}
 	if service.GetArch() == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("Arch must be specified in the service definition."))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Arch must be specified in the service definition."))
 	}
 
 	return nil

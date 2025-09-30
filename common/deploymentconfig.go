@@ -94,7 +94,7 @@ func ConvertToDeploymentConfig(deployment interface{}, msgPrinter *message.Print
 		// The only other valid input is regular json in DeploymentConfig structure. Marshal it back to bytes so we can unmarshal it in a way that lets Go know it is a DeploymentConfig
 		jsonBytes, err = json.Marshal(d)
 		if err != nil {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("failed to marshal body for %v: %v", d, err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("failed to marshal body for %v: %v", d, err))
 		}
 	}
 
@@ -102,7 +102,7 @@ func ConvertToDeploymentConfig(deployment interface{}, msgPrinter *message.Print
 	depConfig := new(DeploymentConfig)
 	err = json.Unmarshal(jsonBytes, depConfig)
 	if err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("failed to unmarshal json for deployment field %s: %v", string(jsonBytes), err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("failed to unmarshal json for deployment field %s: %v", string(jsonBytes), err))
 	}
 
 	return depConfig, nil
@@ -140,7 +140,7 @@ func ConvertToClusterDeploymentConfig(clusterDeployment interface{}, msgPrinter 
 		// The only other valid input is regular json in ClusterDeploymentConfig structure. Marshal it back to bytes so we can unmarshal it in a way that lets Go know it is a DeploymentConfig
 		jsonBytes, err = json.Marshal(d)
 		if err != nil {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("failed to marshal body for %v: %v", d, err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("failed to marshal body for %v: %v", d, err))
 		}
 	}
 
@@ -148,7 +148,7 @@ func ConvertToClusterDeploymentConfig(clusterDeployment interface{}, msgPrinter 
 	clusterDepConfig := new(ClusterDeploymentConfig)
 	err = json.Unmarshal(jsonBytes, clusterDepConfig)
 	if err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("failed to unmarshal json for deployment field %s: %v", string(jsonBytes), err))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("failed to unmarshal json for deployment field %s: %v", string(jsonBytes), err))
 	}
 
 	return clusterDepConfig, nil
@@ -176,7 +176,7 @@ func GetClusterDeploymentMetadata(clusterDeployment interface{}, inspectOperator
 		jsonBytes := []byte(d)
 		err = json.Unmarshal(jsonBytes, &tempInterf)
 		if err != nil {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("failed to unmarshal json for cluster deployment field %s: %v", string(jsonBytes), err))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("failed to unmarshal json for cluster deployment field %s: %v", string(jsonBytes), err))
 		}
 	case nil:
 		return nil, nil
@@ -190,10 +190,10 @@ func GetClusterDeploymentMetadata(clusterDeployment interface{}, inspectOperator
 	// check if metadada is already in the deployment config
 	depConfig, ok := tempInterf.(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Invalid data presented in the cluster deployment field: %v", tempInterf))
+		return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Invalid data presented in the cluster deployment field: %v", tempInterf))
 	} else if md, ok := depConfig["metadata"]; ok {
 		if metadata, ok = md.(map[string]interface{}); !ok {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("The metadata attribute in the cluster deployment has wrong format."))
+			return nil, fmt.Errorf("%s", msgPrinter.Sprintf("The metadata attribute in the cluster deployment has wrong format."))
 		} else {
 			// namespace is has already been inpsected, use it
 			if _, ok := metadata["namespace"]; ok {
@@ -207,7 +207,7 @@ func GetClusterDeploymentMetadata(clusterDeployment interface{}, inspectOperator
 		if tempData, ok := depConfig["operatorYamlArchive"]; ok {
 			if tarData, ok := tempData.(string); ok {
 				if ns, err := GetKubeOperatorNamespace(tarData); err != nil {
-					return nil, fmt.Errorf(msgPrinter.Sprintf("Failed to get the namespace from the Kube operator. %v", err))
+					return nil, fmt.Errorf("%s", msgPrinter.Sprintf("Failed to get the namespace from the Kube operator. %v", err))
 				} else {
 					if metadata == nil {
 						metadata = make(map[string]interface{}, 0)

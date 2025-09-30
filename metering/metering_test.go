@@ -88,7 +88,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans := uint64(15)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -104,7 +104,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(0)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -120,7 +120,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(0)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -136,7 +136,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(0)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -152,7 +152,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(1)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -168,7 +168,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(1)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -184,7 +184,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(1)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -200,7 +200,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(2)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -216,7 +216,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(2)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -232,7 +232,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(2)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -248,7 +248,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(13)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -264,7 +264,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(10)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -280,7 +280,7 @@ func Test_calcAmount(t *testing.T) {
 	}
 	ans = uint64(4)
 	if err := m1.calculateAmount(m, past, 0, 0); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -300,7 +300,7 @@ func Test_calcAmount_withmisses(t *testing.T) {
 	}
 	ans := uint64(12)
 	if err := m1.calculateAmount(m, past, 15, 4); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -316,7 +316,7 @@ func Test_calcAmount_withmisses(t *testing.T) {
 	}
 	ans = uint64(13)
 	if err := m1.calculateAmount(m, past, 15, 2); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -332,7 +332,7 @@ func Test_calcAmount_withmisses(t *testing.T) {
 	}
 	ans = uint64(7)
 	if err := m1.calculateAmount(m, past, 15, 10); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -348,7 +348,7 @@ func Test_calcAmount_withmisses(t *testing.T) {
 	}
 	ans = uint64(2)
 	if err := m1.calculateAmount(m, past, 15, 10); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -364,7 +364,7 @@ func Test_calcAmount_withmisses(t *testing.T) {
 	}
 	ans = uint64(2)
 	if err := m1.calculateAmount(m, past, 15, 10); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)
@@ -380,7 +380,7 @@ func Test_calcAmount_withmisses(t *testing.T) {
 	}
 	ans = uint64(8)
 	if err := m1.calculateAmount(m, past, 25, 5); err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	} else if m1.Amount != ans {
 		fmt.Println(m1)
 		t.Errorf("Token calculation was incorrect, calculated %v should have been %v", m1.Amount, ans)

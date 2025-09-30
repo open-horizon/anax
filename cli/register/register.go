@@ -543,17 +543,17 @@ func CreateNode(nodeDevice api.HorizonDevice, timeout int) error {
 				if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 					cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first."))
 				} else if httpCode != 200 && httpCode != 201 {
-					return fmt.Errorf(msgPrinter.Sprintf("Bad HTTP code %d returned from node.", httpCode))
+					return fmt.Errorf("%s", msgPrinter.Sprintf("Bad HTTP code %d returned from node.", httpCode))
 				} else {
 					return nil
 				}
 			} else {
-				return fmt.Errorf(httpReturn)
+				return fmt.Errorf("%s", httpReturn)
 			}
 		case <-time.After(time.Duration(timeout) * time.Second):
 			totalWait = totalWait - channelWait
 			if totalWait <= 0 {
-				return fmt.Errorf(msgPrinter.Sprintf("Call to anax to create node timed out."))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Call to anax to create node timed out."))
 			}
 		}
 	}
@@ -583,12 +583,12 @@ func SetUserInput(timeout int, resource string, value interface{}) error {
 			if httpReturn == "done" {
 				return nil
 			} else {
-				return fmt.Errorf(httpReturn)
+				return fmt.Errorf("%s", httpReturn)
 			}
 		case <-time.After(time.Duration(channelWait) * time.Second):
 			totalWait = totalWait - channelWait
 			if totalWait <= 0 {
-				return fmt.Errorf(msgPrinter.Sprintf("Call to %s timed out.", resource))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Call to %s timed out.", resource))
 			}
 		}
 	}
@@ -645,7 +645,7 @@ func SetConfigState(timeout int, inputFile string) error {
 					cliutils.Verbose(msgPrinter.Sprintf("Node state is unconfigured."))
 					return nil
 				}
-				return fmt.Errorf(msgPrinter.Sprintf("Timeout waiting for node config state call to return."))
+				return fmt.Errorf("%s", msgPrinter.Sprintf("Timeout waiting for node config state call to return."))
 			}
 			cliutils.Verbose(msgPrinter.Sprintf("Waiting for node config state update call to return. %d seconds until timeout.", totalWait))
 		}
@@ -729,11 +729,11 @@ func ValidateExchangeIdString(id string) error {
 
 	illegalInput, err := api.InputIsIllegal(id)
 	if err != nil {
-		return fmt.Errorf(msgPrinter.Sprintf("Could not validate. %v", err))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Could not validate. %v", err))
 	} else if illegalInput != "" {
-		return fmt.Errorf(msgPrinter.Sprintf("A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed."))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed."))
 	} else if strings.Contains(id, " ") {
-		return fmt.Errorf(msgPrinter.Sprintf("Whitespace is not permitted."))
+		return fmt.Errorf("%s", msgPrinter.Sprintf("Whitespace is not permitted."))
 	}
 
 	return nil
