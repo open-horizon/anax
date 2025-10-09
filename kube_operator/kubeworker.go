@@ -185,7 +185,7 @@ func (w *KubeWorker) processKubeOperator(lc *events.AgreementLaunchContext, kd *
 	glog.V(3).Infof(kwlog(fmt.Sprintf("begin install of Kube Deployment %s", lc.AgreementId)))
 
 	glog.V(3).Infof(kwlog(fmt.Sprintf("save service secrets into microservice in the agent database from agreement %s", lc.AgreementId)))
-	secretsMap, err := w.GetSecretManager().ProcessServiceSecretsWithInstanceIdForCluster(lc.AgreementId, lc.AgreementId)
+	secretsMap, err := w.GetSecretManager().ProcessServiceSecretsWithInstanceIdForCluster(lc.AgreementId, lc.AgreementId, kd)
 	if err != nil {
 		return err
 	}
@@ -273,8 +273,9 @@ func (w *KubeWorker) updateKubeOperatorSecrets(kd *persistence.KubeDeploymentCon
 		return err
 	}
 
-	err = client.Update(kd.OperatorYamlArchive, kd.Metadata, agId, reqnamespace, map[string]string{}, updatedSecrets)
-	if err != nil {
+	if updatedSecretsMap, err := w.GetSecretManager().ProcessServiceSecretUpdatesForCluster(agId, kd, updatedSecrets); err != nil {
+		return err
+	} else if err = client.Update(kd.OperatorYamlArchive, kd.Metadata, agId, reqnamespace, map[string]string{}, updatedSecretsMap); err != nil {
 		return err
 	}
 	return nil

@@ -852,7 +852,7 @@ func serviceStart(client *docker.Client,
 		if cErr == docker.ErrContainerAlreadyExists {
 			return cErr
 		} else {
-			return fail(container, serviceName, cErr)
+			return fail(container, serviceName, fmt.Errorf("failed to create container with container opts: %v, err: %v", containerOpts, cErr))
 		}
 	}
 
@@ -863,20 +863,20 @@ func serviceStart(client *docker.Client,
 		if strings.Contains(err.Error(), "logging driver") && (strings.Contains(err.Error(), LOG_DRIVER_SYSLOG) || strings.Contains(err.Error(), LOG_DRIVER_JOURNALD)) {
 			// prevent infinit loop, just in case
 			if !isFirstTry {
-				return fail(container, serviceName, err)
+				return fail(container, serviceName, fmt.Errorf("logging driver is not first try: %v", err))
 			}
 
 			// if the error is related to syslog or journald, use the default for logconfig and retry
 			glog.V(3).Infof("StartContainer logconfig cannot use %v: %v. Switching to default. You can use 'docker logs -f <container_name> to view the logs.", logDriverName, err)
 
 			if err_r := client.RemoveContainer(docker.RemoveContainerOptions{ID: container.ID, RemoveVolumes: false, Force: true}); err_r != nil {
-				return fail(container, serviceName, err_r)
+				return fail(container, serviceName, fmt.Errorf("error remove container for container: %v, %v. The start container error was: %v", container.ID, err_r, err))
 			} else {
 				return serviceStart(client, agreementId, serviceName, shareLabel, serviceConfig, endpointsConfig,
 					sharedEndpoints, postCreateContainers, fail, false)
 			}
 		} else {
-			return fail(container, serviceName, err)
+			return fail(container, serviceName, fmt.Errorf("error doesn't contain logging driver: %v", err))
 		}
 	}
 	if serviceConfig.HostConfig.NetworkMode != "host" {
@@ -888,7 +888,7 @@ func serviceStart(client *docker.Client,
 				Force:          true,
 			})
 			if err != nil {
-				return fail(container, serviceName, err)
+				return fail(container, serviceName, fmt.Errorf("error connecting network: %v to container id: %v as endpoint: %v, error: %v", cfg.NetworkID, container.ID, cfg.Aliases, err))
 			}
 		}
 	}

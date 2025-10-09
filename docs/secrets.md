@@ -22,7 +22,19 @@ The open-horizon secrets management mechanism allows agents to securely recieve 
 Services that require secrets specify the name of the expected secret in the deployment section of the service description. A description of what the secret is for is optional to include here also. For more about this, see [here](./deployment_string.md).
 ```
 "secrets": {
-  "service_token": { "description": "the authentication token for this service" }, 
+  "service_token": { 
+    "description": "the authentication token for this service"
+  }, 
+  "ai_secret": {}
+}
+```
+Optionally, if you want the secret to be delivered with just the value and not with a key and value in a json format, use the following
+```
+"secrets": {
+  "service_token": { 
+    "description": "the authentication token for this service",
+    "format":"value_only"
+  }, 
   "ai_secret": {}
 }
 ```
@@ -42,7 +54,7 @@ Then in the deployment policy or pattern, the service secret is bound to a Vault
   }
 ]
 ```
-Vault secrets can be created at either the org or user level. Only admins can create org-level secrets and any node in the org can use the org-level secret in their services. User-level secrets can be created by any user and are only availible to nodes owned by the user who created the secret. Org-level secrets are identified with "secret-name" and user-level secrets are identified by "user/username/secret-name".
+Vault secrets can be created at either the org or user level. Only admins can create org-level secrets and any node in the org can use the org-level secret in their services. User-level secrets can be created by any user and are only available to nodes owned by the user who created the secret. Org-level secrets are identified with "secret-name" and user-level secrets are identified by "user/username/secret-name".
 
 ## Creating Secrets
 {: #creating-secrets}
@@ -51,7 +63,7 @@ Secrets can be created and managed with the hzn cli. `hzn secretsmanager secret 
 ## Secrets on a Node
 {: #secrets-on-a-node}
 When the agbot needs to send a proposal to an agent which includes service which requires secrets, the secret values to be used are included in the proposal. Once the proposal is accepted, the secrets are copied from the agreement to a file accessible only to the target service. 
-The service can find the secrets in a file called `/secretName` where secretName is the name from the service description.
+The service can find the secrets in a file called `/open-horizon-secrets/secretName` where secretName is the name from the service description. The secret content inside the file will be in json format unless the `format:value_only` is specified in the service definition.
 
 ## Node-level secrets
 {: #node-level-secrets}
