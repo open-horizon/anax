@@ -284,7 +284,7 @@ start() {
 			arch="amd64"
 	fi
 
-	dockerImage='openhorizon/'$arch'_anax'
+	dockerImage='ghcr.io/open-horizon/'$arch'_anax'
 	dockerTag='latest'
 	if [[ -n "$HC_DOCKER_IMAGE" ]]; then
 		dockerImage="$HC_DOCKER_IMAGE"
