@@ -780,13 +780,26 @@ func (a *SecureAPI) processExchangeCred(resource string, authType string, w http
 	}
 	msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
 
-	// check user cred
-	userId, userPasswd, ok := r.BasicAuth()
-	if !ok {
+	var org, user, userId, userPasswd string
+	var ok bool
+	authHeaderValue := r.Header.Get("Authorization")
+	if authHeaderValue != "" && strings.HasPrefix(authHeaderValue, "Bearer ") {
+		// handle if the request has 'Authorization: Bearer ${bearer_token}' header
+		org = r.Header.Get("X-Organization")
+		user = r.Header.Get("X-UserId")
+		if org == "" || user == "" {
+			glog.Errorf(APIlogString(fmt.Sprintf("%v is called without exchange authentication.", resource)))
+			writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange %v id is supplied.", authType), http.StatusUnauthorized)
+			return nil, "", nil, false
+		}
+		userId = fmt.Sprintf("%v/%v", org, user)
+	} else if userId, userPasswd, ok = r.BasicAuth(); !ok {
 		glog.Errorf(APIlogString(fmt.Sprintf("%v is called without exchange authentication.", resource)))
 		writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange %v id is supplied.", authType), http.StatusUnauthorized)
 		return nil, "", nil, false
-	} else if user_ec, exUser, err := a.authenticateWithExchange(userId, userPasswd, authType, msgPrinter); err != nil {
+	}
+
+	if user_ec, exUser, err := a.authenticateWithExchange(authHeaderValue, userId, userPasswd, authType, msgPrinter); err != nil {
 		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate %v %v with the Exchange. %v", authType, userId, err)))
 		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the %v with the Exchange. %v", authType, err), http.StatusUnauthorized)
 		return nil, "", nil, false
@@ -890,7 +903,7 @@ func (a *SecureAPI) decodeCompCheckBody(body []byte, msgPrinter *message.Printer
 
 // This function verifies the given exchange user name and password.
 // The user must be in the format of orgId/userId.
-func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, authType string, msgPrinter *message.Printer) (exchange.ExchangeContext, string, error) {
+func (a *SecureAPI) authenticateWithExchange(authHeaderTokenValue string, user string, userPasswd string, authType string, msgPrinter *message.Printer) (exchange.ExchangeContext, string, error) {
 	glog.V(5).Infof(APIlogString(fmt.Sprintf("authenticateWithExchange called with user %v", user)))
 
 	orgId, userId := cutil.SplitOrgSpecUrl(user)
@@ -898,12 +911,18 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, aut
 		return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("No exchange user id is supplied."))
 	} else if orgId == "" {
 		return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("No exchange user organization id is supplied."))
-	} else if userPasswd == "" {
-		return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("No exchange user password or api key is supplied."))
 	}
 
+	if authHeaderTokenValue == "" && userPasswd == "" {
+		return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("No exchange user password or api key or token is supplied."))
+	}
+
+	userTokenPasswd := userPasswd
+	if userTokenPasswd == "" {
+		userTokenPasswd = authHeaderTokenValue
+	}
 	// create the exchange context with the provided user and password
-	user_ec := a.createUserExchangeContext(user, userPasswd)
+	user_ec := a.createUserExchangeContext(user, userTokenPasswd)
 
 	// Invoke the exchange API to verify the user.
 	retryCount := user_ec.GetHTTPFactory().RetryCount
@@ -920,11 +939,11 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, aut
 
 		targetURL := fmt.Sprintf("%vorgs/%v/%v/%v", user_ec.GetExchangeURL(), orgId, authType, userId)
 
-		if err, tpErr := exchange.InvokeExchange(a.httpClient, "GET", targetURL, user, userPasswd, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(a.httpClient, "GET", targetURL, user, userTokenPasswd, nil, &resp); err != nil {
 			glog.Errorf(APIlogString(err.Error()))
 
 			if strings.Contains(err.Error(), "401") {
-				return nil, "", fmt.Errorf(msgPrinter.Sprintf("Wrong organization id, %s id or password."), authType)
+				return nil, "", fmt.Errorf("%s", msgPrinter.Sprintf("Wrong organization id, %s id or password.", authType))
 			} else {
 				return nil, "", err
 			}
