@@ -15,6 +15,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/edge-sync-service/common"
@@ -119,7 +120,14 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 			req.Header.Add("Content-Type", "application/json")
 		}
 		if user != "" && pw != "" {
-			req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(user+":"+pw))))
+			if strings.HasPrefix(pw, "Bearer ") {
+				// pw is: Bearer <token>
+				req.Header.Add("Authorization", pw)
+				orgId, _ := cutil.SplitOrgSpecUrl(user)
+				req.Header.Add("X-Organization", orgId)
+			} else {
+				req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(user+":"+pw))))
+			}
 		}
 
 		// If the exchange is down, this call will return an error.
