@@ -25,6 +25,7 @@ import (
 )
 
 const K8S_NAMESPACE_TYPE = "Namespace"
+const K8S_DEPLOYMENT_TYPE = "Deployment"
 
 type DeploymentConfig struct {
 	Services map[string]*containermessage.Service `json:"services"`
@@ -293,6 +294,10 @@ func IsNamespaceType(k8sType string) bool {
 	return k8sType == K8S_NAMESPACE_TYPE
 }
 
+func IsDeploymentType(k8sType string) bool {
+	return k8sType == K8S_DEPLOYMENT_TYPE
+}
+
 // Convert the given yaml files into k8s api objects
 func getK8sNamespaceObjectFromYaml(yamlFiles []YamlFile) string {
 	namespace := ""
@@ -328,6 +333,14 @@ func getK8sNamespaceObjectFromYaml(yamlFiles []YamlFile) string {
 		if gvk != nil && IsNamespaceType(gvk.Kind) {
 			if typedNS, ok := obj.(*corev1.Namespace); ok {
 				namespace = typedNS.ObjectMeta.Name
+			}
+		}
+
+		if gvk != nil && IsDeploymentType(gvk.Kind) && namespace == "" {
+			if typedDeployment, ok := obj.(*appsv1.Deployment); ok {
+				if typedDeployment.ObjectMeta.Namespace != "" {
+					namespace = typedDeployment.ObjectMeta.Namespace
+				}
 			}
 		}
 	}
