@@ -1,6 +1,6 @@
 module github.com/open-horizon/anax
 
-go 1.24
+go 1.24.0
 
 toolchain go1.24.6
 
@@ -23,9 +23,9 @@ require (
 	github.com/operator-framework/operator-lifecycle-manager v0.27.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/crypto v0.39.0
-	golang.org/x/sys v0.35.0
-	golang.org/x/text v0.26.0
+	golang.org/x/crypto v0.45.0
+	golang.org/x/sys v0.38.0
+	golang.org/x/text v0.31.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.28.5
@@ -123,10 +123,10 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.etcd.io/bbolt v1.3.10 // indirect
 	go.mongodb.org/mongo-driver v1.15.0 // indirect
-	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
-	golang.org/x/term v0.32.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
+	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.36.3 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
