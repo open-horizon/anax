@@ -49,3 +49,11 @@ The differences are noted below.
 - `deploymentSignature`: The digital signature of the deployment field, created using an RSA key pair provided to `hzn exchange service publish`. It is a best practice to ALWAYS use the `-K` option when publishing a service, to ensure that the public key used to verify this signature is available for the agent to verify the signature.
 - `clusterDeployment`: The Kubernetes Operator yaml for this service. See [deployment structure](./deployment_string.md) for more information on this field. In `display` form, this field is shown as stringified bytes and truncated. This field MAY be omitted if `deployment` is provided. The yaml files of a published service can be retrieved from the exchange using `hzn exchange service list -f <downloaded-yaml-file>`.
 - `clusterDeploymentSignature`: The digital signature of the clusterDeployment field, created using an RSA key pair provided to `hzn exchange service publish`. It is a best practice to ALWAYS use the `-K` option when publishing a service, to ensure that the public key used to verify this signature is available for the agent to verify the signature.
+
+## Service using MMS in edge cluster
+
+The following three user inputs are only for a service using MMS deployed to the edge cluster:
+
+- `MMS_K8S_STORAGE_CLASS`: to indicate the Kubernete storage class of the PVC for the service. If not specified the service will use the same storage class as cluster agent.
+- `MMS_K8S_STORAGE_SIZE`: to indicate the size of PVC in GB. This user input value will overwrite the value specified in the `clusterDeployment` in the service definition.
+- `MMS_K8S_PVC_ACCESS_MODE`: to indicate the PVC access mode. The values are: `ReadWriteOnce` or `ReadWriteMany`. If not specified in the user input, the service will use the same PVC access mode as cluster agent.
