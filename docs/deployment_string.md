@@ -74,6 +74,7 @@ Because {{site.data.keyword.edge_notm}} uses operators to deploy the application
 
 - `operatorYamlArchive`: The content of the operator yaml archive files. These files are compressed (tarred and gzipped). And then the compressed content is converted to a base64 string.
 - `metadata`: A list of key-value paries. It is for internal use only. Do not put it in the `clusterDeployment` when publishing a service. 
+-  `mmsPVC`: `"mmsPVC": {"enable": true, "pvcSize": 20}` - enable persistent volume claim for the service to receive models deployed using the Model Management System (MMS) with the desired size in GB. Default size is 10GB
 
 ## Deployment String Examples
 {: #deployment-examples}
@@ -122,7 +123,11 @@ A `clusterDeployment` string JSON would look like this when defining a service u
 
 ```json
 "clusterDeployment": {
-  "operatorYamlArchive": "/filepath/k8s_operator_deployment_files.tar.gz"
+  "operatorYamlArchive": "/filepath/k8s_operator_deployment_files.tar.gz",
+  "mmsPVC": {
+    "enable": true,
+    "pvcSize": 20
+  }
 }
 ```
 {: codeblock}
@@ -130,6 +135,6 @@ A `clusterDeployment` string JSON would look like this when defining a service u
 When the content is encoded and stringified, the above would look like:
 
 ```json
-"clusterDeployment": "{\"operatorYamlArchive\":\"H4sIAEu8lF4AA+1aX2/bNhDPcz4FkT4EGGZZsmxn0JuXZluxtjGcoHsMaIm2uVKiRlLO0mHffUfqjyVXkZLNcTCUvxeLR/J4vDse7yQ7w4ikjD8MT14OLuBi4ppfwP6vefb86Xji+ZOL6fjE9byRNz1BkxeUqUImFRYInQjOVde4vv7..."
+"clusterDeployment": "{\"operatorYamlArchive\":\"H4sIAEu8lF4AA+1aX2/bNhDPcz4FkT4EGGZZsmxn0JuXZluxtjGcoHsMaIm2uVKiRlLO0mHffUfqjyVXkZLNcTCUvxeLR/J4vDse7yQ7w4ikjD8MT14OLuBi4ppfwP6vefb86Xji+ZOL6fjE9byRNz1BkxeUqUImFRYInQjOVde4vv7...\",\"mmsPVC\":{\"enable\":true,\"pvcSize\":20}}"
 ```
 {: codeblock}
