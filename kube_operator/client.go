@@ -526,7 +526,7 @@ func (c KubeClient) CreateMMSPVC(envVars map[string]string, mmsPVCConfig map[str
 		Spec: corev1.PersistentVolumeClaimSpec{
 			StorageClassName: &storageClass,
 			AccessModes:      accessModes,
-			Resources: corev1.ResourceRequirements{
+			Resources: corev1.VolumeResourceRequirements{
 				Requests: corev1.ResourceList{
 					corev1.ResourceStorage: resource.MustParse(fmt.Sprintf("%vGi", pvcSizeInString)),
 				},
