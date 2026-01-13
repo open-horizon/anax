@@ -356,7 +356,7 @@ jobs:
   mac-build:
     needs: offset-build-number
     
-    runs-on: ${{ (matrix.architecture == 'amd64') && 'macos-13' || 'macos-14' }}
+    runs-on: ${{ (matrix.architecture == 'amd64') && 'macos-15-intel' || 'macos-latest' }}
 
     strategy:
       matrix:
