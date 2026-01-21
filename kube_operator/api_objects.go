@@ -303,8 +303,20 @@ func (n NamespaceCoreV1) Uninstall(c KubeClient, namespace string) {
 		glog.V(3).Infof(kwlog(fmt.Sprintf("skipping deletion of namespace used by agent %v", namespace)))
 		return
 	}
+
+	pods, err := c.Client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
+	if pods != nil {
+		for _, pod := range pods.Items {
+			if pod.ObjectMeta.DeletionTimestamp == nil {
+				// find pods that are not in the terminating phase, skip deletion of namespace
+				glog.V(3).Infof(kwlog(fmt.Sprintf("skipping deletion of namespace %v that has other running pods", namespace)))
+				return
+			}
+		}
+	}
+
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting namespace %v", namespace)))
-	err := c.Client.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
+	err = c.Client.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to delete namespace %s. Error: %v", namespace, err)))
 	}
