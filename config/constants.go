@@ -103,7 +103,7 @@ const AnaxAPIPortDefault = "8510"
 const AgbotAgreementBatchSize_DEFAULT = 300
 
 // The default max agreement bot work queue size. This is essentially the maximum queue depth for a given agbot protocol worker pool.
-const AgbotAgreementQueueSize_DEFAULT = 300
+const AgbotAgreementQueueSize_DEFAULT = 600
 
 // The default scaling factor applied to Agreement Queue size inorder to keep the message queue full.
 const AgbotMessageQueueScale_DEFAULT = 33.0
