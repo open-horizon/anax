@@ -385,10 +385,10 @@ jobs:
           path: go/src/github.com/${{ github.repository }}
 
       # Prepare the environment
-      - name: Set up golang 1.23
+      - name: Set up golang 1.24
         uses: actions/setup-go@v3
         with:
-          go-version: '1.23'
+          go-version: '1.24'
           check-latest: true
 
       # Configure version variables for later steps, stored in our workflow env. variables
@@ -400,39 +400,40 @@ jobs:
       # Configure the certificates for package signing
       - name: Configure Certificates
         run: |
-          # Navigate to our repo directory and setup important variables
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          CERTIFICATE_PATH=$RUNNER_TEMP/horizon-cli.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
+            echo "creating variables..."
+            cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+            HZN_CLI_CERTIFICATE_PATH=$RUNNER_TEMP/horizon-cli.crt
+            P12_CERTIFICATE_PATH=$RUNNER_TEMP/horizon-cli.p12
+            KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
 
-          # This does something important and the action will run indefinitely without it
-          sudo security authorizationdb write com.apple.trust-settings.admin allow
+            echo "import certificate and provisioning profile from secrets..."
+            echo $HZN_CLI_CERTIFICATE_BASE64_ENC | base64 -d -o $HZN_CLI_CERTIFICATE_PATH
+            echo $MACPKG_HORIZON_CLI_P12_BASE64_ENC | base64 -d -o $P12_CERTIFICATE_PATH
 
-          # Use our secret crt and P12 to create files
-          touch $RUNNER_TEMP/horizon-cli.crt
-          echo "$MACPKG_HORIZON_CLI_CRT" >> $RUNNER_TEMP/horizon-cli.crt
-          echo $MACPKG_HORIZON_CLI_P12_BASE64_ENC | base64 -d -o $CERTIFICATE_PATH
+            echo "create temporary keychain..."
+            security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+            security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+            security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # Create a temporary keychain to bypass the prompts that cause the github action to run indefinitely
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security default-keychain -s $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+            echo "import p12 signing certificate to keychain..."
+            security import $P12_CERTIFICATE_PATH -P "$MACPKG_HORIZON_CLI_P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+            
+            echo "import hzn cli public certificate to keychain..."
+            sudo security add-trusted-cert -d -r trustRoot -k $KEYCHAIN_PATH $HZN_CLI_CERTIFICATE_PATH
 
-          # Add our certificate first as a trusted certificate (so that it can be used) then import the whole pkcs12 certificate so the key is included
-          sudo security add-trusted-cert -d -r trustRoot -k $KEYCHAIN_PATH $RUNNER_TEMP/horizon-cli.crt
-          sudo security import $CERTIFICATE_PATH -P "$MACPKG_HORIZON_CLI_P12_PASSWORD" -k $KEYCHAIN_PATH -A
-
-          # This prevents other popups that cause the github action to run indefinitely
-          sudo security set-key-partition-list -S apple-tool:,apple:,pkgbuild:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-
-          # Clean sensitive files
-          rm $CERTIFICATE_PATH
+            echo "update keychain..."
+            sudo security set-key-partition-list -S apple-tool:,apple:,pkgbuild:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+            security list-keychain -d user -s $KEYCHAIN_PATH
+            
+            echo "cleanup..."
+            rm $HZN_CLI_CERTIFICATE_PATH
+            rm $P12_CERTIFICATE_PATH
         env:
-          MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}         # Contains the content of the horizon-cli.crt
-          MACPKG_HORIZON_CLI_P12_BASE64_ENC: ${{ secrets.MACPKG_HORIZON_CLI_P12_BASE64_ENC }}
-          MACPKG_HORIZON_CLI_P12_PASSWORD: ${{ secrets.MACPKG_HORIZON_CLI_P12_PASSWORD }}
-          MACPKG_KEYCHAIN_PASSWORD: ${{ secrets.MACPKG_KEYCHAIN_PASSWORD }}
+            MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}         # Contains the content of the horizon-cli.crt
+            MACPKG_HORIZON_CLI_P12_BASE64_ENC: ${{ secrets.MACPKG_HORIZON_CLI_P12_BASE64_ENC }}
+            MACPKG_HORIZON_CLI_P12_PASSWORD: ${{ secrets.MACPKG_HORIZON_CLI_P12_PASSWORD }}
+            MACPKG_KEYCHAIN_PASSWORD: ${{ secrets.MACPKG_KEYCHAIN_PASSWORD }}
+            HZN_CLI_CERTIFICATE_BASE64_ENC: ${{ secrets.HZN_CLI_CERTIFICATE_BASE64_ENC }}
 
       # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
