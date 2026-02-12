@@ -314,7 +314,7 @@ test-image:
 		docker build $(DOCKER_DEV_OPTS) -t $(DOCKER_TEST_INAME) -f docker/Dockerfile ./docker && docker tag $(DOCKER_TEST_INAME) $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG); \
 	fi
 
-test-no-clean: $(ANAX_SOURCE)/anax run-dockerreg run-mgmthub run-test
+test-no-clean: $(ANAX_SOURCE)/anax run-mgmthub run-dockerreg run-test
 	@echo -e  "\nBootstrapping the exchange"
 	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); /root/init_exchange.sh"
 	@echo -e  "\nSetting up secrets in the vault"
