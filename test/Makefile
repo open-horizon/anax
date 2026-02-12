@@ -64,7 +64,7 @@ endif
 # agbot
 DOCKER_AGBOT_CNAME := agbot
 DOCKER_AGBOT2_CNAME := agbot2
-AGBOT_IMAGE_NAME ?= ghcr.io/openhorizon/$(arch)_agbot
+AGBOT_IMAGE_NAME ?= docker.io/openhorizon/$(arch)_agbot
 AGBOT_IMAGE_TAG ?= e2edev
 old_agbot := $(shell echo -e $(TEST_VARS) | grep OLDAGBOT=1)
 ifneq ($(old_agbot),)
