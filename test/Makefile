@@ -376,6 +376,7 @@ get-agbot-image:
 	    	echo -e "Building agbot image $(AGBOT_IMAGE_NAME):$(AGBOT_IMAGE_TAG)"; \
 			cd $(ANAX_SOURCE) && make agbot-image; \
 			docker tag $(AGBOT_IMAGE_NAME):testing $(AGBOT_IMAGE_NAME):e2edev; \
+			docker images; \
 	    else \
 	    	echo "Update $(AGBOT_IMAGE_NAME):$(AGBOT_IMAGE_TAG) image with latest anax and hzn."; \
 	    	docker run -it --name="agbot_temp" $(AGBOT_IMAGE_NAME):$(AGBOT_IMAGE_TAG) /bin/bash >/dev/null 2>&1  || true; \
@@ -396,6 +397,7 @@ get-css-image:
 	    	echo -e "Building css image $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)"; \
 			cd $(ANAX_SOURCE) && make css-docker-image; \
 			docker tag $(DOCKER_CSS_INAME):testing $(DOCKER_CSS_INAME):e2edev; \
+			docker images; \
 	    fi \
 	fi
 
