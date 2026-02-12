@@ -112,7 +112,7 @@ DOCKER_REG_PW := testpassword
 
 # css
 DOCKER_CSS_CNAME := css-api
-DOCKER_CSS_INAME := ghcr.io/openhorizon/$(arch)_cloud-sync-service
+DOCKER_CSS_INAME := docker.io/openhorizon/$(arch)_cloud-sync-service
 DOCKER_CSS_TAG := e2edev
 CSS_INTERNAL_PORT := 8080
 CSS_URL ?= $(HZN_TRANSPORT)://css-api:$(CSS_INTERNAL_PORT)
