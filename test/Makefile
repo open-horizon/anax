@@ -64,7 +64,7 @@ endif
 # agbot
 DOCKER_AGBOT_CNAME := agbot
 DOCKER_AGBOT2_CNAME := agbot2
-AGBOT_IMAGE_NAME ?= openhorizon/$(arch)_agbot
+AGBOT_IMAGE_NAME ?= ghcr.io/openhorizon/$(arch)_agbot
 AGBOT_IMAGE_TAG ?= e2edev
 old_agbot := $(shell echo -e $(TEST_VARS) | grep OLDAGBOT=1)
 ifneq ($(old_agbot),)
@@ -78,7 +78,7 @@ AGBOT_TOKEN ?= Abcdefghijklmno1
 
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
-DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
+DOCKER_EXCH_INAME := quay.io/openhorizon/$(arch)_exchange-api
 DOCKER_EXCH_TAG ?= testing
 DOCKER_EXCH ?= $(HZN_TRANSPORT)://exchange-api:8080/v1
 EXCH_ROOTPW ?= Horizon-Rul3s
@@ -112,7 +112,7 @@ DOCKER_REG_PW := testpassword
 
 # css
 DOCKER_CSS_CNAME := css-api
-DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
+DOCKER_CSS_INAME := ghcr.io/openhorizon/$(arch)_cloud-sync-service
 DOCKER_CSS_TAG := e2edev
 CSS_INTERNAL_PORT := 8080
 CSS_URL ?= $(HZN_TRANSPORT)://css-api:$(CSS_INTERNAL_PORT)
