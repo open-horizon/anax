@@ -26,7 +26,7 @@ run: stop build
 
 check:
 	contId=$(shell docker ps -q | head -1) && \
-		helloip=$$(docker inspect --format "{{ .NetworkSettings.Gateway }}" $$contId) && \
+		helloip=$$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" $$contId) && \
 			curl -sSL http://$$helloip:8000/movie
 
 stop:
