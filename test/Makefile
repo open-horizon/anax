@@ -289,9 +289,9 @@ realclean: mostlyclean
 
 test-network:
 	@echo "Creating e2edev environment network"
-	if [[ "$(shell docker network ls -qf name=$(DOCKER_TEST_NETWORK))" == "" ]]; then \
-		docker network create "$(DOCKER_TEST_NETWORK)"; \
-	fi
+#if [[ "$(shell docker network ls -qf name=$(DOCKER_TEST_NETWORK))" == "" ]]; then \
+#		docker network create "$(DOCKER_TEST_NETWORK)"; \
+#	fi
 
 $(ANAX_SOURCE)/anax:
 	@echo "Building anax"
