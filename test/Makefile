@@ -44,13 +44,13 @@ DOCKER_ANAX_INAME := openhorizon/$(arch)_anax:testing
 DOCKER_ANAX_K8S_INAME := openhorizon/$(arch)_anax_k8s:testing
 
 # e2edevtest
-DOCKER_TEST_CNAME := e2edevtest
-DOCKER_TEST_INAME := openhorizon/e2edev-test
-DOCKER_TEST_TAG := latest
-DOCKER_TEST_NETWORK := hzn_horizonnet
+DOCKER_TEST_CNAME ?= e2edevtest
+DOCKER_TEST_INAME ?= openhorizon/e2edev-test
+DOCKER_TEST_TAG ?= latest
+DOCKER_TEST_NETWORK ?= hzn_horizonnet
 DOCKER_TEST_ADD_HOST ?= "localhost:127.0.0.1"
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
-UDS := /var/run/horizon/
+UDS ?= /var/run/horizon/
 API_KEY ?= 0
 DOCKER_CPU_TAG := 1.2.2
 ICP_HOST_IP ?= 0
@@ -62,8 +62,8 @@ else
 endif
 
 # agbot
-DOCKER_AGBOT_CNAME := agbot
-DOCKER_AGBOT2_CNAME := agbot2
+DOCKER_AGBOT_CNAME ?= agbot
+DOCKER_AGBOT2_CNAME ?= agbot2
 AGBOT_IMAGE_NAME ?= docker.io/openhorizon/$(arch)_agbot
 AGBOT_IMAGE_TAG ?= e2edev
 old_agbot := $(shell echo -e $(TEST_VARS) | grep OLDAGBOT=1)
@@ -78,7 +78,7 @@ AGBOT_TOKEN ?= Abcdefghijklmno1
 
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
-DOCKER_EXCH_INAME := quay.io/openhorizon/$(arch)_exchange-api
+DOCKER_EXCH_INAME ?= quay.io/openhorizon/$(arch)_exchange-api
 DOCKER_EXCH_TAG ?= testing
 DOCKER_EXCH ?= $(HZN_TRANSPORT)://exchange-api:8080/v1
 EXCH_ROOTPW ?= Horizon-Rul3s
@@ -86,16 +86,17 @@ EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
 EXCHANGE_SYSTEM_ADMIN_PW ?= ibmadminpw
 
 # exchange DB
-DOCKER_EXCHDB_CNAME := postgres
+DOCKER_EXCHDB_CNAME ?= postgres
 DOCKER_EXCHDB_INAME ?= postgres
 ifeq ($(arch),ppc64le)
 	DOCKER_EXCHDB_TAG ?= 18
 else
 	DOCKER_EXCHDB_TAG ?= 18
 endif
-EXCHDB_USER := admin
-EXCHDB_PORT := 5432
-EXCHDB_NAME := exchange
+EXCHDB_USER ?= admin
+EXCHDB_PORT ?= 5432
+EXCHDB_NAME ?= exchange
+EXCHANGE_DB_PW ?= some_rand0mdat@basepassWord
 
 # registry
 DOCKER_REG_CNAME := e2edevregistry
@@ -111,10 +112,10 @@ DOCKER_REG_USER := testuser
 DOCKER_REG_PW := testpassword
 
 # css
-DOCKER_CSS_CNAME := css-api
-DOCKER_CSS_INAME := docker.io/openhorizon/$(arch)_cloud-sync-service
-DOCKER_CSS_TAG := e2edev
-CSS_INTERNAL_PORT := 8080
+DOCKER_CSS_CNAME ?= css-api
+DOCKER_CSS_INAME ?= docker.io/openhorizon/$(arch)_cloud-sync-service
+DOCKER_CSS_TAG ?= e2edev
+CSS_INTERNAL_PORT ?= 8080
 CSS_URL ?= $(HZN_TRANSPORT)://css-api:$(CSS_INTERNAL_PORT)
 
 #css DB
@@ -425,7 +426,8 @@ run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 		CSS_IMAGE_NAME=$(DOCKER_CSS_INAME) \
 		CSS_INTERNAL_PORT=$(CSS_INTERNAL_PORT); \
 	export MONGO_IMAGE_TAG=$(DOCKER_CSSDB_TAG); \
-	export POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) \
+	export EXCHANGE_DB_PW=$(EXCHANGE_DB_PW) \
+		POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) \
 		POSTGRES_USER=$(EXCHDB_USER); \
 	export VAULT_IMAGE_TAG=$(DOCKER_VAULT_TAG) VAULT_PORT=$(VAULT_PORT) VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) VAULT_ROOT_TOKEN=$(VAULT_DEV_ROOT_TOKEN_ID); \
 	export ANAX_SOURCE=$(ANAX_SOURCE) ANAX_LOG_LEVEL=5; \
