@@ -129,9 +129,9 @@ else
 endif
 
 #vault
-DOCKER_VAULT_CNAME := vault
-DOCKER_VAULT_INAME := openhorizon/$(arch)_vault
-DOCKER_VAULT_TAG := testing
+DOCKER_VAULT_CNAME ?= vault
+DOCKER_VAULT_INAME ?= openhorizon/$(arch)_vault
+DOCKER_VAULT_TAG ?= testing
 VAULT_PORT ?= 8200
 no_vault := $(shell echo -e $(TEST_VARS) | grep NOVAULT=1)
 ifeq ($(no_vault),)
@@ -191,6 +191,7 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "AGBOT2_API=$(AGBOT2_API)" \
 		-e "ORG_ID=$(ORG_ID)" \
 		-e "ICP_HOST_IP=$(ICP_HOST_IP)" \
+		-e "EXCHANGE_DB_PW=$(EXCHANGE_DB_PW)" \
 		-e "DOCKER_REG_USER=$(DOCKER_REG_USER)" \
 		-e "DOCKER_REG_PW=$(DOCKER_REG_PW)" \
 		-e "HZN_EXCHANGE_URL=$(DOCKER_EXCH)" \
@@ -403,12 +404,12 @@ get-css-image:
 	fi
 
 get-vault-image:
-	if [[ "$(NOVAULT)" != "1" ]]; then \
-		echo "\nPulling vault image $(DOCKER_VAULT_INAME)"; \
-		docker pull $(DOCKER_VAULT_INAME):$(DOCKER_VAULT_TAG); \
-	else \
-		echo "Skipping vault image $(DOCKER_VAULT_INAME)"; \
-	fi
+#	if [[ "$(NOVAULT)" != "1" ]]; then \
+#		echo "\nPulling vault image $(DOCKER_VAULT_INAME)"; \
+#		docker pull $(DOCKER_VAULT_INAME):$(DOCKER_VAULT_TAG); \
+#	else
+		echo "Skipping vault image $(DOCKER_VAULT_INAME)";
+#	fi
 
 run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	@echo "Starting all-in-one management hub"
