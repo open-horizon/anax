@@ -52,6 +52,8 @@ function verifyAgreements() {
 # $2 - the agreement id to check.
 #
 function agreementExists() {
+  echo -e "agreementExists(): line 55"
+
   STILL_EXIST=$(echo $1 | jq -r '.[] | select (.current_agreement_id == "'$2'")')
   if [ "${STILL_EXIST}" == "" ]; then
     echo -e "${PREFIX} agreement $2 no longer exists"
@@ -59,12 +61,16 @@ function agreementExists() {
     echo -e "${PREFIX} agreement archive contains: ${AAGS}"
     exit 1
   fi
+
+  echo -e "agreementExists(): line 65"
 }
 
 # Wait until the agreement(s) get to a specific lifecycle state, and make sure the agreements dont change during this time.
 # $1 - the timestamped field name that should be non-zero
 #
 function agreementsReached() {
+  echo -e "agreementsReached(): line 72"
+
   NUM_AGS=$(echo ${MONITOR_AGS} | jq -r '. | length')
   while :; do
     echo -e "${PREFIX} waiting for agreement(s) to have $1 set"
@@ -90,12 +96,17 @@ function agreementsReached() {
     else
       return 0
     fi
+  
+  echo -e "agreementsReached(): line 100"
+
   done
 }
 
 # Keep an eye on the agreements to make sure they dont go away. This function
 # assumes that MONITOR_AGS has been previously set.
 function monitorAgreements {
+    echo -e "monitorAgreements: line 108"
+
     NUM_AGS=$(echo ${MONITOR_AGS} | jq -r '. | length')
     NOT_YET=0
         while :
@@ -120,6 +131,8 @@ function monitorAgreements {
                         sleep 120
                 fi
         done
+    
+    echo -e "monitorAgreements: line 134"
 }
 
 # Do the location specific verification. This function has specific knowledge of the
@@ -127,6 +140,8 @@ function monitorAgreements {
 # $1 - the GET /service object for the location service
 #
 function handleLocation() {
+
+  echo -e "function handleLocation(): line 131"
 
   REFURL=$(echo $1 | jq -r '.ref_url')
 
@@ -136,12 +151,16 @@ function handleLocation() {
     exit 2
   fi
 
+  echo -e "function handleLocation(): line 141"
+
   # Validate that it has 1 container and should have 3 networks.
   CONT_NUM=$(echo $1 | jq -r '.containers | length')
   if [ "${CONT_NUM}" != "1" ]; then
     echo -e "${PREFIX} ${REFURL} should have 1 container, but there are ${CONT_NUM}"
     exit 2
   fi
+
+  echo -e "function handleLocation(): line 150"
 
   # Grab the map of networks. There should be 3, each is a key in the map.
   NETS=$(echo $1 | jq -r '.containers[0].NetworkSettings.Networks')
@@ -150,6 +169,8 @@ function handleLocation() {
     echo -e "${PREFIX} ${REFURL} should have 3 networks, but there are ${NUM_NETS}"
     exit 2
   fi
+
+  echo -e "function handleLocation(): line 160"
 
   # Grab the network name keys as a json array so we can iterate them. One of the networks should be
   # the same as a known agreement id. The other 2 are; the GPS container that is specific to the location
@@ -165,6 +186,8 @@ function handleLocation() {
     echo -e "${PREFIX} the location service is not in the dependent network for cpu, location has: ${NET_KEYS}"
     exit 2
   fi
+
+  echo -e "function handleLocation(): line 177"
 
   # Grab the network name of the cpu service so that we can check it against the network of the cpu
   # service to make sure they match.
@@ -183,6 +206,8 @@ function handleLocation() {
   elif [ "${CPU_NET_NAME}" != "" ] && [ "${CPU_NET_NAME}" == "${LOC_CPU_NETNAME}" ]; then
     echo -e "${PREFIX} location's cpu service network is the same as the network of the CPU service itself"
   fi
+
+  echo -e "function handleLocation(): line 197"
 }
 
 # Do the cpu specific verification. This function has specific knowledge of the
@@ -190,6 +215,8 @@ function handleLocation() {
 # $1 - the GET /service object for the cpu service
 #
 function handleCPU {
+        echo -e "handleCPU: line 205"
+
         NETS_EXPECTED=0
         # Define expected networks number, depending on svc version
         VERS=$(echo $1 | jq -r '.version')
@@ -212,6 +239,8 @@ function handleCPU {
                 fi
         fi
 
+        echo -e "handleCPU: line 229"
+
         REFURL=$(echo $1 | jq -r '.ref_url')
 
         # Validate that it has 1 container.
@@ -221,6 +250,8 @@ function handleCPU {
                 exit 2
         fi
 
+        echo -e "handleCPU: line 240"
+
         # Grab the map of networks. There should be $NETS_EXPECTED.
         NETS=$(echo $1 | jq -r '.containers[0].NetworkSettings.Networks')
 
@@ -229,6 +260,8 @@ function handleCPU {
             echo -e "${PREFIX} ${REFURL} (version ${VERS}) should have ${NETS_EXPECTED} networks, but there are ${NUM_NETS}"
             exit 2
         fi
+
+        echo -e "handleCPU: line 249"
 
         # Grab the network name for the IBM's location service
         # (there is another cpu service which is from e2edev@somecomp.com org. CPU_NET_NAME should be the one from IBM org.)
@@ -244,6 +277,8 @@ function handleCPU {
         elif [ "${LOC_CPU_NETNAME}" != "" ] && [ "${CPU_NET_NAME}" == "${LOC_CPU_NETNAME}" ]; then
                 echo -e "${PREFIX} location's cpu service network is the same as the network of the CPU service itself"
         fi
+
+        echo -e "handleCPU: line 268"
 }
 
 # Verify the service instances that should be running
