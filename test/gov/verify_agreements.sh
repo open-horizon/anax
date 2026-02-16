@@ -316,13 +316,22 @@ function verifyData() {
 
 # =====================================================================================================
 # Main body of the script. Wait until all agreements are started.
+
+echo -e "line 320"
+
 verifyAgreements
+
+echo -e "line 324"
 
 # Wait until all agreements are executing.
 agreementsReached agreement_execution_start_time
 
+echo -e "line 329"
+
 # Check to make sure service are running correctly.
 verifyServices
+
+echo -e "line 334"
 
 # Verify exchange node status
 checkNodeStatus true
@@ -331,11 +340,17 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
+echo -e "line 343"
+
 # Do data verification
 if [ "${PATTERN}" == "sall" ]; then
   verifyData
 fi
 
+echo -e "line 350"
+
 # Monitor agreements to make sure they stay in place. This function does not
 # return unless it finds an error.
 monitorAgreements
+
+echo -e "line 356"

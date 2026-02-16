@@ -3,6 +3,7 @@ name: E2E-test
 
 # Workflow triggers -- When a pull request is made for the listed branches
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - master
@@ -14,7 +15,7 @@ on:
 jobs:
   test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
@@ -51,6 +52,49 @@ jobs:
       - name: Build the e2edev docker images
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
 
-      # E2E development test
-      - name: E2E dev-test
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test clean && make -C test test TEST_VARS=${{matrix.tests}}
+      - name: E2E Development Test
+        id: test-runner
+        run: cd ${GOPATH}/src/github.com/open-horizon/anax && make -C test test-no-clean TEST_VARS=${{matrix.tests}}
+      
+      - name: Verify Built Container Images
+        run: docker images
+
+      - name: Test Failure Catch - Check Docker Containers
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: docker ps -a
+
+      - name: Test Failure Catch - Check Agbot Docker Log
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: docker logs agbot
+
+      - name: Test Failure Catch - Check Exchange Docker Log
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: docker logs exchange-api
+
+      - name: Test Failure Catch - Check k8s Pods
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: sudo -E snap run microk8s kubectl get pods -n agent-namespace -o wide
+
+      - name: Test Failure Catch - Check k8s Pods Description
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: sudo -E snap run microk8s kubectl describe pods -n agent-namespace
+
+      - name: Test Failure Catch - Check k8s Services
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: sudo -E snap run microk8s kubectl get services -n agent-namespace -o wide
+
+      - name: Test Failure Catch - Check k8s Nodes
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: sudo -E snap run microk8s kubectl get nodes -n agent-namespace -o wide
+
+      - name: Test Failure Catch - Check k8s Pod Logs
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: sudo -E snap run microk8s kubectl logs -l app=agent --all-pods=true --all-containers=true -n agent-namespace
