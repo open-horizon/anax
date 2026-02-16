@@ -81,6 +81,7 @@ DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME ?= quay.io/openhorizon/$(arch)_exchange-api
 DOCKER_EXCH_TAG ?= testing
 DOCKER_EXCH ?= $(HZN_TRANSPORT)://exchange-api:8080/v1
+EXCHANGE_LOG_LEVEL ?= DEBUG
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
 EXCHANGE_SYSTEM_ADMIN_PW ?= ibmadminpw
@@ -129,13 +130,13 @@ else
 endif
 
 #vault
-DOCKER_VAULT_CNAME ?= vault
+DOCKER_VAULT_CNAME ?= bao
 DOCKER_VAULT_INAME ?= openhorizon/$(arch)_vault
 DOCKER_VAULT_TAG ?= testing
 VAULT_PORT ?= 8200
 no_vault := $(shell echo -e $(TEST_VARS) | grep NOVAULT=1)
 ifeq ($(no_vault),)
-	VAULT_ADDR = $(HZN_TRANSPORT)://vault:$(VAULT_PORT)
+	VAULT_ADDR = $(HZN_TRANSPORT)://bao:$(VAULT_PORT)
 endif
 VAULT_DEV_ROOT_TOKEN_ID ?= vault_dev_root_token_id
 VAULT_DEV_LISTEN_ADDRESS ?= 0.0.0.0:$(VAULT_PORT)
@@ -182,6 +183,7 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "CSS_URL=$(CSS_URL)" \
 		-e "API_KEY=$(API_KEY)" \
 		-e "CERT_LOC=$(CERT_LOC)" \
+		-e "EXCHANGE_LOG_LEVEL=$(EXCHANGE_LOG_LEVEL)" \
 		-e "EXCH_ROOTPW=$(EXCH_ROOTPW)" \
 		-e "EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW)" \
 		-e "EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW)" \
@@ -416,6 +418,7 @@ run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	echo "\nHZN_LISTEN_IP is $(E2EDEV_HOST_IP)"; \
 	export EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) \
 		EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) \
+		EXCHANGE_LOG_LEVEL=$(EXCHANGE_LOG_LEVEL) \
 		EXCHANGE_DATABASE=$(EXCHDB_NAME); \
 	export EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) \
 		EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
