@@ -112,6 +112,9 @@ DOCKER_REG_PW_CNAME := htregistry
 DOCKER_REG_USER := testuser
 DOCKER_REG_PW := testpassword
 
+# ess
+UNIX_SOCKET_FILE_PERMISSIONS ?= 0777
+
 # css
 DOCKER_CSS_CNAME ?= css-api
 DOCKER_CSS_INAME ?= docker.io/openhorizon/$(arch)_cloud-sync-service
@@ -206,6 +209,7 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "VAULT_ADDR"="$(VAULT_ADDR)" \
 		-e "HZN_AGBOT_URL"="$(AGBOT_SAPI_URL)" \
 		-e "TEST_PATTERNS"="$(TEST_PATTERNS)" \
+		-e "UNIX_SOCKET_FILE_PERMISSIONS=$(UNIX_SOCKET_FILE_PERMISSIONS)" \
 		-t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)
 	docker cp -a $(E2EDEVTEST_TEMPFS)/. $(DOCKER_TEST_CNAME):/
 	docker exec --user root $(DOCKER_TEST_CNAME) chown -R 1000:1000 /certs
