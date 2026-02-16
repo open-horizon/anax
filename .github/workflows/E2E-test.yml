@@ -74,6 +74,11 @@ jobs:
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: docker logs agbot
+      
+      - name: Test Failure Catch - Check Cloud Sync Service (CSS) Docker Log
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: docker logs css-api
 
       - name: Test Failure Catch - Check Exchange Docker Log
         continue-on-error: true
@@ -83,22 +88,22 @@ jobs:
       - name: Test Failure Catch - Check Agent - cpu
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker ps -a --filter "ancestor=localhost:443/amd64_cpu"; docker logs $(docker ps -a --filter "ancestor=localhost:443/amd64_cpu" --format "{{ .ID }}")
+        run: docker ps -a --filter "ancestor=localhost:443/amd64_cpu:1.0"; docker logs $(docker ps -a --filter "ancestor=localhost:443/amd64_cpu:1.0" --format "{{ .ID }}")
       
       - name: Test Failure Catch - Check Agent - helloservice
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker ps -a --filter "ancestor=localhost:443/amd64_helloservice"; docker logs $(docker ps -a --filter "ancestor=localhost:443/amd64_helloservice" --format "{{ .ID }}")
+        run: docker ps -a --filter "ancestor=localhost:443/amd64_helloservice:1.0"; docker logs $(docker ps -a --filter "ancestor=localhost:443/amd64_helloservice:1.0" --format "{{ .ID }}")
       
       - name: Test Failure Catch - Check Agent - leaf
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker ps -a --filter "ancestor=localhost:443/amd64_leaf"; docker logs $(docker ps -a --filter "ancestor=localhost:443/amd64_leaf" --format "{{ .ID }}")
+        run: docker ps -a --filter "ancestor=localhost:443/amd64_leaf:1.0"; docker logs $(docker ps -a --filter "ancestor=localhost:443/amd64_leaf:1.0" --format "{{ .ID }}")
       
       - name: Test Failure Catch - Check Agent - useHello
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker ps -a --filter "ancestor=localhost:443/amd64_usehello"; docker logs $(docker ps -a --filter "ancestor=localhost:443/amd64_usehello" --format "{{ .ID }}")
+        run: docker ps -a --filter "ancestor=localhost:443/amd64_usehello:1.0"; docker logs $(docker ps -a --filter "ancestor=localhost:443/amd64_usehello:1.0" --format "{{ .ID }}")
 
       - name: Test Failure Catch - Check k8s Pods
         continue-on-error: true
