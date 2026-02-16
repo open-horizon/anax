@@ -73,6 +73,26 @@ jobs:
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: docker logs exchange-api
+      
+      - name: Test Failure Catch - Check Agent - helloservice
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: docker logs $(docker ps --filter "ancestor=localhost:443/amd64_cpu" --format "{{ .ID }}")
+      
+      - name: Test Failure Catch - Check Agent - helloservice
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: docker logs $(docker ps --filter "ancestor=localhost:443/amd64_helloservice" --format "{{ .ID }}")
+      
+      - name: Test Failure Catch - Check Agent - useHello
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: docker logs $(docker ps --filter "ancestor=localhost:443/amd64_leaf" --format "{{ .ID }}")
+      
+      - name: Test Failure Catch - Check Agent - useHello
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: docker logs $(docker ps --filter "ancestor=localhost:443/amd64_usehello" --format "{{ .ID }}")
 
       - name: Test Failure Catch - Check k8s Pods
         continue-on-error: true
