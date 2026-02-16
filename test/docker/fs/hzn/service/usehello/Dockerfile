@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 LABEL generated_by="e2edev"
-RUN apk --no-cache --update add curl jq
+RUN apk --no-cache --update add curl jq shadow
 
 RUN adduser --disabled-password "e2edevuser"
 
