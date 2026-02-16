@@ -19,6 +19,7 @@ jobs:
 
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
+      fail-fast: false
       matrix:
         tests: ["NOLOOP=1", "NOLOOP=1 TEST_PATTERNS=sall"]
 
