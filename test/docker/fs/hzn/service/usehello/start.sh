@@ -27,7 +27,6 @@ then
     verify "HZN_ESS_API_PORT" $HZN_ESS_API_PORT
     verify "HZN_ESS_AUTH" $HZN_ESS_AUTH
     verify "HZN_ESS_CERT" $HZN_ESS_CERT
-    verify "UNIX_SOCKET_FILE_PERMISSIONS" $UNIX_SOCKET_FILE_PERMISSIONS
     echo -e "All Horizon platform env vars verified."
 
     echo -e "Service is running on node $HZN_NODE_ID in org $HZN_ORGANIZATION"
