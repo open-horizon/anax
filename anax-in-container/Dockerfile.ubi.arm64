@@ -6,13 +6,18 @@ LABEL description="A container which holds the edge node agent, to be used in en
 
 ARG DOCKER_VER=27.5.1
 
+
+
+
 # The anax binary (secrets manager code) shells out to groupadd, groupdel (from shadow-utils), pkill (from procps-ng)
 # The anax.service calls jq (from jq) and killall (from psmisc)
 # anax does not use iptables directly but the github.com/coreos/go-iptables/iptables dependency needs the directory structure
 # Install docker cli, which requires tar / gunzip to unpack, then remove tar / gzip packages
 # Create required directories
 ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng tar gzip"
-RUN  microdnf update  -y libxml2 --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
+RUN microdnf update -y libxml2 --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
+  && \
+  && \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && curl -4fsSLO https://download.docker.com/linux/static/stable/aarch64/docker-${DOCKER_VER}.tgz \
   && tar xzvf docker-${DOCKER_VER}.tgz --strip 1 -C /usr/bin docker/docker \

@@ -1,0 +1,1938 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+project_name: anax
+
+env:
+  - BASE_IMAGE_FROM_ALPINE={{ envOrDefault "BASE_IMAGE_FROM_ALPINE" "docker.io/alpine:latest" }}
+  - BASE_IMAGE_FROM_UBI9={{ envOrDefault "BASE_IMAGE_FROM_UBI9" "registry.access.redhat.com/ubi9-minimal:latest" }}
+  - BASE_IMAGE_FROM_UBI10={{ envOrDefault "BASE_IMAGE_FROM_UBI10" "registry.access.redhat.com/ubi10-minimal:latest" }}
+  - DIGEST_ALPINE={{ envOrDefault "DIGEST_ALPINE" "" }}
+  - DIGEST_UBI9={{ envOrDefault "DIGEST_UBI9" "" }}
+  - DIGEST_UBI10={{ envOrDefault "DIGEST_UBI10" "" }}
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    #- go generate ./...
+    - |
+      bash -c "if [[ -z '$DIGEST_ALPINE' ]]; then export DIGEST_ALPINE=$(docker buildx imagetools inspect $BASE_IMAGE_FROM_ALPINE --format '{{ "{{" }} json . }}' | jq -r .manifest.digest); fi"
+    - |
+      bash -c "if [[ -z '$DIGEST_UBI9' ]]; then export DIGEST_UBI9=$(docker buildx imagetools inspect $BASE_IMAGE_FROM_UBI9 --format '{{ "{{" }} json . }}' | jq -r .manifest.digest); fi"
+    - |
+      bash -c "if [[ -z '$DIGEST_UBI10' ]]; then export DIGEST_UBI10=$(docker buildx imagetools inspect $BASE_IMAGE_FROM_UBI10 --format '{{ "{{" }} json . }}' | jq -r .manifest.digest); fi"
+
+
+archives:
+# Anax Agent & Agreement Bot
+## Darwin
+  - 
+    formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    id: "archives-anax-darwin"
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Arch "ppc64le"}}{{ .Target }}
+      {{- else}}{{ .Os }}_
+      {{- if eq .Arch "386" }}i386
+      {{- else if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Arm64 }}{{ . }}{{ end }}{{ with .Ppc64 }}{{ . }}{{ end }}{{ end }}
+    files:
+      - src: 'LICENSE.txt'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: 'README.md'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: docs/*.md
+        dst: docs
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+    ids: ["builds-anax-darwin"]
+    builds_info:
+      group: root
+      owner: root
+      mode: 0755
+      # format is `time.RFC3339Nano`
+      mtime: 2008-01-02T15:04:05Z
+    allow_different_binary_count: false
+## FreeBSD
+  - 
+    formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    id: "archives-anax-freebsd"
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Arch "ppc64le"}}{{ .Target }}
+      {{- else}}{{ .Os }}_
+      {{- if eq .Arch "386" }}i386
+      {{- else if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Arm64 }}{{ . }}{{ end }}{{ with .Ppc64 }}{{ . }}{{ end }}{{ end }}
+    files:
+      - src: 'LICENSE.txt'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: 'README.md'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: docs/*.md
+        dst: docs
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+    ids: ["builds-anax-freebsd"]
+    builds_info:
+      group: root
+      owner: root
+      mode: 0755
+      # format is `time.RFC3339Nano`
+      mtime: 2008-01-02T15:04:05Z
+    allow_different_binary_count: true
+## Linux
+  - 
+    formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    id: "archives-anax-linux"
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Arch "ppc64le"}}{{ .Target }}
+      {{- else }}{{ .Os }}_
+      {{- if eq .Arch "386" }}i386
+      {{- else if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Arm64 }}{{ . }}{{ end }}{{ with .Ppc64 }}{{ . }}{{ end }}{{ end }}
+    files:
+      - src: 'LICENSE.txt'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: 'README.md'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: docs/*.md
+        dst: docs
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+    ids: ["builds-anax-linux"]
+    builds_info:
+      group: root
+      owner: root
+      mode: 0755
+      # format is `time.RFC3339Nano`
+      mtime: 2008-01-02T15:04:05Z
+    allow_different_binary_count: false
+
+# Cloud Sync Service (CSS)
+## Linux
+  -
+    formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    id: "archives-css-linux"
+    name_template: >-
+      {{ .Binary }}_{{ .Version }}_
+      {{- if eq .Arch "ppc64le"}}{{ .Target }}
+      {{- else }}{{ .Os }}_
+      {{- if eq .Arch "386" }}i386
+      {{- else if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Arm64 }}{{ . }}{{ end }}{{ with .Ppc64 }}{{ . }}{{ end }}{{ end }}
+    files:
+      - src: 'LICENSE.txt'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: 'README.md'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: docs/*.md
+        dst: docs
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+    ids: ["builds-css-linux"]
+    builds_info:
+      group: root
+      owner: root
+      mode: 0755
+      # format is `time.RFC3339Nano`
+      mtime: 2008-01-02T15:04:05Z
+    allow_different_binary_count: false
+
+# Edge Sync Service (CSS)
+## Linux
+  -
+    formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    id: "archives-ess-linux"
+    name_template: >-
+      {{ .Binary }}_{{ .Version }}_
+      {{- if eq .Arch "ppc64le"}}{{ .Target }}
+      {{- else }}{{ .Os }}_
+      {{- if eq .Arch "386" }}i386
+      {{- else if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Arm64 }}{{ . }}{{ end }}{{ with .Ppc64 }}{{ . }}{{ end }}{{ end }}
+    files:
+      - src: 'LICENSE.txt'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: 'README.md'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: docs/*.md
+        dst: docs
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+    ids: ["builds-ess-linux"]
+    builds_info:
+      group: root
+      owner: root
+      mode: 0755
+      # format is `time.RFC3339Nano`
+      mtime: 2008-01-02T15:04:05Z
+    allow_different_binary_count: false
+
+# HZN CLI
+## Linux
+  -
+    formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    id: "archives-hzn-linux"
+    name_template: >-
+      {{ .Binary }}_{{ .Version }}_
+      {{- if eq .Arch "ppc64le"}}{{ .Target }}
+      {{- else }}{{ .Os }}_
+      {{- if eq .Arch "386" }}i386
+      {{- else if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Arm64 }}{{ . }}{{ end }}{{ with .Ppc64 }}{{ . }}{{ end }}{{ end }}
+    files:
+      - src: 'LICENSE.txt'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: 'README.md'
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+      - src: docs/*.md
+        dst: docs
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+          mode: 0644
+    ids: ["builds-hzn-linux"]
+    builds_info:
+      group: root
+      owner: root
+      mode: 0755
+      # format is `time.RFC3339Nano`
+      mtime: 2008-01-02T15:04:05Z
+    allow_different_binary_count: false
+
+# HZN CLI Man Pages (localization)
+## English
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-english
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.en"
+    strip_binary_directory: true
+    wrap_in_directory: false
+## French
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1.fr
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-french
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.fr"
+    strip_binary_directory: true
+    wrap_in_directory: false
+## German
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1.de
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-german
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.de"
+    strip_binary_directory: true
+    wrap_in_directory: false
+## Italian
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1.it
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-italian
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.it"
+    strip_binary_directory: true
+    wrap_in_directory: false
+## Japanese
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1.ja
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-japanese
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.ja"
+    strip_binary_directory: true
+    wrap_in_directory: false
+## Korean
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1.ko
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-korean
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.ko"
+    strip_binary_directory: true
+    wrap_in_directory: false
+## Mandarin (China)
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1.zh_CN
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-mandarin-china
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.zh_cn"
+    strip_binary_directory: true
+    wrap_in_directory: false
+## Mandarin (Taiwan)
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1.zh_TW
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-mandarin-taiwan
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.zh_tw"
+    strip_binary_directory: true
+    wrap_in_directory: false
+## Portuguese (Brazil)
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1.pt_BR
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-portuguese
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.pt_br"
+    strip_binary_directory: true
+    wrap_in_directory: false
+## Spanish
+  -
+    allow_different_binary_count: true
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      mtime: 2008-01-02T15:04:05Z
+    files:
+      -
+        src: cli/man1/hzn.1.es
+        dst: /hzn.1
+    formats: "gz"
+    id: archives-hzn-man-spanish
+    ids:
+      - none*
+    meta: true
+    name_template: "hzn.1.es"
+    strip_binary_directory: true
+    wrap_in_directory: false
+
+
+#binary_signs:
+#  - artifacts: binary
+#    certificate: "${artifact}.pem"
+#    cmd: cosign
+#    id: binary-sign-cosign
+#    #stdin: "{{ .Env.COSIGN_PWD }}"
+#    args:
+#      - "sign-blob"
+#      - "--oidc-issuer=https://token.actions.githubusercontent.com"
+      #- "--key=cosign.key"
+#      - "--output-certificate=${certificate}"
+#      - "--output-signature=${signature}"
+#      - "${artifact}"
+#      - "--yes" # needed on cosign 2.0.0+
+
+# https://pkg.go.dev/cmd/go#hdr-Environment_variables
+builds:
+# Anax
+## Android
+# CGO support required
+  # Multiple compilation errors
+  -
+    env:
+     - CGO_ENABLED=1
+    id: "builds-anax-android"
+    go386:
+      - sse2
+    goamd64:
+      - v1
+      - v2
+      - v3
+      - v4
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - "6"
+      - "7"
+    goarm64:
+      - "v8.0"
+      - "v9.0"
+    goos:
+      - android
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: true
+## Darwin
+  - 
+    env:
+      - CGO_ENABLED=0
+    id: "builds-anax-darwin"
+    goamd64:
+      - v1
+      - v2
+      - v3
+      - v4
+    goarch:
+      - amd64
+      - arm64
+    goarm64:
+      - "v9.0"
+    goos:
+      - darwin
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: false
+## Linux
+  - 
+    env:
+      - CGO_ENABLED=0
+    id: "builds-anax-linux"
+    go386:
+      - sse2
+    goamd64:
+      - v1
+      - v2
+      - v3
+      #- v4
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+      # - mips - boltdb has compilation errors
+      # - mips64le - boltdb has compilation errors
+      - ppc64le
+      # - riscv64 - boltdb has compilation errors
+      - s390x
+    goarm:
+      - "6"
+      - "7"
+    goarm64:
+      - "v9.0"
+    goos:
+      - linux
+    goppc64:
+      - power8
+    mod_timestamp: "{{ .CommitTimestamp }}"
+## Linux - ppc64le - Power 9
+### the archiever tool is not picking-up versions of power correctly. This is a workaround.
+  -
+    env:
+      - CGO_ENABLED=0
+    id: "builds-anax-linux-power9"
+    goarch:
+      - ppc64le
+    goos:
+      - linux
+    goppc64:
+      - power9
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: true
+## Linux - ppc64le - Power 10
+### the archiever tool is not picking-up versions of power correctly. This is a workaround.
+  - 
+    env:
+      - CGO_ENABLED=0
+    id: "builds-anax-linux-power10"
+    goarch:
+      - ppc64le
+    goos:
+      - linux
+    goppc64:
+      - power10
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: true
+## wasi
+  -
+    env:                           # Multiple compliation errors
+      - CGO_ENABLED=0
+    id: "builds-anax-wasip1"
+    goarch:
+      - wasm
+    goos:
+      - wasip1
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: true
+## Windows
+  -
+    env:
+      - CGO_ENABLED=0
+    id: "builds-anax-windows"
+    go386:
+      - sse2
+    goamd64:
+      - v1
+    goarch:
+      - 386
+      - amd64
+      - arm64
+    goarm64:
+      - "v8.0"
+      - "v9.0"
+    goos:
+      - windows
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: true
+## FreeBSD
+  - 
+    env:
+      - CGO_ENABLED=0
+    id: "builds-anax-freebsd"
+    go386:
+      - sse2
+    goamd64:
+      - v1
+      - v2
+      - v3
+      - v4
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - "6"
+      - "7"
+    goarm64:
+      - "v9.0"
+    goos:
+      - freebsd
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+# Cloud Sync Service (CSS)
+## Darwin
+  -
+    binary: cloud-sync-service
+    dir: ./css
+    env:
+      - CGO_ENABLED=0
+    id: "builds-css-darwin"
+    goamd64:
+      - v1
+      - v2
+      - v3
+      - v4
+    goarch:
+      - amd64
+      - arm64
+    goarm64:
+      - "v9.0"
+    goos:
+      - darwin
+    main: ./cmd/cloud-sync-service/main.go
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: false
+## Linux
+  -
+    binary: cloud-sync-service
+    dir: ./css
+    env:
+      - CGO_ENABLED=0
+    id: "builds-css-linux"
+    go386:
+      - sse2
+    goamd64:
+      - v1
+      - v2
+      - v3
+      - v4
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+      # - mips - boltdb has compilation errors
+      # - mips64le - boltdb has compilation errors
+      - ppc64le
+      # - riscv64 - boltdb has compilation errors
+      - s390x
+    goarm:
+      - "6"
+      - "7"
+    goarm64:
+      - "v9.0"
+    goos:
+      - linux
+    goppc64:
+      - power8
+    main: ./cmd/cloud-sync-service/main.go
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: false
+
+# Edge Sync Service (ESS)
+## Darwin
+  -
+    binary: edge-sync-service
+    dir: ./ess
+    env:
+      - CGO_ENABLED=0
+    id: "builds-ess-darwin"
+    goamd64:
+      - v1
+      - v2
+      - v3
+      - v4
+    goarch:
+      - amd64
+      - arm64
+    goarm64:
+      - "v9.0"
+    goos:
+      - darwin
+    main: ./cmd/edge-sync-service/main.go
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: false
+## Linux
+  -
+    binary: edge-sync-service
+    dir: ./ess
+    env:
+      - CGO_ENABLED=0
+    id: "builds-ess-linux"
+    go386:
+      - sse2
+    goamd64:
+      - v1
+      - v2
+      - v3
+      - v4
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+      # - mips - boltdb has compilation errors
+      # - mips64le - boltdb has compilation errors
+      - ppc64le
+      # - riscv64 - boltdb has compilation errors
+      - s390x
+    goarm:
+      - "6"
+      - "7"
+    goarm64:
+      - "v9.0"
+    goos:
+      - linux
+    goppc64:
+      - power8
+    main: ./cmd/edge-sync-service/main.go
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: false
+
+# HZN CLI
+## Darwin
+  -
+    binary: hzn
+    dir: ./cli
+    env:
+      - CGO_ENABLED=0
+    id: "builds-hzn-darwin"
+    goamd64:
+      - v1
+      - v2
+      - v3
+      - v4
+    goarch:
+      - amd64
+      - arm64
+    goarm64:
+      - "v9.0"
+    goos:
+      - darwin
+    main: ./hzn.go
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: false
+## Linux
+  -
+    binary: hzn
+    dir: ./cli
+    env:
+      - CGO_ENABLED=0
+    id: "builds-hzn-linux"
+    go386:
+      - sse2
+    goamd64:
+      - v1
+      - v2
+      - v3
+      - v4
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+      # - mips - boltdb has compilation errors
+      # - mips64le - boltdb has compilation errors
+      - ppc64le
+      # - riscv64 - boltdb has compilation errors
+      - s390x
+    goarm:
+      - "6"
+      - "7"
+    goarm64:
+      - "v9.0"
+    goos:
+      - linux
+    goppc64:
+      - power8
+    main: ./hzn.go
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    skip: false
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+
+checksum:
+  algorithm: sha3-512
+  disable: false
+  name_template: "{{ .ProjectName }}-{{ .Version }}-checksums.txt"
+  split: false
+
+
+# UBI 10 is disabled for the Agent and Agreement Bot containers due to the lack support for either nftables or fallwalld
+dockers_v2:
+  # Docker - Agent - Alpine
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_ALPINE }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+    disable: false
+    dockerfile: "./Dockerfile"
+    extra_files:
+      - ./anax-in-container/config/anax.json
+      - ./anax-in-container/config/anax.json.tmpl
+      - ./anax-in-container/config/hzn.json
+      - ./anax-in-container/script/anax.service
+      - ./LICENSE.txt
+    flags:
+     - "--target=agent-alpine"
+    id: dockers-v2-agent-linux-alpine
+    ids:
+     - builds-anax-linux
+     - builds-hzn-linux
+    images:
+      - "ghcr.io/naphelps/anax-alpine"
+    labels:
+    platforms:
+      - linux/386
+      - linux/amd64
+      - linux/arm
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
+      - "{{ .Version }}"
+      - "{{ .Version }}-{{ .Timestamp }}"
+  # Docker - Agent - UBI 9
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_ALPINE }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+      RHEL_VERSION: "9"
+    disable: false
+    dockerfile: "./Dockerfile"
+    extra_files:
+      - ./anax-in-container/config/anax.json
+      - ./anax-in-container/config/anax.json.tmpl
+      - ./anax-in-container/config/hzn.json
+      - ./anax-in-container/script/anax.service
+      - ./LICENSE.txt
+    flags:
+     - "--target=agent-ubi9"
+    id: dockers-v2-agent-linux-ubi9
+    ids:
+     - builds-anax-linux
+     - builds-hzn-linux
+    images:
+      - "ghcr.io/naphelps/anax-ubi"
+    labels:
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest"
+      - "latest-ubi9"
+      - "{{ .Major }}-ubi9"
+      - "{{ .Major }}.{{ .Minor }}-ubi9"
+      - "{{ .Version }}-ubi9"
+      - "{{ .Version }}-{{ .Timestamp }}-ubi9"
+  # Docker - Agent - UBI 10  TODO: Do Not Use
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_ALPINE }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+    disable: true
+    dockerfile: "./Dockerfile"
+    extra_files:
+      - ./anax-in-container/config/anax.json
+      - ./anax-in-container/config/anax.json.tmpl
+      - ./anax-in-container/config/hzn.json
+      - ./anax-in-container/script/anax.service
+      - ./LICENSE.txt
+    flags:
+     - "--target=agent-ubi10"
+    id: dockers-v2-agent-linux-ubi10
+    ids:
+     - builds-anax-linux
+     - builds-hzn-linux
+    images:
+      - "ghcr.io/naphelps/anax-ubi"
+    labels:
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest-ubi10"
+      - "{{ .Major }}-ubi10"
+      - "{{ .Major }}.{{ .Minor }}-ubi10"
+      - "{{ .Version }}-ubi10"
+      - "{{ .Version }}-{{ .Timestamp }}-ubi10"
+  # Docker - Agreement Bot - Alpine
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_ALPINE }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+    disable: false
+    dockerfile: "./Dockerfile"
+    extra_files:
+      - ./anax-in-container/config/agbot.json.tmpl
+      - ./anax-in-container/config/hzn.json
+      - ./anax-in-container/script/agbot_start.sh
+      - ./LICENSE.txt
+    flags:
+      - "--target=agbot-alpine"
+    id: dockers-v2-agbot-linux-alpine
+    ids:
+      - builds-anax-linux
+      - builds-hzn-linux
+    images:
+      - "ghcr.io/naphelps/agbot-alpine"
+    labels:
+    platforms:
+      - linux/386
+      - linux/amd64
+      - linux/arm
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
+      - "{{ .Version }}"
+      - "{{ .Version }}-{{ .Timestamp }}"
+  # Docker - Agreement Bot - UBI 9
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_ALPINE }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+      RHEL_VERSION: "9"
+    disable: false
+    dockerfile: "./Dockerfile"
+    extra_files:
+      - ./anax-in-container/config/agbot.json.tmpl
+      - ./anax-in-container/config/hzn.json
+      - ./anax-in-container/script/agbot_start.sh
+      - ./LICENSE.txt
+    flags:
+      - "--target=agbot-ubi9"
+    id: dockers-v2-agbot-linux-ubi9
+    ids:
+      - builds-anax-linux
+      - builds-hzn-linux
+    images:
+      - "ghcr.io/naphelps/agbot-ubi"
+    labels:
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest"
+      - "latest-ubi9"
+      - "{{ .Major }}-ubi9"
+      - "{{ .Major }}.{{ .Minor }}-ubi9"
+      - "{{ .Version }}-ubi9"
+      - "{{ .Version }}-{{ .Timestamp }}-ubi9"
+  # Docker - Agreement Bot - UBI 10  TODO: Do Not Use
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_ALPINE }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+    disable: true
+    dockerfile: "./Dockerfile"
+    extra_files:
+      - ./anax-in-container/config/agbot.json.tmpl
+      - ./anax-in-container/config/hzn.json
+      - ./anax-in-container/script/agbot_start.sh
+      - ./LICENSE.txt
+    flags:
+      - "--target=agbot-ubi10"
+    id: dockers-v2-agbot-linux-ubi10
+    ids:
+      - builds-anax-linux
+      - builds-hzn-linux
+    images:
+      - "ghcr.io/naphelps/agbot-ubi"
+    labels:
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest-ubi10"
+      - "{{ .Major }}-ubi10"
+      - "{{ .Major }}.{{ .Minor }}-ubi10"
+      - "{{ .Version }}-ubi10"
+      - "{{ .Version }}-{{ .Timestamp }}-ubi10"
+  # Docker - Cloud Sync Service - Alpine
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_ALPINE }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+    disable: false
+    dockerfile: "./css/Dockerfile"
+    extra_files:
+      - ./css/config/sync.conf.tmpl
+      - ./LICENSE.txt
+    flags:
+      - "--target=css-alpine"
+    id: dockers-v2-css-linux-alpine
+    ids:
+      - builds-css-linux
+    images:
+      - "ghcr.io/naphelps/cloud-sync-service-alpine"
+    labels:
+    platforms:
+      - linux/386
+      - linux/amd64
+      - linux/arm
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
+      - "{{ .Version }}"
+      - "{{ .Version }}-{{ .Timestamp }}"
+  # Docker - Cloud Sync Service - UBI 9
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_UBI9 }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+      RHEL_VERSION: "9"
+    disable: false
+    dockerfile: "./css/Dockerfile"
+    extra_files:
+      - ./css/config/sync.conf.tmpl
+      - ./LICENSE.txt
+    flags:
+      - "--target=css-ubi"
+    id: dockers-v2-css-linux-ubi9
+    ids:
+      - builds-css-linux
+    images:
+      - "ghcr.io/naphelps/cloud-sync-service-ubi"
+    labels:
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest-ubi9"
+      - "{{ .Major }}-ubi9"
+      - "{{ .Major }}.{{ .Minor }}-ubi9"
+      - "{{ .Version }}-ubi9"
+      - "{{ .Version }}-{{ .Timestamp }}-ubi9"
+  # Docker - Cloud Sync Service - UBI 10
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_UBI10 }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+    disable: false
+    dockerfile: "./css/Dockerfile"
+    extra_files:
+      - ./css/config/sync.conf.tmpl
+      - ./LICENSE.txt
+    flags:
+      - "--target=css-ubi"
+    id: dockers-v2-css-linux-ubi10
+    ids:
+      - builds-css-linux
+    images:
+      - "ghcr.io/naphelps/cloud-sync-service-ubi"
+    labels:
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest"
+      - "latest-ubi10"
+      - "{{ .Major }}-ubi10"
+      - "{{ .Major }}.{{ .Minor }}-ubi10"
+      - "{{ .Version }}-ubi10"
+      - "{{ .Version }}-{{ .Timestamp }}-ubi10"
+  # Docker - Edge Sync Service - Alpine
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_ALPINE }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+    disable: false
+    dockerfile: "./ess/Dockerfile"
+    extra_files:
+      - ./LICENSE.txt
+    flags:
+      - "--target=ess-alpine"
+    id: dockers-v2-ess-linux-alpine
+    ids:
+      - builds-ess-linux
+    images:
+      - "ghcr.io/naphelps/edge-sync-service-alpine"
+    labels:
+    platforms:
+      - linux/386
+      - linux/amd64
+      - linux/arm
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
+      - "{{ .Version }}"
+      - "{{ .Version }}-{{ .Timestamp }}"
+  # Docker - Edge Sync Service - UBI 9
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_UBI9 }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+      RHEL_VERSION: "9"
+    disable: false
+    dockerfile: "./ess/Dockerfile"
+    extra_files:
+      - ./LICENSE.txt
+    flags:
+      - "--target=ess-ubi"
+    id: dockers-v2-ess-linux-ubi9
+    ids:
+      - builds-ess-linux
+    images:
+      - "ghcr.io/naphelps/edge-sync-service-ubi"
+    labels:
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest-ubi9"
+      - "{{ .Major }}-ubi9"
+      - "{{ .Major }}.{{ .Minor }}-ubi9"
+      - "{{ .Version }}-ubi9"
+      - "{{ .Version }}-{{ .Timestamp }}-ubi9"
+  # Docker - Edge Sync Service - UBI 10
+  -
+    build_args:
+      OPENCONTAINERS_IMAGE_CREATED: "{{ .Date }}"
+      OPENCONTAINERS_IMAGE_BASE_DIGEST: "{{ .Env.DIGEST_UBI10 }}"
+      OPENCONTAINERS_IMAGE_REVISION: "{{ .FullCommit }}"
+      OPENCONTAINERS_IMAGE_VERSION: "{{ .Version }}"
+    disable: false
+    dockerfile: "./ess/Dockerfile"
+    extra_files:
+      - ./LICENSE.txt
+    flags:
+      - "--target=ess-ubi"
+    id: dockers-v2-ess-linux-ubi10
+    ids:
+      - builds-ess-linux
+    images:
+      - "ghcr.io/naphelps/edge-sync-service-ubi"
+    labels:
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/ppc64le
+      - linux/s390x
+    sbom: true
+    tags:
+      - "latest"
+      - "latest-ubi10"
+      - "{{ .Major }}-ubi10"
+      - "{{ .Major }}.{{ .Minor }}-ubi10"
+      - "{{ .Version }}-ubi10"
+      - "{{ .Version }}-{{ .Timestamp }}-ubi10"
+
+
+# Pro version only
+metadata:
+#  license: "Apache 2.0"
+  mod_timestamp: "{{ .CommitTimestamp }}"
+#  maintainers:
+#    - "Open Horizon <open-horizon@lists.lfedge.org>"
+
+
+nfpms:
+# Linux - Anax Agent
+  -
+    bindir: /usr/bin
+    # conflicts:
+    contents:
+      ## contents - application static data
+      -
+        dst: /etc/horizon
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      
+      ## contents - systemd unit service
+      -
+        # TODO: rename horizon.service to anax.service
+        dst: /usr/lib/system/horizon.service
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: pkg/rpm/horizon/fs/lib/systemd/system/horizon.service
+        type: config
+      ## contents - general documentation
+      - 
+        dst: /usr/share/doc/anax
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      -
+        dst: /usr/share/doc/anax/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: docs/
+      -
+        dst: /usr/share/doc/anax/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: ./README.md
+        type: file
+      ## contents - copyright (debian)
+      -
+        dst: /usr/share/doc/anax/copyright
+        file_info:
+          mode: 0644
+        packager: deb
+        src: pkg/anax/debian/copyright
+      ## contents - license
+      - 
+        dst: /usr/share/licenses/anax
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      - 
+        dst: /usr/share/licenses/anax/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: ./LICENSE.txt
+        packager: rpm
+        type: license
+      - 
+        dst: /usr/share/licenses/anax/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: ./LICENSE.txt
+        type: file
+      # contents - application dynamic data
+      -
+        dst: /var/run/horizon
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      -
+        dst: /var/horizon
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+    deb:
+      fields:
+        #Bugs: https://github.com/open-horizon/anax/issues
+        Dgit: "${ .FullCommit }"
+        Package-Type: deb
+        Vcs-Broswer: https://github.com/open-horizon/anax
+        Vcs-Git: https://github.com/open-horizon/anax.git
+      predepends:
+        - /bin/sh
+      scripts:
+        rules: pkg/anax/debian/rules
+    dependencies:
+      - /bin/sh
+      - bash
+      - docker-ce
+      - horizon-common
+      - iptables
+      - jq
+      - moby-engine
+      - openssl
+      - podman
+    description: Open Horizon's client agent.
+    homepage: https://open-horizon.github.io
+    file_name_template: >-
+      {{- trimsuffix .ConventionalFileName .ConventionalExtension -}}
+      {{- if and (eq .Arm "6") (eq .ConventionalExtension ".deb") }}6{{ end -}}
+      {{- if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end -}}
+      {{- .ConventionalExtension -}}
+    formats:
+      #- archlinux
+      - deb
+      - rpm
+    id: nfpms-anax-linux
+    ids:
+      - builds-anax-linux
+    license: Apache 2.0
+    maintainer: Open Horizon <open-horizon@lists.lfedge.org>
+    mtime: "{{ .CommitDate }}"
+    overrides:
+      deb:
+        dependencies:
+          - bash, docker-ce (>= 28.1.0) | moby-engine (>= 28.5.1) | podman (>= 5.4.0), /bin/sh, iptables, jq, openssl, systemd
+      rpm:
+        dependencies:
+          - bash, (docker-ce >= 28.1.0 or moby-engine >= 28.5.1 or podman >= 5.4.0), /bin/sh, iptables, jq, openssl, systemd
+    package_name: anax
+    priority: standard
+    provides:
+      - anax
+    recommends:
+      - hzn
+    # replaces:
+    rpm:
+      compression: lzma
+      packager: Open Horizon <open-horizon@lists.lfedge.org>
+      prefixes:
+        - /usr/bin
+      summary: Open Horizon's client agent
+    scripts:
+      postinstall: pkg/anax/debian/postinst
+      preremove: pkg/anax/debian/prerm
+      postremove: pkg/anax/debian/postrm
+    section: net
+    # suggests:
+    umask: 0o002
+    vendor: Open Horizon
+# Linux - Horizon CLI
+  -
+    bindir: /usr/bin
+    # conflicts:
+    contents:
+      ## contents - application static data
+      -
+        dst: /etc/horizon
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      ## contents - systemd unit service
+      #-
+        # TODO: rename horizon.service to anax.service
+        #dst: /usr/lib/system/horizon.service
+        #file_info:
+          #mode: 0644
+          #mtime: "{{.CommitDate}}"
+        #src: pkg/rpm/horizon/fs/lib/systemd/system/horizon.service
+        #type: config
+      ## contents - bash completions
+      -
+        dst: /usr/share/bash-completion/completions/hzn
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: cli/bash_completion/hzn_bash_autocomplete.sh
+        type: file
+      ## contents - general documentation
+      -
+        dst: /usr/share/doc/hzn
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      -
+        dst: /usr/share/doc/hzn/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: docs/
+      -
+        dst: /usr/share/doc/hzn/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: ./README.md
+        type: file
+      -
+        dst: /usr/share/doc/hzn/samples/
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      -
+        dst: /usr/share/doc/hzn/samples/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: cli/samples/
+      ## contents - copyright (debian)
+      -
+        dst: /usr/share/doc/hzn/copyright
+        file_info:
+          mode: 0644
+        packager: deb
+        src: pkg/hzn/debian/copyright
+      ## contents - license
+      - 
+        dst: /usr/share/licenses/hzn
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      - 
+        dst: /usr/share/licenses/hzn/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: ./LICENSE.txt
+        packager: rpm
+        type: license
+      - 
+        dst: /usr/share/licenses/hzn/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: ./LICENSE.txt
+        type: file
+      ## contents - Man Pages (localization)
+      - ### English
+        dst: /usr/share/man/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.en.gz
+        type: file
+      - ### French
+        dst: /usr/share/man/fr/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.fr.gz
+        type: file
+      - ### German
+        dst: /usr/share/man/de/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.de.gz
+        type: file
+      - ### Italian
+        dst: /usr/share/man/it/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.it.gz
+        type: file     
+      - ### Japanese
+        dst: /usr/share/man/ja/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.ja.gz
+        type: file
+      - ### Korean
+        dst: /usr/share/man/ko/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.ko.gz
+        type: file
+      - ### Mandarin (China)
+        dst: /usr/share/man/zh_CN/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.zh_cn.gz
+        type: file
+      - ### Mandarin (Taiwan)
+        dst: /usr/share/man/zh_TW/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.zh_tw.gz
+        type: file
+      - ### Portugese (Brazil)
+        dst: /usr/share/man/pt_BR/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.pt_br.gz
+        type: file
+      - ### Spanish
+        dst: /usr/share/man/es/man1/hzn.1.gz
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: dist/hzn.1.es.gz
+        type: file
+    deb:
+      fields:
+        #Bugs: https://github.com/open-horizon/anax/issues
+        Dgit: "${ .FullCommit }"
+        Package-Type: deb
+        Vcs-Broswer: https://github.com/open-horizon/anax
+        Vcs-Git: https://github.com/open-horizon/anax.git
+      predepends:
+        - /bin/sh
+      scripts:
+        rules: pkg/hzn/debian/rules
+    dependencies:
+      - /bin/sh
+      - bash
+      - docker-ce
+      - horizon-common
+      - iptables
+      - jq
+      - moby-engine
+      - openssl
+      - podman
+    description: Open Horizon's Command Line Interface
+    homepage: https://open-horizon.github.io
+    file_name_template: >-
+      {{- trimsuffix .ConventionalFileName .ConventionalExtension -}}
+      {{- if and (eq .Arm "6") (eq .ConventionalExtension ".deb") }}6{{ end -}}
+      {{- if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end -}}
+      {{- .ConventionalExtension -}}
+    formats:
+      #- archlinux
+      - deb
+      - rpm
+    id: nfpms-hzn-linux
+    ids:
+      - builds-hzn-linux
+    license: Apache 2.0
+    maintainer: Open Horizon <open-horizon@lists.lfedge.org>
+    mtime: "{{ .CommitDate }}"
+    overrides:
+      deb:
+        dependencies:
+          - bash, docker-ce (>= 28.1.0) | moby-engine (>= 28.5.1) | podman (>= 5.4.0), /bin/sh, horizon-common, jq, openssl
+      rpm:
+        dependencies:
+          - bash, (docker-ce >= 28.1.0 or moby-engine >= 28.5.1 or podman >= 5.4.0), /bin/sh, horizon-common, jq, openssl
+    package_name: hzn
+    priority: optional
+    provides:
+      - hzn
+    # recommends:
+    # replaces:
+    rpm:
+      compression: lzma
+      packager: Open Horizon <open-horizon@lists.lfedge.org>
+      prefixes:
+        - /usr/bin
+      summary: Open Horizon's Command Line Interface
+    scripts:
+      postinstall: pkg/hzn/debian/postinst
+      #preremove: pkg/hzn/debian/prerm
+      postremove: pkg/hzn/debian/postrm
+    section: net
+    suggests:
+      - anax
+    umask: 0o002
+    vendor: Open Horizon
+ # Linux - Horizon Common
+  -
+    # TODO: Change this to either /usr/bin/ or /opt/.../ with link
+    bindir: /usr/horizon/bin
+    # conflicts:
+    contents:
+      ## contents - application static data
+      -
+        dst: /etc/horizon
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      ## contents - agent configuration file
+      -
+        dst: /etc/horizon/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: anax-in-container/config/anax.json
+        type: "config|noreplace"
+      ## contents - horizon configuration file
+      -
+        dst: /etc/horizon/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: anax-in-container/config/hzn.json
+        type: "config|noreplace"
+      ##
+      -
+        dst: /usr/horizon/bin
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      -
+        dst: /usr/horizon/bin
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: agent-install/agent-auto-upgrade.sh
+        type: file
+      ## contents - general documentation
+      -
+        dst: /usr/share/doc/hzn
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      ## contents - copyright (debian)
+      -
+        dst: /usr/share/doc/horizon-common/copyright
+        file_info:
+          mode: 0644
+        packager: deb
+        src: pkg/horizon-common/debian/copyright
+      ## contents - license
+      - 
+        dst: /usr/share/licenses/horizon-common
+        file_info:
+          mode: 0700
+          mtime: "{{.CommitDate}}"
+        type: dir
+      - 
+        dst: /usr/share/licenses/horizon-common/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: ./LICENSE.txt
+        packager: rpm
+        type: license
+      - 
+        dst: /usr/share/licenses/horizon-common/
+        file_info:
+          mode: 0644
+          mtime: "{{.CommitDate}}"
+        src: ./LICENSE.txt
+        type: file
+    deb:
+      fields:
+        #Bugs: https://github.com/open-horizon/anax/issues
+        Dgit: "${ .FullCommit }"
+        Package-Type: deb
+        Vcs-Broswer: https://github.com/open-horizon/anax
+        Vcs-Git: https://github.com/open-horizon/anax.git
+      predepends:
+        - /bin/sh
+      scripts:
+        rules: pkg/horizon-common/debian/rules
+    dependencies:
+      - /bin/sh
+      - bash
+      - docker-ce
+      - iptables
+      - jq
+      - moby-engine
+      - openssl
+      - podman
+    description: Open Horizon's shared configuration files and scripts
+    homepage: https://open-horizon.github.io
+    file_name_template: >-
+      {{- trimsuffix .ConventionalFileName .ConventionalExtension -}}
+      {{- if and (eq .Arm "6") (eq .ConventionalExtension ".deb") }}6{{ end -}}
+      {{- if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end -}}
+      {{- .ConventionalExtension -}}
+    formats:
+      #- archlinux
+      - deb
+      - rpm
+    id: nfpms-horizon-common-linux
+    ids:
+      - none*
+    license: Apache 2.0
+    maintainer: Open Horizon <open-horizon@lists.lfedge.org>
+    mtime: "{{ .CommitDate }}"
+    overrides:
+      deb:
+        dependencies:
+          - bash, docker-ce (>= 28.1.0) | moby-engine (>= 28.5.1) | podman (>= 5.4.0), /bin/sh, jq, openssl
+      rpm:
+        dependencies:
+          - bash, (docker-ce >= 28.1.0 or moby-engine >= 28.5.1 or podman >= 5.4.0), /bin/sh, jq, openssl
+    package_name: horizon-common
+    priority: standard
+    provides:
+      - horizon-common
+    recommends:
+      - anax
+    # replaces:
+    rpm:
+      compression: lzma
+      packager: Open Horizon <open-horizon@lists.lfedge.org>
+      prefixes:
+        - /usr/bin
+      summary: Open Horizon's shared configuration files and scripts
+    scripts:
+      postinstall: pkg/hzn/debian/postinst
+      #preremove: pkg/hzn/debian/prerm
+      postremove: pkg/hzn/debian/postrm
+    section: net
+    suggests:
+      - hzn
+    umask: 0o002
+    vendor: Open Horizon
+
+
+
+sboms:
+  -
+    artifacts: archive
+    disable: false
+    documents:
+      - "${artifact}.spdx.json"
+    cmd: syft
+    id: sboms-anax-archive
+  -
+    artifacts: binary
+    disable: false
+    documents:
+      - "${artifact}_{{ .Version }}-{{ .Os }}-.spdx{{- if eq .Arch \"386\" }}i386{{- else if eq .Arch \"amd64\" }}x86_64{{- else if eq .Arch \"arm64\" }}aarch64{{- else }}{{ .Arch }}{{ end }}{{- if not (eq .Amd64 \"v1\") }}{{ .Amd64 }}{{ end }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Arm64 }}{{ . }}{{ end }}{{ with .Ppc64 }}{{ . }}{{ end }}.spdx.json"
+    cmd: syft
+    id: sboms-anax-binary
+  -
+    artifacts: package
+    disable: false
+    documents:
+      - "${artifact}.spdx.json"
+    cmd: syft
+    id: sboms-anax-package
+  -
+    artifacts: source
+    disable: false
+    documents:
+      - "${artifact}.spdx.json"
+    cmd: syft
+    id: sboms-anax-source
+  
+snapshot:
+  version_template: "{{ .Version }}"
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}-{{ .Version }}"
+  format: "tar.gz"
+
+
+release:
+  footer: >-
+
+    ---
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+
+
+report_sizes: true
+
+# Bundled `fat` binary for Mac. amd64 & arm64 together.
+universal_binaries:
+  -
+    id: universal-binaries-darwin-anax
+    ids:
+      - builds-anax-darwin
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    name_template: "anax-{{ .Version }}-darwin-all"
+    replace: true
+  -
+    id: universal-binaries-darwin-css
+    ids:
+      - builds-css-darwin
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    name_template: "cloud-sync-service-{{ .Version }}-darwin-all"
+    replace: true
+  -
+    id: universal-binaries-darwin-ess
+    ids:
+      - builds-ess-darwin
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    name_template: "edge-sync-service-{{ .Version }}-darwin-all"
+    replace: true
+  -
+    id: universal-binaries-darwin-hzn
+    ids:
+      - builds-hzn-darwin
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    name_template: "hzn-{{ .Version }}-darwin-all"
+    replace: true
+
+# Binary compression. More, or less linux only.
+upx:
+  - brute: false
+    compress: '7'
+    enabled: true
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+      - ppc64le
+    goos:
+      - linux
+    lzma: false

@@ -1,5 +1,6 @@
 {
+    "HZN_AGBOT_URL": "",
+    "HZN_AGENT_PORT": 8510,
     "HZN_EXCHANGE_URL": "",
-    "HZN_FSS_CSSURL": "",
-    "HZN_AGBOT_URL": ""
+    "HZN_FSS_CSSURL": ""
 }

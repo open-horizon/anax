@@ -1,9 +1,9 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Horizon
-Upstream-Contact: Horizon Team <linggao@us.ibm.com>
-Source: https://github.com/open-horizon
+Upstream-Name: Anax
+Upstream-Contact: Open Horizon <open-horizon@lists.lfedge.org>
+Source: https://github.com/open-horizon/anax
 
-Files: *
-Copyright: IBM Corp. 2015, 2016, 2017, 2018, 2019, 2020
-License: Apache-2
-  [cf. LICENSE.txt]
+Files:
+  *
+Copyright: (c) Copyright 2015-2026 IBM Corporation. All Rights Reserved.
+License: Apache-2.0

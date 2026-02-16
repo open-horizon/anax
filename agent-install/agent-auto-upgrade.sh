@@ -828,5 +828,3 @@ else
     log_info "Update successful."
     set_nodemanagement_status "$nmp_id" "$status_file" "successful" ""
 fi
-
-

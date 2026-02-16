@@ -3,6 +3,10 @@ package main
 
 import (
 	"flag"
+	"os"
+	"runtime"
+	"strings"
+
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
@@ -34,9 +38,6 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/version"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"os"
-	"runtime"
-	"strings"
 )
 
 func main() {
@@ -63,7 +64,7 @@ func main() {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// the sample file direcory is different between Liunx and mac
-	sample_dir := "/usr/horizon/samples"
+	sample_dir := "/usr/share/doc/hzn/samples"
 	if runtime.GOOS == "darwin" {
 		sample_dir = "/Users/Shared/horizon-cli/samples"
 	}
@@ -611,7 +612,7 @@ Environment Variables:
 	exUserRemoveKeyUser := exUserRemoveKeyCmd.Arg("user", msgPrinter.Sprintf("Username of key owner")).Required().String()
 	exUserRemoveKeyId := exUserRemoveKeyCmd.Arg("keyid", msgPrinter.Sprintf("ID of the key to remove")).Required().String()
 	exUserRemoveKeyForce := exUserRemoveKeyCmd.Flag("force", msgPrinter.Sprintf("Force removal without confirmation")).Short('f').Bool()
-	
+
 	exVersionCmd := exchangeCmd.Command("version", msgPrinter.Sprintf("Display the version of the Horizon Exchange."))
 
 	keyCmd := app.Command("key", msgPrinter.Sprintf("List and manage keys for signing and verifying services."))

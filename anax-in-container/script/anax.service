@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This is an init script for system v.
+# TODO: Convert this into a systemd unit service.
+
 # Script to start, restart, and stop anax inside a docker container
 
 # Note: this trap won't run while we are blocking on a foreground cmd, so when we start anax, we will have to run it in background and use wait.

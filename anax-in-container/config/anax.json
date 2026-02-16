@@ -5,6 +5,7 @@
     "GethURL": "http://127.0.0.1:8545",
     "DockerEndpoint": "unix:///var/run/docker.sock",
     "StaticWebContent": "/usr/horizon/web/",
+    "PublicKeyPath": "",
     "TrustSystemCACerts": true,
     "DefaultCPUSet": "",
     "ServiceStorage": "",
