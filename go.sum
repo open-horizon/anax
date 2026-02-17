@@ -213,8 +213,8 @@ github.com/onsi/ginkgo/v2 v2.27.2 h1:LzwLj0b89qtIy6SSASkzlNvX6WktqurSHwkk2ipF/Ns
 github.com/onsi/ginkgo/v2 v2.27.2/go.mod h1:ArE1D/XhNXBXCBkKOLkbsb2c81dQHCRcF5zwn/ykDRo=
 github.com/onsi/gomega v1.38.2 h1:eZCjf2xjZAqe+LeWvKb5weQ+NcPwX84kqJ0cZNxok2A=
 github.com/onsi/gomega v1.38.2/go.mod h1:W2MJcYxRGV63b418Ai34Ud0hEdTVXq9NW9+Sx6uXf3k=
-github.com/open-horizon/edge-sync-service v1.12.2 h1:jfMEZsynovuBOVTplp3doMda3SKMHhHsV00LCJOC5Tw=
-github.com/open-horizon/edge-sync-service v1.12.2/go.mod h1:WZEMOI9ZxhGZT4ErXpX79OHvCCJmFaV9d9pNa+7gJrE=
+github.com/open-horizon/edge-sync-service v1.12.3 h1:YW/Q+Glp6aykvDVWYAYCv6XLhdZWyGfgB6w8c8gZQUc=
+github.com/open-horizon/edge-sync-service v1.12.3/go.mod h1:WZEMOI9ZxhGZT4ErXpX79OHvCCJmFaV9d9pNa+7gJrE=
 github.com/open-horizon/edge-utilities v0.11.0 h1:/zBPpSgnxk8ij9FtYfHo70VZg4pYV/f0PKCnW0kz8LE=
 github.com/open-horizon/edge-utilities v0.11.0/go.mod h1:iYpgqLjzVewlJuU08PmsJDJF4IR1sxagP50Yr8nrK4I=
 github.com/open-horizon/rsapss-tool v0.0.0-20190416131035-2fc75eb3b6ea h1:yTeiBVYh2JVouBM8ZWI8d0U7NSlea3dZ9wMwveWj58w=
