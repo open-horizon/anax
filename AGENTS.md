@@ -539,6 +539,43 @@ func validateAgreementData(data []byte) error { ... }
 
 ### Testing Practices
 
+**Test-First Development Methodology**
+
+This project follows a test-first development approach:
+
+1. **Tests Define Expected Behavior**: Write tests that describe the correct, desired behavior of the system
+   - Tests should reflect what the code SHOULD do, not what it currently does
+   - Never modify test expectations to match existing functional deficiencies
+   - If a test fails due to incorrect implementation, fix the implementation, not the test
+
+2. **Functional Improvements Over Test Adjustments**: When tests reveal issues:
+   - **Correct Approach**: Improve the implementation to make the test pass
+   - **Incorrect Approach**: Change the test to match the broken behavior
+   - Exception: Only adjust tests if the original test expectations were genuinely incorrect
+
+3. **Test-Driven Bug Fixes**:
+   - Write a failing test that demonstrates the bug
+   - Verify the test fails with current code
+   - Fix the implementation to make the test pass
+   - Never adjust the test to accept the buggy behavior
+
+4. **Example Scenario**:
+   ```
+   BAD:  Test expects validation to reject invalid input
+         → Implementation doesn't validate
+         → Change test to accept invalid input ❌
+   
+   GOOD: Test expects validation to reject invalid input
+         → Implementation doesn't validate
+         → Add validation to implementation ✓
+   ```
+
+5. **When to Adjust Tests**:
+   - Original test expectations were based on misunderstanding requirements
+   - Requirements have legitimately changed
+   - Test was testing implementation details rather than behavior
+   - Never adjust tests simply because implementation is difficult to fix
+
 **CRITICAL: Test Coverage Requirements**
 
 All source code changes MUST be accompanied by corresponding test updates:

@@ -1,8 +1,6 @@
 module github.com/open-horizon/anax
 
-go 1.24.6
-
-toolchain go1.24.7
+go 1.25.7
 
 require (
 	github.com/adams-sarah/test2doc v0.0.0-20211124171229-79cd42e7411d
@@ -16,8 +14,8 @@ require (
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20240418155129-98dd3e91704f
 	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
-	github.com/open-horizon/edge-sync-service v1.12.1
-	github.com/open-horizon/edge-utilities v0.0.0-20190711093331-0908b45a7152
+	github.com/open-horizon/edge-sync-service v1.12.2
+	github.com/open-horizon/edge-utilities v0.11.0
 	github.com/open-horizon/rsapss-tool v0.0.0-20190416131035-2fc75eb3b6ea
 	github.com/operator-framework/api v0.36.0
 	github.com/operator-framework/operator-lifecycle-manager v0.38.0
