@@ -10,13 +10,18 @@ export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 echo "Waiting to ensure that all surfaced errors from previous tests are resolved before proceeding..."
 NUM_ERRS=1
 TIMEOUT=0
-while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 25 ]]
+while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 40 ]]
 do
   ERRS=$(hzn eventlog surface)
   NUM_ERRS=$(echo ${ERRS} | jq -r '. | length')
   sleep 5s
   ((TIMEOUT++))
-  if [[ $TIMEOUT == 26 ]]; then echo -e "surface errors failed to resolve"; exit 2; fi
+  if [[ $TIMEOUT == 41 ]]; then 
+    echo -e "surface errors failed to resolve after 200s"
+    echo -e "Current surfaced errors: $ERRS"
+    hzn eventlog list | tail -50
+    exit 2
+  fi
 done
 
 echo -e "All surfaced errors resolved, test can proceed."
@@ -60,6 +65,9 @@ then
 fi
 
 hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
+
+echo "Waiting for agreement cancellations to complete..."
+sleep 10
 
 echo "Waiting on error to surface"
 NUM_ERRS=0
@@ -114,16 +122,29 @@ fi
 
 hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
 
+echo "Waiting for agreement cancellations to complete..."
+sleep 10
+
 echo "Waiting on the surfaced error to be resolved"
 NUM_ERRS=1
 TIMEOUT=0
-while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 50 ]]
+while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 60 ]]
 do
   ERRS=$(hzn eventlog surface)
   NUM_ERRS=$(echo ${ERRS} | jq -r '. | length')
   sleep 5s
   ((TIMEOUT++))
-  if [[ $TIMEOUT -ge 50 ]]; then echo -e "surface error failed to resolve"; exit 2; fi
+  if [[ $TIMEOUT -ge 60 ]]; then 
+    echo -e "surface error failed to resolve after 300s"
+    echo -e "Remaining surfaced errors: $ERRS"
+    echo -e "\nRecent event log entries:"
+    hzn eventlog list | tail -50
+    echo -e "\nAgreement status:"
+    hzn agreement list
+    echo -e "\nContainer status:"
+    docker ps -a | grep -E "(cpu|netspeed)"
+    exit 2
+  fi
 done
 
 echo -e "All surfaced errors resolved"

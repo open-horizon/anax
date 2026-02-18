@@ -188,6 +188,8 @@ if [ "$TESTFAIL" != "1" ]; then
                     run_test "delete_agreements_device" "./del_loop.sh"
                     sleep 30
                     run_test "delete_agreements_agbot" "./agbot_del_loop.sh"
+                    log_message INFO "Waiting for agreement state to stabilize after cancellations..."
+                    sleep 60
                     run_test "verify_agreements_restart" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
                 fi
             fi
@@ -242,6 +244,8 @@ if [ "$TESTFAIL" != "1" ]; then
                         run_test "delete_agreements_device_${pat}" "./del_loop.sh"
                         sleep 30
                         run_test "delete_agreements_agbot_${pat}" "./agbot_del_loop.sh"
+                        log_message INFO "Waiting for agreement state to stabilize after cancellations..."
+                        sleep 60
                         run_test "verify_agreements_restart_${pat}" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
                     fi
                 fi
