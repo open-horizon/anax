@@ -120,6 +120,8 @@ DOCKER_CSS_CNAME ?= css-api
 DOCKER_CSS_INAME ?= docker.io/openhorizon/$(arch)_cloud-sync-service
 DOCKER_CSS_TAG ?= e2edev
 CSS_INTERNAL_PORT ?= 8080
+CSS_LOG_LEVEL ?= DEBUG
+CSS_TRACE_LEVEL ?= DEBUG
 CSS_URL ?= $(HZN_TRANSPORT)://css-api:$(CSS_INTERNAL_PORT)
 
 #css DB
@@ -184,6 +186,8 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "EXCH_APP_HOST=$(DOCKER_EXCH)" \
 		-e "HZN_SSL_SKIP_VERIFY=1" \
 		-e "CSS_URL=$(CSS_URL)" \
+		-e "CSS_LOG_LEVEL=$(CSS_LOG_LEVEL)" \
+		-e "CSS_TRACE_LEVEL=$(CSS_TRACE_LEVEL)" \
 		-e "API_KEY=$(API_KEY)" \
 		-e "CERT_LOC=$(CERT_LOC)" \
 		-e "EXCHANGE_LOG_LEVEL=$(EXCHANGE_LOG_LEVEL)" \
@@ -432,7 +436,10 @@ run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 		AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG); \
 	export CSS_IMAGE_TAG=$(DOCKER_CSS_TAG) \
 		CSS_IMAGE_NAME=$(DOCKER_CSS_INAME) \
-		CSS_INTERNAL_PORT=$(CSS_INTERNAL_PORT); \
+		CSS_INTERNAL_PORT=$(CSS_INTERNAL_PORT) \
+		CSS_LOG_LEVEL=$(CSS_LOG_LEVEL) \
+		CSS_TRACE_LEVEL=$(CSS_TRACE_LEVEL) \
+		UNIX_SOCKET_FILE_PERMISSIONS=$(UNIX_SOCKET_FILE_PERMISSIONS); \
 	export MONGO_IMAGE_TAG=$(DOCKER_CSSDB_TAG); \
 	export EXCHANGE_DB_PW=$(EXCHANGE_DB_PW) \
 		POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) \
