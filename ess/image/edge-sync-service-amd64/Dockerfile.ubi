@@ -17,6 +17,6 @@ COPY LICENSE.txt /licenses
 
 ADD edge-sync-service /edge-sync-service/
 
-ENV UNIX_SOCKET_FILE_PERMISSIONS=0o777
+ENV UNIX_SOCKET_FILE_PERMISSIONS="0777"
 
 CMD ["/edge-sync-service/edge-sync-service"]
