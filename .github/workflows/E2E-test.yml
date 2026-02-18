@@ -69,6 +69,25 @@ jobs:
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: docker ps -a
+      
+      - name: Test Failure Catch - Capture Agent Service Container Logs
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          docker ps -a --format "{{.ID}}  {{.Image}}  {{.Names}}"
+          echo ""
+          docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"
+          echo ""
+          echo "=== Agent Service Container Logs ==="
+          for container in $(docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"); do
+            echo ""
+            echo "=========================================="
+            echo "Container: $container"
+            echo "Status: $(docker inspect --format='{{.State.Status}}' $container 2>/dev/null || echo 'unknown')"
+            echo "=========================================="
+            docker logs "$container" 2>&1 || echo "Failed to get logs for $container"
+            echo ""
+          done
 
       - name: Test Failure Catch - Check Agbot Docker Log
         continue-on-error: true
@@ -85,21 +104,6 @@ jobs:
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: docker logs exchange-api
       
-      - name: Test Failure Catch - Capture Agent Service Container Logs
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Agent Service Container Logs ==="
-          for container in $(docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"); do
-            echo ""
-            echo "=========================================="
-            echo "Container: $container"
-            echo "Status: $(docker inspect --format='{{.State.Status}}' $container 2>/dev/null || echo 'unknown')"
-            echo "=========================================="
-            docker logs $container 2>&1 | tail -100 || echo "Failed to get logs for $container"
-            echo ""
-          done
-
       - name: Test Failure Catch - Check k8s Pods
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
