@@ -23,7 +23,14 @@ function get_container_id {
         echo "Waiting for netspeed service to start."
         sleep 5s
         inst=$(curl -s $ANAX_API/service | jq -r --arg SVC_URL "$SVC_URL" --arg SVC_ORG "$SVC_ORG" '.instances.active[] | select (.ref_url==$SVC_URL and .organization==$SVC_ORG and .containers[].State=="running")')
-    done 
+    done
+    
+    # Check if service started within timeout period
+    if [[ $inst == "" ]]; then
+        echo -e "${PREFIX} timeout waiting for $SVC_ORG/$SVC_URL service to start after $1 attempts ($(($1 * 5)) seconds)."
+        exit -1
+    fi
+    
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get $SVC_ORG/$SVC_URL service instace."
         exit -1

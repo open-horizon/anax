@@ -95,6 +95,56 @@ Test wrappers add framework features to existing test scripts, providing:
     - Purpose: Agreement bot API testing
     - Features: Agbot responsiveness, agreement tracking
 
+### Service Testing
+
+15. **service_log_test_wrapper.sh**
+    - Wraps: `service_log_test.sh`
+    - Purpose: Service logging functionality testing
+    - Features: Log verification, service state monitoring
+
+16. **service_retry_test_wrapper.sh**
+    - Wraps: `service_retry_test.sh`
+    - Purpose: Service retry logic and recovery testing
+    - Features: Retry behavior validation, agreement recovery
+
+### Secrets and Security
+
+17. **hzn_secretsmanager_wrapper.sh**
+    - Wraps: `hzn_secretsmanager.sh`
+    - Purpose: Secrets manager functionality with hzn CLI
+    - Features: Vault integration, secrets validation
+
+18. **vault_test_wrapper.sh**
+    - Wraps: `vault_test.sh`
+    - Purpose: Vault integration testing
+    - Features: Vault health checks, secrets management
+
+### Agreement Bot Management
+
+19. **agbot_upgrade_test_wrapper.sh**
+    - Wraps: `agbot_upgrade_test.sh`
+    - Purpose: Agreement bot upgrade functionality
+    - Features: Upgrade validation, agreement preservation
+
+20. **agbot_del_loop_wrapper.sh**
+    - Wraps: `agbot_del_loop.sh`
+    - Purpose: Agreement bot deletion loop testing
+    - Features: Agreement deletion tracking, agbot state monitoring
+
+### Node Management
+
+21. **hzn_nmp_wrapper.sh**
+    - Wraps: `hzn_nmp.sh`
+    - Purpose: Node management policy (NMP) testing
+    - Features: NMP validation, node state tracking
+
+### Metering
+
+22. **metering_apitest_wrapper.sh**
+    - Wraps: `metering_apitest.sh`
+    - Purpose: Metering API functionality testing
+    - Features: Metering data validation, API responsiveness
+
 ## Usage
 
 ### Basic Usage

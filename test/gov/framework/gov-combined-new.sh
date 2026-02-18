@@ -152,10 +152,10 @@ fi
 # Test 4: Agbot verification
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
     if ! should_skip_test "agbot_verification"; then
-        run_test "agbot_verification" "bash -c 'curl -sSL ${AGBOT_API}/agreement > /dev/null'"
+        run_test "agbot_verification" "curl -sSL ${AGBOT_API}/agreement > /dev/null"
         
         if [ "$MULTIAGBOT" == "1" ]; then
-            run_test "agbot2_verification" "bash -c 'curl -sSL ${AGBOT2_API}/agreement > /dev/null'"
+            run_test "agbot2_verification" "curl -sSL ${AGBOT2_API}/agreement > /dev/null"
         fi
     fi
 fi
@@ -180,13 +180,13 @@ if [ "$TESTFAIL" != "1" ]; then
             fi
             
             if [ "$NOLOOP" == "1" ]; then
-                run_test "verify_agreements_policy" "bash -c 'ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh'"
+                run_test "verify_agreements_policy" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
                 
                 if [ "$NOCANCEL" != "1" ]; then
                     run_test "delete_agreements_device" "./del_loop.sh"
                     sleep 30
                     run_test "delete_agreements_agbot" "./agbot_del_loop.sh"
-                    run_test "verify_agreements_restart" "bash -c 'ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh'"
+                    run_test "verify_agreements_restart" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
                 fi
             fi
         fi
@@ -222,7 +222,7 @@ if [ "$TESTFAIL" != "1" ]; then
             if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
                 source ./multiple_agents.sh
                 if ! should_skip_test "multiagent_start_${pat}"; then
-                    run_test "multiagent_start_${pat}" "bash -c 'PATTERN=${ma_pattern} startMultiAgents'"
+                    run_test "multiagent_start_${pat}" "PATTERN=${ma_pattern} startMultiAgents"
                 fi
             fi
             
@@ -234,13 +234,13 @@ if [ "$TESTFAIL" != "1" ]; then
                 fi
                 
                 if [ "$NOLOOP" == "1" ]; then
-                    run_test "verify_agreements_${pat}" "bash -c 'ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh'"
+                    run_test "verify_agreements_${pat}" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
                     
                     if [ "$NOCANCEL" != "1" ]; then
                         run_test "delete_agreements_device_${pat}" "./del_loop.sh"
                         sleep 30
                         run_test "delete_agreements_agbot_${pat}" "./agbot_del_loop.sh"
-                        run_test "verify_agreements_restart_${pat}" "bash -c 'ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh'"
+                        run_test "verify_agreements_restart_${pat}" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
                     fi
                 fi
             fi
@@ -248,7 +248,7 @@ if [ "$TESTFAIL" != "1" ]; then
             # Verify multiple agents
             if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
                 if ! should_skip_test "multiagent_verify_${pat}"; then
-                    run_test "multiagent_verify_${pat}" "bash -c 'PATTERN=${ma_pattern} verifyMultiAgentsAgreements'"
+                    run_test "multiagent_verify_${pat}" "PATTERN=${ma_pattern} verifyMultiAgentsAgreements"
                 fi
             fi
             
