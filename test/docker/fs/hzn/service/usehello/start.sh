@@ -79,6 +79,9 @@ do
 
         # For each object, write the data into the local file system using the object ID as the file name. Then mark the object
         # as received so that a subsequent poll doesn't see the object again.
+        
+        echo "${AUTH}  ,  ${CERT}  ,  ${BASEURL}  ,  ${OBJECT_TYPE}"
+
         OBJS=$(curl -sL ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}?received=true)
 
         BADRES=$(echo ${OBJS} | jq -r '.[].objectID')

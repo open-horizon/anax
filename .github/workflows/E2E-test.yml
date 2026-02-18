@@ -85,70 +85,20 @@ jobs:
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: docker logs exchange-api
       
-      - name: Test Failure Catch - Check Agent - cpu
+      - name: Test Failure Catch - Capture Agent Service Container Logs
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^e2edev-somecomp.com_my.company.com.services.cpu*-amd64_cpu" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - helloservice
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^e2edev-somecomp.com_my.company.com.services.hello*-amd64_helloservice" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - leaf
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^e2edev-somecomp.com_my.company.com.services.leaf*-amd64_leaf" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - useHello
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^*-amd64_usehello" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - e2edev-somecomp.com_bluehorizon.network-service-cpu
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^e2edev-somecomp.com_bluehorizon.network-service-cpu*-cpu" --format "{{ .ID }}")
-
-      - name: Test Failure Catch - Check Agent - IBM_bluehorizon.network-service-cpu
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^IBM_bluehorizon.network-service-cpu*-cpu" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - e2edev-somecomp.com_bluehorizon.network-services-locgps
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^e2edev-somecomp.com_bluehorizon.network-services-locgps*-locgps2" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - location2
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^*-location2" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - IBM_bluehorizon.network-service-gps
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^IBM_bluehorizon.network-service-gps*-gps2" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - gpstest
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^*-gpstest" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - weather
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^*-weather" --format "{{ .ID }}")
-      
-      - name: Test Failure Catch - Check Agent - netspeed - instance 1
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^*-netspeed" --format "{{ .ID }}" | awk "NR==1 {print $1}")
-      
-      - name: Test Failure Catch - Check Agent - netspeed - instance 2
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs $(docker ps -a --filter "name=^*-netspeed" --format "{{ .ID }}" | awk "NR==2 {print $1}")
+        run: |
+          echo "=== Agent Service Container Logs ==="
+          for container in $(docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"); do
+            echo ""
+            echo "=========================================="
+            echo "Container: $container"
+            echo "Status: $(docker inspect --format='{{.State.Status}}' $container 2>/dev/null || echo 'unknown')"
+            echo "=========================================="
+            docker logs $container 2>&1 | tail -100 || echo "Failed to get logs for $container"
+            echo ""
+          done
 
       - name: Test Failure Catch - Check k8s Pods
         continue-on-error: true
