@@ -3,7 +3,7 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Configuring a storage class
 description: Documentation for configuring storage class for edge cluster agents
-lastupdated: 2026-01-30
+lastupdated: 2026-02-18
 nav_order: 21
 parent: Agent (anax)
 has_children: false
@@ -29,4 +29,3 @@ A PersistentVolumeClaim will be created during the agent install process. It wil
 
 - Supports both read and write
 - Can be made available immediately
-- Supports `ReadWriteMany` mode if agent is running in multi-node cluster

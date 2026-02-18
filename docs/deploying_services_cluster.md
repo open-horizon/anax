@@ -3,7 +3,7 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Deploying services to your edge cluster
 description: Documentation for Deploying services to an edge cluster
-lastupdated: 2026-01-30
+lastupdated: 2026-02-18
 nav_order: 20
 parent: Agent (anax)
 ---
@@ -36,11 +36,13 @@ Setting node policy on this edge cluster can cause deployment policies to deploy
 3. To test your edge cluster agent, set your node policy with a property that deploys the example helloworld operator and service to this edge node:
 
    ```bash
-   cat << 'EOF' > operator-example-node.policy.json
+   cat << 'EOF' > operator-example-node-policy.json
    {
-     "properties": [
-       { "name": "openhorizon.example", "value": "nginx-operator" }
-     ]
+       "deployment": {
+          "properties": [
+                {"name": "openhorizon.example", "value": "nginx-operator" }
+           ]
+        }
    }
    EOF
 

@@ -3,7 +3,7 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Installing a K3s cluster
 description: Documentation for installing a K3s edge cluster
-lastupdated: 2026-01-30
+lastupdated: 2026-02-18
 nav_order: 13
 parent: Planning to install an edge cluster agent
 grand_parent: Agent (anax)
@@ -22,7 +22,7 @@ has_toc: false
 # Installing a K3s cluster
 {: #install_k3s_cluster}
 
-This content provides a summary of how to install K3s, a lightweight and small Kubernetes cluster, on [Ubuntu 22.04.4 LTS ](https://ubuntu.com/download/server){:target="_blank"}{: .externalLink}. For more information, see [the K3s documentation ](https://docs.k3s.io/){:target="_blank"}{: .externalLink}.
+This content provides a summary of how to install K3s, a lightweight and small Kubernetes cluster, on [Ubuntu](https://ubuntu.com/download/server){:target="_blank"}{: .externalLink}. For more information, see [the K3s documentation ](https://docs.k3s.io/){:target="_blank"}{: .externalLink}.
 {:shortdesc}
 
 **Note**: If installed, uninstall kubectl before completing the following steps.

@@ -1,9 +1,9 @@
 ---
 copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
-title: Installing the agent on Red Hat OpenShift Container Platform Kubernetes edge cluster
+title: Installing the agent on a Red Hat OpenShift Container Platform Kubernetes edge cluster
 description: Documentation for installing the agent on OpenShift edge clusters
-lastupdated: 2026-01-30
+lastupdated: 2026-02-18
 nav_order: 18
 parent: Agent (anax)
 has_children: false
@@ -18,7 +18,7 @@ has_toc: false
 {:child: .link .ulchildlink}
 {:childlinks: .ullinks}
 
-# Installing the agent on Red Hat OpenShift Container Platform Kubernetes edge cluster
+# Installing the agent on a Red Hat OpenShift Container Platform Kubernetes edge cluster
 {: #installing_ocp_edge_cluster_agent}
 
 This content describes how to install the {{site.data.keyword.ieam}} agent on your {{site.data.keyword.ocp}} edge cluster. Follow these steps on a host that has admin access to your edge cluster:
@@ -51,9 +51,6 @@ This content describes how to install the {{site.data.keyword.ieam}} agent on yo
    export HZN_ORG_ID=<your-exchange-organization>
    export HZN_EXCHANGE_USER_AUTH=<authentication string>
    export HZN_EXCHANGE_URL= # example http://open-horizon.lfedge.iol.unh.edu:3090/v1
-   export HZN_FSS_CSSURL= # example http://open-horizon.lfedge.iol.unh.edu:9443/
-   export HZN_AGBOT_URL= # example http://open-horizon.lfedge.iol.unh.edu:3111
-   export HZN_FDO_SVC_URL= # example http://open-horizon.lfedge.iol.unh.edu:9008/api
    export HZN_NODE_ID=<edge-cluster-node-name>
    ```
    {: codeblock}
