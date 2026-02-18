@@ -24,6 +24,6 @@ COPY script/css_start.sh /usr/edge-sync-service/bin
 
 USER cssuser
 
-ENV UNIX_SOCKET_FILE_PERMISSIONS=0o777
+ENV UNIX_SOCKET_FILE_PERMISSIONS="0777"
 
 CMD ["/usr/edge-sync-service/bin/css_start.sh"]

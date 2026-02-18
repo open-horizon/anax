@@ -14,7 +14,7 @@ RUN mkdir /e2edevuser \
 
 USER e2edevuser
 
-ENV UNIX_SOCKET_FILE_PERMISSIONS=0777
+ENV UNIX_SOCKET_FILE_PERMISSIONS="0777"
 
 WORKDIR /tmp
 CMD ["/tmp/start.sh"]
